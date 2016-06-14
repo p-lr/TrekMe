@@ -1,0 +1,78 @@
+{
+    "name": "Map name",
+    "thumbnail": "thumbnail.jpg",
+    "levels": [
+        {"level": 0, 
+         "tile_size": {
+            "x": 256,
+            "y": 256
+         }
+        },
+        {"level": 1, 
+         "tile_size": {
+            "x": 256,
+            "y": 256
+         }
+        },
+        {"level": 2, 
+         "tile_size": {
+            "x": 256,
+            "y": 256
+         }
+        },
+        {"level": 3, 
+         "tile_size": {
+            "x": 256,
+            "y": 256
+         }
+        },
+        {"level": 4, 
+         "tile_size": {
+            "x": 256,
+            "y": 256
+         }
+        },
+        {"level": 5, 
+         "tile_size": {
+            "x": 256,
+            "y": 256
+         }
+        }
+    ],
+    "provider":{
+      "generated_by": "VIPS",
+      "image_extension": ".jpg"
+    },
+    "size": {
+        "x": 154,
+        "y": 245
+    },
+    "calibration": {
+        "projection": {
+          "projection_name": "Pseudo Mercator"
+        },
+        "calibration_method": "simple_2_points",
+        "calibration_points": [
+            {
+                "x": 34.8353234727,
+                "y": 944.684548628,
+                "proj_x": -6879370.16,
+                "proj_y": 1841070.76
+            },
+            {
+                "x": 856.36,
+                "y": 475.21,
+                "proj_x": -6854219.99,
+                "proj_y": 1809493.90
+            }
+        ]
+    },
+    "markers":[
+        {
+            "name": "A marker",
+            "pos": [12.6585, 25.5474],
+            "comment": "A comment"
+        }
+    ]
+}
+

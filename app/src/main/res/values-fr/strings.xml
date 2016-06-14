@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="select_map_menu_title">Choix de carte</string>
+    <string name="projection_preferences_title">Projection</string>
+    <string name="points_number_preferences_title">Nombre de points de calibration</string>
+    <string name="map_title">Nom</string>
+    <string name="map_summary_category">Carte</string>
+    <string name="map_menu_title">Carte</string>
+    <string name="calibration_preferences_category">Calibration</string>
+    <string name="action_settings">Réglages</string>
+    <string name="calibration_status_ok">Calibrée</string>
+    <string name="calibration_status_error">Calibration incorrecte</string>
+    <string name="calibration_status_none">Non calibrée</string>
+    <string name="calibration_button_txt">Définir les points de calibration</string>
+    <string name="calibration_enter_values">Remplir les valeurs pour le point choisi</string>
+    <string name="wgs84_switch">WGS84 lat/lng</string>
+    <string name="latitude_short">Lat</string>
+    <string name="longitude_short">Lng</string>
+    <string name="settings_menu_title">Paramètres</string>
+    <string name="calibration_point_saved">Point sauvegardé</string>
+    <string name="projected_x_short">E</string>
+    <string name="projected_y_short">N</string>
+    <string name="projection_none">Aucune</string>
+    <string name="calibration_projection_saved_ok">Projection changée</string>
+    <string name="no_maps_found_warning">Aucune carte touvée sur la carte SD dans le dossier "trekadvisor". Veuillez consulter le manuel utilisateur pour apprendre à importer une carte.</string>
+    <string name="ok_dialog">OK</string>
+    <string name="unzip">Dézipper</string>
+    <string name="import_menu_title">Importer</string>
+</resources>

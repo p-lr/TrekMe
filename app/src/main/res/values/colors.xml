@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimaryLight">#A1887F</color>
+    <color name="colorPrimary">#795548</color>
+    <color name="colorPrimaryDark">#5D4037</color>
+    <color name="colorAccent">#448AFF</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorPrimaryTextBlack">#DD000000</color>
+    <color name="colorPrimaryTextWhite">#FFFFFF</color>
+    <color name="colorDarkGrey">#616161</color>
+    <color name="colorPositionMarker">#448AFF</color>
+    <color name="colorPositionMarkerBg">#55448AFF</color>
+    <color name="colorCalibrationMarker">#448AFF</color>
+    <color name="colorCalibrationMarkerBg">#55448AFF</color>
+</resources>

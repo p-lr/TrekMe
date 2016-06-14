@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name" translatable="false">TrekAdvisor</string>
+    <string name="app_author" translatable="false">https://github.com/peterLaurence</string>
+
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <string name="map_menu_title">Map</string>
+    <string name="select_map_menu_title">Select map</string>
+    <string name="import_menu_title">Import</string>
+
+    <string name="no_maps_found_warning">No maps found on the SD card, "trekadvisor" folder.
+        Please refer to the documentation to learn how to import maps.</string>
+    <string name="ok_dialog">OK</string>
+
+    <string name="calibration_status_ok">Calibrated</string>
+    <string name="calibration_status_none">Not calibrated</string>
+    <string name="calibration_status_error">Calibration error</string>
+    <string name="calibration_point_saved">Calibration point saved</string>
+    <string name="calibration_projection_saved_ok">Projection successfully changed</string>
+
+    <string name="calibration_preferences_category">Calibration</string>
+    <string name="projection_preferences_title">Projection</string>
+    <string name="points_number_preferences_title">Number of calibration points</string>
+    <string name="calibration_button_txt">Define calibration points</string>
+
+    <string name="map_summary_category">Map</string>
+    <string name="map_title">Name</string>
+
+    <string name="projection_none">None</string>
+
+
+    <!-- Keys and ids of graphical components -->
+    <string name="preference_projection_key" translatable="false">pref_projection_preference</string>
+    <string name="preference_numpoints_key" translatable="false">pref_points_number_preference</string>
+    <string name="preference_map_title_key" translatable="false">pref_map_title_key</string>
+    <string name="preference_calibration_button_key" translatable="false">pref_calib_btn_key</string>
+    <string name="calibration_enter_values">Enter values after choosing a calibration point</string>
+    <string name="wgs84_switch">WGS84 lat/lng</string>
+    <string name="latitude_short">Lat</string>
+    <string name="longitude_short">Lng</string>
+    <string name="projected_x_short">E</string>
+    <string name="projected_y_short">N</string>
+    <string name="unzip">Unzip</string>
+
+</resources>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp"
+            android:gravity="start">
+            <TextView
+                android:id="@+id/valuesEnterTitle"
+                android:layout_width="wrap_content"
+                android:gravity="start"
+                android:layout_alignStart="@+id/tableLayout"
+                android:text="@string/calibration_enter_values"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"/>
+
+            <ImageButton style="@style/Widget.AppCompat.Button.Colored"
+                android:id="@+id/calibration_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:src="@drawable/ic_save_white_24dp"
+                android:clickable="true"
+                android:layout_toEndOf="@+id/calibration_point_selector"
+                android:layout_alignBottom="@+id/calibration_point_selector"
+                android:layout_marginBottom="2dp"
+                />
+
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/valuesEnterTitle"
+                android:layout_alignParentStart="true"
+                android:id="@+id/tableLayout"
+                >
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="@string/longitude_short"
+                        android:id="@+id/calibration_x_label"
+                        android:labelFor="@+id/editTextLng"/>
+
+                    <EditText
+                        android:layout_width="150dp"
+                        android:layout_height="35dp"
+                        android:inputType="numberDecimal|numberSigned"
+                        android:textSize="14sp"
+                        android:paddingTop="0px"
+                        android:paddingBottom="4dp"
+                        android:id="@+id/editTextLng" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="@string/latitude_short"
+                        android:id="@+id/calibration_y_label"
+                        android:labelFor="@+id/editTextLat"/>
+
+                    <EditText
+                        android:layout_width="50dp"
+                        android:layout_height="35dp"
+                        android:inputType="numberDecimal|numberSigned"
+                        android:textSize="14sp"
+                        android:paddingTop="0px"
+                        android:paddingBottom="4dp"
+                        android:id="@+id/editTextLat" />
+                </TableRow>
+
+            </TableLayout>
+
+            <TextView
+                android:id="@+id/wgs84_switch_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wgs84_switch"
+                android:layout_below="@+id/tableLayout"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"/>
+
+            <Switch
+                android:id="@+id/wgs84_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:layout_alignEnd="@+id/tableLayout"
+                android:layout_alignBaseline="@+id/wgs84_switch_label"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"/>
+
+            <GridLayout
+                android:id="@+id/calibration_point_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_below="@+id/valuesEnterTitle"
+                android:layout_toEndOf="@+id/tableLayout"
+                android:columnCount="2"
+                android:rowCount="2"
+                android:useDefaultMargins="false"
+                android:layout_alignParentEnd="false"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_alignParentStart="false">
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/firstCalibPointButton"
+                    android:src="@drawable/ic_looks_one_black_24dp"
+                    android:layout_gravity="center"
+                    android:clickable="true"
+                    android:background="@drawable/ripple" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/thirdCalibPointButton"
+                    android:src="@drawable/ic_looks_3_black_24dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ripple"
+                    android:clickable="true" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/fourthCalibPointButton"
+                    android:src="@drawable/ic_looks_4_black_24dp"
+                    android:background="@drawable/ripple"
+                    android:layout_gravity="center"
+                    android:clickable="true" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/secondCalibPointButton"
+                    android:src="@drawable/ic_looks_two_black_24dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ripple"
+                    android:clickable="true" />
+            </GridLayout>
+
+        </RelativeLayout>
+    </LinearLayout>
+</merge>

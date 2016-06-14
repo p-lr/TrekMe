@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceCategory
+    android:title="@string/calibration_preferences_category">
+    <ListPreference
+        android:key="@string/preference_projection_key"
+        android:title="@string/projection_preferences_title"
+        android:entries="@array/projections_names"
+        android:entryValues="@array/projections_names" />
+
+    <ListPreference
+        android:key="@string/preference_numpoints_key"
+        android:title="@string/points_number_preferences_title"
+        android:entries="@array/calibration_points_numbers"
+        android:entryValues="@array/calibration_points_numbers" />
+    <Preference
+        android:key="@string/preference_calibration_button_key"
+        android:title="@string/calibration_button_txt" />
+</PreferenceCategory>
+<PreferenceCategory
+    android:title="@string/map_summary_category">
+    <EditTextPreference
+        android:key="@string/preference_map_title_key"
+        android:title="@string/map_title" />
+</PreferenceCategory>
+</PreferenceScreen>

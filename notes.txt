@@ -1,0 +1,4 @@
+Ce projet a été construit en important TileView sous forme de module aar.
+Au cas où le projet devait être reconstruit, ou le module changé, suivre scrupuleusement les instructions :
+
+http://stackoverflow.com/questions/24506648/adding-local-aar-files-to-gradle-build-using-flatdirs-is-not-working

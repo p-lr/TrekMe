@@ -1,0 +1,63 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/map_view_frgmt_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/fab_vertical_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:orientation="vertical"
+        android:gravity="bottom">
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_orientation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:src="@drawable/compass_outline_24dp"
+            app:backgroundTint="@color/colorWhite"
+            android:tint="@color/colorDarkGrey"
+            android:layout_marginEnd="@dimen/fab_margin"
+            android:layout_marginBottom="@dimen/fab_margin" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginTop="0dp"
+            android:src="@drawable/ic_gps_fixed_24dp"
+            app:backgroundTint="@color/colorWhite"
+            android:tint="@color/colorDarkGrey"
+            android:layout_marginEnd="@dimen/fab_margin"
+            android:layout_marginBottom="@dimen/fab_margin" />
+    </LinearLayout>
+
+    <!--<LinearLayout-->
+    <!--android:id="@+id/lin_layout"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_gravity="bottom"-->
+    <!--android:layout_marginBottom="4dp"-->
+    <!--android:gravity="left|bottom">-->
+    <!--<ImageButton-->
+    <!--android:id="@+id/btn1"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginLeft="4dp"-->
+    <!--android:padding="10dp"-->
+    <!--android:src="@drawable/move_to_position_black_24dp"-->
+    <!--android:background="#CCFFFFFF"/>-->
+
+    <!--<Button-->
+    <!--android:id="@+id/btn2"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginLeft="4dp"-->
+    <!--android:padding="10dp"-->
+    <!--android:text="@string/button2" />-->
+    <!--</LinearLayout>-->
+
+</merge>
