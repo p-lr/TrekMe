@@ -297,9 +297,6 @@ public class MapViewFragment extends Fragment implements
         /* Panning outside of the map is not possible --affects minimum scale */
         tileView.setShouldScaleToFit(true);
 
-        /* Disable animations. As of 03/2016, it leads to performance drops */
-        tileView.setTransitionsEnabled(false);
-
         /* Render while panning */
         tileView.setShouldRenderWhilePanning(true);
 

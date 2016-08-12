@@ -5,7 +5,7 @@ import android.support.annotation.Nullable;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 
 /**
- * The MapCalibrator provides different methods to obtain a {@link Map.MapBounds} from multiple
+ * The {@link MapCalibrator} provides different methods to obtain a {@link Map.MapBounds} from multiple
  * {@link MapGson.Calibration.CalibrationPoint} objects.
  *
  * @author peterLaurence
