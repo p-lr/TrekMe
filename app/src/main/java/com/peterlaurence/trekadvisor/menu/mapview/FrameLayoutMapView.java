@@ -24,15 +24,17 @@ public class FrameLayoutMapView extends FrameLayout implements
         TileViewExtended.ScrollListener {
 
     private FloatingActionButton mPositionFAB;
-    private FloatingActionButton mOrientationFAB;
+    private FloatingActionButton mLockFAB;
 
     private View mPositionMarker;
 
     private PositionTouchListener mPositionTouchListener;
+    private LockViewListener mLockViewListener;
 
     private Animation mShowOrientationFAB;
     private Animation mHideOrientationFAB;
     private boolean mIsVisibleOrientationFAB = true;
+    private boolean mLockEnabled = false;
 
     public FrameLayoutMapView(Context context) {
         this(context, null);
@@ -66,11 +68,18 @@ public class FrameLayoutMapView extends FrameLayout implements
             }
         });
 
-        mOrientationFAB = (FloatingActionButton) findViewById(R.id.fab_orientation);
-        mOrientationFAB.setOnClickListener(new OnClickListener() {
+        mLockFAB = (FloatingActionButton) findViewById(R.id.fab_lock);
+        mLockFAB.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (mLockViewListener != null) {
+                    mLockFAB.getDrawable().mutate().setTint(
+                            mLockEnabled ?
+                                    getResources().getColor(R.color.colorDarkGrey, null) :
+                                    getResources().getColor(R.color.colorAccent, null));
+                    mLockEnabled = !mLockEnabled;
+                    mLockViewListener.onLockView(mLockEnabled);
+                }
             }
         });
 
@@ -100,20 +109,20 @@ public class FrameLayoutMapView extends FrameLayout implements
 
     private void showOrientationFAB() {
         if (!mIsVisibleOrientationFAB) {
-            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mOrientationFAB.getLayoutParams();
-            layoutParams.rightMargin += (int) (mOrientationFAB.getWidth() * 1.35);
-            mOrientationFAB.setLayoutParams(layoutParams);
-            mOrientationFAB.startAnimation(mShowOrientationFAB);
+            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mLockFAB.getLayoutParams();
+            layoutParams.rightMargin += (int) (mLockFAB.getWidth() * 1.35);
+            mLockFAB.setLayoutParams(layoutParams);
+            mLockFAB.startAnimation(mShowOrientationFAB);
             mIsVisibleOrientationFAB = true;
         }
     }
 
     private void hideOrientationFAB() {
         if (mIsVisibleOrientationFAB) {
-            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mOrientationFAB.getLayoutParams();
-            layoutParams.rightMargin -= (int) (mOrientationFAB.getWidth() * 1.35);
-            mOrientationFAB.setLayoutParams(layoutParams);
-            mOrientationFAB.startAnimation(mHideOrientationFAB);
+            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mLockFAB.getLayoutParams();
+            layoutParams.rightMargin -= (int) (mLockFAB.getWidth() * 1.35);
+            mLockFAB.setLayoutParams(layoutParams);
+            mLockFAB.startAnimation(mHideOrientationFAB);
             mIsVisibleOrientationFAB = false;
         }
     }
@@ -124,6 +133,14 @@ public class FrameLayoutMapView extends FrameLayout implements
 
     public void setPositionTouchListener(PositionTouchListener listener) {
         mPositionTouchListener = listener;
+    }
+
+    public interface LockViewListener {
+        void onLockView(boolean lock);
+    }
+
+    public void setLockViewListener(LockViewListener listener) {
+        mLockViewListener = listener;
     }
 
     public View getDetachedPositionMarker() {

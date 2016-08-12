@@ -47,12 +47,14 @@ public class MapViewFragment extends Fragment implements
         OnConnectionFailedListener,
         LocationListener,
         ProjectionTask.ProjectionUpdateLister,
-        FrameLayoutMapView.PositionTouchListener {
+        FrameLayoutMapView.PositionTouchListener,
+        FrameLayoutMapView.LockViewListener {
 
     private FrameLayoutMapView rootView;
     private TileViewExtended mTileView;
     private Map mMap;
     private View mPositionMarker;
+    private boolean mLockView = false;
     static final String MAP_KEY = "MAP_KEY";
 
     private OnMapViewFragmentInteractionListener mListener;
@@ -105,6 +107,7 @@ public class MapViewFragment extends Fragment implements
         if (rootView == null) {
             rootView = new FrameLayoutMapView(this.getContext());
             rootView.setPositionTouchListener(this);
+            rootView.setLockViewListener(this);
         } else {
             /* Don't re-create the TileView, it handles configuration changes itself */
             return rootView;
@@ -133,6 +136,11 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onPositionTouch() {
         centerOnPosition();
+    }
+
+    @Override
+    public void onLockView(boolean lock) {
+        mLockView = lock;
     }
 
     @Override
@@ -234,12 +242,17 @@ public class MapViewFragment extends Fragment implements
 
     /**
      * Updates the position on the {@link Map}.
+     * Also, if we locked the view, we center the TileView on the current position.
      *
      * @param x the projected X coordinate, or longitude if there is no {@link Projection}
      * @param y the projected Y coordinate, or latitude if there is no {@link Projection}
      */
     private void updatePosition(double x, double y) {
         mTileView.moveMarker(mPositionMarker, x, y);
+
+        if(mLockView) {
+            centerOnPosition();
+        }
     }
 
     private void setTileView(TileViewExtended tileView) {
