@@ -28,6 +28,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
+import com.qozix.tileview.widgets.ZoomPanLayout;
 
 import java.util.List;
 
@@ -307,8 +308,8 @@ public class MapViewFragment extends Fragment implements
             scale = 1 / (float) Math.pow(2, levelList.size() - level.level - 2);
         }
 
-        /* Panning outside of the map is not possible --affects minimum scale */
-        tileView.setShouldScaleToFit(true);
+        /* Allow the scale to be no less to see the entire map */
+        tileView.setMinimumScaleMode(ZoomPanLayout.MinimumScaleMode.FIT);
 
         /* Render while panning */
         tileView.setShouldRenderWhilePanning(true);
