@@ -2,9 +2,14 @@ package com.peterlaurence.trekadvisor.core.map;
 
 import android.support.annotation.Nullable;
 
+import com.google.gson.Gson;
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * The {@link MapImporter} is created from a {@link MapProvider}. Then, the corresponding map parser
@@ -14,7 +19,6 @@ import java.util.HashMap;
  * @author peterLaurence on 23/06/16.
  */
 public class MapImporter {
-    private final MapParser mParser;
     private static final java.util.Map<MapProvider, MapParser> mProviderToParserMap;
 
     /**
@@ -37,14 +41,17 @@ public class MapImporter {
         mProviderToParserMap = Collections.unmodifiableMap(map);
     }
 
-
-    public MapImporter(MapProvider provider) {
-        mParser = mProviderToParserMap.get(provider);
+    /* Don't allow instantiation */
+    private MapImporter() {
     }
 
-    public Map importFromFile(File file) {
-        Map map = mParser.parse(file);
-        return map;
+    public static @Nullable Map importFromFile(File file, MapProvider provider) {
+        MapParser parser = mProviderToParserMap.get(provider);
+        if (parser != null) {
+            Map map = parser.parse(file);
+            return map;
+        }
+        return null;
     }
 
     /**
@@ -60,7 +67,18 @@ public class MapImporter {
                 return null;
             }
 
-            /* Get the maximum zoom level */
+            MapGson mapGson = new MapGson();
+            List<MapGson.Level> levels = new ArrayList<>();
+            int maxLevel = getMaxLevel(file);
+            for (int i=0; i<=maxLevel; i++) {
+                System.out.println("creating level " + i);
+            }
+
+            return null;
+        }
+
+        /* Get the maximum zoom level */
+        private int getMaxLevel(File file) {
             int maxLevel = 0;
             int level;
             for (File f : file.listFiles()) {
@@ -73,16 +91,12 @@ public class MapImporter {
                     }
                 }
             }
-
-            return null;
+            return maxLevel;
         }
 
         /* Get the tile size */
         private int getTileSizeForLevel(File directory) {
             File file = new File(directory, "0");
-//            if (file.exists()) {
-//
-//            }
             return 0;
         }
     }
