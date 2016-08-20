@@ -1,9 +1,10 @@
 package com.peterlaurence.trekadvisor.core.map;
 
+import android.graphics.BitmapFactory;
 import android.support.annotation.Nullable;
 
-import com.google.gson.Gson;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.providers.BitmapProviderLibVips;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,7 +33,8 @@ public class MapImporter {
      * Produces a {@link Map} from a given {@link File}.
      */
     private interface MapParser {
-        @Nullable Map parse(File file);
+        @Nullable
+        Map parse(File file) throws MapParseException;
     }
 
     static {
@@ -45,13 +47,35 @@ public class MapImporter {
     private MapImporter() {
     }
 
-    public static @Nullable Map importFromFile(File file, MapProvider provider) {
+    public static
+    @Nullable
+    Map importFromFile(File file, MapProvider provider) {
         MapParser parser = mProviderToParserMap.get(provider);
         if (parser != null) {
-            Map map = parser.parse(file);
-            return map;
+            try {
+                Map map = parser.parse(file);
+                return map;
+            } catch (MapParseException e) {
+                // TODO : properly handle this and inform the user.
+            }
         }
         return null;
+    }
+
+    /**
+     * An Exception thrown when an error occurred in a {@link MapParser}.
+     */
+    static class MapParseException extends Exception {
+        private Issue mIssue;
+
+        enum Issue {
+            NO_LEVEL_FOUND,
+            UNKNOWN_IMAGE_EXT
+        }
+
+        MapParseException(Issue issue) {
+            mIssue = issue;
+        }
     }
 
     /**
@@ -60,19 +84,44 @@ public class MapImporter {
      */
     private static class LibvipsMapParser implements MapParser {
         private java.util.Map<Integer, Integer> mTileSizeForLevelMap;
+        private BitmapFactory.Options options = new BitmapFactory.Options();
+
+        LibvipsMapParser() {
+            options.inJustDecodeBounds = true;
+        }
 
         @Override
-        public Map parse(File file) {
+        public Map parse(File file) throws MapParseException {
             if (!file.isDirectory()) {
                 return null;
             }
 
             MapGson mapGson = new MapGson();
-            List<MapGson.Level> levels = new ArrayList<>();
+
+            /* Create levels */
+            List<MapGson.Level> levelList = new ArrayList<>();
             int maxLevel = getMaxLevel(file);
-            for (int i=0; i<=maxLevel; i++) {
-                System.out.println("creating level " + i);
+            File levelDir = null;
+            for (int i = 0; i <= maxLevel; i++) {
+                levelDir = new File(file, String.valueOf(i));
+                if (levelDir.exists()) {
+                    MapGson.Level.TileSize tileSize = getTileSize(levelDir);
+                    MapGson.Level level = new MapGson.Level();
+                    level.level = i;
+                    level.tile_size = tileSize;
+                    levelList.add(level);
+                    System.out.println("creating level " + i + " tileSize " + tileSize.x);
+                }
             }
+
+            if (levelDir == null) {
+                throw new MapParseException(MapParseException.Issue.NO_LEVEL_FOUND);
+            }
+
+            /* Create provider */
+            MapGson.Provider provider = new MapGson.Provider();
+            provider.generated_by = BitmapProviderLibVips.GENERATOR_NAME;
+            provider.image_extension = getImageExtension(levelDir);
 
             return null;
         }
@@ -94,10 +143,34 @@ public class MapImporter {
             return maxLevel;
         }
 
-        /* Get the tile size */
-        private int getTileSizeForLevel(File directory) {
-            File file = new File(directory, "0");
-            return 0;
+        private
+        @Nullable
+        MapGson.Level.TileSize getTileSize(File levelDir) {
+            File[] imageFiles = levelDir.listFiles();
+            if (imageFiles != null && imageFiles.length > 0) {
+                File anImage = imageFiles[0];
+                BitmapFactory.decodeFile(anImage.getPath(), options);
+                MapGson.Level.TileSize tileSize = new MapGson.Level.TileSize();
+                tileSize.x = options.outWidth;
+                tileSize.y = options.outHeight;
+                return tileSize;
+            }
+
+            return null;
+        }
+
+        private
+        @Nullable
+        String getImageExtension(File levelDir) {
+            File[] imageFiles = levelDir.listFiles();
+            if (imageFiles != null && imageFiles.length > 0) {
+                String anImagePath = imageFiles[0].getPath();
+                String ext = anImagePath.substring(anImagePath.lastIndexOf(".") + 1);
+                if (ext.length() > 0) {
+                    return ext;
+                }
+            }
+            return null;
         }
     }
 }

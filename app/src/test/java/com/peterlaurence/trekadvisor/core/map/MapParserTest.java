@@ -1,6 +1,12 @@
 package com.peterlaurence.trekadvisor.core.map;
 
+
+import com.peterlaurence.trekadvisor.BuildConfig;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.net.URL;
@@ -9,8 +15,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
+ * Unit tests for importing maps.
+ *
  * @author peterLaurence on 19/08/16.
  */
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class)
 public class MapParserTest {
     private static File mMapsDirectory;
 
