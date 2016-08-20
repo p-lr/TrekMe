@@ -31,9 +31,6 @@ public class Map implements Parcelable {
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
 
-    /* The directory of the map, which contains the configuration file */
-    private final File mDirectory;
-
     private final Bitmap mImage;
 
     private BitmapProvider mBitmapProvider;
@@ -54,7 +51,6 @@ public class Map implements Parcelable {
     public Map(MapGson mapGson, File jsonFile) {
         mMapGson = mapGson;
         mConfigFile = jsonFile;
-        mDirectory = jsonFile.getParentFile();
         mImage = getBitmapFromFile(new File(jsonFile.getParent(), mapGson.thumbnail));
     }
 
@@ -85,7 +81,7 @@ public class Map implements Parcelable {
 
     public Bitmap getDownSample() {
         // TODO : parametrize that
-        File imageFile = new File(mDirectory, "down_sample.jpg");
+        File imageFile = new File(mConfigFile.getParentFile(), "down_sample.jpg");
         try {
             return BitmapFactory.decodeFile(imageFile.getPath());
         } catch (OutOfMemoryError | Exception e) {
@@ -173,7 +169,7 @@ public class Map implements Parcelable {
     }
 
     public File getDirectory() {
-        return mDirectory;
+        return mConfigFile.getParentFile();
     }
 
     public String getName() {
@@ -261,7 +257,6 @@ public class Map implements Parcelable {
 
     protected Map(Parcel in) {
         mConfigFile = new File(in.readString());
-        mDirectory = new File(in.readString());
         mImage = in.readParcelable(Bitmap.class.getClassLoader());
     }
 
@@ -285,7 +280,6 @@ public class Map implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mConfigFile.getAbsolutePath());
-        dest.writeString(mDirectory.getAbsolutePath());
         dest.writeParcelable(mImage, flags);
     }
 }
