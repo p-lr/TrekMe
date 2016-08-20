@@ -48,6 +48,13 @@ public class Map implements Parcelable {
         OK, NONE, ERROR
     }
 
+    /**
+     * To create a {@link Map}, two parameters are needed.
+     *
+     * @param mapGson the {@link MapGson} object that includes informations relative to levels,
+     *                the tile size, the name of the map, etc.
+     * @param jsonFile the {@link File} for serialization.
+     */
     public Map(MapGson mapGson, File jsonFile) {
         mMapGson = mapGson;
         mConfigFile = jsonFile;
