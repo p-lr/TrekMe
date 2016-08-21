@@ -12,6 +12,7 @@ import java.io.File;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -39,7 +40,8 @@ public class MapParserTest {
             File libVipsMapDir = new File(mMapsDirectory, "libvips");
             if (libVipsMapDir.exists()) {
                 Map map = MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS);
-                assertEquals(2, 2);
+                assertNotNull(map);
+                assertEquals(MapImporter.DEFAULT_MAP_NAME, map.getName());
                 return;
             }
         }

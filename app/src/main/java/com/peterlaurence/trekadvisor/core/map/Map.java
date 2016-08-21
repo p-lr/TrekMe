@@ -49,16 +49,17 @@ public class Map implements Parcelable {
     }
 
     /**
-     * To create a {@link Map}, two parameters are needed.
+     * To create a {@link Map}, three parameters are needed.
      *
      * @param mapGson the {@link MapGson} object that includes informations relative to levels,
      *                the tile size, the name of the map, etc.
      * @param jsonFile the {@link File} for serialization.
+     * @param thumbnail the {@link File} image for map customization.
      */
-    public Map(MapGson mapGson, File jsonFile) {
+    public Map(MapGson mapGson, File jsonFile, File thumbnail) {
         mMapGson = mapGson;
         mConfigFile = jsonFile;
-        mImage = getBitmapFromFile(new File(jsonFile.getParent(), mapGson.thumbnail));
+        mImage = getBitmapFromFile(thumbnail);
     }
 
     /**
@@ -81,9 +82,12 @@ public class Map implements Parcelable {
         return BitmapFactory.decodeFile(image.getAbsolutePath(), bmOptions);
     }
 
-    public static Bitmap getBitmapFromFile(File file) {
+    public static @Nullable Bitmap getBitmapFromFile(File file) {
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        return BitmapFactory.decodeFile(file.getAbsolutePath(), bmOptions);
+        if (file != null) {
+            return BitmapFactory.decodeFile(file.getAbsolutePath(), bmOptions);
+        }
+        return null;
     }
 
     public Bitmap getDownSample() {

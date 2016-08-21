@@ -47,7 +47,7 @@ public class MapLoader {
 
     private static final String APP_FOLDER_NAME = "trekadvisor";
     private static final String IMPORTED_MAP_FOLDER_NAME = "imported";
-    private static final String MAP_FILE_NAME = "map.json";
+    static final String MAP_FILE_NAME = "map.json";
 
     private Gson mGson;
     private static final File defaultAppDir = new File(Environment.getExternalStorageDirectory(),
@@ -160,7 +160,7 @@ public class MapLoader {
                     /* json deserialization */
                     MapGson mapGson = mGson.fromJson(jsonString, MapGson.class);
 
-                    Map map = new Map(mapGson, f);
+                    Map map = new Map(mapGson, f, new File(f.getParent(), mapGson.thumbnail));
 
                     /* Calibration */
                     map.calibrate();
