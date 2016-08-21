@@ -115,7 +115,8 @@ contain every informations that TrekAdvisor needs to display the map.
 That file must be named `map.json`. The easiest way is to copy-paste this [configuration
 file](app/src/main/assets/map-example/map.json) an adapt it.
 
-Several points are very important :
+Important steps :
+
 1. Specify the correct number of levels. For example, a level in json file is represented by :
   ```
   "level": 5,
