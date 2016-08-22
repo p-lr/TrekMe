@@ -21,7 +21,10 @@ import com.qozix.tileview.graphics.BitmapProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -46,7 +49,6 @@ import java.util.List;
 public class MapLoader {
 
     private static final String APP_FOLDER_NAME = "trekadvisor";
-    private static final String IMPORTED_MAP_FOLDER_NAME = "imported";
     static final String MAP_FILE_NAME = "map.json";
 
     private Gson mGson;
@@ -54,7 +56,6 @@ public class MapLoader {
             APP_FOLDER_NAME);
     /* For instance maps are searched anywhere under the app folder */
     private static final File defaultMapsDir = defaultAppDir;
-    private static final File defaultImportedMapsDir = new File(defaultAppDir, IMPORTED_MAP_FOLDER_NAME);
 
     private List<Map> mMapList;
     private List<MapListUpdateListener> mMapListUpdateListeners;
@@ -235,7 +236,7 @@ public class MapLoader {
             }
 
             for (File archiveFile : mMapArchiveFilesFoundList) {
-                mMapArchiveList.add(new MapArchive(archiveFile, defaultImportedMapsDir));
+                mMapArchiveList.add(new MapArchive(archiveFile, defaultAppDir));
             }
 
             return null;
