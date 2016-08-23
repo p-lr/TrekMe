@@ -40,6 +40,14 @@ public class MapImporter {
         }
     };
 
+    private static final FilenameFilter DIR_FILTER = new FilenameFilter() {
+
+        @Override
+        public boolean accept(File dir, String filename) {
+            return new File(dir, filename).isDirectory();
+        }
+    };
+
     public static final String DEFAULT_MAP_NAME = "Imported map";
 
     /**
@@ -116,12 +124,18 @@ public class MapImporter {
                 return null;
             }
 
+            /* Find the first image */
+            File imageFile = findFirstImage(mapDir, 0, 5);
+
+            /* .. use it to deduce the parent folder */
+            File parentFolder = findParentFolder(imageFile);
+
             /* Create levels */
             List<MapGson.Level> levelList = new ArrayList<>();
-            int maxLevel = getMaxLevel(mapDir);
+            int maxLevel = getMaxLevel(parentFolder);
             File levelDir = null;
             for (int i = 0; i <= maxLevel; i++) {
-                levelDir = new File(mapDir, String.valueOf(i));
+                levelDir = new File(parentFolder, String.valueOf(i));
                 if (levelDir.exists()) {
                     MapGson.Level.TileSize tileSize = getTileSize(levelDir);
                     MapGson.Level level = new MapGson.Level();
@@ -142,20 +156,61 @@ public class MapImporter {
             /* Create provider */
             MapGson.Provider provider = new MapGson.Provider();
             provider.generated_by = BitmapProviderLibVips.GENERATOR_NAME;
-            provider.image_extension = getImageExtension(levelDir);
+            provider.image_extension = getImageExtension(imageFile);
             mapGson.provider = provider;
 
             /* Find a thumnail */
-            File thumbnail = getThumbnail(mapDir);
+            File thumbnail = getThumbnail(parentFolder);
             mapGson.thumbnail = thumbnail != null ? thumbnail.getPath() : null;
 
             /* Set a default map name */
             mapGson.name = DEFAULT_MAP_NAME;
 
             /* The json file */
-            File jsonFile = new File(mapDir, MapLoader.MAP_FILE_NAME);
+            File jsonFile = new File(parentFolder, MapLoader.MAP_FILE_NAME);
 
             return new Map(mapGson, jsonFile, thumbnail);
+        }
+
+        /**
+         * The map can be contained in a subfolder inside the given directory.
+         * @param imageFile an image in the file structure.
+         */
+        private @Nullable File findParentFolder(File imageFile) {
+            if (imageFile != null) {
+                try {
+                    File parentFolder = imageFile.getParentFile().getParentFile().getParentFile();
+                    if (parentFolder.isDirectory()) {
+                        return parentFolder;
+                    }
+                } catch (NullPointerException e) {
+                    // don't care, will return null
+                }
+                System.out.println(imageFile.getPath());
+            }
+            return null;
+        }
+
+        private File findFirstImage(File dir, int depth, int maxDepth) {
+            if (depth > maxDepth) return null;
+
+            File listFile[] = dir.listFiles();
+            if (listFile != null) {
+                for (int i=0; i<listFile.length; i++) {
+                    if (listFile[i].isDirectory()) {
+                        File found = findFirstImage(listFile[i], depth++, maxDepth);
+                        if (found != null) {
+                            return found;
+                        }
+                    } else {
+                        File listImage[] = dir.listFiles(IMAGE_FILTER);
+                        if (listImage.length > 0) {
+                            return listImage[0];
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         /* Get the maximum zoom level */
@@ -178,7 +233,14 @@ public class MapImporter {
         private
         @Nullable
         MapGson.Level.TileSize getTileSize(File levelDir) {
-            File[] imageFiles = levelDir.listFiles(IMAGE_FILTER);
+            File[] lineDirList = levelDir.listFiles(DIR_FILTER);
+            if (lineDirList.length == 0) {
+                return null;
+            }
+
+            /* take the first line */
+            File lineDir = lineDirList[0];
+            File[] imageFiles = lineDir.listFiles(IMAGE_FILTER);
             if (imageFiles != null && imageFiles.length > 0) {
                 File anImage = imageFiles[0];
                 BitmapFactory.decodeFile(anImage.getPath(), options);
@@ -193,15 +255,13 @@ public class MapImporter {
 
         private
         @Nullable
-        String getImageExtension(File levelDir) {
-            File[] imageFiles = levelDir.listFiles(IMAGE_FILTER);
-            if (imageFiles != null && imageFiles.length > 0) {
-                String anImagePath = imageFiles[0].getPath();
-                String ext = anImagePath.substring(anImagePath.lastIndexOf(".") + 1);
-                if (ext.length() > 0) {
-                    return ext;
-                }
+        String getImageExtension(File imageFile) {
+            String imagePath = imageFile.getPath();
+            String ext = imagePath.substring(imagePath.lastIndexOf(".") + 1);
+            if (ext.length() > 0) {
+                return ext;
             }
+
             return null;
         }
 
