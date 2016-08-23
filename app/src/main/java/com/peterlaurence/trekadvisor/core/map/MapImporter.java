@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.core.map;
 
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
@@ -8,6 +9,7 @@ import com.peterlaurence.trekadvisor.core.providers.BitmapProviderLibVips;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,19 +77,19 @@ public class MapImporter {
     private MapImporter() {
     }
 
+    public interface MapParseListener {
+        void onMapParsed(Map map);
+        void onError(MapParseException e);
+    }
+
     public static
     @Nullable
-    Map importFromFile(File file, MapProvider provider) {
+    void importFromFile(File dir, MapProvider provider, MapParseListener listener) {
         MapParser parser = mProviderToParserMap.get(provider);
         if (parser != null) {
-            try {
-                Map map = parser.parse(file);
-                return map;
-            } catch (MapParseException e) {
-                // TODO : properly handle this and inform the user.
-            }
+            MapParseTask mapParseTask = new MapParseTask(parser, dir, listener);
+            mapParseTask.execute();
         }
-        return null;
     }
 
     /**
@@ -97,12 +99,65 @@ public class MapImporter {
         private Issue mIssue;
 
         enum Issue {
+            NO_PARENT_FOLDER_FOUND,
             NO_LEVEL_FOUND,
             UNKNOWN_IMAGE_EXT
         }
 
         MapParseException(Issue issue) {
             mIssue = issue;
+        }
+    }
+
+    private static class MapParseTask extends AsyncTask<Void, Void, Map> {
+        private WeakReference<MapParser> mMapParserWeakReference;
+        private WeakReference<File> mDirWeakReference;
+        private WeakReference<MapParseListener> mMapParseListenerWeakReference;
+        private MapParseException mException;
+
+        MapParseTask(MapParser parser, File dir, MapParseListener listener) {
+            mMapParserWeakReference = new WeakReference<>(parser);
+            mDirWeakReference = new WeakReference<>(dir);
+            mMapParseListenerWeakReference = new WeakReference<>(listener);
+        }
+
+        @Override
+        protected Map doInBackground(Void... params) {
+            File dir = null;
+            if (mDirWeakReference != null) {
+                dir = mDirWeakReference.get();
+            }
+
+            if (dir == null) return null;
+
+            if (mMapParserWeakReference != null) {
+                MapParser mapParser = mMapParserWeakReference.get();
+                if (mapParser != null) {
+                    try {
+                        Map map = mapParser.parse(dir);
+                        return map;
+                    } catch (MapParseException e) {
+                        mException = e;
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Map map) {
+            if (mMapParseListenerWeakReference == null) return;
+            MapParseListener mapParseListener = mMapParseListenerWeakReference.get();
+            if (mapParseListener == null) return;
+
+            if (mException != null) {
+                mapParseListener.onError(mException);
+                return;
+            }
+
+            if (map != null) {
+                mapParseListener.onMapParsed(map);
+            }
         }
     }
 
@@ -129,6 +184,10 @@ public class MapImporter {
 
             /* .. use it to deduce the parent folder */
             File parentFolder = findParentFolder(imageFile);
+
+            if (parentFolder == null) {
+                throw new MapParseException(MapParseException.Issue.NO_PARENT_FOLDER_FOUND);
+            }
 
             /* Create levels */
             List<MapGson.Level> levelList = new ArrayList<>();

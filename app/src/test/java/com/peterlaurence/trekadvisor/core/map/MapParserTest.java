@@ -37,24 +37,34 @@ public class MapParserTest {
     @Test
     public void libvipsMapParser() {
         if (mMapsDirectory != null) {
-            File libVipsMapDir = new File(mMapsDirectory, "libvips");
+            final File libVipsMapDir = new File(mMapsDirectory, "libvips");
             if (libVipsMapDir.exists()) {
-                Map map = MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS);
-                assertNotNull(map);
-                assertEquals(MapImporter.DEFAULT_MAP_NAME, map.getName());
+                MapImporter.MapParseListener dummyMapParseListener = new MapImporter.MapParseListener() {
+                    @Override
+                    public void onMapParsed(Map map) {
+                        assertNotNull(map);
+                        assertEquals(MapImporter.DEFAULT_MAP_NAME, map.getName());
 
-                /* A subfolder under "libvips" subdirectory has been voluntarily created, to test
-                 * the case when the import is done from a parent directory. Indeed, when a map is
-                 * extracted from an archive, we don't know whether the map was zipped within a
-                 * subdirectory or not. Only an analyse of the extracted file structure can tell us.
-                 */
-                File expectedParentFolder = new File(libVipsMapDir, "mapname");
-                assertEquals(expectedParentFolder, map.getDirectory());
+                        /* A subfolder under "libvips" subdirectory has been voluntarily created, to test
+                         * the case when the import is done from a parent directory. Indeed, when a map is
+                         * extracted from an archive, we don't know whether the map was zipped within a
+                         * subdirectory or not. Only an analyse of the extracted file structure can tell us.
+                         */
+                        File expectedParentFolder = new File(libVipsMapDir, "mapname");
+                        assertEquals(expectedParentFolder, map.getDirectory());
 
-                assertEquals("jpg", map.getImageExtension());
-                return;
+                        assertEquals("jpg", map.getImageExtension());
+                        return;
+                    }
+
+                    @Override
+                    public void onError(MapImporter.MapParseException e) {
+                        fail();
+                    }
+                };
+
+                MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, dummyMapParseListener);
             }
         }
-        fail();
     }
 }
