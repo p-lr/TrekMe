@@ -43,18 +43,19 @@ public class MapParserTest {
                     @Override
                     public void onMapParsed(Map map) {
                         assertNotNull(map);
-                        assertEquals(MapImporter.DEFAULT_MAP_NAME, map.getName());
 
                         /* A subfolder under "libvips" subdirectory has been voluntarily created, to test
                          * the case when the import is done from a parent directory. Indeed, when a map is
                          * extracted from an archive, we don't know whether the map was zipped within a
-                         * subdirectory or not. Only an analyse of the extracted file structure can tell us.
+                         * subdirectory or not. A way to know that is to analyse the extracted file structure.
                          */
                         File expectedParentFolder = new File(libVipsMapDir, "mapname");
                         assertEquals(expectedParentFolder, map.getDirectory());
+                        assertEquals("mapname", map.getName());
 
+                        assertEquals(4, map.getMapGson().levels.size());
+                        assertEquals(100, map.getMapGson().levels.get(0).tile_size.x);
                         assertEquals("jpg", map.getImageExtension());
-                        return;
                     }
 
                     @Override

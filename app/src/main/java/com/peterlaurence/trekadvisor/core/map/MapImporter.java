@@ -50,8 +50,6 @@ public class MapImporter {
         }
     };
 
-    public static final String DEFAULT_MAP_NAME = "Imported map";
-
     /**
      * Possible {@link Map} providers.
      */
@@ -222,8 +220,8 @@ public class MapImporter {
             File thumbnail = getThumbnail(parentFolder);
             mapGson.thumbnail = thumbnail != null ? thumbnail.getPath() : null;
 
-            /* Set a default map name */
-            mapGson.name = DEFAULT_MAP_NAME;
+            /* Set the map name to the parent folder name */
+            mapGson.name = parentFolder.getName();
 
             /* The json file */
             File jsonFile = new File(parentFolder, MapLoader.MAP_FILE_NAME);
@@ -289,6 +287,7 @@ public class MapImporter {
             return maxLevel;
         }
 
+        /* We assume that the tile size is constant at a given zoom level */
         private
         @Nullable
         MapGson.Level.TileSize getTileSize(File levelDir) {
