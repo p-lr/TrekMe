@@ -21,10 +21,7 @@ import com.qozix.tileview.graphics.BitmapProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -52,10 +49,10 @@ public class MapLoader {
     static final String MAP_FILE_NAME = "map.json";
 
     private Gson mGson;
-    private static final File defaultAppDir = new File(Environment.getExternalStorageDirectory(),
+    private static final File DEFAULT_APP_DIR = new File(Environment.getExternalStorageDirectory(),
             APP_FOLDER_NAME);
     /* For instance maps are searched anywhere under the app folder */
-    private static final File defaultMapsDir = defaultAppDir;
+    private static final File DEFAULT_MAPS_DIR = DEFAULT_APP_DIR;
 
     private List<Map> mMapList;
     private List<MapListUpdateListener> mMapListUpdateListeners;
@@ -236,7 +233,7 @@ public class MapLoader {
             }
 
             for (File archiveFile : mMapArchiveFilesFoundList) {
-                mMapArchiveList.add(new MapArchive(archiveFile, defaultAppDir));
+                mMapArchiveList.add(new MapArchive(archiveFile));
             }
 
             return null;
@@ -296,7 +293,7 @@ public class MapLoader {
         MapUpdateTask updateTask = new MapUpdateTask(mMapListUpdateListeners, mGson, mMapList);
         if (dirs.length == 0) { // No directories specified? We take the default value.
             dirs = new File[1];
-            dirs[0] = defaultMapsDir;
+            dirs[0] = DEFAULT_MAPS_DIR;
         }
         updateTask.execute(dirs);
     }
@@ -317,7 +314,7 @@ public class MapLoader {
         MapArchiveSearchTask searchTask = new MapArchiveSearchTask(mMapArchiveListUpdateListeners, mMapArchiveList);
         if (dirs.length == 0) { // No directories specified? We take the default value.
             dirs = new File[1];
-            dirs[0] = defaultAppDir;
+            dirs[0] = DEFAULT_APP_DIR;
         }
         searchTask.execute(dirs);
     }
