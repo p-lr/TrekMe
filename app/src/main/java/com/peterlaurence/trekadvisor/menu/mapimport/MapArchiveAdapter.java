@@ -13,9 +13,11 @@ import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
+import com.peterlaurence.trekadvisor.core.map.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.MapLoader;
 import com.peterlaurence.trekadvisor.util.UnzipTask;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -50,8 +52,12 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
         }
 
         @Override
-        public void onFinished() {
+        public void onFinished(File outputDirectory) {
             progressBar.setProgress(100);
+
+            /* Import the extracted map */
+            // TODO : for instance we only import LIBVIPS maps
+            MapImporter.importFromFile(outputDirectory, MapImporter.MapProvider.LIBVIPS, MapLoader.getInstance());
         }
     }
 

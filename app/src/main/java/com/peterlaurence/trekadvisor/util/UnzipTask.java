@@ -19,7 +19,11 @@ public class UnzipTask extends AsyncTask<Void, Integer, Void> {
     public interface UnzipProgressionListener {
         void onProgress(int p);
 
-        void onFinished();
+        /**
+         * Called once the extraction is done.
+         * @param outputDirectory the (just created) parent folder
+         */
+        void onFinished(File outputDirectory);
     }
 
     private File mZipFile;
@@ -90,6 +94,6 @@ public class UnzipTask extends AsyncTask<Void, Integer, Void> {
 
     @Override
     protected void onPostExecute(Void result) {
-        mUnzipProgressionListener.onFinished();
+        mUnzipProgressionListener.onFinished(mOutputFolder);
     }
 }

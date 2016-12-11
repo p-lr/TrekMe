@@ -29,7 +29,7 @@ public class MapImporter {
             "jpg", "gif", "png", "bmp"
     };
 
-    private static final FilenameFilter IMAGE_FILTER = new FilenameFilter() {
+    private static final FilenameFilter THUMBNAIL_FILTER = new FilenameFilter() {
 
         @Override
         public boolean accept(File dir, String filename) {
@@ -37,6 +37,31 @@ public class MapImporter {
                 if (filename.endsWith("." + ext)) {
                     return true;
                 }
+            }
+            return false;
+        }
+    };
+
+    private static final FilenameFilter IMAGE_FILTER = new FilenameFilter() {
+
+        @Override
+        public boolean accept(File dir, String filename) {
+            /* We only look at files */
+            if (new File(dir, filename).isDirectory()) {
+                return false;
+            }
+
+            boolean accept = true;
+            for (final String ext : IMAGE_EXTENSIONS) {
+                if (!filename.endsWith("." + ext)) {
+                    accept = false;
+                }
+                try {
+                    Integer.parseInt(filename.substring(0, filename.lastIndexOf(".")));
+                } catch (Exception e) {
+                    accept = false;
+                }
+                if (accept) return true;
             }
             return false;
         }
@@ -99,7 +124,8 @@ public class MapImporter {
         enum Issue {
             NO_PARENT_FOLDER_FOUND,
             NO_LEVEL_FOUND,
-            UNKNOWN_IMAGE_EXT
+            UNKNOWN_IMAGE_EXT,
+            MAP_SIZE_INCORRECT
         }
 
         MapParseException(Issue issue) {
@@ -191,10 +217,12 @@ public class MapImporter {
             List<MapGson.Level> levelList = new ArrayList<>();
             int maxLevel = getMaxLevel(parentFolder);
             File levelDir = null;
+            MapGson.Level.TileSize lastLevelTileSize = null;  // used later, for the map size
             for (int i = 0; i <= maxLevel; i++) {
                 levelDir = new File(parentFolder, String.valueOf(i));
                 if (levelDir.exists()) {
                     MapGson.Level.TileSize tileSize = getTileSize(levelDir);
+                    lastLevelTileSize = tileSize;
                     MapGson.Level level = new MapGson.Level();
                     level.level = i;
                     level.tile_size = tileSize;
@@ -215,6 +243,15 @@ public class MapImporter {
             provider.generated_by = BitmapProviderLibVips.GENERATOR_NAME;
             provider.image_extension = getImageExtension(imageFile);
             mapGson.provider = provider;
+
+            /* Map size */
+            if (lastLevelTileSize == null) {
+                throw new MapParseException(MapParseException.Issue.NO_LEVEL_FOUND);
+            }
+            mapGson.size = computeMapSize(levelDir, lastLevelTileSize);
+            if (mapGson.size == null) {
+                throw new MapParseException(MapParseException.Issue.MAP_SIZE_INCORRECT);
+            }
 
             /* Find a thumnail */
             File thumbnail = getThumbnail(parentFolder);
@@ -326,7 +363,7 @@ public class MapImporter {
         private
         @Nullable
         File getThumbnail(File mapDir) {
-            for (File imageFile : mapDir.listFiles(IMAGE_FILTER)) {
+            for (File imageFile : mapDir.listFiles(THUMBNAIL_FILTER)) {
                 BitmapFactory.decodeFile(imageFile.getPath(), options);
                 if (options.outWidth == THUMBNAIL_ACCEPT_SIZE &&
                         options.outHeight == THUMBNAIL_ACCEPT_SIZE) {
@@ -334,6 +371,25 @@ public class MapImporter {
                 }
             }
             return null;
+        }
+
+        private @Nullable MapGson.MapSize computeMapSize(File lastLevel, MapGson.Level.TileSize lastLevelTileSize) {
+            File[] lineDirList = lastLevel.listFiles(DIR_FILTER);
+            if (lineDirList == null || lineDirList.length == 0) {
+                return null;
+            }
+            /* Only look into the first line */
+            int rowCount = lineDirList.length;
+            File[] imageFiles = lineDirList[0].listFiles(IMAGE_FILTER);
+            int columnCount = imageFiles.length;
+            if (columnCount == 0) {
+                return null;
+            }
+
+            MapGson.MapSize mapSize = new MapGson.MapSize();
+            mapSize.x = columnCount * lastLevelTileSize.x;
+            mapSize.y = rowCount * lastLevelTileSize.y;
+            return mapSize;
         }
     }
 }

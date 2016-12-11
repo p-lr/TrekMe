@@ -43,7 +43,7 @@ import java.util.List;
  *
  * @author peterLaurence
  */
-public class MapLoader {
+public class MapLoader implements MapImporter.MapParseListener {
 
     private static final String APP_FOLDER_NAME = "trekadvisor";
     static final String MAP_FILE_NAME = "map.json";
@@ -344,6 +344,27 @@ public class MapLoader {
 
     public void addMapArchiveListUpdateListener(MapArchiveListUpdateListener listener) {
         mMapArchiveListUpdateListeners.add(listener);
+    }
+
+    /**
+     * Add a {@link Map} to the internal list. <br>
+     * This is typically called after an import, after a {@link Map} has been generated from a file
+     * structure.
+     */
+    @Override
+    public void onMapParsed(Map map) {
+        mMapList.add(map);
+
+        if (mMapListUpdateListeners != null) {
+            for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
+                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
+            }
+        }
+    }
+
+    @Override
+    public void onError(MapImporter.MapParseException e) {
+        e.printStackTrace();
     }
 
     /**

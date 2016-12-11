@@ -5,7 +5,7 @@
     tools:context=".menu.mapimport.MapImportFragment">
 
     <RelativeLayout
-        android:id="@+id/loadingPanel"
+        android:id="@+id/import_main_panel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center" >

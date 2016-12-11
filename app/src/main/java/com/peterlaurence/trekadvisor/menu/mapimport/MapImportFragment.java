@@ -68,6 +68,6 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
 
     @Override
     public void onMapArchiveListUpdate() {
-        rootView.findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        rootView.findViewById(R.id.import_main_panel).setVisibility(View.GONE);
     }
 }
