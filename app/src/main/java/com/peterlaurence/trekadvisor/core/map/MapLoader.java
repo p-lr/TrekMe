@@ -347,14 +347,22 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
-     * Add a {@link Map} to the internal list. <br>
+     * Add a {@link Map} to the internal list and generated the json file. <br>
      * This is typically called after an import, after a {@link Map} has been generated from a file
      * structure.
      */
     @Override
     public void onMapParsed(Map map) {
+        /* Set BitMapProvider */
+        map.setBitmapProvider(makeBitmapProvider(map));
+
+        /* Add the map */
         mMapList.add(map);
 
+        /* Generate the json file */
+        saveMap(map);
+
+        /* Notify for view update */
         if (mMapListUpdateListeners != null) {
             for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
                 listUpdateListener.onMapListUpdate(mMapList.size() > 0);

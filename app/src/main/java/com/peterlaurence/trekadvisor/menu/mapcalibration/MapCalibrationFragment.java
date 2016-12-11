@@ -199,7 +199,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     }
 
     private void moveToCalibrationPoint(int calibrationPointNumber, double relativeX, double relativeY) {
-        if (mCalibrationPointList.size() > calibrationPointNumber) {
+        if (mCalibrationPointList != null && mCalibrationPointList.size() > calibrationPointNumber) {
             MapGson.Calibration.CalibrationPoint calibrationPoint = mCalibrationPointList.get(calibrationPointNumber);
             moveCalibrationMarker(mTileView, mCalibrationMarker, calibrationPoint.x, calibrationPoint.y);
         } else {
@@ -253,7 +253,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     }
 
     private void updateCoordinateFieldsFromData(int calibrationPointNumber) {
-        if (mCalibrationPointList.size() > calibrationPointNumber) {
+        if (mCalibrationPointList != null && mCalibrationPointList.size() > calibrationPointNumber) {
             MapGson.Calibration.CalibrationPoint calibrationPoint = mCalibrationPointList.get(calibrationPointNumber);
             Projection projection = mMapWeakReference.get().getProjection();
             if (rootView.isWgs84() && projection != null) {

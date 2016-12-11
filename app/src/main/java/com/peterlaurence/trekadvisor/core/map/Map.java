@@ -102,14 +102,18 @@ public class Map implements Parcelable {
     }
 
     public @Nullable String getProjectionName() {
-        if (mMapGson.calibration.projection != null) {
+        if (mMapGson.calibration != null && mMapGson.calibration.projection != null) {
             return mMapGson.calibration.projection.getName();
         }
         return null;
     }
 
-    public Projection getProjection() {
-        return mMapGson.calibration.projection;
+    public @Nullable Projection getProjection() {
+        try {
+            return mMapGson.calibration.projection;
+        } catch (NullPointerException e) {
+            return null;
+        }
     }
 
     public void setProjection(Projection projection) {

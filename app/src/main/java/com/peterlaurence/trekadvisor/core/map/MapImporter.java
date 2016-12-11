@@ -260,6 +260,10 @@ public class MapImporter {
             /* Set the map name to the parent folder name */
             mapGson.name = parentFolder.getName();
 
+            /* Set default calibration */
+            mapGson.calibration = new MapGson.Calibration();
+            mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name();
+
             /* The json file */
             File jsonFile = new File(parentFolder, MapLoader.MAP_FILE_NAME);
 
@@ -348,11 +352,14 @@ public class MapImporter {
             return null;
         }
 
+        /**
+         * Get the image extension, width the dot. For example : ".jpg"
+         */
         private
         @Nullable
         String getImageExtension(File imageFile) {
             String imagePath = imageFile.getPath();
-            String ext = imagePath.substring(imagePath.lastIndexOf(".") + 1);
+            String ext = imagePath.substring(imagePath.lastIndexOf("."));
             if (ext.length() > 0) {
                 return ext;
             }
