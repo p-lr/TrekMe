@@ -100,19 +100,25 @@ public class MapImporter {
     private MapImporter() {
     }
 
+    /**
+     * When a {@link Map} is parsed for {@link MapGson} object creation, a {@link MapParseListener}
+     * is called after the task is done.
+     */
     public interface MapParseListener {
         void onMapParsed(Map map);
         void onError(MapParseException e);
     }
 
-    public static
-    @Nullable
-    void importFromFile(File dir, MapProvider provider, MapParseListener listener) {
+    public static void importFromFile(File dir, MapProvider provider, MapParseListener listener) {
         MapParser parser = mProviderToParserMap.get(provider);
         if (parser != null) {
             MapParseTask mapParseTask = new MapParseTask(parser, dir, listener);
             mapParseTask.execute();
         }
+    }
+
+    public static void importFromFile(File dir, MapProvider provider) {
+        importFromFile(dir, provider, MapLoader.getInstance());
     }
 
     /**
@@ -158,8 +164,7 @@ public class MapImporter {
                 MapParser mapParser = mMapParserWeakReference.get();
                 if (mapParser != null) {
                     try {
-                        Map map = mapParser.parse(dir);
-                        return map;
+                        return mapParser.parse(dir);
                     } catch (MapParseException e) {
                         mException = e;
                     }
@@ -190,7 +195,6 @@ public class MapImporter {
      * produced by libvips.
      */
     private static class LibvipsMapParser implements MapParser {
-        private java.util.Map<Integer, Integer> mTileSizeForLevelMap;
         private BitmapFactory.Options options = new BitmapFactory.Options();
 
         LibvipsMapParser() {
@@ -294,9 +298,9 @@ public class MapImporter {
 
             File listFile[] = dir.listFiles();
             if (listFile != null) {
-                for (int i=0; i<listFile.length; i++) {
-                    if (listFile[i].isDirectory()) {
-                        File found = findFirstImage(listFile[i], depth++, maxDepth);
+                for (File aListFile : listFile) {
+                    if (aListFile.isDirectory()) {
+                        File found = findFirstImage(aListFile, depth++, maxDepth);
                         if (found != null) {
                             return found;
                         }

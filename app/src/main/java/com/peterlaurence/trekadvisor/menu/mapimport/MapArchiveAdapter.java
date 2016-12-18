@@ -57,7 +57,7 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
 
             /* Import the extracted map */
             // TODO : for instance we only import LIBVIPS maps
-            MapImporter.importFromFile(outputDirectory, MapImporter.MapProvider.LIBVIPS, MapLoader.getInstance());
+            MapImporter.importFromFile(outputDirectory, MapImporter.MapProvider.LIBVIPS);
         }
     }
 
