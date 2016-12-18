@@ -13,6 +13,7 @@ import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -56,6 +57,7 @@ public class MapParserTest {
                         assertEquals(4, map.getMapGson().levels.size());
                         assertEquals(100, map.getMapGson().levels.get(0).tile_size.x);
                         assertEquals(".jpg", map.getImageExtension());
+                        assertNull(map.getImage());
                     }
 
                     @Override

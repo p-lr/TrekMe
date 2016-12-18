@@ -196,6 +196,7 @@ public class MapImporter {
      */
     private static class LibvipsMapParser implements MapParser {
         private BitmapFactory.Options options = new BitmapFactory.Options();
+        private static final String THUMBNAIL_EXCLUDE_NAME = "blank";
 
         LibvipsMapParser() {
             options.inJustDecodeBounds = true;
@@ -259,7 +260,7 @@ public class MapImporter {
 
             /* Find a thumnail */
             File thumbnail = getThumbnail(parentFolder);
-            mapGson.thumbnail = thumbnail != null ? thumbnail.getPath() : null;
+            mapGson.thumbnail = thumbnail != null ? thumbnail.getName() : null;
 
             /* Set the map name to the parent folder name */
             mapGson.name = parentFolder.getName();
@@ -378,7 +379,9 @@ public class MapImporter {
                 BitmapFactory.decodeFile(imageFile.getPath(), options);
                 if (options.outWidth == THUMBNAIL_ACCEPT_SIZE &&
                         options.outHeight == THUMBNAIL_ACCEPT_SIZE) {
-                    return imageFile;
+                    if (!imageFile.getName().toLowerCase().contains(THUMBNAIL_EXCLUDE_NAME.toLowerCase())) {
+                        return imageFile;
+                    }
                 }
             }
             return null;
