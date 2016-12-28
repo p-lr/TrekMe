@@ -1,6 +1,8 @@
 package com.peterlaurence.trekadvisor.menu.mapimport;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -8,10 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
 import com.peterlaurence.trekadvisor.core.map.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.MapLoader;
@@ -31,33 +36,66 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
 
     private List<MapArchive> mMapArchiveList;
 
-    public static class MapArchiveViewHolder extends RecyclerView.ViewHolder implements UnzipTask.UnzipProgressionListener {
+    public static class MapArchiveViewHolder extends RecyclerView.ViewHolder implements UnzipTask.UnzipProgressionListener,
+            MapImporter.MapParseListener {
         CardView cardView;
+        GridLayout gridLayout;
         TextView mapArchiveName;
-        ProgressBar progressBar;
-        Button unzipButton;
+        ProgressBar progressBarHorizontal;
+        ProgressBar progressBarIndUnzip;
+        ImageView iconMapExtracted;
+        TextView extractionLabel;
+        ProgressBar progressBarIndMapCreation;
+        ImageView iconMapCreated;
+        TextView mapCreationLabel;
+
+        Button importButton;
 
         public MapArchiveViewHolder(View itemView) {
             super(itemView);
             cardView = (CardView) itemView.findViewById(R.id.cv_map_archive);
+            gridLayout = (GridLayout) itemView.findViewById(R.id.status_grid);
             mapArchiveName = (TextView) itemView.findViewById(R.id.map_archive_name);
-            progressBar = (ProgressBar) itemView.findViewById(R.id.unzip_progressbar);
-            progressBar.setMax(100);
-            unzipButton = (Button) itemView.findViewById(R.id.unzip_archive_btn);
+            progressBarHorizontal = (ProgressBar) itemView.findViewById(R.id.unzip_progressbar);
+            progressBarHorizontal.setMax(100);
+            progressBarIndUnzip = (ProgressBar) itemView.findViewById(R.id.extraction_ind_progressbar);
+            progressBarIndUnzip.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+            iconMapExtracted = (ImageView) itemView.findViewById(R.id.extraction_done);
+            extractionLabel = (TextView) itemView.findViewById(R.id.extraction_txtview);
+            progressBarIndMapCreation = (ProgressBar) itemView.findViewById(R.id.mapcreation_ind_progressbar);
+            progressBarIndMapCreation.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+            iconMapCreated = (ImageView) itemView.findViewById(R.id.mapcreation_done);
+            mapCreationLabel = (TextView) itemView.findViewById(R.id.mapcreation_txtview);
+            importButton = (Button) itemView.findViewById(R.id.unzip_archive_btn);
         }
 
         @Override
         public void onProgress(int p) {
-            progressBar.setProgress(p);
+            progressBarHorizontal.setProgress(p);
         }
 
         @Override
-        public void onFinished(File outputDirectory) {
-            progressBar.setProgress(100);
+        public void onUnzipFinished(File outputDirectory) {
+            progressBarHorizontal.setVisibility(View.GONE);
+            progressBarIndMapCreation.setVisibility(View.GONE);
+            progressBarIndUnzip.setVisibility(View.GONE);
+            extractionLabel.setVisibility(View.VISIBLE);
+            mapCreationLabel.setVisibility(View.VISIBLE);
+            iconMapExtracted.setVisibility(View.VISIBLE);
 
             /* Import the extracted map */
             // TODO : for instance we only import LIBVIPS maps
-            MapImporter.importFromFile(outputDirectory, MapImporter.MapProvider.LIBVIPS);
+            MapImporter.importFromFile(outputDirectory, MapImporter.MapProvider.LIBVIPS, this);
+        }
+
+        @Override
+        public void onMapParsed(Map map) {
+            iconMapCreated.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onError(MapImporter.MapParseException e) {
+            // TODO : show an error message that something went wrong
         }
     }
 
@@ -78,7 +116,7 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
         final MapArchive mapArchive = mMapArchiveList.get(position);
         holder.mapArchiveName.setText(mapArchive.getName());
 
-        holder.unzipButton.setOnClickListener(new UnzipButtonClickListener(holder, this));
+        holder.importButton.setOnClickListener(new UnzipButtonClickListener(holder, this));
     }
 
     @Override
@@ -115,7 +153,12 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
 
                 if (mapArchiveAdapter != null && mapArchiveViewHolder != null) {
                     MapArchive mapArchive = mapArchiveAdapter.mMapArchiveList.get(mapArchiveViewHolder.getAdapterPosition());
-                    mapArchiveViewHolder.progressBar.setVisibility(View.VISIBLE);
+                    mapArchiveViewHolder.gridLayout.setVisibility(View.VISIBLE);
+                    mapArchiveViewHolder.progressBarHorizontal.setVisibility(View.VISIBLE);
+                    mapArchiveViewHolder.progressBarIndUnzip.setVisibility(View.VISIBLE);
+                    mapArchiveViewHolder.progressBarIndMapCreation.setVisibility(View.VISIBLE);
+                    mapArchiveViewHolder.mapCreationLabel.setVisibility(View.VISIBLE);
+                    mapArchiveViewHolder.extractionLabel.setVisibility(View.VISIBLE);
 
                     mapArchive.unZip(mapArchiveViewHolder);
                 }

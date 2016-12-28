@@ -38,12 +38,68 @@
             android:visibility="gone"
             />
 
+        <GridLayout
+            android:id="@+id/status_grid"
+            android:columnCount="3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_below="@id/unzip_progressbar"
+            android:layout_marginTop="18dp"
+            android:layout_marginStart="17dp"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/extraction_ind_progressbar"
+                style="@style/Widget.AppCompat.ProgressBar"
+                android:layout_width="18sp"
+                android:layout_height="18sp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                />
+
+            <ImageView
+                android:id="@+id/extraction_done"
+                android:src="@drawable/ic_done_grey_18sp"
+                android:visibility="gone"
+                />
+
+            <TextView
+                android:id="@+id/extraction_txtview"
+                android:layout_marginStart="8dp"
+                android:text="@string/extraction_lbl"
+                android:visibility="gone"
+                />
+
+            <ProgressBar
+                android:id="@+id/mapcreation_ind_progressbar"
+                style="@style/Widget.AppCompat.ProgressBar"
+                android:layout_width="18sp"
+                android:layout_height="18sp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                />
+
+            <ImageView
+                android:id="@+id/mapcreation_done"
+                android:src="@drawable/ic_done_grey_18sp"
+                android:visibility="gone"
+                />
+
+            <TextView
+                android:id="@+id/mapcreation_txtview"
+                android:layout_marginStart="8dp"
+                android:text="@string/map_created_lbl"
+                android:visibility="gone"
+                />
+        </GridLayout>
+
         <Button style="@style/Widget.AppCompat.Button.Borderless.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/unzip_archive_btn"
-            android:text="@string/unzip"
-            android:layout_below="@id/unzip_progressbar"
+            android:text="@string/import_btn"
+            android:layout_below="@id/status_grid"
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"

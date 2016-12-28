@@ -117,14 +117,10 @@ public class MapImporter {
         }
     }
 
-    public static void importFromFile(File dir, MapProvider provider) {
-        importFromFile(dir, provider, MapLoader.getInstance());
-    }
-
     /**
      * An Exception thrown when an error occurred in a {@link MapParser}.
      */
-    static class MapParseException extends Exception {
+    public static class MapParseException extends Exception {
         private Issue mIssue;
 
         enum Issue {
@@ -180,11 +176,13 @@ public class MapImporter {
             if (mapParseListener == null) return;
 
             if (mException != null) {
+                MapLoader.getInstance().onError(mException);
                 mapParseListener.onError(mException);
                 return;
             }
 
             if (map != null) {
+                MapLoader.getInstance().onMapParsed(map);
                 mapParseListener.onMapParsed(map);
             }
         }

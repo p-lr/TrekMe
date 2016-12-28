@@ -43,6 +43,10 @@
     <string name="longitude_short">Lng</string>
     <string name="projected_x_short">E</string>
     <string name="projected_y_short">N</string>
-    <string name="unzip">Unzip</string>
+
+    <!-- Import map cardview -->
+    <string name="extraction_lbl">Extraction</string>
+    <string name="map_created_lbl">Create map</string>
+    <string name="import_btn">Import</string>
 
 </resources>

@@ -357,7 +357,9 @@ public class MapLoader implements MapImporter.MapParseListener {
         map.setBitmapProvider(makeBitmapProvider(map));
 
         /* Add the map */
-        mMapList.add(map);
+        if (mMapList != null) {
+            mMapList.add(map);
+        }
 
         /* Generate the json file */
         saveMap(map);

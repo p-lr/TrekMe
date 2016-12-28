@@ -24,6 +24,8 @@
     <string name="calibration_projection_saved_ok">Projection changée</string>
     <string name="no_maps_found_warning">Aucune carte touvée sur la carte SD dans le dossier "trekadvisor". Veuillez consulter le manuel utilisateur pour apprendre à importer une carte.</string>
     <string name="ok_dialog">OK</string>
-    <string name="unzip">Dézipper</string>
     <string name="import_menu_title">Importer</string>
+    <string name="import_btn">Importer</string>
+    <string name="extraction_lbl">Extraction</string>
+    <string name="map_created_lbl">Création de la carte</string>
 </resources>
