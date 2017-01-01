@@ -416,6 +416,17 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
+     * Delete a {@link Map}. Recursively deletes the parent directory.
+     *
+     * @param map The {@link Map} to delete.
+     */
+    public void deleteMap(Map map) {
+        // TODO : do this in an another thread. And update the map list.
+        File parentDirectory = map.getDirectory();
+        FileUtils.deleteRecursive(parentDirectory);
+    }
+
+    /**
      * Mutate the {@link Projection} of a given {@link Map}.
      *
      * @return true on success, false if something went wrong.

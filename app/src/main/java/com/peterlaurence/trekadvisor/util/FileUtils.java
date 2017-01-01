@@ -56,4 +56,17 @@ public class FileUtils {
 
         return sb.toString();
     }
+
+    /**
+     * Recursively delete a directory. Or, if it's just a file, deletes it.
+     *
+     * @param fileOrDirectory the {@link File} to delete
+     */
+    public static void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursive(child);
+
+        fileOrDirectory.delete();
+    }
 }

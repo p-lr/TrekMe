@@ -113,6 +113,7 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
      */
     public void setMap(String mapName) {
         mMapWeakReference = new WeakReference<>(MapLoader.getInstance().getMap(mapName));
+        mConfirmDeleteFragment.setMapWeakRef(mMapWeakReference);
 
         /* Choice is made to have the preference file name equal to the map name */
         getPreferenceManager().setSharedPreferencesName(mapName);
@@ -252,13 +253,21 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
     }
 
     public static class ConfirmDeleteFragment extends DialogFragment {
+        private WeakReference<Map> mMapWeakReference;
+
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.map_delete_question)
                     .setPositiveButton(R.string.map_delete_string, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            // TODO : implement map deletion
+                            /* Delete the map */
+                            if (mMapWeakReference != null) {
+                                Map map = mMapWeakReference.get();
+                                if (map != null) {
+                                    MapLoader.getInstance().deleteMap(map);
+                                }
+                            }
                         }
                     })
                     .setNegativeButton(R.string.cancel_dialog_string, new DialogInterface.OnClickListener() {
@@ -268,6 +277,10 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
                     });
 
             return builder.create();
+        }
+
+        public void setMapWeakRef(WeakReference<Map> mapWr) {
+            mMapWeakReference = mapWr;
         }
     }
 }
