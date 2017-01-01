@@ -22,5 +22,8 @@
     <EditTextPreference
         android:key="@string/preference_map_title_key"
         android:title="@string/map_title" />
+    <Preference
+        android:key="@string/preference_delete_button_key"
+        android:title="@string/map_delete_string" />
 </PreferenceCategory>
 </PreferenceScreen>

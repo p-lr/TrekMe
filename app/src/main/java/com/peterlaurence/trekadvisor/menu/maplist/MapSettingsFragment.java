@@ -1,6 +1,10 @@
 package com.peterlaurence.trekadvisor.menu.maplist;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -35,8 +39,8 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
     private static final String ARG_MAP_NAME = "arg_map_name";
     private WeakReference<Map> mMapWeakReference;
 
-    private CalibrationButtonClickListener mCalibrationButtonClickListener;
     private MapCalibrationRequestListener mMapCalibrationRequestListener;
+    private ConfirmDeleteFragment mConfirmDeleteFragment;
 
     private LinearLayout rootView;
 
@@ -48,17 +52,6 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
      */
     public interface MapCalibrationRequestListener {
         void onMapCalibrationRequest(Map map);
-    }
-
-    private class CalibrationButtonClickListener implements Preference.OnPreferenceClickListener{
-        @Override
-        public boolean onPreferenceClick(Preference preference) {
-            Map map = mMapWeakReference.get();
-            if (map != null) {
-                mMapCalibrationRequestListener.onMapCalibrationRequest(map);
-            }
-            return true;
-        }
     }
 
     /**
@@ -90,8 +83,8 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
             mapName = args.getString(ARG_MAP_NAME);
         }
 
-        /* The click listener for the calibration button */
-        mCalibrationButtonClickListener = new CalibrationButtonClickListener();
+        /* The dialog that shows up when the user press the delete button */
+        mConfirmDeleteFragment = new ConfirmDeleteFragment();
 
         /* The Preferences layout */
         addPreferencesFromResource(R.xml.calibration_settings);
@@ -112,8 +105,8 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
     /**
      * Set the {@link Map} for this {@code MapSettingsFragment}.
      * <p>
-     *     This calls {@code initComponents} method, so it must be called after the Preferences
-     *     layout has been set with e.g {@code addPreferencesFromResource}.
+     * This calls {@code initComponents} method, so it must be called after the Preferences
+     * layout has been set with e.g {@code addPreferencesFromResource}.
      * </p>
      *
      * @param mapName the name of the {@link Map}
@@ -137,6 +130,9 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
         Preference calibrationButton = getPreferenceManager().findPreference(
                 getString(R.string.preference_calibration_button_key));
 
+        Preference deleteButton = getPreferenceManager().findPreference(
+                getString(R.string.preference_delete_button_key));
+
         /* Set the summaries and the values of preferences according to the Map object */
         final Map map = mMapWeakReference.get();
         if (map != null) {
@@ -150,7 +146,16 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
             setEditTextPreferenceSummaryAndValue(mapNamePreference, map.getName());
         }
 
-        calibrationButton.setOnPreferenceClickListener(mCalibrationButtonClickListener);
+        calibrationButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Map map = mMapWeakReference.get();
+                if (map != null) {
+                    mMapCalibrationRequestListener.onMapCalibrationRequest(map);
+                }
+                return true;
+            }
+        });
 
         mapNamePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -185,6 +190,14 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
                 } catch (Exception e) {
                     return false;
                 }
+            }
+        });
+
+        deleteButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                mConfirmDeleteFragment.show(getFragmentManager(), "delete");
+                return true;
             }
         });
     }
@@ -235,6 +248,26 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
         } else {
             throw new RuntimeException(context.toString() +
                     "must implement MapCalibrationRequestListener");
+        }
+    }
+
+    public static class ConfirmDeleteFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.map_delete_question)
+                    .setPositiveButton(R.string.map_delete_string, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // TODO : implement map deletion
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel_dialog_string, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // Do nothing. This empty listener is used just to create the Cancel button.
+                        }
+                    });
+
+            return builder.create();
         }
     }
 }

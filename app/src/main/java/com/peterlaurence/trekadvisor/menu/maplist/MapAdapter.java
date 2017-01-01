@@ -69,7 +69,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
         TextView mapName;
         TextView calibrationStatus;
         ImageView mapImage;
-        Button settingsButton;
+        Button editButton;
 
         public MapViewHolder(View itemView) {
             super(itemView);
@@ -77,7 +77,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
             mapName = (TextView) itemView.findViewById(R.id.map_name);
             calibrationStatus = (TextView) itemView.findViewById(R.id.map_calibration_status);
             mapImage = (ImageView) itemView.findViewById(R.id.map_preview_image);
-            settingsButton = (Button) itemView.findViewById(R.id.map_settings_btn);
+            editButton = (Button) itemView.findViewById(R.id.map_edit_btn);
         }
     }
 
@@ -125,11 +125,11 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
         if (holder.getLayoutPosition() == selectedMapIndex) {
             holder.cardView.setCardBackgroundColor(mColorAccent);
             holder.mapName.setTextColor(mColorWhiteText);
-            holder.settingsButton.setTextColor(mColorWhiteText);
+            holder.editButton.setTextColor(mColorWhiteText);
         } else {
             holder.cardView.setCardBackgroundColor(Color.WHITE);
             holder.mapName.setTextColor(mColorBlackText);
-            holder.settingsButton.setTextColor(mColorAccent);
+            holder.editButton.setTextColor(mColorAccent);
         }
         switch (map.getCalibrationStatus()) {
             case OK:
@@ -145,7 +145,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
 
         /* Set click listeners */
         holder.itemView.setOnClickListener(new MapViewHolderClickListener(holder, this));
-        holder.settingsButton.setOnClickListener(new SettingsButtonClickListener(holder, this));
+        holder.editButton.setOnClickListener(new SettingsButtonClickListener(holder, this));
     }
 
     @Override
