@@ -78,4 +78,45 @@ are from the poles, the smaller is the area where the position error is negligib
 
 ## <a name="TOC-Using-TrekAdvisor"></a>Using TrekAdvisor
 
+### <a name="TOC-Configure-the-map"></a>Advanced usage
+
+When it loads, TrekAdvisor recursively looks for configuration files under the "trekadvisor" folder.
+While the Readme explains how to import a map using the "Import" capability of the app, it is not
+ the only way to achieve this. In fact, if you know the structure of those configuration files, you
+ don't have to do that.
+This section explains the format of the configuration file. Is has the following requirements :
+
+* It must be placed right under the previously produced "output" folder (map tiling).
+* It must be named `map.json`.
+
+The easiest way is to copy-paste this [configuration
+file](app/src/main/assets/map-example/map.json) an adapt it.
+
+Important steps :
+
+1. Specify the correct number of levels. For example, a level in json file is represented by :
+  ```
+  "level": 5,
+  "tile_size": {
+      "x": 256,
+      "y": 256
+  }
+  ```
+  There must be as many levels as there are subfolders in the "output" folder. You may
+  have to add or remove some levels in the example json file. Be careful not to alter
+  the file consistency or the map won't show up in TrekAdvisor.
+  Specify the correct values for the `tile_size` for each level.
+
+2. Specify the size of the map. For example :
+  ```
+  "size": {
+    "x": 12456,
+    "y": 23412
+  }
+  ```
+  The values to set are the size in pixels of the original image (the "big_image.png" in the example).
+  One way to get it is right-clicking on the image file and read its properties. <br>
+  `x` is the width <br>
+  `y` is the height
+
 _[TODO : a tutorial with screeshots]_

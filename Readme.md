@@ -53,9 +53,9 @@ imported from the app.
 
 TrekAdvisor was first designed to work with maps that was originally (huge) files. But no
 device is able to show a huge image without running out of memory. That's why the image has to be
-cut into tiles, so only a small subset of them are displayed (to only show the visble part of the map on
+cut into tiles, so only a small subset of them are displayed (to only show the visible part of the map on
 the screen).
-The process of tiling a huge image can be ressources demanding, and may require quite some time on
+The process of tiling a huge image can be resources demanding, and may require quite some time on
 an android device. Not to mention that the original file would have to fit in memory.
 To reduce the time needed for map preparation and have less limitations, that part is made on a computer.
 Then, when the image is tiled, the map is (almost) ready to be put on the phone. 
@@ -63,7 +63,7 @@ The next section is the recommended way to do this.
 
 ### <a name="TOC-Image-tiling"></a>Image tiling
 
-An excellent tool for image processing, and by extention image tiling, is [Libvips](https://github.com/jcupitt/libvips).
+An excellent tool for image processing, and by extension image tiling, is [Libvips](https://github.com/jcupitt/libvips).
 Actually, TrekAdvisor only supports maps produced with that tool (for instance, but that may change in the future).
 
 #### <a name="TOC-Libvips"></a>Libvips installation
@@ -108,41 +108,7 @@ At the end of the tiling process, a folder "output" is created. You can rename i
 you like. That folder contains several subfolders that are number-named (0, 1, 2, etc). Each subfolder
 corresponds to a level of the map. This is important for the next step.
 
-### <a name="TOC-Configure-the-map"></a>Configure the map
-
-This is a very important step. We add a file into the previously produced "output" folder that will
-contain every informations that TrekAdvisor needs to display the map.
-That file must be named `map.json`. The easiest way is to copy-paste this [configuration
-file](app/src/main/assets/map-example/map.json) an adapt it.
-
-Important steps :
-
-1. Specify the correct number of levels. For example, a level in json file is represented by :
-  ```
-  "level": 5,
-  "tile_size": {
-      "x": 256,
-      "y": 256
-  }
-  ```
-  There must be as many levels as there are subfolders in the "output" folder. You may
-  have to add or remove some levels in the example json file. Be careful not to alter
-  the file consistency or the map won't show up in TrekAdvisor.
-  Specify the correct values for the `tile_size` for each level.
-
-2. Specify the size of the map. For example :
-  ```
-  "size": {
-    "x": 12456,
-    "y": 23412
-  }
-  ```
-  The values to set are the size in pixels of the original image (the "big_image.png" in the example).
-  One way to get it is right-clicking on the image file and read its properties. <br>
-  `x` is the width <br>
-  `y` is the height
-
-### <a name="TOC-Import"></a>Import
+### <a name="TOC-Import-the-map"></a>Import the map on your device
 
 Once the map is tiled and the configuration file created, we just have to put it on the device,
 under the <b>trekadvisor</b> folder.<br>
@@ -151,18 +117,21 @@ it is recommended to create a zip archive from the produced "output" folder, and
 <b>trekadvisor</b> folder. That will be much faster.
 
 Then, launch TrekAdvisor and open the Import menu. You should see the zip file in the list. Just
-press the "Unzip" button, and at the end of the process the map will appear in the list of available
+press the "Import" button, and at the end of the process the map will appear in the list of available
 maps.
 
-Unziped maps are automatically put in a subfolder named "imported" under the "trekadvisor"
-directory. This is to avoid accidental overrides of existing maps. Indeed, to be sure a map folder
-will never be overriden by an imported map, move this map folder to another subfolder under
-"trekadvisor". A lot of Android apps are meant for file manipulation like this.
+Imported maps are extracted in the same directory the zip were put. To avoid accidental overrides of
+existing maps, it is recommended to place zip files in a subdirectory under the "trekadvisor" folder.
+You can give this subdirectory the name you want.
+
+Once a map is imported, it can be viewed by selecting it in the "Map Choice" panel of the app. But,
+it's not yet calibrated (sadly, that part can't be automated). See next section.
+
 
 ### <a name="TOC-Calibration"></a>Map calibration
 
-The last step. A lot of effort have been made to make it easy. The map is on the device, it can be
-displayed, but TrekAdvisor needs to know at least two calibration points for the location functionnality
+The last step. A lot of effort has been made to simplify this. The map is on the device, it can be
+displayed, but TrekAdvisor needs to know at least two calibration points for the location functionality
 to work.<br>
 In TrekAdvisor, under the list of maps, a settings button for each map gives access to the calibration fragment, 
 among other things.
@@ -197,7 +166,7 @@ if needed. Don't forget to save your changes.
 
 2. Universal Transverse Mercator (UTM).
 
-   It can be used with setting, for example, the projection in map.json :
+   It can be used with setting, for example, the projection in map.json (advanced usage only):
 
    ```
    "projection": {
