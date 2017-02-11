@@ -55,10 +55,10 @@ The application is hosted on Bintray : https://dl.bintray.com/peterlaurence/Andr
 
 ## <a name="TOC-Create-a-map"></a>Create a map
 
-TrekAdvisor was first designed to work with maps that was originally (huge) files. But no
-device is able to show a huge image without running out of memory. That's why the image has to be
-cut into tiles, so only a small subset of them are displayed (to only show the visible part of the map on
-the screen).
+TrekAdvisor can load maps that were originally (huge) files. As no device is able to show a huge
+image without running out of memory, it is cut into tiles and only the visible subset of them are
+displayed.
+
 The process of tiling a huge image can be resources demanding, and may require quite some time on
 an android device. Not to mention that the original file would have to fit in memory.
 To reduce the time needed for map preparation and have less limitations, that part is made on a computer.
