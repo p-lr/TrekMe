@@ -49,6 +49,10 @@ For instance, that step is manual so you have to do the copy/paste of the map on
 Hopefully this will be simplified on a future version, so a map located on your computer would be
 imported from the app.
 
+## <a name="TOC-Create-a-map"></a>Download
+
+The application is hosted on Bintray : https://dl.bintray.com/peterlaurence/Android
+
 ## <a name="TOC-Create-a-map"></a>Create a map
 
 TrekAdvisor was first designed to work with maps that was originally (huge) files. But no
