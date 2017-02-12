@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -38,7 +39,7 @@ public class GPXParser {
 
     static private final String ns = null;
 
-    private static final DateFormat DATE_PARSER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    private static final DateFormat DATE_PARSER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
 
 
     public Gpx parse(InputStream in) throws XmlPullParserException, IOException, ParseException {
