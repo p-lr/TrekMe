@@ -76,7 +76,6 @@ public class Map implements Parcelable {
      */
     public static Bitmap getBitmapFromPath(String imagePath) {
         File sd = Environment.getExternalStorageDirectory();
-        System.out.println(sd.getAbsolutePath());
         File image = new File(sd, imagePath);
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         return BitmapFactory.decodeFile(image.getAbsolutePath(), bmOptions);

@@ -16,6 +16,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -63,6 +64,8 @@ public class MainActivity extends AppCompatActivity
     };
 
     private FragmentManager fragmentManager;
+
+    private static final String TAG = "MainActivity";
 
     /**
      * Checks whether the app has permission to access fine location.
@@ -416,7 +419,7 @@ public class MainActivity extends AppCompatActivity
 
         MapViewFragment mapFragment = (MapViewFragment) fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
         if (mapFragment == null) {
-            // TODO : log here
+            Log.w(TAG, "No map fragment while we try to show a map");
             return;
         }
 

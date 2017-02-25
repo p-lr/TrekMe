@@ -3,6 +3,7 @@ package com.peterlaurence.trekadvisor.core.map;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderLibVips;
@@ -28,6 +29,8 @@ public class MapImporter {
     private static final String[] IMAGE_EXTENSIONS = new String[] {
             "jpg", "gif", "png", "bmp"
     };
+
+    private static final String TAG = "MapImporter";
 
     private static final FilenameFilter THUMBNAIL_FILTER = new FilenameFilter() {
 
@@ -230,7 +233,7 @@ public class MapImporter {
                     level.level = i;
                     level.tile_size = tileSize;
                     levelList.add(level);
-                    System.out.println("creating level " + i + " tileSize " + tileSize.x);
+                    Log.d(TAG, "creating level " + i + " tileSize " + tileSize.x);
                 }
             }
 
@@ -287,7 +290,6 @@ public class MapImporter {
                 } catch (NullPointerException e) {
                     // don't care, will return null
                 }
-                System.out.println(imageFile.getPath());
             }
             return null;
         }

@@ -3,6 +3,7 @@ package com.peterlaurence.trekadvisor.core.map;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -88,6 +89,8 @@ public class MapLoader implements MapImporter.MapParseListener {
         }
     }
 
+    private static final String TAG = "MapLoader";
+
     /**
      * Create once for all the {@link Gson} object, that is used to serialize/deserialize json content.
      * Register all {@link Projection} types, depending on their name.
@@ -150,7 +153,7 @@ public class MapLoader implements MapImporter.MapParseListener {
                     jsonString = FileUtils.getStringFromFile(f);
                 } catch (Exception e) {
                     // Error while decoding the json file
-                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage(), e);
                     continue;
                 }
 
@@ -168,7 +171,7 @@ public class MapLoader implements MapImporter.MapParseListener {
 
                     mMapList.add(map);
                 } catch (JsonSyntaxException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage(), e);
                 }
             }
             return null;
@@ -374,7 +377,8 @@ public class MapLoader implements MapImporter.MapParseListener {
 
     @Override
     public void onError(MapImporter.MapParseException e) {
-        e.printStackTrace();
+        Log.e(TAG, "Error while parsing a map");
+        Log.e(TAG, e.getMessage(), e);
     }
 
     /**
@@ -411,7 +415,8 @@ public class MapLoader implements MapImporter.MapParseListener {
             writer.print(jsonString);
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error while saving the map");
+            Log.e(TAG, e.getMessage(), e);
         }
     }
 
