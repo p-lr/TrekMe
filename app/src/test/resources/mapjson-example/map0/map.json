@@ -67,6 +67,23 @@
             }
         ]
     },
+    "tracks":[
+        {
+            "name": "A track",
+            "track_markers": [
+                {
+                  "name": "First marker",
+                  "pos": [12.6585, 25.5474],
+                  "comment": "A comment1"
+                },
+                {
+                  "name": "Second marker",
+                  "pos": [13.6585, 26.5474],
+                  "comment": "A comment2"
+                }
+            ]
+        }
+    ],
     "markers":[
         {
             "name": "A marker",

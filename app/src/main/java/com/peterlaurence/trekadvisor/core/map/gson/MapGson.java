@@ -31,11 +31,13 @@ public class MapGson {
     public Provider provider;
     public MapSize size;
     public Calibration calibration;
+    public List<Track> tracks;
     public List<Marker> markers;
 
     public MapGson() {
         levels = new ArrayList<>();
         markers = new ArrayList<>();
+        tracks = new ArrayList<>();
     }
 
     public static class MapSize {
@@ -75,6 +77,15 @@ public class MapGson {
         public static class TileSize {
             public int x;
             public int y;
+        }
+    }
+
+    public static class Track {
+        public String name;
+        public List<Marker> track_markers;
+
+        public Track() {
+            track_markers = new ArrayList<>();
         }
     }
 

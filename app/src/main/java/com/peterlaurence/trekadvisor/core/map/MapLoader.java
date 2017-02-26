@@ -140,7 +140,7 @@ public class MapLoader implements MapImporter.MapParseListener {
 
         @Override
         protected Void doInBackground(File... dirs) {
-            /* Search for json files on SD card */
+            /* Search for json files */
             for (File dir : dirs) {
                 findMaps(dir, 1);
             }

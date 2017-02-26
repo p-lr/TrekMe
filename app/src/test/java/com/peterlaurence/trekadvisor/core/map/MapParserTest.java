@@ -1,7 +1,7 @@
 package com.peterlaurence.trekadvisor.core.map;
 
-
 import com.peterlaurence.trekadvisor.BuildConfig;
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,64 +10,60 @@ import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 /**
- * Unit tests for importing maps.
+ * Unit tests for maps's json file parsing.
  *
- * @author peterLaurence on 19/08/16.
+ * @author peterLaurence on 26/02/17.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class)
 public class MapParserTest {
-    private static File mMapsDirectory;
+    private static File mJsonFilesDirectory;
 
     static {
         try {
-            URL mapDirURL = MapParserTest.class.getClassLoader().getResource("maps");
-            mMapsDirectory = new File(mapDirURL.toURI());
+            URL mapDirURL = MapImporterTest.class.getClassLoader().getResource("mapjson-example");
+            mJsonFilesDirectory = new File(mapDirURL.toURI());
         } catch (Exception e) {
-            System.out.println("No resource file for map test directory.");
+            System.out.println("No json directory found.");
         }
     }
 
     @Test
-    public void libvipsMapParser() {
-        if (mMapsDirectory != null) {
-            final File libVipsMapDir = new File(mMapsDirectory, "libvips");
-            if (libVipsMapDir.exists()) {
-                MapImporter.MapParseListener dummyMapParseListener = new MapImporter.MapParseListener() {
-                    @Override
-                    public void onMapParsed(Map map) {
-                        assertNotNull(map);
+    public void mapTracksParse() {
+        if (mJsonFilesDirectory != null) {
+            File[] dirs = new File[1];
+            dirs[0] = mJsonFilesDirectory;
 
-                        /* A subfolder under "libvips" subdirectory has been voluntarily created, to test
-                         * the case when the import is done from a parent directory. Indeed, when a map is
-                         * extracted from an archive, we don't know whether the map was zipped within a
-                         * subdirectory or not. A way to know that is to analyse the extracted file structure.
-                         */
-                        File expectedParentFolder = new File(libVipsMapDir, "mapname");
-                        assertEquals(expectedParentFolder, map.getDirectory());
-                        assertEquals("mapname", map.getName());
+            MapLoader.MapListUpdateListener mapListUpdateListener = new MapLoader.MapListUpdateListener() {
+                @Override
+                public void onMapListUpdate(boolean mapsFound) {
+                    List<Map> mapList = MapLoader.getInstance().getMaps();
+                    assertEquals(1, mapList.size());
 
-                        assertEquals(4, map.getMapGson().levels.size());
-                        assertEquals(100, map.getMapGson().levels.get(0).tile_size.x);
-                        assertEquals(".jpg", map.getImageExtension());
-                        assertNull(map.getImage());
-                    }
+                    Map map = mapList.get(0);
+                    MapGson.Track track = map.getMapGson().tracks.get(0);
+                    assertEquals("A track", track.name);
+                    List<MapGson.Marker> markers = track.track_markers;
+                    assertEquals(2, markers.size());
 
-                    @Override
-                    public void onError(MapImporter.MapParseException e) {
-                        fail();
-                    }
-                };
+                    MapGson.Marker marker1 = markers.get(0);
+                    assertEquals("First marker", marker1.name);
+                    assertEquals(12.6585, marker1.pos.get(0), 0);
 
-                MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, dummyMapParseListener);
-            }
+                    MapGson.Marker marker2 = markers.get(1);
+                    assertEquals("Second marker", marker2.name);
+                    assertEquals(13.6585, marker2.pos.get(0), 0);
+                }
+            };
+
+            MapLoader mapLoader = MapLoader.getInstance();
+            mapLoader.addMapListUpdateListener(mapListUpdateListener);
+            mapLoader.generateMaps(dirs);
         }
     }
 }
