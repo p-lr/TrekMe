@@ -28,8 +28,12 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
+import com.qozix.tileview.TileView;
+import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -340,6 +344,9 @@ public class MapViewFragment extends Fragment implements
         /* Remove the existing TileView, then add the new one */
         removeCurrentTileView();
         setTileView(tileView);
+
+        /* Display all tracks */
+        processTracks(map, tileView);
     }
 
     public void centerOnPosition() {
@@ -355,5 +362,75 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+    }
+
+    private void processTracks(Map map, TileViewExtended tileView) {
+        CreateTracksTask createTracksTask = new CreateTracksTask(map, tileView, tileView.getCoordinateTranslater());
+        createTracksTask.execute();
+    }
+
+    /**
+     * Each {@link com.peterlaurence.trekadvisor.core.map.gson.MapGson.Track} of a {@link Map} is
+     * processed in an ansynctask, to ensure that this process does not hangs the UI thread.
+     */
+    private static class CreateTracksTask extends AsyncTask<Void, Void, Void> {
+        private Map mMap;
+        private WeakReference<TileViewExtended> mTileViewWeakReference;
+        private WeakReference<CoordinateTranslater> mCoordinateTranslaterWeakReference;
+        private List<float[]> mPathList;
+
+        CreateTracksTask(Map map, TileViewExtended tileView, CoordinateTranslater coordinateTranslater) {
+            mMap = map;
+            mTileViewWeakReference = new WeakReference<>(tileView);
+            mCoordinateTranslaterWeakReference = new WeakReference<>(coordinateTranslater);
+            mPathList = new ArrayList<>();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            List<MapGson.Track> trackList = mMap.getMapGson().tracks;
+            for (MapGson.Track track : trackList) {
+                List<MapGson.Marker> markerList = track.track_markers;
+                /* If there is only one marker, the path has no sense */
+                if (markerList.size() < 2) continue;
+
+
+                CoordinateTranslater coordinateTranslater = mCoordinateTranslaterWeakReference.get();
+                if (coordinateTranslater == null) continue;
+
+                int size = markerList.size() * 4 - 4;
+                float[] lines = new float[size];
+
+                int i = 0;
+                int markerIndex = 0;
+                for (MapGson.Marker marker : markerList) {
+                    if (markerIndex % 2 != 0) {
+                        lines[i] = (float) coordinateTranslater.translateX(marker.pos.get(0));
+                        lines[i + 1] = (float) coordinateTranslater.translateY(marker.pos.get(1));
+                        if (i + 2 >= size) break;
+                        lines[i + 2] = lines[i];
+                        lines[i + 3] = lines[i + 1];
+                        i += 4;
+                    } else {
+                        lines[i] = (float) coordinateTranslater.translateX(marker.pos.get(0));
+                        lines[i+1] = (float) coordinateTranslater.translateY(marker.pos.get(1));
+                        i += 2;
+                    }
+                    markerIndex++;
+                }
+                mPathList.add(lines);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            TileViewExtended tileView = mTileViewWeakReference.get();
+            if (tileView != null) {
+                for (float[] path : mPathList) {
+                    tileView.drawPathQuickly(path, null);
+                }
+            }
+        }
     }
 }

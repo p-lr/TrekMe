@@ -1,12 +1,14 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.content.Context;
+import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.qozix.tileview.TileView;
-import com.qozix.tileview.geom.CoordinateTranslater;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -83,37 +85,29 @@ public class TileViewExtended extends TileView {
     }
 
     /**
-     * An alternative way to {@link #drawPath(List, Paint)}, which uses a {@link PathView}.
+     * An alternate way to {@link #drawPath(List, Paint)}, which uses a {@link PathView}.
      *
-     * @param positions {@link List} of coordinates, typically projected values
-     * @param paint     The Paint instance that defines the style of the drawn path.
-     * @return The {@link PathView.DrawablePath} instance passed to the TileView.
+     * @param path  {@code float[]} of coordinates, typically projected values
+     * @param paint The Paint instance that defines the style of the drawn path.
      */
-    public PathView.DrawablePath drawPathQuickly(List<double[]> positions, Paint paint) {
-        CoordinateTranslater mCoordinateTranslater = getCoordinateTranslater();
+    public void drawPathQuickly(float[] path, Paint paint) {
+        if (paint == null) {
+            paint = getDefaultPathPaint();
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            paint.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, metrics));
+            paint.setPathEffect(
+                    new CornerPathEffect(
+                            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, metrics)
+                    )
+            );
+        }
 
-        int size;
-        if (positions.size() > 2) {
-            size = 4 * (positions.size() - 2) + 4;
-        } else {
-            size = 2 * positions.size();
-        }
-        float[] path = new float[size];
-        int i = 0;
-        for (double[] point : positions) {
-            if (i == 0) {
-                path[0] = (float) mCoordinateTranslater.translateX(point[0]);
-                path[1] = (float) mCoordinateTranslater.translateY(point[1]);
-                i += 2;
-            } else {
-                path[i] = (float) mCoordinateTranslater.translateX(point[0]);
-                path[i + 1] = (float) mCoordinateTranslater.translateY(point[1]);
-                if (i + 2 == path.length) break;
-                path[i + 2] = path[i];
-                path[i + 3] = path[i + 1];
-                i += 4;
-            }
-        }
-        return mPathView.addPath(path, paint);
+        mPathView.addPath(path, paint);
+    }
+
+    @Override
+    public void onScaleChanged(float scale, float previous) {
+        super.onScaleChanged(scale, previous);
+        mPathView.setScale(scale);
     }
 }

@@ -57,20 +57,19 @@ public class PathView extends View {
         return mDefaultPaint;
     }
 
-    public DrawablePath addPath(float[] path, Paint paint) {
+    public void addPath(float[] path, Paint paint) {
         if (paint == null) {
             paint = mDefaultPaint;
         }
         DrawablePath DrawablePath = new DrawablePath();
         DrawablePath.path = path;
         DrawablePath.paint = paint;
-        return addPath(DrawablePath);
+        addPath(DrawablePath);
     }
 
-    public DrawablePath addPath(DrawablePath DrawablePath) {
-        mDrawablePaths.add(DrawablePath);
+    public void addPath(DrawablePath drawablePath) {
+        mDrawablePaths.add(drawablePath);
         invalidate();
-        return DrawablePath;
     }
 
     public void removePath(DrawablePath path) {
