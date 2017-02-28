@@ -5,6 +5,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.View;
 
 import java.util.HashSet;
@@ -19,8 +21,9 @@ import java.util.HashSet;
  */
 public class PathView extends View {
 
-    private static final int DEFAULT_STROKE_COLOR = 0xFF000000;
-    private static final int DEFAULT_STROKE_WIDTH = 15;
+    private static final int DEFAULT_STROKE_COLOR = 0xCC311B92;
+    private static final int DEFAULT_STROKE_WIDTH_DP = 4;
+    private float mStrokeWidthDefault;
 
     private float mScale = 1;
 
@@ -30,18 +33,21 @@ public class PathView extends View {
 
     private Paint mDefaultPaint = new Paint();
 
-    {
-        mDefaultPaint.setStyle(Paint.Style.STROKE);
-        mDefaultPaint.setColor(DEFAULT_STROKE_COLOR);
-        mDefaultPaint.setStrokeWidth(DEFAULT_STROKE_WIDTH);
-        mDefaultPaint.setAntiAlias(true);
-        mDefaultPaint.setStrokeJoin(Paint.Join.ROUND);
-        mDefaultPaint.setStrokeCap(Paint.Cap.ROUND);
-    }
 
     public PathView(Context context) {
         super(context);
         setWillNotDraw(false);
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        mStrokeWidthDefault = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_STROKE_WIDTH_DP, metrics);
+        System.out.println(mStrokeWidthDefault);
+
+        mDefaultPaint.setStyle(Paint.Style.STROKE);
+        mDefaultPaint.setColor(DEFAULT_STROKE_COLOR);
+        mDefaultPaint.setStrokeWidth(mStrokeWidthDefault);
+        mDefaultPaint.setAntiAlias(true);
+        mDefaultPaint.setStrokeJoin(Paint.Join.ROUND);
+        mDefaultPaint.setStrokeCap(Paint.Cap.ROUND);
     }
 
     public float getScale() {
@@ -58,13 +64,15 @@ public class PathView extends View {
     }
 
     public void addPath(float[] path, Paint paint) {
+        DrawablePath drawablePath = new DrawablePath();
         if (paint == null) {
             paint = mDefaultPaint;
+            drawablePath.width = mStrokeWidthDefault;
         }
-        DrawablePath DrawablePath = new DrawablePath();
-        DrawablePath.path = path;
-        DrawablePath.paint = paint;
-        addPath(DrawablePath);
+
+        drawablePath.path = path;
+        drawablePath.paint = paint;
+        addPath(drawablePath);
     }
 
     public void addPath(DrawablePath drawablePath) {
@@ -114,6 +122,6 @@ public class PathView extends View {
         /**
          * The width of the path
          */
-        public float width = DEFAULT_STROKE_WIDTH;
+        public float width;
     }
 }

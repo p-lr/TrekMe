@@ -91,17 +91,6 @@ public class TileViewExtended extends TileView {
      * @param paint The Paint instance that defines the style of the drawn path.
      */
     public void drawPathQuickly(float[] path, Paint paint) {
-        if (paint == null) {
-            paint = getDefaultPathPaint();
-            DisplayMetrics metrics = getResources().getDisplayMetrics();
-            paint.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, metrics));
-            paint.setPathEffect(
-                    new CornerPathEffect(
-                            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, metrics)
-                    )
-            );
-        }
-
         mPathView.addPath(path, paint);
     }
 
