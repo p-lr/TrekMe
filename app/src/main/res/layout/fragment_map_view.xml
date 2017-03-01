@@ -19,7 +19,9 @@
             android:src="@drawable/ic_lock_black_24dp"
             app:backgroundTint="@color/colorWhite"
             android:tint="@color/colorDarkGrey"
+            android:layout_marginStart="@dimen/fab_margin"
             android:layout_marginEnd="@dimen/fab_margin"
+            android:layout_marginTop="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin" />
 
         <android.support.design.widget.FloatingActionButton
@@ -31,6 +33,7 @@
             android:src="@drawable/ic_gps_fixed_24dp"
             app:backgroundTint="@color/colorWhite"
             android:tint="@color/colorDarkGrey"
+            android:layout_marginStart="@dimen/fab_margin"
             android:layout_marginEnd="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin" />
     </LinearLayout>
