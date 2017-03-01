@@ -1,8 +1,10 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -11,9 +13,11 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -70,6 +74,9 @@ public class MapViewFragment extends Fragment implements
     private LocationRequest mLocationRequest;
 
     private OrientationSensor mOrientationSensor;
+
+    public static final String TAG = "MapViewFragment";
+    private static final int TRACK_REQUEST_CODE = 1337;
 
     public MapViewFragment() {
     }
@@ -146,6 +153,40 @@ public class MapViewFragment extends Fragment implements
         menu.clear();
         inflater.inflate(R.menu.menu_fragment_map_view, menu);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.manage_tracks_id:
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+                /* Search for all documents available via installed storage providers */
+                intent.setType("*/*");
+                startActivityForResult(intent, TRACK_REQUEST_CODE);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        Log.i(TAG, "Received an \"Activity Result\"");
+
+        /* Check if the request code is the one we are interested in */
+        if (requestCode == TRACK_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
+            Uri uri = null;
+            if (resultData != null) {
+                uri = resultData.getData();
+                Log.i(TAG, "Uri: " + uri.toString());
+                // TODO : process file
+            }
+        }
     }
 
     @Override
