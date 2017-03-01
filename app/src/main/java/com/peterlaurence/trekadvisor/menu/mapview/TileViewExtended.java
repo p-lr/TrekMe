@@ -1,10 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.content.Context;
-import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;

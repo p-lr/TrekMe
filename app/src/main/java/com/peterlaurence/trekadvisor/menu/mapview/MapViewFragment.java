@@ -12,6 +12,8 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -86,6 +88,7 @@ public class MapViewFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        setHasOptionsMenu(true);
 
         /* Create the instance of GoogleAPIClient */
         if (mGoogleApiClient == null) {
@@ -136,6 +139,13 @@ public class MapViewFragment extends Fragment implements
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+        inflater.inflate(R.menu.menu_fragment_map_view, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -255,7 +265,7 @@ public class MapViewFragment extends Fragment implements
     private void updatePosition(double x, double y) {
         mTileView.moveMarker(mPositionMarker, x, y);
 
-        if(mLockView) {
+        if (mLockView) {
             centerOnPosition();
         }
     }
@@ -413,7 +423,7 @@ public class MapViewFragment extends Fragment implements
                         i += 4;
                     } else {
                         lines[i] = (float) coordinateTranslater.translateX(marker.pos.get(0));
-                        lines[i+1] = (float) coordinateTranslater.translateY(marker.pos.get(1));
+                        lines[i + 1] = (float) coordinateTranslater.translateY(marker.pos.get(1));
                         i += 2;
                     }
                     markerIndex++;
