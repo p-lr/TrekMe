@@ -55,4 +55,7 @@
 
     <!-- Menu of the map view fragment -->
     <string name="manage_tracks_menu">Manage tracks</string>
+
+    <!-- Menu of the tracks manager fragment -->
+    <string name="import_tracks_menu">Import tracks</string>
 </resources>

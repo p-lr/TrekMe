@@ -1,7 +1,9 @@
 package com.peterlaurence.trekadvisor.menu.tracksmanage;
 
+import android.content.Context;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -44,13 +46,17 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
     @Override
     public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return null;
+        Context ctx = parent.getContext();
+        View v = LayoutInflater.from(ctx).inflate(R.layout.track_card, parent, false);
+
+        return new TrackViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(TrackViewHolder holder, int position) {
         final MapGson.Track track = mTrackList.get(position);
         holder.trackName.setText(track.name);
+        holder.checkBox.setChecked(track.visible);
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -62,6 +68,6 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
     @Override
     public int getItemCount() {
-        return 0;
+        return mTrackList == null ? 0 : mTrackList.size();
     }
 }

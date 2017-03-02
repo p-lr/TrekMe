@@ -26,6 +26,7 @@ import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
+import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +35,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         MapListFragment.OnMapListFragmentInteractionListener,
-        MapViewFragment.OnMapViewFragmentInteractionListener,
+        MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_SETTINGS_FRAGMENT_TAG = "mapSettingsFragment";
     private static final String MAP_CALIBRATION_FRAGMENT_TAG = "mapCalibrationFragment";
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
+    private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
 
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
             new ArrayList<String>() {{
@@ -207,8 +209,32 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onMapViewFragmentInteraction(Uri uri) {
+    public void onRequestManageTracks(Map map) {
+        TracksManageFragment tracksManageFragment = new TracksManageFragment();
 
+        hideAllFragments();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.add(R.id.content_frame, tracksManageFragment, TRACKS_MANAGE_FRAGMENT_TAG);
+        transaction.show(tracksManageFragment);
+
+        /* Hide the MapViewFragment. As this transaction is part of the last commit, the next
+         * backStack pop will revert this and thus show the MapViewFragment.
+         */
+        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
+        if (mapViewFragment != null) {
+            transaction.hide(mapViewFragment);
+        }
+
+        // Add the transaction to the back stack to allow the use of the Back button
+        transaction.addToBackStack(null);
+        transaction.commit();
+
+        /* A transaction commit does not happen immediately; it will be scheduled as work on the
+         * main thread to be done the next time that thread is ready. But we need it to be done
+         * right now.
+         */
+        fragmentManager.executePendingTransactions();
+        tracksManageFragment.generateTracks(map);
     }
 
     private Fragment createMapViewFragment(FragmentTransaction transaction) {
@@ -402,6 +428,20 @@ public class MainActivity extends AppCompatActivity
                 transaction.hide(otherFragment);
             }
         }
+    }
+
+    /**
+     * Hides all fragments which have a TAG.
+     */
+    private void hideAllFragments() {
+        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
+        for (String tag : FRAGMENT_TAGS) {
+            Fragment fragment = fragmentManager.findFragmentByTag(tag);
+            if (fragment != null) {
+                hideTransaction.hide(fragment);
+            }
+        }
+        hideTransaction.commit();
     }
 
     @Override

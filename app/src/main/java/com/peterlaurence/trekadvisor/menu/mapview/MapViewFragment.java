@@ -47,7 +47,7 @@ import java.util.List;
  * {@link GoogleApiClient}.
  * <p>
  * Activities that contain this fragment must implement the
- * {@link MapViewFragment.OnMapViewFragmentInteractionListener} interface to handle interaction
+ * {@link RequestManageTracksListener} interface to handle interaction
  * events.
  * </p>
  *
@@ -68,7 +68,7 @@ public class MapViewFragment extends Fragment implements
     private boolean mLockView = false;
     static final String MAP_KEY = "MAP_KEY";
 
-    private OnMapViewFragmentInteractionListener mListener;
+    private RequestManageTracksListener mActivity;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -76,7 +76,6 @@ public class MapViewFragment extends Fragment implements
     private OrientationSensor mOrientationSensor;
 
     public static final String TAG = "MapViewFragment";
-    private static final int TRACK_REQUEST_CODE = 1337;
 
     public MapViewFragment() {
     }
@@ -87,8 +86,8 @@ public class MapViewFragment extends Fragment implements
      * to the activity and potentially other fragments contained in that
      * activity.
      */
-    public interface OnMapViewFragmentInteractionListener {
-        void onMapViewFragmentInteraction(Uri uri);
+    public interface RequestManageTracksListener {
+        void onRequestManageTracks(Map map);
     }
 
     @Override
@@ -159,33 +158,10 @@ public class MapViewFragment extends Fragment implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.manage_tracks_id:
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-
-                /* Search for all documents available via installed storage providers */
-                intent.setType("*/*");
-                startActivityForResult(intent, TRACK_REQUEST_CODE);
+                mActivity.onRequestManageTracks(mMap);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        Log.i(TAG, "Received an \"Activity Result\"");
-
-        /* Check if the request code is the one we are interested in */
-        if (requestCode == TRACK_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // The document selected by the user won't be returned in the intent.
-            // Instead, a URI to that document will be contained in the return intent
-            // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
-            Uri uri = null;
-            if (resultData != null) {
-                uri = resultData.getData();
-                Log.i(TAG, "Uri: " + uri.toString());
-                // TODO : process file
-            }
         }
     }
 
@@ -232,8 +208,8 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnMapViewFragmentInteractionListener) {
-            mListener = (OnMapViewFragmentInteractionListener) context;
+        if (context instanceof RequestManageTracksListener) {
+            mActivity = (RequestManageTracksListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -243,7 +219,7 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        mActivity = null;
     }
 
     @Override

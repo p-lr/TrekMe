@@ -33,4 +33,5 @@
     <string name="map_delete_question">Confirmer la suppression de la carte</string>
     <string name="cancel_dialog_string">Annuler</string>
     <string name="manage_tracks_menu">Gérer les traces</string>
+    <string name="import_tracks_menu">Nouvelle trace</string>
 </resources>
