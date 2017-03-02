@@ -82,10 +82,15 @@ public class MapGson {
 
     public static class Track {
         public String name;
+        public boolean visible;
         public List<Marker> track_markers;
 
         public Track() {
             track_markers = new ArrayList<>();
+        }
+
+        public void setVisibility(boolean visible_) {
+            visible = visible_;
         }
     }
 
