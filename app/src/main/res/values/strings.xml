@@ -58,4 +58,6 @@
 
     <!-- Menu of the tracks manager fragment -->
     <string name="import_tracks_menu">Import tracks</string>
+    <string name="action_settings">Settings</string>
+    <string name="settings_menu_title"></string>
 </resources>

@@ -16,7 +16,6 @@
     <string name="wgs84_switch">WGS84 lat/lng</string>
     <string name="latitude_short">Lat</string>
     <string name="longitude_short">Lng</string>
-    <string name="settings_menu_title">Paramètres</string>
     <string name="calibration_point_saved">Point sauvegardé</string>
     <string name="projected_x_short">E</string>
     <string name="projected_y_short">N</string>
