@@ -56,8 +56,11 @@
     <!-- Menu of the map view fragment -->
     <string name="manage_tracks_menu">Manage tracks</string>
 
-    <!-- Menu of the tracks manager fragment -->
+    <!-- Tracks manager fragment -->
     <string name="import_tracks_menu">Import tracks</string>
-    <string name="action_settings">Settings</string>
-    <string name="settings_menu_title"></string>
+    <string name="import_tracks_action_settings">Settings</string>
+    <string name="import_tracks_warning">The file you chose is not in a supported format. Supported extensions are :</string>
+    <string name="import_tracks_format_gpx" translatable="false">GPX (tracks, routes, waypoints)</string>
+    <string name="import_tracks_format_google" translatable="false">Google Maps directions (XML, JSON)</string>
+
 </resources>

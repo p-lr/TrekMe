@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * The {@link MapImporter} is created from a {@link MapProvider}. Then, the corresponding map parser
+ * The {@link MapImporter} is created by a {@link MapProvider}. Then, the corresponding map parser
  * is used to parse the map (given as a {@link File}). <br>
  * This is typically used after a {@link MapArchive} has been extracted.
  *

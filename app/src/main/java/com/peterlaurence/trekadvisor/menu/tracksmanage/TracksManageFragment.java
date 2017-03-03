@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.tracksmanage;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
@@ -18,6 +19,9 @@ import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.track.TrackImporter;
+
+import java.io.File;
 
 /**
  * A {@link Fragment} subclass that shows the tracks currently available for a given map, and
@@ -75,12 +79,20 @@ public class TracksManageFragment extends Fragment {
 
         /* Check if the request code is the one we are interested in */
         if (requestCode == TRACK_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // The document selected by the user won't be returned in the intent.
-            // Instead, a URI to that document will be contained in the return intent
-            // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
+
             Uri uri = null;
             if (resultData != null) {
                 uri = resultData.getData();
+                File file = new File(uri.getPath());
+                if (!TrackImporter.isFileSupported(file)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    builder.setView(inflater.inflate(R.layout.track_warning, null));
+                    builder.setCancelable(false)
+                            .setPositiveButton(getString(R.string.ok_dialog), null);
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }
                 Log.i(TAG, "Uri: " + uri.toString());
                 // TODO : process file
             }

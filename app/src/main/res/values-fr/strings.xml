@@ -7,7 +7,7 @@
     <string name="map_summary_category">Carte</string>
     <string name="map_menu_title">Carte</string>
     <string name="calibration_preferences_category">Calibration</string>
-    <string name="action_settings">Réglages</string>
+    <string name="import_tracks_action_settings">Réglages</string>
     <string name="calibration_status_ok">Calibrée</string>
     <string name="calibration_status_error">Calibration incorrecte</string>
     <string name="calibration_status_none">Non calibrée</string>
@@ -33,4 +33,6 @@
     <string name="cancel_dialog_string">Annuler</string>
     <string name="manage_tracks_menu">Gérer les traces</string>
     <string name="import_tracks_menu">Nouvelle trace</string>
+    <string name="import_tracks_format_google"></string>
+    <string name="import_tracks_warning">Le fichier sélectionné a un format inconnu. Les extensions connues sont :</string>
 </resources>
