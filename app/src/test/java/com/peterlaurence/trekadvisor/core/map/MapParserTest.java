@@ -46,18 +46,18 @@ public class MapParserTest {
                     assertEquals(1, mapList.size());
 
                     Map map = mapList.get(0);
-                    MapGson.Track track = map.getMapGson().tracks.get(0);
-                    assertEquals("A track", track.name);
-                    List<MapGson.Marker> markers = track.track_markers;
+                    MapGson.Route route = map.getMapGson().routes.get(0);
+                    assertEquals("A sample route", route.name);
+                    List<MapGson.Marker> markers = route.route_markers;
                     assertEquals(2, markers.size());
 
                     MapGson.Marker marker1 = markers.get(0);
                     assertEquals("First marker", marker1.name);
-                    assertEquals(12.6585, marker1.pos.get(0), 0);
+                    assertEquals(12.6585, marker1.proj_x, 0);
 
                     MapGson.Marker marker2 = markers.get(1);
                     assertEquals("Second marker", marker2.name);
-                    assertEquals(13.6585, marker2.pos.get(0), 0);
+                    assertEquals(13.6585, marker2.proj_x, 0);
                 }
             };
 

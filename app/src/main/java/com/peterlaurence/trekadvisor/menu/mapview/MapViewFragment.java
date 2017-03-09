@@ -1,19 +1,15 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -372,7 +368,7 @@ public class MapViewFragment extends Fragment implements
         removeCurrentTileView();
         setTileView(tileView);
 
-        /* Display all tracks */
+        /* Display all routes */
         processTracks(map, tileView);
     }
 
@@ -397,7 +393,7 @@ public class MapViewFragment extends Fragment implements
     }
 
     /**
-     * Each {@link com.peterlaurence.trekadvisor.core.map.gson.MapGson.Track} of a {@link Map} is
+     * Each {@link MapGson.Route} of a {@link Map} is
      * processed in an ansynctask, to ensure that this process does not hangs the UI thread.
      */
     private static class CreateTracksTask extends AsyncTask<Void, Void, Void> {
@@ -415,9 +411,9 @@ public class MapViewFragment extends Fragment implements
 
         @Override
         protected Void doInBackground(Void... params) {
-            List<MapGson.Track> trackList = mMap.getMapGson().tracks;
-            for (MapGson.Track track : trackList) {
-                List<MapGson.Marker> markerList = track.track_markers;
+            List<MapGson.Route> routeList = mMap.getMapGson().routes;
+            for (MapGson.Route route : routeList) {
+                List<MapGson.Marker> markerList = route.route_markers;
                 /* If there is only one marker, the path has no sense */
                 if (markerList.size() < 2) continue;
 
@@ -432,15 +428,15 @@ public class MapViewFragment extends Fragment implements
                 int markerIndex = 0;
                 for (MapGson.Marker marker : markerList) {
                     if (markerIndex % 2 != 0) {
-                        lines[i] = (float) coordinateTranslater.translateX(marker.pos.get(0));
-                        lines[i + 1] = (float) coordinateTranslater.translateY(marker.pos.get(1));
+                        lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
+                        lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
                         if (i + 2 >= size) break;
                         lines[i + 2] = lines[i];
                         lines[i + 3] = lines[i + 1];
                         i += 4;
                     } else {
-                        lines[i] = (float) coordinateTranslater.translateX(marker.pos.get(0));
-                        lines[i + 1] = (float) coordinateTranslater.translateY(marker.pos.get(1));
+                        lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
+                        lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
                         i += 2;
                     }
                     markerIndex++;

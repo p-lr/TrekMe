@@ -18,12 +18,12 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import java.util.List;
 
 /**
- * Adapter to provide access to the data set (here a list of {@link MapGson.Track}).
+ * Adapter to provide access to the data set (here a list of {@link MapGson.Route}).
  *
  * @author peterLaurence on 01/03/17.
  */
 public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHolder> {
-    private List<MapGson.Track> mTrackList;
+    private List<MapGson.Route> mRouteList;
     private Map mMap;
 
     static class TrackViewHolder extends RecyclerView.ViewHolder {
@@ -41,7 +41,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
     TrackAdapter(Map map) {
         mMap = map;
-        mTrackList = map.getMapGson().tracks;
+        mRouteList = map.getMapGson().routes;
     }
 
     @Override
@@ -54,13 +54,13 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
     @Override
     public void onBindViewHolder(TrackViewHolder holder, int position) {
-        final MapGson.Track track = mTrackList.get(position);
-        holder.trackName.setText(track.name);
-        holder.checkBox.setChecked(track.visible);
+        final MapGson.Route route = mRouteList.get(position);
+        holder.trackName.setText(route.name);
+        holder.checkBox.setChecked(route.visible);
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                track.setVisibility(isChecked);
+                route.setVisibility(isChecked);
                 MapLoader.getInstance().saveMap(mMap);
             }
         });
@@ -68,6 +68,6 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
     @Override
     public int getItemCount() {
-        return mTrackList == null ? 0 : mTrackList.size();
+        return mRouteList == null ? 0 : mRouteList.size();
     }
 }

@@ -184,9 +184,12 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
     @Override
     public void onWgs84modeChanged(boolean isWgs84) {
+        Projection projection = mMapWeakReference.get().getProjection();
+        if (projection == null) return;
+
         double x = rootView.getXValue();
         double y = rootView.getYValue();
-        Projection projection = mMapWeakReference.get().getProjection();
+
         if (isWgs84) {
             projection.undoProjection(x, y);
             double[] wgs84 = projection.getWgs84Coords();

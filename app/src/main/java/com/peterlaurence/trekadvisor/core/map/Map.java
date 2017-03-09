@@ -175,10 +175,40 @@ public class Map implements Parcelable {
                     setMapBounds(MapCalibrator.simple2PointsCalibration(calibrationPoints.get(0),
                             calibrationPoints.get(1)));
                 }
-                mCalibrationStatus = CalibrationStatus.OK;
                 break;
             default:
-                mCalibrationStatus = CalibrationStatus.ERROR;
+                // don't care
+        }
+
+        /* Update the calibration status */
+        setCalibrationStatus();
+    }
+
+    private void setCalibrationStatus() {
+        // TODO : implement the detection of an erroneous calibration
+        if (mMapGson.calibration.calibration_points.size() >= 2) {
+            mCalibrationStatus = CalibrationStatus.OK;
+        } else {
+            mCalibrationStatus = CalibrationStatus.NONE;
+        }
+    }
+
+    /**
+     * Get the projected values for a geographical position. <br>
+     * This is a blocking call.
+     *
+     * @param latitude the geodetic latitude
+     * @param longitude the geodetic longitude
+     * @return the [X ; Y] values, or null if this map
+     */
+    @Nullable
+    public double[] getProjectedValues(double latitude, double longitude) {
+        Projection projection = getProjection();
+        if (projection == null) {
+            return null;
+        } else {
+            projection.doProjection(latitude, longitude);
+            return projection.getProjectedValues();
         }
     }
 
@@ -198,8 +228,22 @@ public class Map implements Parcelable {
         return "";
     }
 
+    /**
+     * The calibration status is either : <ul>
+     *     <li>{@link CalibrationStatus#OK}</li>
+     *     <li>{@link CalibrationStatus#NONE}</li>
+     *     <li>{@link CalibrationStatus#ERROR}</li>
+     * </ul>.
+     */
     public CalibrationStatus getCalibrationStatus() {
         return mCalibrationStatus;
+    }
+
+    /**
+     * Add a new route to the map.
+     */
+    public void addRoute(MapGson.Route route) {
+        mMapGson.routes.add(route);
     }
 
     public Bitmap getImage() {

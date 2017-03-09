@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/track_checkbox"
             android:layout_alignBaseline="@id/track_checkbox"
-            android:text="A track"
+            android:text="A route"
             />
 
     </RelativeLayout>

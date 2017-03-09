@@ -31,13 +31,13 @@ public class MapGson {
     public Provider provider;
     public MapSize size;
     public Calibration calibration;
-    public List<Track> tracks;
+    public List<Route> routes;
     public List<Marker> markers;
 
     public MapGson() {
         levels = new ArrayList<>();
         markers = new ArrayList<>();
-        tracks = new ArrayList<>();
+        routes = new ArrayList<>();
     }
 
     public static class MapSize {
@@ -80,13 +80,13 @@ public class MapGson {
         }
     }
 
-    public static class Track {
+    public static class Route {
         public String name;
         public boolean visible;
-        public List<Marker> track_markers;
+        public List<Marker> route_markers;
 
-        public Track() {
-            track_markers = new ArrayList<>();
+        public Route() {
+            route_markers = new ArrayList<>();
         }
 
         public void setVisibility(boolean visible_) {
@@ -96,12 +96,11 @@ public class MapGson {
 
     public static class Marker {
         public String name;
-        public List<Double> pos;
+        public double lat;
+        public double lon;
+        public Double proj_x;
+        public Double proj_y;
         public String comment;
-
-        public Marker(){
-            pos = new ArrayList<>();
-        }
     }
 
     public static class Provider {

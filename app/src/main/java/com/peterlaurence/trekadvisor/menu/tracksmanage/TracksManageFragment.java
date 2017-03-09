@@ -24,8 +24,8 @@ import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import java.io.File;
 
 /**
- * A {@link Fragment} subclass that shows the tracks currently available for a given map, and
- * provides the ability to import new tracks.
+ * A {@link Fragment} subclass that shows the routes currently available for a given map, and
+ * provides the ability to import new routes.
  *
  * @author peterLaurence on 01/03/17.
  */

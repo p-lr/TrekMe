@@ -67,18 +67,24 @@
             }
         ]
     },
-    "tracks":[
+    "routes":[
         {
-            "name": "A track",
-            "track_markers": [
+            "name": "A sample route",
+            "route_markers": [
                 {
                   "name": "First marker",
-                  "pos": [12.6585, 25.5474],
+                  "lat": 48.7167,
+                  "lon": 2.5,
+                  "proj_x": 12.6585,
+                  "proj_y": 25.5474,
                   "comment": "A comment1"
                 },
                 {
                   "name": "Second marker",
-                  "pos": [13.6585, 26.5474],
+                  "lat": 48.7164,
+                  "lon": 2.5,
+                  "proj_x": 13.6585,
+                  "proj_y": 26.5474,
                   "comment": "A comment2"
                 }
             ]
@@ -87,7 +93,10 @@
     "markers":[
         {
             "name": "A marker",
-            "pos": [12.6585, 25.5474],
+            "lat": 48.7167,
+            "lon": 2.5,
+            "proj_x": 12.6585,
+            "proj_y": 25.5474,
             "comment": "A comment"
         }
     ]
