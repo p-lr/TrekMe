@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
+import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.qozix.tileview.graphics.BitmapProvider;
 
 import java.io.File;
@@ -195,7 +196,10 @@ public class Map implements Parcelable {
 
     /**
      * Get the projected values for a geographical position. <br>
-     * This is a blocking call.
+     * This utility method is a blocking call. It can also be done asynchronously by getting the
+     * {@link Projection} with {@link Map#getProjection()}, create a
+     * {@link com.peterlaurence.trekadvisor.core.projection.ProjectionTask} and implement a
+     * {@link ProjectionTask.ProjectionUpdateLister}.
      *
      * @param latitude the geodetic latitude
      * @param longitude the geodetic longitude

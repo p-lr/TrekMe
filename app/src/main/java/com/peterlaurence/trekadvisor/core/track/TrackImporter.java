@@ -86,7 +86,7 @@ public class TrackImporter {
                     Gpx gpx = parser.parse(new FileInputStream(file));
 
                     for (Track track : gpx.getTracks()) {
-                        MapGson.Route route = toGsonTrack(track);
+                        MapGson.Route route = gpxTracktoRoute(track);
                         mMap.addRoute(route);
                     }
                 } catch (XmlPullParserException | IOException | ParseException e) {
@@ -105,7 +105,7 @@ public class TrackImporter {
          * Converts a {@link Track} into a {@link MapGson.Route}. <br>
          * A single {@link Track} may contain several {@link TrackSegment}.
          */
-        private MapGson.Route toGsonTrack(Track track) {
+        private MapGson.Route gpxTracktoRoute(Track track) {
             /* Create a new route */
             MapGson.Route route = new MapGson.Route();
 
