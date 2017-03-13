@@ -3,6 +3,7 @@ package com.peterlaurence.trekadvisor.menu.tracksmanage;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,8 +21,7 @@ import android.widget.FrameLayout;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
-
-import java.io.File;
+import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
 
 /**
  * A {@link Fragment} subclass that shows the routes currently available for a given map, and
@@ -29,12 +29,25 @@ import java.io.File;
  *
  * @author peterLaurence on 01/03/17.
  */
-public class TracksManageFragment extends Fragment {
+public class TracksManageFragment extends Fragment implements TrackImporter.TrackFileParsedListener {
     private FrameLayout rootView;
     private RecyclerView mRecyclerView;
+    private Map mMap;
+    private CurrentMapProvider mCurrentMapProvider;
 
     private static final int TRACK_REQUEST_CODE = 1337;
     public static final String TAG = "TracksManageFragment";
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof CurrentMapProvider) {
+            mCurrentMapProvider = (CurrentMapProvider) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement CurrentMapProvider");
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +68,14 @@ public class TracksManageFragment extends Fragment {
         menu.clear();
         inflater.inflate(R.menu.menu_fragment_tracks_manage, menu);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        mMap = mCurrentMapProvider.getCurrentMap();
+        generateTracks(mMap);
     }
 
     @Override
@@ -83,8 +104,8 @@ public class TracksManageFragment extends Fragment {
             Uri uri = null;
             if (resultData != null) {
                 uri = resultData.getData();
-                File file = new File(uri.getPath());
-                if (!TrackImporter.isFileSupported(file)) {
+
+                if (!TrackImporter.isFileSupported(uri)) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
                     LayoutInflater inflater = getActivity().getLayoutInflater();
                     builder.setView(inflater.inflate(R.layout.track_warning, null));
@@ -93,13 +114,14 @@ public class TracksManageFragment extends Fragment {
                     AlertDialog alert = builder.create();
                     alert.show();
                 }
-                Log.i(TAG, "Uri: " + uri.toString());
-                // TODO : process file
+
+                /* Import the file */
+                importTrack(uri);
             }
         }
     }
 
-    public void generateTracks(Map map) {
+    private void generateTracks(Map map) {
         mRecyclerView = new RecyclerView(this.getContext());
         mRecyclerView.setHasFixedSize(false);
 
@@ -110,5 +132,25 @@ public class TracksManageFragment extends Fragment {
         mRecyclerView.setAdapter(trackAdapter);
 
         rootView.addView(mRecyclerView, 0);
+    }
+
+    private void importTrack(Uri uri) {
+        TrackImporter.parseTrackFile(uri, this, mMap, getContext().getContentResolver());
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCurrentMapProvider = null;
+    }
+
+    @Override
+    public void onTrackFileParsed() {
+        Log.i(TAG, "Track file parsed");
+    }
+
+    @Override
+    public void onError(String message) {
+        Log.e(TAG, message);
     }
 }

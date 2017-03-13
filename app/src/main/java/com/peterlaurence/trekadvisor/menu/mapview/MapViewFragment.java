@@ -30,6 +30,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
+import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
@@ -43,8 +44,8 @@ import java.util.List;
  * {@link GoogleApiClient}.
  * <p>
  * Activities that contain this fragment must implement the
- * {@link RequestManageTracksListener} interface to handle interaction
- * events.
+ * {@link RequestManageTracksListener} and {@link CurrentMapProvider} interfaces to handle
+ * interaction events.
  * </p>
  *
  * @author peterLaurence
@@ -64,7 +65,8 @@ public class MapViewFragment extends Fragment implements
     private boolean mLockView = false;
     static final String MAP_KEY = "MAP_KEY";
 
-    private RequestManageTracksListener mActivity;
+    private RequestManageTracksListener mRequestManageTracksListener;
+    private CurrentMapProvider mCurrentMapProvider;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -154,7 +156,7 @@ public class MapViewFragment extends Fragment implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.manage_tracks_id:
-                mActivity.onRequestManageTracks(mMap);
+                mRequestManageTracksListener.onRequestManageTracks(mMap);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -175,6 +177,9 @@ public class MapViewFragment extends Fragment implements
     public void onStart() {
         mGoogleApiClient.connect();
         super.onStart();
+
+        mMap = mCurrentMapProvider.getCurrentMap();
+        setMap(mMap);
     }
 
     @Override
@@ -204,18 +209,20 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof RequestManageTracksListener) {
-            mActivity = (RequestManageTracksListener) context;
+        if (context instanceof RequestManageTracksListener && context instanceof CurrentMapProvider) {
+            mRequestManageTracksListener = (RequestManageTracksListener) context;
+            mCurrentMapProvider = (CurrentMapProvider) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement RequestManageTracksListener and CurrentMapProvider");
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mActivity = null;
+        mRequestManageTracksListener = null;
+        mCurrentMapProvider = null;
     }
 
     @Override
@@ -311,7 +318,7 @@ public class MapViewFragment extends Fragment implements
      *
      * @param map The new {@link Map} object
      */
-    public void setMap(Map map) {
+    private void setMap(Map map) {
         mMap = map;
         TileViewExtended tileView = new TileViewExtended(this.getContext());
 

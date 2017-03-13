@@ -1,10 +1,12 @@
 package com.peterlaurence.trekadvisor.core.track;
 
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.ParcelFileDescriptor;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
-import com.peterlaurence.trekadvisor.util.FileUtils;
 import com.peterlaurence.trekadvisor.util.gpxparser.GPXParser;
 import com.peterlaurence.trekadvisor.util.gpxparser.model.Gpx;
 import com.peterlaurence.trekadvisor.util.gpxparser.model.Track;
@@ -14,8 +16,11 @@ import com.peterlaurence.trekadvisor.util.gpxparser.model.TrackSegment;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.List;
 
@@ -30,7 +35,7 @@ public class TrackImporter {
     };
 
     public interface TrackFileParsedListener {
-        void onTrackFileParsed(MapGson.Route route);
+        void onTrackFileParsed();
 
         void onError(String message);
     }
@@ -39,8 +44,9 @@ public class TrackImporter {
     private TrackImporter() {
     }
 
-    public static boolean isFileSupported(File file) {
-        String extension = FileUtils.getFileExtension(file);
+    public static boolean isFileSupported(Uri uri) {
+        String path = uri.getPath();
+        String extension = path.substring(path.lastIndexOf(".") + 1);
 
         if ("".equals(extension)) return false;
 
@@ -54,22 +60,25 @@ public class TrackImporter {
      * Parse a {@link File} that represents a routes, and is in one of the supported formats. <br>
      * The parsing is done in an asynctask.
      *
-     * @param trackFiles a {@link File}
-     * @param listener   a {@link TrackFileParsedListener}
-     * @param map        the {@link Map} to which the routes will be added
+     * @param uri      the track as an {@link Uri}
+     * @param listener a {@link TrackFileParsedListener}
+     * @param map      the {@link Map} to which the routes will be added
      */
-    public static void parseTrackFile(File[] trackFiles, TrackFileParsedListener listener, Map map) {
-        GpxTrackFileTask gpxTrackFileTask = new GpxTrackFileTask(listener, map);
-        gpxTrackFileTask.execute(trackFiles);
+    public static void parseTrackFile(Uri uri, TrackFileParsedListener listener, Map map,
+                                      ContentResolver contentResolver) {
+        GpxTrackFileTask gpxTrackFileTask = new GpxTrackFileTask(listener, map, contentResolver);
+        gpxTrackFileTask.execute(uri);
     }
 
-    private static class GpxTrackFileTask extends AsyncTask<File, Void, MapGson.Route> {
+    private static class GpxTrackFileTask extends AsyncTask<Uri, Void, Void> {
         private TrackFileParsedListener mListener;
         private Map mMap;
+        private ContentResolver mContentResolver;
 
-        GpxTrackFileTask(TrackFileParsedListener listener, Map map) {
+        GpxTrackFileTask(TrackFileParsedListener listener, Map map, ContentResolver contentResolver) {
             mListener = listener;
             mMap = map;
+            mContentResolver = contentResolver;
         }
 
         /**
@@ -79,26 +88,39 @@ public class TrackImporter {
          * are added to a single {@link MapGson.Route}.
          */
         @Override
-        protected MapGson.Route doInBackground(File... trackFiles) {
+        protected Void doInBackground(Uri... uriList) {
             GPXParser parser = new GPXParser();
-            for (File file : trackFiles) {
+            for (Uri uri : uriList) {
+
                 try {
-                    Gpx gpx = parser.parse(new FileInputStream(file));
+                    ParcelFileDescriptor parcelFileDescriptor = mContentResolver.openFileDescriptor(uri, "r");
+                    if (parcelFileDescriptor == null) {
+                        mListener.onError("Could not read content of file");
+                        continue;
+                    }
+                    FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+                    FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
+                    Gpx gpx = parser.parse(fileInputStream);
 
                     for (Track track : gpx.getTracks()) {
                         MapGson.Route route = gpxTracktoRoute(track);
                         mMap.addRoute(route);
                     }
+                    fileInputStream.close();
+                    parcelFileDescriptor.close();
                 } catch (XmlPullParserException | IOException | ParseException e) {
-                    mListener.onError(e.getMessage());
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    mListener.onError(sw.toString());
                 }
             }
             return null;
         }
 
         @Override
-        protected void onPostExecute(MapGson.Route route) {
-            mListener.onTrackFileParsed(route);
+        protected void onPostExecute(Void result) {
+            mListener.onTrackFileParsed();
         }
 
         /**

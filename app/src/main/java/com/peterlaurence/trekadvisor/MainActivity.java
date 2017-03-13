@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
@@ -36,7 +37,8 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         MapListFragment.OnMapListFragmentInteractionListener,
         MapViewFragment.RequestManageTracksListener,
-        MapSettingsFragment.MapCalibrationRequestListener {
+        MapSettingsFragment.MapCalibrationRequestListener,
+        CurrentMapProvider {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
     private static final String MAP_LIST_FRAGMENT_TAG = "mapListFragment";
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity
     };
 
     private FragmentManager fragmentManager;
+    private Map mCurrentMap;
 
     private static final String TAG = "MainActivity";
 
@@ -229,12 +232,12 @@ public class MainActivity extends AppCompatActivity
         transaction.addToBackStack(null);
         transaction.commit();
 
-        /* A transaction commit does not happen immediately; it will be scheduled as work on the
-         * main thread to be done the next time that thread is ready. But we need it to be done
-         * right now.
-         */
-        fragmentManager.executePendingTransactions();
-        tracksManageFragment.generateTracks(map);
+//        /* A transaction commit does not happen immediately; it will be scheduled as work on the
+//         * main thread to be done the next time that thread is ready. But we need it to be done
+//         * right now.
+//         */
+//        fragmentManager.executePendingTransactions();
+//        tracksManageFragment.generateTracks(map);
     }
 
     private Fragment createMapViewFragment(FragmentTransaction transaction) {
@@ -444,26 +447,14 @@ public class MainActivity extends AppCompatActivity
         hideTransaction.commit();
     }
 
+    /**
+     * A map has been selected from the {@link MapListFragment}. <br>
+     * Updates the current map reference and show the {@link MapViewFragment}.
+     */
     @Override
     public void onMapSelectedFragmentInteraction(Map map) {
-        /* A map has been selected from the MapListFragment
-         * Show the MapListFragment
-         */
+        mCurrentMap = map;
         showMapViewFragment();
-
-        /* A transaction commit does not happen immediately; it will be scheduled as work on the
-         * main thread to be done the next time that thread is ready. But we need it to be done
-         * right now.
-         */
-        fragmentManager.executePendingTransactions();
-
-        MapViewFragment mapFragment = (MapViewFragment) fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapFragment == null) {
-            Log.w(TAG, "No map fragment while we try to show a map");
-            return;
-        }
-
-        mapFragment.setMap(map);
     }
 
     @Override
@@ -508,5 +499,10 @@ public class MainActivity extends AppCompatActivity
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+
+    @Override
+    public Map getCurrentMap() {
+        return mCurrentMap;
     }
 }
