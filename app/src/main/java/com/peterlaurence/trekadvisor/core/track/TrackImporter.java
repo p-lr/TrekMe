@@ -57,15 +57,15 @@ public class TrackImporter {
     }
 
     /**
-     * Parse a {@link File} that represents a routes, and is in one of the supported formats. <br>
+     * Parse a {@link File} that contains routes, and is in one of the supported formats. <br>
      * The parsing is done in an asynctask.
      *
      * @param uri      the track as an {@link Uri}
      * @param listener a {@link TrackFileParsedListener}
      * @param map      the {@link Map} to which the routes will be added
      */
-    public static void parseTrackFile(Uri uri, TrackFileParsedListener listener, Map map,
-                                      ContentResolver contentResolver) {
+    public static void importTrackFile(Uri uri, TrackFileParsedListener listener, Map map,
+                                       ContentResolver contentResolver) {
         GpxTrackFileTask gpxTrackFileTask = new GpxTrackFileTask(listener, map, contentResolver);
         gpxTrackFileTask.execute(uri);
     }

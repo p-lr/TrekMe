@@ -6,7 +6,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -16,7 +15,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -38,7 +36,8 @@ public class MainActivity extends AppCompatActivity
         MapListFragment.OnMapListFragmentInteractionListener,
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
-        CurrentMapProvider {
+        CurrentMapProvider,
+        TracksManageFragment.TrackChangeListener {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
     private static final String MAP_LIST_FRAGMENT_TAG = "mapListFragment";
@@ -504,5 +503,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Map getCurrentMap() {
         return mCurrentMap;
+    }
+
+    @Override
+    public void onTrackChanged() {
+        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
+        if (mapViewFragment != null) {
+            ((MapViewFragment) mapViewFragment).onTrackChanged();
+        }
+
     }
 }

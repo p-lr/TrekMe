@@ -34,18 +34,24 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     private RecyclerView mRecyclerView;
     private Map mMap;
     private CurrentMapProvider mCurrentMapProvider;
+    private TrackChangeListener mTrackChangeListener;
 
     private static final int TRACK_REQUEST_CODE = 1337;
     public static final String TAG = "TracksManageFragment";
 
+    public interface TrackChangeListener {
+        void onTrackChanged();
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof CurrentMapProvider) {
+        if (context instanceof CurrentMapProvider && context instanceof TrackChangeListener) {
             mCurrentMapProvider = (CurrentMapProvider) context;
+            mTrackChangeListener = (TrackChangeListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement CurrentMapProvider");
+                    + " must implement CurrentMapProvider and MapLoader.MapUpdateListener");
         }
     }
 
@@ -135,7 +141,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     private void importTrack(Uri uri) {
-        TrackImporter.parseTrackFile(uri, this, mMap, getContext().getContentResolver());
+        TrackImporter.importTrackFile(uri, this, mMap, getContext().getContentResolver());
     }
 
     @Override
@@ -147,6 +153,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onTrackFileParsed() {
         Log.i(TAG, "Track file parsed");
+        mTrackChangeListener.onTrackChanged();
     }
 
     @Override

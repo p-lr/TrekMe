@@ -31,6 +31,7 @@ import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
@@ -56,7 +57,8 @@ public class MapViewFragment extends Fragment implements
         LocationListener,
         ProjectionTask.ProjectionUpdateLister,
         FrameLayoutMapView.PositionTouchListener,
-        FrameLayoutMapView.LockViewListener {
+        FrameLayoutMapView.LockViewListener,
+        TracksManageFragment.TrackChangeListener {
 
     private FrameLayoutMapView rootView;
     private TileViewExtended mTileView;
@@ -76,6 +78,12 @@ public class MapViewFragment extends Fragment implements
     public static final String TAG = "MapViewFragment";
 
     public MapViewFragment() {
+    }
+
+    @Override
+    public void onTrackChanged() {
+        // TODO : update tracks
+        System.out.println("map view notified");
     }
 
     /**
