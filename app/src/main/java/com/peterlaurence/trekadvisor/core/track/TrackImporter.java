@@ -7,6 +7,7 @@ import android.os.ParcelFileDescriptor;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.util.gpxparser.GPXParser;
 import com.peterlaurence.trekadvisor.util.gpxparser.model.Gpx;
 import com.peterlaurence.trekadvisor.util.gpxparser.model.Track;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -35,7 +37,7 @@ public class TrackImporter {
     };
 
     public interface TrackFileParsedListener {
-        void onTrackFileParsed();
+        void onTrackFileParsed(Map map, List<MapGson.Route> routeList);
 
         void onError(String message);
     }
@@ -62,7 +64,7 @@ public class TrackImporter {
      *
      * @param uri      the track as an {@link Uri}
      * @param listener a {@link TrackFileParsedListener}
-     * @param map      the {@link Map} to which the routes will be added
+     * @param map      the {@link Map} to which the routes will be added.
      */
     public static void importTrackFile(Uri uri, TrackFileParsedListener listener, Map map,
                                        ContentResolver contentResolver) {
@@ -74,11 +76,13 @@ public class TrackImporter {
         private TrackFileParsedListener mListener;
         private Map mMap;
         private ContentResolver mContentResolver;
+        private LinkedList<MapGson.Route> mNewRouteList;
 
         GpxTrackFileTask(TrackFileParsedListener listener, Map map, ContentResolver contentResolver) {
             mListener = listener;
             mMap = map;
             mContentResolver = contentResolver;
+            mNewRouteList = new LinkedList<>();
         }
 
         /**
@@ -104,7 +108,7 @@ public class TrackImporter {
 
                     for (Track track : gpx.getTracks()) {
                         MapGson.Route route = gpxTracktoRoute(track);
-                        mMap.addRoute(route);
+                        mNewRouteList.add(route);
                     }
                     fileInputStream.close();
                     parcelFileDescriptor.close();
@@ -120,7 +124,7 @@ public class TrackImporter {
 
         @Override
         protected void onPostExecute(Void result) {
-            mListener.onTrackFileParsed();
+            mListener.onTrackFileParsed(mMap, mNewRouteList);
         }
 
         /**
@@ -141,8 +145,12 @@ public class TrackImporter {
                      * longitude if the map doesn't use a projection. In both cases, we treat the
                      * data the same way : they are respectively stored as "proj_x" and "proj_y"
                      * attributes of a marker inside a track. */
-                    double[] projectedValues = mMap.getProjectedValues(trackPoint.getLatitude(),
-                            trackPoint.getLongitude());
+                    double[] projectedValues = null;
+                    Projection projection = mMap.getProjection();
+                    if (projection != null) {
+                        projection.doProjection(trackPoint.getLatitude(), trackPoint.getLongitude());
+                        projectedValues = projection.getProjectedValues();
+                    }
 
                     /* By design, default values are null */
                     if (projectedValues != null) {

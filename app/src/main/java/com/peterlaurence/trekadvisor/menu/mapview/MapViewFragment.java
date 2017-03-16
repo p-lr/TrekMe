@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -81,9 +82,8 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onTrackChanged() {
-        // TODO : update tracks
-        System.out.println("map view notified");
+    public void onTrackChanged(Map map, List<MapGson.Route> routeList) {
+        Log.d(TAG, routeList.size() + " new route received for map " + map.getName());
     }
 
     /**

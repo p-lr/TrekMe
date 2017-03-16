@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
@@ -506,10 +507,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onTrackChanged() {
+    public void onTrackChanged(Map map, List<MapGson.Route> routeList) {
         Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
         if (mapViewFragment != null) {
-            ((MapViewFragment) mapViewFragment).onTrackChanged();
+            ((MapViewFragment) mapViewFragment).onTrackChanged(map, routeList);
         }
 
     }

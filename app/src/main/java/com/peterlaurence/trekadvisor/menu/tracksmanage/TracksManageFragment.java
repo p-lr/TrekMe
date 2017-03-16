@@ -20,8 +20,11 @@ import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+
+import java.util.List;
 
 /**
  * A {@link Fragment} subclass that shows the routes currently available for a given map, and
@@ -40,7 +43,13 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     public static final String TAG = "TracksManageFragment";
 
     public interface TrackChangeListener {
-        void onTrackChanged();
+        /**
+         * When new {@link MapGson.Route} are added or modified, this method is called.
+         *
+         * @param map       the {@link Map} associated with the change
+         * @param routeList a list of {@link MapGson.Route}
+         */
+        void onTrackChanged(Map map, List<MapGson.Route> routeList);
     }
 
     @Override
@@ -151,9 +160,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public void onTrackFileParsed() {
-        Log.i(TAG, "Track file parsed");
-        mTrackChangeListener.onTrackChanged();
+    public void onTrackFileParsed(Map map, List<MapGson.Route> routeList) {
+        Log.d(TAG, "Track file parsed");
+        mTrackChangeListener.onTrackChanged(map, routeList);
     }
 
     @Override
