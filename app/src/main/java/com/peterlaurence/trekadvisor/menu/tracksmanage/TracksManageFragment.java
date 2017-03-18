@@ -5,11 +5,10 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -36,23 +35,12 @@ import java.util.List;
  * @author peterLaurence on 01/03/17.
  */
 public class TracksManageFragment extends Fragment implements TrackImporter.TrackFileParsedListener {
+    public static final String TAG = "TracksManageFragment";
+    private static final int TRACK_REQUEST_CODE = 1337;
     private FrameLayout rootView;
     private Map mMap;
     private CurrentMapProvider mCurrentMapProvider;
     private TrackChangeListener mTrackChangeListener;
-
-    private static final int TRACK_REQUEST_CODE = 1337;
-    public static final String TAG = "TracksManageFragment";
-
-    public interface TrackChangeListener {
-        /**
-         * When new {@link MapGson.Route} are added or modified, this method is called.
-         *
-         * @param map       the {@link Map} associated with the change
-         * @param routeList a list of {@link MapGson.Route}
-         */
-        void onTrackChanged(Map map, List<MapGson.Route> routeList);
-    }
 
     @Override
     public void onAttach(Context context) {
@@ -144,7 +132,11 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         mRecyclerView.setLayoutManager(llm);
 
         /* Apply item decoration (add an horizontal divider) */
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this.getContext(), R.drawable.divider);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL);
+        Drawable divider = this.getContext().getDrawable(R.drawable.divider);
+        if (divider != null) {
+            dividerItemDecoration.setDrawable(divider);
+        }
         mRecyclerView.addItemDecoration(dividerItemDecoration);
 
         TrackAdapter trackAdapter = new TrackAdapter(map);
@@ -174,46 +166,13 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         Log.e(TAG, message);
     }
 
-
-    /**
-     * A custom {@link RecyclerView.ItemDecoration}, to make the RecyclerView look more like a
-     * {@link android.widget.ListView}.
-     */
-    private static class DividerItemDecoration extends RecyclerView.ItemDecoration {
-        private Drawable mDivider;
-
-        DividerItemDecoration(Context context, int resId) {
-            mDivider = context.getDrawable(resId);
-        }
-
-        @Override
-        public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-            int left = parent.getPaddingLeft();
-            int right = parent.getWidth() - parent.getPaddingRight();
-
-            int childCount = parent.getChildCount();
-            for (int i = 0; i < childCount; i++) {
-                View child = parent.getChildAt(i);
-
-                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
-
-                int top = child.getBottom() + params.bottomMargin;
-                int bottom = top + mDivider.getIntrinsicHeight();
-
-                mDivider.setBounds(left, top, right, bottom);
-                mDivider.draw(c);
-            }
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            super.getItemOffsets(outRect, view, parent, state);
-
-            if (parent.getChildAdapterPosition(view) == 0) {
-                return;
-            }
-
-            outRect.top = mDivider.getIntrinsicHeight();
-        }
+    public interface TrackChangeListener {
+        /**
+         * When new {@link MapGson.Route} are added or modified, this method is called.
+         *
+         * @param map       the {@link Map} associated with the change
+         * @param routeList a list of {@link MapGson.Route}
+         */
+        void onTrackChanged(Map map, List<MapGson.Route> routeList);
     }
 }
