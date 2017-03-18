@@ -5,6 +5,9 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -34,7 +37,6 @@ import java.util.List;
  */
 public class TracksManageFragment extends Fragment implements TrackImporter.TrackFileParsedListener {
     private FrameLayout rootView;
-    private RecyclerView mRecyclerView;
     private Map mMap;
     private CurrentMapProvider mCurrentMapProvider;
     private TrackChangeListener mTrackChangeListener;
@@ -111,8 +113,6 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        Log.i(TAG, "Received an \"Activity Result\"");
-
         /* Check if the request code is the one we are interested in */
         if (requestCode == TRACK_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
 
@@ -137,11 +137,15 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     private void generateTracks(Map map) {
-        mRecyclerView = new RecyclerView(this.getContext());
+        RecyclerView mRecyclerView = new RecyclerView(this.getContext());
         mRecyclerView.setHasFixedSize(false);
 
         LinearLayoutManager llm = new LinearLayoutManager(this.getContext());
         mRecyclerView.setLayoutManager(llm);
+
+        /* Apply item decoration (add an horizontal divider) */
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this.getContext(), R.drawable.divider);
+        mRecyclerView.addItemDecoration(dividerItemDecoration);
 
         TrackAdapter trackAdapter = new TrackAdapter(map);
         mRecyclerView.setAdapter(trackAdapter);
@@ -168,5 +172,48 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onError(String message) {
         Log.e(TAG, message);
+    }
+
+
+    /**
+     * A custom {@link RecyclerView.ItemDecoration}, to make the RecyclerView look more like a
+     * {@link android.widget.ListView}.
+     */
+    private static class DividerItemDecoration extends RecyclerView.ItemDecoration {
+        private Drawable mDivider;
+
+        DividerItemDecoration(Context context, int resId) {
+            mDivider = context.getDrawable(resId);
+        }
+
+        @Override
+        public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+            int left = parent.getPaddingLeft();
+            int right = parent.getWidth() - parent.getPaddingRight();
+
+            int childCount = parent.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View child = parent.getChildAt(i);
+
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+
+                int top = child.getBottom() + params.bottomMargin;
+                int bottom = top + mDivider.getIntrinsicHeight();
+
+                mDivider.setBounds(left, top, right, bottom);
+                mDivider.draw(c);
+            }
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            super.getItemOffsets(outRect, view, parent, state);
+
+            if (parent.getChildAdapterPosition(view) == 0) {
+                return;
+            }
+
+            outRect.top = mDivider.getIntrinsicHeight();
+        }
     }
 }

@@ -70,6 +70,7 @@
     "routes":[
         {
             "name": "A sample route",
+            "visible": true,
             "route_markers": [
                 {
                   "name": "First marker",
@@ -88,7 +89,29 @@
                   "comment": "A comment2"
                 }
             ]
-        }
+        },
+      {
+        "name": "Another route",
+        "visible": true,
+        "route_markers": [
+          {
+            "name": "First marker",
+            "lat": 49.7167,
+            "lon": 2.6,
+            "proj_x": 12.6585,
+            "proj_y": 25.5474,
+            "comment": "A comment1"
+          },
+          {
+            "name": "Second marker",
+            "lat": 49.7164,
+            "lon": 2.6,
+            "proj_x": 13.6585,
+            "proj_y": 26.5474,
+            "comment": "A comment2"
+          }
+        ]
+      }
     ],
     "markers":[
         {

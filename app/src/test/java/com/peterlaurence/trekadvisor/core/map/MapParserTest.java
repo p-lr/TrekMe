@@ -43,11 +43,17 @@ public class MapParserTest {
                 @Override
                 public void onMapListUpdate(boolean mapsFound) {
                     List<Map> mapList = MapLoader.getInstance().getMaps();
-                    assertEquals(1, mapList.size());
 
+                    /* One map should be found */
+                    assertEquals(1, mapList.size());
                     Map map = mapList.get(0);
+
+                    /* 2 routes should be found */
+                    assertEquals(2, map.getMapGson().routes.size());
+
                     MapGson.Route route = map.getMapGson().routes.get(0);
                     assertEquals("A sample route", route.name);
+                    assertEquals(true, route.visible);
                     List<MapGson.Marker> markers = route.route_markers;
                     assertEquals(2, markers.size());
 

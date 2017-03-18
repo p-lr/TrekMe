@@ -6,8 +6,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
@@ -29,13 +29,13 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
     static class TrackViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
         TextView trackName;
-        CheckBox checkBox;
+        ImageButton visibleButton;
 
         public TrackViewHolder(View itemView) {
             super(itemView);
             cardView = (CardView) itemView.findViewById(R.id.cv_track);
             trackName = (TextView) itemView.findViewById(R.id.track_name);
-            checkBox = (CheckBox) itemView.findViewById(R.id.track_checkbox);
+            visibleButton = (ImageButton) itemView.findViewById(R.id.track_visible_btn);
         }
     }
 
@@ -56,14 +56,14 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
     public void onBindViewHolder(TrackViewHolder holder, int position) {
         final MapGson.Route route = mRouteList.get(position);
         holder.trackName.setText(route.name);
-        holder.checkBox.setChecked(route.visible);
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                route.setVisibility(isChecked);
-                MapLoader.getInstance().saveMap(mMap);
-            }
-        });
+//        holder.visibleButton.setChecked(route.visible);
+//        holder.visibleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                route.setVisibility(isChecked);
+//                MapLoader.getInstance().saveMap(mMap);
+//            }
+//        });
     }
 
     @Override
