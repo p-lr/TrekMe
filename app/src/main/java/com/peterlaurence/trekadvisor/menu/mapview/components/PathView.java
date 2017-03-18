@@ -9,6 +9,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -62,19 +63,12 @@ public class PathView extends View {
         return mDefaultPaint;
     }
 
-    public void addPath(float[] path, Paint paint) {
-        DrawablePath drawablePath = new DrawablePath();
-        if (paint == null) {
-            paint = mDefaultPaint;
+    public void addPath(DrawablePath drawablePath) {
+        if (drawablePath.paint == null) {
+            drawablePath.paint = mDefaultPaint;
             drawablePath.width = mStrokeWidthDefault;
         }
 
-        drawablePath.path = path;
-        drawablePath.paint = paint;
-        addPath(drawablePath);
-    }
-
-    public void addPath(DrawablePath drawablePath) {
         mDrawablePaths.add(drawablePath);
         invalidate();
     }
@@ -99,14 +93,27 @@ public class PathView extends View {
         if (mShouldDraw) {
             canvas.scale(mScale, mScale);
             for (DrawablePath drawablePath : mDrawablePaths) {
-                drawablePath.paint.setStrokeWidth(drawablePath.width / mScale);
-                canvas.drawLines(drawablePath.path, drawablePath.paint);
+                if (drawablePath.visible) {
+                    drawablePath.paint.setStrokeWidth(drawablePath.width / mScale);
+                    canvas.drawLines(drawablePath.path, drawablePath.paint);
+                }
             }
         }
         super.onDraw(canvas);
     }
 
     public static class DrawablePath {
+
+        public DrawablePath(float[] path, Paint paint) {
+            this.path = path;
+            this.paint = paint;
+            visible = true;
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(path);
+        }
 
         /**
          * The path that this drawable will follow.
@@ -117,6 +124,11 @@ public class PathView extends View {
          * The paint to be used for this path.
          */
         public Paint paint;
+
+        /**
+         * Whether or not this path shall be drawn
+         */
+        public boolean visible;
 
         /**
          * The width of the path

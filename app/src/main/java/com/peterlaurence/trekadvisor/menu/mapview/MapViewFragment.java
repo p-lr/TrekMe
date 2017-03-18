@@ -408,8 +408,9 @@ public class MapViewFragment extends Fragment implements
     }
 
     /**
-     * Each {@link MapGson.Route} of a {@link Map} is
-     * processed in an ansynctask, to ensure that this process does not hangs the UI thread.
+     * Each {@link MapGson.Route} of a {@link Map} needs to be converted in a format that the
+     * {@link TileView} understands. <br>
+     * This is done in an ansynctask, to ensure that this process does not hangs the UI thread.
      */
     private static class CreateTracksTask extends AsyncTask<Void, Void, Void> {
         private Map mMap;

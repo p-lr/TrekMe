@@ -88,7 +88,8 @@ public class TileViewExtended extends TileView {
      * @param paint The Paint instance that defines the style of the drawn path.
      */
     public void drawPathQuickly(float[] path, Paint paint) {
-        mPathView.addPath(path, paint);
+        PathView.DrawablePath drawablePath = new PathView.DrawablePath(path, paint);
+        mPathView.addPath(drawablePath);
     }
 
     @Override
