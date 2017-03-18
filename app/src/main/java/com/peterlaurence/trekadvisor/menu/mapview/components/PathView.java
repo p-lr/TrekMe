@@ -40,7 +40,6 @@ public class PathView extends View {
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         mStrokeWidthDefault = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_STROKE_WIDTH_DP, metrics);
-        System.out.println(mStrokeWidthDefault);
 
         mDefaultPaint.setStyle(Paint.Style.STROKE);
         mDefaultPaint.setColor(DEFAULT_STROKE_COLOR);
@@ -98,8 +97,8 @@ public class PathView extends View {
     @Override
     public void onDraw(Canvas canvas) {
         if (mShouldDraw) {
+            canvas.scale(mScale, mScale);
             for (DrawablePath drawablePath : mDrawablePaths) {
-                canvas.scale(mScale, mScale);
                 drawablePath.paint.setStrokeWidth(drawablePath.width / mScale);
                 canvas.drawLines(drawablePath.path, drawablePath.paint);
             }
