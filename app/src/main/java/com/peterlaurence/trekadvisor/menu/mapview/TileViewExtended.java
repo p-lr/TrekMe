@@ -1,9 +1,9 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.content.Context;
-import android.graphics.Paint;
 import android.view.MotionEvent;
 
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.qozix.tileview.TileView;
 
@@ -61,6 +61,28 @@ public class TileViewExtended extends TileView {
         return super.onScroll(motionEvent, motionEvent1, v, v1);
     }
 
+    public void setSingleTapListener(SingleTapStaticListener listener) {
+        mSingleTapListenerWeakReference = new WeakReference<>(listener);
+    }
+
+    public void setScrollListener(ScrollListener listener) {
+        mScrollListenerWeakReference = new WeakReference<>(listener);
+    }
+
+    /**
+     * Updates the {@link PathView}. It expects that each {@link MapGson.Route} has a data object
+     * of type {@link PathView.DrawablePath}.
+     */
+    public void drawRoutes(List<MapGson.Route> routeList) {
+        mPathView.updateRoutes(routeList);
+    }
+
+    @Override
+    public void onScaleChanged(float scale, float previous) {
+        super.onScaleChanged(scale, previous);
+        mPathView.setScale(scale);
+    }
+
     /**
      * On a tap up, if the {@link TileView} was not scrolling when the touch down occurred, we
      * consider that event eligible for a SingleTapStatic event.
@@ -69,32 +91,7 @@ public class TileViewExtended extends TileView {
         void onSingleTapStatic();
     }
 
-    public void setSingleTapListener(SingleTapStaticListener listener) {
-        mSingleTapListenerWeakReference = new WeakReference<>(listener);
-    }
-
     public interface ScrollListener {
         void onScroll();
-    }
-
-    public void setScrollListener(ScrollListener listener) {
-        mScrollListenerWeakReference = new WeakReference<>(listener);
-    }
-
-    /**
-     * An alternate way to {@link #drawPath(List, Paint)}, which uses a {@link PathView}.
-     *
-     * @param path  {@code float[]} of coordinates, typically projected values
-     * @param paint The Paint instance that defines the style of the drawn path.
-     */
-    public void drawPathQuickly(float[] path, Paint paint) {
-        PathView.DrawablePath drawablePath = new PathView.DrawablePath(path, paint);
-        mPathView.addPath(drawablePath);
-    }
-
-    @Override
-    public void onScaleChanged(float scale, float previous) {
-        super.onScaleChanged(scale, previous);
-        mPathView.setScale(scale);
     }
 }

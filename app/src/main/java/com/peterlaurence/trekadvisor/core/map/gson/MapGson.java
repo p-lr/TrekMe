@@ -84,13 +84,18 @@ public class MapGson {
         public String name;
         public boolean visible;
         public List<Marker> route_markers;
+        private transient Object mData;
 
         public Route() {
             route_markers = new ArrayList<>();
         }
 
-        public void setVisibility(boolean visible_) {
-            visible = visible_;
+        public Object getData() {
+            return mData;
+        }
+
+        public void setData(Object data) {
+            mData = data;
         }
     }
 

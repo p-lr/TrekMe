@@ -32,13 +32,13 @@ import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -61,22 +61,18 @@ public class MapViewFragment extends Fragment implements
         FrameLayoutMapView.LockViewListener,
         TracksManageFragment.TrackChangeListener {
 
+    public static final String TAG = "MapViewFragment";
+    static final String MAP_KEY = "MAP_KEY";
     private FrameLayoutMapView rootView;
     private TileViewExtended mTileView;
     private Map mMap;
     private View mPositionMarker;
     private boolean mLockView = false;
-    static final String MAP_KEY = "MAP_KEY";
-
     private RequestManageTracksListener mRequestManageTracksListener;
     private CurrentMapProvider mCurrentMapProvider;
-
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-
     private OrientationSensor mOrientationSensor;
-
-    public static final String TAG = "MapViewFragment";
 
     public MapViewFragment() {
     }
@@ -84,16 +80,6 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onTrackChanged(Map map, List<MapGson.Route> routeList) {
         Log.d(TAG, routeList.size() + " new route received for map " + map.getName());
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     */
-    public interface RequestManageTracksListener {
-        void onRequestManageTracks(Map map);
     }
 
     @Override
@@ -403,32 +389,41 @@ public class MapViewFragment extends Fragment implements
     }
 
     private void processTracks(Map map, TileViewExtended tileView) {
-        CreateTracksTask createTracksTask = new CreateTracksTask(map, tileView, tileView.getCoordinateTranslater());
-        createTracksTask.execute();
+        DrawRoutesTask drawRoutesTask = new DrawRoutesTask(map, tileView, tileView.getCoordinateTranslater());
+        drawRoutesTask.execute();
     }
 
     /**
-     * Each {@link MapGson.Route} of a {@link Map} needs to be converted in a format that the
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     */
+    public interface RequestManageTracksListener {
+        void onRequestManageTracks(Map map);
+    }
+
+    /**
+     * Each {@link MapGson.Route} of a {@link Map} needs to provide data in a format that the
      * {@link TileView} understands. <br>
      * This is done in an ansynctask, to ensure that this process does not hangs the UI thread.
      */
-    private static class CreateTracksTask extends AsyncTask<Void, Void, Void> {
+    private static class DrawRoutesTask extends AsyncTask<Void, Void, Void> {
+        List<MapGson.Route> mRouteList;
         private Map mMap;
         private WeakReference<TileViewExtended> mTileViewWeakReference;
         private WeakReference<CoordinateTranslater> mCoordinateTranslaterWeakReference;
-        private List<float[]> mPathList;
 
-        CreateTracksTask(Map map, TileViewExtended tileView, CoordinateTranslater coordinateTranslater) {
+        DrawRoutesTask(Map map, TileViewExtended tileView, CoordinateTranslater coordinateTranslater) {
             mMap = map;
             mTileViewWeakReference = new WeakReference<>(tileView);
             mCoordinateTranslaterWeakReference = new WeakReference<>(coordinateTranslater);
-            mPathList = new ArrayList<>();
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            List<MapGson.Route> routeList = mMap.getMapGson().routes;
-            for (MapGson.Route route : routeList) {
+            mRouteList = mMap.getMapGson().routes;
+            for (MapGson.Route route : mRouteList) {
                 List<MapGson.Marker> markerList = route.route_markers;
                 /* If there is only one marker, the path has no sense */
                 if (markerList.size() < 2) continue;
@@ -457,7 +452,10 @@ public class MapViewFragment extends Fragment implements
                     }
                     markerIndex++;
                 }
-                mPathList.add(lines);
+
+                /* Set the route data */
+                PathView.DrawablePath drawablePath = new PathView.DrawablePath(lines, null);
+                route.setData(drawablePath);
             }
             return null;
         }
@@ -466,9 +464,7 @@ public class MapViewFragment extends Fragment implements
         protected void onPostExecute(Void result) {
             TileViewExtended tileView = mTileViewWeakReference.get();
             if (tileView != null) {
-                for (float[] path : mPathList) {
-                    tileView.drawPathQuickly(path, null);
-                }
+                tileView.drawRoutes(mRouteList);
             }
         }
     }

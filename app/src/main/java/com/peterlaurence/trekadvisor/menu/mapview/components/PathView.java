@@ -9,8 +9,10 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.List;
 
 /**
  * This is a modified version of {@link com.qozix.tileview.paths.CompositePathView}, using
@@ -30,7 +32,7 @@ public class PathView extends View {
 
     private boolean mShouldDraw = true;
 
-    private HashSet<DrawablePath> mDrawablePaths = new HashSet<>();
+    private List<MapGson.Route> mRouteList;
 
     private Paint mDefaultPaint = new Paint();
 
@@ -50,6 +52,11 @@ public class PathView extends View {
         mDefaultPaint.setStrokeCap(Paint.Cap.ROUND);
     }
 
+    public void updateRoutes(List<MapGson.Route> routeList) {
+        mRouteList = routeList;
+        invalidate();
+    }
+
     public float getScale() {
         return mScale;
     }
@@ -63,23 +70,8 @@ public class PathView extends View {
         return mDefaultPaint;
     }
 
-    public void addPath(DrawablePath drawablePath) {
-        if (drawablePath.paint == null) {
-            drawablePath.paint = mDefaultPaint;
-            drawablePath.width = mStrokeWidthDefault;
-        }
-
-        mDrawablePaths.add(drawablePath);
-        invalidate();
-    }
-
-    public void removePath(DrawablePath path) {
-        mDrawablePaths.remove(path);
-        invalidate();
-    }
-
     public void clear() {
-        mDrawablePaths.clear();
+        mRouteList.clear();
         invalidate();
     }
 
@@ -90,12 +82,21 @@ public class PathView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        if (mShouldDraw) {
+        if (mShouldDraw && mRouteList != null) {
             canvas.scale(mScale, mScale);
-            for (DrawablePath drawablePath : mDrawablePaths) {
-                if (drawablePath.visible) {
-                    drawablePath.paint.setStrokeWidth(drawablePath.width / mScale);
-                    canvas.drawLines(drawablePath.path, drawablePath.paint);
+            for (MapGson.Route route : mRouteList) {
+
+                if (route.getData() instanceof DrawablePath) {
+                    DrawablePath drawablePath = (DrawablePath) route.getData();
+                    if (drawablePath.paint == null) {
+                        drawablePath.paint = mDefaultPaint;
+                        drawablePath.width = mStrokeWidthDefault;
+                    }
+
+                    if (drawablePath.visible) {
+                        drawablePath.paint.setStrokeWidth(drawablePath.width / mScale);
+                        canvas.drawLines(drawablePath.path, drawablePath.paint);
+                    }
                 }
             }
         }
@@ -103,6 +104,23 @@ public class PathView extends View {
     }
 
     public static class DrawablePath {
+
+        /**
+         * The path that this drawable will follow.
+         */
+        public float[] path;
+        /**
+         * The paint to be used for this path.
+         */
+        public Paint paint;
+        /**
+         * Whether or not this path shall be drawn
+         */
+        public boolean visible;
+        /**
+         * The width of the path
+         */
+        public float width;
 
         public DrawablePath(float[] path, Paint paint) {
             this.path = path;
@@ -114,25 +132,5 @@ public class PathView extends View {
         public int hashCode() {
             return Arrays.hashCode(path);
         }
-
-        /**
-         * The path that this drawable will follow.
-         */
-        public float[] path;
-
-        /**
-         * The paint to be used for this path.
-         */
-        public Paint paint;
-
-        /**
-         * Whether or not this path shall be drawn
-         */
-        public boolean visible;
-
-        /**
-         * The width of the path
-         */
-        public float width;
     }
 }
