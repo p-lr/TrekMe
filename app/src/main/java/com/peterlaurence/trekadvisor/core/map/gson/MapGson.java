@@ -97,6 +97,23 @@ public class MapGson {
         public void setData(Object data) {
             mData = data;
         }
+
+        public void copyRoute(Route route) {
+            name = route.name;
+            visible = route.visible;
+            route_markers = route.route_markers;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || !(o instanceof Route)) return false;
+            return ((Route) o).name.equals(this.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode();
+        }
     }
 
     public static class Marker {

@@ -39,6 +39,7 @@ import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -79,6 +80,9 @@ public class MapViewFragment extends Fragment implements
 
     @Override
     public void onTrackChanged(Map map, List<MapGson.Route> routeList) {
+        DrawRoutesTask drawRoutesTask = new DrawRoutesTask(map, routeList, mTileView);
+        drawRoutesTask.execute();
+
         Log.d(TAG, routeList.size() + " new route received for map " + map.getName());
     }
 
@@ -370,7 +374,8 @@ public class MapViewFragment extends Fragment implements
         setTileView(tileView);
 
         /* Display all routes */
-        processTracks(map, tileView);
+        DrawRoutesTask drawRoutesTask = new DrawRoutesTask(map, map.getMapGson().routes, tileView);
+        drawRoutesTask.execute();
     }
 
     public void centerOnPosition() {
@@ -386,11 +391,6 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-    }
-
-    private void processTracks(Map map, TileViewExtended tileView) {
-        DrawRoutesTask drawRoutesTask = new DrawRoutesTask(map, tileView, tileView.getCoordinateTranslater());
-        drawRoutesTask.execute();
     }
 
     /**
@@ -409,20 +409,20 @@ public class MapViewFragment extends Fragment implements
      * This is done in an ansynctask, to ensure that this process does not hangs the UI thread.
      */
     private static class DrawRoutesTask extends AsyncTask<Void, Void, Void> {
-        List<MapGson.Route> mRouteList;
         private Map mMap;
+        private List<MapGson.Route> mRouteList;
         private WeakReference<TileViewExtended> mTileViewWeakReference;
         private WeakReference<CoordinateTranslater> mCoordinateTranslaterWeakReference;
 
-        DrawRoutesTask(Map map, TileViewExtended tileView, CoordinateTranslater coordinateTranslater) {
+        DrawRoutesTask(Map map, List<MapGson.Route> routeList, TileViewExtended tileView) {
             mMap = map;
+            mRouteList = routeList;
             mTileViewWeakReference = new WeakReference<>(tileView);
-            mCoordinateTranslaterWeakReference = new WeakReference<>(coordinateTranslater);
+            mCoordinateTranslaterWeakReference = new WeakReference<>(tileView.getCoordinateTranslater());
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            mRouteList = mMap.getMapGson().routes;
             for (MapGson.Route route : mRouteList) {
                 List<MapGson.Marker> markerList = route.route_markers;
                 /* If there is only one marker, the path has no sense */
@@ -460,11 +460,29 @@ public class MapViewFragment extends Fragment implements
             return null;
         }
 
+        private void updateRouteList() {
+            java.util.Map<String, MapGson.Route> hashMap = new HashMap<>();
+            for (MapGson.Route route : mMap.getMapGson().routes) {
+                hashMap.put(route.name, route);
+            }
+
+            for (MapGson.Route route : mRouteList) {
+                if (hashMap.containsKey(route.name)) {
+                    MapGson.Route existingRoute = hashMap.get(route.name);
+                    existingRoute.copyRoute(route);
+                } else {
+                    mMap.addRoute(route);
+                }
+            }
+        }
+
         @Override
         protected void onPostExecute(Void result) {
+            updateRouteList();
+
             TileViewExtended tileView = mTileViewWeakReference.get();
             if (tileView != null) {
-                tileView.drawRoutes(mRouteList);
+                tileView.drawRoutes(mMap.getMapGson().routes);
             }
         }
     }
