@@ -104,6 +104,10 @@ public class MapGson {
             route_markers = route.route_markers;
         }
 
+        public void toggleVisibility() {
+            visible = !visible;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (o == null || !(o instanceof Route)) return false;
