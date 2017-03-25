@@ -10,9 +10,11 @@ import java.util.List;
  * @author peterLaurence on 12/02/17.
  */
 public class Track {
+    private String mName;
     private final List<TrackSegment> mTrackSegments;
 
     private Track(Builder builder) {
+        mName = builder.mName;
         mTrackSegments = Collections.unmodifiableList(new ArrayList<>(builder.mTrackSegments));
     }
 
@@ -20,11 +22,21 @@ public class Track {
         return mTrackSegments;
     }
 
+    public String getName() {
+        return mName;
+    }
+
     public static class Builder {
+        private String mName;
         private List<TrackSegment> mTrackSegments;
 
         public Builder setTrackSegments(List<TrackSegment> trackSegments) {
             mTrackSegments = trackSegments;
+            return this;
+        }
+
+        public Builder setName(String name) {
+            mName = name;
             return this;
         }
 

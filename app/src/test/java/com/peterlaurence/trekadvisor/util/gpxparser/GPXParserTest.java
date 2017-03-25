@@ -52,6 +52,7 @@ public class GPXParserTest {
 
                     Track track = trackList.get(0);
                     List<TrackSegment> trackSegmentList = track.getTrackSegments();
+                    assertEquals("Example track", track.getName());
                     assertEquals(1, trackSegmentList.size());
                     TrackSegment trackSegment = trackSegmentList.get(0);
                     List<TrackPoint> trackPointList = trackSegment.getTrackPoints();
@@ -69,6 +70,7 @@ public class GPXParserTest {
                             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).
                                     parse("2007-10-14T10:09:57Z"));
                 } catch (Exception e) {
+                    e.printStackTrace();
                     fail();
                 }
             }

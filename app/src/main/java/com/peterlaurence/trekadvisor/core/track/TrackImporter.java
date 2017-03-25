@@ -135,6 +135,10 @@ public class TrackImporter {
             /* Create a new route */
             MapGson.Route route = new MapGson.Route();
 
+            /* The route name is the track name */
+            route.name = track.getName();
+
+            /* All track segments are concatenated */
             List<TrackSegment> trackSegmentList = track.getTrackSegments();
             for (TrackSegment trackSegment : trackSegmentList) {
                 List<TrackPoint> trackPointList = trackSegment.getTrackPoints();
