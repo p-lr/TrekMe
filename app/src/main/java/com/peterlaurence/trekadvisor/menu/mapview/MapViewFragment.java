@@ -39,7 +39,6 @@ import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -78,12 +77,19 @@ public class MapViewFragment extends Fragment implements
     public MapViewFragment() {
     }
 
+    /**
+     * A track file has been parsed. At this stage, the new {@link MapGson.Route} are added to the
+     * {@link Map}.
+     *
+     * @param map       the {@link Map} associated with the change
+     * @param routeList a list of {@link MapGson.Route}
+     */
     @Override
     public void onTrackChanged(Map map, List<MapGson.Route> routeList) {
+        Log.d(TAG, routeList.size() + " new route received for map " + map.getName());
+
         DrawRoutesTask drawRoutesTask = new DrawRoutesTask(map, routeList, mTileView);
         drawRoutesTask.execute();
-
-        Log.d(TAG, routeList.size() + " new route received for map " + map.getName());
     }
 
     @Override
@@ -460,26 +466,8 @@ public class MapViewFragment extends Fragment implements
             return null;
         }
 
-        private void updateRouteList() {
-            java.util.Map<String, MapGson.Route> hashMap = new HashMap<>();
-            for (MapGson.Route route : mMap.getMapGson().routes) {
-                hashMap.put(route.name, route);
-            }
-
-            for (MapGson.Route route : mRouteList) {
-                if (hashMap.containsKey(route.name)) {
-                    MapGson.Route existingRoute = hashMap.get(route.name);
-                    existingRoute.copyRoute(route);
-                } else {
-                    mMap.addRoute(route);
-                }
-            }
-        }
-
         @Override
         protected void onPostExecute(Void result) {
-            updateRouteList();
-
             TileViewExtended tileView = mTileViewWeakReference.get();
             if (tileView != null) {
                 tileView.drawRoutes(mMap.getMapGson().routes);

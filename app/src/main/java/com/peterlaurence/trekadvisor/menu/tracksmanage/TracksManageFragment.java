@@ -26,6 +26,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -41,6 +42,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     private Map mMap;
     private CurrentMapProvider mCurrentMapProvider;
     private TrackChangeListener mTrackChangeListener;
+    private TrackAdapter mTrackAdapter;
 
     @Override
     public void onAttach(Context context) {
@@ -125,11 +127,11 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     private void generateTracks(Map map) {
-        RecyclerView mRecyclerView = new RecyclerView(this.getContext());
-        mRecyclerView.setHasFixedSize(false);
+        RecyclerView recyclerView = new RecyclerView(this.getContext());
+        recyclerView.setHasFixedSize(false);
 
         LinearLayoutManager llm = new LinearLayoutManager(this.getContext());
-        mRecyclerView.setLayoutManager(llm);
+        recyclerView.setLayoutManager(llm);
 
         /* Apply item decoration (add an horizontal divider) */
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL);
@@ -137,12 +139,12 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider);
         }
-        mRecyclerView.addItemDecoration(dividerItemDecoration);
+        recyclerView.addItemDecoration(dividerItemDecoration);
 
-        TrackAdapter trackAdapter = new TrackAdapter(map);
-        mRecyclerView.setAdapter(trackAdapter);
+        mTrackAdapter = new TrackAdapter(map);
+        recyclerView.setAdapter(mTrackAdapter);
 
-        rootView.addView(mRecyclerView, 0);
+        rootView.addView(recyclerView, 0);
     }
 
     private void importTrack(Uri uri) {
@@ -158,7 +160,28 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onTrackFileParsed(Map map, List<MapGson.Route> routeList) {
         Log.d(TAG, "Track file parsed");
+        updateRouteList(routeList);
         mTrackChangeListener.onTrackChanged(map, routeList);
+        mTrackAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * Add new {@link MapGson.Route}s to the {@link Map}.
+     */
+    private void updateRouteList(List<MapGson.Route> routeList) {
+        java.util.Map<String, MapGson.Route> hashMap = new HashMap<>();
+        for (MapGson.Route route : mMap.getMapGson().routes) {
+            hashMap.put(route.name, route);
+        }
+
+        for (MapGson.Route route : routeList) {
+            if (hashMap.containsKey(route.name)) {
+                MapGson.Route existingRoute = hashMap.get(route.name);
+                existingRoute.copyRoute(route);
+            } else {
+                mMap.addRoute(route);
+            }
+        }
     }
 
     @Override
