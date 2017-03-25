@@ -27,7 +27,7 @@ public class Track {
     }
 
     public static class Builder {
-        private String mName;
+        private String mName = "";
         private List<TrackSegment> mTrackSegments;
 
         public Builder setTrackSegments(List<TrackSegment> trackSegments) {
