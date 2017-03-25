@@ -69,6 +69,10 @@ public class TileViewExtended extends TileView {
         mScrollListenerWeakReference = new WeakReference<>(listener);
     }
 
+    public PathView getPathView() {
+        return mPathView;
+    }
+
     /**
      * Updates the {@link PathView}. It expects that each {@link MapGson.Route} has a data object
      * of type {@link PathView.DrawablePath}.

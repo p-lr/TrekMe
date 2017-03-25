@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
         CurrentMapProvider,
-        TracksManageFragment.TrackChangeListener {
+        TracksManageFragment.TrackChangeListenerProvider {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
     private static final String MAP_LIST_FRAGMENT_TAG = "mapListFragment";
@@ -507,11 +507,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onTrackChanged(Map map, List<MapGson.Route> routeList) {
+    public TracksManageFragment.TrackChangeListener getTrackChangeListener() {
         Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
         if (mapViewFragment != null) {
-            ((MapViewFragment) mapViewFragment).onTrackChanged(map, routeList);
+            return (TracksManageFragment.TrackChangeListener) mapViewFragment;
         }
-
+        return null;
     }
 }

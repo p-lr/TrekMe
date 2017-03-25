@@ -93,6 +93,11 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
+    public void onTrackVisibilityChanged() {
+        mTileView.getPathView().invalidate();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);

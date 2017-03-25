@@ -1,19 +1,16 @@
 package com.peterlaurence.trekadvisor.menu.tracksmanage;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.MapLoader;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 
 import java.lang.ref.WeakReference;
@@ -27,6 +24,11 @@ import java.util.List;
 public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHolder> {
     private List<MapGson.Route> mRouteList;
     private Map mMap;
+    private TrackSelectionListener mTrackSelectionListener;
+
+    interface TrackSelectionListener {
+        void onVisibilityToggle(MapGson.Route route);
+    }
 
     static class TrackViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
@@ -46,9 +48,10 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
         }
     }
 
-    TrackAdapter(Map map) {
+    TrackAdapter(Map map, TrackSelectionListener trackSelectionListener) {
         mMap = map;
         mRouteList = map.getMapGson().routes;
+        mTrackSelectionListener = trackSelectionListener;
     }
 
     @Override
@@ -91,6 +94,8 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
                 MapGson.Route route = trackAdapter.mRouteList.get(position);
                 route.toggleVisibility();
                 trackViewHolder.setVisibleButtonIcon(route.visible);
+
+                trackAdapter.mTrackSelectionListener.onVisibilityToggle(route);
             }
         }
     }

@@ -93,7 +93,7 @@ public class PathView extends View {
                         drawablePath.width = mStrokeWidthDefault;
                     }
 
-                    if (drawablePath.visible) {
+                    if (route.visible) {
                         drawablePath.paint.setStrokeWidth(drawablePath.width / mScale);
                         canvas.drawLines(drawablePath.path, drawablePath.paint);
                     }
@@ -114,10 +114,6 @@ public class PathView extends View {
          */
         public Paint paint;
         /**
-         * Whether or not this path shall be drawn
-         */
-        public boolean visible;
-        /**
          * The width of the path
          */
         public float width;
@@ -125,7 +121,6 @@ public class PathView extends View {
         public DrawablePath(float[] path, Paint paint) {
             this.path = path;
             this.paint = paint;
-            visible = true;
         }
 
         @Override

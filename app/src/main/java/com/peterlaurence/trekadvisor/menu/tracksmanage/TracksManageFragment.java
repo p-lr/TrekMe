@@ -35,7 +35,8 @@ import java.util.List;
  *
  * @author peterLaurence on 01/03/17.
  */
-public class TracksManageFragment extends Fragment implements TrackImporter.TrackFileParsedListener {
+public class TracksManageFragment extends Fragment implements TrackImporter.TrackFileParsedListener,
+        TrackAdapter.TrackSelectionListener {
     public static final String TAG = "TracksManageFragment";
     private static final int TRACK_REQUEST_CODE = 1337;
     private FrameLayout rootView;
@@ -47,9 +48,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof CurrentMapProvider && context instanceof TrackChangeListener) {
+        if (context instanceof CurrentMapProvider && context instanceof TrackChangeListenerProvider) {
             mCurrentMapProvider = (CurrentMapProvider) context;
-            mTrackChangeListener = (TrackChangeListener) context;
+            mTrackChangeListener = ((TrackChangeListenerProvider) context).getTrackChangeListener();
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement CurrentMapProvider and MapLoader.MapUpdateListener");
@@ -141,7 +142,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         }
         recyclerView.addItemDecoration(dividerItemDecoration);
 
-        mTrackAdapter = new TrackAdapter(map);
+        mTrackAdapter = new TrackAdapter(map, this);
         recyclerView.setAdapter(mTrackAdapter);
 
         rootView.addView(recyclerView, 0);
@@ -189,6 +190,15 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         Log.e(TAG, message);
     }
 
+    @Override
+    public void onVisibilityToggle(MapGson.Route route) {
+        mTrackChangeListener.onTrackVisibilityChanged();
+    }
+
+    public interface TrackChangeListenerProvider {
+        TrackChangeListener getTrackChangeListener();
+    }
+
     public interface TrackChangeListener {
         /**
          * When new {@link MapGson.Route} are added or modified, this method is called.
@@ -197,5 +207,10 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
          * @param routeList a list of {@link MapGson.Route}
          */
         void onTrackChanged(Map map, List<MapGson.Route> routeList);
+
+        /**
+         * When the visibility of a {@link MapGson.Route} is changed, this method is called.
+         */
+        void onTrackVisibilityChanged();
     }
 }
