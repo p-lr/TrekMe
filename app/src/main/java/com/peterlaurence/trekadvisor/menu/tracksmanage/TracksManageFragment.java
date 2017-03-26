@@ -160,6 +160,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 mTrackAdapter.removeItem(viewHolder.getAdapterPosition());
+                mTrackChangeListener.onTrackVisibilityChanged();
             }
         };
 
@@ -181,10 +182,12 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     @Override
     public void onTrackFileParsed(Map map, List<MapGson.Route> routeList) {
-        Log.d(TAG, "Track file parsed");
+        /* We want to append new routes, so the index to add new routes is equal to current length
+         * of the data set. */
+        int positionStart = mTrackAdapter.getItemCount();
         int newRouteCount = updateRouteList(map, routeList);
         mTrackChangeListener.onTrackChanged(map, routeList);
-        mTrackAdapter.notifyItemRangeInserted(mTrackAdapter.getItemCount(), newRouteCount);
+        mTrackAdapter.notifyItemRangeInserted(positionStart, newRouteCount);
     }
 
     /**
