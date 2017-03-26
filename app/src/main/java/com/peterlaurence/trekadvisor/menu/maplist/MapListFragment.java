@@ -171,6 +171,5 @@ public class MapListFragment extends Fragment implements
         super.onSaveInstanceState(outState);
 
         outState.putBoolean(RECREATE_FRAGMENT_KEY, false);
-//        System.out.println("save list fragment");
     }
 }

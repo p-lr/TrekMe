@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -68,6 +69,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
                              Bundle savedInstanceState) {
 
         rootView = (FrameLayout) inflater.inflate(R.layout.fragment_tracks_manage, container, false);
+        mMap = mCurrentMapProvider.getCurrentMap();
+        generateTracks(mMap);
+
         return rootView;
     }
 
@@ -81,9 +85,6 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onStart() {
         super.onStart();
-
-        mMap = mCurrentMapProvider.getCurrentMap();
-        generateTracks(mMap);
     }
 
     @Override
@@ -131,11 +132,13 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         RecyclerView recyclerView = new RecyclerView(this.getContext());
         recyclerView.setHasFixedSize(false);
 
+        /* All cards are laid out vertically */
         LinearLayoutManager llm = new LinearLayoutManager(this.getContext());
         recyclerView.setLayoutManager(llm);
 
         /* Apply item decoration (add an horizontal divider) */
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this.getContext(),
+                DividerItemDecoration.VERTICAL);
         Drawable divider = this.getContext().getDrawable(R.drawable.divider);
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider);
@@ -144,6 +147,24 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
         mTrackAdapter = new TrackAdapter(map, this);
         recyclerView.setAdapter(mTrackAdapter);
+
+        /* Swipe to dismiss functionality */
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                                  RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                mTrackAdapter.removeItem(viewHolder.getAdapterPosition());
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
 
         rootView.addView(recyclerView, 0);
     }
@@ -161,28 +182,34 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onTrackFileParsed(Map map, List<MapGson.Route> routeList) {
         Log.d(TAG, "Track file parsed");
-        updateRouteList(routeList);
+        int newRouteCount = updateRouteList(map, routeList);
         mTrackChangeListener.onTrackChanged(map, routeList);
-        mTrackAdapter.notifyDataSetChanged();
+        mTrackAdapter.notifyItemRangeInserted(mTrackAdapter.getItemCount(), newRouteCount);
     }
 
     /**
-     * Add new {@link MapGson.Route}s to the {@link Map}.
+     * Add new {@link MapGson.Route}s to a {@link Map}.
+     *
+     * @return the number of {@link MapGson.Route} that have been appended to the list.
      */
-    private void updateRouteList(List<MapGson.Route> routeList) {
+    private int updateRouteList(Map map, List<MapGson.Route> routeList) {
         java.util.Map<String, MapGson.Route> hashMap = new HashMap<>();
-        for (MapGson.Route route : mMap.getMapGson().routes) {
+        for (MapGson.Route route : map.getMapGson().routes) {
             hashMap.put(route.name, route);
         }
 
+        int newRouteCount = 0;
         for (MapGson.Route route : routeList) {
             if (hashMap.containsKey(route.name)) {
                 MapGson.Route existingRoute = hashMap.get(route.name);
                 existingRoute.copyRoute(route);
             } else {
-                mMap.addRoute(route);
+                map.addRoute(route);
+                newRouteCount++;
             }
         }
+
+        return newRouteCount;
     }
 
     @Override

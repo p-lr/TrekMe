@@ -54,6 +54,11 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
         mTrackSelectionListener = trackSelectionListener;
     }
 
+    public void removeItem(int position) {
+        mRouteList.remove(position);
+        notifyItemRemoved(position);
+    }
+
     @Override
     public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context ctx = parent.getContext();
