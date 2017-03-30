@@ -1,5 +1,7 @@
 package com.peterlaurence.trekadvisor.menu;
 
+import android.support.annotation.Nullable;
+
 import com.peterlaurence.trekadvisor.core.map.Map;
 
 /**
@@ -8,5 +10,6 @@ import com.peterlaurence.trekadvisor.core.map.Map;
  * @author peterLaurence on 13/03/17.
  */
 public interface CurrentMapProvider {
+    @Nullable
     Map getCurrentMap();
 }

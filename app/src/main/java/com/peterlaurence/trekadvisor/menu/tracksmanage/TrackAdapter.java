@@ -23,7 +23,6 @@ import java.util.List;
  */
 public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHolder> {
     private List<MapGson.Route> mRouteList;
-    private Map mMap;
     private TrackSelectionListener mTrackSelectionListener;
 
     interface TrackSelectionListener {
@@ -49,7 +48,6 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
     }
 
     TrackAdapter(Map map, TrackSelectionListener trackSelectionListener) {
-        mMap = map;
         mRouteList = map.getMapGson().routes;
         mTrackSelectionListener = trackSelectionListener;
     }

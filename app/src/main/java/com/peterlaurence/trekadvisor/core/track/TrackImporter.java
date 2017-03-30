@@ -36,12 +36,6 @@ public class TrackImporter {
             "gpx", "json", "xml"
     };
 
-    public interface TrackFileParsedListener {
-        void onTrackFileParsed(Map map, List<MapGson.Route> routeList);
-
-        void onError(String message);
-    }
-
     /* Don't allow instantiation */
     private TrackImporter() {
     }
@@ -70,6 +64,12 @@ public class TrackImporter {
                                        ContentResolver contentResolver) {
         GpxTrackFileTask gpxTrackFileTask = new GpxTrackFileTask(listener, map, contentResolver);
         gpxTrackFileTask.execute(uri);
+    }
+
+    public interface TrackFileParsedListener {
+        void onTrackFileParsed(Map map, List<MapGson.Route> routeList);
+
+        void onError(String message);
     }
 
     private static class GpxTrackFileTask extends AsyncTask<Uri, Void, Void> {

@@ -33,6 +33,7 @@ public class MapListFragment extends Fragment implements
     private RecyclerView recyclerView;
 
     private OnMapListFragmentInteractionListener mListener;
+    private Map mCurrentMap;
 
     public MapListFragment() {
         // Required empty public constructor
@@ -93,6 +94,13 @@ public class MapListFragment extends Fragment implements
         generateMapList();
     }
 
+    /**
+     * Get a reference to the last {@link Map} that has been selected.
+     */
+    public Map getCurrentMap() {
+        return mCurrentMap;
+    }
+
     private void generateMapList() {
         recyclerView = new RecyclerView(this.getContext());
         recyclerView.setHasFixedSize(false);
@@ -115,6 +123,7 @@ public class MapListFragment extends Fragment implements
 
     @Override
     public void onMapSelected(Map map) {
+        mCurrentMap = map;
         if (mListener != null) {
             mListener.onMapSelectedFragmentInteraction(map);
         }

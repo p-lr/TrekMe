@@ -43,6 +43,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     private FrameLayout rootView;
     private Map mMap;
     private CurrentMapProvider mCurrentMapProvider;
+    private TrackChangeListenerProvider mTrackChangeListenerProvider;
     private TrackChangeListener mTrackChangeListener;
     private TrackAdapter mTrackAdapter;
 
@@ -51,7 +52,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         super.onAttach(context);
         if (context instanceof CurrentMapProvider && context instanceof TrackChangeListenerProvider) {
             mCurrentMapProvider = (CurrentMapProvider) context;
-            mTrackChangeListener = ((TrackChangeListenerProvider) context).getTrackChangeListener();
+            mTrackChangeListenerProvider = (TrackChangeListenerProvider) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement CurrentMapProvider and MapLoader.MapUpdateListener");
@@ -85,6 +86,11 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onStart() {
         super.onStart();
+
+        /* The listener is acquired now in this fragment's life cycle, and not during onAttach
+         * because at that moment the FragmentManager is not fully initialized (it may not have
+         * attached all needed fragments) */
+        mTrackChangeListener = mTrackChangeListenerProvider.getTrackChangeListener();
     }
 
     @Override
@@ -160,7 +166,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 mTrackAdapter.removeItem(viewHolder.getAdapterPosition());
-                mTrackChangeListener.onTrackVisibilityChanged();
+                if (mTrackChangeListener != null) {
+                    mTrackChangeListener.onTrackVisibilityChanged();
+                }
             }
         };
 
@@ -178,6 +186,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     public void onDetach() {
         super.onDetach();
         mCurrentMapProvider = null;
+        mTrackChangeListenerProvider = null;
     }
 
     @Override
@@ -186,7 +195,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
          * of the data set. */
         int positionStart = mTrackAdapter.getItemCount();
         int newRouteCount = updateRouteList(map, routeList);
-        mTrackChangeListener.onTrackChanged(map, routeList);
+        if (mTrackChangeListener != null) {
+            mTrackChangeListener.onTrackChanged(map, routeList);
+        }
         mTrackAdapter.notifyItemRangeInserted(positionStart, newRouteCount);
     }
 
@@ -222,7 +233,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     @Override
     public void onVisibilityToggle(MapGson.Route route) {
-        mTrackChangeListener.onTrackVisibilityChanged();
+        if (mTrackChangeListener != null) {
+            mTrackChangeListener.onTrackVisibilityChanged();
+        }
     }
 
     public interface TrackChangeListenerProvider {

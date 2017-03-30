@@ -8,6 +8,7 @@ import android.app.FragmentTransaction;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -68,7 +69,6 @@ public class MainActivity extends AppCompatActivity
     };
 
     private FragmentManager fragmentManager;
-    private Map mCurrentMap;
 
     private static final String TAG = "MainActivity";
 
@@ -453,7 +453,6 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onMapSelectedFragmentInteraction(Map map) {
-        mCurrentMap = map;
         showMapViewFragment();
     }
 
@@ -502,8 +501,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    @Nullable
     public Map getCurrentMap() {
-        return mCurrentMap;
+        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
+        if (mapListFragment != null && mapListFragment instanceof MapListFragment) {
+            return ((MapListFragment) mapListFragment).getCurrentMap();
+        }
+        return null;
     }
 
     @Override
