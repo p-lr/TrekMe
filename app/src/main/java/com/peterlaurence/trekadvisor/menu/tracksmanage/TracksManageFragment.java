@@ -23,6 +23,7 @@ import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.MapLoader;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
@@ -165,10 +166,16 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                /* Remove the track from the list and from the map */
                 mTrackAdapter.removeItem(viewHolder.getAdapterPosition());
+
+                /* Update the view */
                 if (mTrackChangeListener != null) {
                     mTrackChangeListener.onTrackVisibilityChanged();
                 }
+
+                /* Save */
+                saveChanges();
             }
         };
 
@@ -180,6 +187,10 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     private void importTrack(Uri uri) {
         TrackImporter.importTrackFile(uri, this, mMap, getContext().getContentResolver());
+    }
+
+    private void saveChanges() {
+        MapLoader.getInstance().saveMap(mMap);
     }
 
     @Override
@@ -199,6 +210,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
             mTrackChangeListener.onTrackChanged(map, routeList);
         }
         mTrackAdapter.notifyItemRangeInserted(positionStart, newRouteCount);
+
+        /* Save */
+        saveChanges();
     }
 
     /**
@@ -236,6 +250,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         if (mTrackChangeListener != null) {
             mTrackChangeListener.onTrackVisibilityChanged();
         }
+
+        /* Save */
+        saveChanges();
     }
 
     public interface TrackChangeListenerProvider {
