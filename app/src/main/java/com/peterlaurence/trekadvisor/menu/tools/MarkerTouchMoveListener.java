@@ -11,8 +11,8 @@ import com.qozix.tileview.TileView;
  * <pre>{@code
  * MarkerMoveCallback callback = new ClassImplementsMarkerMoveCallback();
  * MarkerTouchMoveListener markerTouchListener = new MarkerTouchMoveListener(tileView, callback);
- * mPositionMarker = new PositionMarker(context);
- * mPositionMarker.setOnTouchListener(markerTouchListener);
+ * View marker = new CustomMarker(context);
+ * marker.setOnTouchListener(markerTouchListener);
  * }</pre>
  *
  * @author peterLaurence
