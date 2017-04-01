@@ -2,6 +2,12 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/add_marker_id"
+        android:icon="@drawable/ic_add_location_white_24dp"
+        android:title="@string/mapview_add_marker"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/manage_tracks_id"
         android:orderInCategory="0"
         android:title="@string/manage_tracks_menu"

@@ -63,4 +63,7 @@
     <string name="import_tracks_format_gpx" translatable="false">GPX (tracks, routes, waypoints)</string>
     <string name="import_tracks_format_google" translatable="false">Google Maps directions (XML, JSON)</string>
 
+    <!-- MapView fragment -->
+    <string name="mapview_add_marker">Add marker</string>
+
 </resources>

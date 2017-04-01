@@ -33,6 +33,6 @@
     <string name="cancel_dialog_string">Annuler</string>
     <string name="manage_tracks_menu">Gérer les traces</string>
     <string name="import_tracks_menu">Nouvelle trace</string>
-    <string name="import_tracks_format_google"></string>
     <string name="import_tracks_warning">Le fichier sélectionné a un format inconnu. Les extensions connues sont :</string>
+    <string name="mapview_add_marker">Ajouter un repère</string>
 </resources>
