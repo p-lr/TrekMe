@@ -1,4 +1,9 @@
 <resources>
+    <attr name="measureDimension" format="dimension" />
+    <attr name="lineWidth" format="dimension" />
+    <attr name="sightColor" format="color" />
+    <attr name="sightBackgroundColor" format="color" />
+
     <declare-styleable name="PositionOrientationMarker">
         <attr name="mesureDimension" format="dimension" />
         <attr name="positionDimension" format="dimension" />
@@ -11,9 +16,16 @@
     </declare-styleable>
 
     <declare-styleable name="CalibrationMarker">
-        <attr name="measureDimension" format="dimension" />
-        <attr name="lineWidth" format="dimension" />
-        <attr name="sightColor" format="color" />
-        <attr name="sightBackgroundColor" format="color" />
+        <attr name="measureDimension" />
+        <attr name="lineWidth" />
+        <attr name="sightColor" />
+        <attr name="sightBackgroundColor" />
+    </declare-styleable>
+
+    <declare-styleable name="DistanceMarker">
+        <attr name="measureDimension" />
+        <attr name="lineWidth" />
+        <attr name="sightColor" />
+        <attr name="sightBackgroundColor" />
     </declare-styleable>
 </resources>

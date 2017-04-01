@@ -35,4 +35,11 @@
         <item name="sightBackgroundColor">@color/colorCalibrationMarkerBg</item>
     </style>
 
+    <style name="DistanceMarkerStyle">
+        <item name="measureDimension">100dp</item>
+        <item name="lineWidth">3dp</item>
+        <item name="sightColor">@color/colorDistanceMarker</item>
+        <item name="sightBackgroundColor">@color/colorDistanceMarkerBg</item>
+    </style>
+
 </resources>

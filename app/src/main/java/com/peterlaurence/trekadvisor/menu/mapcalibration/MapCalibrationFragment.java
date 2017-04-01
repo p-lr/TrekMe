@@ -3,7 +3,6 @@ package com.peterlaurence.trekadvisor.menu.mapcalibration;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -14,6 +13,7 @@ import com.peterlaurence.trekadvisor.core.map.MapLoader;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.components.CalibrationMarker;
+import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
 import com.qozix.tileview.TileView;
 
 import java.lang.ref.WeakReference;
@@ -37,27 +37,6 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     private List<MapGson.Calibration.CalibrationPoint> mCalibrationPointList;
     private int mCurrentCalibrationPoint;
 
-    /*
-     * The interface that the view associated with this fragment must implement.
-     */
-    public interface MapCalibrationView {
-        void updateCoordinateFields(double x, double y);
-
-        void setCalibrationModel(CalibrationModel l);
-
-        void setup();
-
-        void noProjectionDefined();
-
-        void projectionDefined();
-
-        boolean isWgs84();
-
-        double getXValue();
-
-        double getYValue();
-    }
-
     /**
      * Factory method to create a new instance of this fragment.
      *
@@ -65,6 +44,17 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
      */
     public static MapCalibrationFragment newInstance() {
         return new MapCalibrationFragment();
+    }
+
+    /**
+     * Before telling the {@link TileView} to move a marker, we save its relative coordinates so we
+     * can use them later on calibration save.
+     */
+    private static void moveCalibrationMarker(TileView tileView, View view, double x, double y) {
+        CalibrationMarker calibrationMarker = (CalibrationMarker) view;
+        calibrationMarker.setRelativeX(x);
+        calibrationMarker.setRelativeY(y);
+        tileView.moveMarker(view, x, y);
     }
 
     @Override
@@ -133,7 +123,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
         /* The calibration marker */
         mCalibrationMarker = new CalibrationMarker(this.getContext());
-        mCalibrationMarker.setOnTouchListener(new MarkerTouchMoveListener(tileView));
+        MarkerTouchMoveListener.MarkerMoveCallback callback = new CalibrationMarkerMoveCallback();
+        mCalibrationMarker.setOnTouchListener(new MarkerTouchMoveListener(tileView, callback));
         tileView.addMarker(mCalibrationMarker, 0.5, 0.5, -0.5f, -0.5f);
 
         /* The BitmapProvider */
@@ -271,55 +262,6 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         }
     }
 
-    /**
-     * A touch listener that enables touch-moves of a marker.
-     * Example of usage :
-     * <pre>{@code
-     * MarkerTouchMoveListener markerTouchListener = new MarkerTouchMoveListener(tileView);
-     * mPositionMarker = new PositionMarker(context);
-     * mPositionMarker.setOnTouchListener(markerTouchListener);
-     * }</pre>
-     */
-    private static class MarkerTouchMoveListener implements View.OnTouchListener {
-
-        private final TileView mTileView;
-        private double deltaX;
-        private double deltaY;
-
-        public MarkerTouchMoveListener(TileView tileView) {
-            mTileView = tileView;
-        }
-
-        @Override
-        public boolean onTouch(final View view, MotionEvent event) {
-            switch (event.getAction()) {
-
-                case MotionEvent.ACTION_DOWN:
-                    deltaX = getRelativeX(view.getX() - view.getWidth() / 2 + event.getX()) - getRelativeX(view.getX());
-                    deltaY = getRelativeY(view.getY() - view.getHeight() / 2 + event.getY()) - getRelativeY(view.getY());
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    double X = getRelativeX(view.getX() + event.getX());
-                    double Y = getRelativeY(view.getY() + event.getY());
-                    moveCalibrationMarker(mTileView, view, X - deltaX, Y - deltaY);
-                    break;
-
-                default:
-                    return false;
-            }
-            return true;
-        }
-
-        private double getRelativeX(float x) {
-            return mTileView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
-        }
-
-        private double getRelativeY(float y) {
-            return mTileView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
-        }
-    }
-
     private void removeCurrentTileView() {
         try {
             mTileView.destroy();
@@ -342,14 +284,32 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         toast.show();
     }
 
-    /**
-     * Before telling the {@link TileView} to move a marker, we save its relative coordinates so we
-     * can use them later on calibration save.
+
+    /*
+     * The interface that the view associated with this fragment must implement.
      */
-    private static void moveCalibrationMarker(TileView tileView, View view, double x, double y) {
-        CalibrationMarker calibrationMarker = (CalibrationMarker) view;
-        calibrationMarker.setRelativeX(x);
-        calibrationMarker.setRelativeY(y);
-        tileView.moveMarker(view, x, y);
+    interface MapCalibrationView {
+        void updateCoordinateFields(double x, double y);
+
+        void setCalibrationModel(CalibrationModel l);
+
+        void setup();
+
+        void noProjectionDefined();
+
+        void projectionDefined();
+
+        boolean isWgs84();
+
+        double getXValue();
+
+        double getYValue();
+    }
+
+    private static class CalibrationMarkerMoveCallback implements MarkerTouchMoveListener.MarkerMoveCallback {
+        @Override
+        public void moveMarker(TileView tileView, View view, double x, double y) {
+            moveCalibrationMarker(tileView, view, x, y);
+        }
     }
 }
