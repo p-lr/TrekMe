@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <set xmlns:android="http://schemas.android.com/apk/res/android"
-    android:ordering="sequentially">
+    android:ordering="together">
     <objectAnimator
         android:duration="500"
         android:propertyName="trimPathEnd"
@@ -8,7 +8,7 @@
         android:valueTo="@fraction/arrows_rounded_trim_end" />
 
     <objectAnimator
-        android:duration="200"
+        android:duration="500"
         android:propertyName="fillAlpha"
         android:valueFrom="0"
         android:valueTo="1" />

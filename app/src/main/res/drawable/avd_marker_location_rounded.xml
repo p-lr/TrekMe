@@ -5,23 +5,23 @@
 
     <target
         android:name="left_arrow"
-        android:animation="@animator/an_marker_arrows_in"></target>
+        android:animation="@animator/an_marker_arrows_in" />
 
     <target
         android:name="right_arrow"
-        android:animation="@animator/an_marker_arrows_in"></target>
+        android:animation="@animator/an_marker_arrows_in" />
 
     <target
         android:name="bottom_arrow"
-        android:animation="@animator/an_marker_arrows_in"></target>
+        android:animation="@animator/an_marker_arrows_in" />
 
     <target
         android:name="top_arrow"
-        android:animation="@animator/an_marker_arrows_in"></target>
+        android:animation="@animator/an_marker_arrows_in" />
 
     <target
         android:name="rotationGroup"
-        android:animation="@animator/an_marker_arrows_rotate"></target>
+        android:animation="@animator/an_marker_arrows_rotate" />
 
     <target android:name="mainShape">
         <aapt:attr name="android:animation">
