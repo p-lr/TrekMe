@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
-    android:duration="1500"
-    android:startOffset="550"
-    android:repeatCount="infinite"
-    android:propertyName="rotation"
-    android:valueFrom="0"
-    android:valueTo="360" />
