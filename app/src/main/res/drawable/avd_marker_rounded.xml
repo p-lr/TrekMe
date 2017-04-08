@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/vd_marker_rounded_location">
+
+    <target
+        android:name="rotationGroup"
+        android:animation="@animator/an_marker_arrows_rotate"></target>
+</animated-vector>

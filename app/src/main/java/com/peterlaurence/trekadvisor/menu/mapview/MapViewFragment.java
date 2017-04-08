@@ -34,6 +34,7 @@ import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+import com.peterlaurence.trekadvisor.menu.mapview.components.MovableMarker;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.TileView;
@@ -65,6 +66,7 @@ public class MapViewFragment extends Fragment implements
 
     public static final String TAG = "MapViewFragment";
     static final String MAP_KEY = "MAP_KEY";
+    MovableMarker movableMaker;
     private FrameLayoutMapView rootView;
     private TileViewExtended mTileView;
     private Map mMap;
@@ -175,6 +177,9 @@ public class MapViewFragment extends Fragment implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.add_marker_id:
+                addMarker();
+                return true;
             case R.id.manage_tracks_id:
                 mRequestManageTracksListener.onRequestManageTracks(mMap);
                 return true;
@@ -198,8 +203,11 @@ public class MapViewFragment extends Fragment implements
         mGoogleApiClient.connect();
         super.onStart();
 
-        mMap = mCurrentMapProvider.getCurrentMap();
-        setMap(mMap);
+        /* Only update the map if its a new one */
+        Map map = mCurrentMapProvider.getCurrentMap();
+        if (mMap == null || mMap != map) {
+            setMap(map);
+        }
     }
 
     @Override
@@ -402,6 +410,15 @@ public class MapViewFragment extends Fragment implements
 
     public void centerOnPosition() {
         mTileView.moveToMarker(mPositionMarker, true);
+    }
+
+    private void addMarker() {
+        if (movableMaker == null) {
+            movableMaker = new MovableMarker(getContext());
+
+            // TODO : remove this
+            mTileView.addMarker(movableMaker, 260000, 6230000, -0.5f, -0.5f);
+        }
     }
 
     @Override

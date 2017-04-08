@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/vd_marker_location_rounded">
+
+    <target
+        android:name="left_arrow"
+        android:animation="@animator/an_marker_arrows_in"></target>
+
+    <target
+        android:name="right_arrow"
+        android:animation="@animator/an_marker_arrows_in"></target>
+
+    <target
+        android:name="bottom_arrow"
+        android:animation="@animator/an_marker_arrows_in"></target>
+
+    <target
+        android:name="top_arrow"
+        android:animation="@animator/an_marker_arrows_in"></target>
+
+    <target
+        android:name="rotationGroup"
+        android:animation="@animator/an_marker_arrows_rotate"></target>
+
+    <target android:name="mainShape">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="500"
+                android:propertyName="pathData"
+                android:valueType="pathType"
+                android:valueFrom="@string/marker_location"
+                android:valueTo="@string/marker_rounded" />
+        </aapt:attr>
+    </target>
+</animated-vector>
