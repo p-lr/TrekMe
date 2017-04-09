@@ -27,7 +27,7 @@ public class TileViewExtended extends TileView {
         super(context);
 
         mPathView = new PathView(context);
-        addView(mPathView);
+        addView(mPathView, getChildCount() - 1);
     }
 
     @Override

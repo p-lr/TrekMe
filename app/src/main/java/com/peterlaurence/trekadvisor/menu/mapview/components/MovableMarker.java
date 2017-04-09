@@ -28,13 +28,6 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
         mCurrentAnimation = mRounded;
         setImageDrawable(mRounded);
         mRounded.start();
-
-        setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                morph();
-            }
-        });
     }
 
 

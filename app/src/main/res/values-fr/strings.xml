@@ -35,4 +35,5 @@
     <string name="import_tracks_menu">Nouvelle trace</string>
     <string name="import_tracks_warning">Le fichier sélectionné a un format inconnu. Les extensions connues sont :</string>
     <string name="mapview_add_marker">Ajouter un repère</string>
+    <string name="move_marker">Déplacer</string>
 </resources>

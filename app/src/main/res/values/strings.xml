@@ -65,5 +65,6 @@
 
     <!-- MapView fragment -->
     <string name="mapview_add_marker">Add marker</string>
+    <string name="move_marker">Move</string>
 
 </resources>

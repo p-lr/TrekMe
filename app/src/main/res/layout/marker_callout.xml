@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="200dp"
+    android:layout_height="120dp"
+    android:background="@drawable/marker_callout_shape"
+    android:elevation="10dp">
+
+    <TextView
+        android:id="@+id/callout_title"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimaryTextBlack"
+        android:text="A marker" />
+
+    <TextView
+        android:id="@+id/callout_subtitle"
+        android:layout_below="@+id/callout_title"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:textStyle="normal"
+        android:textColor="@color/colorPrimaryTextBlack"
+        android:text="lat : 15.224  lon : 4.2135" />
+
+
+    <Button
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:id="@+id/edit_callout_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="@string/map_edit_btn_string" />
+
+    <View
+        android:background="@drawable/divider"
+        android:layout_above="@id/edit_callout_btn"
+
+        android:layout_height="1dp"
+        android:layout_width="match_parent" />
+
+    <View
+        android:layout_centerInParent="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:layout_width="1dp"
+        android:layout_height="16dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:background="?android:attr/dividerVertical" />
+
+    <Button
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:id="@+id/move_callout_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:text="@string/move_marker" />
+</RelativeLayout>
