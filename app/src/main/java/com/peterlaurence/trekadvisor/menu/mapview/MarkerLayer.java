@@ -4,7 +4,9 @@ import android.content.Context;
 import android.view.View;
 
 import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerCallout;
+import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerGrab;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MovableMarker;
+import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 
@@ -39,20 +41,42 @@ class MarkerLayer {
         final double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
         final double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
 
-        final MovableMarker movableMaker;
+        final MovableMarker movableMarker;
         final Context context = mMapViewFragment.getContext();
-        movableMaker = new MovableMarker(context);
+        movableMarker = new MovableMarker(context);
 
-        movableMaker.setOnClickListener(new View.OnClickListener() {
+        movableMarker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                movableMaker.morph();
+                movableMarker.morph();
                 MarkerCallout markerCallout = new MarkerCallout(context);
                 mTileView.addCallout(markerCallout, relativeX, relativeY, -0.5f, -1.2f);
                 markerCallout.transitionIn();
             }
         });
 
-        mTileView.addMarker(movableMaker, relativeX, relativeY, -0.5f, -0.5f);
+        mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
+
+        /* Easily move the marker */
+        attachMarkerGrab(movableMarker, relativeX, relativeY);
+    }
+
+    /**
+     * A {@link MarkerGrab} is used along with a {@link MarkerTouchMoveListener} to reflect its
+     * displacement to the marker passed as argument.
+     */
+    private void attachMarkerGrab(final MovableMarker movableMarker, double relativeX, double relativeY) {
+        /* Add a view as background, to move easily the marker */
+        MarkerTouchMoveListener.MarkerMoveCallback markerMoveCallback = new MarkerTouchMoveListener.MarkerMoveCallback() {
+            @Override
+            public void moveMarker(TileView tileView, View view, double x, double y) {
+                tileView.moveMarker(view, x, y);
+                tileView.moveMarker(movableMarker, x, y);
+            }
+        };
+
+        MarkerGrab markerGrab = new MarkerGrab(mMapViewFragment.getContext());
+        markerGrab.setOnTouchListener(new MarkerTouchMoveListener(mTileView, markerMoveCallback));
+        mTileView.addMarker(markerGrab, relativeX, relativeY, -0.5f, -0.5f);
     }
 }

@@ -14,4 +14,5 @@
     <color name="colorCalibrationMarkerBg">#55448AFF</color>
     <color name="colorDistanceMarker">#448AFF</color>
     <color name="colorDistanceMarkerBg">#55448AFF</color>
+    <color name="colorMarkerGrabBg">#55448AFF</color>
 </resources>

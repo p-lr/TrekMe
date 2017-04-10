@@ -19,8 +19,8 @@ import com.qozix.tileview.TileView;
  */
 public class MarkerTouchMoveListener implements View.OnTouchListener {
     private final TileView mTileView;
-    private double deltaX;
-    private double deltaY;
+    private float deltaX;
+    private float deltaY;
     private MarkerMoveCallback mMarkerMoveCallback;
 
     public interface MarkerMoveCallback {
@@ -37,14 +37,14 @@ public class MarkerTouchMoveListener implements View.OnTouchListener {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
-                deltaX = getRelativeX(event.getX() - view.getWidth() / 2);
-                deltaY = getRelativeY(event.getY() - view.getHeight() / 2);
+                deltaX = event.getX() - view.getWidth() / 2;
+                deltaY = event.getY() - view.getHeight() / 2;
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                double X = getRelativeX(view.getX() + event.getX());
-                double Y = getRelativeY(view.getY() + event.getY());
-                mMarkerMoveCallback.moveMarker(mTileView, view, X - deltaX, Y - deltaY);
+                double X = getRelativeX(view.getX() + event.getX() - deltaX);
+                double Y = getRelativeY(view.getY() + event.getY() - deltaY);
+                mMarkerMoveCallback.moveMarker(mTileView, view, X, Y);
                 break;
 
             default:
