@@ -4,6 +4,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.qozix.tileview.TileView;
+import com.qozix.tileview.geom.CoordinateTranslater;
 
 /**
  * A touch listener that enables touch-moves of a marker on a {@link TileView}. <br>
@@ -23,6 +24,11 @@ public class MarkerTouchMoveListener implements View.OnTouchListener {
     private float deltaY;
     private MarkerMoveCallback mMarkerMoveCallback;
 
+    private double mLeftBound;
+    private double mRightBound;
+    private double mTopBound;
+    private double mBottomBound;
+
     public interface MarkerMoveCallback {
         void moveMarker(TileView tileView, View view, double x, double y);
     }
@@ -30,6 +36,12 @@ public class MarkerTouchMoveListener implements View.OnTouchListener {
     public MarkerTouchMoveListener(TileView tileView, MarkerMoveCallback markerMoveCallback) {
         mTileView = tileView;
         mMarkerMoveCallback = markerMoveCallback;
+
+        CoordinateTranslater coordinateTranslater = tileView.getCoordinateTranslater();
+        mLeftBound = coordinateTranslater.getLeft();
+        mRightBound = coordinateTranslater.getRight();
+        mTopBound = coordinateTranslater.getTop();
+        mBottomBound = coordinateTranslater.getBottom();
     }
 
     @Override
@@ -44,7 +56,7 @@ public class MarkerTouchMoveListener implements View.OnTouchListener {
             case MotionEvent.ACTION_MOVE:
                 double X = getRelativeX(view.getX() + event.getX() - deltaX);
                 double Y = getRelativeY(view.getY() + event.getY() - deltaY);
-                mMarkerMoveCallback.moveMarker(mTileView, view, X, Y);
+                mMarkerMoveCallback.moveMarker(mTileView, view, getConstrainedX(X), getConstrainedY(Y));
                 break;
 
             default:
@@ -59,5 +71,23 @@ public class MarkerTouchMoveListener implements View.OnTouchListener {
 
     private double getRelativeY(float y) {
         return mTileView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
+    }
+
+    private double getConstrainedX(double x) {
+        if (x <= mLeftBound) {
+            return mLeftBound;
+        } else if (x >= mRightBound) {
+            return mRightBound;
+        }
+        return x;
+    }
+
+    private double getConstrainedY(double y) {
+        if (y <= mBottomBound) {
+            return mBottomBound;
+        } else if (y >= mTopBound) {
+            return mTopBound;
+        }
+        return y;
     }
 }

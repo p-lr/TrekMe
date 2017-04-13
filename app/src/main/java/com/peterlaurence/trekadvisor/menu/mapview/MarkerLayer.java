@@ -55,10 +55,10 @@ class MarkerLayer {
             }
         });
 
-        mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
-
         /* Easily move the marker */
         attachMarkerGrab(movableMarker, relativeX, relativeY);
+
+        mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
     }
 
     /**
