@@ -40,12 +40,9 @@ class MarkerLayer {
 
                     /* Prepare the callout */
                     MarkerCallout markerCallout = new MarkerCallout(mMapViewFragment.getContext());
-                    markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout, mTileView));
+                    markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout, mTileView, mMapViewFragment.getContext()));
 
-                    CoordinateTranslater coordinateTranslater = mTileView.getCoordinateTranslater();
-                    double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
-                    double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
-                    mTileView.addCallout(markerCallout, relativeX, relativeY, -0.5f, -1.2f);
+                    mTileView.addCallout(markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -1.2f);
                     markerCallout.transitionIn();
                 }
             }
@@ -68,7 +65,9 @@ class MarkerLayer {
         movableMarker = new MovableMarker(context);
 
         /* Easily move the marker */
-        MarkerGrab markerGrab = attachMarkerGrab(movableMarker, relativeX, relativeY);
+        movableMarker.setRelativeX(relativeX);
+        movableMarker.setRelativeY(relativeY);
+        MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mMapViewFragment.getContext());
 
         movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
 
@@ -79,19 +78,21 @@ class MarkerLayer {
      * A {@link MarkerGrab} is used along with a {@link MarkerTouchMoveListener} to reflect its
      * displacement to the marker passed as argument.
      */
-    private MarkerGrab attachMarkerGrab(final MovableMarker movableMarker, double relativeX, double relativeY) {
+    private static MarkerGrab attachMarkerGrab(final MovableMarker movableMarker, TileView tileView, Context context) {
         /* Add a view as background, to move easily the marker */
         MarkerTouchMoveListener.MarkerMoveCallback markerMoveCallback = new MarkerTouchMoveListener.MarkerMoveCallback() {
             @Override
             public void moveMarker(TileView tileView, View view, double x, double y) {
                 tileView.moveMarker(view, x, y);
                 tileView.moveMarker(movableMarker, x, y);
+                movableMarker.setRelativeX(x);
+                movableMarker.setRelativeY(y);
             }
         };
 
-        MarkerGrab markerGrab = new MarkerGrab(mMapViewFragment.getContext());
-        markerGrab.setOnTouchListener(new MarkerTouchMoveListener(mTileView, markerMoveCallback));
-        mTileView.addMarker(markerGrab, relativeX, relativeY, -0.5f, -0.5f);
+        MarkerGrab markerGrab = new MarkerGrab(context);
+        markerGrab.setOnTouchListener(new MarkerTouchMoveListener(tileView, markerMoveCallback));
+        tileView.addMarker(markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f);
 
         return markerGrab;
     }
@@ -132,11 +133,13 @@ class MarkerLayer {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
         private TileView mTileView;
+        private Context mContext;
 
-        MorphMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, TileView tileView) {
+        MorphMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, TileView tileView, Context context) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
             mTileView = tileView;
+            mContext = context;
         }
 
         @Override
@@ -145,6 +148,14 @@ class MarkerLayer {
 
             if (movableMarker != null) {
                 movableMarker.morphToDynamicForm();
+
+                /* Easily move the marker */
+                MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mContext);
+                movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
+
+                /* Use a trick to bring the marker to the foreground */
+                mTileView.removeMarker(movableMarker);
+                mTileView.addMarker(movableMarker, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f);
             }
 
             /* Remove the callout */

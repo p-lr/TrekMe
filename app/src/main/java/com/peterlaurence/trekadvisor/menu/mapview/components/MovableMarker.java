@@ -22,6 +22,13 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
     private AnimatedVectorDrawable mStaticToDynamic;
     private AnimatedVectorDrawable mDynamicToStatic;
 
+    /* The relative coordinates are kept here. Although this shouldn't be a concern of this object,
+     * the TileView don't offer the possibility to retrieve the relative coordinates of a marker,
+     * so we have to save them in e.g, the marker's view.
+     */
+    private double relativeX;
+    private double relativeY;
+
 
     /**
      * The {@code mRounded} drawable is just the end state of the {@code mStaticToDynamic}
@@ -55,5 +62,21 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
             setImageDrawable(mStaticToDynamic);
             mStaticToDynamic.start();
         }
+    }
+
+    public double getRelativeX() {
+        return relativeX;
+    }
+
+    public void setRelativeX(double relativeX) {
+        this.relativeX = relativeX;
+    }
+
+    public double getRelativeY() {
+        return relativeY;
+    }
+
+    public void setRelativeY(double relativeY) {
+        this.relativeY = relativeY;
     }
 }
