@@ -1,11 +1,13 @@
 package com.peterlaurence.trekadvisor.menu.mapview.components;
 
 import android.content.Context;
+import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import com.peterlaurence.trekadvisor.R;
@@ -14,10 +16,14 @@ import com.peterlaurence.trekadvisor.R;
  * @author peterLaurence on 09/04/17.
  */
 public class MarkerCallout extends RelativeLayout {
+    private Button mMoveButton;
+
     public MarkerCallout(Context context) {
         super(context);
 
         inflate(context, R.layout.marker_callout, this);
+
+        mMoveButton = (Button) findViewById(R.id.move_callout_btn);
     }
 
     public void transitionIn() {
@@ -34,5 +40,14 @@ public class MarkerCallout extends RelativeLayout {
         animationSet.addAnimation(alphaAnimation);
 
         startAnimation(animationSet);
+    }
+
+    public void setMoveAction(final Runnable moveAction) {
+        mMoveButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveAction.run();
+            }
+        });
     }
 }

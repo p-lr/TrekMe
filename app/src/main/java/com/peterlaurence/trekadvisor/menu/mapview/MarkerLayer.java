@@ -37,8 +37,11 @@ class MarkerLayer {
             public void onMarkerTap(View view, int x, int y) {
                 if (view instanceof MovableMarker) {
                     MovableMarker movableMarker = (MovableMarker) view;
-                    movableMarker.morphToDynamicForm();
+
+                    /* Prepare the callout */
                     MarkerCallout markerCallout = new MarkerCallout(mMapViewFragment.getContext());
+                    markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout, mTileView));
+
                     CoordinateTranslater coordinateTranslater = mTileView.getCoordinateTranslater();
                     double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
                     double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
@@ -117,6 +120,37 @@ class MarkerLayer {
                 if (markerGrab != null) {
                     mTileView.removeMarker(markerGrab);
                 }
+            }
+        }
+    }
+
+    /**
+     * This {@link Runnable} is called when an external component requests a {@link MovableMarker} to
+     * morph into the dynamic shape. <br>Here, this component is a {@link MarkerCallout}.
+     */
+    private static class MorphMarkerRunnable implements Runnable {
+        private WeakReference<MovableMarker> mMovableMarkerWeakReference;
+        private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
+        private TileView mTileView;
+
+        MorphMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, TileView tileView) {
+            mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
+            mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
+            mTileView = tileView;
+        }
+
+        @Override
+        public void run() {
+            MovableMarker movableMarker = mMovableMarkerWeakReference.get();
+
+            if (movableMarker != null) {
+                movableMarker.morphToDynamicForm();
+            }
+
+            /* Remove the callout */
+            MarkerCallout markerCallout = mMarkerCalloutWeakReference.get();
+            if (markerCallout != null) {
+                mTileView.removeCallout(markerCallout);
             }
         }
     }
