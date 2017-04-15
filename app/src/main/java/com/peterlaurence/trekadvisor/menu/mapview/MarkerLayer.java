@@ -9,6 +9,9 @@ import com.peterlaurence.trekadvisor.menu.mapview.components.MovableMarker;
 import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
+import com.qozix.tileview.markers.MarkerLayout;
+
+import java.lang.ref.WeakReference;
 
 /**
  * All {@link MovableMarker} and {@link MarkerCallout} are managed here. <br>
@@ -28,6 +31,22 @@ class MarkerLayer {
 
     void setTileView(TileView tileView) {
         mTileView = tileView;
+
+        mTileView.setMarkerTapListener(new MarkerLayout.MarkerTapListener() {
+            @Override
+            public void onMarkerTap(View view, int x, int y) {
+                if (view instanceof MovableMarker) {
+                    MovableMarker movableMarker = (MovableMarker) view;
+                    movableMarker.morphToDynamicForm();
+                    MarkerCallout markerCallout = new MarkerCallout(mMapViewFragment.getContext());
+                    CoordinateTranslater coordinateTranslater = mTileView.getCoordinateTranslater();
+                    double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
+                    double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
+                    mTileView.addCallout(markerCallout, relativeX, relativeY, -0.5f, -1.2f);
+                    markerCallout.transitionIn();
+                }
+            }
+        });
     }
 
     /**
@@ -45,18 +64,10 @@ class MarkerLayer {
         final Context context = mMapViewFragment.getContext();
         movableMarker = new MovableMarker(context);
 
-        movableMarker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                movableMarker.morph();
-                MarkerCallout markerCallout = new MarkerCallout(context);
-                mTileView.addCallout(markerCallout, relativeX, relativeY, -0.5f, -1.2f);
-                markerCallout.transitionIn();
-            }
-        });
-
         /* Easily move the marker */
-        attachMarkerGrab(movableMarker, relativeX, relativeY);
+        MarkerGrab markerGrab = attachMarkerGrab(movableMarker, relativeX, relativeY);
+
+        movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
 
         mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
     }
@@ -65,7 +76,7 @@ class MarkerLayer {
      * A {@link MarkerGrab} is used along with a {@link MarkerTouchMoveListener} to reflect its
      * displacement to the marker passed as argument.
      */
-    private void attachMarkerGrab(final MovableMarker movableMarker, double relativeX, double relativeY) {
+    private MarkerGrab attachMarkerGrab(final MovableMarker movableMarker, double relativeX, double relativeY) {
         /* Add a view as background, to move easily the marker */
         MarkerTouchMoveListener.MarkerMoveCallback markerMoveCallback = new MarkerTouchMoveListener.MarkerMoveCallback() {
             @Override
@@ -78,5 +89,35 @@ class MarkerLayer {
         MarkerGrab markerGrab = new MarkerGrab(mMapViewFragment.getContext());
         markerGrab.setOnTouchListener(new MarkerTouchMoveListener(mTileView, markerMoveCallback));
         mTileView.addMarker(markerGrab, relativeX, relativeY, -0.5f, -0.5f);
+
+        return markerGrab;
+    }
+
+    private static class MovableMarkerClickListener implements View.OnClickListener {
+        private WeakReference<MovableMarker> mMovableMarkerWeakReference;
+        private WeakReference<MarkerGrab> mMarkerGrabWeakReference;
+        private TileView mTileView;
+
+        MovableMarkerClickListener(MovableMarker movableMarker, MarkerGrab markerGrab, TileView tileView) {
+            mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
+            mMarkerGrabWeakReference = new WeakReference<>(markerGrab);
+            mTileView = tileView;
+        }
+
+        @Override
+        public void onClick(View v) {
+            MovableMarker movableMarker = mMovableMarkerWeakReference.get();
+            if (movableMarker != null) {
+                movableMarker.morphToStaticForm();
+
+                /* After the morph, the marker should not consume touch events */
+                movableMarker.setClickable(false);
+
+                MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
+                if (markerGrab != null) {
+                    mTileView.removeMarker(markerGrab);
+                }
+            }
+        }
     }
 }
