@@ -205,11 +205,7 @@ public class MapViewFragment extends Fragment implements
         mGoogleApiClient.connect();
         super.onStart();
 
-        /* Only update the map if its a new one */
-        Map map = mCurrentMapProvider.getCurrentMap();
-        if (mMap == null || mMap != map) {
-            setMap(map);
-        }
+        updateMapIfNecessary();
     }
 
     @Override
@@ -224,6 +220,24 @@ public class MapViewFragment extends Fragment implements
     public void onPause() {
         super.onPause();
         stopLocationUpdates();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            updateMapIfNecessary();
+        }
+    }
+
+    /**
+     * Only update the map if its a new one.
+     */
+    private void updateMapIfNecessary() {
+        Map map = mCurrentMapProvider.getCurrentMap();
+        if (mMap == null || mMap != map) {
+            setMap(map);
+        }
     }
 
     private void stopLocationUpdates() {
