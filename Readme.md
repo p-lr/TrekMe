@@ -44,8 +44,8 @@ Beginners are strongly advised to read the Technical Basis from the [User Guide]
 ## <a name="TOC-How-does-it-work"></a>How does it work?
 
 TrekAdvisor works with maps that you put on your SD card in the "trekadvisor" folder on the devices's 
-external storage (SD card). The format of tha map is discussed later.
-For instance, that step is manual so you have to do the copy/paste of the map on your phone yourself.
+external storage (SD card). The format of the map is discussed later.
+For instance, that step is manual so you have to do the copy/paste of the map on your phone by yourself.
 Hopefully this will be simplified on a future version, so a map located on your computer would be
 imported from the app.
 
@@ -124,7 +124,7 @@ Then, launch TrekAdvisor and open the Import menu. You should see the zip file i
 press the "Import" button, and at the end of the process the map will appear in the list of available
 maps.
 
-Imported maps are extracted in the same directory the zip were put. To avoid accidental overrides of
+Imported maps are extracted in the same directory the of the zip file. To avoid accidental overrides of
 existing maps, it is recommended to place zip files in a subdirectory under the "trekadvisor" folder.
 You can give this subdirectory the name you want.
 
@@ -137,10 +137,10 @@ it's not yet calibrated (sadly, that part can't be automated). See next section.
 The last step. A lot of effort has been made to simplify this. The map is on the device, it can be
 displayed, but TrekAdvisor needs to know at least two calibration points for the location functionality
 to work.<br>
-In TrekAdvisor, under the list of maps, a settings button for each map gives access to the calibration fragment, 
+In TrekAdvisor, under the list of maps, a settings button for each map gives access to the calibration, 
 among other things.
 
-For example, if you only know the latitude and longitude for two points and you have no idea what projection
+For example, if you only know the latitude and longitude of two points and you have no idea what projection
 was used to make this map, just set the projection to "None", the number of calibration points to 2 (the
 default), and press the "Define calibration points" button to access the calibration screen.
 
@@ -157,7 +157,7 @@ list and open the calibrated map).
 
 PS : for best accuracy, it is advised to zoom the map during the calibration process before positioning
 the reticule. You can edit the calibration of a map at any time and fix the position of each calibration
-if needed. Don't forget to save your changes.
+if needed. Again, don't forget to save your changes.
 
 
 ## <a name="TOC-Supported_projections"></a>Supported projections
