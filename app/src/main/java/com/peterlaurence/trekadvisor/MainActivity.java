@@ -20,9 +20,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
@@ -40,7 +44,8 @@ public class MainActivity extends AppCompatActivity
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
         CurrentMapProvider,
-        TracksManageFragment.TrackChangeListenerProvider {
+        TracksManageFragment.TrackChangeListenerProvider,
+        LocationProvider {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
     private static final String MAP_LIST_FRAGMENT_TAG = "mapListFragment";
@@ -68,10 +73,9 @@ public class MainActivity extends AppCompatActivity
     private static final String[] PERMISSIONS_LOCATION = {
             Manifest.permission.ACCESS_FINE_LOCATION
     };
-
-    private FragmentManager fragmentManager;
-
     private static final String TAG = "MainActivity";
+    private FragmentManager fragmentManager;
+    private GoogleApiClient mGoogleApiClient;
 
     /**
      * Checks whether the app has permission to access fine location.
@@ -114,6 +118,13 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        /* Create the instance of GoogleAPIClient BEFORE fragments are attached */
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+
         super.onCreate(savedInstanceState);
 
         fragmentManager = this.getFragmentManager();
@@ -162,6 +173,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onStart() {
+        /* Start the location service */
+        mGoogleApiClient.connect();
+
         super.onStart();
 
         /* Show the map list fragment if we have the right to read the sd card */
@@ -176,6 +190,13 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
+    @Override
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -524,5 +545,31 @@ public class MainActivity extends AppCompatActivity
             return (TracksManageFragment.TrackChangeListener) mapViewFragment;
         }
         return null;
+    }
+
+
+    @Override
+    public void registerLocationListener(GoogleApiClient.ConnectionCallbacks connectionCallbacks,
+                                         GoogleApiClient.OnConnectionFailedListener connFailedListener) {
+        mGoogleApiClient.registerConnectionCallbacks(connectionCallbacks);
+        mGoogleApiClient.registerConnectionFailedListener(connFailedListener);
+    }
+
+    @Override
+    public void requestLocationUpdates(LocationListener listener, LocationRequest request) {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    mGoogleApiClient, request, listener);
+        }
+    }
+
+    @Override
+    public void removeLocationListener(LocationListener listener) {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, listener);
     }
 }

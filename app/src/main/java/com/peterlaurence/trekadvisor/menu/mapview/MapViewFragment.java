@@ -1,15 +1,13 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
-import android.Manifest;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -26,7 +24,6 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
@@ -34,6 +31,7 @@ import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.TileView;
@@ -72,7 +70,7 @@ public class MapViewFragment extends Fragment implements
     private boolean mLockView = false;
     private RequestManageTracksListener mRequestManageTracksListener;
     private CurrentMapProvider mCurrentMapProvider;
-    private GoogleApiClient mGoogleApiClient;
+    private LocationProvider mLocationProvider;
     private LocationRequest mLocationRequest;
     private OrientationSensor mOrientationSensor;
     private MarkerLayer mMarkerLayer;
@@ -106,19 +104,11 @@ public class MapViewFragment extends Fragment implements
         setRetainInstance(true);
         setHasOptionsMenu(true);
 
-        /* Create the instance of GoogleAPIClient */
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this.getContext())
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-
-            mLocationRequest = new LocationRequest();
-            mLocationRequest.setInterval(1000);
-            mLocationRequest.setFastestInterval(1000);
-            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        }
+        /* The location request specific to this fragment */
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         /* Create the instance of the OrientationSensor */
         mOrientationSensor = new OrientationSensor(getContext());
@@ -202,7 +192,6 @@ public class MapViewFragment extends Fragment implements
 
     @Override
     public void onStart() {
-        mGoogleApiClient.connect();
         super.onStart();
 
         updateMapIfNecessary();
@@ -211,15 +200,11 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        if (mGoogleApiClient.isConnected()) {
-            startLocationUpdates();
-        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        stopLocationUpdates();
     }
 
     @Override
@@ -240,25 +225,24 @@ public class MapViewFragment extends Fragment implements
         }
     }
 
-    private void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-    }
-
     @Override
     public void onStop() {
-        mGoogleApiClient.disconnect();
+        mLocationProvider.removeLocationListener(this);
         super.onStop();
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof RequestManageTracksListener && context instanceof CurrentMapProvider) {
+        if (context instanceof RequestManageTracksListener && context instanceof CurrentMapProvider
+                && context instanceof LocationProvider) {
             mRequestManageTracksListener = (RequestManageTracksListener) context;
             mCurrentMapProvider = (CurrentMapProvider) context;
+            mLocationProvider = (LocationProvider) context;
+            mLocationProvider.registerLocationListener(this, this);
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement RequestManageTracksListener and CurrentMapProvider");
+                    + " must implement RequestManageTracksListener, CurrentMapProvider and LocationProvider");
         }
     }
 
@@ -270,17 +254,13 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-        startLocationUpdates();
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 
-    private void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this.getContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        mLocationProvider.requestLocationUpdates(this, mLocationRequest);
     }
 
     @Override
@@ -289,12 +269,9 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
     public void onLocationChanged(Location location) {
+        if (isHidden()) return;
+
         if (location != null) {
             /* If there is no TileView, no need to go further */
             if (mTileView == null) {
