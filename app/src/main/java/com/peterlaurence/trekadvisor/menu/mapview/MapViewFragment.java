@@ -5,7 +5,6 @@ import android.content.Context;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -62,7 +61,6 @@ public class MapViewFragment extends Fragment implements
         TracksManageFragment.TrackChangeListener {
 
     public static final String TAG = "MapViewFragment";
-    static final String MAP_KEY = "MAP_KEY";
     private FrameLayoutMapView rootView;
     private TileViewExtended mTileView;
     private Map mMap;
@@ -120,31 +118,13 @@ public class MapViewFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        /* Create layout from scratch if it does not exist*/
+        /* Create layout from scratch if it does not exist, else don't re-create the TileView,
+         * it handles configuration changes itself
+         */
         if (rootView == null) {
             rootView = new FrameLayoutMapView(this.getContext());
             rootView.setPositionTouchListener(this);
             rootView.setLockViewListener(this);
-        } else {
-            /* Don't re-create the TileView, it handles configuration changes itself */
-            return rootView;
-        }
-
-        /**
-         * This code bellow should not be reachable in a retained fragment, but in case of design
-         * change, this shows that we are able to restore a {@link TileView} state from a former
-         * instance of {@link TileView}.
-         */
-        if (savedInstanceState != null) {
-            Parcelable parcelable = savedInstanceState.getParcelable(MAP_KEY);
-            if (parcelable != null) {
-                try {
-                    mMap = (Map) parcelable;
-                    setMap(mMap);
-                } catch (Exception e) {
-                    // no-op
-                }
-            }
         }
 
         return rootView;
@@ -406,12 +386,6 @@ public class MapViewFragment extends Fragment implements
 
     public void centerOnPosition() {
         mTileView.moveToMarker(mPositionMarker, true);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(MAP_KEY, mMap);
     }
 
     @Override
