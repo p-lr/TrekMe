@@ -309,6 +309,7 @@ public class MainActivity extends AppCompatActivity
 
         if (mapFragment == null) {
             mapFragment = createMapViewFragment(transaction);
+            transaction.disallowAddToBackStack();
         }
         transaction.show(mapFragment);
 
@@ -320,9 +321,12 @@ public class MainActivity extends AppCompatActivity
             transaction.hide(mapListFragment);
         }
 
-        // Add the transaction to the back stack to allow the use of the Back button
-        transaction.addToBackStack(null);
-//        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        /* Add the transaction to the back stack to allow the use of the Back button */
+        try {
+            transaction.addToBackStack(null);
+        } catch (IllegalStateException e) {
+            // don't care
+        }
         transaction.commit();
     }
 

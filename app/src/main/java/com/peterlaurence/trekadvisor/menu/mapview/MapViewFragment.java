@@ -200,7 +200,7 @@ public class MapViewFragment extends Fragment implements
      */
     private void updateMapIfNecessary() {
         Map map = mCurrentMapProvider.getCurrentMap();
-        if (mMap == null || mMap != map) {
+        if (mMap == null || mMap != map && map != null) {
             setMap(map);
         }
     }
