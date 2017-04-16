@@ -95,6 +95,7 @@ class MarkerLayer {
         MarkerGrab markerGrab = new MarkerGrab(context);
         markerGrab.setOnTouchListener(new MarkerTouchMoveListener(tileView, markerMoveCallback));
         tileView.addMarker(markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f);
+        markerGrab.morphIn();
 
         return markerGrab;
     }

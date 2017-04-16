@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/vd_marker_circle_grab_out">
+
+    <target android:name="circleShape">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="500"
+                android:propertyName="pathData"
+                android:valueType="pathType"
+                android:valueFrom="M50,50a0,0 0 1,0 0,0a0,0 0 1,0 0,0"
+                android:valueTo="M0,50a50,50 0 1,0 100,0a50,50 0 1,0 -100,0" />
+        </aapt:attr>
+    </target>
+
+</animated-vector>
