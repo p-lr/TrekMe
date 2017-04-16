@@ -1,6 +1,8 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.content.Context;
+import android.graphics.drawable.Animatable2;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerCallout;
@@ -117,10 +119,17 @@ class MarkerLayer {
                 /* After the morph, the marker should not consume touch events */
                 movableMarker.setClickable(false);
 
-                MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
-                if (markerGrab != null) {
-                    mTileView.removeMarker(markerGrab);
-                }
+
+                final MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
+                markerGrab.morphOut(new Animatable2.AnimationCallback() {
+                    @Override
+                    public void onAnimationEnd(Drawable drawable) {
+                        super.onAnimationEnd(drawable);
+                        if (markerGrab != null) {
+                            mTileView.removeMarker(markerGrab);
+                        }
+                    }
+                });
             }
         }
     }
