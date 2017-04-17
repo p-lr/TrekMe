@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
 
+    private String mBackFragmentTag;
+
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
             new ArrayList<String>() {{
                 add(MAP_FRAGMENT_TAG);
@@ -151,6 +153,24 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (mBackFragmentTag != null) {
+            switch (mBackFragmentTag) {
+                case MAP_LIST_FRAGMENT_TAG:
+                    showMapListFragment();
+                    break;
+                case MAP_FRAGMENT_TAG:
+                    showMapViewFragment();
+                    break;
+                case MAP_SETTINGS_FRAGMENT_TAG:
+                    Map map = getCurrentMap();
+                    if (map != null) {
+                        showMapSettingsFragment(getCurrentMap().getName());
+                        break;
+                    }
+                default:
+                    showMapListFragment();
+            }
+            mBackFragmentTag = null;
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
         } else {
@@ -310,6 +330,7 @@ public class MainActivity extends AppCompatActivity
         if (mapFragment == null) {
             mapFragment = createMapViewFragment(transaction);
             transaction.disallowAddToBackStack();
+            mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         }
         transaction.show(mapFragment);
 
@@ -375,6 +396,8 @@ public class MainActivity extends AppCompatActivity
         /* Show the map settings fragment if it exists */
         if (mapSettingsFragment == null) {
             mapSettingsFragment = createMapSettingsFragment(transaction, mapName);
+            transaction.disallowAddToBackStack();
+            mBackFragmentTag = MAP_FRAGMENT_TAG;
         } else {
             /* If it already exists, set the Map */
             ((MapSettingsFragment) mapSettingsFragment).setMap(mapName);
@@ -389,8 +412,12 @@ public class MainActivity extends AppCompatActivity
             transaction.hide(mapListFragment);
         }
 
-        // Add the transaction to the back stack to allow the use of the Back button
-        transaction.addToBackStack(null);
+        /* Add the transaction to the back stack to allow the use of the Back button */
+        try {
+            transaction.addToBackStack(null);
+        } catch (IllegalStateException e) {
+            // don't care
+        }
         transaction.commit();
     }
 
@@ -406,6 +433,8 @@ public class MainActivity extends AppCompatActivity
         /* Show the map calibration fragment if it exists */
         if (mapCalibrationFragment == null) {
             mapCalibrationFragment = createMapCalibrationFragment(transaction);
+            transaction.disallowAddToBackStack();
+            mBackFragmentTag = MAP_SETTINGS_FRAGMENT_TAG;
         }
         transaction.show(mapCalibrationFragment);
 
@@ -417,8 +446,12 @@ public class MainActivity extends AppCompatActivity
             transaction.hide(mapListFragment);
         }
 
-        // Add the transaction to the back stack to allow the use of the Back button
-        transaction.addToBackStack(null);
+        /* Add the transaction to the back stack to allow the use of the Back button */
+        try {
+            transaction.addToBackStack(null);
+        } catch (IllegalStateException e) {
+            // don't care
+        }
         transaction.commit();
     }
 
@@ -434,6 +467,8 @@ public class MainActivity extends AppCompatActivity
         /* Show the map calibration fragment if it exists */
         if (mapImportFragment == null) {
             mapImportFragment = createMapImportFragment(transaction);
+            transaction.disallowAddToBackStack();
+            mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         }
         transaction.show(mapImportFragment);
 
@@ -445,8 +480,12 @@ public class MainActivity extends AppCompatActivity
             transaction.hide(mapListFragment);
         }
 
-        // Add the transaction to the back stack to allow the use of the Back button
-        transaction.addToBackStack(null);
+        /* Add the transaction to the back stack to allow the use of the Back button */
+        try {
+            transaction.addToBackStack(null);
+        } catch (IllegalStateException e) {
+            // don't care
+        }
         transaction.commit();
     }
 
