@@ -148,6 +148,16 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * The first time we create a retained fragment, we don't want it to be added to the back stack,
+     * because if the user uses the back button, the fragment manager will "forget" it and there is
+     * no way to retrieve with {@link FragmentManager#findFragmentByTag(String)}. <br>
+     * Even worse, that last method is used to decide whether a retained fragment should be created
+     * or not. So a "forgotten" retained fragment can be created several times. <br>
+     * Consequently, the first time a retained fragment is created and shown, it is not added to the
+     * back stack. In that particular case, to keep the back functionality, a {@code mBackFragmentTag}
+     * is used to store the tag of the fragment to go back to.
+     */
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -170,6 +180,10 @@ public class MainActivity extends AppCompatActivity
                 default:
                     showMapListFragment();
             }
+
+            /* Clear the tag so that the back stack is popped the next time, unless a new retained
+             * fragment is created in the meanwhile.
+             */
             mBackFragmentTag = null;
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
