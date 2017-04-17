@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
         } else {
-            super.onBackPressed();
+            showMapListFragment();
         }
     }
 
@@ -342,6 +342,7 @@ public class MainActivity extends AppCompatActivity
         /* Show the map list fragment if it exists */
         if (mapListFragment == null) {
             mapListFragment = createMapListFragment(transaction);
+            transaction.disallowAddToBackStack();
         }
         transaction.show(mapListFragment);
 
@@ -353,9 +354,12 @@ public class MainActivity extends AppCompatActivity
             transaction.hide(mapViewFragment);
         }
 
-        // Add the transaction to the back stack to allow the use of the Back button
-        transaction.addToBackStack(null);
-//        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        /* Add the transaction to the back stack to allow the use of the Back button */
+        try {
+            transaction.addToBackStack(null);
+        } catch (IllegalStateException e) {
+            // don't care
+        }
         transaction.commit();
     }
 
