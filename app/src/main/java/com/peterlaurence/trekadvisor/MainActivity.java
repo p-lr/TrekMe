@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_SETTINGS_FRAGMENT_TAG);
                 add(MAP_CALIBRATION_FRAGMENT_TAG);
                 add(MAP_IMPORT_FRAGMENT_TAG);
+                add(TRACKS_MANAGE_FRAGMENT_TAG);
             }});
 
     // Storage Permissions
@@ -177,6 +178,9 @@ public class MainActivity extends AppCompatActivity
                         showMapSettingsFragment(getCurrentMap().getName());
                         break;
                     }
+                case TRACKS_MANAGE_FRAGMENT_TAG:
+                    showMapViewFragment();
+                    break;
                 default:
                     showMapListFragment();
             }
@@ -282,24 +286,9 @@ public class MainActivity extends AppCompatActivity
         transaction.add(R.id.content_frame, tracksManageFragment, TRACKS_MANAGE_FRAGMENT_TAG);
         transaction.show(tracksManageFragment);
 
-        /* Hide the MapViewFragment. As this transaction is part of the last commit, the next
-         * backStack pop will revert this and thus show the MapViewFragment.
-         */
-        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapViewFragment != null) {
-            transaction.hide(mapViewFragment);
-        }
-
-        // Add the transaction to the back stack to allow the use of the Back button
-        transaction.addToBackStack(null);
+        /* Manually manage the back action*/
+        mBackFragmentTag = TRACKS_MANAGE_FRAGMENT_TAG;
         transaction.commit();
-
-//        /* A transaction commit does not happen immediately; it will be scheduled as work on the
-//         * main thread to be done the next time that thread is ready. But we need it to be done
-//         * right now.
-//         */
-//        fragmentManager.executePendingTransactions();
-//        tracksManageFragment.generateTracks(map);
     }
 
     private Fragment createMapViewFragment(FragmentTransaction transaction) {
