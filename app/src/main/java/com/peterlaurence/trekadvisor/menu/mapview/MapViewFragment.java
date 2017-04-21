@@ -38,6 +38,7 @@ import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -410,52 +411,73 @@ public class MapViewFragment extends Fragment implements
      */
     private static class DrawRoutesTask extends AsyncTask<Void, Void, Void> {
         private Map mMap;
-        private List<MapGson.Route> mRouteList;
+        private List<WeakReference<MapGson.Route>> mRouteList;
         private WeakReference<TileViewExtended> mTileViewWeakReference;
         private WeakReference<CoordinateTranslater> mCoordinateTranslaterWeakReference;
 
+        /**
+         * During this task, data is generated from the markers of each route of a map. As this is
+         * done in a different thread than the ui-thread (where the user is able to add/remove and
+         * also modify routes), we want to avoid {@link java.util.ConcurrentModificationException}
+         * when iterating over the list of routes. So we create another list of
+         * {@link WeakReference<MapGson.Route>}, while being aware that a {@link MapGson.Route} can
+         * be deleted at any time.
+         */
         DrawRoutesTask(Map map, List<MapGson.Route> routeList, TileViewExtended tileView) {
             mMap = map;
-            mRouteList = routeList;
+
+            mRouteList = new ArrayList<>();
+            for (MapGson.Route route : routeList) {
+                mRouteList.add(new WeakReference<>(route));
+            }
+
             mTileViewWeakReference = new WeakReference<>(tileView);
             mCoordinateTranslaterWeakReference = new WeakReference<>(tileView.getCoordinateTranslater());
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            for (MapGson.Route route : mRouteList) {
-                List<MapGson.Marker> markerList = route.route_markers;
-                /* If there is only one marker, the path has no sense */
-                if (markerList.size() < 2) continue;
+            for (WeakReference<MapGson.Route> route : mRouteList) {
+                try {
+                    /* Work on a copy of the list of markers */
+                    List<MapGson.Marker> markerList = new ArrayList<>(route.get().route_markers);
+                    /* If there is only one marker, the path has no sense */
+                    if (markerList.size() < 2) continue;
 
 
-                CoordinateTranslater coordinateTranslater = mCoordinateTranslaterWeakReference.get();
-                if (coordinateTranslater == null) continue;
+                    CoordinateTranslater coordinateTranslater = mCoordinateTranslaterWeakReference.get();
+                    if (coordinateTranslater == null) continue;
 
-                int size = markerList.size() * 4 - 4;
-                float[] lines = new float[size];
+                    int size = markerList.size() * 4 - 4;
+                    float[] lines = new float[size];
 
-                int i = 0;
-                int markerIndex = 0;
-                for (MapGson.Marker marker : markerList) {
-                    if (markerIndex % 2 != 0) {
-                        lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
-                        lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
-                        if (i + 2 >= size) break;
-                        lines[i + 2] = lines[i];
-                        lines[i + 3] = lines[i + 1];
-                        i += 4;
-                    } else {
-                        lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
-                        lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
-                        i += 2;
+                    int i = 0;
+                    int markerIndex = 0;
+                    for (MapGson.Marker marker : markerList) {
+                        /* No need to continue if the route has been deleted in the meanwhile */
+                        if (route.get() == null) break;
+
+                        if (markerIndex % 2 != 0) {
+                            lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
+                            lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
+                            if (i + 2 >= size) break;
+                            lines[i + 2] = lines[i];
+                            lines[i + 3] = lines[i + 1];
+                            i += 4;
+                        } else {
+                            lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
+                            lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
+                            i += 2;
+                        }
+                        markerIndex++;
                     }
-                    markerIndex++;
-                }
 
-                /* Set the route data */
-                PathView.DrawablePath drawablePath = new PathView.DrawablePath(lines, null);
-                route.setData(drawablePath);
+                    /* Set the route data */
+                    PathView.DrawablePath drawablePath = new PathView.DrawablePath(lines, null);
+                    route.get().setData(drawablePath);
+                } catch (Exception e) {
+                    // ignore and continue the loop
+                }
             }
             return null;
         }

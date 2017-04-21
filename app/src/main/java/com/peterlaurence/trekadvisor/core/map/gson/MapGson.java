@@ -85,17 +85,22 @@ public class MapGson {
         public boolean visible;
         public List<Marker> route_markers;
         private transient Object mData;
+        private final transient Object mDataLock = new Object();
 
         public Route() {
             route_markers = new ArrayList<>();
         }
 
         public Object getData() {
-            return mData;
+            synchronized (mDataLock) {
+                return mData;
+            }
         }
 
         public void setData(Object data) {
-            mData = data;
+            synchronized (mDataLock) {
+                mData = data;
+            }
         }
 
         public void copyRoute(Route route) {
