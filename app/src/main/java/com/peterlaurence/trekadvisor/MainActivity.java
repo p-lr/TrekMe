@@ -431,14 +431,7 @@ public class MainActivity extends AppCompatActivity
         hideTransaction.commit();
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment mapCalibrationFragment = fragmentManager.findFragmentByTag(MAP_CALIBRATION_FRAGMENT_TAG);
-
-        /* Show the map calibration fragment if it exists */
-        if (mapCalibrationFragment == null) {
-            mapCalibrationFragment = createMapCalibrationFragment(transaction);
-            transaction.disallowAddToBackStack();
-            mBackFragmentTag = MAP_SETTINGS_FRAGMENT_TAG;
-        }
+        Fragment mapCalibrationFragment = createMapCalibrationFragment(transaction);
         transaction.show(mapCalibrationFragment);
 
         /* Hide the MapSettingsFragment. As this transaction is part of the last commit, the next
@@ -450,11 +443,11 @@ public class MainActivity extends AppCompatActivity
         }
 
         /* Add the transaction to the back stack to allow the use of the Back button */
-        try {
-            transaction.addToBackStack(null);
-        } catch (IllegalStateException e) {
-            // don't care
-        }
+        transaction.addToBackStack(null);
+
+        /* Ensure that the back stack will be popped */
+        mBackFragmentTag = null;
+
         transaction.commit();
     }
 

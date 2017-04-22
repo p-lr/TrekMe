@@ -51,20 +51,16 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (savedInstanceState != null && rootView != null) {
-            return rootView;
-        }
 
         rootView = new MapCalibrationLayout(getContext());
         rootView.setCalibrationModel(this);
+
+        /* Set the map to calibrate */
+        Map map = mMapProvider.getCalibrationMap();
+        setMap(map);
+
         return rootView;
     }
 
@@ -76,32 +72,6 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement MapProvider");
-        }
-    }
-
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (!hidden) {
-            updateMapIfNecessary();
-        }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        updateMapIfNecessary();
-    }
-
-    /**
-     * Only update the map if its a new one.
-     */
-    private void updateMapIfNecessary() {
-        Map map = mMapProvider.getCalibrationMap();
-        if (map != null && (mMapWeakReference != null && mMapWeakReference.get() != map) ||
-                mMapWeakReference == null) {
-            setMap(map);
         }
     }
 
@@ -160,8 +130,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         /* The BitmapProvider */
         tileView.setBitmapProvider(map.getBitmapProvider());
 
-        /* Remove the existing TileView, then add the new one */
-        removeCurrentTileView();
+        /* Add the TileView to the root view */
         setTileView(tileView);
 
         /* Update the ui */
@@ -289,15 +258,6 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
             } else {
                 rootView.updateCoordinateFields(calibrationPoint.proj_x, calibrationPoint.proj_y);
             }
-        }
-    }
-
-    private void removeCurrentTileView() {
-        try {
-            mTileView.destroy();
-            rootView.removeView(mTileView);
-        } catch (Exception e) {
-            // don't care
         }
     }
 
