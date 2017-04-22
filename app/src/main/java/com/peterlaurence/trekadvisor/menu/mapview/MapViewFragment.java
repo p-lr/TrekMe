@@ -29,7 +29,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
-import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
@@ -46,7 +46,7 @@ import java.util.List;
  * {@link GoogleApiClient}.
  * <p>
  * Activities that contain this fragment must implement the
- * {@link RequestManageTracksListener} and {@link CurrentMapProvider} interfaces to handle
+ * {@link RequestManageTracksListener} and {@link MapProvider} interfaces to handle
  * interaction events.
  * </p>
  *
@@ -68,7 +68,7 @@ public class MapViewFragment extends Fragment implements
     private View mPositionMarker;
     private boolean mLockView = false;
     private RequestManageTracksListener mRequestManageTracksListener;
-    private CurrentMapProvider mCurrentMapProvider;
+    private MapProvider mMapProvider;
     private LocationProvider mLocationProvider;
     private LocationRequest mLocationRequest;
     private OrientationSensor mOrientationSensor;
@@ -200,7 +200,7 @@ public class MapViewFragment extends Fragment implements
      * Only update the map if its a new one.
      */
     private void updateMapIfNecessary() {
-        Map map = mCurrentMapProvider.getCurrentMap();
+        Map map = mMapProvider.getCurrentMap();
         if (map != null && mMap != map) {
             setMap(map);
         }
@@ -215,15 +215,15 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof RequestManageTracksListener && context instanceof CurrentMapProvider
+        if (context instanceof RequestManageTracksListener && context instanceof MapProvider
                 && context instanceof LocationProvider) {
             mRequestManageTracksListener = (RequestManageTracksListener) context;
-            mCurrentMapProvider = (CurrentMapProvider) context;
+            mMapProvider = (MapProvider) context;
             mLocationProvider = (LocationProvider) context;
             mLocationProvider.registerLocationListener(this, this);
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement RequestManageTracksListener, CurrentMapProvider and LocationProvider");
+                    + " must implement RequestManageTracksListener, MapProvider and LocationProvider");
         }
     }
 
@@ -231,7 +231,7 @@ public class MapViewFragment extends Fragment implements
     public void onDetach() {
         super.onDetach();
         mRequestManageTracksListener = null;
-        mCurrentMapProvider = null;
+        mMapProvider = null;
     }
 
     @Override

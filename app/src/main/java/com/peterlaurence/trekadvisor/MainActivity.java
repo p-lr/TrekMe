@@ -25,7 +25,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity
         MapListFragment.OnMapListFragmentInteractionListener,
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
-        CurrentMapProvider,
+        MapProvider,
         TracksManageFragment.TrackChangeListenerProvider,
         LocationProvider {
 
@@ -310,7 +310,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private Fragment createMapCalibrationFragment(FragmentTransaction transaction) {
-        Fragment mapCalibrationFragment = MapCalibrationFragment.newInstance();
+        Fragment mapCalibrationFragment = new MapCalibrationFragment();
         transaction.add(R.id.content_frame, mapCalibrationFragment, MAP_CALIBRATION_FRAGMENT_TAG);
         return mapCalibrationFragment;
     }
@@ -541,17 +541,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onMapCalibrationRequest(Map map) {
+    public void onMapCalibrationRequest() {
         /* A map has been selected from the MapSettingsFragment to be calibrated. */
         showMapCalibrationFragment();
-
-        /* Set the map */
-        fragmentManager.executePendingTransactions();
-        MapCalibrationFragment calibrationFragment = (MapCalibrationFragment) fragmentManager.findFragmentByTag(MAP_CALIBRATION_FRAGMENT_TAG);
-        if (calibrationFragment == null) {
-            return;
-        }
-        calibrationFragment.setMap(map);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -584,6 +576,16 @@ public class MainActivity extends AppCompatActivity
         Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
         if (mapListFragment != null && mapListFragment instanceof MapListFragment) {
             return ((MapListFragment) mapListFragment).getCurrentMap();
+        }
+        return null;
+    }
+
+    @Override
+    @Nullable
+    public Map getCalibrationMap() {
+        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
+        if (mapListFragment != null && mapListFragment instanceof MapListFragment) {
+            return ((MapListFragment) mapListFragment).getCalibrationMap();
         }
         return null;
     }

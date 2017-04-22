@@ -26,7 +26,7 @@ import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapLoader;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
-import com.peterlaurence.trekadvisor.menu.CurrentMapProvider;
+import com.peterlaurence.trekadvisor.menu.MapProvider;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +43,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     private static final int TRACK_REQUEST_CODE = 1337;
     private FrameLayout rootView;
     private Map mMap;
-    private CurrentMapProvider mCurrentMapProvider;
+    private MapProvider mMapProvider;
     private TrackChangeListenerProvider mTrackChangeListenerProvider;
     private TrackChangeListener mTrackChangeListener;
     private TrackAdapter mTrackAdapter;
@@ -51,12 +51,12 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof CurrentMapProvider && context instanceof TrackChangeListenerProvider) {
-            mCurrentMapProvider = (CurrentMapProvider) context;
+        if (context instanceof MapProvider && context instanceof TrackChangeListenerProvider) {
+            mMapProvider = (MapProvider) context;
             mTrackChangeListenerProvider = (TrackChangeListenerProvider) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement CurrentMapProvider and MapLoader.MapUpdateListener");
+                    + " must implement MapProvider and MapLoader.MapUpdateListener");
         }
     }
 
@@ -71,7 +71,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
                              Bundle savedInstanceState) {
 
         rootView = (FrameLayout) inflater.inflate(R.layout.fragment_tracks_manage, container, false);
-        mMap = mCurrentMapProvider.getCurrentMap();
+        mMap = mMapProvider.getCurrentMap();
         generateTracks(mMap);
 
         return rootView;
@@ -196,7 +196,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onDetach() {
         super.onDetach();
-        mCurrentMapProvider = null;
+        mMapProvider = null;
         mTrackChangeListenerProvider = null;
     }
 

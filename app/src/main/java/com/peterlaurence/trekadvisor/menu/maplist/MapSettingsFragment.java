@@ -51,7 +51,7 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
      * activity.
      */
     public interface MapCalibrationRequestListener {
-        void onMapCalibrationRequest(Map map);
+        void onMapCalibrationRequest();
     }
 
     /**
@@ -150,10 +150,7 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
         calibrationButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Map map = mMapWeakReference.get();
-                if (map != null) {
-                    mMapCalibrationRequestListener.onMapCalibrationRequest(map);
-                }
+                mMapCalibrationRequestListener.onMapCalibrationRequest();
                 return true;
             }
         });

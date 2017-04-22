@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.mapcalibration;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapLoader;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
+import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
 import com.qozix.tileview.TileView;
@@ -29,22 +31,13 @@ import java.util.List;
  * @author peterLaurence on 30/04/16.
  */
 public class MapCalibrationFragment extends Fragment implements CalibrationModel {
+    private MapProvider mMapProvider;
     private WeakReference<Map> mMapWeakReference;
-
     private MapCalibrationLayout rootView;
     private TileView mTileView;
     private CalibrationMarker mCalibrationMarker;
     private List<MapGson.Calibration.CalibrationPoint> mCalibrationPointList;
     private int mCurrentCalibrationPoint;
-
-    /**
-     * Factory method to create a new instance of this fragment.
-     *
-     * @return A new instance of {@code MapSettingsFragment}
-     */
-    public static MapCalibrationFragment newInstance() {
-        return new MapCalibrationFragment();
-    }
 
     /**
      * Before telling the {@link TileView} to move a marker, we save its relative coordinates so we
@@ -75,12 +68,49 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         return rootView;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof MapProvider) {
+            mMapProvider = (MapProvider) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement MapProvider");
+        }
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            updateMapIfNecessary();
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        updateMapIfNecessary();
+    }
+
+    /**
+     * Only update the map if its a new one.
+     */
+    private void updateMapIfNecessary() {
+        Map map = mMapProvider.getCalibrationMap();
+        if (map != null && (mMapWeakReference != null && mMapWeakReference.get() != map) ||
+                mMapWeakReference == null) {
+            setMap(map);
+        }
+    }
+
     /**
      * Sets the map to generate a new {@link TileView}.
      *
      * @param map The new {@link Map} object
      */
-    public void setMap(Map map) {
+    private void setMap(Map map) {
         /* Keep a weakRef for future references */
         mMapWeakReference = new WeakReference<>(map);
 

@@ -33,7 +33,9 @@ public class MapListFragment extends Fragment implements
     private RecyclerView recyclerView;
 
     private OnMapListFragmentInteractionListener mListener;
-    private Map mCurrentMap;
+
+    private Map mCurrentMap;      // The map selected by the user in the list
+    private Map mCalibrationMap;  // The map that the user wants to calibrate
 
     public MapListFragment() {
         // Required empty public constructor
@@ -101,6 +103,14 @@ public class MapListFragment extends Fragment implements
         return mCurrentMap;
     }
 
+    /**
+     * Get a reference to the last {@link Map} that the user selected to calibrate (with the
+     * settings button).
+     */
+    public Map getCalibrationMap() {
+        return mCalibrationMap;
+    }
+
     private void generateMapList() {
         recyclerView = new RecyclerView(this.getContext());
         recyclerView.setHasFixedSize(false);
@@ -152,6 +162,7 @@ public class MapListFragment extends Fragment implements
 
     @Override
     public void onMapSettings(Map map) {
+        mCalibrationMap = map;
         if (mListener != null) {
             mListener.onMapSettingsFragmentInteraction(map);
         }
