@@ -29,38 +29,44 @@ import java.util.List;
  */
 public class Map implements Parcelable {
 
+    public static final Creator<Map> CREATOR = new Creator<Map>() {
+        @Override
+        public Map createFromParcel(Parcel in) {
+            return new Map(in);
+        }
+
+        @Override
+        public Map[] newArray(int size) {
+            return new Map[size];
+        }
+    };
+    private static final String UNDEFINED = "undefined";
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
-
     private final Bitmap mImage;
-
     private BitmapProvider mBitmapProvider;
-
     private MapBounds mMapBounds;
-
     /* The Java Object corresponding to the json configuration file */
     private MapGson mMapGson;
-
     private CalibrationStatus mCalibrationStatus = CalibrationStatus.NONE;
-
-    private static final String UNDEFINED = "undefined";
-
-    public enum CalibrationStatus {
-        OK, NONE, ERROR
-    }
 
     /**
      * To create a {@link Map}, three parameters are needed.
      *
-     * @param mapGson the {@link MapGson} object that includes informations relative to levels,
-     *                the tile size, the name of the map, etc.
-     * @param jsonFile the {@link File} for serialization.
+     * @param mapGson   the {@link MapGson} object that includes informations relative to levels,
+     *                  the tile size, the name of the map, etc.
+     * @param jsonFile  the {@link File} for serialization.
      * @param thumbnail the {@link File} image for map customization.
      */
     public Map(MapGson mapGson, File jsonFile, File thumbnail) {
         mMapGson = mapGson;
         mConfigFile = jsonFile;
         mImage = getBitmapFromFile(thumbnail);
+    }
+
+    protected Map(Parcel in) {
+        mConfigFile = new File(in.readString());
+        mImage = in.readParcelable(Bitmap.class.getClassLoader());
     }
 
     /**
@@ -82,7 +88,9 @@ public class Map implements Parcelable {
         return BitmapFactory.decodeFile(image.getAbsolutePath(), bmOptions);
     }
 
-    public static @Nullable Bitmap getBitmapFromFile(File file) {
+    public static
+    @Nullable
+    Bitmap getBitmapFromFile(File file) {
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         if (file != null) {
             return BitmapFactory.decodeFile(file.getAbsolutePath(), bmOptions);
@@ -101,14 +109,18 @@ public class Map implements Parcelable {
         return null;
     }
 
-    public @Nullable String getProjectionName() {
+    public
+    @Nullable
+    String getProjectionName() {
         if (mMapGson.calibration != null && mMapGson.calibration.projection != null) {
             return mMapGson.calibration.projection.getName();
         }
         return null;
     }
 
-    public @Nullable Projection getProjection() {
+    public
+    @Nullable
+    Projection getProjection() {
         try {
             return mMapGson.calibration.projection;
         } catch (NullPointerException e) {
@@ -120,37 +132,16 @@ public class Map implements Parcelable {
         mMapGson.calibration.projection = projection;
     }
 
-    public void setBitmapProvider(BitmapProvider bitmapProvider) {
-        mBitmapProvider = bitmapProvider;
-    }
-
     public BitmapProvider getBitmapProvider() {
         return mBitmapProvider;
     }
 
-    public void clearCalibrationPoints() {
-        mMapGson.calibration.calibration_points.clear();
+    public void setBitmapProvider(BitmapProvider bitmapProvider) {
+        mBitmapProvider = bitmapProvider;
     }
 
-    /**
-     * A MapBounds object holds the projected coordinates of :
-     * <ul>
-     * <li>The top-left corner of the map : (projectionX0, projectionY0)</li>
-     * <li>The bottom-right corner of the map : (projectionX1, projectionY1)</li>
-     * </ul>
-     */
-    public static class MapBounds {
-        public double projectionX0;
-        public double projectionY0;
-        public double projectionX1;
-        public double projectionY1;
-
-        public MapBounds(double x0, double y0, double x1, double y1) {
-            projectionX0 = x0;
-            projectionY0 = y0;
-            projectionX1 = x1;
-            projectionY1 = y1;
-        }
+    public void clearCalibrationPoints() {
+        mMapGson.calibration.calibration_points.clear();
     }
 
     public
@@ -173,6 +164,10 @@ public class Map implements Parcelable {
             case SIMPLE_2_POINTS:
                 List<MapGson.Calibration.CalibrationPoint> calibrationPoints = mMapGson.calibration.calibration_points;
                 if (calibrationPoints != null && calibrationPoints.size() >= 2) {
+                    /* Correct points if necessary */
+                    MapCalibrator.sanityCheck2PointsCalibration(calibrationPoints.get(0),
+                            calibrationPoints.get(1));
+
                     setMapBounds(MapCalibrator.simple2PointsCalibration(calibrationPoints.get(0),
                             calibrationPoints.get(1)));
                 }
@@ -201,7 +196,7 @@ public class Map implements Parcelable {
      * {@link com.peterlaurence.trekadvisor.core.projection.ProjectionTask} and implement a
      * {@link ProjectionTask.ProjectionUpdateLister}.
      *
-     * @param latitude the geodetic latitude
+     * @param latitude  the geodetic latitude
      * @param longitude the geodetic longitude
      * @return the [X ; Y] values, or null if this map
      */
@@ -234,9 +229,9 @@ public class Map implements Parcelable {
 
     /**
      * The calibration status is either : <ul>
-     *     <li>{@link CalibrationStatus#OK}</li>
-     *     <li>{@link CalibrationStatus#NONE}</li>
-     *     <li>{@link CalibrationStatus#ERROR}</li>
+     * <li>{@link CalibrationStatus#OK}</li>
+     * <li>{@link CalibrationStatus#NONE}</li>
+     * <li>{@link CalibrationStatus#ERROR}</li>
      * </ul>.
      */
     public CalibrationStatus getCalibrationStatus() {
@@ -317,23 +312,6 @@ public class Map implements Parcelable {
         return mConfigFile;
     }
 
-    protected Map(Parcel in) {
-        mConfigFile = new File(in.readString());
-        mImage = in.readParcelable(Bitmap.class.getClassLoader());
-    }
-
-    public static final Creator<Map> CREATOR = new Creator<Map>() {
-        @Override
-        public Map createFromParcel(Parcel in) {
-            return new Map(in);
-        }
-
-        @Override
-        public Map[] newArray(int size) {
-            return new Map[size];
-        }
-    };
-
     @Override
     public int describeContents() {
         return 0;
@@ -343,5 +321,30 @@ public class Map implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mConfigFile.getAbsolutePath());
         dest.writeParcelable(mImage, flags);
+    }
+
+    public enum CalibrationStatus {
+        OK, NONE, ERROR
+    }
+
+    /**
+     * A MapBounds object holds the projected coordinates of :
+     * <ul>
+     * <li>The top-left corner of the map : (projectionX0, projectionY0)</li>
+     * <li>The bottom-right corner of the map : (projectionX1, projectionY1)</li>
+     * </ul>
+     */
+    public static class MapBounds {
+        public double projectionX0;
+        public double projectionY0;
+        public double projectionX1;
+        public double projectionY1;
+
+        public MapBounds(double x0, double y0, double x1, double y1) {
+            projectionX0 = x0;
+            projectionY0 = y0;
+            projectionX1 = x1;
+            projectionY1 = y1;
+        }
     }
 }

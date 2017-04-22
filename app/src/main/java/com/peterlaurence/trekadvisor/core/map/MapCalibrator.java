@@ -45,4 +45,49 @@ public class MapCalibrator {
 
         return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
     }
+
+    /**
+     * x and y values are expected to be between 0 and 1 : they respectively represent the position
+     * in percent of the calibration point relatively to the map width and height. <br>
+     * This method can change the {@link MapGson.Calibration.CalibrationPoint}.
+     */
+    static void sanityCheck2PointsCalibration(MapGson.Calibration.CalibrationPoint calibrationPointA,
+                                              MapGson.Calibration.CalibrationPoint calibrationPointB) {
+        /* Check whether one of the two points is apparently ok */
+        boolean okA = checkPercentPositionBounds(calibrationPointA);
+        boolean okB = checkPercentPositionBounds(calibrationPointB);
+        boolean different = checkPercentPositionDifferent(calibrationPointA, calibrationPointB);
+
+        if (!different || (!okA && !okB)) {
+            init2Points(calibrationPointA, calibrationPointB);
+        } else if (okA && !okB) {
+            reposition2PointCalibration(calibrationPointB, calibrationPointA);
+        } else if (!okA) {
+            reposition2PointCalibration(calibrationPointA, calibrationPointB);
+        }
+    }
+
+    private static boolean checkPercentPositionBounds(MapGson.Calibration.CalibrationPoint calibrationPoint) {
+        return !(calibrationPoint.x < 0 || calibrationPoint.x > 1 || calibrationPoint.y < 0 ||
+                calibrationPoint.y > 1);
+    }
+
+    private static boolean checkPercentPositionDifferent(MapGson.Calibration.CalibrationPoint calibrationPointA,
+                                                         MapGson.Calibration.CalibrationPoint calibrationPointB) {
+        return calibrationPointA.x != calibrationPointB.x && calibrationPointA.y != calibrationPointB.y;
+    }
+
+    private static void init2Points(MapGson.Calibration.CalibrationPoint calibrationPointA,
+                                    MapGson.Calibration.CalibrationPoint calibrationPointB) {
+        calibrationPointA.x = 0;
+        calibrationPointA.y = 0;
+        calibrationPointB.x = 1;
+        calibrationPointB.y = 1;
+    }
+
+    private static void reposition2PointCalibration(MapGson.Calibration.CalibrationPoint calibrationPointWrong,
+                                                    MapGson.Calibration.CalibrationPoint calibrationPointRef) {
+        calibrationPointWrong.x = 1 - calibrationPointRef.x;
+        calibrationPointWrong.y = 1 - calibrationPointRef.y;
+    }
 }
