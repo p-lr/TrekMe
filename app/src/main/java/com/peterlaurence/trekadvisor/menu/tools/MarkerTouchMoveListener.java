@@ -74,19 +74,35 @@ public class MarkerTouchMoveListener implements View.OnTouchListener {
     }
 
     private double getConstrainedX(double x) {
-        if (x <= mLeftBound) {
-            return mLeftBound;
-        } else if (x >= mRightBound) {
-            return mRightBound;
+        if (mLeftBound < mRightBound) {
+            if (x <= mLeftBound) {
+                return mLeftBound;
+            } else if (x >= mRightBound) {
+                return mRightBound;
+            }
+        } else {
+            if (x >= mLeftBound) {
+                return mLeftBound;
+            } else if (x <= mRightBound) {
+                return mRightBound;
+            }
         }
         return x;
     }
 
     private double getConstrainedY(double y) {
-        if (y <= mBottomBound) {
-            return mBottomBound;
-        } else if (y >= mTopBound) {
-            return mTopBound;
+        if (mBottomBound < mTopBound) {
+            if (y <= mBottomBound) {
+                return mBottomBound;
+            } else if (y >= mTopBound) {
+                return mTopBound;
+            }
+        } else {
+            if (y >= mBottomBound) {
+                return mBottomBound;
+            } else if (y <= mTopBound) {
+                return mTopBound;
+            }
         }
         return y;
     }
