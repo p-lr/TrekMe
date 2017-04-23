@@ -35,7 +35,7 @@ public class MapListFragment extends Fragment implements
     private OnMapListFragmentInteractionListener mListener;
 
     private Map mCurrentMap;      // The map selected by the user in the list
-    private Map mCalibrationMap;  // The map that the user wants to calibrate
+    private Map mSettingsMap;  // The map that the user wants to calibrate
 
     public MapListFragment() {
         // Required empty public constructor
@@ -104,11 +104,11 @@ public class MapListFragment extends Fragment implements
     }
 
     /**
-     * Get a reference to the last {@link Map} that the user selected to calibrate (with the
+     * Get a reference to the last {@link Map} that the user selected to edit (with the
      * settings button).
      */
-    public Map getCalibrationMap() {
-        return mCalibrationMap;
+    public Map getSettingsMap() {
+        return mSettingsMap;
     }
 
     private void generateMapList() {
@@ -162,7 +162,7 @@ public class MapListFragment extends Fragment implements
 
     @Override
     public void onMapSettings(Map map) {
-        mCalibrationMap = map;
+        mSettingsMap = map;
         if (mListener != null) {
             mListener.onMapSettingsFragmentInteraction(map);
         }

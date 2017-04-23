@@ -14,5 +14,5 @@ public interface MapProvider {
     Map getCurrentMap();
 
     @Nullable
-    Map getCalibrationMap();
+    Map getSettingsMap();
 }

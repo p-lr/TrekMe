@@ -61,7 +61,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         rootView.setCalibrationModel(this);
 
         /* Set the map to calibrate */
-        Map map = mMapProvider.getCalibrationMap();
+        Map map = mMapProvider.getSettingsMap();
         setMap(map);
 
         /* If the fragment is created for the first time (e.g not re-created after a configuration
@@ -94,8 +94,10 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
 
-        savedInstanceState.putDouble(CALIBRATION_MARKER_X, mCalibrationMarker.getRelativeX());
-        savedInstanceState.putDouble(CALIBRATION_MARKER_Y, mCalibrationMarker.getRelativeY());
+        if (mCalibrationMarker != null) {
+            savedInstanceState.putDouble(CALIBRATION_MARKER_X, mCalibrationMarker.getRelativeX());
+            savedInstanceState.putDouble(CALIBRATION_MARKER_Y, mCalibrationMarker.getRelativeY());
+        }
     }
 
     /**
@@ -103,7 +105,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
      *
      * @param map The new {@link Map} object
      */
-    private void setMap(Map map) {
+    public void setMap(Map map) {
         /* Keep a weakRef for future references */
         mMapWeakReference = new WeakReference<>(map);
 

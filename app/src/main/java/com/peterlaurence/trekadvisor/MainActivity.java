@@ -25,8 +25,8 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
+import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
@@ -53,9 +53,6 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_CALIBRATION_FRAGMENT_TAG = "mapCalibrationFragment";
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
-
-    private String mBackFragmentTag;
-
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
             new ArrayList<String>() {{
                 add(MAP_FRAGMENT_TAG);
@@ -65,7 +62,6 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_IMPORT_FRAGMENT_TAG);
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
             }});
-
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_LOCATION = 2;
@@ -77,6 +73,7 @@ public class MainActivity extends AppCompatActivity
             Manifest.permission.ACCESS_FINE_LOCATION
     };
     private static final String TAG = "MainActivity";
+    private String mBackFragmentTag;
     private FragmentManager fragmentManager;
     private GoogleApiClient mGoogleApiClient;
 
@@ -173,9 +170,9 @@ public class MainActivity extends AppCompatActivity
                     showMapViewFragment();
                     break;
                 case MAP_SETTINGS_FRAGMENT_TAG:
-                    Map map = getCurrentMap();
+                    Map map = getSettingsMap();
                     if (map != null) {
-                        showMapSettingsFragment(getCurrentMap().getName());
+                        showMapSettingsFragment(map.getName());
                         break;
                     }
                 case TRACKS_MANAGE_FRAGMENT_TAG:
@@ -322,6 +319,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMapViewFragment() {
+        /* Don't show the fragment if no map has been selected yet */
+        if (getCurrentMap() == null) {
+            return;
+        }
+
         /* Hide other fragments */
         FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
         hideOtherFragments(hideTransaction, MAP_FRAGMENT_TAG);
@@ -332,25 +334,11 @@ public class MainActivity extends AppCompatActivity
 
         if (mapFragment == null) {
             mapFragment = createMapViewFragment(transaction);
-            transaction.disallowAddToBackStack();
-            mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         }
         transaction.show(mapFragment);
 
-        /* Hide the MapListFragment. As this transaction is part of the last commit, the next
-         * backStack pop will revert this and thus show the MapListFragment.
-         */
-        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-        if (mapListFragment != null) {
-            transaction.hide(mapListFragment);
-        }
-
-        /* Add the transaction to the back stack to allow the use of the Back button */
-        try {
-            transaction.addToBackStack(null);
-        } catch (IllegalStateException e) {
-            // don't care
-        }
+        /* Manually manage the back action*/
+        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -366,24 +354,11 @@ public class MainActivity extends AppCompatActivity
         /* Show the map list fragment if it exists */
         if (mapListFragment == null) {
             mapListFragment = createMapListFragment(transaction);
-            transaction.disallowAddToBackStack();
         }
         transaction.show(mapListFragment);
 
-        /* Hide the MapViewFragment. As this transaction is part of the last commit, the next
-         * backStack pop will revert this and thus show the MapViewFragment.
-         */
-        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapViewFragment != null) {
-            transaction.hide(mapViewFragment);
-        }
-
-        /* Add the transaction to the back stack to allow the use of the Back button */
-        try {
-            transaction.addToBackStack(null);
-        } catch (IllegalStateException e) {
-            // don't care
-        }
+        /* Manually manage the back action*/
+        mBackFragmentTag = MAP_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -399,28 +374,14 @@ public class MainActivity extends AppCompatActivity
         /* Show the map settings fragment if it exists */
         if (mapSettingsFragment == null) {
             mapSettingsFragment = createMapSettingsFragment(transaction, mapName);
-            transaction.disallowAddToBackStack();
-            mBackFragmentTag = MAP_FRAGMENT_TAG;
         } else {
             /* If it already exists, set the Map */
             ((MapSettingsFragment) mapSettingsFragment).setMap(mapName);
         }
         transaction.show(mapSettingsFragment);
 
-        /* Hide the MapListFragment. As this transaction is part of the last commit, the next
-         * backStack pop will revert this and thus show the MapListFragment.
-         */
-        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-        if (mapListFragment != null) {
-            transaction.hide(mapListFragment);
-        }
-
-        /* Add the transaction to the back stack to allow the use of the Back button */
-        try {
-            transaction.addToBackStack(null);
-        } catch (IllegalStateException e) {
-            // don't care
-        }
+        /* Manually manage the back action*/
+        mBackFragmentTag = MAP_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -431,23 +392,15 @@ public class MainActivity extends AppCompatActivity
         hideTransaction.commit();
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment mapCalibrationFragment = createMapCalibrationFragment(transaction);
+        Fragment mapCalibrationFragment = fragmentManager.findFragmentByTag(MAP_CALIBRATION_FRAGMENT_TAG);
+        if (mapCalibrationFragment != null) {
+            transaction.remove(mapCalibrationFragment);
+        }
+        mapCalibrationFragment = createMapCalibrationFragment(transaction);
         transaction.show(mapCalibrationFragment);
 
-        /* Hide the MapSettingsFragment. As this transaction is part of the last commit, the next
-         * backStack pop will revert this and thus show the MapSettingsFragment.
-         */
-        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_SETTINGS_FRAGMENT_TAG);
-        if (mapListFragment != null) {
-            transaction.hide(mapListFragment);
-        }
-
-        /* Add the transaction to the back stack to allow the use of the Back button */
-        transaction.addToBackStack(null);
-
-        /* Ensure that the back stack will be popped */
-        mBackFragmentTag = null;
-
+        /* Manually manage the back action*/
+        mBackFragmentTag = MAP_SETTINGS_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -463,25 +416,11 @@ public class MainActivity extends AppCompatActivity
         /* Show the map calibration fragment if it exists */
         if (mapImportFragment == null) {
             mapImportFragment = createMapImportFragment(transaction);
-            transaction.disallowAddToBackStack();
-            mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         }
         transaction.show(mapImportFragment);
 
-        /* Hide the MapListFragment. As this transaction is part of the last commit, the next
-         * backStack pop will revert this and thus show the MapListFragment.
-         */
-        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-        if (mapListFragment != null) {
-            transaction.hide(mapListFragment);
-        }
-
-        /* Add the transaction to the back stack to allow the use of the Back button */
-        try {
-            transaction.addToBackStack(null);
-        } catch (IllegalStateException e) {
-            // don't care
-        }
+        /* Manually manage the back action*/
+        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -575,10 +514,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     @Nullable
-    public Map getCalibrationMap() {
+    public Map getSettingsMap() {
         Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
         if (mapListFragment != null && mapListFragment instanceof MapListFragment) {
-            return ((MapListFragment) mapListFragment).getCalibrationMap();
+            return ((MapListFragment) mapListFragment).getSettingsMap();
         }
         return null;
     }
