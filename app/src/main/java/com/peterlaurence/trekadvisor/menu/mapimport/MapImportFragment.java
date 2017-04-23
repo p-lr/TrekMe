@@ -23,31 +23,12 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
     private RecyclerView mRecyclerView;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (savedInstanceState != null && rootView != null) {
-            return rootView;
-        }
 
         rootView = (FrameLayout) inflater.inflate(R.layout.fragment_map_import, container, false);
-        return rootView;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        if (mRecyclerView != null) {
-            return;
-        }
-
         generateMapList();
+        return rootView;
     }
 
     private void generateMapList() {

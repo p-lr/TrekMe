@@ -429,12 +429,7 @@ public class MainActivity extends AppCompatActivity
         hideTransaction.commit();
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment mapImportFragment = fragmentManager.findFragmentByTag(MAP_IMPORT_FRAGMENT_TAG);
-
-        /* Show the map calibration fragment if it exists */
-        if (mapImportFragment == null) {
-            mapImportFragment = createMapImportFragment(transaction);
-        }
+        Fragment mapImportFragment = createMapImportFragment(transaction);
         transaction.show(mapImportFragment);
 
         /* Manually manage the back action*/
@@ -474,6 +469,12 @@ public class MainActivity extends AppCompatActivity
         Fragment tracksManageFragment = fragmentManager.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG);
         if (tracksManageFragment != null) {
             transaction.remove(tracksManageFragment);
+        }
+
+        /* Remove the map-import fragment */
+        Fragment mapImportFragment = fragmentManager.findFragmentByTag(MAP_IMPORT_FRAGMENT_TAG);
+        if (mapImportFragment != null) {
+            transaction.remove(mapImportFragment);
         }
 
         transaction.commit();
