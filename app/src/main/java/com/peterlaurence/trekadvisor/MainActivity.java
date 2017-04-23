@@ -274,20 +274,6 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public void onRequestManageTracks(Map map) {
-        TracksManageFragment tracksManageFragment = new TracksManageFragment();
-
-        hideAllFragments();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(R.id.content_frame, tracksManageFragment, TRACKS_MANAGE_FRAGMENT_TAG);
-        transaction.show(tracksManageFragment);
-
-        /* Manually manage the back action*/
-        mBackFragmentTag = TRACKS_MANAGE_FRAGMENT_TAG;
-        transaction.commit();
-    }
-
     private Fragment createMapViewFragment(FragmentTransaction transaction) {
         Fragment mapFragment = new MapViewFragment();
         transaction.add(R.id.content_frame, mapFragment, MAP_FRAGMENT_TAG);
@@ -318,11 +304,19 @@ public class MainActivity extends AppCompatActivity
         return mapCalibrationFragment;
     }
 
+    @Override
+    public void onRequestManageTracks() {
+        showTracksManageFragment();
+    }
+
     private void showMapViewFragment() {
         /* Don't show the fragment if no map has been selected yet */
         if (getCurrentMap() == null) {
             return;
         }
+
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
 
         /* Hide other fragments */
         FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
@@ -342,7 +336,26 @@ public class MainActivity extends AppCompatActivity
         transaction.commit();
     }
 
+    private void showTracksManageFragment() {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
+        TracksManageFragment tracksManageFragment = new TracksManageFragment();
+
+        hideAllFragments();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.add(R.id.content_frame, tracksManageFragment, TRACKS_MANAGE_FRAGMENT_TAG);
+        transaction.show(tracksManageFragment);
+
+        /* Manually manage the back action*/
+        mBackFragmentTag = TRACKS_MANAGE_FRAGMENT_TAG;
+        transaction.commit();
+    }
+
     private void showMapListFragment() {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
         /* Hide other fragments */
         FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
         hideOtherFragments(hideTransaction, MAP_LIST_FRAGMENT_TAG);
@@ -363,6 +376,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMapSettingsFragment(String mapName) {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
         /* Hide other fragments */
         FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
         hideOtherFragments(hideTransaction, MAP_SETTINGS_FRAGMENT_TAG);
@@ -386,17 +402,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMapCalibrationFragment() {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
         /* Hide other fragments */
         FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
         hideOtherFragments(hideTransaction, MAP_CALIBRATION_FRAGMENT_TAG);
         hideTransaction.commit();
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment mapCalibrationFragment = fragmentManager.findFragmentByTag(MAP_CALIBRATION_FRAGMENT_TAG);
-        if (mapCalibrationFragment != null) {
-            transaction.remove(mapCalibrationFragment);
-        }
-        mapCalibrationFragment = createMapCalibrationFragment(transaction);
+        Fragment mapCalibrationFragment = createMapCalibrationFragment(transaction);
         transaction.show(mapCalibrationFragment);
 
         /* Manually manage the back action*/
@@ -405,6 +420,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMapImportFragment() {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
         /* Hide other fragments */
         FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
         hideOtherFragments(hideTransaction, MAP_IMPORT_FRAGMENT_TAG);
@@ -441,6 +459,24 @@ public class MainActivity extends AppCompatActivity
                 transaction.hide(otherFragment);
             }
         }
+    }
+
+    private void removeSingleUsageFragments() {
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        /* Remove the calibration fragment */
+        Fragment mapCalibrationFragment = fragmentManager.findFragmentByTag(MAP_CALIBRATION_FRAGMENT_TAG);
+        if (mapCalibrationFragment != null) {
+            transaction.remove(mapCalibrationFragment);
+        }
+
+        /* Remove the fragment for tracks management */
+        Fragment tracksManageFragment = fragmentManager.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG);
+        if (tracksManageFragment != null) {
+            transaction.remove(tracksManageFragment);
+        }
+
+        transaction.commit();
     }
 
     /**

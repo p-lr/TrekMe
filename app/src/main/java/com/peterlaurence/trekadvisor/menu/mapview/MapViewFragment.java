@@ -154,7 +154,7 @@ public class MapViewFragment extends Fragment implements
                 mMarkerLayer.addMarker();
                 return true;
             case R.id.manage_tracks_id:
-                mRequestManageTracksListener.onRequestManageTracks(mMap);
+                mRequestManageTracksListener.onRequestManageTracks();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -401,7 +401,7 @@ public class MapViewFragment extends Fragment implements
      * activity.
      */
     public interface RequestManageTracksListener {
-        void onRequestManageTracks(Map map);
+        void onRequestManageTracks();
     }
 
     /**
