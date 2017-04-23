@@ -143,6 +143,12 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
         }
     }
 
+    /* By default, select the first calibration point */
+    @Override
+    public void setDefault() {
+        mFirstCalibrationPointButton.callOnClick();
+    }
+
     private void setupCalibrationPointSelector() {
         mFirstCalibrationPointButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -202,9 +208,6 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
                 }
             });
         }
-
-        /* By default, select the first calibration point */
-        mFirstCalibrationPointButton.callOnClick();
     }
 
     private void setupSaveButton() {

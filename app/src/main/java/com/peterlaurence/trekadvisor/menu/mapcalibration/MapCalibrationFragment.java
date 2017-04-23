@@ -31,6 +31,9 @@ import java.util.List;
  * @author peterLaurence on 30/04/16.
  */
 public class MapCalibrationFragment extends Fragment implements CalibrationModel {
+    /* To restore the state upon configuration change */
+    private static final String CALIBRATION_MARKER_X = "calibration_marker_x";
+    private static final String CALIBRATION_MARKER_Y = "calibration_marker_y";
     private MapProvider mMapProvider;
     private WeakReference<Map> mMapWeakReference;
     private MapCalibrationLayout rootView;
@@ -61,6 +64,18 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         Map map = mMapProvider.getCalibrationMap();
         setMap(map);
 
+        /* If the fragment is created for the first time (e.g not re-created after a configuration
+         * change), init the layout to its default.
+         * Otherwise, restore the last position of the calibration marker.
+         */
+        if (savedInstanceState == null) {
+            rootView.setDefault();
+        } else {
+            double relativeX = savedInstanceState.getDouble(CALIBRATION_MARKER_X);
+            double relativeY = savedInstanceState.getDouble(CALIBRATION_MARKER_Y);
+            moveCalibrationMarker(mTileView, mCalibrationMarker, relativeX, relativeY);
+        }
+
         return rootView;
     }
 
@@ -73,6 +88,14 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
             throw new RuntimeException(context.toString()
                     + " must implement MapProvider");
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
+        savedInstanceState.putDouble(CALIBRATION_MARKER_X, mCalibrationMarker.getRelativeX());
+        savedInstanceState.putDouble(CALIBRATION_MARKER_Y, mCalibrationMarker.getRelativeY());
     }
 
     /**
@@ -284,6 +307,9 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         void setCalibrationModel(CalibrationModel l);
 
         void setup();
+
+        /* Called only when the view is created for the first time */
+        void setDefault();
 
         void noProjectionDefined();
 
