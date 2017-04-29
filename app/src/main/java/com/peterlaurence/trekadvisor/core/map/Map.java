@@ -245,6 +245,13 @@ public class Map implements Parcelable {
         mMapGson.routes.add(route);
     }
 
+    /**
+     * Add a new marker.
+     */
+    public void addMarker(MapGson.Marker marker) {
+        mMapGson.markers.add(marker);
+    }
+
     public Bitmap getImage() {
         return mImage;
     }

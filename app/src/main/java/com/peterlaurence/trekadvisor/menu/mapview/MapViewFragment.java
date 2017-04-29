@@ -204,6 +204,9 @@ public class MapViewFragment extends Fragment implements
         Map map = mMapProvider.getCurrentMap();
         if (map != null && mMap != map) {
             setMap(map);
+
+            /* Update the marker layer */
+            mMarkerLayer.setMap(mMap);
         }
     }
 
@@ -279,6 +282,10 @@ public class MapViewFragment extends Fragment implements
     public void onProjectionUpdate(Projection projection) {
         double[] val = projection.getProjectedValues();
         updatePosition(val[0], val[1]);
+    }
+
+    public MapGson.Marker getCurrentMarker() {
+        return mMarkerLayer.getCurrentMarker();
     }
 
     /**
@@ -412,7 +419,7 @@ public class MapViewFragment extends Fragment implements
      * Same as {@link RequestManageTracksListener}.
      */
     public interface RequestManageMarkerListener {
-        void onRequestManageMarker(MapGson.Marker marker);
+        void onRequestManageMarker();
     }
 
     /**

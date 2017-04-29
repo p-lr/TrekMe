@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.mapview.components.markermanage;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -9,6 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.menu.MapProvider;
+import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 
 /**
  * A {@link Fragment} subclass that provides tools to :
@@ -23,6 +28,23 @@ import com.peterlaurence.trekadvisor.R;
 
 public class MarkerManageFragment extends Fragment {
     private View rootView;
+    private MarkerProvider mMarkerProvider;
+    private MapProvider mMapProvider;
+
+    private Map mMap;
+    private MapGson.Marker mMarker;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof MapProvider && context instanceof MarkerProvider) {
+            mMapProvider = (MapProvider) context;
+            mMarkerProvider = (MarkerProvider) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement MapProvider and MarkerProvider");
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,6 +57,8 @@ public class MarkerManageFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.fragment_marker_manage, container, false);
+        mMap = mMapProvider.getCurrentMap();
+        mMarker = mMarkerProvider.getCurrentMarker();
         return rootView;
     }
 

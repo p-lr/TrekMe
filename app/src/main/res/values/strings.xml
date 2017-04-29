@@ -70,5 +70,6 @@
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>
     <string name="wgs84_label">WGS84 coordinates</string>
+    <string name="projection_label">Projected coordinates</string>
 
 </resources>

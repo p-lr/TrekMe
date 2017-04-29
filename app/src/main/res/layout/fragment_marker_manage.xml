@@ -70,5 +70,52 @@
                     android:imeOptions="actionNext" />
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/marker_proj_label_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:text="@string/projection_label"
+            android:textColor="?android:attr/colorAccent"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <EditText
+                    android:id="@+id/marker_proj_x_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/projected_x_short"
+                    android:textSize="14sp"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:imeOptions="actionNext" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <EditText
+                    android:id="@+id/marker_proj_y_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/projected_y_short"
+                    android:textSize="14sp"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:imeOptions="actionNext" />
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

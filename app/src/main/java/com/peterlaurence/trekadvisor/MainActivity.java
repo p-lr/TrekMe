@@ -29,6 +29,7 @@ import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
+import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
         MapProvider,
+        MarkerProvider,
         TracksManageFragment.TrackChangeListenerProvider,
         MapViewFragment.RequestManageMarkerListener,
         LocationProvider {
@@ -316,7 +318,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestManageMarker(MapGson.Marker marker) {
+    public void onRequestManageMarker() {
         showMarkerManageFragment();
     }
 
@@ -588,6 +590,16 @@ public class MainActivity extends AppCompatActivity
         Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
         if (mapListFragment != null && mapListFragment instanceof MapListFragment) {
             return ((MapListFragment) mapListFragment).getSettingsMap();
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public MapGson.Marker getCurrentMarker() {
+        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
+        if (mapViewFragment != null && mapViewFragment instanceof MapViewFragment) {
+            return ((MapViewFragment) mapViewFragment).getCurrentMarker();
         }
         return null;
     }

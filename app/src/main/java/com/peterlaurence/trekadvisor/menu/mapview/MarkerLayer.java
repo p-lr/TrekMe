@@ -5,6 +5,7 @@ import android.graphics.drawable.Animatable2;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
+import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerCallout;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerGrab;
@@ -25,10 +26,16 @@ import java.lang.ref.WeakReference;
 class MarkerLayer {
     private MapViewFragment mMapViewFragment;
     private TileView mTileView;
+    private Map mMap;
+    private MapGson.Marker mCurrentMarker;
 
 
     MarkerLayer(MapViewFragment mapViewFragment) {
         mMapViewFragment = mapViewFragment;
+    }
+
+    public MapGson.Marker getCurrentMarker() {
+        return mCurrentMarker;
     }
 
     /**
@@ -77,6 +84,10 @@ class MarkerLayer {
         });
     }
 
+    void setMap(Map map) {
+        mMap = map;
+    }
+
     /**
      * Add a {@link MovableMarker} to the center of the {@link TileView}.
      */
@@ -90,7 +101,15 @@ class MarkerLayer {
 
         final MovableMarker movableMarker;
         Context context = mMapViewFragment.getContext();
-        movableMarker = new MovableMarker(context, new MapGson.Marker());
+
+        /* Create a new marker and add it to the map */
+        MapGson.Marker newMarker = new MapGson.Marker();
+        if (mMap != null) {
+            mMap.addMarker(newMarker);
+        }
+
+        /* Create the corresponding view */
+        movableMarker = new MovableMarker(context, newMarker);
 
         /* Easily move the marker */
         movableMarker.setRelativeX(relativeX);
@@ -205,7 +224,7 @@ class MarkerLayer {
                     MapViewFragment.RequestManageMarkerListener listener = mListenerWeakRef.get();
                     if (listener != null) {
                         // TODO : implement this
-                        listener.onRequestManageMarker(null);
+                        listener.onRequestManageMarker();
                     }
                 }
             }
