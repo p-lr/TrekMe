@@ -80,7 +80,7 @@ class MarkerLayer {
     /**
      * Add a {@link MovableMarker} to the center of the {@link TileView}.
      */
-    void addMarker() {
+    void addNewMarker() {
         /* Calculate the relative coordinates of the center of the screen */
         int x = mTileView.getScrollX() + mTileView.getWidth() / 2 - mTileView.getOffsetX();
         int y = mTileView.getScrollY() + mTileView.getHeight() / 2 - mTileView.getOffsetY();

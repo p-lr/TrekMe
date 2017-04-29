@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent">
 
     <LinearLayout
@@ -12,18 +11,24 @@
         android:layout_marginTop="8dp"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/marker_name_id"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/marker_name_label"
-            android:textSize="14sp" />
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/marker_name_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/marker_name_label"
+                android:textSize="14sp"
+                android:inputType="textCapSentences|textAutoCorrect" />
+        </android.support.design.widget.TextInputLayout>
 
         <TextView
             android:id="@+id/marker_wgs84_label_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             android:text="@string/wgs84_label"
             android:textColor="?android:attr/colorAccent"
@@ -32,27 +37,38 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
 
-            <EditText
-                android:id="@+id/marker_lat_id"
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="@string/latitude_short"
-                android:textSize="14sp"
-                android:inputType="numberSigned" />
+                android:layout_weight="1">
 
-            <EditText
-                android:id="@+id/marker_lon_id"
+                <EditText
+                    android:id="@+id/marker_lat_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/latitude_short"
+                    android:textSize="14sp"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:imeOptions="actionNext" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="@string/longitude_short"
-                android:textSize="14sp"
-                android:inputType="numberSigned" />
+                android:layout_weight="1">
+
+                <EditText
+                    android:id="@+id/marker_lon_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/longitude_short"
+                    android:textSize="14sp"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:imeOptions="actionNext" />
+            </android.support.design.widget.TextInputLayout>
         </LinearLayout>
-
-
     </LinearLayout>
 </ScrollView>

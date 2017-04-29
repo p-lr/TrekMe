@@ -152,7 +152,7 @@ public class MapViewFragment extends Fragment implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_marker_id:
-                mMarkerLayer.addMarker();
+                mMarkerLayer.addNewMarker();
                 return true;
             case R.id.manage_tracks_id:
                 mRequestManageTracksListener.onRequestManageTracks();
