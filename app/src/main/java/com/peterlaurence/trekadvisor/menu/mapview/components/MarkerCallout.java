@@ -17,6 +17,7 @@ import com.peterlaurence.trekadvisor.R;
  */
 public class MarkerCallout extends RelativeLayout {
     private Button mMoveButton;
+    private Button mEditButton;
 
     public MarkerCallout(Context context) {
         super(context);
@@ -24,6 +25,7 @@ public class MarkerCallout extends RelativeLayout {
         inflate(context, R.layout.marker_callout, this);
 
         mMoveButton = (Button) findViewById(R.id.move_callout_btn);
+        mEditButton = (Button) findViewById(R.id.edit_callout_btn);
     }
 
     public void transitionIn() {
@@ -47,6 +49,15 @@ public class MarkerCallout extends RelativeLayout {
             @Override
             public void onClick(View v) {
                 moveAction.run();
+            }
+        });
+    }
+
+    public void setEditAction(final Runnable editAction) {
+        mEditButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editAction.run();
             }
         });
     }

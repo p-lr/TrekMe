@@ -17,6 +17,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -25,6 +26,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
@@ -32,6 +34,7 @@ import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
+import com.peterlaurence.trekadvisor.menu.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 
 import java.util.ArrayList;
@@ -45,6 +48,7 @@ public class MainActivity extends AppCompatActivity
         MapSettingsFragment.MapCalibrationRequestListener,
         MapProvider,
         TracksManageFragment.TrackChangeListenerProvider,
+        MapViewFragment.RequestManageMarkerListener,
         LocationProvider {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
@@ -53,6 +57,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_CALIBRATION_FRAGMENT_TAG = "mapCalibrationFragment";
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
+    private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
             new ArrayList<String>() {{
                 add(MAP_FRAGMENT_TAG);
@@ -61,6 +66,7 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_CALIBRATION_FRAGMENT_TAG);
                 add(MAP_IMPORT_FRAGMENT_TAG);
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
+                add(MARKER_MANAGE_FRAGMENT_TAG);
             }});
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -309,6 +315,11 @@ public class MainActivity extends AppCompatActivity
         showTracksManageFragment();
     }
 
+    @Override
+    public void onRequestManageMarker(MapGson.Marker marker) {
+        showMarkerManageFragment();
+    }
+
     private void showMapViewFragment() {
         /* Don't show the fragment if no map has been selected yet */
         if (getCurrentMap() == null) {
@@ -337,18 +348,34 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showTracksManageFragment() {
+        try {
+            showSingleUsageFragment(TRACKS_MANAGE_FRAGMENT_TAG, TracksManageFragment.class);
+        } catch (IllegalAccessException | InstantiationException e) {
+            Log.e(TAG, "Error while creating " + TRACKS_MANAGE_FRAGMENT_TAG);
+        }
+    }
+
+    private void showMarkerManageFragment() {
+        try {
+            showSingleUsageFragment(MARKER_MANAGE_FRAGMENT_TAG, MarkerManageFragment.class);
+        } catch (IllegalAccessException | InstantiationException e) {
+            Log.e(TAG, "Error while creating " + MARKER_MANAGE_FRAGMENT_TAG);
+        }
+    }
+
+    private <T extends Fragment> void showSingleUsageFragment(String tag, Class<T> fragmentType) throws IllegalAccessException, InstantiationException {
         /* Remove single-usage fragments */
         removeSingleUsageFragments();
 
-        TracksManageFragment tracksManageFragment = new TracksManageFragment();
+        T fragment = fragmentType.newInstance();
 
         hideAllFragments();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(R.id.content_frame, tracksManageFragment, TRACKS_MANAGE_FRAGMENT_TAG);
-        transaction.show(tracksManageFragment);
+        transaction.add(R.id.content_frame, fragment, tag);
+        transaction.show(fragment);
 
         /* Manually manage the back action*/
-        mBackFragmentTag = TRACKS_MANAGE_FRAGMENT_TAG;
+        mBackFragmentTag = tag;
         transaction.commit();
     }
 
@@ -469,6 +496,12 @@ public class MainActivity extends AppCompatActivity
         Fragment tracksManageFragment = fragmentManager.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG);
         if (tracksManageFragment != null) {
             transaction.remove(tracksManageFragment);
+        }
+
+        /* Remove the fragment for marker management */
+        Fragment markerManageFragment = fragmentManager.findFragmentByTag(MARKER_MANAGE_FRAGMENT_TAG);
+        if (markerManageFragment != null) {
+            transaction.remove(markerManageFragment);
         }
 
         /* Remove the map-import fragment */

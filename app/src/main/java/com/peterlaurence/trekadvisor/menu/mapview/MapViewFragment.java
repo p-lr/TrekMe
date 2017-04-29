@@ -29,8 +29,8 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
-import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
+import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.TileView;
@@ -68,6 +68,7 @@ public class MapViewFragment extends Fragment implements
     private View mPositionMarker;
     private boolean mLockView = false;
     private RequestManageTracksListener mRequestManageTracksListener;
+    private RequestManageMarkerListener mRequestManageMarkerListener;
     private MapProvider mMapProvider;
     private LocationProvider mLocationProvider;
     private LocationRequest mLocationRequest;
@@ -215,9 +216,12 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof RequestManageTracksListener && context instanceof MapProvider
+        if (context instanceof RequestManageTracksListener
+                && context instanceof RequestManageMarkerListener
+                && context instanceof MapProvider
                 && context instanceof LocationProvider) {
             mRequestManageTracksListener = (RequestManageTracksListener) context;
+            mRequestManageMarkerListener = (RequestManageMarkerListener) context;
             mMapProvider = (MapProvider) context;
             mLocationProvider = (LocationProvider) context;
             mLocationProvider.registerLocationListener(this, this);
@@ -402,6 +406,13 @@ public class MapViewFragment extends Fragment implements
      */
     public interface RequestManageTracksListener {
         void onRequestManageTracks();
+    }
+
+    /**
+     * Same as {@link RequestManageTracksListener}.
+     */
+    public interface RequestManageMarkerListener {
+        void onRequestManageMarker(MapGson.Marker marker);
     }
 
     /**

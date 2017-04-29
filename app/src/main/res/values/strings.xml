@@ -67,4 +67,8 @@
     <string name="mapview_add_marker">Add marker</string>
     <string name="move_marker">Move</string>
 
+    <!-- Marker manager fragment -->
+    <string name="marker_name_label">Name</string>
+    <string name="wgs84_label">WGS84 coordinates</string>
+
 </resources>

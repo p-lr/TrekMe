@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.AnimatedVectorDrawable;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 
 /**
  * This {@link android.widget.ImageView} has two states :
@@ -22,6 +23,9 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
     private AnimatedVectorDrawable mStaticToDynamic;
     private AnimatedVectorDrawable mDynamicToStatic;
 
+    /* The model object that this view represents */
+    private MapGson.Marker mMarker;
+
     /* The relative coordinates are kept here. Although this shouldn't be a concern of this object,
      * the TileView don't offer the possibility to retrieve the relative coordinates of a marker,
      * so we have to save them in e.g, the marker's view.
@@ -34,7 +38,7 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
      * The {@code mRounded} drawable is just the end state of the {@code mStaticToDynamic}
      * {@link AnimatedVectorDrawable}. So by default, the maker is in its dynamic shape.
      */
-    public MovableMarker(Context context) {
+    public MovableMarker(Context context, MapGson.Marker marker) {
         super(context);
 
         mRounded = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_marker_rounded);
