@@ -18,8 +18,8 @@ import android.widget.TextView;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
-import com.peterlaurence.trekadvisor.core.map.MapImporter;
-import com.peterlaurence.trekadvisor.core.map.MapLoader;
+import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.util.UnzipTask;
 
 import java.io.File;

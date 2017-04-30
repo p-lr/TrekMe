@@ -26,7 +26,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
@@ -596,7 +596,7 @@ public class MainActivity extends AppCompatActivity
 
     @Nullable
     @Override
-    public MapGson.Marker getCurrentMarker() {
+    public MarkerGson.Marker getCurrentMarker() {
         Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
         if (mapViewFragment != null && mapViewFragment instanceof MapViewFragment) {
             return ((MapViewFragment) mapViewFragment).getCurrentMarker();

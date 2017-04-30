@@ -2,6 +2,7 @@ package com.peterlaurence.trekadvisor.core.map;
 
 
 import com.peterlaurence.trekadvisor.BuildConfig;
+import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -8,6 +8,8 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.qozix.tileview.graphics.BitmapProvider;
@@ -48,10 +50,13 @@ public class Map implements Parcelable {
     private MapBounds mMapBounds;
     /* The Java Object corresponding to the json configuration file */
     private MapGson mMapGson;
+    /* The Java Object corresponding to the json file of markers */
+    private MarkerGson mMarkerGson;
     private CalibrationStatus mCalibrationStatus = CalibrationStatus.NONE;
 
     /**
-     * To create a {@link Map}, three parameters are needed.
+     * To create a {@link Map}, three parameters are needed. <br>
+     * The {@link MarkerGson} is set later when the user wants to see the map.
      *
      * @param mapGson   the {@link MapGson} object that includes informations relative to levels,
      *                  the tile size, the name of the map, etc.
@@ -60,6 +65,7 @@ public class Map implements Parcelable {
      */
     public Map(MapGson mapGson, File jsonFile, File thumbnail) {
         mMapGson = mapGson;
+        mMarkerGson = new MarkerGson();
         mConfigFile = jsonFile;
         mImage = getBitmapFromFile(thumbnail);
     }
@@ -248,8 +254,8 @@ public class Map implements Parcelable {
     /**
      * Add a new marker.
      */
-    public void addMarker(MapGson.Marker marker) {
-        mMapGson.markers.add(marker);
+    public void addMarker(MarkerGson.Marker marker) {
+        mMarkerGson.markers.add(marker);
     }
 
     public Bitmap getImage() {

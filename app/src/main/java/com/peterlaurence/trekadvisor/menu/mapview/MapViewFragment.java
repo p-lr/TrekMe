@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
@@ -284,7 +285,7 @@ public class MapViewFragment extends Fragment implements
         updatePosition(val[0], val[1]);
     }
 
-    public MapGson.Marker getCurrentMarker() {
+    public MarkerGson.Marker getCurrentMarker() {
         return mMarkerLayer.getCurrentMarker();
     }
 
@@ -458,7 +459,7 @@ public class MapViewFragment extends Fragment implements
             for (WeakReference<MapGson.Route> route : mRouteList) {
                 try {
                     /* Work on a copy of the list of markers */
-                    List<MapGson.Marker> markerList = new ArrayList<>(route.get().route_markers);
+                    List<MarkerGson.Marker> markerList = new ArrayList<>(route.get().route_markers);
                     /* If there is only one marker, the path has no sense */
                     if (markerList.size() < 2) continue;
 
@@ -471,7 +472,7 @@ public class MapViewFragment extends Fragment implements
 
                     int i = 0;
                     int markerIndex = 0;
-                    for (MapGson.Marker marker : markerList) {
+                    for (MarkerGson.Marker marker : markerList) {
                         /* No need to continue if the route has been deleted in the meanwhile */
                         if (route.get() == null) break;
 

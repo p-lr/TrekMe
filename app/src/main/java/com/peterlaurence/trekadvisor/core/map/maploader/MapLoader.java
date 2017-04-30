@@ -1,15 +1,17 @@
-package com.peterlaurence.trekadvisor.core.map;
+package com.peterlaurence.trekadvisor.core.map.maploader;
 
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.MapArchive;
+import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.gson.RuntimeTypeAdapterFactory;
+import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapArchiveSearchTask;
+import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapUpdateTask;
 import com.peterlaurence.trekadvisor.core.projection.MercatorProjection;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.UniversalTransverseMercator;
@@ -47,7 +49,7 @@ import java.util.List;
 public class MapLoader implements MapImporter.MapParseListener {
 
     private static final String APP_FOLDER_NAME = "trekadvisor";
-    static final String MAP_FILE_NAME = "map.json";
+    public static final String MAP_FILE_NAME = "map.json";
 
     private Gson mGson;
     private static final File DEFAULT_APP_DIR = new File(Environment.getExternalStorageDirectory(),
@@ -57,6 +59,7 @@ public class MapLoader implements MapImporter.MapParseListener {
 
     private List<Map> mMapList;
     private List<MapListUpdateListener> mMapListUpdateListeners;
+    private List<MapMarkerUpdateListener> mMapMarkerUpdateListeners;
     private List<MapArchive> mMapArchiveList;
     private List<MapArchiveListUpdateListener> mMapArchiveListUpdateListeners;
 
@@ -105,6 +108,7 @@ public class MapLoader implements MapImporter.MapParseListener {
                 registerTypeAdapterFactory(factory).create();
 
         mMapListUpdateListeners = new ArrayList<>();
+        mMapMarkerUpdateListeners = new ArrayList<>();
         mMapArchiveListUpdateListeners = new ArrayList<>();
     }
 
@@ -116,172 +120,15 @@ public class MapLoader implements MapImporter.MapParseListener {
         void onMapListUpdate(boolean mapsFound);
     }
 
+    /**
+     * When a map's markers are retrieved from their json content, this listener is called.
+     */
+    public interface MapMarkerUpdateListener {
+        void onMapMarkerUpdate();
+    }
+
     public interface MapArchiveListUpdateListener {
         void onMapArchiveListUpdate();
-    }
-
-    private static class MapUpdateTask extends AsyncTask<File, Void, Void> {
-        List<MapListUpdateListener> mListenerList;
-        Gson mGson;
-        List<Map> mMapList;
-
-        private List<File> mapFilesFoundList;
-        private static final int MAX_RECURSION_DEPTH = 6;
-
-        public MapUpdateTask(@Nullable List<MapListUpdateListener> listener,
-                             Gson gson,
-                             List<Map> mapList) {
-            super();
-            mListenerList = listener;
-            mGson = gson;
-            mMapList = mapList;
-            mapFilesFoundList = new ArrayList<>();
-        }
-
-        @Override
-        protected Void doInBackground(File... dirs) {
-            /* Search for json files */
-            for (File dir : dirs) {
-                findMaps(dir, 1);
-            }
-
-            /* Now parse the json files found */
-            for (File f : mapFilesFoundList) {
-                /* Get json file content as String */
-                String jsonString;
-                try {
-                    jsonString = FileUtils.getStringFromFile(f);
-                } catch (Exception e) {
-                    // Error while decoding the json file
-                    Log.e(TAG, e.getMessage(), e);
-                    continue;
-                }
-
-                try {
-                    /* json deserialization */
-                    MapGson mapGson = mGson.fromJson(jsonString, MapGson.class);
-
-                    Map map = new Map(mapGson, f, new File(f.getParent(), mapGson.thumbnail));
-
-                    /* Calibration */
-                    map.calibrate();
-
-                    /* Set BitMapProvider */
-                    map.setBitmapProvider(makeBitmapProvider(map));
-
-                    mMapList.add(map);
-                } catch (JsonSyntaxException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-            }
-            return null;
-        }
-
-        private void findMaps(File root, int depth) {
-            if (depth > MAX_RECURSION_DEPTH) return;
-
-            File[] list = root.listFiles();
-            if (list == null) {
-                return;
-            }
-
-            for (File f : list) {
-                if (f.isDirectory()) {
-                    File jsonFile = new File(f, MAP_FILE_NAME);
-
-                    /* Don't allow nested maps */
-                    if (jsonFile.exists() && jsonFile.isFile()) {
-                        mapFilesFoundList.add(jsonFile);
-                    } else {
-                        findMaps(f, depth + 1);
-                    }
-                }
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            if (mListenerList != null) {
-                for (MapListUpdateListener listUpdateListener : mListenerList) {
-                    listUpdateListener.onMapListUpdate(mMapList.size() > 0);
-                }
-            }
-        }
-    }
-
-    private static class MapArchiveSearchTask extends AsyncTask<File, Void, Void> {
-        private static final int MAX_RECURSION_DEPTH = 6;
-        private List<MapArchiveListUpdateListener> mMapArchiveListUpdateListeners;
-        private List<MapArchive> mMapArchiveList;
-        private List<File> mMapArchiveFilesFoundList;
-        private static final List<String> mArchiveFormatList;
-
-        static {
-            mArchiveFormatList = new ArrayList<>();
-            mArchiveFormatList.add("zip");
-        }
-
-        public MapArchiveSearchTask(@Nullable List<MapArchiveListUpdateListener> listeners, List<MapArchive> mapArchiveList) {
-            super();
-            mMapArchiveList = mapArchiveList;
-            mMapArchiveFilesFoundList = new ArrayList<>();
-            mMapArchiveListUpdateListeners = listeners;
-        }
-
-        @Override
-        protected Void doInBackground(File... dirs) {
-            /* Search for archive files on SD card */
-            for (File dir : dirs) {
-                findArchives(dir, 1);
-            }
-
-            for (File archiveFile : mMapArchiveFilesFoundList) {
-                mMapArchiveList.add(new MapArchive(archiveFile));
-            }
-
-            return null;
-        }
-
-        private void findArchives(File root, int depth) {
-            if (depth > MAX_RECURSION_DEPTH) return;
-
-            File[] list = root.listFiles();
-            if (list == null) {
-                return;
-            }
-
-            for (File f : list) {
-                if (f.isDirectory()) {
-                    File jsonFile = new File(f, MAP_FILE_NAME);
-
-                    /* Don't allow archives inside maps */
-                    if (!jsonFile.exists()) {
-                        findArchives(f, depth + 1);
-                    }
-                } else {
-                    int index = f.getName().lastIndexOf('.');
-                    if (index > 0) {
-                        try {
-                            String ext = f.getName().substring(index + 1);
-                            if (mArchiveFormatList.contains(ext)) {
-                                mMapArchiveFilesFoundList.add(f);
-                            }
-                        } catch (IndexOutOfBoundsException e) {
-                            // don't care
-                        }
-                    }
-                }
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            if (mMapArchiveListUpdateListeners != null) {
-                for (MapArchiveListUpdateListener listener : mMapArchiveListUpdateListeners) {
-                    listener.onMapArchiveListUpdate();
-                }
-            }
-        }
     }
 
     /**
@@ -303,6 +150,17 @@ public class MapLoader implements MapImporter.MapParseListener {
 
     public List<Map> getMaps() {
         return mMapList;
+    }
+
+    /**
+     * Get the markers of a {@link Map}. <br>
+     * If this is the first call since the application start, this launches a
+     * {@link com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapMarkerImportTask} which reads
+     * the markers.json file. Otherwise, it just returns the existing list of
+     * {@link com.peterlaurence.trekadvisor.core.map.gson.MarkerGson.Marker}.
+     */
+    public void getMarkersForMap(Map map) {
+
     }
 
     /**
@@ -345,6 +203,10 @@ public class MapLoader implements MapImporter.MapParseListener {
         mMapListUpdateListeners.add(listener);
     }
 
+    public void addMapMarkerUpdateListener(MapMarkerUpdateListener listener) {
+        mMapMarkerUpdateListeners.add(listener);
+    }
+
     public void addMapArchiveListUpdateListener(MapArchiveListUpdateListener listener) {
         mMapArchiveListUpdateListeners.add(listener);
     }
@@ -382,12 +244,12 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
-     * Constructs the {@link BitmapProvider} depending on the origin of the map.
+     * Factory of {@link BitmapProvider} depending on the origin of the map.
      *
      * @param map The {@link Map} object
      * @return The {@link BitmapProvider} or a {@link BitmapProviderDummy} if the origin is unknown.
      */
-    private static BitmapProvider makeBitmapProvider(Map map) {
+    public static BitmapProvider makeBitmapProvider(Map map) {
         switch (map.getOrigin()) {
             case BitmapProviderLibVips.GENERATOR_NAME:
                 return new BitmapProviderLibVips(map);

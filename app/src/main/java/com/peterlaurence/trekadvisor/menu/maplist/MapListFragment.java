@@ -13,7 +13,7 @@ import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.MapLoader;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 
 /**
  * A {@link Fragment} subclass that displays the list of available maps, using a {@link RecyclerView}.

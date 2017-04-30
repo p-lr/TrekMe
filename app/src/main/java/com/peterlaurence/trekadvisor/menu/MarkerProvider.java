@@ -2,7 +2,7 @@ package com.peterlaurence.trekadvisor.menu;
 
 import android.support.annotation.Nullable;
 
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 
 /**
  * Any object able to give the current marker requested for editing.
@@ -11,5 +11,5 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
  */
 public interface MarkerProvider {
     @Nullable
-    MapGson.Marker getCurrentMarker();
+    MarkerGson.Marker getCurrentMarker();
 }

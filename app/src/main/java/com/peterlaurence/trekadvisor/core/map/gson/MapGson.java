@@ -32,11 +32,10 @@ public class MapGson {
     public MapSize size;
     public Calibration calibration;
     public List<Route> routes;
-    public List<Marker> markers;
+
 
     public MapGson() {
         levels = new ArrayList<>();
-        markers = new ArrayList<>();
         routes = new ArrayList<>();
     }
 
@@ -83,7 +82,7 @@ public class MapGson {
     public static class Route {
         public String name;
         public boolean visible;
-        public List<Marker> route_markers;
+        public List<MarkerGson.Marker> route_markers;
         private transient Object mData;
         private final transient Object mDataLock = new Object();
 
@@ -123,15 +122,6 @@ public class MapGson {
         public int hashCode() {
             return name.hashCode();
         }
-    }
-
-    public static class Marker {
-        public String name;
-        public double lat;
-        public double lon;
-        public Double proj_x;
-        public Double proj_y;
-        public String comment;
     }
 
     public static class Provider {

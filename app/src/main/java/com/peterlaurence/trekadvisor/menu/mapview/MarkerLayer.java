@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerCallout;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerGrab;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MovableMarker;
@@ -27,14 +27,14 @@ class MarkerLayer {
     private MapViewFragment mMapViewFragment;
     private TileView mTileView;
     private Map mMap;
-    private MapGson.Marker mCurrentMarker;
+    private MarkerGson.Marker mCurrentMarker;
 
 
     MarkerLayer(MapViewFragment mapViewFragment) {
         mMapViewFragment = mapViewFragment;
     }
 
-    public MapGson.Marker getCurrentMarker() {
+    public MarkerGson.Marker getCurrentMarker() {
         return mCurrentMarker;
     }
 
@@ -103,7 +103,7 @@ class MarkerLayer {
         Context context = mMapViewFragment.getContext();
 
         /* Create a new marker and add it to the map */
-        MapGson.Marker newMarker = new MapGson.Marker();
+        MarkerGson.Marker newMarker = new MarkerGson.Marker();
         if (mMap != null) {
             mMap.addMarker(newMarker);
         }

@@ -1,11 +1,14 @@
-package com.peterlaurence.trekadvisor.core.map;
+package com.peterlaurence.trekadvisor.core.map.mapimporter;
 
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.MapArchive;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderLibVips;
 
 import java.io.File;

@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 
@@ -32,7 +32,7 @@ public class MarkerManageFragment extends Fragment {
     private MapProvider mMapProvider;
 
     private Map mMap;
-    private MapGson.Marker mMarker;
+    private MarkerGson.Marker mMarker;
 
     @Override
     public void onAttach(Context context) {

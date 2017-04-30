@@ -2,6 +2,8 @@ package com.peterlaurence.trekadvisor.core.map;
 
 import com.peterlaurence.trekadvisor.BuildConfig;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,14 +56,14 @@ public class MapParserTest {
                     MapGson.Route route = map.getMapGson().routes.get(0);
                     assertEquals("A sample route", route.name);
                     assertEquals(true, route.visible);
-                    List<MapGson.Marker> markers = route.route_markers;
+                    List<MarkerGson.Marker> markers = route.route_markers;
                     assertEquals(2, markers.size());
 
-                    MapGson.Marker marker1 = markers.get(0);
+                    MarkerGson.Marker marker1 = markers.get(0);
                     assertEquals("First marker", marker1.name);
                     assertEquals(12.6585, marker1.proj_x, 0);
 
-                    MapGson.Marker marker2 = markers.get(1);
+                    MarkerGson.Marker marker2 = markers.get(1);
                     assertEquals("Second marker", marker2.name);
                     assertEquals(13.6585, marker2.proj_x, 0);
                 }

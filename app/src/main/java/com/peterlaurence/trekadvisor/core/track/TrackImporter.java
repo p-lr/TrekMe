@@ -7,6 +7,7 @@ import android.os.ParcelFileDescriptor;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.util.gpxparser.GPXParser;
 import com.peterlaurence.trekadvisor.util.gpxparser.model.Gpx;
@@ -143,7 +144,7 @@ public class TrackImporter {
             for (TrackSegment trackSegment : trackSegmentList) {
                 List<TrackPoint> trackPointList = trackSegment.getTrackPoints();
                 for (TrackPoint trackPoint : trackPointList) {
-                    MapGson.Marker marker = new MapGson.Marker();
+                    MarkerGson.Marker marker = new MarkerGson.Marker();
 
                     /* Here, the projected values obtained may be just the untouched latitude and
                      * longitude if the map doesn't use a projection. In both cases, we treat the
