@@ -8,9 +8,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.gson.RuntimeTypeAdapterFactory;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapArchiveSearchTask;
+import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapMarkerImportTask;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapUpdateTask;
 import com.peterlaurence.trekadvisor.core.projection.MercatorProjection;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
@@ -50,6 +52,7 @@ public class MapLoader implements MapImporter.MapParseListener {
 
     private static final String APP_FOLDER_NAME = "trekadvisor";
     public static final String MAP_FILE_NAME = "map.json";
+    public static final String MAP_MARKER_FILE_NAME = "markers.json";
 
     private Gson mGson;
     private static final File DEFAULT_APP_DIR = new File(Environment.getExternalStorageDirectory(),
@@ -156,11 +159,18 @@ public class MapLoader implements MapImporter.MapParseListener {
      * Get the markers of a {@link Map}. <br>
      * If this is the first call since the application start, this launches a
      * {@link com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapMarkerImportTask} which reads
-     * the markers.json file. Otherwise, it just returns the existing list of
+     * the markers.json file and returns null. Otherwise, it just returns the existing list of
      * {@link com.peterlaurence.trekadvisor.core.map.gson.MarkerGson.Marker}.
      */
-    public void getMarkersForMap(Map map) {
-
+    @Nullable
+    public List<MarkerGson.Marker> getMarkersForMap(Map map) {
+        if (map.areMarkersDefined()) {
+            return map.getMarkers();
+        }
+        MapMarkerImportTask mapMarkerImportTask = new MapMarkerImportTask(mMapMarkerUpdateListeners,
+                map, mGson);
+        mapMarkerImportTask.execute();
+        return null;
     }
 
     /**

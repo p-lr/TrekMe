@@ -75,26 +75,7 @@ public class Map implements Parcelable {
         mImage = in.readParcelable(Bitmap.class.getClassLoader());
     }
 
-    /**
-     * Retrieve a {@link Bitmap} given its relative path from the external storage directory.
-     * Usually, this directory is "/storage/emulated/0".
-     * For example : if {@code imagePath} is "trekavisor/maps/paris/paris.jpg", the full path of
-     * the file that will be retrieved is "/storage/emulated/0/trekavisor/maps/paris/paris.jpg".
-     * <p/>
-     * NB : a nice way to generate thumbnails of maps is by using vipsthumbnail. Example :
-     * vipsthumbnail big-image.jpg --interpolator bicubic --size 256x256 --crop
-     *
-     * @param imagePath the relative path of the image
-     * @return the {@link Bitmap} object
-     */
-    public static Bitmap getBitmapFromPath(String imagePath) {
-        File sd = Environment.getExternalStorageDirectory();
-        File image = new File(sd, imagePath);
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        return BitmapFactory.decodeFile(image.getAbsolutePath(), bmOptions);
-    }
-
-    public static
+    private static
     @Nullable
     Bitmap getBitmapFromFile(File file) {
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
@@ -319,6 +300,18 @@ public class Map implements Parcelable {
 
     public final MapGson getMapGson() {
         return mMapGson;
+    }
+
+    public boolean areMarkersDefined() {
+        return mMarkerGson != null;
+    }
+
+    public List<MarkerGson.Marker> getMarkers() {
+        return mMarkerGson.markers;
+    }
+
+    public void setMarkerGson(MarkerGson markerGson) {
+        mMarkerGson = markerGson;
     }
 
     public final File getConfigFile() {

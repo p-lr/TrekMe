@@ -25,7 +25,7 @@ public class MapUpdateTask extends AsyncTask<File, Void, Void> {
 
     private List<File> mapFilesFoundList;
     private static final int MAX_RECURSION_DEPTH = 6;
-    private static final String TAG = "MapLoader.MapUpdateTask";
+    private static final String TAG = "MapUpdateTask";
 
     public MapUpdateTask(@Nullable List<MapLoader.MapListUpdateListener> listener,
                          Gson gson,

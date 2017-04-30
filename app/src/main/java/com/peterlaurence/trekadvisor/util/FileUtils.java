@@ -1,5 +1,9 @@
 package com.peterlaurence.trekadvisor.util;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -82,5 +86,24 @@ public class FileUtils {
         } catch (Exception e) {
             return "";
         }
+    }
+
+    /**
+     * Retrieve a {@link Bitmap} given its relative path from the external storage directory.
+     * Usually, this directory is "/storage/emulated/0".
+     * For example : if {@code imagePath} is "trekavisor/maps/paris/paris.jpg", the full path of
+     * the file that will be retrieved is "/storage/emulated/0/trekavisor/maps/paris/paris.jpg".
+     * <p/>
+     * NB : a nice way to generate thumbnails of maps is by using vipsthumbnail. Example :
+     * vipsthumbnail big-image.jpg --interpolator bicubic --size 256x256 --crop
+     *
+     * @param imagePath the relative path of the image
+     * @return the {@link Bitmap} object
+     */
+    public static Bitmap getBitmapFromPath(String imagePath) {
+        File sd = Environment.getExternalStorageDirectory();
+        File image = new File(sd, imagePath);
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        return BitmapFactory.decodeFile(image.getAbsolutePath(), bmOptions);
     }
 }
