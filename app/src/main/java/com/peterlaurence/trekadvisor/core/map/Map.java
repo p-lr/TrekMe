@@ -303,7 +303,7 @@ public class Map implements Parcelable {
     }
 
     public boolean areMarkersDefined() {
-        return mMarkerGson != null;
+        return mMarkerGson.markers.size() > 0;
     }
 
     public List<MarkerGson.Marker> getMarkers() {
