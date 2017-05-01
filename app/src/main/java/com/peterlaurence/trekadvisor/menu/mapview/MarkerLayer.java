@@ -7,6 +7,7 @@ import android.view.View;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerCallout;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MarkerGrab;
 import com.peterlaurence.trekadvisor.menu.mapview.components.MovableMarker;
@@ -16,6 +17,7 @@ import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.markers.MarkerLayout;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 /**
  * All {@link MovableMarker} and {@link MarkerCallout} are managed here. <br>
@@ -23,19 +25,26 @@ import java.lang.ref.WeakReference;
  *
  * @author peterLaurence on 09/04/17.
  */
-class MarkerLayer {
+class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     private MapViewFragment mMapViewFragment;
     private TileView mTileView;
     private Map mMap;
+    List<MarkerGson.Marker> mMarkers;
     private MarkerGson.Marker mCurrentMarker;
 
 
     MarkerLayer(MapViewFragment mapViewFragment) {
         mMapViewFragment = mapViewFragment;
+        MapLoader.getInstance().addMapMarkerUpdateListener(this);
     }
 
-    public MarkerGson.Marker getCurrentMarker() {
+    MarkerGson.Marker getCurrentMarker() {
         return mCurrentMarker;
+    }
+
+    @Override
+    public void onMapMarkerUpdate() {
+        drawMarkers();
     }
 
     /**
@@ -86,6 +95,28 @@ class MarkerLayer {
 
     void setMap(Map map) {
         mMap = map;
+
+        /* Update the ui accordingly */
+        init();
+    }
+
+    /**
+     * Triggers the fetch of the map's markers and their drawing on the {@link TileView}. If this is
+     * the first time this method is called for this map, the markers aren't defined and the
+     * {@link MapLoader} will get them in an asynctask. Otherwise, we can draw them immediately.<br>
+     * This must be called when the {@link MapViewFragment} is ready to update its UI.
+     */
+    private void init() {
+        if (mMap.areMarkersDefined()) {
+            drawMarkers();
+        } else {
+            MapLoader.getInstance().getMarkersForMap(mMap);
+        }
+    }
+
+    private void drawMarkers() {
+        mMarkers = mMap.getMarkers();
+
     }
 
     /**

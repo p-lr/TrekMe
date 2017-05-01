@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * A {@code MapArchive} contains every information relative to a map archive.
+ * A {@code MapArchive} contains every information about a map archive.
  *
  * @author peterLaurence on 08/06/16.
  */

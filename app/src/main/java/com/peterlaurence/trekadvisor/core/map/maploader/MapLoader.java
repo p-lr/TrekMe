@@ -156,21 +156,13 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
-     * Get the markers of a {@link Map}. <br>
-     * If this is the first call since the application start, this launches a
-     * {@link com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapMarkerImportTask} which reads
-     * the markers.json file and returns null. Otherwise, it just returns the existing list of
-     * {@link com.peterlaurence.trekadvisor.core.map.gson.MarkerGson.Marker}.
+     * Launch a {@link com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapMarkerImportTask}
+     * which reads the markers.json file and returns null.
      */
-    @Nullable
-    public List<MarkerGson.Marker> getMarkersForMap(Map map) {
-        if (map.areMarkersDefined()) {
-            return map.getMarkers();
-        }
+    public void getMarkersForMap(Map map) {
         MapMarkerImportTask mapMarkerImportTask = new MapMarkerImportTask(mMapMarkerUpdateListeners,
                 map, mGson);
         mapMarkerImportTask.execute();
-        return null;
     }
 
     /**

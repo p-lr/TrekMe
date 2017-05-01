@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <EditText
+            <android.support.design.widget.TextInputEditText
                 android:id="@+id/marker_name_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/marker_lat_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/marker_lon_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/marker_proj_x_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
-                <EditText
+                <android.support.design.widget.TextInputEditText
                     android:id="@+id/marker_proj_y_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
