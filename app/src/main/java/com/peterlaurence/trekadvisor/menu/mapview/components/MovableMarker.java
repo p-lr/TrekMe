@@ -2,6 +2,8 @@ package com.peterlaurence.trekadvisor.menu.mapview.components;
 
 import android.content.Context;
 import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
@@ -18,13 +20,14 @@ import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
  * @author peterLaurence on 08/04/17.
  */
 public class MovableMarker extends android.support.v7.widget.AppCompatImageView {
-    private AnimatedVectorDrawable mCurrentDrawable;
     private AnimatedVectorDrawable mRounded;
+    private Drawable mStatic;
     private AnimatedVectorDrawable mStaticToDynamic;
     private AnimatedVectorDrawable mDynamicToStatic;
 
     /* The model object that this view represents */
     private MarkerGson.Marker mMarker;
+    private boolean mIsStatic;
 
     /* The relative coordinates are kept here. Although this shouldn't be a concern of this object,
      * the TileView don't offer the possibility to retrieve the relative coordinates of a marker,
@@ -36,35 +39,67 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
 
     /**
      * The {@code mRounded} drawable is just the end state of the {@code mStaticToDynamic}
-     * {@link AnimatedVectorDrawable}. So by default, the maker is in its dynamic shape.
+     * {@link AnimatedVectorDrawable}.
+     * The {@code mStatic} drawable is the end state of the {@code mDynamicToStatic}
+     * {@link AnimatedVectorDrawable}. <br>
+     *
      */
-    public MovableMarker(Context context, MarkerGson.Marker marker) {
+    public MovableMarker(Context context, boolean staticForm, MarkerGson.Marker marker) {
         super(context);
 
         mRounded = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_marker_rounded);
+        mStatic = context.getDrawable(R.drawable.vd_marker_location_rounded);
         mStaticToDynamic = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_marker_location_rounded);
         mDynamicToStatic = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_marker_rounded_location);
 
-        mCurrentDrawable = mRounded;
+        /* Keep a reference on the model object */
+        mMarker = marker;
+
+        /* Init the drawable */
+        if (staticForm) {
+            initStatic();
+        } else {
+            initRounded();
+        }
+    }
+
+    public void initRounded() {
+        mIsStatic = false;
         setImageDrawable(mRounded);
         mRounded.start();
     }
 
+    public void initStatic() {
+        mIsStatic = true;
+        setImageDrawable(mStatic);
+    }
+
+    public boolean isStatic() {
+        return mIsStatic;
+    }
+
     public void morphToStaticForm() {
-        if (mCurrentDrawable == mRounded || mCurrentDrawable == mStaticToDynamic) {
-            mCurrentDrawable.stop();
-            mCurrentDrawable = mDynamicToStatic;
+        if (!mIsStatic) {
+            stopCurrentAnimation();
             setImageDrawable(mDynamicToStatic);
             mDynamicToStatic.start();
+            mIsStatic = true;
         }
     }
 
     public void morphToDynamicForm() {
-        if (mCurrentDrawable == mDynamicToStatic) {
-            mCurrentDrawable.stop();
-            mCurrentDrawable = mStaticToDynamic;
+        if (mIsStatic) {
+            stopCurrentAnimation();
             setImageDrawable(mStaticToDynamic);
             mStaticToDynamic.start();
+            mIsStatic = false;
+        }
+    }
+
+    private void stopCurrentAnimation() {
+        Drawable drawable = getDrawable();
+        if (drawable instanceof AnimatedVectorDrawable) {
+            ((AnimatedVectorDrawable) drawable).stop();
         }
     }
 

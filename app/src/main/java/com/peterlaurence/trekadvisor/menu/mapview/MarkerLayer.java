@@ -117,6 +117,17 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     private void drawMarkers() {
         mMarkers = mMap.getMarkers();
 
+        for (MarkerGson.Marker marker : mMarkers) {
+            MovableMarker movableMarker = new MovableMarker(mMapViewFragment.getContext(), true, marker);
+            movableMarker.initStatic();
+
+            // TODO : now the movablemarker ha a reference to the marker, maybe this step is useless
+            movableMarker.setRelativeX(marker.proj_x);
+            movableMarker.setRelativeY(marker.proj_y);
+            MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mMapViewFragment.getContext());
+            movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
+            mTileView.addMarker(movableMarker, marker.proj_x, marker.proj_y, -0.5f, -0.5f);
+        }
     }
 
     /**
@@ -140,7 +151,8 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         }
 
         /* Create the corresponding view */
-        movableMarker = new MovableMarker(context, newMarker);
+        movableMarker = new MovableMarker(context, false, newMarker);
+        movableMarker.initRounded();
 
         /* Easily move the marker */
         movableMarker.setRelativeX(relativeX);
@@ -167,22 +179,27 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         public void onClick(View v) {
             MovableMarker movableMarker = mMovableMarkerWeakReference.get();
             if (movableMarker != null) {
-                movableMarker.morphToStaticForm();
+                if (!movableMarker.isStatic()) {
+                    movableMarker.morphToStaticForm();
 
-                /* After the morph, the marker should not consume touch events */
-                movableMarker.setClickable(false);
+                    /* After the morph, the marker should not consume touch events */
+                    movableMarker.setClickable(false);
 
 
-                final MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
-                markerGrab.morphOut(new Animatable2.AnimationCallback() {
-                    @Override
-                    public void onAnimationEnd(Drawable drawable) {
-                        super.onAnimationEnd(drawable);
-                        if (markerGrab != null) {
-                            mTileView.removeMarker(markerGrab);
+                    final MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
+                    markerGrab.morphOut(new Animatable2.AnimationCallback() {
+                        @Override
+                        public void onAnimationEnd(Drawable drawable) {
+                            super.onAnimationEnd(drawable);
+                            if (markerGrab != null) {
+                                mTileView.removeMarker(markerGrab);
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    movableMarker.morphToDynamicForm();
+                    // TODO : implement this
+                }
             }
         }
     }
