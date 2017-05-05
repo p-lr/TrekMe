@@ -121,11 +121,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
             MovableMarker movableMarker = new MovableMarker(mMapViewFragment.getContext(), true, marker);
             movableMarker.initStatic();
 
-            // TODO : now the movablemarker ha a reference to the marker, maybe this step is useless
-            movableMarker.setRelativeX(marker.proj_x);
-            movableMarker.setRelativeY(marker.proj_y);
-            MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mMapViewFragment.getContext());
-            movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
             mTileView.addMarker(movableMarker, marker.proj_x, marker.proj_y, -0.5f, -0.5f);
         }
     }
@@ -146,6 +141,8 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
 
         /* Create a new marker and add it to the map */
         MarkerGson.Marker newMarker = new MarkerGson.Marker();
+        newMarker.proj_x = relativeX;
+        newMarker.proj_y = relativeY;
         if (mMap != null) {
             mMap.addMarker(newMarker);
         }
@@ -155,8 +152,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         movableMarker.initRounded();
 
         /* Easily move the marker */
-        movableMarker.setRelativeX(relativeX);
-        movableMarker.setRelativeY(relativeY);
         MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mMapViewFragment.getContext());
 
         movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
@@ -164,6 +159,16 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
     }
 
+    /**
+     * This listener is only set on a {@link MovableMarker} when it is in its dynamic form (e.g it
+     * can be moved). <br>
+     * So it does the following :
+     * <ul>
+     * <li>Morph the {@link MovableMarker} into its static form</li>
+     * <li>Animate out and remove the {@link MarkerGrab} which help the user to move the
+     * {@link MovableMarker}</li>
+     * </ul>
+     */
     private static class MovableMarkerClickListener implements View.OnClickListener {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerGrab> mMarkerGrabWeakReference;
@@ -179,27 +184,21 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         public void onClick(View v) {
             MovableMarker movableMarker = mMovableMarkerWeakReference.get();
             if (movableMarker != null) {
-                if (!movableMarker.isStatic()) {
-                    movableMarker.morphToStaticForm();
+                movableMarker.morphToStaticForm();
 
-                    /* After the morph, the marker should not consume touch events */
-                    movableMarker.setClickable(false);
+                /* After the morph, the marker should not consume touch events */
+                movableMarker.setClickable(false);
 
-
-                    final MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
-                    markerGrab.morphOut(new Animatable2.AnimationCallback() {
-                        @Override
-                        public void onAnimationEnd(Drawable drawable) {
-                            super.onAnimationEnd(drawable);
-                            if (markerGrab != null) {
-                                mTileView.removeMarker(markerGrab);
-                            }
+                final MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
+                markerGrab.morphOut(new Animatable2.AnimationCallback() {
+                    @Override
+                    public void onAnimationEnd(Drawable drawable) {
+                        super.onAnimationEnd(drawable);
+                        if (markerGrab != null) {
+                            mTileView.removeMarker(markerGrab);
                         }
-                    });
-                } else {
-                    movableMarker.morphToDynamicForm();
-                    // TODO : implement this
-                }
+                    }
+                });
             }
         }
     }
