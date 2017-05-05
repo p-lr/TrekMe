@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestManageMarker() {
+    public void onRequestManageMarker(MarkerGson.Marker marker) {
         showMarkerManageFragment();
     }
 

@@ -420,7 +420,7 @@ public class MapViewFragment extends Fragment implements
      * Same as {@link RequestManageTracksListener}.
      */
     public interface RequestManageMarkerListener {
-        void onRequestManageMarker();
+        void onRequestManageMarker(MarkerGson.Marker marker);
     }
 
     /**

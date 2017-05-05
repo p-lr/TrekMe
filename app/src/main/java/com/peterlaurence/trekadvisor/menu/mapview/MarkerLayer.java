@@ -26,25 +26,16 @@ import java.util.List;
  * @author peterLaurence on 09/04/17.
  */
 class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
+    List<MarkerGson.Marker> mMarkers;
     private MapViewFragment mMapViewFragment;
     private TileView mTileView;
     private Map mMap;
-    List<MarkerGson.Marker> mMarkers;
     private MarkerGson.Marker mCurrentMarker;
 
 
     MarkerLayer(MapViewFragment mapViewFragment) {
         mMapViewFragment = mapViewFragment;
         MapLoader.getInstance().addMapMarkerUpdateListener(this);
-    }
-
-    MarkerGson.Marker getCurrentMarker() {
-        return mCurrentMarker;
-    }
-
-    @Override
-    public void onMapMarkerUpdate() {
-        drawMarkers();
     }
 
     /**
@@ -71,6 +62,19 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         return markerGrab;
     }
 
+    MarkerGson.Marker getCurrentMarker() {
+        return mCurrentMarker;
+    }
+
+    public void setCurrentMarker(MarkerGson.Marker marker) {
+        mCurrentMarker = marker;
+    }
+
+    @Override
+    public void onMapMarkerUpdate() {
+        drawMarkers();
+    }
+
     void setTileView(TileView tileView) {
         mTileView = tileView;
 
@@ -83,7 +87,8 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                     /* Prepare the callout */
                     MarkerCallout markerCallout = new MarkerCallout(mMapViewFragment.getContext());
                     markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout, mTileView, mMapViewFragment.getContext()));
-                    markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, markerCallout, mTileView,
+                    markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
+                            markerCallout, mTileView,
                             (MapViewFragment.RequestManageMarkerListener) mMapViewFragment.getActivity()));
 
                     mTileView.addCallout(markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -1.2f);
@@ -250,13 +255,16 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
      */
     private static class EditMarkerRunnable implements Runnable {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
+        private WeakReference<MarkerLayer> mMarkerLayerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
         private TileView mTileView;
         private WeakReference<MapViewFragment.RequestManageMarkerListener> mListenerWeakRef;
 
-        EditMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, TileView tileView,
+        EditMarkerRunnable(MovableMarker movableMarker, MarkerLayer markerLayer,
+                           MarkerCallout markerCallout, TileView tileView,
                            MapViewFragment.RequestManageMarkerListener listener) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
+            mMarkerLayerWeakReference = new WeakReference<>(markerLayer);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
             mTileView = tileView;
             mListenerWeakRef = new WeakReference<>(listener);
@@ -270,8 +278,13 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                 if (mListenerWeakRef != null) {
                     MapViewFragment.RequestManageMarkerListener listener = mListenerWeakRef.get();
                     if (listener != null) {
-                        // TODO : implement this
-                        listener.onRequestManageMarker();
+                        MarkerLayer markerLayer = mMarkerLayerWeakReference.get();
+                        MarkerGson.Marker marker = movableMarker.getMarker();
+                        if (markerLayer != null) {
+                            markerLayer.setCurrentMarker(marker);
+                        }
+
+                        listener.onRequestManageMarker(marker);
                     }
                 }
             }

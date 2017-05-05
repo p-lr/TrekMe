@@ -118,4 +118,8 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
     public void setRelativeY(double relativeY) {
         this.relativeY = relativeY;
     }
+
+    public MarkerGson.Marker getMarker() {
+        return mMarker;
+    }
 }
