@@ -37,4 +37,5 @@
     <string name="mapview_add_marker">Ajouter un repère</string>
     <string name="move_marker">Déplacer</string>
     <string name="marker_name_label">Nom</string>
+    <string name="comment_label">Commentaire</string>
 </resources>

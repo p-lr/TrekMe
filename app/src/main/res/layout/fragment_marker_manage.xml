@@ -117,5 +117,29 @@
                     android:imeOptions="actionNext" />
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/marker_comment_label_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:text="@string/comment_label"
+            android:textColor="?android:attr/colorAccent"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/marker_comment_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:minLines="6"
+            android:scrollbars="vertical"
+            android:gravity="top|start"
+            android:background="@drawable/bordered_shape"
+            android:padding="10dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
     </LinearLayout>
 </ScrollView>
