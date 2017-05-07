@@ -72,5 +72,6 @@
     <string name="wgs84_label">WGS84 coordinates</string>
     <string name="projection_label">Projected coordinates</string>
     <string name="comment_label">Comment</string>
+    <string name="save_action">Save</string>
 
 </resources>

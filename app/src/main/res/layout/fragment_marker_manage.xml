@@ -136,6 +136,7 @@
             android:minLines="6"
             android:scrollbars="vertical"
             android:gravity="top|start"
+            android:textSize="14sp"
             android:background="@drawable/bordered_shape"
             android:padding="10dp"
             android:layout_marginTop="16dp"

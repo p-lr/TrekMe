@@ -4,11 +4,15 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
@@ -44,6 +48,7 @@ public class MarkerManageFragment extends Fragment {
     private TextView mProjectionLabel;
     private TextInputEditText mProjectionX;
     private TextInputEditText mProjectionY;
+    private EditText mComment;
 
     @Override
     public void onAttach(Context context) {
@@ -76,6 +81,7 @@ public class MarkerManageFragment extends Fragment {
         mProjectionLabel = (TextView) rootView.findViewById(R.id.marker_proj_label_id);
         mProjectionX = (TextInputEditText) rootView.findViewById(R.id.marker_proj_x_id);
         mProjectionY = (TextInputEditText) rootView.findViewById(R.id.marker_proj_y_id);
+        mComment = (EditText) rootView.findViewById(R.id.marker_comment_id);
 
         mMap = mMapProvider.getCurrentMap();
         mMarker = mMarkerProvider.getCurrentMarker();
@@ -86,14 +92,39 @@ public class MarkerManageFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        /* Hide the app title */
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(false);
+        }
+
+        /* Clear the existing action menu */
         menu.clear();
+
+        /* .. and fill the new one */
+        inflater.inflate(R.menu.menu_fragment_marker_manage, menu);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.save_marker_id:
+                //TODO : implement makers save
+                return true;
+            case R.id.undo_marker_id:
+                updateView();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void updateView() {
         mNameEditText.setText(mMarker.name);
         mLatEditText.setText(String.valueOf(mMarker.lat));
         mLonEditText.setText(String.valueOf(mMarker.lon));
+        mComment.setText(mMarker.comment);
 
         /* Check whether projected coordinates fields should be shown or not */
         if (mMap.getProjection() == null) {

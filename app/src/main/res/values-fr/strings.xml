@@ -38,4 +38,7 @@
     <string name="move_marker">Déplacer</string>
     <string name="marker_name_label">Nom</string>
     <string name="comment_label">Commentaire</string>
+    <string name="save_action">Enregistrer</string>
+    <string name="wgs84_label">Coordonnées WGS84</string>
+    <string name="projection_label">Coordonnées de projection</string>
 </resources>
