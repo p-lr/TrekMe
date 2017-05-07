@@ -110,7 +110,8 @@ public class MarkerManageFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_marker_id:
-                //TODO : implement makers save
+                //TODO : implement makers save to json file
+                saveChanges();
                 return true;
             case R.id.undo_marker_id:
                 updateView();
@@ -136,5 +137,19 @@ public class MarkerManageFragment extends Fragment {
 
         mProjectionX.setText(String.valueOf(mMarker.proj_x));
         mProjectionY.setText(String.valueOf(mMarker.proj_y));
+    }
+
+    private void saveChanges() {
+        try {
+            mMarker.lat = Double.valueOf(mLatEditText.getText().toString());
+            mMarker.lon = Double.valueOf(mLonEditText.getText().toString());
+            mMarker.proj_x = Double.valueOf(mProjectionX.getText().toString());
+            mMarker.proj_y = Double.valueOf(mProjectionY.getText().toString());
+        } catch (Exception e) {
+            //don't care
+        }
+        mMarker.comment = mComment.getText().toString();
+
+        mMarkerProvider.currentMarkerEdited();
     }
 }

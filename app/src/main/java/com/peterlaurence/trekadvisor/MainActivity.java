@@ -605,6 +605,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void currentMarkerEdited() {
+        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
+        if (mapViewFragment != null && mapViewFragment instanceof MapViewFragment) {
+            ((MapViewFragment) mapViewFragment).currentMarkerEdited();
+        }
+    }
+
+    @Override
     public TracksManageFragment.TrackChangeListener getTrackChangeListener() {
         Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
         if (mapViewFragment != null) {

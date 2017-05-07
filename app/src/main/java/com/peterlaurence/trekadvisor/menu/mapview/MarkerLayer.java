@@ -30,7 +30,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     private MapViewFragment mMapViewFragment;
     private TileView mTileView;
     private Map mMap;
-    private MarkerGson.Marker mCurrentMarker;
+    private MovableMarker mCurrentMovableMarker;
 
 
     MarkerLayer(MapViewFragment mapViewFragment) {
@@ -63,11 +63,11 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     }
 
     MarkerGson.Marker getCurrentMarker() {
-        return mCurrentMarker;
+        return mCurrentMovableMarker.getMarker();
     }
 
-    public void setCurrentMarker(MarkerGson.Marker marker) {
-        mCurrentMarker = marker;
+    private void setCurrentMarker(MovableMarker movableMarker) {
+        mCurrentMovableMarker = movableMarker;
     }
 
     @Override
@@ -162,6 +162,17 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
 
         mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
+    }
+
+    /**
+     * The {@link MarkerGson.Marker} of the {@code mCurrentMovableMarker} has changed. <br>
+     * Updates the view.
+     */
+    void updateCurrentMarker() {
+        mCurrentMovableMarker.setRelativeX(mCurrentMovableMarker.getMarker().proj_x);
+        mCurrentMovableMarker.setRelativeY(mCurrentMovableMarker.getMarker().proj_y);
+        mTileView.moveMarker(mCurrentMovableMarker, mCurrentMovableMarker.getRelativeX(),
+                mCurrentMovableMarker.getRelativeY());
     }
 
     /**
@@ -279,12 +290,11 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                     MapViewFragment.RequestManageMarkerListener listener = mListenerWeakRef.get();
                     if (listener != null) {
                         MarkerLayer markerLayer = mMarkerLayerWeakReference.get();
-                        MarkerGson.Marker marker = movableMarker.getMarker();
                         if (markerLayer != null) {
-                            markerLayer.setCurrentMarker(marker);
+                            markerLayer.setCurrentMarker(movableMarker);
                         }
 
-                        listener.onRequestManageMarker(marker);
+                        listener.onRequestManageMarker(movableMarker.getMarker());
                     }
                 }
             }

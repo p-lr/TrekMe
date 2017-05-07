@@ -289,6 +289,10 @@ public class MapViewFragment extends Fragment implements
         return mMarkerLayer.getCurrentMarker();
     }
 
+    public void currentMarkerEdited() {
+        mMarkerLayer.updateCurrentMarker();
+    }
+
     /**
      * Updates the position on the {@link Map}.
      * Also, if we locked the view, we center the TileView on the current position.
