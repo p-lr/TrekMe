@@ -153,8 +153,7 @@ public class TrackImporter {
                     double[] projectedValues = null;
                     Projection projection = mMap.getProjection();
                     if (projection != null) {
-                        projection.doProjection(trackPoint.getLatitude(), trackPoint.getLongitude());
-                        projectedValues = projection.getProjectedValues();
+                        projectedValues = projection.doProjection(trackPoint.getLatitude(), trackPoint.getLongitude());
                     }
 
                     /* By design, default values are null */

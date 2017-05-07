@@ -15,9 +15,10 @@ public class ProjectionTask extends AsyncTask<Object, Void, Object> {
     private double mLatitude;
     private double mLongitude;
     private Projection mProjection;
+    private double[] mProjectedValues;
 
     public interface ProjectionUpdateLister {
-        void onProjectionUpdate(Projection projection);
+        void onProjectionUpdate(double[] projectedValues);
     }
 
     public ProjectionTask(ProjectionUpdateLister projectionUpdateLister, double latitude,
@@ -30,15 +31,15 @@ public class ProjectionTask extends AsyncTask<Object, Void, Object> {
 
     @Override
     protected Object doInBackground(Object[] params) {
-        mProjection.doProjection(mLatitude, mLongitude);
+        mProjectedValues = mProjection.doProjection(mLatitude, mLongitude);
         return null;
     }
 
     @Override
     protected void onPostExecute(Object result) {
         ProjectionUpdateLister projectionUpdateLister = mProjectionUpdateListerWeakReference.get();
-        if (projectionUpdateLister != null) {
-            projectionUpdateLister.onProjectionUpdate(mProjection);
+        if (projectionUpdateLister != null && mProjectedValues != null) {
+            projectionUpdateLister.onProjectionUpdate(mProjectedValues);
         }
     }
 }

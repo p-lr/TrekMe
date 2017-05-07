@@ -55,10 +55,6 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
         /* Keep a reference on the model object */
         mMarker = marker;
 
-        /* Get the init position from the marker */
-        relativeX = marker.proj_x;
-        relativeY = marker.proj_y;
-
         /* Init the drawable */
         if (staticForm) {
             initStatic();

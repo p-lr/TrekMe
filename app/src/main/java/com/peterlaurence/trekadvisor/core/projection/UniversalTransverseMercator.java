@@ -71,11 +71,6 @@ public class UniversalTransverseMercator implements Projection {
     @SerializedName("hemisphere")
     private String mHemisphere;
 
-    private transient double mEasting;
-    private transient double mNorthing;
-
-    private transient double mLatitude;
-    private transient double mLongitude;
 
     @Override
     public void init() {
@@ -89,9 +84,11 @@ public class UniversalTransverseMercator implements Projection {
      *
      * @param latitude  in decimal degrees
      * @param longitude in decimal degrees
+     * @return a {@code double[]} of size 2. First element is the Easting, the second is the
+     * Northing. Values are expressed in meters.
      */
     @Override
-    public void doProjection(double latitude, double longitude) {
+    public double[] doProjection(double latitude, double longitude) {
         /* First, convert values in radians */
         latitude = latitude * toRad;
         longitude = longitude * toRad;
@@ -104,12 +101,12 @@ public class UniversalTransverseMercator implements Projection {
         double _e2 = Math.pow(e, 2);
         double C = _e2 / (1 - _e2) * Math.pow(Math.cos(latitude), 2);
 
-        synchronized (this) {
-            mEasting = FE + k0 * a * nu * (A + (1 - T + C) * Math.pow(A, 3) / 6 + (5 - 18 * T + Math.pow(T, 2)) *
-                    Math.pow(A, 5) / 120);
-            mNorthing = FN + k0 * a * (s + nu * Math.tan(latitude) * (Math.pow(A, 2) / 2 + (5 - T + 9 * C + 4 * Math.pow(C, 2)) *
-                    Math.pow(A, 4) / 24 + (61 - 58 * T + Math.pow(T, 2)) * Math.pow(A, 6) / 720));
-        }
+        double easting = FE + k0 * a * nu * (A + (1 - T + C) * Math.pow(A, 3) / 6 + (5 - 18 * T + Math.pow(T, 2)) *
+                Math.pow(A, 5) / 120);
+        double northing = FN + k0 * a * (s + nu * Math.tan(latitude) * (Math.pow(A, 2) / 2 + (5 - T + 9 * C + 4 * Math.pow(C, 2)) *
+                Math.pow(A, 4) / 24 + (61 - 58 * T + Math.pow(T, 2)) * Math.pow(A, 6) / 720));
+
+        return new double[]{easting, northing};
     }
 
     /**
@@ -118,9 +115,11 @@ public class UniversalTransverseMercator implements Projection {
      *
      * @param E Easting in meters
      * @param N Northing in meters
+     * @return a {@code double[]} of size 2. First element is the longitude, the second is the
+     * latitude. Values are expressed in radians.
      */
     @Override
-    public void undoProjection(double E, double N) {
+    public double[] undoProjection(double E, double N) {
         double e1 = (1 - Math.sqrt(1 - e * e)) / (1 + Math.sqrt(1 - e * e));
         double M0 = 0; // UTM
         double M1 = M0 + (N - FN) / k0;
@@ -134,34 +133,15 @@ public class UniversalTransverseMercator implements Projection {
         double nu1 = a / Math.sqrt(1 - e * e * Math.pow(Math.sin(phi1), 2));
         double rho1 = a * (1 - e * e) / Math.pow(1 - e * e * Math.pow(Math.sin(phi1), 2), 1.5);
         double D = (E - FE) / (nu1 * k0);
-        synchronized (this) {
-            mLatitude = (phi1 - (nu1 * Math.tan(phi1) / rho1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 -
-                    4 * C1 * C1 - 9 * ep2) * Math.pow(D, 4) / 24 + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 -
-                    252 * ep2 - 3 * C1 * C1) * Math.pow(D, 6) / 720)) * toDecimalDegrees;
 
-            mLongitude = (mReferenceMeridian + (D - (1 + 2 * T1 + C1) * Math.pow(D, 3) / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 +
-                    8 * ep2 + 24 * T1 * T1) * Math.pow(D, 5) / 120) / Math.cos(phi1)) * toDecimalDegrees;
-        }
-    }
+        double latitude = (phi1 - (nu1 * Math.tan(phi1) / rho1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 -
+                4 * C1 * C1 - 9 * ep2) * Math.pow(D, 4) / 24 + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 -
+                252 * ep2 - 3 * C1 * C1) * Math.pow(D, 6) / 720)) * toDecimalDegrees;
 
-    /**
-     * Obtain the projected values as an array of two double.
-     * The first is the Easting, the second is the Northing.
-     * Values are expressed in meters.
-     */
-    @Override
-    public synchronized double[] getProjectedValues() {
-        return new double[]{mEasting, mNorthing};
-    }
+        double longitude = (mReferenceMeridian + (D - (1 + 2 * T1 + C1) * Math.pow(D, 3) / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 +
+                8 * ep2 + 24 * T1 * T1) * Math.pow(D, 5) / 120) / Math.cos(phi1)) * toDecimalDegrees;
 
-    /**
-     * Obtain the WGS84 latitude and longitude as an array of two double.
-     * The first is the latitude, the second is the longitude.
-     * Values are expressed in radians.
-     */
-    @Override
-    public double[] getWgs84Coords() {
-        return new double[]{mLatitude, mLongitude};
+        return new double[]{longitude, latitude};
     }
 
     public String getName() {

@@ -206,12 +206,10 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         double y = rootView.getYValue();
 
         if (isWgs84) {
-            projection.undoProjection(x, y);
-            double[] wgs84 = projection.getWgs84Coords();
-            rootView.updateCoordinateFields(wgs84[1], wgs84[0]);
+            double[] wgs84 = projection.undoProjection(x, y);
+            rootView.updateCoordinateFields(wgs84[0], wgs84[1]);
         } else {
-            projection.doProjection(y, x);
-            double[] projectedValues = projection.getProjectedValues();
+            double[] projectedValues = projection.doProjection(y, x);
             rootView.updateCoordinateFields(projectedValues[0], projectedValues[1]);
         }
     }
@@ -248,8 +246,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         MapGson.Calibration.CalibrationPoint calibrationPoint = mCalibrationPointList.get(mCurrentCalibrationPoint);
         Projection projection = map.getProjection();
         if (rootView.isWgs84() && projection != null) {
-            projection.doProjection(y, x);
-            double[] projectedValues = projection.getProjectedValues();
+            double[] projectedValues = projection.doProjection(y, x);
             calibrationPoint.proj_x = projectedValues[0];
             calibrationPoint.proj_y = projectedValues[1];
         } else {
@@ -275,10 +272,9 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
             MapGson.Calibration.CalibrationPoint calibrationPoint = mCalibrationPointList.get(calibrationPointNumber);
             Projection projection = mMapWeakReference.get().getProjection();
             if (rootView.isWgs84() && projection != null) {
-                projection.undoProjection(calibrationPoint.proj_x, calibrationPoint.proj_y);
-                double[] wgs84 = projection.getWgs84Coords();
+                double[] wgs84 = projection.undoProjection(calibrationPoint.proj_x, calibrationPoint.proj_y);
                 if (wgs84.length == 2) {
-                    rootView.updateCoordinateFields(wgs84[1], wgs84[0]);
+                    rootView.updateCoordinateFields(wgs84[0], wgs84[1]);
                 }
             } else {
                 rootView.updateCoordinateFields(calibrationPoint.proj_x, calibrationPoint.proj_y);

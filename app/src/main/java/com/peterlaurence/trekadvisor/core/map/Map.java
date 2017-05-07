@@ -193,8 +193,7 @@ public class Map implements Parcelable {
         if (projection == null) {
             return null;
         } else {
-            projection.doProjection(latitude, longitude);
-            return projection.getProjectedValues();
+            return projection.doProjection(latitude, longitude);
         }
     }
 

@@ -280,9 +280,8 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onProjectionUpdate(Projection projection) {
-        double[] val = projection.getProjectedValues();
-        updatePosition(val[0], val[1]);
+    public void onProjectionUpdate(double[] projectedValues) {
+        updatePosition(projectedValues[0], projectedValues[1]);
     }
 
     public MarkerGson.Marker getCurrentMarker() {

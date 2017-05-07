@@ -1,5 +1,7 @@
 package com.peterlaurence.trekadvisor.core.projection;
 
+import android.support.annotation.Nullable;
+
 /**
  * Interface which defines a projection.
  *
@@ -9,13 +11,11 @@ public interface Projection {
     /* Called after object creation */
     void init();
 
-    void doProjection(double latitude, double longitude);
+    @Nullable
+    double[] doProjection(double latitude, double longitude);
 
-    void undoProjection(double X, double Y);
-
-    double[] getProjectedValues();
-
-    double[] getWgs84Coords();
+    @Nullable
+    double[] undoProjection(double X, double Y);
 
     String getName();
 }

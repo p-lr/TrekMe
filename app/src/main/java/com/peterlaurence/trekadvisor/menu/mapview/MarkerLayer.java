@@ -86,7 +86,8 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
 
                     /* Prepare the callout */
                     MarkerCallout markerCallout = new MarkerCallout(mMapViewFragment.getContext());
-                    markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout, mTileView, mMapViewFragment.getContext()));
+                    markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
+                            mTileView, mMapViewFragment.getContext(), mMap));
                     markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
                             markerCallout, mTileView,
                             (MapViewFragment.RequestManageMarkerListener) mMapViewFragment.getActivity()));
@@ -124,9 +125,17 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
 
         for (MarkerGson.Marker marker : mMarkers) {
             MovableMarker movableMarker = new MovableMarker(mMapViewFragment.getContext(), true, marker);
+            if (mMap.getProjection() == null) {
+                movableMarker.setRelativeX(marker.lon);
+                movableMarker.setRelativeY(marker.lat);
+            } else {
+                movableMarker.setRelativeX(marker.proj_x);
+                movableMarker.setRelativeY(marker.proj_y);
+            }
             movableMarker.initStatic();
 
-            mTileView.addMarker(movableMarker, marker.proj_x, marker.proj_y, -0.5f, -0.5f);
+            mTileView.addMarker(movableMarker, movableMarker.getRelativeX(),
+                    movableMarker.getRelativeY(), -0.5f, -0.5f);
         }
     }
 
@@ -146,20 +155,36 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
 
         /* Create a new marker and add it to the map */
         MarkerGson.Marker newMarker = new MarkerGson.Marker();
-        newMarker.proj_x = relativeX;
-        newMarker.proj_y = relativeY;
-        if (mMap != null) {
-            mMap.addMarker(newMarker);
+
+        if (mMap.getProjection() == null) {
+            newMarker.lat = relativeY;
+            newMarker.lon = relativeX;
+        } else {
+            newMarker.proj_x = relativeX;
+            newMarker.proj_y = relativeY;
+            double[] wgs84Coords;
+            wgs84Coords = mMap.getProjection().undoProjection(relativeX, relativeY);
+            if (wgs84Coords != null) {
+                newMarker.lon = wgs84Coords[0];
+                newMarker.lat = wgs84Coords[1];
+            }
         }
 
         /* Create the corresponding view */
         movableMarker = new MovableMarker(context, false, newMarker);
+        movableMarker.setRelativeX(relativeX);
+        movableMarker.setRelativeY(relativeY);
         movableMarker.initRounded();
+
+        if (mMap != null) {
+            mMap.addMarker(newMarker);
+        }
 
         /* Easily move the marker */
         MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mMapViewFragment.getContext());
 
-        movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
+        movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab,
+                mTileView, mMap));
 
         mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
     }
@@ -169,8 +194,14 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
      * Updates the view.
      */
     void updateCurrentMarker() {
-        mCurrentMovableMarker.setRelativeX(mCurrentMovableMarker.getMarker().proj_x);
-        mCurrentMovableMarker.setRelativeY(mCurrentMovableMarker.getMarker().proj_y);
+        if (mMap.getProjection() == null) {
+            mCurrentMovableMarker.setRelativeX(mCurrentMovableMarker.getMarker().lon);
+            mCurrentMovableMarker.setRelativeY(mCurrentMovableMarker.getMarker().lat);
+        } else {
+            mCurrentMovableMarker.setRelativeX(mCurrentMovableMarker.getMarker().proj_x);
+            mCurrentMovableMarker.setRelativeY(mCurrentMovableMarker.getMarker().proj_y);
+        }
+
         mTileView.moveMarker(mCurrentMovableMarker, mCurrentMovableMarker.getRelativeX(),
                 mCurrentMovableMarker.getRelativeY());
     }
@@ -183,17 +214,23 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
      * <li>Morph the {@link MovableMarker} into its static form</li>
      * <li>Animate out and remove the {@link MarkerGrab} which help the user to move the
      * {@link MovableMarker}</li>
+     * <li>Update the {@link MarkerGson.Marker} associated with the relative coordinates of the
+     * {@link MovableMarker}. Depending on the {@link Map} using a projection or not, those
+     * relative coordinates are wgs84 or projected values.</li>
      * </ul>
      */
     private static class MovableMarkerClickListener implements View.OnClickListener {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerGrab> mMarkerGrabWeakReference;
         private TileView mTileView;
+        private Map mMap;
 
-        MovableMarkerClickListener(MovableMarker movableMarker, MarkerGrab markerGrab, TileView tileView) {
+        MovableMarkerClickListener(MovableMarker movableMarker, MarkerGrab markerGrab,
+                                   TileView tileView, Map map) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerGrabWeakReference = new WeakReference<>(markerGrab);
             mTileView = tileView;
+            mMap = map;
         }
 
         @Override
@@ -215,6 +252,22 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                         }
                     }
                 });
+
+                /* The view has been moved, update the associated model object */
+                MarkerGson.Marker marker = movableMarker.getMarker();
+                if (mMap.getProjection() == null) {
+                    marker.lon = movableMarker.getRelativeX();
+                    marker.lat = movableMarker.getRelativeY();
+                } else {
+                    marker.proj_x = movableMarker.getRelativeX();
+                    marker.proj_y = movableMarker.getRelativeY();
+                    double[] wgs84Coords;
+                    wgs84Coords = mMap.getProjection().undoProjection(marker.proj_x, marker.proj_y);
+                    if (wgs84Coords != null) {
+                        marker.lon = wgs84Coords[0];
+                        marker.lat = wgs84Coords[1];
+                    }
+                }
             }
         }
     }
@@ -228,12 +281,15 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
         private TileView mTileView;
         private Context mContext;
+        private Map mMap;
 
-        MorphMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, TileView tileView, Context context) {
+        MorphMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, TileView tileView,
+                            Context context, Map map) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
             mTileView = tileView;
             mContext = context;
+            mMap = map;
         }
 
         @Override
@@ -245,7 +301,8 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
 
                 /* Easily move the marker */
                 MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mContext);
-                movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab, mTileView));
+                movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker,
+                        markerGrab, mTileView, mMap));
 
                 /* Use a trick to bring the marker to the foreground */
                 mTileView.removeMarker(movableMarker);
