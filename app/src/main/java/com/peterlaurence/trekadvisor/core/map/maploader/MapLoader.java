@@ -285,6 +285,28 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
+     * Save the {@link MarkerGson} of a {@link Map}, so the changes persist upon application restart.
+     * <p>
+     * Here, it writes to the corresponding json file.
+     * </p>
+     *
+     * @param map The {@link Map} to save.
+     */
+    public void saveMarkers(Map map) {
+        String jsonString = mGson.toJson(map.getMarkerGson());
+
+        File markerFile = new File(map.getDirectory(), MapLoader.MAP_MARKER_FILE_NAME);
+        try {
+            PrintWriter writer = new PrintWriter(markerFile);
+            writer.print(jsonString);
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while saving the markers");
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    /**
      * Delete a {@link Map}. Recursively deletes the parent directory.
      *
      * @param map The {@link Map} to delete.

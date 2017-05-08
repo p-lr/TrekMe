@@ -268,6 +268,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                         marker.lat = wgs84Coords[1];
                     }
                 }
+
+                /* Save the changes on the markers.json file */
+                MapLoader.getInstance().saveMarkers(mMap);
             }
         }
     }

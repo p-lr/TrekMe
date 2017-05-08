@@ -301,6 +301,10 @@ public class Map implements Parcelable {
         return mMapGson;
     }
 
+    public final MarkerGson getMarkerGson() {
+        return mMarkerGson;
+    }
+
     public boolean areMarkersDefined() {
         return mMarkerGson.markers.size() > 0;
     }

@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 
@@ -151,5 +152,8 @@ public class MarkerManageFragment extends Fragment {
         mMarker.comment = mComment.getText().toString();
 
         mMarkerProvider.currentMarkerEdited();
+
+        /* Save the changes on the markers.json file */
+        MapLoader.getInstance().saveMarkers(mMap);
     }
 }
