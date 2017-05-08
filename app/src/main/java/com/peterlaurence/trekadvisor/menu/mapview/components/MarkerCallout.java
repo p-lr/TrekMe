@@ -9,8 +9,12 @@ import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
+
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 /**
  * @author peterLaurence on 09/04/17.
@@ -18,6 +22,8 @@ import com.peterlaurence.trekadvisor.R;
 public class MarkerCallout extends RelativeLayout {
     private Button mMoveButton;
     private Button mEditButton;
+    private TextView mTitle;
+    private TextView mSubTitle;
 
     public MarkerCallout(Context context) {
         super(context);
@@ -26,6 +32,8 @@ public class MarkerCallout extends RelativeLayout {
 
         mMoveButton = (Button) findViewById(R.id.move_callout_btn);
         mEditButton = (Button) findViewById(R.id.edit_callout_btn);
+        mTitle = (TextView) findViewById(R.id.callout_title);
+        mSubTitle = (TextView) findViewById(R.id.callout_subtitle);
     }
 
     public void transitionIn() {
@@ -60,5 +68,21 @@ public class MarkerCallout extends RelativeLayout {
                 editAction.run();
             }
         });
+    }
+
+    public void setTitle(String title) {
+        mTitle.setText(title);
+    }
+
+    public void setSubTitle(String subtitle) {
+        mSubTitle.setText(subtitle);
+    }
+
+    public void setSubTitle(double lat, double lon) {
+        DecimalFormat df = new DecimalFormat("#.####");
+        df.setRoundingMode(RoundingMode.CEILING);
+
+        /* Note the the compiler uses StringBuilder under the hood */
+        setSubTitle("lat : " + df.format(lat) + "  " + "lon : " + df.format(lon));
     }
 }

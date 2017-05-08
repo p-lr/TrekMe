@@ -91,6 +91,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                     markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
                             markerCallout, mTileView,
                             (MapViewFragment.RequestManageMarkerListener) mMapViewFragment.getActivity()));
+                    MarkerGson.Marker marker = movableMarker.getMarker();
+                    markerCallout.setTitle(marker.name);
+                    markerCallout.setSubTitle(marker.lat, marker.lon);
 
                     mTileView.addCallout(markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -1.2f);
                     markerCallout.transitionIn();

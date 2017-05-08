@@ -16,7 +16,7 @@
         android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="@color/colorPrimaryTextBlack"
-        android:text="A marker" />
+        android:text="@string/marker_name_label" />
 
     <TextView
         android:id="@+id/callout_subtitle"
@@ -27,8 +27,7 @@
         android:layout_height="wrap_content"
         android:textSize="10sp"
         android:textStyle="normal"
-        android:textColor="@color/colorPrimaryTextBlack"
-        android:text="lat : 15.224  lon : 4.2135" />
+        android:textColor="@color/colorPrimaryTextBlack" />
 
 
     <Button

@@ -149,6 +149,7 @@ public class MarkerManageFragment extends Fragment {
         } catch (Exception e) {
             //don't care
         }
+        mMarker.name = mNameEditText.getText().toString();
         mMarker.comment = mComment.getText().toString();
 
         mMarkerProvider.currentMarkerEdited();
