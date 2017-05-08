@@ -15,4 +15,6 @@
     <color name="colorDistanceMarker">#448AFF</color>
     <color name="colorDistanceMarkerBg">#55448AFF</color>
     <color name="colorMarkerGrabBg">#55448AFF</color>
+    <color name="colorMarker">#FF5722</color>
+    <color name="colorMarkerStroke">#FFFFFF</color>
 </resources>
