@@ -1,0 +1,161 @@
+package com.peterlaurence.trekadvisor.menu.mapview;
+
+import android.os.AsyncTask;
+import android.util.Log;
+
+import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
+import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
+import com.qozix.tileview.TileView;
+import com.qozix.tileview.geom.CoordinateTranslater;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * All {@link com.peterlaurence.trekadvisor.core.map.gson.RouteGson.Route} are managed here. <br>
+ * This object is intended to be used exclusively by the {@link MapViewFragment}.
+ *
+ * @author peterLaurence on 13/05/17.
+ */
+class RouteLayer implements TracksManageFragment.TrackChangeListener {
+    private static final String TAG = "RouteLayer";
+    private TileViewExtended mTileView;
+    private Map mMap;
+
+    /**
+     * A track file has been parsed. At this stage, the new {@link RouteGson.Route} are added to the
+     * {@link Map}.
+     *
+     * @param map       the {@link Map} associated with the change
+     * @param routeList a list of {@link RouteGson.Route}
+     */
+    @Override
+    public void onTrackChanged(Map map, List<RouteGson.Route> routeList) {
+        Log.d(TAG, routeList.size() + " new route received for map " + map.getName());
+
+        DrawRoutesTask drawRoutesTask = new DrawRoutesTask(map, routeList, mTileView);
+        drawRoutesTask.execute();
+    }
+
+    @Override
+    public void onTrackVisibilityChanged() {
+        mTileView.getPathView().invalidate();
+    }
+
+    void setMap(Map map) {
+        mMap = map;
+
+        /* Update the ui accordingly */
+        init();
+    }
+
+    private void init() {
+        if (mMap.areRoutesDefined()) {
+            drawRoutes();
+        } else {
+            MapLoader.getInstance().getRoutesForMap(mMap);
+        }
+    }
+
+    private void drawRoutes() {
+        /* Display all routes */
+        DrawRoutesTask drawRoutesTask = new DrawRoutesTask(mMap, mMap.getRoutes(), mTileView);
+        drawRoutesTask.execute();
+    }
+
+    void setTileView(TileViewExtended tileView) {
+        mTileView = tileView;
+    }
+
+    /**
+     * Each {@link RouteGson.Route} of a {@link Map} needs to provide data in a format that the
+     * {@link TileView} understands. <br>
+     * This is done in an ansynctask, to ensure that this process does not hangs the UI thread.
+     */
+    private static class DrawRoutesTask extends AsyncTask<Void, Void, Void> {
+        private Map mMap;
+        private List<WeakReference<RouteGson.Route>> mRouteList;
+        private WeakReference<TileViewExtended> mTileViewWeakReference;
+        private WeakReference<CoordinateTranslater> mCoordinateTranslaterWeakReference;
+
+        /**
+         * During this task, data is generated from the markers of each route of a map. As this is
+         * done in a different thread than the ui-thread (where the user is able to add/remove and
+         * also modify routes), we want to avoid {@link java.util.ConcurrentModificationException}
+         * when iterating over the list of routes. So we create another list of
+         * {@link WeakReference< RouteGson.Route >}, while being aware that a {@link RouteGson.Route} can
+         * be deleted at any time.
+         */
+        DrawRoutesTask(Map map, List<RouteGson.Route> routeList, TileViewExtended tileView) {
+            mMap = map;
+
+            mRouteList = new ArrayList<>();
+            for (RouteGson.Route route : routeList) {
+                mRouteList.add(new WeakReference<>(route));
+            }
+
+            mTileViewWeakReference = new WeakReference<>(tileView);
+            mCoordinateTranslaterWeakReference = new WeakReference<>(tileView.getCoordinateTranslater());
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            for (WeakReference<RouteGson.Route> route : mRouteList) {
+                try {
+                    /* Work on a copy of the list of markers */
+                    List<MarkerGson.Marker> markerList = new ArrayList<>(route.get().route_markers);
+                    /* If there is only one marker, the path has no sense */
+                    if (markerList.size() < 2) continue;
+
+
+                    CoordinateTranslater coordinateTranslater = mCoordinateTranslaterWeakReference.get();
+                    if (coordinateTranslater == null) continue;
+
+                    int size = markerList.size() * 4 - 4;
+                    float[] lines = new float[size];
+
+                    int i = 0;
+                    int markerIndex = 0;
+                    for (MarkerGson.Marker marker : markerList) {
+                        /* No need to continue if the route has been deleted in the meanwhile */
+                        if (route.get() == null) break;
+
+                        if (markerIndex % 2 != 0) {
+                            lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
+                            lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
+                            if (i + 2 >= size) break;
+                            lines[i + 2] = lines[i];
+                            lines[i + 3] = lines[i + 1];
+                            i += 4;
+                        } else {
+                            lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
+                            lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
+                            i += 2;
+                        }
+                        markerIndex++;
+                    }
+
+                    /* Set the route data */
+                    PathView.DrawablePath drawablePath = new PathView.DrawablePath(lines, null);
+                    route.get().setData(drawablePath);
+                } catch (Exception e) {
+                    // ignore and continue the loop
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            TileViewExtended tileView = mTileViewWeakReference.get();
+            if (tileView != null) {
+                tileView.drawRoutes(mMap.getRoutes());
+            }
+        }
+    }
+}

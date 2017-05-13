@@ -9,10 +9,12 @@ import com.google.gson.GsonBuilder;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
-import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.gson.RuntimeTypeAdapterFactory;
+import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapArchiveSearchTask;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapMarkerImportTask;
+import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapRouteImportTask;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapUpdateTask;
 import com.peterlaurence.trekadvisor.core.projection.MercatorProjection;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
@@ -50,27 +52,9 @@ import java.util.List;
  */
 public class MapLoader implements MapImporter.MapParseListener {
 
-    private static final String APP_FOLDER_NAME = "trekadvisor";
     public static final String MAP_FILE_NAME = "map.json";
     public static final String MAP_MARKER_FILE_NAME = "markers.json";
-
-    private Gson mGson;
-    private static final File DEFAULT_APP_DIR = new File(Environment.getExternalStorageDirectory(),
-            APP_FOLDER_NAME);
-    /* For instance maps are searched anywhere under the app folder */
-    private static final File DEFAULT_MAPS_DIR = DEFAULT_APP_DIR;
-
-    private List<Map> mMapList;
-    private List<MapListUpdateListener> mMapListUpdateListeners;
-    private List<MapMarkerUpdateListener> mMapMarkerUpdateListeners;
-    private List<MapArchive> mMapArchiveList;
-    private List<MapArchiveListUpdateListener> mMapArchiveListUpdateListeners;
-
-    /* Singleton implementation */
-    private static class SingletonHolder {
-        private static final MapLoader instance = new MapLoader();
-    }
-
+    public static final String MAP_ROUTE_FILE_NAME = "routes.json";
     /**
      * All {@link Projection}s are registered here.
      */
@@ -78,24 +62,19 @@ public class MapLoader implements MapImporter.MapParseListener {
         put(MercatorProjection.NAME, MercatorProjection.class);
         put(UniversalTransverseMercator.NAME, UniversalTransverseMercator.class);
     }};
-
-    public enum CALIBRATION_METHOD {
-        SIMPLE_2_POINTS,
-        UNKNOWN;
-
-        public static CALIBRATION_METHOD fromCalibrationName(String name) {
-            if (name != null) {
-                for (CALIBRATION_METHOD method : CALIBRATION_METHOD.values()) {
-                    if (name.equalsIgnoreCase(method.toString())) {
-                        return method;
-                    }
-                }
-            }
-            return UNKNOWN;
-        }
-    }
-
+    private static final String APP_FOLDER_NAME = "trekadvisor";
+    private static final File DEFAULT_APP_DIR = new File(Environment.getExternalStorageDirectory(),
+            APP_FOLDER_NAME);
+    /* For instance maps are searched anywhere under the app folder */
+    private static final File DEFAULT_MAPS_DIR = DEFAULT_APP_DIR;
     private static final String TAG = "MapLoader";
+    private Gson mGson;
+    private List<Map> mMapList;
+    private List<MapListUpdateListener> mMapListUpdateListeners;
+    private List<MapMarkerUpdateListener> mMapMarkerUpdateListeners;
+    private List<MapRouteUpdateListener> mMapRouteUpdateListeners;
+    private List<MapArchive> mMapArchiveList;
+    private List<MapArchiveListUpdateListener> mMapArchiveListUpdateListeners;
 
     /**
      * Create once for all the {@link Gson} object, that is used to serialize/deserialize json content.
@@ -112,6 +91,7 @@ public class MapLoader implements MapImporter.MapParseListener {
 
         mMapListUpdateListeners = new ArrayList<>();
         mMapMarkerUpdateListeners = new ArrayList<>();
+        mMapRouteUpdateListeners = new ArrayList<>();
         mMapArchiveListUpdateListeners = new ArrayList<>();
     }
 
@@ -119,24 +99,27 @@ public class MapLoader implements MapImporter.MapParseListener {
         return SingletonHolder.instance;
     }
 
-    public interface MapListUpdateListener {
-        void onMapListUpdate(boolean mapsFound);
-    }
-
     /**
-     * When a map's markers are retrieved from their json content, this listener is called.
+     * Factory of {@link BitmapProvider} depending on the origin of the map.
+     *
+     * @param map The {@link Map} object
+     * @return The {@link BitmapProvider} or a {@link BitmapProviderDummy} if the origin is unknown.
      */
-    public interface MapMarkerUpdateListener {
-        void onMapMarkerUpdate();
-    }
-
-    public interface MapArchiveListUpdateListener {
-        void onMapArchiveListUpdate();
+    public static BitmapProvider makeBitmapProvider(Map map) {
+        switch (map.getOrigin()) {
+            case BitmapProviderLibVips.GENERATOR_NAME:
+                return new BitmapProviderLibVips(map);
+            case BitmapProviderOsm.GENERATOR_NAME:
+                return new BitmapProviderOsm(map);
+            default:
+                return new BitmapProviderDummy();
+        }
     }
 
     /**
      * Update the internal list of {@link Map} : {@code mMapList}. Once done, all of the registered
      * {@link MapListUpdateListener} are called.
+     *
      * @param dirs The directories in which to search for maps. If not specified, a default value is
      *             taken.
      */
@@ -156,8 +139,7 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
-     * Launch a {@link com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapMarkerImportTask}
-     * which reads the markers.json file and returns null.
+     * Launch a {@link MapMarkerImportTask} which reads the markers.json file.
      */
     public void getMarkersForMap(Map map) {
         MapMarkerImportTask mapMarkerImportTask = new MapMarkerImportTask(mMapMarkerUpdateListeners,
@@ -166,8 +148,18 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
+     * Launch a {@link MapRouteImportTask} which reads the routes.json file.
+     */
+    public void getRoutesForMap(Map map) {
+        MapRouteImportTask mapRouteImportTask = new MapRouteImportTask(mMapRouteUpdateListeners,
+                map, mGson);
+        mapRouteImportTask.execute();
+    }
+
+    /**
      * Update the internal list of {@link MapArchive} : {@code mMapArchiveList}. Once done, all of
      * the registered {@link MapArchiveListUpdateListener} are called.
+     *
      * @param dirs The directories in which to search for map archives. If not specified, a default
      *             value is taken.
      */
@@ -246,23 +238,6 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
-     * Factory of {@link BitmapProvider} depending on the origin of the map.
-     *
-     * @param map The {@link Map} object
-     * @return The {@link BitmapProvider} or a {@link BitmapProviderDummy} if the origin is unknown.
-     */
-    public static BitmapProvider makeBitmapProvider(Map map) {
-        switch (map.getOrigin()) {
-            case BitmapProviderLibVips.GENERATOR_NAME:
-                return new BitmapProviderLibVips(map);
-            case BitmapProviderOsm.GENERATOR_NAME:
-                return new BitmapProviderOsm(map);
-            default:
-                return new BitmapProviderDummy();
-        }
-    }
-
-    /**
      * Save the content of a {@link Map}, so the changes persist upon application restart.
      * <p>
      * Here, it writes to the corresponding json file.
@@ -307,6 +282,28 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
+     * Save the {@link RouteGson} of a {@link Map}, so the changes persist upon application restart.
+     * <p>
+     * Here, it writes to the corresponding json file.
+     * </p>
+     *
+     * @param map The {@link Map} to save.
+     */
+    public void saveRoutes(Map map) {
+        String jsonString = mGson.toJson(map.getRouteGson());
+
+        File routeFile = new File(map.getDirectory(), MapLoader.MAP_ROUTE_FILE_NAME);
+        try {
+            PrintWriter writer = new PrintWriter(routeFile);
+            writer.print(jsonString);
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while saving the routes");
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    /**
      * Delete a {@link Map}. Recursively deletes the parent directory.
      *
      * @param map The {@link Map} to delete.
@@ -332,5 +329,48 @@ public class MapLoader implements MapImporter.MapParseListener {
             return false;
         }
         return true;
+    }
+
+    public enum CALIBRATION_METHOD {
+        SIMPLE_2_POINTS,
+        UNKNOWN;
+
+        public static CALIBRATION_METHOD fromCalibrationName(String name) {
+            if (name != null) {
+                for (CALIBRATION_METHOD method : CALIBRATION_METHOD.values()) {
+                    if (name.equalsIgnoreCase(method.toString())) {
+                        return method;
+                    }
+                }
+            }
+            return UNKNOWN;
+        }
+    }
+
+    public interface MapListUpdateListener {
+        void onMapListUpdate(boolean mapsFound);
+    }
+
+    /**
+     * When a map's markers are retrieved from their json content, this listener is called.
+     */
+    public interface MapMarkerUpdateListener {
+        void onMapMarkerUpdate();
+    }
+
+    /**
+     * When a map's routes are retrieved from their json content, this listener is called.
+     */
+    public interface MapRouteUpdateListener {
+        void onMapRouteUpdate();
+    }
+
+    public interface MapArchiveListUpdateListener {
+        void onMapArchiveListUpdate();
+    }
+
+    /* Singleton implementation */
+    private static class SingletonHolder {
+        private static final MapLoader instance = new MapLoader();
     }
 }

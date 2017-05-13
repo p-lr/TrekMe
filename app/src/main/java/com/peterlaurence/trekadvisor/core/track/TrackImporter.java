@@ -6,8 +6,8 @@ import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.util.gpxparser.GPXParser;
 import com.peterlaurence.trekadvisor.util.gpxparser.model.Gpx;
@@ -68,7 +68,7 @@ public class TrackImporter {
     }
 
     public interface TrackFileParsedListener {
-        void onTrackFileParsed(Map map, List<MapGson.Route> routeList);
+        void onTrackFileParsed(Map map, List<RouteGson.Route> routeList);
 
         void onError(String message);
     }
@@ -77,7 +77,7 @@ public class TrackImporter {
         private TrackFileParsedListener mListener;
         private Map mMap;
         private ContentResolver mContentResolver;
-        private LinkedList<MapGson.Route> mNewRouteList;
+        private LinkedList<RouteGson.Route> mNewRouteList;
 
         GpxTrackFileTask(TrackFileParsedListener listener, Map map, ContentResolver contentResolver) {
             mListener = listener;
@@ -89,8 +89,8 @@ public class TrackImporter {
         /**
          * Each gpx file may contain several tracks. And each {@link Track} may contain several
          * {@link TrackSegment}. <br>
-         * A {@link Track} is the equivalent of a {@link MapGson.Route}, so all {@link TrackSegment}
-         * are added to a single {@link MapGson.Route}.
+         * A {@link Track} is the equivalent of a {@link RouteGson.Route}, so all {@link TrackSegment}
+         * are added to a single {@link RouteGson.Route}.
          */
         @Override
         protected Void doInBackground(Uri... uriList) {
@@ -108,7 +108,7 @@ public class TrackImporter {
                     Gpx gpx = parser.parse(fileInputStream);
 
                     for (Track track : gpx.getTracks()) {
-                        MapGson.Route route = gpxTracktoRoute(track);
+                        RouteGson.Route route = gpxTracktoRoute(track);
                         mNewRouteList.add(route);
                     }
                     fileInputStream.close();
@@ -129,12 +129,12 @@ public class TrackImporter {
         }
 
         /**
-         * Converts a {@link Track} into a {@link MapGson.Route}. <br>
+         * Converts a {@link Track} into a {@link RouteGson.Route}. <br>
          * A single {@link Track} may contain several {@link TrackSegment}.
          */
-        private MapGson.Route gpxTracktoRoute(Track track) {
+        private RouteGson.Route gpxTracktoRoute(Track track) {
             /* Create a new route */
-            MapGson.Route route = new MapGson.Route();
+            RouteGson.Route route = new RouteGson.Route();
 
             /* The route name is the track name */
             route.name = track.getName();

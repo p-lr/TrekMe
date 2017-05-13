@@ -9,7 +9,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +32,7 @@ public class PathView extends View {
 
     private boolean mShouldDraw = true;
 
-    private List<MapGson.Route> mRouteList;
+    private List<RouteGson.Route> mRouteList;
 
     private Paint mDefaultPaint = new Paint();
 
@@ -52,7 +52,7 @@ public class PathView extends View {
         mDefaultPaint.setStrokeCap(Paint.Cap.ROUND);
     }
 
-    public void updateRoutes(List<MapGson.Route> routeList) {
+    public void updateRoutes(List<RouteGson.Route> routeList) {
         mRouteList = routeList;
         invalidate();
     }
@@ -84,7 +84,7 @@ public class PathView extends View {
     public void onDraw(Canvas canvas) {
         if (mShouldDraw && mRouteList != null) {
             canvas.scale(mScale, mScale);
-            for (MapGson.Route route : mRouteList) {
+            for (RouteGson.Route route : mRouteList) {
 
                 if (route.getData() instanceof DrawablePath) {
                     DrawablePath drawablePath = (DrawablePath) route.getData();

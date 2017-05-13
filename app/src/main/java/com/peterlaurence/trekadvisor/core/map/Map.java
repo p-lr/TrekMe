@@ -2,13 +2,13 @@ package com.peterlaurence.trekadvisor.core.map;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
@@ -52,6 +52,8 @@ public class Map implements Parcelable {
     private MapGson mMapGson;
     /* The Java Object corresponding to the json file of markers */
     private MarkerGson mMarkerGson;
+    /* The Java Object corresponding to the json file of routes */
+    private RouteGson mRouteGson;
     private CalibrationStatus mCalibrationStatus = CalibrationStatus.NONE;
 
     /**
@@ -66,6 +68,7 @@ public class Map implements Parcelable {
     public Map(MapGson mapGson, File jsonFile, File thumbnail) {
         mMapGson = mapGson;
         mMarkerGson = new MarkerGson();
+        mRouteGson = new RouteGson();
         mConfigFile = jsonFile;
         mImage = getBitmapFromFile(thumbnail);
     }
@@ -227,8 +230,10 @@ public class Map implements Parcelable {
     /**
      * Add a new route to the map.
      */
-    public void addRoute(MapGson.Route route) {
-        mMapGson.routes.add(route);
+    public void addRoute(RouteGson.Route route) {
+        if (mRouteGson != null) {
+            mRouteGson.routes.add(route);
+        }
     }
 
     /**
@@ -305,16 +310,40 @@ public class Map implements Parcelable {
         return mMarkerGson;
     }
 
-    public boolean areMarkersDefined() {
-        return mMarkerGson.markers.size() > 0;
-    }
-
-    public List<MarkerGson.Marker> getMarkers() {
-        return mMarkerGson.markers;
-    }
-
     public void setMarkerGson(MarkerGson markerGson) {
         mMarkerGson = markerGson;
+    }
+
+    public final RouteGson getRouteGson() {
+        return mRouteGson;
+    }
+
+    public void setRouteGson(RouteGson routeGson) {
+        mRouteGson = routeGson;
+    }
+
+    public boolean areMarkersDefined() {
+        return mMarkerGson != null && mMarkerGson.markers.size() > 0;
+    }
+
+    public boolean areRoutesDefined() {
+        return mRouteGson != null && mRouteGson.routes.size() > 0;
+    }
+
+    @Nullable
+    public List<MarkerGson.Marker> getMarkers() {
+        if (mMarkerGson != null) {
+            return mMarkerGson.markers;
+        }
+        return null;
+    }
+
+    @Nullable
+    public List<RouteGson.Route> getRoutes() {
+        if (mRouteGson != null) {
+            return mRouteGson.routes;
+        }
+        return null;
     }
 
     public final File getConfigFile() {

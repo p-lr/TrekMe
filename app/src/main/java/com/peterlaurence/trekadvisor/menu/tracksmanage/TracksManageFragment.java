@@ -23,8 +23,8 @@ import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 
@@ -190,7 +190,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     private void saveChanges() {
-        MapLoader.getInstance().saveMap(mMap);
+        MapLoader.getInstance().saveRoutes(mMap);
     }
 
     @Override
@@ -201,7 +201,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public void onTrackFileParsed(Map map, List<MapGson.Route> routeList) {
+    public void onTrackFileParsed(Map map, List<RouteGson.Route> routeList) {
         /* We want to append new routes, so the index to add new routes is equal to current length
          * of the data set. */
         int positionStart = mTrackAdapter.getItemCount();
@@ -216,20 +216,24 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     /**
-     * Add new {@link MapGson.Route}s to a {@link Map}.
+     * Add new {@link RouteGson.Route}s to a {@link Map}.
      *
-     * @return the number of {@link MapGson.Route} that have been appended to the list.
+     * @return the number of {@link RouteGson.Route} that have been appended to the list.
      */
-    private int updateRouteList(Map map, List<MapGson.Route> routeList) {
-        java.util.Map<String, MapGson.Route> hashMap = new HashMap<>();
-        for (MapGson.Route route : map.getMapGson().routes) {
-            hashMap.put(route.name, route);
+    private int updateRouteList(Map map, List<RouteGson.Route> newRouteList) {
+        if (newRouteList == null) return 0;
+        java.util.Map<String, RouteGson.Route> hashMap = new HashMap<>();
+        List<RouteGson.Route> routeList = map.getRoutes();
+        if (routeList != null) {
+            for (RouteGson.Route route : routeList) {
+                hashMap.put(route.name, route);
+            }
         }
 
         int newRouteCount = 0;
-        for (MapGson.Route route : routeList) {
+        for (RouteGson.Route route : newRouteList) {
             if (hashMap.containsKey(route.name)) {
-                MapGson.Route existingRoute = hashMap.get(route.name);
+                RouteGson.Route existingRoute = hashMap.get(route.name);
                 existingRoute.copyRoute(route);
             } else {
                 map.addRoute(route);
@@ -246,7 +250,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public void onVisibilityToggle(MapGson.Route route) {
+    public void onVisibilityToggle(RouteGson.Route route) {
         if (mTrackChangeListener != null) {
             mTrackChangeListener.onTrackVisibilityChanged();
         }
@@ -261,15 +265,15 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     public interface TrackChangeListener {
         /**
-         * When new {@link MapGson.Route} are added or modified, this method is called.
+         * When new {@link RouteGson.Route} are added or modified, this method is called.
          *
          * @param map       the {@link Map} associated with the change
-         * @param routeList a list of {@link MapGson.Route}
+         * @param routeList a list of {@link RouteGson.Route}
          */
-        void onTrackChanged(Map map, List<MapGson.Route> routeList);
+        void onTrackChanged(Map map, List<RouteGson.Route> routeList);
 
         /**
-         * When the visibility of a {@link MapGson.Route} is changed, this method is called.
+         * When the visibility of a {@link RouteGson.Route} is changed, this method is called.
          */
         void onTrackVisibilityChanged();
     }

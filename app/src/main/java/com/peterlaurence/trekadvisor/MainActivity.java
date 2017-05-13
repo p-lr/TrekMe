@@ -616,7 +616,7 @@ public class MainActivity extends AppCompatActivity
     public TracksManageFragment.TrackChangeListener getTrackChangeListener() {
         Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
         if (mapViewFragment != null) {
-            return (TracksManageFragment.TrackChangeListener) mapViewFragment;
+            return ((MapViewFragment) mapViewFragment).getTrackChangeListener();
         }
         return null;
     }

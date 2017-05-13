@@ -3,7 +3,7 @@ package com.peterlaurence.trekadvisor.menu.mapview;
 import android.content.Context;
 import android.view.MotionEvent;
 
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.qozix.tileview.TileView;
 
@@ -74,10 +74,10 @@ public class TileViewExtended extends TileView {
     }
 
     /**
-     * Updates the {@link PathView}. It expects that each {@link MapGson.Route} has a data object
+     * Updates the {@link PathView}. It expects that each {@link RouteGson.Route} has a data object
      * of type {@link PathView.DrawablePath}.
      */
-    public void drawRoutes(List<MapGson.Route> routeList) {
+    public void drawRoutes(List<RouteGson.Route> routeList) {
         mPathView.updateRoutes(routeList);
     }
 

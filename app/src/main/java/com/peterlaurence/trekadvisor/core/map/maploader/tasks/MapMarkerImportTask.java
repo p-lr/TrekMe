@@ -14,7 +14,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * This task is run when this is the first time a map is loaded, so the list of
+ * This task is run when this is the first time a map is loaded, hence the list of
  * {@link com.peterlaurence.trekadvisor.core.map.gson.MarkerGson.Marker} is required. <br>
  * A file named 'markers.json' is expected at the same level of the 'map.json' configuration file.
  * If there is no markers file, this means that the map has no markers.

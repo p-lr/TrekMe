@@ -11,22 +11,53 @@ import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
- * Adapter to provide access to the data set (here a list of {@link MapGson.Route}).
+ * Adapter to provide access to the data set (here a list of {@link RouteGson.Route}).
  *
  * @author peterLaurence on 01/03/17.
  */
 public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHolder> {
-    private List<MapGson.Route> mRouteList;
+    private List<RouteGson.Route> mRouteList;
     private TrackSelectionListener mTrackSelectionListener;
 
+    TrackAdapter(Map map, TrackSelectionListener trackSelectionListener) {
+        mRouteList = map.getRoutes();
+        mTrackSelectionListener = trackSelectionListener;
+    }
+
+    public void removeItem(int position) {
+        mRouteList.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    @Override
+    public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Context ctx = parent.getContext();
+        View v = LayoutInflater.from(ctx).inflate(R.layout.track_card, parent, false);
+
+        return new TrackViewHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(TrackViewHolder holder, int position) {
+        RouteGson.Route route = mRouteList.get(position);
+        holder.trackName.setText(route.name);
+        holder.setVisibleButtonIcon(route.visible);
+        holder.visibleButton.setOnClickListener(new VisibilityButtonClickListener(holder, this));
+    }
+
+    @Override
+    public int getItemCount() {
+        return mRouteList == null ? 0 : mRouteList.size();
+    }
+
     interface TrackSelectionListener {
-        void onVisibilityToggle(MapGson.Route route);
+        void onVisibilityToggle(RouteGson.Route route);
     }
 
     static class TrackViewHolder extends RecyclerView.ViewHolder {
@@ -47,37 +78,6 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
         }
     }
 
-    TrackAdapter(Map map, TrackSelectionListener trackSelectionListener) {
-        mRouteList = map.getMapGson().routes;
-        mTrackSelectionListener = trackSelectionListener;
-    }
-
-    public void removeItem(int position) {
-        mRouteList.remove(position);
-        notifyItemRemoved(position);
-    }
-
-    @Override
-    public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context ctx = parent.getContext();
-        View v = LayoutInflater.from(ctx).inflate(R.layout.track_card, parent, false);
-
-        return new TrackViewHolder(v);
-    }
-
-    @Override
-    public void onBindViewHolder(TrackViewHolder holder, int position) {
-        MapGson.Route route = mRouteList.get(position);
-        holder.trackName.setText(route.name);
-        holder.setVisibleButtonIcon(route.visible);
-        holder.visibleButton.setOnClickListener(new VisibilityButtonClickListener(holder, this));
-    }
-
-    @Override
-    public int getItemCount() {
-        return mRouteList == null ? 0 : mRouteList.size();
-    }
-
     private static class VisibilityButtonClickListener implements View.OnClickListener {
         WeakReference<TrackViewHolder> mTrackViewHolderWeakReference;
         WeakReference<TrackAdapter> mTrackAdapterWeakReference;
@@ -94,7 +94,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
             if (trackViewHolder != null && trackAdapter != null) {
                 int position = trackViewHolder.getAdapterPosition();
-                MapGson.Route route = trackAdapter.mRouteList.get(position);
+                RouteGson.Route route = trackAdapter.mRouteList.get(position);
                 route.toggleVisibility();
                 trackViewHolder.setVisibleButtonIcon(route.visible);
 
