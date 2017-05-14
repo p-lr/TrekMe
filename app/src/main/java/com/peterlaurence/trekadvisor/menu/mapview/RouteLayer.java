@@ -22,14 +22,18 @@ import java.util.List;
  *
  * @author peterLaurence on 13/05/17.
  */
-class RouteLayer implements TracksManageFragment.TrackChangeListener {
+class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.MapRouteUpdateListener {
     private static final String TAG = "RouteLayer";
     private TileViewExtended mTileView;
     private Map mMap;
 
+    RouteLayer() {
+        MapLoader.getInstance().addMapRouteUpdateListener(this);
+    }
+
     /**
-     * A track file has been parsed. At this stage, the new {@link RouteGson.Route} are added to the
-     * {@link Map}.
+     * When a track file has been parsed, this method is called. At this stage, the new
+     * {@link RouteGson.Route} are added to the {@link Map}.
      *
      * @param map       the {@link Map} associated with the change
      * @param routeList a list of {@link RouteGson.Route}
@@ -40,6 +44,14 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener {
 
         DrawRoutesTask drawRoutesTask = new DrawRoutesTask(map, routeList, mTileView);
         drawRoutesTask.execute();
+    }
+
+    /**
+     * When saved routes are retrieved from the route.json file, this method is called.
+     */
+    @Override
+    public void onMapRouteUpdate() {
+        drawRoutes();
     }
 
     @Override

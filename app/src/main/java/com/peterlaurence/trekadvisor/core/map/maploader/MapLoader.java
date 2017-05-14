@@ -201,6 +201,10 @@ public class MapLoader implements MapImporter.MapParseListener {
         mMapMarkerUpdateListeners.add(listener);
     }
 
+    public void addMapRouteUpdateListener(MapRouteUpdateListener listener) {
+        mMapRouteUpdateListeners.add(listener);
+    }
+
     public void addMapArchiveListUpdateListener(MapArchiveListUpdateListener listener) {
         mMapArchiveListUpdateListeners.add(listener);
     }
