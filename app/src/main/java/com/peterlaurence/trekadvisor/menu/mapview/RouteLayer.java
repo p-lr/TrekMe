@@ -120,24 +120,24 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener {
                     float[] lines = new float[size];
 
                     int i = 0;
-                    int markerIndex = 0;
+                    boolean init = true;
                     for (MarkerGson.Marker marker : markerList) {
                         /* No need to continue if the route has been deleted in the meanwhile */
                         if (route.get() == null) break;
 
-                        if (markerIndex % 2 != 0) {
+                        if (init) {
+                            lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
+                            lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
+                            init = false;
+                            i += 2;
+                        } else {
                             lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
                             lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
                             if (i + 2 >= size) break;
                             lines[i + 2] = lines[i];
                             lines[i + 3] = lines[i + 1];
                             i += 4;
-                        } else {
-                            lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
-                            lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
-                            i += 2;
                         }
-                        markerIndex++;
                     }
 
                     /* Set the route data */
