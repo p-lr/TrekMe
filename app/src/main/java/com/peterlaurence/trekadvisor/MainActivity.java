@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity
         MapListFragment.OnMapListFragmentInteractionListener,
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
+        MarkerManageFragment.MarkerManageFragmentInteractionListener,
         MapProvider,
         MarkerProvider,
         TracksManageFragment.TrackChangeListenerProvider,
@@ -645,5 +646,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void removeLocationListener(LocationListener listener) {
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, listener);
+    }
+
+    @Override
+    public void showCurrentMap() {
+        showMapViewFragment();
     }
 }

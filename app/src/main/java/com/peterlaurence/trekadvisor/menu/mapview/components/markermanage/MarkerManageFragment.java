@@ -1,8 +1,10 @@
 package com.peterlaurence.trekadvisor.menu.mapview.components.markermanage;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -39,6 +42,7 @@ public class MarkerManageFragment extends Fragment {
     private View rootView;
     private MarkerProvider mMarkerProvider;
     private MapProvider mMapProvider;
+    private MarkerManageFragmentInteractionListener mMarkerManageFragmentInteractionListener;
 
     private Map mMap;
     private MarkerGson.Marker mMarker;
@@ -51,12 +55,18 @@ public class MarkerManageFragment extends Fragment {
     private TextInputEditText mProjectionY;
     private EditText mComment;
 
+    public interface MarkerManageFragmentInteractionListener {
+        void showCurrentMap();
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof MapProvider && context instanceof MarkerProvider) {
+        if (context instanceof MapProvider && context instanceof MarkerProvider &&
+                context instanceof MarkerManageFragmentInteractionListener) {
             mMapProvider = (MapProvider) context;
             mMarkerProvider = (MarkerProvider) context;
+            mMarkerManageFragmentInteractionListener = (MarkerManageFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement MapProvider and MarkerProvider");
@@ -156,5 +166,28 @@ public class MarkerManageFragment extends Fragment {
 
         /* Save the changes on the markers.json file */
         MapLoader.getInstance().saveMarkers(mMap);
+
+        hideSoftKeyboard();
+
+        /* Show a snackbar to confirm the changes and offer to show the map */
+        Snackbar snackbar = Snackbar.make(rootView, R.string.marker_changes_saved, Snackbar.LENGTH_SHORT);
+        snackbar.setAction(R.string.show_map_action, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMarkerManageFragmentInteractionListener.showCurrentMap();
+            }
+        });
+        snackbar.show();
+    }
+
+    private void hideSoftKeyboard() {
+        Activity activity = getActivity();
+        if (activity == null) return;
+
+        View view = activity.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

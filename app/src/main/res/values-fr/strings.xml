@@ -41,4 +41,7 @@
     <string name="save_action">Enregistrer</string>
     <string name="wgs84_label">Coordonnées WGS84</string>
     <string name="projection_label">Coordonnées de projection</string>
+    <string name="marker_changes_saved">Changements sauvegardés</string>
+    <string name="show_action"></string>
+    <string name="show_map_action">Voir carte</string>
 </resources>

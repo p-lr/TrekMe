@@ -73,5 +73,7 @@
     <string name="projection_label">Projected coordinates</string>
     <string name="comment_label">Comment</string>
     <string name="save_action">Save</string>
+    <string name="marker_changes_saved">Changes saved</string>
+    <string name="show_map_action">Show map</string>
 
 </resources>
