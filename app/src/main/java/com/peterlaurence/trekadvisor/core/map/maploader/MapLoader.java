@@ -319,6 +319,18 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
+     * Delete a {@link MarkerGson.Marker} from a {@link Map}.
+     */
+    public void deleteMarker(Map map, MarkerGson.Marker marker) {
+        List<MarkerGson.Marker> markerList = map.getMarkers();
+        if (markerList != null) {
+            markerList.remove(marker);
+        }
+
+        saveMarkers(map);
+    }
+
+    /**
      * Mutate the {@link Projection} of a given {@link Map}.
      *
      * @return true on success, false if something went wrong.

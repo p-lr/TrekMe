@@ -7,7 +7,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -20,8 +20,9 @@ import java.text.DecimalFormat;
  * @author peterLaurence on 09/04/17.
  */
 public class MarkerCallout extends RelativeLayout {
-    private Button mMoveButton;
-    private Button mEditButton;
+    private ImageButton mMoveButton;
+    private ImageButton mEditButton;
+    private ImageButton mDeleteButton;
     private TextView mTitle;
     private TextView mSubTitle;
 
@@ -30,10 +31,15 @@ public class MarkerCallout extends RelativeLayout {
 
         inflate(context, R.layout.marker_callout, this);
 
-        mMoveButton = (Button) findViewById(R.id.move_callout_btn);
-        mEditButton = (Button) findViewById(R.id.edit_callout_btn);
+        mMoveButton = (ImageButton) findViewById(R.id.move_callout_btn);
+        mEditButton = (ImageButton) findViewById(R.id.edit_callout_btn);
+        mDeleteButton = (ImageButton) findViewById(R.id.delete_callout_btn);
         mTitle = (TextView) findViewById(R.id.callout_title);
         mSubTitle = (TextView) findViewById(R.id.callout_subtitle);
+
+        mMoveButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
+        mEditButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
+        mDeleteButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
     }
 
     public void transitionIn() {
@@ -66,6 +72,15 @@ public class MarkerCallout extends RelativeLayout {
             @Override
             public void onClick(View v) {
                 editAction.run();
+            }
+        });
+    }
+
+    public void setDeleteAction(final Runnable deleteAction) {
+        mDeleteButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteAction.run();
             }
         });
     }

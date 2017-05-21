@@ -3,8 +3,10 @@ package com.peterlaurence.trekadvisor.menu.mapview;
 import android.content.Context;
 import android.graphics.drawable.Animatable2;
 import android.graphics.drawable.Drawable;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 
+import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
@@ -75,7 +77,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         drawMarkers();
     }
 
-    void setTileView(TileView tileView) {
+    void setTileView(final TileView tileView) {
         mTileView = tileView;
 
         mTileView.setMarkerTapListener(new MarkerLayout.MarkerTapListener() {
@@ -91,6 +93,8 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                     markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
                             markerCallout, mTileView,
                             (MapViewFragment.RequestManageMarkerListener) mMapViewFragment.getActivity()));
+                    markerCallout.setDeleteAction(new DeleteMarkerRunnable(mMapViewFragment.getView(), movableMarker, markerCallout,
+                            tileView, mMap));
                     MarkerGson.Marker marker = movableMarker.getMarker();
                     markerCallout.setTitle(marker.name);
                     markerCallout.setSubTitle(marker.lat, marker.lon);
@@ -367,6 +371,53 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
             if (markerCallout != null) {
                 mTileView.removeCallout(markerCallout);
             }
+        }
+    }
+
+    /**
+     * This {@link Runnable} is called when an external component requests a {@link MovableMarker} to
+     * be deleted. <br>Here, this component is a {@link MarkerCallout}.
+     */
+    private static class DeleteMarkerRunnable implements Runnable {
+        private View mParentView;
+        private WeakReference<MovableMarker> mMovableMarkerWeakReference;
+        private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
+        private TileView mTileView;
+        private Map mMap;
+
+        DeleteMarkerRunnable(View parentView, MovableMarker movableMarker, MarkerCallout markerCallout,
+                             TileView tileView, Map map) {
+            mParentView = parentView;
+            mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
+            mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
+            mTileView = tileView;
+            mMap = map;
+        }
+
+        @Override
+        public void run() {
+            /* Remove the callout */
+            MarkerCallout markerCallout = mMarkerCalloutWeakReference.get();
+            if (markerCallout != null) {
+                mTileView.removeCallout(markerCallout);
+            }
+
+            /* Make the user confirm his choice */
+            Snackbar snackbar = Snackbar.make(mParentView, R.string.delete_marker_question, Snackbar.LENGTH_SHORT);
+            snackbar.setAction(R.string.ok_dialog, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MovableMarker movableMarker = mMovableMarkerWeakReference.get();
+
+                    if (movableMarker != null) {
+                        mTileView.removeMarker(movableMarker);
+
+                        MarkerGson.Marker marker = movableMarker.getMarker();
+                        MapLoader.getInstance().deleteMarker(mMap, marker);
+                    }
+                }
+            });
+            snackbar.show();
         }
     }
 }

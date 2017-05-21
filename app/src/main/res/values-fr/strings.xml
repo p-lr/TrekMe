@@ -44,4 +44,5 @@
     <string name="marker_changes_saved">Changements sauvegardés</string>
     <string name="show_action"></string>
     <string name="show_map_action">Voir carte</string>
+    <string name="delete_marker_question">Supprimer le marker ?</string>
 </resources>
