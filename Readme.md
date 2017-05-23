@@ -1,21 +1,22 @@
 # TrekAdvisor
 
 1. [Overview](#TOC-Overview)
-2. [TrekAdvisor Users](#TOC-TrekAdvisor-Users)
-3. [How does it work?](#TOC-How-does-it-work)
-4. [Create a map](#TOC-Create-a-map)
+2. [Features](#TOC-Features)
+3. [TrekAdvisor Users](#TOC-TrekAdvisor-Users)
+4. [How does it work?](#TOC-How-does-it-work)
+5. [Create a map](#TOC-Create-a-map)
   * [Image tiling](#TOC-Image-tiling)
     * [Libvips installation](#TOC-Libvips)
     * [Using Libvips](#TOC-Using-Libvips)
   * [Configure the map](#TOC-Configure-the-map)
   * [Import](#TOC-Import)
   * [Map calibration](#TOC-Calibration)
-5. [Supported projections](#TOC-Supported_projections)
+6. [Supported projections](#TOC-Supported_projections)
 
 
 ## <a name="TOC-Overview"></a>Overview
 
-TrekAdvisor is an Android app to get live position on a map and other useful informations, without
+TrekAdvisor is an Android app to get live position on a map and other useful information, without
 ever needing an internet connection.
 It differs from other map apps in the source of maps.
 Usually, a map is downloaded from the internet and is sometimes cached for an offline access (e.g google map).
@@ -24,6 +25,20 @@ possess a paper map and you want to use it for your next trek, just scan it,
 prepare and view it in TrekAdvisor. It also works if you possess a map as a huge single file (several Gb),
 as TrekAdvisor is designed to work with arbitrary map size. The only limitation
 is the memory available on your device (smartphone, tablet).
+
+## <a name="TOC-Features"></a>Features
+
+* Marker support (with optional comments)
+* GPX tracks import
+* Lock the view to the current position
+* Orientation indicator
+
+### On TODO list
+
+* Speed and distance indicator
+* GPX track recording
+* Calibration with 3+ points (when not using a projection)
+* Develop a desktop tool to assist map creation
 
 ## <a name="TOC-TrekAdvisor-Users"></a>TrekAdvisor Users
 
