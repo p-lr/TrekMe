@@ -256,6 +256,9 @@ public class MapViewFragment extends Fragment implements
             } else {
                 updatePosition(location.getLongitude(), location.getLatitude());
             }
+
+            /* If the user wants to see the speed */
+            float speed = location.getSpeed();
         }
     }
 

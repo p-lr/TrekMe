@@ -1,8 +1,6 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/map_view_frgmt_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:id="@+id/map_view_frgmt_layout">
 
     <LinearLayout
         android:id="@+id/fab_vertical_layout"
@@ -37,30 +35,4 @@
             android:layout_marginEnd="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin" />
     </LinearLayout>
-
-    <!--<LinearLayout-->
-    <!--android:id="@+id/lin_layout"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:layout_gravity="bottom"-->
-    <!--android:layout_marginBottom="4dp"-->
-    <!--android:gravity="left|bottom">-->
-    <!--<ImageButton-->
-    <!--android:id="@+id/btn1"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_marginLeft="4dp"-->
-    <!--android:padding="10dp"-->
-    <!--android:src="@drawable/move_to_position_black_24dp"-->
-    <!--android:background="#CCFFFFFF"/>-->
-
-    <!--<Button-->
-    <!--android:id="@+id/btn2"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_marginLeft="4dp"-->
-    <!--android:padding="10dp"-->
-    <!--android:text="@string/button2" />-->
-    <!--</LinearLayout>-->
-
 </merge>

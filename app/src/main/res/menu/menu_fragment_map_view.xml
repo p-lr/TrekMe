@@ -13,4 +13,10 @@
         android:title="@string/manage_tracks_menu"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/speedometer_id"
+        android:icon="@drawable/ic_speedometer"
+        android:title="@string/mapview_show_speed"
+        app:showAsAction="ifRoom" />
+
 </menu>

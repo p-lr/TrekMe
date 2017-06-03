@@ -45,4 +45,5 @@
     <string name="show_action"></string>
     <string name="show_map_action">Voir carte</string>
     <string name="delete_marker_question">Supprimer le marker ?</string>
+    <string name="mapview_show_speed">Afficher vitesse</string>
 </resources>
