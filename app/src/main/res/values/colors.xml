@@ -17,4 +17,5 @@
     <color name="colorMarkerGrabBg">#55448AFF</color>
     <color name="colorMarker">#F16157</color>
     <color name="colorMarkerStroke">#B6392F</color>
+    <color name="colorIndicatorOverlay">#885D4037</color>
 </resources>

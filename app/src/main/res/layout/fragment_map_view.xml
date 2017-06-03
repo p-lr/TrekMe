@@ -2,6 +2,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/map_view_frgmt_layout">
 
+    <com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:backgroundColor="@color/colorIndicatorOverlay"
+        android:layout_gravity="top" />
+
     <LinearLayout
         android:id="@+id/fab_vertical_layout"
         android:layout_width="wrap_content"
