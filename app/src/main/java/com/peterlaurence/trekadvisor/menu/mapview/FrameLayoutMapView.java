@@ -15,8 +15,8 @@ import com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PositionOrientationMarker;
 
 /**
- * Layout for {@link MapViewFragment}, but can be used with a different {@link View}, as it uses
- * hooks to report events.
+ * Layout for {@link MapViewFragment}. It is loosely coupled with it, so a different layout could be
+ * used.
  *
  * @author peterLaurence on 19/03/16.
  */

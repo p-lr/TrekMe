@@ -32,7 +32,6 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
         try {
             int color = a.getColor(R.styleable.IndicatorOverlay_backgroundColor, BACKGROUND_COLOR_DEFAULT);
             setBackgroundColor(color);
-            System.out.println("back : " + color);
         } finally {
             a.recycle();
         }
