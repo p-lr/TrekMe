@@ -69,6 +69,7 @@ public class MapViewFragment extends Fragment implements
     private OrientationSensor mOrientationSensor;
     private MarkerLayer mMarkerLayer;
     private RouteLayer mRouteLayer;
+    private boolean mIndicatorOverlayVisible = false;
 
     public MapViewFragment() {
     }
@@ -135,6 +136,13 @@ public class MapViewFragment extends Fragment implements
             case R.id.manage_tracks_id:
                 mRequestManageTracksListener.onRequestManageTracks();
                 return true;
+            case R.id.speedometer_id:
+                mIndicatorOverlayVisible = !mIndicatorOverlayVisible;
+                if (mIndicatorOverlayVisible) {
+                    rootView.setIndicatorOverlayVisible(View.VISIBLE);
+                } else {
+                    rootView.setIndicatorOverlayVisible(View.GONE);
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }

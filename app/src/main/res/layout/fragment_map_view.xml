@@ -3,8 +3,10 @@
     android:id="@+id/map_view_frgmt_layout">
 
     <com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay
+        android:id="@+id/indicator_overlay"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:visibility="gone"
         app:backgroundColor="@color/colorIndicatorOverlay"
         android:layout_gravity="top" />
 

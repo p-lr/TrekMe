@@ -23,6 +23,7 @@ public class FrameLayoutMapView extends FrameLayout implements
         TileViewExtended.SingleTapStaticListener,
         TileViewExtended.ScrollListener {
 
+    private View mIndicatorOverlay;
     private FloatingActionButton mPositionFAB;
     private FloatingActionButton mLockFAB;
 
@@ -55,6 +56,7 @@ public class FrameLayoutMapView extends FrameLayout implements
 
     private void init(Context context, AttributeSet attrs) {
         inflate(context, R.layout.fragment_map_view, this);
+        mIndicatorOverlay = findViewById(R.id.indicator_overlay);
         mPositionFAB = (FloatingActionButton) findViewById(R.id.fab_position);
 
         mPositionFAB.setOnClickListener(new View.OnClickListener() {
@@ -107,6 +109,10 @@ public class FrameLayoutMapView extends FrameLayout implements
         hideOrientationFAB();
     }
 
+    public void setIndicatorOverlayVisible(int visible) {
+        mIndicatorOverlay.setVisibility(visible);
+    }
+
     private void showOrientationFAB() {
         if (!mIsVisibleOrientationFAB) {
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mLockFAB.getLayoutParams();
@@ -127,16 +133,8 @@ public class FrameLayoutMapView extends FrameLayout implements
         }
     }
 
-    public interface PositionTouchListener {
-        void onPositionTouch();
-    }
-
     public void setPositionTouchListener(PositionTouchListener listener) {
         mPositionTouchListener = listener;
-    }
-
-    public interface LockViewListener {
-        void onLockView(boolean lock);
     }
 
     public void setLockViewListener(LockViewListener listener) {
@@ -151,5 +149,13 @@ public class FrameLayoutMapView extends FrameLayout implements
             // don't care
         }
         return mPositionMarker;
+    }
+
+    public interface PositionTouchListener {
+        void onPositionTouch();
+    }
+
+    public interface LockViewListener {
+        void onLockView(boolean lock);
     }
 }
