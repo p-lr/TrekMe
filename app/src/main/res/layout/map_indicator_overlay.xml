@@ -3,7 +3,6 @@
 
     <TextView
         android:id="@+id/speed_id"
-        android:text="12 km/h"
         android:textSize="18sp"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"

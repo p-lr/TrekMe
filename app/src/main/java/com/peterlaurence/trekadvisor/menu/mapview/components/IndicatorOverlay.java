@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
 
@@ -18,6 +19,7 @@ import com.peterlaurence.trekadvisor.R;
  */
 public class IndicatorOverlay extends LinearLayout {
     private static final int BACKGROUND_COLOR_DEFAULT = 0x22FFFFFF;
+    private TextView mSpeedTextView;
 
     public IndicatorOverlay(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -40,7 +42,12 @@ public class IndicatorOverlay extends LinearLayout {
 
     private void init() {
         inflate(getContext(), R.layout.map_indicator_overlay, this);
+
+        mSpeedTextView = (TextView) findViewById(R.id.speed_id);
     }
 
-
+    public void setSpeed(float speed, String unit) {
+        String speedText = String.valueOf(speed) + " " + unit;
+        mSpeedTextView.setText(speedText);
+    }
 }

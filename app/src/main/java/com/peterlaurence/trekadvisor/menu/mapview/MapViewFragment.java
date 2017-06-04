@@ -31,6 +31,7 @@ import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
+import com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
@@ -69,7 +70,7 @@ public class MapViewFragment extends Fragment implements
     private OrientationSensor mOrientationSensor;
     private MarkerLayer mMarkerLayer;
     private RouteLayer mRouteLayer;
-    private boolean mIndicatorOverlayVisible = false;
+    private IndicatorOverlay mIndicatorOverlay;
 
     public MapViewFragment() {
     }
@@ -106,6 +107,7 @@ public class MapViewFragment extends Fragment implements
             rootView = new FrameLayoutMapView(this.getContext());
             rootView.setPositionTouchListener(this);
             rootView.setLockViewListener(this);
+            mIndicatorOverlay = rootView.getIndicatorOverlay();
         }
 
         return rootView;
@@ -137,12 +139,7 @@ public class MapViewFragment extends Fragment implements
                 mRequestManageTracksListener.onRequestManageTracks();
                 return true;
             case R.id.speedometer_id:
-                mIndicatorOverlayVisible = !mIndicatorOverlayVisible;
-                if (mIndicatorOverlayVisible) {
-                    rootView.setIndicatorOverlayVisible(View.VISIBLE);
-                } else {
-                    rootView.setIndicatorOverlayVisible(View.GONE);
-                }
+                rootView.toggleIndicatorOverlayVisibility();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -266,7 +263,10 @@ public class MapViewFragment extends Fragment implements
             }
 
             /* If the user wants to see the speed */
-            float speed = location.getSpeed();
+            if (mIndicatorOverlay.getVisibility() == View.VISIBLE) {
+                float speed = location.getSpeed() * 3.6f;
+                mIndicatorOverlay.setSpeed(speed, "km/h");
+            }
         }
     }
 

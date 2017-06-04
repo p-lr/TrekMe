@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PositionOrientationMarker;
 
 /**
@@ -23,7 +24,7 @@ public class FrameLayoutMapView extends FrameLayout implements
         TileViewExtended.SingleTapStaticListener,
         TileViewExtended.ScrollListener {
 
-    private View mIndicatorOverlay;
+    private IndicatorOverlay mIndicatorOverlay;
     private FloatingActionButton mPositionFAB;
     private FloatingActionButton mLockFAB;
 
@@ -56,7 +57,7 @@ public class FrameLayoutMapView extends FrameLayout implements
 
     private void init(Context context, AttributeSet attrs) {
         inflate(context, R.layout.fragment_map_view, this);
-        mIndicatorOverlay = findViewById(R.id.indicator_overlay);
+        mIndicatorOverlay = (IndicatorOverlay) findViewById(R.id.indicator_overlay);
         mPositionFAB = (FloatingActionButton) findViewById(R.id.fab_position);
 
         mPositionFAB.setOnClickListener(new View.OnClickListener() {
@@ -109,8 +110,16 @@ public class FrameLayoutMapView extends FrameLayout implements
         hideOrientationFAB();
     }
 
-    public void setIndicatorOverlayVisible(int visible) {
-        mIndicatorOverlay.setVisibility(visible);
+    public void toggleIndicatorOverlayVisibility() {
+        if (mIndicatorOverlay.getVisibility() == VISIBLE) {
+            mIndicatorOverlay.setVisibility(GONE);
+        } else {
+            mIndicatorOverlay.setVisibility(VISIBLE);
+        }
+    }
+
+    public IndicatorOverlay getIndicatorOverlay() {
+        return mIndicatorOverlay;
     }
 
     private void showOrientationFAB() {
