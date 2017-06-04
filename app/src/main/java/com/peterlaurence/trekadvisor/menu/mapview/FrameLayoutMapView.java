@@ -118,7 +118,11 @@ public class FrameLayoutMapView extends FrameLayout implements
         }
     }
 
-    public IndicatorOverlay getIndicatorOverlay() {
+    public boolean shouldDisplaySpeed() {
+        return mIndicatorOverlay.getVisibility() == VISIBLE;
+    }
+
+    public MapViewFragment.SpeedListener getSpeedListener() {
         return mIndicatorOverlay;
     }
 

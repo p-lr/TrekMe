@@ -31,7 +31,6 @@ import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
-import com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
@@ -70,7 +69,7 @@ public class MapViewFragment extends Fragment implements
     private OrientationSensor mOrientationSensor;
     private MarkerLayer mMarkerLayer;
     private RouteLayer mRouteLayer;
-    private IndicatorOverlay mIndicatorOverlay;
+    private SpeedListener mSpeedListener;
 
     public MapViewFragment() {
     }
@@ -107,7 +106,7 @@ public class MapViewFragment extends Fragment implements
             rootView = new FrameLayoutMapView(this.getContext());
             rootView.setPositionTouchListener(this);
             rootView.setLockViewListener(this);
-            mIndicatorOverlay = rootView.getIndicatorOverlay();
+            mSpeedListener = rootView.getSpeedListener();
         }
 
         return rootView;
@@ -263,9 +262,9 @@ public class MapViewFragment extends Fragment implements
             }
 
             /* If the user wants to see the speed */
-            if (mIndicatorOverlay.getVisibility() == View.VISIBLE) {
+            if (rootView.shouldDisplaySpeed()) {
                 float speed = location.getSpeed() * 3.6f;
-                mIndicatorOverlay.setSpeed(speed, "km/h");
+                mSpeedListener.onSpeed(speed, "km/h");
             }
         }
     }
@@ -418,5 +417,14 @@ public class MapViewFragment extends Fragment implements
      */
     public interface RequestManageMarkerListener {
         void onRequestManageMarker(MarkerGson.Marker marker);
+    }
+
+
+    /**
+     * As the {@code MapViewFragment} is a {@link LocationListener}, it can dispatch speed
+     * information to other sub-components.
+     */
+    public interface SpeedListener {
+        void onSpeed(float speed, String unit);
     }
 }

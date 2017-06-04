@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 
 /**
  * An overlay to show optional information. It can display :
@@ -17,7 +18,7 @@ import com.peterlaurence.trekadvisor.R;
  *
  * @author peterLaurence on 03/06/17.
  */
-public class IndicatorOverlay extends LinearLayout {
+public class IndicatorOverlay extends LinearLayout implements MapViewFragment.SpeedListener {
     private static final int BACKGROUND_COLOR_DEFAULT = 0x22FFFFFF;
     private TextView mSpeedTextView;
 
@@ -46,7 +47,8 @@ public class IndicatorOverlay extends LinearLayout {
         mSpeedTextView = (TextView) findViewById(R.id.speed_id);
     }
 
-    public void setSpeed(float speed, String unit) {
+    @Override
+    public void onSpeed(float speed, String unit) {
         String speedText = String.valueOf(speed) + " " + unit;
         mSpeedTextView.setText(speedText);
     }
