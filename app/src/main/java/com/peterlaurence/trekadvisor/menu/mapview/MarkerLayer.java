@@ -44,11 +44,12 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
      * A {@link MarkerGrab} is used along with a {@link MarkerTouchMoveListener} to reflect its
      * displacement to the marker passed as argument.
      */
-    private static MarkerGrab attachMarkerGrab(final MovableMarker movableMarker, TileView tileView, Context context) {
+    private static void attachMarkerGrab(final MovableMarker movableMarker, TileView tileView,
+                                         Map map, Context context) {
         /* Add a view as background, to move easily the marker */
         MarkerTouchMoveListener.MarkerMoveCallback markerMoveCallback = new MarkerTouchMoveListener.MarkerMoveCallback() {
             @Override
-            public void moveMarker(TileView tileView, View view, double x, double y) {
+            public void onMarkerMove(TileView tileView, View view, double x, double y) {
                 tileView.moveMarker(view, x, y);
                 tileView.moveMarker(movableMarker, x, y);
                 movableMarker.setRelativeX(x);
@@ -57,11 +58,11 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         };
 
         MarkerGrab markerGrab = new MarkerGrab(context);
-        markerGrab.setOnTouchListener(new MarkerTouchMoveListener(tileView, markerMoveCallback));
+        MarkerTouchMoveListener.MarkerClickCallback markerClickCallback = new MovableMarkerClickCallback(
+                movableMarker, markerGrab, tileView, map);
+        markerGrab.setOnTouchListener(new MarkerTouchMoveListener(tileView, markerMoveCallback, markerClickCallback));
         tileView.addMarker(markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f);
         markerGrab.morphIn();
-
-        return markerGrab;
     }
 
     MarkerGson.Marker getCurrentMarker() {
@@ -188,10 +189,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         }
 
         /* Easily move the marker */
-        MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mMapViewFragment.getContext());
-
-        movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker, markerGrab,
-                mTileView, mMap));
+        attachMarkerGrab(movableMarker, mTileView, mMap, mMapViewFragment.getContext());
 
         mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
     }
@@ -214,8 +212,8 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     }
 
     /**
-     * This listener is only set on a {@link MovableMarker} when it is in its dynamic form (e.g it
-     * can be moved). <br>
+     * This callback is only called when a single-tap is detected on a {@link MarkerGrab} (e.g when
+     * the associated {@link MovableMarker} can be moved). <br>
      * So it does the following :
      * <ul>
      * <li>Morph the {@link MovableMarker} into its static form</li>
@@ -226,13 +224,13 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
      * relative coordinates are wgs84 or projected values.</li>
      * </ul>
      */
-    private static class MovableMarkerClickListener implements View.OnClickListener {
+    private static class MovableMarkerClickCallback implements MarkerTouchMoveListener.MarkerClickCallback {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerGrab> mMarkerGrabWeakReference;
         private TileView mTileView;
         private Map mMap;
 
-        MovableMarkerClickListener(MovableMarker movableMarker, MarkerGrab markerGrab,
+        MovableMarkerClickCallback(MovableMarker movableMarker, MarkerGrab markerGrab,
                                    TileView tileView, Map map) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerGrabWeakReference = new WeakReference<>(markerGrab);
@@ -241,14 +239,12 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         }
 
         @Override
-        public void onClick(View v) {
+        public void onMarkerClick() {
             MovableMarker movableMarker = mMovableMarkerWeakReference.get();
             if (movableMarker != null) {
                 movableMarker.morphToStaticForm();
 
-                /* After the morph, the marker should not consume touch events */
-                movableMarker.setClickable(false);
-
+                /* After the morph, remove the MarkerGrab */
                 final MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
                 markerGrab.morphOut(new Animatable2.AnimationCallback() {
                     @Override
@@ -310,9 +306,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                 movableMarker.morphToDynamicForm();
 
                 /* Easily move the marker */
-                MarkerGrab markerGrab = attachMarkerGrab(movableMarker, mTileView, mContext);
-                movableMarker.setOnClickListener(new MovableMarkerClickListener(movableMarker,
-                        markerGrab, mTileView, mMap));
+                attachMarkerGrab(movableMarker, mTileView, mMap, mContext);
 
                 /* Use a trick to bring the marker to the foreground */
                 mTileView.removeMarker(movableMarker);

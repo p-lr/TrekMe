@@ -18,24 +18,24 @@
         android:rotation="0">
         <path
             android:name="left_arrow"
-            android:fillColor="@color/colorWhite"
+            android:fillColor="@color/colorMarkerStroke"
             android:pathData="M 3,26 v -4 l -3,2 Z"
             android:trimPathEnd="0" />
         <path
             android:name="right_arrow"
-            android:fillColor="@color/colorWhite"
+            android:fillColor="@color/colorMarkerStroke"
             android:pathData="M 21,26 v -4 l 3,2 Z"
             android:trimPathEnd="0" />
 
         <path
             android:name="top_arrow"
-            android:fillColor="@color/colorWhite"
+            android:fillColor="@color/colorMarkerStroke"
             android:pathData="M 10,15 h 4 l -2,-3 Z"
             android:trimPathEnd="0" />
 
         <path
             android:name="bottom_arrow"
-            android:fillColor="@color/colorWhite"
+            android:fillColor="@color/colorMarkerStroke"
             android:pathData="M 10,33 h 4 l -2,3 Z"
             android:trimPathEnd="0" />
     </group>

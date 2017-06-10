@@ -322,7 +322,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
     private static class CalibrationMarkerMoveCallback implements MarkerTouchMoveListener.MarkerMoveCallback {
         @Override
-        public void moveMarker(TileView tileView, View view, double x, double y) {
+        public void onMarkerMove(TileView tileView, View view, double x, double y) {
             moveCalibrationMarker(tileView, view, x, y);
         }
     }
