@@ -187,6 +187,9 @@ public class MainActivity extends AppCompatActivity
                 case TRACKS_MANAGE_FRAGMENT_TAG:
                     showMapViewFragment();
                     break;
+                case MARKER_MANAGE_FRAGMENT_TAG:
+                    showMapViewFragment();
+                    break;
                 default:
                     showMapListFragment();
             }
