@@ -32,10 +32,11 @@ is the memory available on your device (smartphone, tablet).
 * GPX tracks import
 * Lock the view to the current position
 * Orientation indicator
+* Speed indicator
 
 ### On TODO list
 
-* Speed and distance indicator
+* Distance indicator
 * GPX track recording
 * Calibration with 3+ points (when not using a projection)
 * Develop a desktop tool to assist map creation
