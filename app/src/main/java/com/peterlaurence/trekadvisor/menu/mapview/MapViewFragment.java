@@ -31,6 +31,7 @@ import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
+import com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
@@ -263,8 +264,7 @@ public class MapViewFragment extends Fragment implements
 
             /* If the user wants to see the speed */
             if (rootView.shouldDisplaySpeed()) {
-                float speed = location.getSpeed() * 3.6f;
-                mSpeedListener.onSpeed(speed, "km/h");
+                mSpeedListener.onSpeed(location.getSpeed(), IndicatorOverlay.SpeedUnit.KM_H);
             }
         }
     }
@@ -425,6 +425,6 @@ public class MapViewFragment extends Fragment implements
      * information to other sub-components.
      */
     public interface SpeedListener {
-        void onSpeed(float speed, String unit);
+        void onSpeed(float speed, IndicatorOverlay.SpeedUnit unit);
     }
 }

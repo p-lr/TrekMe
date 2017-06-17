@@ -10,6 +10,8 @@ import android.widget.TextView;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 
+import java.text.NumberFormat;
+
 /**
  * An overlay to show optional information. It can display :
  * <ul>
@@ -37,18 +39,58 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
         }
 
 
-        init();
+        init(context);
     }
 
-    private void init() {
-        inflate(getContext(), R.layout.map_indicator_overlay, this);
+    private void init(Context context) {
+        inflate(context, R.layout.map_indicator_overlay, this);
 
         mSpeedTextView = (TextView) findViewById(R.id.speed_id);
     }
 
     @Override
-    public void onSpeed(float speed, String unit) {
-        String speedText = String.valueOf(speed) + " " + unit;
+    public void onSpeed(float speed, SpeedUnit unit) {
+        float speedConverted = convertSpeed(speed, unit);
+
+        /* Format the speed with only one fraction digit */
+        NumberFormat formatter = NumberFormat.getNumberInstance();
+        formatter.setMinimumFractionDigits(1);
+        formatter.setMaximumFractionDigits(1);
+
+        String speedText = formatter.format(speedConverted) + " " + getSpeedUnitI18n(unit);
         mSpeedTextView.setText(speedText);
+    }
+
+    /**
+     * Converts the given speed (assumed to be in m/s), using the provided unit.
+     */
+    private float convertSpeed(float speed, SpeedUnit unit) {
+        switch (unit) {
+            case KM_H:
+                return speed * 3.6f;
+            case MPH:
+                return speed * 2.23694f;
+            default:
+                return speed;
+        }
+    }
+
+    /**
+     * Converts a given {@link SpeedUnit} using the user's language.
+     */
+    private String getSpeedUnitI18n(SpeedUnit unit) {
+        Context context = getContext();
+        switch (unit) {
+            case KM_H:
+                return context.getString(R.string.km_h);
+            case MPH:
+                return context.getString(R.string.mph);
+            default:
+                return context.getString(R.string.km_h);
+        }
+    }
+
+    public enum SpeedUnit {
+        KM_H, MPH
     }
 }
