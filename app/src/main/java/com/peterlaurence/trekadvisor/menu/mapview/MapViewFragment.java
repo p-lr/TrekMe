@@ -86,15 +86,6 @@ public class MapViewFragment extends Fragment implements
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        /* Create the instance of the OrientationSensor */
-        mOrientationSensor = new OrientationSensor(getContext());
-
-        /* Create the marker layer */
-        mMarkerLayer = new MarkerLayer(this);
-
-        /* Create the route layer */
-        mRouteLayer = new RouteLayer();
     }
 
     @Override
@@ -111,6 +102,20 @@ public class MapViewFragment extends Fragment implements
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        /* Create the instance of the OrientationSensor */
+        mOrientationSensor = new OrientationSensor(getContext());
+
+        /* Create the marker layer */
+        mMarkerLayer = new MarkerLayer(view, getContext(), mRequestManageMarkerListener);
+
+        /* Create the route layer */
+        mRouteLayer = new RouteLayer();
     }
 
     @Override
