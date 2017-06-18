@@ -37,6 +37,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     private MovableMarker mCurrentMovableMarker;
 
 
+    /**
+     * After being created, the method {@link #init(Map, TileView)} has to be called.
+     */
     MarkerLayer(View parentView, Context context, MapViewFragment.RequestManageMarkerListener listener) {
         mParentView = parentView;
         mContext = context;
@@ -82,7 +85,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         drawMarkers();
     }
 
-    void setTileView(final TileView tileView) {
+    private void setTileView(final TileView tileView) {
         mTileView = tileView;
 
         mTileView.setMarkerTapListener(new MarkerLayout.MarkerTapListener() {
@@ -110,20 +113,16 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         });
     }
 
-    void setMap(Map map) {
-        mMap = map;
-
-        /* Update the ui accordingly */
-        init();
-    }
-
     /**
      * Triggers the fetch of the map's markers and their drawing on the {@link TileView}. If this is
      * the first time this method is called for this map, the markers aren't defined and the
      * {@link MapLoader} will get them in an asynctask. Otherwise, we can draw them immediately.<br>
      * This must be called when the {@link MapViewFragment} is ready to update its UI.
      */
-    private void init() {
+    public void init(Map map, TileView tileView) {
+        mMap = map;
+        setTileView(tileView);
+
         if (mMap.areMarkersDefined()) {
             drawMarkers();
         } else {

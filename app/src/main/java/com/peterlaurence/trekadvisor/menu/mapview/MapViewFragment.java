@@ -95,7 +95,7 @@ public class MapViewFragment extends Fragment implements
          * it handles configuration changes itself
          */
         if (rootView == null) {
-            rootView = new FrameLayoutMapView(this.getContext());
+            rootView = new FrameLayoutMapView(getContext());
             rootView.setPositionTouchListener(this);
             rootView.setLockViewListener(this);
             mSpeedListener = rootView.getSpeedListener();
@@ -186,19 +186,24 @@ public class MapViewFragment extends Fragment implements
     }
 
     /**
-     * Only update the map if its a new one.
+     * Only update the map if its a new one. <br>
+     * Once the map is updated, a {@link TileViewExtended} instance is created, so layers can be
+     * updated.
      */
     private void updateMapIfNecessary() {
         Map map = mMapProvider.getCurrentMap();
         if (map != null && mMap != map) {
             setMap(map);
-
-            /* Update the marker layer */
-            mMarkerLayer.setMap(mMap);
-
-            /* Update the route layer */
-            mRouteLayer.setMap(mMap);
+            updateLayers();
         }
+    }
+
+    private void updateLayers() {
+        /* Update the marker layer */
+        mMarkerLayer.init(mMap, mTileView);
+
+        /* Update the route layer */
+        mRouteLayer.init(mMap, mTileView);
     }
 
     @Override
@@ -318,12 +323,6 @@ public class MapViewFragment extends Fragment implements
          * Register the position marker as an {@link OrientationListener}
          */
         mOrientationSensor.setOrientationListener((OrientationSensor.OrientationListener) mPositionMarker);
-
-        /* Update the marker layer */
-        mMarkerLayer.setTileView(tileView);
-
-        /* Update the route layer */
-        mRouteLayer.setTileView(tileView);
     }
 
     private void removeCurrentTileView() {

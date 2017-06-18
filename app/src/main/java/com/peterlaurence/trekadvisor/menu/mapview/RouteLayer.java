@@ -27,6 +27,9 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
     private TileViewExtended mTileView;
     private Map mMap;
 
+    /**
+     * After being created, the method {@link #init(Map, TileView)} has to be called.
+     */
     RouteLayer() {
         MapLoader.getInstance().addMapRouteUpdateListener(this);
     }
@@ -59,14 +62,11 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
         mTileView.getPathView().invalidate();
     }
 
-    void setMap(Map map) {
+
+    public void init(Map map, TileView tileView) {
         mMap = map;
+        setTileView((TileViewExtended) tileView);
 
-        /* Update the ui accordingly */
-        init();
-    }
-
-    private void init() {
         if (mMap.areRoutesDefined()) {
             drawRoutes();
         } else {
@@ -80,7 +80,7 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
         drawRoutesTask.execute();
     }
 
-    void setTileView(TileViewExtended tileView) {
+    private void setTileView(TileViewExtended tileView) {
         mTileView = tileView;
     }
 
