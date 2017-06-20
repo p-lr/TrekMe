@@ -122,7 +122,7 @@ public class FrameLayoutMapView extends FrameLayout implements
         return mIndicatorOverlay.getVisibility() == VISIBLE;
     }
 
-    public MapViewFragment.SpeedListener getSpeedListener() {
+    public MapViewFragment.SpeedListener getSpeedIndicator() {
         return mIndicatorOverlay;
     }
 

@@ -26,6 +26,7 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
@@ -76,16 +77,36 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof RequestManageTracksListener
+                && context instanceof RequestManageMarkerListener
+                && context instanceof MapProvider
+                && context instanceof LocationProvider) {
+            mRequestManageTracksListener = (RequestManageTracksListener) context;
+            mRequestManageMarkerListener = (RequestManageMarkerListener) context;
+            mMapProvider = (MapProvider) context;
+            mLocationProvider = (LocationProvider) context;
+            mLocationProvider.registerLocationListener(this, this);
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement RequestManageTracksListener, MapProvider and LocationProvider");
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
 
         /* The location request specific to this fragment */
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        if (mLocationRequest == null) {
+            mLocationRequest = new LocationRequest();
+            mLocationRequest.setInterval(1000);
+            mLocationRequest.setFastestInterval(1000);
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        }
     }
 
     @Override
@@ -98,7 +119,6 @@ public class MapViewFragment extends Fragment implements
             rootView = new FrameLayoutMapView(getContext());
             rootView.setPositionTouchListener(this);
             rootView.setLockViewListener(this);
-            mSpeedListener = rootView.getSpeedListener();
         }
 
         return rootView;
@@ -107,6 +127,9 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        /* Get the speed indicator from the main layout */
+        mSpeedListener = rootView.getSpeedIndicator();
 
         /* Create the instance of the OrientationSensor */
         mOrientationSensor = new OrientationSensor(getContext());
@@ -213,28 +236,24 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof RequestManageTracksListener
-                && context instanceof RequestManageMarkerListener
-                && context instanceof MapProvider
-                && context instanceof LocationProvider) {
-            mRequestManageTracksListener = (RequestManageTracksListener) context;
-            mRequestManageMarkerListener = (RequestManageMarkerListener) context;
-            mMapProvider = (MapProvider) context;
-            mLocationProvider = (LocationProvider) context;
-            mLocationProvider.registerLocationListener(this, this);
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement RequestManageTracksListener, MapProvider and LocationProvider");
-        }
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        MapLoader.getInstance().clearMapMarkerUpdateListener();
+        MapLoader.getInstance().clearMapRouteUpdateListener();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+
         mRequestManageTracksListener = null;
+        mRequestManageMarkerListener = null;
         mMapProvider = null;
+        mLocationProvider = null;
+        mSpeedListener = null;
+        mOrientationSensor = null;
+        mMarkerLayer = null;
     }
 
     @Override

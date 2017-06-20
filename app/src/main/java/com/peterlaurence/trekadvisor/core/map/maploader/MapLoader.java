@@ -213,6 +213,14 @@ public class MapLoader implements MapImporter.MapParseListener {
         mMapListUpdateListeners.clear();
     }
 
+    public void clearMapMarkerUpdateListener() {
+        mMapMarkerUpdateListeners.clear();
+    }
+
+    public void clearMapRouteUpdateListener() {
+        mMapRouteUpdateListeners.clear();
+    }
+
     /**
      * Add a {@link Map} to the internal list and generated the json file. <br>
      * This is typically called after an import, after a {@link Map} has been generated from a file
