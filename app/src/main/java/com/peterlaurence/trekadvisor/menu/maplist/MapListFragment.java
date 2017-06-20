@@ -1,9 +1,9 @@
 package com.peterlaurence.trekadvisor.menu.maplist;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,36 +18,26 @@ import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 /**
  * A {@link Fragment} subclass that displays the list of available maps, using a {@link RecyclerView}.
  * <p>
- *     Activities that contain this fragment must implement the
- *     {@link MapListFragment.OnMapListFragmentInteractionListener} interface to handle interaction
- *     events.
+ * Activities that contain this fragment must implement the
+ * {@link MapListFragment.OnMapListFragmentInteractionListener} interface to handle interaction
+ * events.
  * </p>
  */
 public class MapListFragment extends Fragment implements
         MapAdapter.MapSelectionListener,
         MapAdapter.MapSettingsListener,
         MapLoader.MapListUpdateListener {
-    private static final String RECREATE_FRAGMENT_KEY = "RECREATE_FRAGMENT_KEY";
 
     private FrameLayout rootView;
     private RecyclerView recyclerView;
 
     private OnMapListFragmentInteractionListener mListener;
 
-    private Map mCurrentMap;      // The map selected by the user in the list
+    private Map mCurrentMap;   // The map selected by the user in the list
     private Map mSettingsMap;  // The map that the user wants to calibrate
 
     public MapListFragment() {
         // Required empty public constructor
-    }
-
-    /**
-     * Factory method to create a new instance of this fragment using the provided parameters.
-     * Takes no arguments for instance, so this methods is quite useless, but let it because it is a
-     * better practice to create fragments from a factory rather directly from constructor.
-     */
-    public static MapListFragment newInstance() {
-        return new MapListFragment();
     }
 
     @Override
@@ -70,13 +60,9 @@ public class MapListFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (savedInstanceState != null && savedInstanceState.get(RECREATE_FRAGMENT_KEY) != null &&
-                !((boolean) savedInstanceState.get(RECREATE_FRAGMENT_KEY)) &&
-                rootView != null) {
-            return rootView;
+        if (rootView == null) {
+            rootView = (FrameLayout) inflater.inflate(R.layout.fragment_map_list, container, false);
         }
-
-        rootView = (FrameLayout) inflater.inflate(R.layout.fragment_map_list, container, false);
         return rootView;
     }
 
@@ -155,6 +141,13 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        MapLoader.getInstance().clearMapListUpdateListener();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
@@ -176,20 +169,7 @@ public class MapListFragment extends Fragment implements
      */
     public interface OnMapListFragmentInteractionListener {
         void onMapSelectedFragmentInteraction(Map map);
+
         void onMapSettingsFragmentInteraction(Map map);
-    }
-
-    /**
-     * Don't recreate the fragment on a configuration change. Can be easily parametrized if
-     * needed.
-     * <p/>
-     * Important note : if no data is appended to the {@link Bundle outState} the
-     * {@code Fragment.onCreateView} will receive a null {@link Bundle savedInstanceState}.
-     */
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        outState.putBoolean(RECREATE_FRAGMENT_KEY, false);
     }
 }
