@@ -40,11 +40,14 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     /**
      * After being created, the method {@link #init(Map, TileView)} has to be called.
      */
-    MarkerLayer(View parentView, Context context, MapViewFragment.RequestManageMarkerListener listener) {
+    MarkerLayer(View parentView, Context context) {
         mParentView = parentView;
         mContext = context;
-        mRequestManageMarkerListener = listener;
         MapLoader.getInstance().addMapMarkerUpdateListener(this);
+    }
+
+    public void setRequestManageMarkerListener(MapViewFragment.RequestManageMarkerListener listener) {
+        mRequestManageMarkerListener = listener;
     }
 
     /**

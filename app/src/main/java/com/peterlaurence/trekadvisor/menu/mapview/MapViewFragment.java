@@ -132,13 +132,20 @@ public class MapViewFragment extends Fragment implements
         mSpeedListener = rootView.getSpeedIndicator();
 
         /* Create the instance of the OrientationSensor */
-        mOrientationSensor = new OrientationSensor(getContext());
+        if (mOrientationSensor == null) {
+            mOrientationSensor = new OrientationSensor(getContext());
+        }
 
         /* Create the marker layer */
-        mMarkerLayer = new MarkerLayer(view, getContext(), mRequestManageMarkerListener);
+        if (mMarkerLayer == null) {
+            mMarkerLayer = new MarkerLayer(view, getContext());
+        }
+        mMarkerLayer.setRequestManageMarkerListener(mRequestManageMarkerListener);
 
         /* Create the route layer */
-        mRouteLayer = new RouteLayer();
+        if (mRouteLayer == null) {
+            mRouteLayer = new RouteLayer();
+        }
     }
 
     @Override
@@ -250,10 +257,7 @@ public class MapViewFragment extends Fragment implements
         mRequestManageTracksListener = null;
         mRequestManageMarkerListener = null;
         mMapProvider = null;
-        mLocationProvider = null;
         mSpeedListener = null;
-        mOrientationSensor = null;
-        mMarkerLayer = null;
     }
 
     @Override

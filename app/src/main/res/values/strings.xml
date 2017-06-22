@@ -66,6 +66,7 @@
     <!-- MapView fragment -->
     <string name="mapview_show_speed">Show speed</string>
     <string name="mapview_add_marker">Add marker</string>
+    <string name="mapview_measure_distance">Measure distance</string>
     <string name="move_marker">Move</string>
     <string name="delete_marker_question">Delete marker?</string>
     <string name="km_h">km/h</string>
