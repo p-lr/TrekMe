@@ -10,7 +10,6 @@ import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.util.FileUtils;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * This task is run when this is the first time a map is loaded, hence the list of
@@ -22,12 +21,12 @@ import java.util.List;
  */
 public class MapRouteImportTask extends AsyncTask<Void, Void, Void> {
     private static final String TAG = "MapRouteImportTask";
-    private List<MapLoader.MapRouteUpdateListener> mListenerList;
+    private MapLoader.MapRouteUpdateListener mListener;
     private Map mMap;
     private Gson mGson;
 
-    public MapRouteImportTask(List<MapLoader.MapRouteUpdateListener> listenerList, Map map, Gson gson) {
-        mListenerList = listenerList;
+    public MapRouteImportTask(MapLoader.MapRouteUpdateListener listener, Map map, Gson gson) {
+        mListener = listener;
         mMap = map;
         mGson = gson;
     }
@@ -52,10 +51,8 @@ public class MapRouteImportTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void result) {
-        if (mListenerList != null) {
-            for (MapLoader.MapRouteUpdateListener listener : mListenerList) {
-                listener.onMapRouteUpdate();
-            }
+        if (mListener != null) {
+            mListener.onMapRouteUpdate();
         }
     }
 }

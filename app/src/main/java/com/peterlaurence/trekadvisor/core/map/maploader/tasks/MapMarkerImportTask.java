@@ -4,14 +4,12 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.util.FileUtils;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * This task is run when this is the first time a map is loaded, hence the list of
@@ -22,15 +20,15 @@ import java.util.List;
  * @author peterLaurence on 30/04/17.
  */
 public class MapMarkerImportTask extends AsyncTask<Void, Void, Void> {
-    private List<MapLoader.MapMarkerUpdateListener> mListenerList;
+    private MapLoader.MapMarkerUpdateListener mListener;
     private Map mMap;
     private Gson mGson;
     private static final String TAG = "MapMarkerImportTask";
 
-    public MapMarkerImportTask(List<MapLoader.MapMarkerUpdateListener> listenerList, Map map,
+    public MapMarkerImportTask(MapLoader.MapMarkerUpdateListener listener, Map map,
                                Gson gson) {
         super();
-        mListenerList = listenerList;
+        mListener = listener;
         mMap = map;
         mGson = gson;
     }
@@ -55,10 +53,8 @@ public class MapMarkerImportTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void result) {
-        if (mListenerList != null) {
-            for (MapLoader.MapMarkerUpdateListener listener : mListenerList) {
-                listener.onMapMarkerUpdate();
-            }
+        if (mListener != null) {
+            mListener.onMapMarkerUpdate();
         }
     }
 }

@@ -66,7 +66,7 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
     public void init(Map map, TileView tileView) {
         mMap = map;
         setTileView((TileViewExtended) tileView);
-        MapLoader.getInstance().addMapRouteUpdateListener(this);
+        MapLoader.getInstance().setMapRouteUpdateListener(this);
 
         if (mMap.areRoutesDefined()) {
             drawRoutes();

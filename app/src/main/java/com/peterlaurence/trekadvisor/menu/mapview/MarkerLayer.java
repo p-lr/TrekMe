@@ -128,7 +128,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     public void init(Map map, TileView tileView) {
         mMap = map;
         setTileView(tileView);
-        MapLoader.getInstance().addMapMarkerUpdateListener(this);
+        MapLoader.getInstance().setMapMarkerUpdateListener(this);
 
         if (mMap.areMarkersDefined()) {
             drawMarkers();
