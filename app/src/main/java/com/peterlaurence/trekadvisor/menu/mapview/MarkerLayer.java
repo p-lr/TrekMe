@@ -43,7 +43,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     MarkerLayer(View parentView, Context context) {
         mParentView = parentView;
         mContext = context;
-        MapLoader.getInstance().addMapMarkerUpdateListener(this);
     }
 
     public void setRequestManageMarkerListener(MapViewFragment.RequestManageMarkerListener listener) {
@@ -119,12 +118,17 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     /**
      * Triggers the fetch of the map's markers and their drawing on the {@link TileView}. If this is
      * the first time this method is called for this map, the markers aren't defined and the
-     * {@link MapLoader} will get them in an asynctask. Otherwise, we can draw them immediately.<br>
+     * {@link MapLoader} will get them in an asynctask. Otherwise, we can draw them immediately.
+     * <p>
      * This must be called when the {@link MapViewFragment} is ready to update its UI.
+     * <p>
+     * The caller is responsible for removing this {@link MapLoader.MapMarkerUpdateListener} from
+     * the {@link MapLoader}, after this object is no longer used.
      */
     public void init(Map map, TileView tileView) {
         mMap = map;
         setTileView(tileView);
+        MapLoader.getInstance().addMapMarkerUpdateListener(this);
 
         if (mMap.areMarkersDefined()) {
             drawMarkers();
