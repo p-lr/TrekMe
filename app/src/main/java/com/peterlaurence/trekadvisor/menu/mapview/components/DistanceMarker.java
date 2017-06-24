@@ -10,16 +10,14 @@ import android.view.View;
 import com.peterlaurence.trekadvisor.R;
 
 /**
- * Custom marker to show the distance with another view.
+ * Custom marker which is part of the distance measurement feature.
  *
- * @author peterLaurence on 01/04/17.
+ * @author peterLaurence on 24/06/17.
  */
 public class DistanceMarker extends View {
     private int mMeasureDimension;
-    private int mSightColor = Color.BLUE;
-    private int mSightBackgroundColor = Color.BLUE;
+    private int mBackgroundColor = Color.BLUE;
 
-    private Paint mPaint;
     private Paint mPaintBackground;
 
     public DistanceMarker(Context context) {
@@ -35,29 +33,15 @@ public class DistanceMarker extends View {
                 R.styleable.DistanceMarker_measureDimension,
                 200);
 
-        int lineWidth = a.getDimensionPixelSize(
-                R.styleable.DistanceMarker_lineWidth,
-                10);
-
-        mSightColor = a.getColor(
-                R.styleable.DistanceMarker_sightColor,
-                mSightColor);
-
-        mSightBackgroundColor = a.getColor(
+        mBackgroundColor = a.getColor(
                 R.styleable.DistanceMarker_sightBackgroundColor,
-                mSightBackgroundColor);
+                mBackgroundColor);
 
         a.recycle();
 
-        /* Paint for the sight */
-        mPaint = new Paint();
-        mPaint.setColor(mSightColor);
-        mPaint.setStrokeWidth(lineWidth);
-        mPaint.setAntiAlias(true);
-
         /* Paint for the background circle */
         mPaintBackground = new Paint();
-        mPaintBackground.setColor(mSightBackgroundColor);
+        mPaintBackground.setColor(mBackgroundColor);
         mPaintBackground.setAntiAlias(true);
     }
 
@@ -67,8 +51,6 @@ public class DistanceMarker extends View {
 
         canvas.save();
         canvas.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2, mMeasureDimension / 2, mPaintBackground);
-        canvas.drawLine(0, mMeasureDimension / 2, mMeasureDimension, mMeasureDimension / 2, mPaint);
-        canvas.drawLine(mMeasureDimension / 2, 0, mMeasureDimension / 2, mMeasureDimension, mPaint);
         canvas.restore();
     }
 

@@ -36,10 +36,8 @@
     </style>
 
     <style name="DistanceMarkerStyle">
-        <item name="measureDimension">100dp</item>
-        <item name="lineWidth">3dp</item>
-        <item name="sightColor">@color/colorDistanceMarker</item>
-        <item name="sightBackgroundColor">@color/colorDistanceMarkerBg</item>
+        <item name="measureDimension">50dp</item>
+        <item name="sightBackgroundColor">@color/colorDistanceMarker</item>
     </style>
 
 </resources>

@@ -165,8 +165,13 @@ public class MapViewFragment extends Fragment implements
         /* Clear the existing action menu */
         menu.clear();
 
-        /* .. and fill the new one */
+        /* Fill the new one */
         inflater.inflate(R.menu.menu_fragment_map_view, menu);
+
+        /* .. adn restore a checkable state */
+        MenuItem item = menu.findItem(R.id.distancemeter_id);
+        item.setChecked(mDistanceLayer.isVisible());
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -223,7 +228,9 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (hidden) {
+            mDistanceLayer.hide();
+        } else {
             updateMapIfNecessary();
         }
     }

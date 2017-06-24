@@ -12,8 +12,7 @@
     <color name="colorPositionMarkerBg">#55448AFF</color>
     <color name="colorCalibrationMarker">#448AFF</color>
     <color name="colorCalibrationMarkerBg">#55448AFF</color>
-    <color name="colorDistanceMarker">#448AFF</color>
-    <color name="colorDistanceMarkerBg">#55448AFF</color>
+    <color name="colorDistanceMarker">#55448AFF</color>
     <color name="colorMarkerGrabBg">#55448AFF</color>
     <color name="colorMarker">#F16157</color>
     <color name="colorMarkerStroke">#B6392F</color>
