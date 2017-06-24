@@ -71,6 +71,7 @@ public class MapViewFragment extends Fragment implements
     private OrientationSensor mOrientationSensor;
     private MarkerLayer mMarkerLayer;
     private RouteLayer mRouteLayer;
+    private DistanceLayer mDistanceLayer;
     private SpeedListener mSpeedListener;
 
     public MapViewFragment() {
@@ -146,6 +147,11 @@ public class MapViewFragment extends Fragment implements
         if (mRouteLayer == null) {
             mRouteLayer = new RouteLayer();
         }
+
+        /* Create the distance layer */
+        if (mDistanceLayer == null) {
+            mDistanceLayer = new DistanceLayer(getContext());
+        }
     }
 
     @Override
@@ -175,6 +181,13 @@ public class MapViewFragment extends Fragment implements
                 return true;
             case R.id.speedometer_id:
                 rootView.toggleIndicatorOverlayVisibility();
+            case R.id.distancemeter_id:
+                item.setChecked(!item.isChecked());
+                if (item.isChecked()) {
+                    mDistanceLayer.show();
+                } else {
+                    mDistanceLayer.hide();
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -234,6 +247,9 @@ public class MapViewFragment extends Fragment implements
 
         /* Update the route layer */
         mRouteLayer.init(mMap, mTileView);
+
+        /* Update the distance layer */
+        mDistanceLayer.init(mTileView);
     }
 
     @Override

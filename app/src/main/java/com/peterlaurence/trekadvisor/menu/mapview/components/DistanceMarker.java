@@ -22,9 +22,6 @@ public class DistanceMarker extends View {
     private Paint mPaint;
     private Paint mPaintBackground;
 
-    private double mRelativeX;
-    private double mRelativeY;
-
     public DistanceMarker(Context context) {
         super(context);
         init(context);
@@ -78,21 +75,5 @@ public class DistanceMarker extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         setMeasuredDimension(mMeasureDimension, mMeasureDimension);
-    }
-
-    public double getRelativeX() {
-        return mRelativeX;
-    }
-
-    public void setRelativeX(double relativeX) {
-        mRelativeX = relativeX;
-    }
-
-    public double getRelativeY() {
-        return mRelativeY;
-    }
-
-    public void setRelativeY(double relativeY) {
-        mRelativeY = relativeY;
     }
 }

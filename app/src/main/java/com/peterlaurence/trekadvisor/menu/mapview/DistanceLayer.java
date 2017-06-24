@@ -1,7 +1,6 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.content.Context;
-import android.view.View;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceMarker;
@@ -15,7 +14,6 @@ import com.qozix.tileview.geom.CoordinateTranslater;
  * @author peterLaurence on 17/06/17.
  */
 public class DistanceLayer {
-    private View mParentView;
     private Context mContext;
     private DistanceMarker mDistanceMarkerFirst;
     private DistanceMarker mDistanceMarkerSecond;
@@ -23,16 +21,33 @@ public class DistanceLayer {
     private Map mMap;
     private TileView mTileView;
 
-    DistanceLayer(View parentView, Context context, TileView tileView) {
-        mParentView = parentView;
+    private double mFirstMarkerRelativeX;
+    private double mFirstMarkerRelativeY;
+    private double mSecondMarkerRelativeX;
+    private double mSecondMarkerRelativeY;
+
+    DistanceLayer(Context context) {
         mContext = context;
+    }
 
+    public void init(TileView tileView) {
         mTileView = tileView;
+    }
 
+    /**
+     * Shows the two {@link DistanceMarker} and the {@link DistanceView}.<br>
+     * {@link #init(TileView)} must have been called before.
+     */
+    public void show() {
         mDistanceMarkerFirst = new DistanceMarker(mContext);
         mDistanceMarkerSecond = new DistanceMarker(mContext);
 
-        drawDistanceMarkers();
+        initDistanceMarkers();
+
+        mTileView.addMarker(mDistanceMarkerFirst, mFirstMarkerRelativeX, mFirstMarkerRelativeY,
+                -0.5f, -0.5f);
+        mTileView.addMarker(mDistanceMarkerSecond, mSecondMarkerRelativeX, mSecondMarkerRelativeY,
+                -0.5f, -0.5f);
     }
 
     /**
@@ -41,27 +56,29 @@ public class DistanceLayer {
     public void hide() {
         mTileView.removeMarker(mDistanceMarkerFirst);
         mTileView.removeMarker(mDistanceMarkerSecond);
-        mContext = null;
-        mParentView = null;
+
+        mDistanceMarkerFirst = null;
+        mDistanceMarkerSecond = null;
     }
 
-    private void drawDistanceMarkers() {
+    private void initDistanceMarkers() {
         /* Calculate the relative coordinates of the first marker */
         int x = mTileView.getScrollX() + mTileView.getWidth() / 3 - mTileView.getOffsetX();
-        int y = mTileView.getScrollY() + mTileView.getHeight() / 2 - mTileView.getOffsetY();
+        int y = mTileView.getScrollY() + mTileView.getHeight() / 3 - mTileView.getOffsetY();
         CoordinateTranslater coordinateTranslater = mTileView.getCoordinateTranslater();
         double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
         double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
 
-        mDistanceMarkerFirst.setRelativeX(relativeX);
-        mDistanceMarkerFirst.setRelativeY(relativeY);
+        mFirstMarkerRelativeX = relativeX;
+        mFirstMarkerRelativeY = relativeY;
 
-        /* Calculate the relative coordinates of the first marker */
+        /* Calculate the relative coordinates of the second marker */
         x = mTileView.getScrollX() + mTileView.getWidth() * 2 / 3 - mTileView.getOffsetX();
+        y = mTileView.getScrollY() + mTileView.getHeight() * 2 / 3 - mTileView.getOffsetY();
         relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
         relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
 
-        mDistanceMarkerSecond.setRelativeX(relativeX);
-        mDistanceMarkerSecond.setRelativeY(relativeY);
+        mSecondMarkerRelativeX = relativeX;
+        mSecondMarkerRelativeY = relativeY;
     }
 }
