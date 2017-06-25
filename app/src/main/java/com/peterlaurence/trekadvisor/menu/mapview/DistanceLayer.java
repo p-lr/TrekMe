@@ -3,7 +3,6 @@ package com.peterlaurence.trekadvisor.menu.mapview;
 import android.content.Context;
 import android.view.View;
 
-import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceMarker;
 import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceView;
 import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
@@ -19,10 +18,10 @@ public class DistanceLayer {
     private Context mContext;
     private DistanceMarker mDistanceMarkerFirst;
     private DistanceMarker mDistanceMarkerSecond;
+    private DistanceView mDistanceView;
     private boolean mVisible;
 
-    private Map mMap;
-    private TileView mTileView;
+    private TileViewExtended mTileView;
 
     private double mFirstMarkerRelativeX;
     private double mFirstMarkerRelativeY;
@@ -34,15 +33,20 @@ public class DistanceLayer {
         mVisible = false;
     }
 
-    public void init(TileView tileView) {
+    public void init(TileViewExtended tileView) {
         mTileView = tileView;
     }
 
     /**
      * Shows the two {@link DistanceMarker} and the {@link DistanceView}.<br>
-     * {@link #init(TileView)} must have been called before.
+     * {@link #init(TileViewExtended)} must have been called before.
      */
     public void show() {
+        /* Create the DistanceView (the line between the two markers) */
+        mDistanceView = new DistanceView(mContext, mTileView.getScale());
+        mTileView.addScaleChangeListener(mDistanceView);
+        mTileView.addView(mDistanceView);
+
         /* Setup the first marker */
         mDistanceMarkerFirst = new DistanceMarker(mContext);
         MarkerTouchMoveListener.MarkerMoveCallback firstMarkerMoveCallback = new MarkerTouchMoveListener.MarkerMoveCallback() {
@@ -51,6 +55,7 @@ public class DistanceLayer {
                 mFirstMarkerRelativeX = x;
                 mFirstMarkerRelativeY = y;
                 tileView.moveMarker(mDistanceMarkerFirst, x, y);
+                updateDistanceView();
             }
         };
         MarkerTouchMoveListener firstMarkerTouchMoveListener = new MarkerTouchMoveListener(mTileView, firstMarkerMoveCallback);
@@ -64,6 +69,7 @@ public class DistanceLayer {
                 mSecondMarkerRelativeX = x;
                 mSecondMarkerRelativeY = y;
                 tileView.moveMarker(mDistanceMarkerSecond, x, y);
+                updateDistanceView();
             }
         };
         MarkerTouchMoveListener secondMarkerTouchMoveListener = new MarkerTouchMoveListener(mTileView, secondMarkerMoveCallback);
@@ -71,6 +77,7 @@ public class DistanceLayer {
 
         /* Set their positions */
         initDistanceMarkers();
+        updateDistanceView();
 
         /* ..and add them to the TileView */
         mTileView.addMarker(mDistanceMarkerFirst, mFirstMarkerRelativeX, mFirstMarkerRelativeY,
@@ -86,9 +93,12 @@ public class DistanceLayer {
     public void hide() {
         mTileView.removeMarker(mDistanceMarkerFirst);
         mTileView.removeMarker(mDistanceMarkerSecond);
+        mTileView.removeView(mDistanceView);
+        mTileView.removeScaleChangeLisetner(mDistanceView);
 
         mDistanceMarkerFirst = null;
         mDistanceMarkerSecond = null;
+        mDistanceView = null;
         mVisible = false;
     }
 
@@ -115,5 +125,14 @@ public class DistanceLayer {
 
         mSecondMarkerRelativeX = relativeX;
         mSecondMarkerRelativeY = relativeY;
+    }
+
+    private void updateDistanceView() {
+        CoordinateTranslater translater = mTileView.getCoordinateTranslater();
+        mDistanceView.updateLine(
+                (float) translater.translateX(mFirstMarkerRelativeX),
+                (float) translater.translateY(mFirstMarkerRelativeY),
+                (float) translater.translateX(mSecondMarkerRelativeX),
+                (float) translater.translateY(mSecondMarkerRelativeY));
     }
 }

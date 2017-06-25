@@ -7,13 +7,15 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 
+import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended;
+
 /**
  * A custom view that draws a line between two {@link DistanceMarker} and represents the distance
  * between them.
  *
  * @author peterLaurence on 21/06/17.
  */
-public class DistanceView extends View {
+public class DistanceView extends View implements TileViewExtended.ScaleChangeListener {
     private static final int DEFAULT_STROKE_COLOR = 0xCC311B92;
     private static final int DEFAULT_STROKE_WIDTH_DP = 4;
     private float mStrokeWidth;
@@ -22,9 +24,10 @@ public class DistanceView extends View {
 
     private float mScale = 1;
 
-    public DistanceView(Context context) {
+    public DistanceView(Context context, float scale) {
         super(context);
         setWillNotDraw(false);
+        mScale = scale;
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         mStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_STROKE_WIDTH_DP, metrics);
@@ -37,12 +40,7 @@ public class DistanceView extends View {
         mPaint.setStrokeCap(Paint.Cap.ROUND);
     }
 
-    public void setScale(float scale) {
-        mScale = scale;
-        invalidate();
-    }
-
-    public void updateLine(int x1, int y1, int x2, int y2) {
+    public void updateLine(float x1, float y1, float x2, float y2) {
         mLine[0] = x1;
         mLine[1] = y1;
         mLine[2] = x2;
@@ -55,7 +53,13 @@ public class DistanceView extends View {
     public void onDraw(Canvas canvas) {
         canvas.scale(mScale, mScale);
         mPaint.setStrokeWidth(mStrokeWidth / mScale);
-        canvas.drawLines(mLine, mPaint);
+        canvas.drawLine(mLine[0], mLine[1], mLine[2], mLine[3], mPaint);
         super.onDraw(canvas);
+    }
+
+    @Override
+    public void onScaleChanged(float scale) {
+        mScale = scale;
+        invalidate();
     }
 }
