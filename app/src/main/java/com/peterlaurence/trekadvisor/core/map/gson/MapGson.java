@@ -50,7 +50,8 @@ public class MapGson {
         /**
          * A CalibrationPoint defines a point on the map whose (x, y) relative coordinates
          * correspond to (projectionX, projectionY) as projected coordinates.
-         * Values of x and y are in [0-1] interval.
+         * Values of {@code x} and {@code y} are in [0-1] interval. <br>
+         * Values of {@code proj_x} and {@code proj_y} can very well be bare latitude and longitude.
          * <p/>
          * For example, a point which has x=1 and y=1 is located at the bottom right corner of the map.
          * A point which has x=0 and y=0 is located at the top left corner of the map.

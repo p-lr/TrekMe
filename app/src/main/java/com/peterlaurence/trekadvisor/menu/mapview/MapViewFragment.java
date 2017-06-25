@@ -186,6 +186,7 @@ public class MapViewFragment extends Fragment implements
                 return true;
             case R.id.speedometer_id:
                 rootView.toggleIndicatorOverlayVisibility();
+                return true;
             case R.id.distancemeter_id:
                 item.setChecked(!item.isChecked());
                 if (item.isChecked()) {
@@ -193,6 +194,7 @@ public class MapViewFragment extends Fragment implements
                 } else {
                     mDistanceLayer.hide();
                 }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -418,10 +420,10 @@ public class MapViewFragment extends Fragment implements
         /* Map calibration */
         Map.MapBounds mapBounds = map.getMapBounds();
         if (mapBounds != null) {
-            tileView.defineBounds(mapBounds.projectionX0,
-                    mapBounds.projectionY0,
-                    mapBounds.projectionX1,
-                    mapBounds.projectionY1);
+            tileView.defineBounds(mapBounds.X0,
+                    mapBounds.Y0,
+                    mapBounds.X1,
+                    mapBounds.Y1);
         } else {
             tileView.defineBounds(0, 0, 1, 1);
         }
