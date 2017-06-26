@@ -168,7 +168,7 @@ public class MapViewFragment extends Fragment implements
         /* Fill the new one */
         inflater.inflate(R.menu.menu_fragment_map_view, menu);
 
-        /* .. adn restore a checkable state */
+        /* .. and restore a checkable state */
         MenuItem item = menu.findItem(R.id.distancemeter_id);
         item.setChecked(mDistanceLayer.isVisible());
 
@@ -185,7 +185,7 @@ public class MapViewFragment extends Fragment implements
                 mRequestManageTracksListener.onRequestManageTracks();
                 return true;
             case R.id.speedometer_id:
-                rootView.toggleIndicatorOverlayVisibility();
+                mSpeedListener.toggleSpeedVisibility();
                 return true;
             case R.id.distancemeter_id:
                 item.setChecked(!item.isChecked());
@@ -321,7 +321,7 @@ public class MapViewFragment extends Fragment implements
             }
 
             /* If the user wants to see the speed */
-            if (rootView.shouldDisplaySpeed()) {
+            if (mSpeedListener != null) {
                 mSpeedListener.onSpeed(location.getSpeed(), IndicatorOverlay.SpeedUnit.KM_H);
             }
         }
@@ -478,5 +478,7 @@ public class MapViewFragment extends Fragment implements
      */
     public interface SpeedListener {
         void onSpeed(float speed, IndicatorOverlay.SpeedUnit unit);
+
+        void toggleSpeedVisibility();
     }
 }

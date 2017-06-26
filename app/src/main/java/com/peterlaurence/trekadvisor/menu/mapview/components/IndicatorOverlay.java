@@ -23,6 +23,8 @@ import java.text.NumberFormat;
 public class IndicatorOverlay extends LinearLayout implements MapViewFragment.SpeedListener {
     private static final int BACKGROUND_COLOR_DEFAULT = 0x22FFFFFF;
     private TextView mSpeedTextView;
+    private boolean mSpeedVisibility = false;
+    private boolean mDistanceVisibility = false;
 
     public IndicatorOverlay(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -50,6 +52,8 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
 
     @Override
     public void onSpeed(float speed, SpeedUnit unit) {
+        if (!mSpeedVisibility) return;
+
         float speedConverted = convertSpeed(speed, unit);
 
         /* Format the speed with only one fraction digit */
@@ -59,6 +63,17 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
 
         String speedText = formatter.format(speedConverted) + " " + getSpeedUnitI18n(unit);
         mSpeedTextView.setText(speedText);
+    }
+
+    @Override
+    public void toggleSpeedVisibility() {
+        mSpeedVisibility = !mSpeedVisibility;
+        mSpeedTextView.setVisibility(mSpeedVisibility ? VISIBLE : GONE);
+        updateVisibility();
+    }
+
+    private void updateVisibility() {
+        setVisibility(mSpeedVisibility || mDistanceVisibility ? VISIBLE : GONE);
     }
 
     /**
