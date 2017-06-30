@@ -2,6 +2,8 @@ package com.peterlaurence.trekadvisor.menu.mapview.components;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -18,16 +20,12 @@ import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
  */
 public class PositionOrientationMarker extends View implements OrientationSensor.OrientationListener{
     private int mMeasureDimension;
-    private int mPositionDimension;
     private int mOrientationRadius1Dimension;
-    private int mBackgroundCircleDimension;
     private int mPositionColor = Color.BLUE;
     private int mOrientationColor = Color.BLUE;
     private int mPositionBackGroundColor = Color.TRANSPARENT;
 
-    private Paint mPositionPaint;
-    private Paint mPositionBackgroundPaint;
-    private Path mPath;
+    private Bitmap mBitmap;
 
     private int mAzimuth;
 
@@ -44,7 +42,7 @@ public class PositionOrientationMarker extends View implements OrientationSensor
                 R.styleable.PositionOrientationMarker_mesureDimension,
                 65);
 
-        mPositionDimension = a.getDimensionPixelSize(
+        int positionDimension = a.getDimensionPixelSize(
                 R.styleable.PositionOrientationMarker_positionDimension,
                 20);
 
@@ -52,7 +50,7 @@ public class PositionOrientationMarker extends View implements OrientationSensor
                 R.styleable.PositionOrientationMarker_orientationRadius1Dimension,
                 mOrientationRadius1Dimension);
 
-        mBackgroundCircleDimension = a.getDimensionPixelSize(
+        int backgroundCircleDimension = a.getDimensionPixelSize(
                 R.styleable.PositionOrientationMarker_backgroundCircleDimension,
                 60);
 
@@ -75,37 +73,39 @@ public class PositionOrientationMarker extends View implements OrientationSensor
         a.recycle();
 
         /* Paint for the position circle and the arrow */
-        mPositionPaint = new Paint();
-        mPositionPaint.setColor(mPositionColor);
-        mPositionPaint.setAntiAlias(true);
-//        mPositionPaint.setStrokeWidth(2f);
+        Paint positionPaint = new Paint();
+        positionPaint.setColor(mPositionColor);
+        positionPaint.setAntiAlias(true);
 
         /* Paint for the background circle */
-        mPositionBackgroundPaint = new Paint();
-        mPositionBackgroundPaint.setColor(mPositionBackGroundColor);
-        mPositionBackgroundPaint.setAntiAlias(true);
+        Paint positionBackgroundPaint = new Paint();
+        positionBackgroundPaint.setColor(mPositionBackGroundColor);
+        positionBackgroundPaint.setAntiAlias(true);
 
         /* Path for the orientation arrow */
-        mPath = new Path();
+        Path path = new Path();
         float delta = (mMeasureDimension - mOrientationRadius1Dimension) / 2;
-        mPath.arcTo(delta, delta,
+        path.arcTo(delta, delta,
                 mOrientationRadius1Dimension + delta, mOrientationRadius1Dimension + delta, -90, orientationAngle, false);
-        mPath.lineTo(mMeasureDimension / 2, 0);
-        mPath.arcTo(delta, delta,
+        path.lineTo(mMeasureDimension / 2, 0);
+        path.arcTo(delta, delta,
                 mOrientationRadius1Dimension + delta, mOrientationRadius1Dimension + delta, -90, -orientationAngle, false);
-        mPath.lineTo(mMeasureDimension / 2, 0);
+        path.lineTo(mMeasureDimension / 2, 0);
+
+        /* Prepare the bitmap */
+        mBitmap = Bitmap.createBitmap(mMeasureDimension, mMeasureDimension, Bitmap.Config.ARGB_4444);
+        Canvas c = new Canvas(mBitmap);
+        c.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2, backgroundCircleDimension / 2, positionBackgroundPaint);
+        c.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2, positionDimension / 2, positionPaint);
+        c.drawPath(path, positionPaint);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.save();
         canvas.rotate(mAzimuth, mMeasureDimension / 2, mMeasureDimension / 2);
-        canvas.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2, mBackgroundCircleDimension / 2, mPositionBackgroundPaint);
-        canvas.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2, mPositionDimension / 2, mPositionPaint);
-        canvas.drawPath(mPath, mPositionPaint);
-        canvas.restore();
+        canvas.drawBitmap(mBitmap, 0, 0, null);
     }
 
     @Override
@@ -115,7 +115,9 @@ public class PositionOrientationMarker extends View implements OrientationSensor
 
     @Override
     public void onOrientation(int azimuth) {
-        mAzimuth = azimuth;
-        invalidate();
+        if (Math.abs(azimuth - mAzimuth) > 0.5) {
+            mAzimuth = azimuth;
+            invalidate();
+        }
     }
 }
