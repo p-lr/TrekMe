@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class PathView extends View {
 
-    private static final int DEFAULT_STROKE_COLOR = 0xCC311B92;
+    private static final int DEFAULT_STROKE_COLOR = 0xFF311B92;
     private static final int DEFAULT_STROKE_WIDTH_DP = 4;
     private float mStrokeWidthDefault;
 
@@ -50,6 +50,7 @@ public class PathView extends View {
         mDefaultPaint.setAntiAlias(true);
         mDefaultPaint.setStrokeJoin(Paint.Join.ROUND);
         mDefaultPaint.setStrokeCap(Paint.Cap.ROUND);
+        mDefaultPaint.setAlpha(1);
     }
 
     public void updateRoutes(List<RouteGson.Route> routeList) {
