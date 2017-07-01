@@ -114,6 +114,10 @@ public class FrameLayoutMapView extends FrameLayout implements
         return mIndicatorOverlay;
     }
 
+    public DistanceLayer.DistanceListener getDistanceIndicator() {
+        return mIndicatorOverlay;
+    }
+
     private void showOrientationFAB() {
         if (!mIsVisibleOrientationFAB) {
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mLockFAB.getLayoutParams();

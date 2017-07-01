@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.menu.mapview.DistanceLayer;
 import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 
 import java.text.NumberFormat;
@@ -20,7 +21,8 @@ import java.text.NumberFormat;
  *
  * @author peterLaurence on 03/06/17.
  */
-public class IndicatorOverlay extends LinearLayout implements MapViewFragment.SpeedListener {
+public class IndicatorOverlay extends LinearLayout implements MapViewFragment.SpeedListener,
+        DistanceLayer.DistanceListener {
     private static final int BACKGROUND_COLOR_DEFAULT = 0x22FFFFFF;
     private TextView mSpeedTextView;
     private boolean mSpeedVisibility = false;
@@ -51,7 +53,7 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
     }
 
     @Override
-    public void onSpeed(float speed, SpeedUnit unit) {
+    public void onSpeed(float speed, MapViewFragment.SpeedUnit unit) {
         if (!mSpeedVisibility) return;
 
         float speedConverted = convertSpeed(speed, unit);
@@ -79,7 +81,7 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
     /**
      * Converts the given speed (assumed to be in m/s), using the provided unit.
      */
-    private float convertSpeed(float speed, SpeedUnit unit) {
+    private float convertSpeed(float speed, MapViewFragment.SpeedUnit unit) {
         switch (unit) {
             case KM_H:
                 return speed * 3.6f;
@@ -91,9 +93,9 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
     }
 
     /**
-     * Converts a given {@link SpeedUnit} using the user's language.
+     * Converts a given {@link MapViewFragment.SpeedUnit} using the user's language.
      */
-    private String getSpeedUnitI18n(SpeedUnit unit) {
+    private String getSpeedUnitI18n(MapViewFragment.SpeedUnit unit) {
         Context context = getContext();
         switch (unit) {
             case KM_H:
@@ -105,7 +107,8 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
         }
     }
 
-    public enum SpeedUnit {
-        KM_H, MPH
+    @Override
+    public void onDistance(float distance, DistanceLayer.DistanceUnit unit) {
+
     }
 }

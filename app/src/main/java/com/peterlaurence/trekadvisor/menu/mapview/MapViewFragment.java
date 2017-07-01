@@ -32,7 +32,6 @@ import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
-import com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
@@ -150,7 +149,7 @@ public class MapViewFragment extends Fragment implements
 
         /* Create the distance layer */
         if (mDistanceLayer == null) {
-            mDistanceLayer = new DistanceLayer(getContext());
+            mDistanceLayer = new DistanceLayer(getContext(), rootView.getDistanceIndicator());
         }
     }
 
@@ -322,7 +321,7 @@ public class MapViewFragment extends Fragment implements
 
             /* If the user wants to see the speed */
             if (mSpeedListener != null) {
-                mSpeedListener.onSpeed(location.getSpeed(), IndicatorOverlay.SpeedUnit.KM_H);
+                mSpeedListener.onSpeed(location.getSpeed(), SpeedUnit.KM_H);
             }
         }
     }
@@ -471,13 +470,16 @@ public class MapViewFragment extends Fragment implements
         void onRequestManageMarker(MarkerGson.Marker marker);
     }
 
+    public enum SpeedUnit {
+        KM_H, MPH
+    }
 
     /**
      * As the {@code MapViewFragment} is a {@link LocationListener}, it can dispatch speed
      * information to other sub-components.
      */
     public interface SpeedListener {
-        void onSpeed(float speed, IndicatorOverlay.SpeedUnit unit);
+        void onSpeed(float speed, SpeedUnit unit);
 
         void toggleSpeedVisibility();
     }
