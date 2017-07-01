@@ -50,7 +50,6 @@ public class PathView extends View {
         mDefaultPaint.setAntiAlias(true);
         mDefaultPaint.setStrokeJoin(Paint.Join.ROUND);
         mDefaultPaint.setStrokeCap(Paint.Cap.ROUND);
-        mDefaultPaint.setAlpha(1);
     }
 
     public void updateRoutes(List<RouteGson.Route> routeList) {
