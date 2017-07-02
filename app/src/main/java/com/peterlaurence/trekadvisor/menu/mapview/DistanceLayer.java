@@ -3,8 +3,11 @@ package com.peterlaurence.trekadvisor.menu.mapview;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
 import android.view.View;
 
+import com.peterlaurence.trekadvisor.core.geotools.GeoTools;
 import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceMarker;
 import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceView;
 import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
@@ -17,8 +20,8 @@ import com.qozix.tileview.geom.CoordinateTranslater;
  * @author peterLaurence on 17/06/17.
  */
 public class DistanceLayer {
-    HandlerThread mDistanceThread;
-    Handler mHandler;
+    private HandlerThread mDistanceThread;
+    private Handler mHandler;
     private Context mContext;
     private DistanceMarker mDistanceMarkerFirst;
     private DistanceMarker mDistanceMarkerSecond;
@@ -150,7 +153,17 @@ public class DistanceLayer {
     private void prepareDistanceCalculation() {
         mDistanceThread = new HandlerThread("Distance calculation thread", Thread.MIN_PRIORITY);
         mDistanceThread.start();
-        mHandler = new Handler(mDistanceThread.getLooper());
+
+        /* Get a handler on the ui thread */
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        /* This runnable will be executed on ui thread after each distance calculation */
+        UpdateDistanceListenerRunnable updateUiRunnable = new UpdateDistanceListenerRunnable(mDistanceListener);
+
+        /* The task to be executed on the dedicated thread */
+        DistanceCalculationRunnable runnable = new DistanceCalculationRunnable(handler, updateUiRunnable);
+
+        mHandler = new LimitedHandler(runnable);
     }
 
     private void stopDistanceCalculation() {
@@ -165,5 +178,78 @@ public class DistanceLayer {
 
     public interface DistanceListener {
         void onDistance(float distance, DistanceUnit unit);
+    }
+
+    /**
+     * A custom {@link Handler} that executes a {@link DistanceCalculationRunnable} at a maximum rate. <p>
+     * To submit a new distance calculation, call {@link #submit(long, long, long, long)}.
+     */
+    private static class LimitedHandler extends Handler {
+        private static final int DISTANCE_CALCULATION_TIMEOUT = 100;
+        private static final int MESSAGE = 0;
+        private DistanceCalculationRunnable mDistanceRunnable;
+
+        LimitedHandler(DistanceCalculationRunnable task) {
+            mDistanceRunnable = task;
+        }
+
+        void submit(long lat1, long lon1, long lat2, long lon2) {
+            if (!hasMessages(MESSAGE)) {
+                mDistanceRunnable.setPoints(lat1, lon1, lat2, lon2);
+                sendEmptyMessageDelayed(MESSAGE, DISTANCE_CALCULATION_TIMEOUT);
+            }
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            mDistanceRunnable.run();
+        }
+    }
+
+    private static class DistanceCalculationRunnable implements Runnable {
+        private Handler mPostExecuteHandler;
+        private UpdateDistanceListenerRunnable mPostExecuteTask;
+        private long mLatitude1;
+        private long mLongitude1;
+        private long mLatitude2;
+        private long mLongitude2;
+
+        DistanceCalculationRunnable(Handler postExecuteHandler, UpdateDistanceListenerRunnable postExecuteTask) {
+            mPostExecuteHandler = postExecuteHandler;
+            mPostExecuteTask = postExecuteTask;
+        }
+
+        void setPoints(long lat1, long lon1, long lat2, long lon2) {
+            mLatitude1 = lat1;
+            mLongitude1 = lon1;
+            mLatitude2 = lat2;
+            mLongitude2 = lon2;
+        }
+
+        @Override
+        public void run() {
+            double distance = GeoTools.distanceApprox(mLatitude1, mLongitude1, mLatitude2, mLongitude2);
+            mPostExecuteTask.setDistance(distance);
+
+            mPostExecuteHandler.post(mPostExecuteTask);
+        }
+    }
+
+    private static class UpdateDistanceListenerRunnable implements Runnable {
+        private double mDistance;
+        private DistanceListener mDistanceListener;
+
+        UpdateDistanceListenerRunnable(DistanceListener listener) {
+            mDistanceListener = listener;
+        }
+
+        void setDistance(double distance) {
+            mDistance = distance;
+        }
+
+        @Override
+        public void run() {
+            mDistanceListener.onDistance((float) mDistance, DistanceUnit.METERS);
+        }
     }
 }
