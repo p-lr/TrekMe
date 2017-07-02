@@ -194,8 +194,8 @@ public class DistanceLayer {
         }
 
         void submit(long lat1, long lon1, long lat2, long lon2) {
+            mDistanceRunnable.setPoints(lat1, lon1, lat2, lon2);
             if (!hasMessages(MESSAGE)) {
-                mDistanceRunnable.setPoints(lat1, lon1, lat2, lon2);
                 sendEmptyMessageDelayed(MESSAGE, DISTANCE_CALCULATION_TIMEOUT);
             }
         }
@@ -209,10 +209,10 @@ public class DistanceLayer {
     private static class DistanceCalculationRunnable implements Runnable {
         private Handler mPostExecuteHandler;
         private UpdateDistanceListenerRunnable mPostExecuteTask;
-        private long mLatitude1;
-        private long mLongitude1;
-        private long mLatitude2;
-        private long mLongitude2;
+        private volatile long mLatitude1;
+        private volatile long mLongitude1;
+        private volatile long mLatitude2;
+        private volatile long mLongitude2;
 
         DistanceCalculationRunnable(Handler postExecuteHandler, UpdateDistanceListenerRunnable postExecuteTask) {
             mPostExecuteHandler = postExecuteHandler;
