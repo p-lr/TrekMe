@@ -257,7 +257,7 @@ public class MapViewFragment extends Fragment implements
         mRouteLayer.init(mMap, mTileView);
 
         /* Update the distance layer */
-        mDistanceLayer.init(mTileView);
+        mDistanceLayer.init(mMap, mTileView);
     }
 
     @Override

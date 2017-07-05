@@ -8,6 +8,8 @@ import android.os.Message;
 import android.view.View;
 
 import com.peterlaurence.trekadvisor.core.geotools.GeoTools;
+import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceMarker;
 import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceView;
 import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
@@ -21,7 +23,7 @@ import com.qozix.tileview.geom.CoordinateTranslater;
  */
 public class DistanceLayer {
     private HandlerThread mDistanceThread;
-    private Handler mHandler;
+    private LimitedHandler mHandler;
     private Context mContext;
     private DistanceMarker mDistanceMarkerFirst;
     private DistanceMarker mDistanceMarkerSecond;
@@ -29,6 +31,7 @@ public class DistanceLayer {
     private boolean mVisible;
     private DistanceListener mDistanceListener;
     private TileViewExtended mTileView;
+    private Map mMap;
 
     private double mFirstMarkerRelativeX;
     private double mFirstMarkerRelativeY;
@@ -41,13 +44,14 @@ public class DistanceLayer {
         mDistanceListener = listener;
     }
 
-    public void init(TileViewExtended tileView) {
+    public void init(Map map, TileViewExtended tileView) {
+        mMap = map;
         mTileView = tileView;
     }
 
     /**
      * Shows the two {@link DistanceMarker} and the {@link DistanceView}.<br>
-     * {@link #init(TileViewExtended)} must have been called before.
+     * {@link #init(Map, TileViewExtended)} must have been called before.
      */
     public void show() {
         /* Create the DistanceView (the line between the two markers) */
@@ -63,7 +67,7 @@ public class DistanceLayer {
                 mFirstMarkerRelativeX = x;
                 mFirstMarkerRelativeY = y;
                 tileView.moveMarker(mDistanceMarkerFirst, x, y);
-                updateDistanceView();
+                onMarkerMoved();
             }
         };
         MarkerTouchMoveListener firstMarkerTouchMoveListener = new MarkerTouchMoveListener(mTileView, firstMarkerMoveCallback);
@@ -77,7 +81,7 @@ public class DistanceLayer {
                 mSecondMarkerRelativeX = x;
                 mSecondMarkerRelativeY = y;
                 tileView.moveMarker(mDistanceMarkerSecond, x, y);
-                updateDistanceView();
+                onMarkerMoved();
             }
         };
         MarkerTouchMoveListener secondMarkerTouchMoveListener = new MarkerTouchMoveListener(mTileView, secondMarkerMoveCallback);
@@ -85,7 +89,7 @@ public class DistanceLayer {
 
         /* Set their positions */
         initDistanceMarkers();
-        updateDistanceView();
+        onMarkerMoved();
 
         /* ..and add them to the TileView */
         mTileView.addMarker(mDistanceMarkerFirst, mFirstMarkerRelativeX, mFirstMarkerRelativeY,
@@ -141,13 +145,20 @@ public class DistanceLayer {
         mSecondMarkerRelativeY = relativeY;
     }
 
-    private void updateDistanceView() {
+    private void onMarkerMoved() {
+        /* Update the ui */
         CoordinateTranslater translater = mTileView.getCoordinateTranslater();
         mDistanceView.updateLine(
                 (float) translater.translateX(mFirstMarkerRelativeX),
                 (float) translater.translateY(mFirstMarkerRelativeY),
                 (float) translater.translateX(mSecondMarkerRelativeX),
                 (float) translater.translateY(mSecondMarkerRelativeY));
+
+        /* Schedule distance calculation */
+        if (mHandler != null) {
+            mHandler.submit(mFirstMarkerRelativeX, mFirstMarkerRelativeY,
+                    mSecondMarkerRelativeX, mSecondMarkerRelativeY);
+        }
     }
 
     private void prepareDistanceCalculation() {
@@ -161,7 +172,7 @@ public class DistanceLayer {
         UpdateDistanceListenerRunnable updateUiRunnable = new UpdateDistanceListenerRunnable(mDistanceListener);
 
         /* The task to be executed on the dedicated thread */
-        DistanceCalculationRunnable runnable = new DistanceCalculationRunnable(handler, updateUiRunnable);
+        DistanceCalculationRunnable runnable = new DistanceCalculationRunnable(mMap, handler, updateUiRunnable);
 
         mHandler = new LimitedHandler(runnable);
     }
@@ -182,7 +193,7 @@ public class DistanceLayer {
 
     /**
      * A custom {@link Handler} that executes a {@link DistanceCalculationRunnable} at a maximum rate. <p>
-     * To submit a new distance calculation, call {@link #submit(long, long, long, long)}.
+     * To submit a new distance calculation, call {@link #submit(double, double, double, double)}.
      */
     private static class LimitedHandler extends Handler {
         private static final int DISTANCE_CALCULATION_TIMEOUT = 100;
@@ -193,8 +204,8 @@ public class DistanceLayer {
             mDistanceRunnable = task;
         }
 
-        void submit(long lat1, long lon1, long lat2, long lon2) {
-            mDistanceRunnable.setPoints(lat1, lon1, lat2, lon2);
+        void submit(double relativeX1, double relativeY1, double relativeX2, double relativeY2) {
+            mDistanceRunnable.setPoints(relativeX1, relativeY1, relativeX2, relativeY2);
             if (!hasMessages(MESSAGE)) {
                 sendEmptyMessageDelayed(MESSAGE, DISTANCE_CALCULATION_TIMEOUT);
             }
@@ -207,28 +218,50 @@ public class DistanceLayer {
     }
 
     private static class DistanceCalculationRunnable implements Runnable {
+        private Map mMap;
         private Handler mPostExecuteHandler;
         private UpdateDistanceListenerRunnable mPostExecuteTask;
-        private volatile long mLatitude1;
-        private volatile long mLongitude1;
-        private volatile long mLatitude2;
-        private volatile long mLongitude2;
+        private volatile double mRelativeX1;
+        private volatile double mRelativeY1;
+        private volatile double mRelativeX2;
+        private volatile double mRelativeY2;
 
-        DistanceCalculationRunnable(Handler postExecuteHandler, UpdateDistanceListenerRunnable postExecuteTask) {
+        DistanceCalculationRunnable(Map map, Handler postExecuteHandler, UpdateDistanceListenerRunnable postExecuteTask) {
+            mMap = map;
             mPostExecuteHandler = postExecuteHandler;
             mPostExecuteTask = postExecuteTask;
         }
 
-        void setPoints(long lat1, long lon1, long lat2, long lon2) {
-            mLatitude1 = lat1;
-            mLongitude1 = lon1;
-            mLatitude2 = lat2;
-            mLongitude2 = lon2;
+        void setPoints(double relativeX1, double relativeY1, double relativeX2, double relativeY2) {
+            mRelativeX1 = relativeX1;
+            mRelativeY1 = relativeY1;
+            mRelativeX2 = relativeX2;
+            mRelativeY2 = relativeY2;
         }
 
+        /**
+         * If the {@link Map} has no projection, the provided relative coordinates are expected to
+         * be the wgs84 (latitude/longitude) coordinates.
+         */
         @Override
         public void run() {
-            double distance = GeoTools.distanceApprox(mLatitude1, mLongitude1, mLatitude2, mLongitude2);
+            double distance;
+            Projection projection = mMap.getProjection();
+            if (projection == null) {
+                distance = GeoTools.distanceApprox(mRelativeX1, mRelativeY1, mRelativeX2, mRelativeY2);
+            } else {
+                double[] firstPointGeographic = projection.undoProjection(mRelativeX1, mRelativeY1);
+                if (firstPointGeographic == null) return;
+
+                double[] secondPointGeographic = projection.undoProjection(mRelativeX2, mRelativeY2);
+                if (secondPointGeographic == null) return;
+
+                double lat1 = firstPointGeographic[1];
+                double lon1 = firstPointGeographic[0];
+                double lat2 = secondPointGeographic[1];
+                double lon2 = secondPointGeographic[0];
+                distance = GeoTools.distanceApprox(lat1, lon1, lat2, lon2);
+            }
             mPostExecuteTask.setDistance(distance);
 
             mPostExecuteHandler.post(mPostExecuteTask);

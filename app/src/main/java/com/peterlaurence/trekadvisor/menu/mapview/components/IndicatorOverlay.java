@@ -109,6 +109,6 @@ public class IndicatorOverlay extends LinearLayout implements MapViewFragment.Sp
 
     @Override
     public void onDistance(float distance, DistanceLayer.DistanceUnit unit) {
-
+        System.out.println("Distance : " + distance);
     }
 }
