@@ -90,6 +90,13 @@ public class IndicatorOverlay extends RelativeLayout implements MapViewFragment.
         updateVisibility();
     }
 
+    @Override
+    public void hideSpeed() {
+        mSpeedVisibility = false;
+        mSpeedTextView.setVisibility(GONE);
+        updateVisibility();
+    }
+
     private void updateVisibility() {
         setVisibility(mSpeedVisibility || mDistanceVisibility ? VISIBLE : GONE);
     }
@@ -126,6 +133,13 @@ public class IndicatorOverlay extends RelativeLayout implements MapViewFragment.
     public void toggleDistanceVisibility() {
         mDistanceVisibility = !mDistanceVisibility;
         mDistanceTextView.setVisibility(mDistanceVisibility ? VISIBLE : GONE);
+        updateVisibility();
+    }
+
+    @Override
+    public void hideDistance() {
+        mDistanceVisibility = false;
+        mDistanceTextView.setVisibility(GONE);
         updateVisibility();
     }
 

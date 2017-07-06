@@ -119,6 +119,9 @@ public class DistanceLayer {
 
         /* Stop the thread that process distance calculation */
         stopDistanceCalculation();
+
+        /* */
+        mDistanceListener.hideDistance();
     }
 
     public boolean isVisible() {
@@ -179,7 +182,9 @@ public class DistanceLayer {
     }
 
     private void stopDistanceCalculation() {
-        mDistanceThread.quit();
+        if (mDistanceThread != null) {
+            mDistanceThread.quit();
+        }
         mDistanceThread = null;
         mHandler = null;
     }
@@ -197,6 +202,8 @@ public class DistanceLayer {
         void onDistance(float distance, @Nullable DistanceUnit unit);
 
         void toggleDistanceVisibility();
+
+        void hideDistance();
     }
 
     /**

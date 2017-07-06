@@ -233,6 +233,7 @@ public class MapViewFragment extends Fragment implements
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if (hidden) {
+            mSpeedListener.hideSpeed();
             mDistanceLayer.hide();
         } else {
             updateMapIfNecessary();
@@ -485,5 +486,7 @@ public class MapViewFragment extends Fragment implements
         void onSpeed(float speed, SpeedUnit unit);
 
         void toggleSpeedVisibility();
+
+        void hideSpeed();
     }
 }
