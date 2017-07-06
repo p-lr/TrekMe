@@ -130,23 +130,23 @@ public class DistanceLayer {
 
     private void initDistanceMarkers() {
         /* Calculate the relative coordinates of the first marker */
-        int x = mTileView.getScrollX() + mTileView.getWidth() * 2 / 3 - mTileView.getOffsetX();
-        int y = mTileView.getScrollY() + mTileView.getHeight() / 3 - mTileView.getOffsetY();
+        int x = mTileView.getScrollX() + (int) (mTileView.getWidth() * 0.66f) - mTileView.getOffsetX();
+        int y = mTileView.getScrollY() + (int) (mTileView.getHeight() * 0.33f) - mTileView.getOffsetY();
         CoordinateTranslater coordinateTranslater = mTileView.getCoordinateTranslater();
         double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
         double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
 
-        mFirstMarkerRelativeX = relativeX;
-        mFirstMarkerRelativeY = relativeY;
+        mFirstMarkerRelativeX = Math.min(relativeX, coordinateTranslater.getRight());
+        mFirstMarkerRelativeY = Math.min(relativeY, coordinateTranslater.getTop());
 
         /* Calculate the relative coordinates of the second marker */
-        x = mTileView.getScrollX() + mTileView.getWidth() / 3 - mTileView.getOffsetX();
-        y = mTileView.getScrollY() + mTileView.getHeight() * 2 / 3 - mTileView.getOffsetY();
+        x = mTileView.getScrollX() + (int) (mTileView.getWidth() * 0.33f) - mTileView.getOffsetX();
+        y = mTileView.getScrollY() + (int) (mTileView.getHeight() * 0.66f) - mTileView.getOffsetY();
         relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
         relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
 
-        mSecondMarkerRelativeX = relativeX;
-        mSecondMarkerRelativeY = relativeY;
+        mSecondMarkerRelativeX = Math.max(relativeX, coordinateTranslater.getLeft());
+        mSecondMarkerRelativeY = Math.max(relativeY, coordinateTranslater.getBottom());
     }
 
     private void onMarkerMoved() {
