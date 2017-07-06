@@ -49,4 +49,7 @@
     <string name="km_h">km/h</string>
     <string name="mph">mph</string>
     <string name="mapview_measure_distance">Mesurer une distance</string>
+    <string name="km">km</string>
+    <string name="m">m</string>
+    <string name="mile">ml</string>
 </resources>

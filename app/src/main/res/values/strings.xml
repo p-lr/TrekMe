@@ -71,6 +71,9 @@
     <string name="delete_marker_question">Delete marker?</string>
     <string name="km_h">km/h</string>
     <string name="mph">mph</string>
+    <string name="km">km</string>
+    <string name="m">m</string>
+    <string name="mile">ml</string>
 
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>

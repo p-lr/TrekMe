@@ -72,6 +72,7 @@ public class MapViewFragment extends Fragment implements
     private RouteLayer mRouteLayer;
     private DistanceLayer mDistanceLayer;
     private SpeedListener mSpeedListener;
+    private DistanceLayer.DistanceListener mDistanceListener;
 
     public MapViewFragment() {
     }
@@ -128,8 +129,9 @@ public class MapViewFragment extends Fragment implements
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        /* Get the speed indicator from the main layout */
+        /* Get the speed and distances indicators from the main layout */
         mSpeedListener = rootView.getSpeedIndicator();
+        mDistanceListener = rootView.getDistanceIndicator();
 
         /* Create the instance of the OrientationSensor */
         if (mOrientationSensor == null) {
@@ -149,7 +151,7 @@ public class MapViewFragment extends Fragment implements
 
         /* Create the distance layer */
         if (mDistanceLayer == null) {
-            mDistanceLayer = new DistanceLayer(getContext(), rootView.getDistanceIndicator());
+            mDistanceLayer = new DistanceLayer(getContext(), mDistanceListener);
         }
     }
 
@@ -187,6 +189,7 @@ public class MapViewFragment extends Fragment implements
                 mSpeedListener.toggleSpeedVisibility();
                 return true;
             case R.id.distancemeter_id:
+                mDistanceListener.toggleDistanceVisibility();
                 item.setChecked(!item.isChecked());
                 if (item.isChecked()) {
                     mDistanceLayer.show();

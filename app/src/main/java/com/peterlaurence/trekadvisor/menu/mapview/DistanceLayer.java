@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.peterlaurence.trekadvisor.core.geotools.GeoTools;
@@ -188,7 +189,14 @@ public class DistanceLayer {
     }
 
     public interface DistanceListener {
-        void onDistance(float distance, DistanceUnit unit);
+        /**
+         * @param distance the numeric value of the distance, in meters
+         * @param unit     the unit in which the value has to be converted and shown, or {@code null} if
+         *                 the conversion is delegated to the view.
+         */
+        void onDistance(float distance, @Nullable DistanceUnit unit);
+
+        void toggleDistanceVisibility();
     }
 
     /**
@@ -282,7 +290,7 @@ public class DistanceLayer {
 
         @Override
         public void run() {
-            mDistanceListener.onDistance((float) mDistance, DistanceUnit.METERS);
+            mDistanceListener.onDistance((float) mDistance, null);
         }
     }
 }
