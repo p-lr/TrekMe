@@ -8,7 +8,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
-import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
+import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 

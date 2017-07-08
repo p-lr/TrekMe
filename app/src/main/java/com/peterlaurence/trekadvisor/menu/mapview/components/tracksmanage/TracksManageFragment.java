@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.menu.tracksmanage;
+package com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage;
 
 import android.app.Activity;
 import android.app.AlertDialog;

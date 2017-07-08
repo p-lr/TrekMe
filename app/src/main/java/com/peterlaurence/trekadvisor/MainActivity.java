@@ -36,7 +36,7 @@ import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.markermanage.MarkerManageFragment;
-import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
+import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;

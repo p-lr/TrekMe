@@ -32,7 +32,7 @@ import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
-import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
+import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
 import java.util.List;
