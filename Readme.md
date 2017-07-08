@@ -207,12 +207,12 @@ if needed. Again, don't forget to save your changes.
 
 While viewing a map, select the option menu on the upper right corner :
 
-![track-import-step1](https://user-images.githubusercontent.com/15638794/27983978-e231fef8-63ca-11e7-8619-bc520bb397d7.png)
+![track-import-step1](https://user-images.githubusercontent.com/15638794/27984165-a9ee2658-63ce-11e7-9ae5-c64b3e750ce4.png)
 
 Then, a list of currently available tracks opens up. There is a button to import a new track from a 
 .gpx file :
 
-![track-import-step2](https://user-images.githubusercontent.com/15638794/27983977-e22f4230-63ca-11e7-87f9-9a03d50eb65c.png)
+![track-import-step2](https://user-images.githubusercontent.com/15638794/27984164-a9eb421c-63ce-11e7-97c6-b11a8dbdcd79.png)
 
 
 
