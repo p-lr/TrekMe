@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private Fragment createMapListFragment(FragmentTransaction transaction) {
-        Fragment mapListFragment = MapListFragment.newInstance();
+        Fragment mapListFragment = new MapListFragment();
         transaction.add(R.id.content_frame, mapListFragment, MAP_LIST_FRAGMENT_TAG);
         return mapListFragment;
     }

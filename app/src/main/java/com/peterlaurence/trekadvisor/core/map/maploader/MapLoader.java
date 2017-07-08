@@ -71,8 +71,8 @@ public class MapLoader implements MapImporter.MapParseListener {
     private Gson mGson;
     private List<Map> mMapList;
     private List<MapListUpdateListener> mMapListUpdateListeners;
-    private List<MapMarkerUpdateListener> mMapMarkerUpdateListeners;
-    private List<MapRouteUpdateListener> mMapRouteUpdateListeners;
+    private MapMarkerUpdateListener mMapMarkerUpdateListener;
+    private MapRouteUpdateListener mMapRouteUpdateListener;
     private List<MapArchive> mMapArchiveList;
     private List<MapArchiveListUpdateListener> mMapArchiveListUpdateListeners;
 
@@ -90,8 +90,6 @@ public class MapLoader implements MapImporter.MapParseListener {
                 registerTypeAdapterFactory(factory).create();
 
         mMapListUpdateListeners = new ArrayList<>();
-        mMapMarkerUpdateListeners = new ArrayList<>();
-        mMapRouteUpdateListeners = new ArrayList<>();
         mMapArchiveListUpdateListeners = new ArrayList<>();
     }
 
@@ -142,7 +140,7 @@ public class MapLoader implements MapImporter.MapParseListener {
      * Launch a {@link MapMarkerImportTask} which reads the markers.json file.
      */
     public void getMarkersForMap(Map map) {
-        MapMarkerImportTask mapMarkerImportTask = new MapMarkerImportTask(mMapMarkerUpdateListeners,
+        MapMarkerImportTask mapMarkerImportTask = new MapMarkerImportTask(mMapMarkerUpdateListener,
                 map, mGson);
         mapMarkerImportTask.execute();
     }
@@ -151,7 +149,7 @@ public class MapLoader implements MapImporter.MapParseListener {
      * Launch a {@link MapRouteImportTask} which reads the routes.json file.
      */
     public void getRoutesForMap(Map map) {
-        MapRouteImportTask mapRouteImportTask = new MapRouteImportTask(mMapRouteUpdateListeners,
+        MapRouteImportTask mapRouteImportTask = new MapRouteImportTask(mMapRouteUpdateListener,
                 map, mGson);
         mapRouteImportTask.execute();
     }
@@ -197,16 +195,28 @@ public class MapLoader implements MapImporter.MapParseListener {
         mMapListUpdateListeners.add(listener);
     }
 
-    public void addMapMarkerUpdateListener(MapMarkerUpdateListener listener) {
-        mMapMarkerUpdateListeners.add(listener);
+    public void setMapMarkerUpdateListener(MapMarkerUpdateListener listener) {
+        mMapMarkerUpdateListener = listener;
     }
 
-    public void addMapRouteUpdateListener(MapRouteUpdateListener listener) {
-        mMapRouteUpdateListeners.add(listener);
+    public void setMapRouteUpdateListener(MapRouteUpdateListener listener) {
+        mMapRouteUpdateListener = listener;
     }
 
     public void addMapArchiveListUpdateListener(MapArchiveListUpdateListener listener) {
         mMapArchiveListUpdateListeners.add(listener);
+    }
+
+    public void clearMapListUpdateListener() {
+        mMapListUpdateListeners.clear();
+    }
+
+    public void clearMapMarkerUpdateListener() {
+        mMapMarkerUpdateListener = null;
+    }
+
+    public void clearMapRouteUpdateListener() {
+        mMapRouteUpdateListener = null;
     }
 
     /**

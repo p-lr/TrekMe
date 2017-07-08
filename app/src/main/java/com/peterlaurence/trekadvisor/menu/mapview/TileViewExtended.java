@@ -8,6 +8,7 @@ import com.peterlaurence.trekadvisor.menu.mapview.components.PathView;
 import com.qozix.tileview.TileView;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,11 +22,13 @@ public class TileViewExtended extends TileView {
     private boolean mScrollingAtStart;
 
     private WeakReference<ScrollListener> mScrollListenerWeakReference;
+    private List<ScaleChangeListener> mScaleChangeListeners;
     private PathView mPathView;
 
     public TileViewExtended(Context context) {
         super(context);
 
+        mScaleChangeListeners = new ArrayList<>();
         mPathView = new PathView(context);
         addView(mPathView, getChildCount() - 1);
     }
@@ -84,7 +87,25 @@ public class TileViewExtended extends TileView {
     @Override
     public void onScaleChanged(float scale, float previous) {
         super.onScaleChanged(scale, previous);
+
+        for (ScaleChangeListener listener : mScaleChangeListeners) {
+            listener.onScaleChanged(scale);
+        }
+
+        // TODO : set the PathView as a scale listener
         mPathView.setScale(scale);
+    }
+
+    public void addScaleChangeListener(ScaleChangeListener listener) {
+        mScaleChangeListeners.add(listener);
+    }
+
+    public void removeScaleChangeLisetner(ScaleChangeListener listener) {
+        mScaleChangeListeners.remove(listener);
+    }
+
+    public interface ScaleChangeListener {
+        void onScaleChanged(float scale);
     }
 
     /**

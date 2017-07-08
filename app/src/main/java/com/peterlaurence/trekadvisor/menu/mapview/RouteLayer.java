@@ -18,7 +18,8 @@ import java.util.List;
 
 /**
  * All {@link com.peterlaurence.trekadvisor.core.map.gson.RouteGson.Route} are managed here. <br>
- * This object is intended to be used exclusively by the {@link MapViewFragment}.
+ * This object is intended to be used exclusively by the {@link MapViewFragment}. <p>
+ * After being created, the method {@link #init(Map, TileView)} has to be called.
  *
  * @author peterLaurence on 13/05/17.
  */
@@ -26,10 +27,6 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
     private static final String TAG = "RouteLayer";
     private TileViewExtended mTileView;
     private Map mMap;
-
-    RouteLayer() {
-        MapLoader.getInstance().addMapRouteUpdateListener(this);
-    }
 
     /**
      * When a track file has been parsed, this method is called. At this stage, the new
@@ -59,14 +56,18 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
         mTileView.getPathView().invalidate();
     }
 
-    void setMap(Map map) {
+
+    /**
+     * This must be called when the {@link MapViewFragment} is ready to update its UI.
+     * <p>
+     * The caller is responsible for removing this {@link MapLoader.MapRouteUpdateListener} from the
+     * {@link MapLoader}, after this object is no longer used.
+     */
+    public void init(Map map, TileView tileView) {
         mMap = map;
+        setTileView((TileViewExtended) tileView);
+        MapLoader.getInstance().setMapRouteUpdateListener(this);
 
-        /* Update the ui accordingly */
-        init();
-    }
-
-    private void init() {
         if (mMap.areRoutesDefined()) {
             drawRoutes();
         } else {
@@ -80,7 +81,7 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
         drawRoutesTask.execute();
     }
 
-    void setTileView(TileViewExtended tileView) {
+    private void setTileView(TileViewExtended tileView) {
         mTileView = tileView;
     }
 

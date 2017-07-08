@@ -134,14 +134,13 @@ public class Map implements Parcelable {
         mMapGson.calibration.calibration_points.clear();
     }
 
+    /**
+     * Get the bounds the map. See {@link MapBounds}.
+     */
     public
     @Nullable
     MapBounds getMapBounds() {
         return mMapBounds;
-    }
-
-    public void setMapBounds(MapBounds mapBounds) {
-        mMapBounds = mapBounds;
     }
 
     public void calibrate() {
@@ -158,8 +157,8 @@ public class Map implements Parcelable {
                     MapCalibrator.sanityCheck2PointsCalibration(calibrationPoints.get(0),
                             calibrationPoints.get(1));
 
-                    setMapBounds(MapCalibrator.simple2PointsCalibration(calibrationPoints.get(0),
-                            calibrationPoints.get(1)));
+                    mMapBounds = MapCalibrator.simple2PointsCalibration(calibrationPoints.get(0),
+                            calibrationPoints.get(1));
                 }
                 break;
             default:
@@ -366,23 +365,24 @@ public class Map implements Parcelable {
     }
 
     /**
-     * A MapBounds object holds the projected coordinates of :
+     * A MapBounds object holds the bounds coordinates of :
      * <ul>
-     * <li>The top-left corner of the map : (projectionX0, projectionY0)</li>
-     * <li>The bottom-right corner of the map : (projectionX1, projectionY1)</li>
+     * <li>The top-left corner of the map : (projectionX0, projectionY0) or (lon0, lat0) depending
+     * on the map using a projection or not. </li>
+     * <li>The bottom-right corner of the map : (projectionX1, projectionY1) or (lon1, lat1) </li>
      * </ul>
      */
     public static class MapBounds {
-        public double projectionX0;
-        public double projectionY0;
-        public double projectionX1;
-        public double projectionY1;
+        public double X0;
+        public double Y0;
+        public double X1;
+        public double Y1;
 
         public MapBounds(double x0, double y0, double x1, double y1) {
-            projectionX0 = x0;
-            projectionY0 = y0;
-            projectionX1 = x1;
-            projectionY1 = y1;
+            X0 = x0;
+            Y0 = y0;
+            X1 = x1;
+            Y1 = y1;
         }
     }
 }

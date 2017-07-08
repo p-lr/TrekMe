@@ -29,15 +29,24 @@ import java.util.List;
  */
 class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     List<MarkerGson.Marker> mMarkers;
-    private MapViewFragment mMapViewFragment;
+    private View mParentView;
+    private Context mContext;
+    private MapViewFragment.RequestManageMarkerListener mRequestManageMarkerListener;
     private TileView mTileView;
     private Map mMap;
     private MovableMarker mCurrentMovableMarker;
 
 
-    MarkerLayer(MapViewFragment mapViewFragment) {
-        mMapViewFragment = mapViewFragment;
-        MapLoader.getInstance().addMapMarkerUpdateListener(this);
+    /**
+     * After being created, the method {@link #init(Map, TileView)} has to be called.
+     */
+    MarkerLayer(View parentView, Context context) {
+        mParentView = parentView;
+        mContext = context;
+    }
+
+    public void setRequestManageMarkerListener(MapViewFragment.RequestManageMarkerListener listener) {
+        mRequestManageMarkerListener = listener;
     }
 
     /**
@@ -78,7 +87,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         drawMarkers();
     }
 
-    void setTileView(final TileView tileView) {
+    private void setTileView(final TileView tileView) {
         mTileView = tileView;
 
         mTileView.setMarkerTapListener(new MarkerLayout.MarkerTapListener() {
@@ -88,13 +97,12 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                     MovableMarker movableMarker = (MovableMarker) view;
 
                     /* Prepare the callout */
-                    MarkerCallout markerCallout = new MarkerCallout(mMapViewFragment.getContext());
+                    MarkerCallout markerCallout = new MarkerCallout(mContext);
                     markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
-                            mTileView, mMapViewFragment.getContext(), mMap));
+                            mTileView, mContext, mMap));
                     markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
-                            markerCallout, mTileView,
-                            (MapViewFragment.RequestManageMarkerListener) mMapViewFragment.getActivity()));
-                    markerCallout.setDeleteAction(new DeleteMarkerRunnable(mMapViewFragment.getView(), movableMarker, markerCallout,
+                            markerCallout, mTileView, mRequestManageMarkerListener));
+                    markerCallout.setDeleteAction(new DeleteMarkerRunnable(mParentView, movableMarker, markerCallout,
                             tileView, mMap));
                     MarkerGson.Marker marker = movableMarker.getMarker();
                     markerCallout.setTitle(marker.name);
@@ -107,20 +115,21 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         });
     }
 
-    void setMap(Map map) {
-        mMap = map;
-
-        /* Update the ui accordingly */
-        init();
-    }
-
     /**
      * Triggers the fetch of the map's markers and their drawing on the {@link TileView}. If this is
      * the first time this method is called for this map, the markers aren't defined and the
-     * {@link MapLoader} will get them in an asynctask. Otherwise, we can draw them immediately.<br>
+     * {@link MapLoader} will get them in an asynctask. Otherwise, we can draw them immediately.
+     * <p>
      * This must be called when the {@link MapViewFragment} is ready to update its UI.
+     * <p>
+     * The caller is responsible for removing this {@link MapLoader.MapMarkerUpdateListener} from
+     * the {@link MapLoader}, after this object is no longer used.
      */
-    private void init() {
+    public void init(Map map, TileView tileView) {
+        mMap = map;
+        setTileView(tileView);
+        MapLoader.getInstance().setMapMarkerUpdateListener(this);
+
         if (mMap.areMarkersDefined()) {
             drawMarkers();
         } else {
@@ -130,9 +139,10 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
 
     private void drawMarkers() {
         mMarkers = mMap.getMarkers();
+        if (mMarkers == null) return;
 
         for (MarkerGson.Marker marker : mMarkers) {
-            MovableMarker movableMarker = new MovableMarker(mMapViewFragment.getContext(), true, marker);
+            MovableMarker movableMarker = new MovableMarker(mContext, true, marker);
             if (mMap.getProjection() == null) {
                 movableMarker.setRelativeX(marker.lon);
                 movableMarker.setRelativeY(marker.lat);
@@ -159,7 +169,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         final double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
 
         final MovableMarker movableMarker;
-        Context context = mMapViewFragment.getContext();
 
         /* Create a new marker and add it to the map */
         MarkerGson.Marker newMarker = new MarkerGson.Marker();
@@ -179,7 +188,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         }
 
         /* Create the corresponding view */
-        movableMarker = new MovableMarker(context, false, newMarker);
+        movableMarker = new MovableMarker(mContext, false, newMarker);
         movableMarker.setRelativeX(relativeX);
         movableMarker.setRelativeY(relativeY);
         movableMarker.initRounded();
@@ -189,7 +198,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
         }
 
         /* Easily move the marker */
-        attachMarkerGrab(movableMarker, mTileView, mMap, mMapViewFragment.getContext());
+        attachMarkerGrab(movableMarker, mTileView, mMap, mContext);
 
         mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
     }

@@ -110,19 +110,11 @@ public class FrameLayoutMapView extends FrameLayout implements
         hideOrientationFAB();
     }
 
-    public void toggleIndicatorOverlayVisibility() {
-        if (mIndicatorOverlay.getVisibility() == VISIBLE) {
-            mIndicatorOverlay.setVisibility(GONE);
-        } else {
-            mIndicatorOverlay.setVisibility(VISIBLE);
-        }
+    public MapViewFragment.SpeedListener getSpeedIndicator() {
+        return mIndicatorOverlay;
     }
 
-    public boolean shouldDisplaySpeed() {
-        return mIndicatorOverlay.getVisibility() == VISIBLE;
-    }
-
-    public MapViewFragment.SpeedListener getSpeedListener() {
+    public DistanceLayer.DistanceListener getDistanceIndicator() {
         return mIndicatorOverlay;
     }
 

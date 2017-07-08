@@ -26,12 +26,12 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
-import com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay;
 import com.peterlaurence.trekadvisor.menu.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
@@ -70,9 +70,29 @@ public class MapViewFragment extends Fragment implements
     private OrientationSensor mOrientationSensor;
     private MarkerLayer mMarkerLayer;
     private RouteLayer mRouteLayer;
+    private DistanceLayer mDistanceLayer;
     private SpeedListener mSpeedListener;
+    private DistanceLayer.DistanceListener mDistanceListener;
 
     public MapViewFragment() {
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof RequestManageTracksListener
+                && context instanceof RequestManageMarkerListener
+                && context instanceof MapProvider
+                && context instanceof LocationProvider) {
+            mRequestManageTracksListener = (RequestManageTracksListener) context;
+            mRequestManageMarkerListener = (RequestManageMarkerListener) context;
+            mMapProvider = (MapProvider) context;
+            mLocationProvider = (LocationProvider) context;
+            mLocationProvider.registerLocationListener(this, this);
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement RequestManageTracksListener, MapProvider and LocationProvider");
+        }
     }
 
     @Override
@@ -82,19 +102,12 @@ public class MapViewFragment extends Fragment implements
         setHasOptionsMenu(true);
 
         /* The location request specific to this fragment */
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        /* Create the instance of the OrientationSensor */
-        mOrientationSensor = new OrientationSensor(getContext());
-
-        /* Create the marker layer */
-        mMarkerLayer = new MarkerLayer(this);
-
-        /* Create the route layer */
-        mRouteLayer = new RouteLayer();
+        if (mLocationRequest == null) {
+            mLocationRequest = new LocationRequest();
+            mLocationRequest.setInterval(1000);
+            mLocationRequest.setFastestInterval(1000);
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        }
     }
 
     @Override
@@ -104,13 +117,42 @@ public class MapViewFragment extends Fragment implements
          * it handles configuration changes itself
          */
         if (rootView == null) {
-            rootView = new FrameLayoutMapView(this.getContext());
+            rootView = new FrameLayoutMapView(getContext());
             rootView.setPositionTouchListener(this);
             rootView.setLockViewListener(this);
-            mSpeedListener = rootView.getSpeedListener();
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        /* Get the speed and distances indicators from the main layout */
+        mSpeedListener = rootView.getSpeedIndicator();
+        mDistanceListener = rootView.getDistanceIndicator();
+
+        /* Create the instance of the OrientationSensor */
+        if (mOrientationSensor == null) {
+            mOrientationSensor = new OrientationSensor(getContext());
+        }
+
+        /* Create the marker layer */
+        if (mMarkerLayer == null) {
+            mMarkerLayer = new MarkerLayer(view, getContext());
+        }
+        mMarkerLayer.setRequestManageMarkerListener(mRequestManageMarkerListener);
+
+        /* Create the route layer */
+        if (mRouteLayer == null) {
+            mRouteLayer = new RouteLayer();
+        }
+
+        /* Create the distance layer */
+        if (mDistanceLayer == null) {
+            mDistanceLayer = new DistanceLayer(getContext(), mDistanceListener);
+        }
     }
 
     @Override
@@ -124,8 +166,13 @@ public class MapViewFragment extends Fragment implements
         /* Clear the existing action menu */
         menu.clear();
 
-        /* .. and fill the new one */
+        /* Fill the new one */
         inflater.inflate(R.menu.menu_fragment_map_view, menu);
+
+        /* .. and restore a checkable state */
+        MenuItem item = menu.findItem(R.id.distancemeter_id);
+        item.setChecked(mDistanceLayer.isVisible());
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -139,7 +186,17 @@ public class MapViewFragment extends Fragment implements
                 mRequestManageTracksListener.onRequestManageTracks();
                 return true;
             case R.id.speedometer_id:
-                rootView.toggleIndicatorOverlayVisibility();
+                mSpeedListener.toggleSpeedVisibility();
+                return true;
+            case R.id.distancemeter_id:
+                mDistanceListener.toggleDistanceVisibility();
+                item.setChecked(!item.isChecked());
+                if (item.isChecked()) {
+                    mDistanceLayer.show();
+                } else {
+                    mDistanceLayer.hide();
+                }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -175,25 +232,36 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        if (!hidden) {
+        if (hidden) {
+            mSpeedListener.hideSpeed();
+            mDistanceLayer.hide();
+        } else {
             updateMapIfNecessary();
         }
     }
 
     /**
-     * Only update the map if its a new one.
+     * Only update the map if its a new one. <br>
+     * Once the map is updated, a {@link TileViewExtended} instance is created, so layers can be
+     * updated.
      */
     private void updateMapIfNecessary() {
         Map map = mMapProvider.getCurrentMap();
         if (map != null && mMap != map) {
             setMap(map);
-
-            /* Update the marker layer */
-            mMarkerLayer.setMap(mMap);
-
-            /* Update the route layer */
-            mRouteLayer.setMap(mMap);
+            updateLayers();
         }
+    }
+
+    private void updateLayers() {
+        /* Update the marker layer */
+        mMarkerLayer.init(mMap, mTileView);
+
+        /* Update the route layer */
+        mRouteLayer.init(mMap, mTileView);
+
+        /* Update the distance layer */
+        mDistanceLayer.init(mMap, mTileView);
     }
 
     @Override
@@ -203,28 +271,21 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof RequestManageTracksListener
-                && context instanceof RequestManageMarkerListener
-                && context instanceof MapProvider
-                && context instanceof LocationProvider) {
-            mRequestManageTracksListener = (RequestManageTracksListener) context;
-            mRequestManageMarkerListener = (RequestManageMarkerListener) context;
-            mMapProvider = (MapProvider) context;
-            mLocationProvider = (LocationProvider) context;
-            mLocationProvider.registerLocationListener(this, this);
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement RequestManageTracksListener, MapProvider and LocationProvider");
-        }
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        MapLoader.getInstance().clearMapMarkerUpdateListener();
+        MapLoader.getInstance().clearMapRouteUpdateListener();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+
         mRequestManageTracksListener = null;
+        mRequestManageMarkerListener = null;
         mMapProvider = null;
+        mSpeedListener = null;
     }
 
     @Override
@@ -263,8 +324,8 @@ public class MapViewFragment extends Fragment implements
             }
 
             /* If the user wants to see the speed */
-            if (rootView.shouldDisplaySpeed()) {
-                mSpeedListener.onSpeed(location.getSpeed(), IndicatorOverlay.SpeedUnit.KM_H);
+            if (mSpeedListener != null) {
+                mSpeedListener.onSpeed(location.getSpeed(), SpeedUnit.KM_H);
             }
         }
     }
@@ -313,12 +374,6 @@ public class MapViewFragment extends Fragment implements
          * Register the position marker as an {@link OrientationListener}
          */
         mOrientationSensor.setOrientationListener((OrientationSensor.OrientationListener) mPositionMarker);
-
-        /* Update the marker layer */
-        mMarkerLayer.setTileView(tileView);
-
-        /* Update the route layer */
-        mRouteLayer.setTileView(tileView);
     }
 
     private void removeCurrentTileView() {
@@ -368,10 +423,10 @@ public class MapViewFragment extends Fragment implements
         /* Map calibration */
         Map.MapBounds mapBounds = map.getMapBounds();
         if (mapBounds != null) {
-            tileView.defineBounds(mapBounds.projectionX0,
-                    mapBounds.projectionY0,
-                    mapBounds.projectionX1,
-                    mapBounds.projectionY1);
+            tileView.defineBounds(mapBounds.X0,
+                    mapBounds.Y0,
+                    mapBounds.X1,
+                    mapBounds.Y1);
         } else {
             tileView.defineBounds(0, 0, 1, 1);
         }
@@ -419,12 +474,19 @@ public class MapViewFragment extends Fragment implements
         void onRequestManageMarker(MarkerGson.Marker marker);
     }
 
+    public enum SpeedUnit {
+        KM_H, MPH
+    }
 
     /**
      * As the {@code MapViewFragment} is a {@link LocationListener}, it can dispatch speed
      * information to other sub-components.
      */
     public interface SpeedListener {
-        void onSpeed(float speed, IndicatorOverlay.SpeedUnit unit);
+        void onSpeed(float speed, SpeedUnit unit);
+
+        void toggleSpeedVisibility();
+
+        void hideSpeed();
     }
 }

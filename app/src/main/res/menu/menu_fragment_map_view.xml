@@ -19,4 +19,11 @@
         android:title="@string/mapview_show_speed"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/distancemeter_id"
+        android:checkable="true"
+        android:icon="@drawable/math_compass"
+        android:title="@string/mapview_measure_distance"
+        app:showAsAction="ifRoom" />
+
 </menu>

@@ -18,8 +18,8 @@ public class OrientationSensor implements SensorEventListener {
     private WeakReference<OrientationListener> mOrientationListenerWeakReference;
 
     /* object internals */
-    float[] orientationValues;
-    float[] rMat;
+    private float[] orientationValues;
+    private float[] rMat;
 
     public OrientationSensor(Context context) {
         orientationValues = new float[3];
@@ -27,7 +27,7 @@ public class OrientationSensor implements SensorEventListener {
 
         SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         Sensor mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        sensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, mSensor, 100);
     }
 
     public interface OrientationListener {
