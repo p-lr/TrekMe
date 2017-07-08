@@ -1,7 +1,7 @@
 # TrekAdvisor
 
 1. [Overview](#TOC-Overview)
-2. [Features](#TOC-Features)
+2. [Features summary](#TOC-Features-sum)
 3. [TrekAdvisor Users](#TOC-TrekAdvisor-Users)
 4. [How does it work?](#TOC-How-does-it-work)
 5. [Create a map](#TOC-Create-a-map)
@@ -12,6 +12,8 @@
   * [Import](#TOC-Import)
   * [Map calibration](#TOC-Calibration)
 6. [Supported projections](#TOC-Supported_projections)
+7. [Features](#TOC-Features)
+  * [Import a GPX track](#TOC-GPX-track-import)
 
 
 ## <a name="TOC-Overview"></a>Overview
@@ -26,17 +28,17 @@ prepare and view it in TrekAdvisor. It also works if you possess a map as a huge
 as TrekAdvisor is designed to work with arbitrary map size. The only limitation
 is the memory available on your device (smartphone, tablet).
 
-## <a name="TOC-Features"></a>Features
+## <a name="TOC-Features-sum"></a>Features summary
 
 * Marker support (with optional comments)
 * GPX tracks import
 * Lock the view to the current position
 * Orientation indicator
 * Speed indicator
+* Distance indicator
 
 ### On TODO list
 
-* Distance indicator
 * GPX track recording
 * Calibration with 3+ points (when not using a projection)
 * Develop a desktop tool to assist map creation
@@ -198,6 +200,19 @@ if needed. Again, don't forget to save your changes.
 
    Possible values for "hemisphere" are "N" or "S".
    Possible values for "zone" are 1 to 60.
+   
+## <a name="TOC-Features"></a>Features
+
+### <a name="TOC-GPX-track-import"></a>Import a GPX track
+
+While viewing a map, select the option menu on the upper right corner :
+
+![track-import-step1](https://user-images.githubusercontent.com/15638794/27983978-e231fef8-63ca-11e7-8619-bc520bb397d7.png)
+
+Then, a list of currently available tracks opens up. There is a button to import a new track from a 
+.gpx file :
+
+![track-import-step2](https://user-images.githubusercontent.com/15638794/27983977-e22f4230-63ca-11e7-87f9-9a03d50eb65c.png)
 
 
 
