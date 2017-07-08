@@ -98,13 +98,17 @@ public class MapListFragment extends Fragment implements
     }
 
     private void generateMapList() {
-        recyclerView = new RecyclerView(this.getContext());
+        Context ctx = getContext();
+        recyclerView = new RecyclerView(ctx);
         recyclerView.setHasFixedSize(false);
 
-        LinearLayoutManager llm = new LinearLayoutManager(this.getContext());
+        LinearLayoutManager llm = new LinearLayoutManager(ctx);
         recyclerView.setLayoutManager(llm);
 
-        MapAdapter adapter = new MapAdapter(null, this, this);
+        MapAdapter adapter = new MapAdapter(null, this, this,
+                ctx.getColor(R.color.colorAccent),
+                ctx.getColor(R.color.colorPrimaryTextWhite),
+                ctx.getColor(R.color.colorPrimaryTextBlack));
 
         /**
          * The {@link MapAdapter} and this fragment are interested by the map list update event.

@@ -37,55 +37,24 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     private int mColorWhiteText;
     private int mColorBlackText;
 
+    MapAdapter(@Nullable List<Map> maps, MapSelectionListener mapSelectionListener,
+               MapSettingsListener mapSettingsListener, int accentColor, int whiteTextColor,
+               int blackTextColor) {
+        this.maps = maps;
+        mMapSelectionListener = mapSelectionListener;
+        mMapSettingsListener = mapSettingsListener;
+
+        mColorAccent = accentColor;
+        mColorWhiteText = whiteTextColor;
+        mColorBlackText = blackTextColor;
+    }
+
     @Override
     public void onMapListUpdate(boolean mapsFound) {
         if (mapsFound) {
             maps = MapLoader.getInstance().getMaps();
             notifyDataSetChanged();
         }
-    }
-
-    /**
-     * When an item gets selected, the {@link MapSelectionListener} is called with the corresponding
-     * {@link Map}.
-     */
-    public interface MapSelectionListener {
-        void onMapSelected(Map m);
-    }
-
-    /**
-     * When the settings button of an item is clicked, the {@link MapSettingsListener} is called
-     * with the corresponding {@link Map}.
-     */
-    public interface MapSettingsListener {
-        void onMapSettings(Map m);
-    }
-
-    /**
-     * The view for each {@link Map}
-     */
-    public static class MapViewHolder extends RecyclerView.ViewHolder {
-        CardView cardView;
-        TextView mapName;
-        TextView calibrationStatus;
-        ImageView mapImage;
-        Button editButton;
-
-        public MapViewHolder(View itemView) {
-            super(itemView);
-            cardView = (CardView) itemView.findViewById(R.id.cv);
-            mapName = (TextView) itemView.findViewById(R.id.map_name);
-            calibrationStatus = (TextView) itemView.findViewById(R.id.map_calibration_status);
-            mapImage = (ImageView) itemView.findViewById(R.id.map_preview_image);
-            editButton = (Button) itemView.findViewById(R.id.map_edit_btn);
-        }
-    }
-
-    public MapAdapter(@Nullable List<Map> maps, MapSelectionListener mapSelectionListener,
-                      MapSettingsListener mapSettingsListener) {
-        this.maps = maps;
-        mMapSelectionListener = mapSelectionListener;
-        mMapSettingsListener = mapSettingsListener;
     }
 
     /**
@@ -108,9 +77,6 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     public MapViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context ctx = parent.getContext();
         View v = LayoutInflater.from(ctx).inflate(R.layout.map_row, parent, false);
-        mColorAccent = ctx.getColor(R.color.colorAccent);
-        mColorWhiteText = ctx.getColor(R.color.colorPrimaryTextWhite);
-        mColorBlackText = ctx.getColor(R.color.colorPrimaryTextBlack);
 
         return new MapViewHolder(v);
     }
@@ -151,6 +117,42 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     @Override
     public int getItemCount() {
         return maps == null ? 0 : maps.size();
+    }
+
+    /**
+     * When an item gets selected, the {@link MapSelectionListener} is called with the corresponding
+     * {@link Map}.
+     */
+    public interface MapSelectionListener {
+        void onMapSelected(Map m);
+    }
+
+    /**
+     * When the settings button of an item is clicked, the {@link MapSettingsListener} is called
+     * with the corresponding {@link Map}.
+     */
+    public interface MapSettingsListener {
+        void onMapSettings(Map m);
+    }
+
+    /**
+     * The view for each {@link Map}
+     */
+    public static class MapViewHolder extends RecyclerView.ViewHolder {
+        CardView cardView;
+        TextView mapName;
+        TextView calibrationStatus;
+        ImageView mapImage;
+        Button editButton;
+
+        public MapViewHolder(View itemView) {
+            super(itemView);
+            cardView = (CardView) itemView.findViewById(R.id.cv);
+            mapName = (TextView) itemView.findViewById(R.id.map_name);
+            calibrationStatus = (TextView) itemView.findViewById(R.id.map_calibration_status);
+            mapImage = (ImageView) itemView.findViewById(R.id.map_preview_image);
+            editButton = (Button) itemView.findViewById(R.id.map_edit_btn);
+        }
     }
 
     /**
