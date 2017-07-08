@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -25,14 +26,41 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
     private List<RouteGson.Route> mRouteList;
     private TrackSelectionListener mTrackSelectionListener;
 
-    TrackAdapter(Map map, TrackSelectionListener trackSelectionListener) {
+    private int mSelectedRouteIndex = -1;
+    private int mPreviousSelectedRouteIndex = -1;
+
+    private int mColorAccent;
+    private int mColorWhite;
+    private int mColorBlack;
+
+    TrackAdapter(Map map, TrackSelectionListener trackSelectionListener, int accentColor,
+                 int whiteTextColor, int blackTextColor) {
         mRouteList = map.getRoutes();
         mTrackSelectionListener = trackSelectionListener;
+        mColorAccent = accentColor;
+        mColorWhite = whiteTextColor;
+        mColorBlack = blackTextColor;
     }
 
     public void removeItem(int position) {
         mRouteList.remove(position);
         notifyItemRemoved(position);
+    }
+
+    /**
+     * Simple implementation of a toggle selection. When an item is clicked, we change its
+     * background and we remember his index. When another item is clicked, the background of the
+     * first item is set to its original state.
+     *
+     * @param position index of the selected view
+     */
+    private void updateSelectionColor(int position) {
+        mSelectedRouteIndex = position;
+        notifyItemChanged(position);
+        if (mPreviousSelectedRouteIndex != -1) {
+            notifyItemChanged(mPreviousSelectedRouteIndex);
+        }
+        mPreviousSelectedRouteIndex = position;
     }
 
     @Override
@@ -49,6 +77,18 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
         holder.trackName.setText(route.name);
         holder.setVisibleButtonIcon(route.visible);
         holder.visibleButton.setOnClickListener(new VisibilityButtonClickListener(holder, this));
+
+        if (holder.getLayoutPosition() == mSelectedRouteIndex) {
+            holder.cardView.setCardBackgroundColor(mColorAccent);
+            holder.trackName.setTextColor(mColorWhite);
+            holder.visibleButton.setColorFilter(mColorWhite);
+        } else {
+            holder.cardView.setCardBackgroundColor(Color.WHITE);
+            holder.trackName.setTextColor(mColorBlack);
+            holder.visibleButton.setColorFilter(mColorBlack);
+        }
+
+        holder.itemView.setOnClickListener(new TrackViewHolderClickListener(holder, this));
     }
 
     @Override
@@ -99,6 +139,31 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
                 trackViewHolder.setVisibleButtonIcon(route.visible);
 
                 trackAdapter.mTrackSelectionListener.onVisibilityToggle(route);
+            }
+        }
+    }
+
+    private static class TrackViewHolderClickListener implements View.OnClickListener {
+        WeakReference<TrackViewHolder> mTrackViewHolderWeakReference;
+        WeakReference<TrackAdapter> mTrackAdapterWeakReference;
+
+        TrackViewHolderClickListener(TrackViewHolder holder, TrackAdapter adapter) {
+            mTrackViewHolderWeakReference = new WeakReference<>(holder);
+            mTrackAdapterWeakReference = new WeakReference<>(adapter);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (mTrackAdapterWeakReference != null && mTrackViewHolderWeakReference != null) {
+                TrackViewHolder holder = mTrackViewHolderWeakReference.get();
+                TrackAdapter adapter = mTrackAdapterWeakReference.get();
+                if (adapter != null && holder != null) {
+                    int position = holder.getAdapterPosition();
+
+                    // Toggle background color
+                    adapter.updateSelectionColor(position);
+
+                }
             }
         }
     }

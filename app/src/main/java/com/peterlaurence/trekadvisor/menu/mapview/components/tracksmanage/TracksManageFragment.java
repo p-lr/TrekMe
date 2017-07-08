@@ -136,15 +136,16 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     private void generateTracks(Map map) {
-        RecyclerView recyclerView = new RecyclerView(this.getContext());
+        Context ctx = getContext();
+        RecyclerView recyclerView = new RecyclerView(ctx);
         recyclerView.setHasFixedSize(false);
 
         /* All cards are laid out vertically */
-        LinearLayoutManager llm = new LinearLayoutManager(this.getContext());
+        LinearLayoutManager llm = new LinearLayoutManager(ctx);
         recyclerView.setLayoutManager(llm);
 
         /* Apply item decoration (add an horizontal divider) */
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this.getContext(),
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(ctx,
                 DividerItemDecoration.VERTICAL);
         Drawable divider = this.getContext().getDrawable(R.drawable.divider);
         if (divider != null) {
@@ -152,7 +153,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         }
         recyclerView.addItemDecoration(dividerItemDecoration);
 
-        mTrackAdapter = new TrackAdapter(map, this);
+        mTrackAdapter = new TrackAdapter(map, this, ctx.getColor(R.color.colorAccent),
+                ctx.getColor(R.color.colorPrimaryTextWhite),
+                ctx.getColor(R.color.colorPrimaryTextBlack));
         recyclerView.setAdapter(mTrackAdapter);
 
         /* Swipe to dismiss functionality */
