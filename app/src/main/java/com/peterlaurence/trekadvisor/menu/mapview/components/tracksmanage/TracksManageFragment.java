@@ -2,8 +2,11 @@ package com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -19,8 +22,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 
+import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
@@ -41,9 +46,11 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         TrackAdapter.TrackSelectionListener {
     public static final String TAG = "TracksManageFragment";
     private static final int TRACK_REQUEST_CODE = 1337;
+    private static final String ROUTE_INDEX = "routeIndex";
     private FrameLayout rootView;
     private Map mMap;
     private MapProvider mMapProvider;
+    private MenuItem mTrackRenameMenuItem;
     private TrackChangeListenerProvider mTrackChangeListenerProvider;
     private TrackChangeListener mTrackChangeListener;
     private TrackAdapter mTrackAdapter;
@@ -74,6 +81,13 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         mMap = mMapProvider.getCurrentMap();
         generateTracks(mMap);
 
+        if (savedInstanceState != null) {
+            int routeIndex = savedInstanceState.getInt(ROUTE_INDEX);
+            if (routeIndex >= 0) {
+                mTrackAdapter.restoreSelectionIndex(routeIndex);
+            }
+        }
+
         return rootView;
     }
 
@@ -81,6 +95,10 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
         inflater.inflate(R.menu.menu_fragment_tracks_manage, menu);
+        mTrackRenameMenuItem = menu.findItem(R.id.track_rename_id);
+        if (mTrackAdapter.getSelectedRouteIndex() >= 0) {
+            mTrackRenameMenuItem.setVisible(true);
+        }
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -105,6 +123,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
                 intent.setType("*/*");
                 startActivityForResult(intent, TRACK_REQUEST_CODE);
                 return true;
+            case R.id.track_rename_id:
+                ChangeRouteNameFragment fragment = new ChangeRouteNameFragment();
+                fragment.show(getFragmentManager(), "rename route");
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -253,6 +274,11 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
+    public void onTrackSelected() {
+        mTrackRenameMenuItem.setVisible(true);
+    }
+
+    @Override
     public void onVisibilityToggle(RouteGson.Route route) {
         if (mTrackChangeListener != null) {
             mTrackChangeListener.onTrackVisibilityChanged();
@@ -260,6 +286,12 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
         /* Save */
         saveChanges();
+    }
+
+    @Override
+    public void onSaveInstanceState(final Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(ROUTE_INDEX, mTrackAdapter.getSelectedRouteIndex());
     }
 
     public interface TrackChangeListenerProvider {
@@ -279,5 +311,76 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
          * When the visibility of a {@link RouteGson.Route} is changed, this method is called.
          */
         void onTrackVisibilityChanged();
+    }
+
+    public static class ChangeRouteNameFragment extends DialogFragment {
+        private TracksManageFragment mTracksManageFragment;
+        private String mText;
+
+        /**
+         * The first time this fragment is created, the activity exists and so does the
+         * {@link TracksManageFragment}. But, upon configuration change, the
+         * {@link TracksManageFragment} is not yet attached to the fragment manager when
+         * {@link #onAttach(Context)} is called. <br>
+         * So, we get a reference to it later in {@link #onActivityCreated(Bundle)}.
+         * In the meanwhile, we don't have to retrieve the route's name because the framework
+         * automatically saves the {@link EditText} state upon configuration change.
+         */
+        @Override
+        public void onAttach(Context context) {
+            super.onAttach(context);
+
+            try {
+                mTracksManageFragment = ((MainActivity) getActivity()).getTracksManageFragment();
+
+                final RouteGson.Route route = mTracksManageFragment.mTrackAdapter.getSelectedRoute();
+                if (route != null) {
+                    mText = route.name;
+                }
+            } catch (NullPointerException e) {
+                /* The fragment is being recreated upon configuration change */
+            }
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+
+            if (mTracksManageFragment == null) {
+                mTracksManageFragment = ((MainActivity) getActivity()).getTracksManageFragment();
+            }
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            final View view = inflater.inflate(R.layout.change_trackname_fragment, null);
+
+            if (mText != null) {
+                EditText editText = (EditText) view.findViewById(R.id.track_name_edittext);
+                editText.setText(mText);
+            }
+
+            builder.setView(view);
+            builder.setMessage(R.string.track_name_change)
+                    .setPositiveButton(R.string.ok_dialog, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            RouteGson.Route route = mTracksManageFragment.mTrackAdapter.getSelectedRoute();
+                            EditText editText = (EditText) view.findViewById(R.id.track_name_edittext);
+                            if (route != null) {
+                                route.name = editText.getText().toString();
+                                mTracksManageFragment.mTrackAdapter.notifyDataSetChanged();
+                                mTracksManageFragment.saveChanges();
+                            }
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel_dialog_string, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // Do nothing. This empty listener is used just to create the Cancel button.
+                        }
+                    });
+            return builder.create();
+        }
     }
 }

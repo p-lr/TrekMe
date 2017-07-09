@@ -326,6 +326,11 @@ public class MainActivity extends AppCompatActivity
         showMarkerManageFragment();
     }
 
+    public TracksManageFragment getTracksManageFragment() {
+        Fragment fragment = fragmentManager.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG);
+        return fragment != null ? (TracksManageFragment) fragment : null;
+    }
+
     private void showMapViewFragment() {
         /* Don't show the fragment if no map has been selected yet */
         if (getCurrentMap() == null) {

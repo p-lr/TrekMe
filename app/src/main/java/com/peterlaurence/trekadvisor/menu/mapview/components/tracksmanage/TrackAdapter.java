@@ -47,6 +47,23 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
         notifyItemRemoved(position);
     }
 
+    public RouteGson.Route getSelectedRoute() {
+        try {
+            return mRouteList.get(mSelectedRouteIndex);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
+    }
+
+    public void restoreSelectionIndex(int selectionIndex) {
+        mSelectedRouteIndex = selectionIndex;
+        updateSelectionColor(selectionIndex);
+    }
+
+    public int getSelectedRouteIndex() {
+        return mSelectedRouteIndex;
+    }
+
     /**
      * Simple implementation of a toggle selection. When an item is clicked, we change its
      * background and we remember his index. When another item is clicked, the background of the
@@ -97,6 +114,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
     }
 
     interface TrackSelectionListener {
+        void onTrackSelected();
         void onVisibilityToggle(RouteGson.Route route);
     }
 
@@ -160,9 +178,11 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
                 if (adapter != null && holder != null) {
                     int position = holder.getAdapterPosition();
 
-                    // Toggle background color
+                    /* Toggle background color */
                     adapter.updateSelectionColor(position);
 
+                    /* Call the listener for track selection */
+                    adapter.mTrackSelectionListener.onTrackSelected();
                 }
             }
         }

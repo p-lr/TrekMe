@@ -52,4 +52,6 @@
     <string name="km">km</string>
     <string name="m">m</string>
     <string name="mile">ml</string>
+    <string name="track_name_change">Entrez le nom de la trace</string>
+    <string name="track_rename_action">Renommer</string>
 </resources>

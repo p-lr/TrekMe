@@ -6,5 +6,10 @@
         android:orderInCategory="0"
         android:title="@string/import_tracks_menu"
         app:showAsAction="always" />
-
+    <item
+        android:id="@+id/track_rename_id"
+        android:orderInCategory="1"
+        android:title="@string/track_rename_action"
+        app:showAsAction="never"
+        android:visible="false" />
 </menu>

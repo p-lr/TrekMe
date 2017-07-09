@@ -62,6 +62,8 @@
     <string name="import_tracks_warning">The file you chose is not in a supported format. Supported extensions are :</string>
     <string name="import_tracks_format_gpx" translatable="false">GPX (tracks, routes, waypoints)</string>
     <string name="import_tracks_format_google" translatable="false">Google Maps directions (XML, JSON)</string>
+    <string name="track_name_change">Enter the name of the track</string>
+    <string name="track_rename_action">Rename</string>
 
     <!-- MapView fragment -->
     <string name="mapview_show_speed">Show speed</string>
