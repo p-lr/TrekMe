@@ -207,10 +207,14 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
         if (isWgs84) {
             double[] wgs84 = projection.undoProjection(x, y);
-            rootView.updateCoordinateFields(wgs84[0], wgs84[1]);
+            if (wgs84 != null) {
+                rootView.updateCoordinateFields(wgs84[0], wgs84[1]);
+            }
         } else {
             double[] projectedValues = projection.doProjection(y, x);
-            rootView.updateCoordinateFields(projectedValues[0], projectedValues[1]);
+            if (projectedValues != null) {
+                rootView.updateCoordinateFields(projectedValues[0], projectedValues[1]);
+            }
         }
     }
 
@@ -247,8 +251,10 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         Projection projection = map.getProjection();
         if (rootView.isWgs84() && projection != null) {
             double[] projectedValues = projection.doProjection(y, x);
-            calibrationPoint.proj_x = projectedValues[0];
-            calibrationPoint.proj_y = projectedValues[1];
+            if (projectedValues != null) {
+                calibrationPoint.proj_x = projectedValues[0];
+                calibrationPoint.proj_y = projectedValues[1];
+            }
         } else {
             calibrationPoint.proj_x = x;
             calibrationPoint.proj_y = y;
@@ -273,7 +279,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
             Projection projection = mMapWeakReference.get().getProjection();
             if (rootView.isWgs84() && projection != null) {
                 double[] wgs84 = projection.undoProjection(calibrationPoint.proj_x, calibrationPoint.proj_y);
-                if (wgs84.length == 2) {
+                if (wgs84 != null && wgs84.length == 2) {
                     rootView.updateCoordinateFields(wgs84[0], wgs84[1]);
                 }
             } else {
