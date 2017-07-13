@@ -247,7 +247,13 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         }
 
         Map map = mMapWeakReference.get();
-        MapGson.Calibration.CalibrationPoint calibrationPoint = mCalibrationPointList.get(mCurrentCalibrationPoint);
+        MapGson.Calibration.CalibrationPoint calibrationPoint;
+        if (mCalibrationPointList.size() > mCurrentCalibrationPoint) {
+            calibrationPoint = mCalibrationPointList.get(mCurrentCalibrationPoint);
+        } else {
+            calibrationPoint = new MapGson.Calibration.CalibrationPoint();
+            mCalibrationPointList.add(calibrationPoint);
+        }
         Projection projection = map.getProjection();
         if (rootView.isWgs84() && projection != null) {
             double[] projectedValues = projection.doProjection(y, x);
