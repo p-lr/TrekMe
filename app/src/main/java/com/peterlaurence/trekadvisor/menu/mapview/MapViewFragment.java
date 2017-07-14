@@ -135,7 +135,7 @@ public class MapViewFragment extends Fragment implements
 
         /* Create the instance of the OrientationSensor */
         if (mOrientationSensor == null) {
-            mOrientationSensor = new OrientationSensor(getContext());
+            mOrientationSensor = new OrientationSensor(getActivity());
         }
 
         /* Create the marker layer */

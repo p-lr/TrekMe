@@ -1,10 +1,12 @@
 package com.peterlaurence.trekadvisor.core.sensors;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.view.Surface;
 
 import java.lang.ref.WeakReference;
 
@@ -18,20 +20,19 @@ public class OrientationSensor implements SensorEventListener {
     private WeakReference<OrientationListener> mOrientationListenerWeakReference;
 
     /* object internals */
+    private Activity mActivity;
     private float[] orientationValues;
     private float[] rMat;
 
-    public OrientationSensor(Context context) {
+
+    public OrientationSensor(Activity context) {
+        mActivity = context;
         orientationValues = new float[3];
         rMat = new float[9];
 
         SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         Sensor mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         sensorManager.registerListener(this, mSensor, 100);
-    }
-
-    public interface OrientationListener {
-        void onOrientation(int azimuth);
     }
 
     /**
@@ -49,8 +50,27 @@ public class OrientationSensor implements SensorEventListener {
             /* Calculate the rotation matrix */
             SensorManager.getRotationMatrixFromVector(rMat, event.values);
 
+            int screenRotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+            int fix = 0;
+            switch (screenRotation) {
+                case Surface.ROTATION_90:
+                    fix = 90;
+                    break;
+
+                case Surface.ROTATION_180:
+                    fix = 180;
+                    break;
+
+                case Surface.ROTATION_270:
+                    fix = 270;
+                    break;
+
+                default:
+                    break;
+            }
+
             /* Get the azimuth value (orientation[0]) in degree */
-            int mAzimuth = (int) (Math.toDegrees(SensorManager.getOrientation(rMat, orientationValues)[0]) + 360) % 360;
+            int mAzimuth = (int) (Math.toDegrees(SensorManager.getOrientation(rMat, orientationValues)[0]) + 360 + fix) % 360;
 
             /* Call the listener */
             if (mOrientationListenerWeakReference != null) {
@@ -65,5 +85,9 @@ public class OrientationSensor implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    public interface OrientationListener {
+        void onOrientation(int azimuth);
     }
 }
