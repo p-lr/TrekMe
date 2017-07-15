@@ -26,4 +26,10 @@
         android:title="@string/mapview_measure_distance"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/orientation_enable_id"
+        android:checkable="true"
+        app:showAsAction="never"
+        android:title="@string/mapview_orientation_enable" />
+
 </menu>

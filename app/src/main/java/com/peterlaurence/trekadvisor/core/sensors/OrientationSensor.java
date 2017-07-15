@@ -20,6 +20,7 @@ public class OrientationSensor implements SensorEventListener {
     private WeakReference<OrientationListener> mOrientationListenerWeakReference;
 
     /* object internals */
+    private boolean mStarted;
     private Activity mActivity;
     private float[] orientationValues;
     private float[] rMat;
@@ -30,9 +31,7 @@ public class OrientationSensor implements SensorEventListener {
         orientationValues = new float[3];
         rMat = new float[9];
 
-        SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        Sensor mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        sensorManager.registerListener(this, mSensor, 100);
+        start();
     }
 
     /**
@@ -42,6 +41,57 @@ public class OrientationSensor implements SensorEventListener {
      */
     public void setOrientationListener(OrientationListener listener) {
         mOrientationListenerWeakReference = new WeakReference<>(listener);
+        if (mStarted) {
+            listener.onOrientationEnable();
+        } else {
+            listener.onOrientationDisable();
+        }
+    }
+
+    public boolean toggleOrientation() {
+        if (mStarted) {
+            stop();
+        } else {
+            start();
+        }
+        return mStarted;
+    }
+
+    public boolean isStarted() {
+        return mStarted;
+    }
+
+    public void start() {
+        mStarted = true;
+
+        /* First subscribe to orientation events */
+        SensorManager sensorManager = (SensorManager) mActivity.getSystemService(Context.SENSOR_SERVICE);
+        Sensor mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        sensorManager.registerListener(this, mSensor, 100);
+
+        /* Then update the listener (view) */
+        if (mOrientationListenerWeakReference != null) {
+            OrientationListener listener = mOrientationListenerWeakReference.get();
+            if (listener != null) {
+                listener.onOrientationEnable();
+            }
+        }
+    }
+
+    public void stop() {
+        mStarted = false;
+
+        /* First update the listener (view) */
+        if (mOrientationListenerWeakReference != null) {
+            OrientationListener listener = mOrientationListenerWeakReference.get();
+            if (listener != null) {
+                listener.onOrientationDisable();
+            }
+        }
+
+        /* Then unsubscribe */
+        SensorManager sensorManager = (SensorManager) mActivity.getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.unregisterListener(this);
     }
 
     @Override
@@ -89,5 +139,9 @@ public class OrientationSensor implements SensorEventListener {
 
     public interface OrientationListener {
         void onOrientation(int azimuth);
+
+        void onOrientationEnable();
+
+        void onOrientationDisable();
     }
 }

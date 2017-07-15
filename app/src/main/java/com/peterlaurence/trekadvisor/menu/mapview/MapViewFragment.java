@@ -169,9 +169,12 @@ public class MapViewFragment extends Fragment implements
         /* Fill the new one */
         inflater.inflate(R.menu.menu_fragment_map_view, menu);
 
-        /* .. and restore a checkable state */
+        /* .. and restore some checkable state */
         MenuItem item = menu.findItem(R.id.distancemeter_id);
         item.setChecked(mDistanceLayer.isVisible());
+
+        MenuItem itemOrientation = menu.findItem(R.id.orientation_enable_id);
+        itemOrientation.setChecked(mOrientationSensor.isStarted());
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -196,6 +199,9 @@ public class MapViewFragment extends Fragment implements
                 } else {
                     mDistanceLayer.hide();
                 }
+                return true;
+            case R.id.orientation_enable_id:
+                item.setChecked(mOrientationSensor.toggleOrientation());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -286,6 +292,7 @@ public class MapViewFragment extends Fragment implements
         mRequestManageMarkerListener = null;
         mMapProvider = null;
         mSpeedListener = null;
+        mOrientationSensor.stop();
     }
 
     @Override
