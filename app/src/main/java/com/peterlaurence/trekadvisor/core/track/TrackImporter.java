@@ -146,21 +146,20 @@ public class TrackImporter {
                 for (TrackPoint trackPoint : trackPointList) {
                     MarkerGson.Marker marker = new MarkerGson.Marker();
 
-                    /* Here, the projected values obtained may be just the untouched latitude and
-                     * longitude if the map doesn't use a projection. In both cases, we treat the
-                     * data the same way : they are respectively stored as "proj_x" and "proj_y"
-                     * attributes of a marker inside a track. */
-                    double[] projectedValues = null;
+                    /* If the map uses a projection, store projected values */
+                    double[] projectedValues;
                     Projection projection = mMap.getProjection();
                     if (projection != null) {
                         projectedValues = projection.doProjection(trackPoint.getLatitude(), trackPoint.getLongitude());
+                        if (projectedValues != null) {
+                            marker.proj_x = projectedValues[0];
+                            marker.proj_y = projectedValues[1];
+                        }
                     }
 
-                    /* By design, default values are null */
-                    if (projectedValues != null) {
-                        marker.proj_x = projectedValues[0];
-                        marker.proj_y = projectedValues[1];
-                    }
+                    /* In any case, we store the wgs84 coordinates */
+                    marker.lat = trackPoint.getLatitude();
+                    marker.lon = trackPoint.getLongitude();
 
                     route.route_markers.add(marker);
                 }

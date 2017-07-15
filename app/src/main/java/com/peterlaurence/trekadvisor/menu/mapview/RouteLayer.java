@@ -134,18 +134,21 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
 
                     int i = 0;
                     boolean init = true;
+                    boolean mapUsesProjection = mMap.getProjection() != null;
                     for (MarkerGson.Marker marker : markerList) {
                         /* No need to continue if the route has been deleted in the meanwhile */
                         if (route.get() == null) break;
 
+                        double relativeX = mapUsesProjection ? marker.proj_x : marker.lon;
+                        double relativeY = mapUsesProjection ? marker.proj_y : marker.lat;
                         if (init) {
-                            lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
-                            lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
+                            lines[i] = (float) coordinateTranslater.translateX(relativeX);
+                            lines[i + 1] = (float) coordinateTranslater.translateY(relativeY);
                             init = false;
                             i += 2;
                         } else {
-                            lines[i] = (float) coordinateTranslater.translateX(marker.proj_x);
-                            lines[i + 1] = (float) coordinateTranslater.translateY(marker.proj_y);
+                            lines[i] = (float) coordinateTranslater.translateX(relativeX);
+                            lines[i + 1] = (float) coordinateTranslater.translateY(relativeY);
                             if (i + 2 >= size) break;
                             lines[i + 2] = lines[i];
                             lines[i + 3] = lines[i + 1];
