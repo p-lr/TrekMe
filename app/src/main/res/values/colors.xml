@@ -10,7 +10,7 @@
     <color name="colorDarkGrey">#616161</color>
     <color name="colorPositionMarker">#448AFF</color>
     <color name="colorPositionMarkerBg">#55448AFF</color>
-    <color name="colorCalibrationMarker">#448AFF</color>
+    <color name="colorCalibrationMarker">#CC448AFF</color>
     <color name="colorCalibrationMarkerBg">#55448AFF</color>
     <color name="colorDistanceMarker">#55448AFF</color>
     <color name="colorMarkerGrabBg">#55448AFF</color>

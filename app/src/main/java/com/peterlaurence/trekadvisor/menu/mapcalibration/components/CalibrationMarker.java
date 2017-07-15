@@ -16,6 +16,7 @@ import com.peterlaurence.trekadvisor.R;
  */
 public class CalibrationMarker extends View {
     private int mMeasureDimension;
+    private int mLineWidth;
     private int mSightColor = Color.BLUE;
     private int mSightBackgroundColor = Color.BLUE;
 
@@ -38,7 +39,7 @@ public class CalibrationMarker extends View {
                 R.styleable.CalibrationMarker_measureDimension,
                 200);
 
-        int lineWidth = a.getDimensionPixelSize(
+        mLineWidth = a.getDimensionPixelSize(
                 R.styleable.CalibrationMarker_lineWidth,
                 10);
 
@@ -55,7 +56,7 @@ public class CalibrationMarker extends View {
         /* Paint for the sight */
         mPaint = new Paint();
         mPaint.setColor(mSightColor);
-        mPaint.setStrokeWidth(lineWidth);
+        mPaint.setStrokeWidth(mLineWidth);
         mPaint.setAntiAlias(true);
 
         /* Paint for the background circle */
@@ -69,9 +70,11 @@ public class CalibrationMarker extends View {
         super.onDraw(canvas);
 
         canvas.save();
-        canvas.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2,  mMeasureDimension / 2, mPaintBackground);
-        canvas.drawLine(0, mMeasureDimension/2, mMeasureDimension, mMeasureDimension/2, mPaint);
-        canvas.drawLine(mMeasureDimension/2, 0, mMeasureDimension/2, mMeasureDimension, mPaint);
+        canvas.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2, mMeasureDimension / 2, mPaintBackground);
+        canvas.drawLine(0, mMeasureDimension / 2, mMeasureDimension / 2 - mLineWidth / 2, mMeasureDimension / 2, mPaint);
+        canvas.drawLine(mMeasureDimension / 2 + mLineWidth / 2, mMeasureDimension / 2, mMeasureDimension, mMeasureDimension / 2, mPaint);
+        canvas.drawLine(mMeasureDimension / 2, 0, mMeasureDimension / 2, mMeasureDimension / 2 - mLineWidth / 2, mPaint);
+        canvas.drawLine(mMeasureDimension / 2, mMeasureDimension / 2 + mLineWidth / 2, mMeasureDimension / 2, mMeasureDimension, mPaint);
         canvas.restore();
     }
 
