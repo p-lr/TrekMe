@@ -27,6 +27,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity
         MapListFragment.OnMapListFragmentInteractionListener,
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
+        MapLoader.DeleteMapListener,
         MarkerManageFragment.MarkerManageFragmentInteractionListener,
         MapProvider,
         MarkerProvider,
@@ -659,5 +661,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void showCurrentMap() {
         showMapViewFragment();
+    }
+
+    @Override
+    public void onMapDeleted() {
+        showMapListFragment();
     }
 }

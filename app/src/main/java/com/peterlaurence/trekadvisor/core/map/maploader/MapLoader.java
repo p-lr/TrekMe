@@ -13,6 +13,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.gson.RuntimeTypeAdapterFactory;
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapArchiveSearchTask;
+import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapDeleteTask;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapMarkerImportTask;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapRouteImportTask;
 import com.peterlaurence.trekadvisor.core.map.maploader.tasks.MapUpdateTask;
@@ -330,14 +331,28 @@ public class MapLoader implements MapImporter.MapImportListener {
     }
 
     /**
-     * Delete a {@link Map}. Recursively deletes the parent directory.
+     * Delete a {@link Map}. Recursively deletes its directory.
      *
      * @param map The {@link Map} to delete.
      */
-    public void deleteMap(Map map) {
-        // TODO : do this in an another thread. And update the map list.
-        File parentDirectory = map.getDirectory();
-        FileUtils.deleteRecursive(parentDirectory);
+    public void deleteMap(Map map, DeleteMapListener listener) {
+        File mapDirectory = map.getDirectory();
+        mMapList.remove(map);
+
+        /* Notify for view update */
+        if (mMapListUpdateListeners != null) {
+            for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
+                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
+            }
+        }
+
+        /* Delete the map directory in a separate thread */
+        MapDeleteTask mapDeleteTask = new MapDeleteTask(mapDirectory);
+        mapDeleteTask.execute();
+
+        if (listener != null) {
+            listener.onMapDeleted();
+        }
     }
 
     /**
@@ -405,6 +420,10 @@ public class MapLoader implements MapImporter.MapImportListener {
 
     public interface MapArchiveListUpdateListener {
         void onMapArchiveListUpdate();
+    }
+
+    public interface DeleteMapListener {
+        void onMapDeleted();
     }
 
     /* Singleton implementation */

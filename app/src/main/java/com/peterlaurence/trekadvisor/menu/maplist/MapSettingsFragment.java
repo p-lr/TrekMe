@@ -40,7 +40,7 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
     private WeakReference<Map> mMapWeakReference;
 
     private MapCalibrationRequestListener mMapCalibrationRequestListener;
-    private ConfirmDeleteFragment mConfirmDeleteFragment;
+    private MapLoader.DeleteMapListener mDeleteMapListener;
 
     private LinearLayout rootView;
 
@@ -83,9 +83,6 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
             mapName = args.getString(ARG_MAP_NAME);
         }
 
-        /* The dialog that shows up when the user press the delete button */
-        mConfirmDeleteFragment = new ConfirmDeleteFragment();
-
         /* The Preferences layout */
         addPreferencesFromResource(R.xml.calibration_settings);
 
@@ -113,7 +110,6 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
      */
     public void setMap(String mapName) {
         mMapWeakReference = new WeakReference<>(MapLoader.getInstance().getMap(mapName));
-        mConfirmDeleteFragment.setMapWeakRef(mMapWeakReference);
 
         /* Choice is made to have the preference file name equal to the map name */
         getPreferenceManager().setSharedPreferencesName(mapName);
@@ -194,7 +190,10 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
         deleteButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                mConfirmDeleteFragment.show(getFragmentManager(), "delete");
+                ConfirmDeleteFragment f = new ConfirmDeleteFragment();
+                f.setMapWeakRef(mMapWeakReference);
+                f.setDeleteMapListener(mDeleteMapListener);
+                f.show(getFragmentManager(), "delete");
                 return true;
             }
         });
@@ -243,14 +242,19 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
         super.onAttach(context);
         if (context instanceof MapCalibrationRequestListener) {
             mMapCalibrationRequestListener = (MapCalibrationRequestListener) context;
+            mDeleteMapListener = (MapLoader.DeleteMapListener) context;
         } else {
             throw new RuntimeException(context.toString() +
                     "must implement MapCalibrationRequestListener");
         }
     }
 
+    /**
+     * The dialog that shows up when the user press the delete button
+     */
     public static class ConfirmDeleteFragment extends DialogFragment {
         private WeakReference<Map> mMapWeakReference;
+        private MapLoader.DeleteMapListener mDeleteMapListener;
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -262,7 +266,7 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
                             if (mMapWeakReference != null) {
                                 Map map = mMapWeakReference.get();
                                 if (map != null) {
-                                    MapLoader.getInstance().deleteMap(map);
+                                    MapLoader.getInstance().deleteMap(map, mDeleteMapListener);
                                 }
                             }
                         }
@@ -278,6 +282,10 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
 
         public void setMapWeakRef(WeakReference<Map> mapWr) {
             mMapWeakReference = mapWr;
+        }
+
+        public void setDeleteMapListener(MapLoader.DeleteMapListener listener) {
+            mDeleteMapListener = listener;
         }
     }
 }
