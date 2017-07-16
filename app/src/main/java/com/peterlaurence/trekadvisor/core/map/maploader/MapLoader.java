@@ -23,7 +23,6 @@ import com.peterlaurence.trekadvisor.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderDummy;
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderLibVips;
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderOsm;
-import com.peterlaurence.trekadvisor.util.FileUtils;
 import com.qozix.tileview.graphics.BitmapProvider;
 
 import java.io.File;
@@ -93,6 +92,18 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapListUpdateListeners = new ArrayList<>();
         mMapArchiveListUpdateListeners = new ArrayList<>();
         mMapList = new ArrayList<>();
+
+        /* Create the app folder if it doesn't exist */
+        try {
+            if (!DEFAULT_APP_DIR.exists()) {
+                boolean created = DEFAULT_APP_DIR.mkdir();
+                if (!created) {
+                    Log.e(TAG, "Could not create application folder");
+                }
+            }
+        } catch (SecurityException e) {
+            Log.e(TAG, "We don't have right access to create application folder");
+        }
     }
 
     public static MapLoader getInstance() {
