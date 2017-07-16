@@ -115,7 +115,7 @@ public class MapListFragment extends Fragment implements
          */
         MapLoader.getInstance().addMapListUpdateListener(adapter);
         MapLoader.getInstance().addMapListUpdateListener(this);
-        MapLoader.getInstance().generateMaps();
+        MapLoader.getInstance().clearAndGenerateMaps();
         recyclerView.setAdapter(adapter);
 
         rootView.addView(recyclerView, 0);

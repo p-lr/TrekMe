@@ -29,7 +29,7 @@ import java.util.List;
 public class MapImporter {
     private static final java.util.Map<MapProvider, MapParser> mProviderToParserMap;
     private static final int THUMBNAIL_ACCEPT_SIZE = 256;
-    private static final String[] IMAGE_EXTENSIONS = new String[] {
+    private static final String[] IMAGE_EXTENSIONS = new String[]{
             "jpg", "gif", "png", "bmp"
     };
 
@@ -81,6 +81,24 @@ public class MapImporter {
         }
     };
 
+    static {
+        java.util.Map<MapProvider, MapParser> map = new HashMap<>();
+        map.put(MapProvider.LIBVIPS, new LibvipsMapParser());
+        mProviderToParserMap = Collections.unmodifiableMap(map);
+    }
+
+    /* Don't allow instantiation */
+    private MapImporter() {
+    }
+
+    public static void importFromFile(File dir, MapProvider provider, MapImportListener listener) {
+        MapParser parser = mProviderToParserMap.get(provider);
+        if (parser != null) {
+            MapParseTask mapParseTask = new MapParseTask(parser, dir, listener);
+            mapParseTask.execute();
+        }
+    }
+
     /**
      * Possible {@link Map} providers.
      */
@@ -94,33 +112,23 @@ public class MapImporter {
     private interface MapParser {
         @Nullable
         Map parse(File file) throws MapParseException;
+
+        MapParserStatus getStatus();
     }
 
-    static {
-        java.util.Map<MapProvider, MapParser> map = new HashMap<>();
-        map.put(MapProvider.LIBVIPS, new LibvipsMapParser());
-        mProviderToParserMap = Collections.unmodifiableMap(map);
-    }
-
-    /* Don't allow instantiation */
-    private MapImporter() {
+    public enum MapParserStatus {
+        NEW_MAP,        // a new map was successfully created
+        EXISTING_MAP,   // a map.json file was found
     }
 
     /**
-     * When a {@link Map} is parsed for {@link MapGson} object creation, a {@link MapParseListener}
+     * When a {@link Map} is parsed for {@link MapGson} object creation, a {@link MapImportListener}
      * is called after the task is done.
      */
-    public interface MapParseListener {
-        void onMapParsed(Map map);
-        void onError(MapParseException e);
-    }
+    public interface MapImportListener {
+        void onMapImported(Map map, MapParserStatus status);
 
-    public static void importFromFile(File dir, MapProvider provider, MapParseListener listener) {
-        MapParser parser = mProviderToParserMap.get(provider);
-        if (parser != null) {
-            MapParseTask mapParseTask = new MapParseTask(parser, dir, listener);
-            mapParseTask.execute();
-        }
+        void onMapImportError(MapParseException e);
     }
 
     /**
@@ -129,26 +137,26 @@ public class MapImporter {
     public static class MapParseException extends Exception {
         private Issue mIssue;
 
+        MapParseException(Issue issue) {
+            mIssue = issue;
+        }
+
         enum Issue {
             NO_PARENT_FOLDER_FOUND,
             NO_LEVEL_FOUND,
             UNKNOWN_IMAGE_EXT,
             MAP_SIZE_INCORRECT
         }
-
-        MapParseException(Issue issue) {
-            mIssue = issue;
-        }
     }
 
     private static class MapParseTask extends AsyncTask<Void, Void, Map> {
-        private WeakReference<MapParser> mMapParserWeakReference;
+        private MapParser mMapParser;
         private WeakReference<File> mDirWeakReference;
-        private WeakReference<MapParseListener> mMapParseListenerWeakReference;
+        private WeakReference<MapImportListener> mMapParseListenerWeakReference;
         private MapParseException mException;
 
-        MapParseTask(MapParser parser, File dir, MapParseListener listener) {
-            mMapParserWeakReference = new WeakReference<>(parser);
+        MapParseTask(MapParser parser, File dir, MapImportListener listener) {
+            mMapParser = parser;
             mDirWeakReference = new WeakReference<>(dir);
             mMapParseListenerWeakReference = new WeakReference<>(listener);
         }
@@ -162,15 +170,10 @@ public class MapImporter {
 
             if (dir == null) return null;
 
-            if (mMapParserWeakReference != null) {
-                MapParser mapParser = mMapParserWeakReference.get();
-                if (mapParser != null) {
-                    try {
-                        return mapParser.parse(dir);
-                    } catch (MapParseException e) {
-                        mException = e;
-                    }
-                }
+            try {
+                return mMapParser.parse(dir);
+            } catch (MapParseException e) {
+                mException = e;
             }
             return null;
         }
@@ -178,18 +181,19 @@ public class MapImporter {
         @Override
         protected void onPostExecute(Map map) {
             if (mMapParseListenerWeakReference == null) return;
-            MapParseListener mapParseListener = mMapParseListenerWeakReference.get();
-            if (mapParseListener == null) return;
+            MapImportListener mapImportListener = mMapParseListenerWeakReference.get();
 
             if (mException != null) {
-                MapLoader.getInstance().onError(mException);
-                mapParseListener.onError(mException);
+                MapLoader.getInstance().onMapImportError(mException);
+                if (mapImportListener != null) {
+                    mapImportListener.onMapImportError(mException);
+                }
                 return;
             }
 
-            if (map != null) {
-                MapLoader.getInstance().onMapParsed(map);
-                mapParseListener.onMapParsed(map);
+            MapLoader.getInstance().onMapImported(map, mMapParser.getStatus());
+            if (mapImportListener != null) {
+                mapImportListener.onMapImported(map, mMapParser.getStatus());
             }
         }
     }
@@ -199,8 +203,9 @@ public class MapImporter {
      * produced by libvips.
      */
     private static class LibvipsMapParser implements MapParser {
-        private BitmapFactory.Options options = new BitmapFactory.Options();
         private static final String THUMBNAIL_EXCLUDE_NAME = "blank";
+        private BitmapFactory.Options options = new BitmapFactory.Options();
+        private MapParserStatus mStatus;
 
         LibvipsMapParser() {
             options.inJustDecodeBounds = true;
@@ -220,6 +225,14 @@ public class MapImporter {
 
             if (parentFolder == null) {
                 throw new MapParseException(MapParseException.Issue.NO_PARENT_FOLDER_FOUND);
+            }
+
+            /* Check whether there is already a map.json file or not */
+            File existingJsonFile = new File(parentFolder, MapLoader.MAP_FILE_NAME);
+            if (existingJsonFile.exists()) {
+                MapLoader.getInstance().generateMaps(parentFolder);
+                mStatus = MapParserStatus.EXISTING_MAP;
+                return null;
             }
 
             /* Create levels */
@@ -276,14 +289,23 @@ public class MapImporter {
             /* The json file */
             File jsonFile = new File(parentFolder, MapLoader.MAP_FILE_NAME);
 
+            mStatus = MapParserStatus.NEW_MAP;
             return new Map(mapGson, jsonFile, thumbnail);
+        }
+
+        @Override
+        public MapParserStatus getStatus() {
+            return mStatus;
         }
 
         /**
          * The map can be contained in a subfolder inside the given directory.
+         *
          * @param imageFile an image in the file structure.
          */
-        private @Nullable File findParentFolder(File imageFile) {
+        private
+        @Nullable
+        File findParentFolder(File imageFile) {
             if (imageFile != null) {
                 try {
                     File parentFolder = imageFile.getParentFile().getParentFile().getParentFile();
@@ -297,6 +319,9 @@ public class MapImporter {
             return null;
         }
 
+        /**
+         * Find the first image which is named with an integer (so this excludes the thumbnail).
+         */
         private File findFirstImage(File dir, int depth, int maxDepth) {
             if (depth > maxDepth) return null;
 
@@ -390,7 +415,9 @@ public class MapImporter {
             return null;
         }
 
-        private @Nullable MapGson.MapSize computeMapSize(File lastLevel, MapGson.Level.TileSize lastLevelTileSize) {
+        private
+        @Nullable
+        MapGson.MapSize computeMapSize(File lastLevel, MapGson.Level.TileSize lastLevelTileSize) {
             File[] lineDirList = lastLevel.listFiles(DIR_FILTER);
             if (lineDirList == null || lineDirList.length == 0) {
                 return null;

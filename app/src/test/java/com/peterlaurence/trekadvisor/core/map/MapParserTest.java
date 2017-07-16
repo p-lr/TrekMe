@@ -40,6 +40,7 @@ public class MapParserTest {
         if (mJsonFilesDirectory != null) {
             File[] dirs = new File[1];
             dirs[0] = mJsonFilesDirectory;
+            final Map[] map = new Map[1];
 
             MapLoader.MapListUpdateListener mapListUpdateListener = new MapLoader.MapListUpdateListener() {
                 @Override
@@ -48,30 +49,37 @@ public class MapParserTest {
 
                     /* One map should be found */
                     assertEquals(1, mapList.size());
-                    Map map = mapList.get(0);
+                    map[0] = mapList.get(0);
+                }
+            };
 
+            MapLoader.MapRouteUpdateListener mapRouteUpdateListener = new MapLoader.MapRouteUpdateListener() {
+                @Override
+                public void onMapRouteUpdate() {
                     /* 2 routes should be found */
-                    assertEquals(2, map.getRoutes().size());
+                    assertEquals(2, map[0].getRoutes().size());
 
-                    RouteGson.Route route = map.getRoutes().get(0);
-                    assertEquals("A sample route", route.name);
+                    RouteGson.Route route = map[0].getRoutes().get(0);
+                    assertEquals("A test route 1", route.name);
                     assertEquals(true, route.visible);
                     List<MarkerGson.Marker> markers = route.route_markers;
                     assertEquals(2, markers.size());
 
                     MarkerGson.Marker marker1 = markers.get(0);
-                    assertEquals("First marker", marker1.name);
-                    assertEquals(12.6585, marker1.proj_x, 0);
+                    assertEquals("marker1", marker1.name);
+                    assertEquals(6198798.5047565, marker1.proj_x, 0);
 
                     MarkerGson.Marker marker2 = markers.get(1);
-                    assertEquals("Second marker", marker2.name);
-                    assertEquals(13.6585, marker2.proj_x, 0);
+                    assertEquals("marker2", marker2.name);
+                    assertEquals(-2418744.7142449305, marker2.proj_y, 0);
                 }
             };
 
             MapLoader mapLoader = MapLoader.getInstance();
+            mapLoader.setMapRouteUpdateListener(mapRouteUpdateListener);
             mapLoader.addMapListUpdateListener(mapListUpdateListener);
-            mapLoader.generateMaps(dirs);
+            mapLoader.clearAndGenerateMaps(dirs);
+            mapLoader.getRoutesForMap(map[0]);
         }
     }
 }

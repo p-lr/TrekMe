@@ -52,6 +52,7 @@
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Create map</string>
     <string name="import_btn">Import</string>
+    <string name="imported_untouched">Imported without modification</string>
 
     <!-- Menu of the map view fragment -->
     <string name="manage_tracks_menu">Manage tracks</string>

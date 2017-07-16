@@ -55,4 +55,5 @@
     <string name="track_name_change">Entrez le nom de la trace</string>
     <string name="track_rename_action">Renommer</string>
     <string name="mapview_orientation_enable">Show orientation</string>
+    <string name="imported_untouched">Carte importée sans modifications</string>
 </resources>

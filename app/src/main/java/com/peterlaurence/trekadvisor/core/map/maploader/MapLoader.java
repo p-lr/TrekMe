@@ -50,7 +50,7 @@ import java.util.List;
  *
  * @author peterLaurence
  */
-public class MapLoader implements MapImporter.MapParseListener {
+public class MapLoader implements MapImporter.MapImportListener {
 
     public static final String MAP_FILE_NAME = "map.json";
     public static final String MAP_MARKER_FILE_NAME = "markers.json";
@@ -91,6 +91,7 @@ public class MapLoader implements MapImporter.MapParseListener {
 
         mMapListUpdateListeners = new ArrayList<>();
         mMapArchiveListUpdateListeners = new ArrayList<>();
+        mMapList = new ArrayList<>();
     }
 
     public static MapLoader getInstance() {
@@ -115,20 +116,29 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     /**
-     * Update the internal list of {@link Map} : {@code mMapList}. Once done, all of the registered
-     * {@link MapListUpdateListener} are called.
+     * Clear and sets the internal list of {@link Map} : {@code mMapList}. <br>
+     * Once done, all of the registered {@link MapListUpdateListener} are called.
      *
      * @param dirs The directories in which to search for maps. If not specified, a default value is
      *             taken.
      */
-    public void generateMaps(File... dirs) {
+    public void clearAndGenerateMaps(File... dirs) {
         mMapList = new ArrayList<>();
-
-        MapUpdateTask updateTask = new MapUpdateTask(mMapListUpdateListeners, mGson, mMapList);
         if (dirs.length == 0) { // No directories specified? We take the default value.
             dirs = new File[1];
             dirs[0] = DEFAULT_MAPS_DIR;
         }
+        generateMaps(dirs);
+    }
+
+    /**
+     * Appends found {@link Map}s to the internal list of {@link Map} : {@code mMapList}.
+     * Once done, all of the registered {@link MapListUpdateListener} are called.
+     *
+     * @param dirs The directories in which to search for new maps.
+     */
+    public void generateMaps(File... dirs) {
+        MapUpdateTask updateTask = new MapUpdateTask(mMapListUpdateListeners, mGson, mMapList);
         updateTask.execute(dirs);
     }
 
@@ -225,7 +235,9 @@ public class MapLoader implements MapImporter.MapParseListener {
      * structure.
      */
     @Override
-    public void onMapParsed(Map map) {
+    public void onMapImported(Map map, MapImporter.MapParserStatus status) {
+        if (map == null) return;
+
         /* Set BitMapProvider */
         map.setBitmapProvider(makeBitmapProvider(map));
 
@@ -246,7 +258,7 @@ public class MapLoader implements MapImporter.MapParseListener {
     }
 
     @Override
-    public void onError(MapImporter.MapParseException e) {
+    public void onMapImportError(MapImporter.MapParseException e) {
         Log.e(TAG, "Error while parsing a map");
         Log.e(TAG, e.getMessage(), e);
     }

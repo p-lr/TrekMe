@@ -1,0 +1,55 @@
+{
+  "calibration": {
+    "calibration_method": "SIMPLE_2_POINTS",
+    "calibration_points": [
+      {
+        "proj_x": 6189131.59,
+        "proj_y": -2410441.24,
+        "x": 0.029208096590909092,
+        "y": 0.04261363636363636
+      },
+      {
+        "proj_x": 6210836.78,
+        "proj_y": -2433331.0399999996,
+        "x": 0.8359703584150835,
+        "y": 0.8932663310657848
+      }
+    ],
+    "projection": {
+      "projection_name": "Pseudo Mercator"
+    }
+  },
+  "levels": [
+    {
+      "level": 0,
+      "tile_size": {
+        "x": 256,
+        "y": 256
+      }
+    },
+    {
+      "level": 1,
+      "tile_size": {
+        "x": 256,
+        "y": 256
+      }
+    },
+    {
+      "level": 2,
+      "tile_size": {
+        "x": 256,
+        "y": 256
+      }
+    }
+  ],
+  "name": "La Réunion - Est",
+  "provider": {
+    "generated_by": "VIPS",
+    "image_extension": ".jpg"
+  },
+  "size": {
+    "x": 11264,
+    "y": 11264
+  },
+  "thumbnail": "piton_de_la_fournaise.jpg"
+}

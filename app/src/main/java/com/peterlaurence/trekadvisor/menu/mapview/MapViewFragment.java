@@ -438,11 +438,6 @@ public class MapViewFragment extends Fragment implements
             tileView.defineBounds(0, 0, 1, 1);
         }
 
-        /* Add a down-sample image */
-//        ImageView downSampleImage = new ImageView(context);
-//        downSampleImage.setImageBitmap(map.getDownSample());
-//        tileView.addView(downSampleImage, 0);
-
         /* The BitmapProvider */
         tileView.setBitmapProvider(map.getBitmapProvider());
 

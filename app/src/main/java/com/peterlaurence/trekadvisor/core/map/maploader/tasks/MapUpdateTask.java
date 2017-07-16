@@ -79,6 +79,13 @@ public class MapUpdateTask extends AsyncTask<File, Void, Void> {
     private void findMaps(File root, int depth) {
         if (depth > MAX_RECURSION_DEPTH) return;
 
+        /* Don't allow nested maps */
+        File rootJsonFile = new File(root, MapLoader.MAP_FILE_NAME);
+        if (rootJsonFile.exists() && rootJsonFile.isFile()) {
+            mapFilesFoundList.add(rootJsonFile);
+            return;
+        }
+
         File[] list = root.listFiles();
         if (list == null) {
             return;
@@ -86,14 +93,7 @@ public class MapUpdateTask extends AsyncTask<File, Void, Void> {
 
         for (File f : list) {
             if (f.isDirectory()) {
-                File jsonFile = new File(f, MapLoader.MAP_FILE_NAME);
-
-                /* Don't allow nested maps */
-                if (jsonFile.exists() && jsonFile.isFile()) {
-                    mapFilesFoundList.add(jsonFile);
-                } else {
-                    findMaps(f, depth + 1);
-                }
+                findMaps(f, depth + 1);
             }
         }
     }

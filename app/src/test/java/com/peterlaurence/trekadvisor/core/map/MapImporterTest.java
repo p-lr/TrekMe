@@ -3,6 +3,7 @@ package com.peterlaurence.trekadvisor.core.map;
 
 import com.peterlaurence.trekadvisor.BuildConfig;
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,11 +40,12 @@ public class MapImporterTest {
     @Test
     public void libvipsMapImporter() {
         if (mMapsDirectory != null) {
-            final File libVipsMapDir = new File(mMapsDirectory, "libvips");
+            final File libVipsMapDir = new File(mMapsDirectory, "libvips-no-json");
+            final File expectedParentFolder = new File(libVipsMapDir, "mapname");
             if (libVipsMapDir.exists()) {
-                MapImporter.MapParseListener dummyMapParseListener = new MapImporter.MapParseListener() {
+                MapImporter.MapImportListener dummyMapImportListener = new MapImporter.MapImportListener() {
                     @Override
-                    public void onMapParsed(Map map) {
+                    public void onMapImported(Map map, MapImporter.MapParserStatus status) {
                         assertNotNull(map);
 
                         /* A subfolder under "libvips" subdirectory has been voluntarily created, to test
@@ -51,7 +53,6 @@ public class MapImporterTest {
                          * extracted from an archive, we don't know whether the map was zipped within a
                          * subdirectory or not. A way to know that is to analyse the extracted file structure.
                          */
-                        File expectedParentFolder = new File(libVipsMapDir, "mapname");
                         assertEquals(expectedParentFolder, map.getDirectory());
                         assertEquals("mapname", map.getName());
 
@@ -62,12 +63,39 @@ public class MapImporterTest {
                     }
 
                     @Override
-                    public void onError(MapImporter.MapParseException e) {
+                    public void onMapImportError(MapImporter.MapParseException e) {
                         fail();
                     }
                 };
 
-                MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, dummyMapParseListener);
+                /* Previous execution of this test created a map.json file. So delete it. */
+                File existingJsonFile = new File(expectedParentFolder, MapLoader.MAP_FILE_NAME);
+                if (existingJsonFile.exists()) {
+                    existingJsonFile.delete();
+                }
+                MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, dummyMapImportListener);
+            }
+        }
+    }
+
+    @Test
+    public void existingMapImport() {
+        if (mMapsDirectory != null) {
+            final File libVipsMapDir = new File(mMapsDirectory, "libvips-with-json");
+            if (libVipsMapDir.exists()) {
+                MapLoader.MapListUpdateListener mapListUpdateListener = new MapLoader.MapListUpdateListener() {
+                    @Override
+                    public void onMapListUpdate(boolean mapsFound) {
+                        assertEquals(true, mapsFound);
+                        Map map = MapLoader.getInstance().getMap("La Réunion - Est");
+                        assertNotNull(map);
+                        assertEquals(3, map.getMapGson().levels.size());
+                    }
+                };
+                MapLoader mapLoader = MapLoader.getInstance();
+                mapLoader.addMapListUpdateListener(mapListUpdateListener);
+
+                MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, null);
             }
         }
     }

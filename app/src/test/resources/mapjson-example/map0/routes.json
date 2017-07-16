@@ -1,0 +1,48 @@
+{
+  "routes": [
+    {
+      "name": "A test route 1",
+      "route_markers": [
+        {
+          "comment": null,
+          "lat": 0.0,
+          "lon": 0.0,
+          "name": "marker1",
+          "proj_x": 6198798.5047565,
+          "proj_y": -2418744.7142449305
+        },
+        {
+          "comment": null,
+          "lat": 0.0,
+          "lon": 0.0,
+          "name": "marker2",
+          "proj_x": 6198798.5047565,
+          "proj_y": -2418744.7142449305
+        }
+      ],
+      "visible": true
+    },
+    {
+      "name": "A test route 2",
+      "route_markers": [
+        {
+          "comment": null,
+          "lat": 0.0,
+          "lon": 0.0,
+          "name": "marker3",
+          "proj_x": 6198798.5047565,
+          "proj_y": -2418744.7142449305
+        },
+        {
+          "comment": null,
+          "lat": 0.0,
+          "lon": 0.0,
+          "name": "marker4",
+          "proj_x": 6198798.5047565,
+          "proj_y": -2418744.7142449305
+        }
+      ],
+      "visible": true
+    }
+  ]
+}

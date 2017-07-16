@@ -37,7 +37,7 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
     private List<MapArchive> mMapArchiveList;
 
     public static class MapArchiveViewHolder extends RecyclerView.ViewHolder implements UnzipTask.UnzipProgressionListener,
-            MapImporter.MapParseListener {
+            MapImporter.MapImportListener {
         CardView cardView;
         GridLayout gridLayout;
         TextView mapArchiveName;
@@ -77,7 +77,6 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
         @Override
         public void onUnzipFinished(File outputDirectory) {
             progressBarHorizontal.setVisibility(View.GONE);
-            progressBarIndMapCreation.setVisibility(View.GONE);
             progressBarIndUnzip.setVisibility(View.GONE);
             extractionLabel.setVisibility(View.VISIBLE);
             mapCreationLabel.setVisibility(View.VISIBLE);
@@ -86,15 +85,21 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
             /* Import the extracted map */
             // TODO : for instance we only import LIBVIPS maps
             MapImporter.importFromFile(outputDirectory, MapImporter.MapProvider.LIBVIPS, this);
+            progressBarIndMapCreation.setVisibility(View.VISIBLE);
+            mapCreationLabel.setVisibility(View.VISIBLE);
         }
 
         @Override
-        public void onMapParsed(Map map) {
+        public void onMapImported(Map map, MapImporter.MapParserStatus status) {
+            if (status == MapImporter.MapParserStatus.EXISTING_MAP) {
+                mapCreationLabel.setText(R.string.imported_untouched);
+            }
+            progressBarIndMapCreation.setVisibility(View.GONE);
             iconMapCreated.setVisibility(View.VISIBLE);
         }
 
         @Override
-        public void onError(MapImporter.MapParseException e) {
+        public void onMapImportError(MapImporter.MapParseException e) {
             // TODO : show an error message that something went wrong
         }
     }
@@ -156,8 +161,6 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
                     mapArchiveViewHolder.gridLayout.setVisibility(View.VISIBLE);
                     mapArchiveViewHolder.progressBarHorizontal.setVisibility(View.VISIBLE);
                     mapArchiveViewHolder.progressBarIndUnzip.setVisibility(View.VISIBLE);
-                    mapArchiveViewHolder.progressBarIndMapCreation.setVisibility(View.VISIBLE);
-                    mapArchiveViewHolder.mapCreationLabel.setVisibility(View.VISIBLE);
                     mapArchiveViewHolder.extractionLabel.setVisibility(View.VISIBLE);
 
                     mapArchive.unZip(mapArchiveViewHolder);
