@@ -210,6 +210,7 @@ public class MapViewFragment extends Fragment implements
 
     @Override
     public void onPositionTouch() {
+        mTileView.setScale(1f);
         centerOnPosition();
     }
 
