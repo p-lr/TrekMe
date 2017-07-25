@@ -57,6 +57,7 @@ public class MapViewFragment extends Fragment implements
         FrameLayoutMapView.LockViewListener {
 
     public static final String TAG = "MapViewFragment";
+    private static final String WAS_DISPLAYING_ORIENTATION = "wasDisplayingOrientation";
     private FrameLayoutMapView rootView;
     private TileViewExtended mTileView;
     private Map mMap;
@@ -129,13 +130,23 @@ public class MapViewFragment extends Fragment implements
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        /* Get the speed and distances indicators from the main layout */
+        /* Get the speed, distance and orientation indicators from the main layout */
         mSpeedListener = rootView.getSpeedIndicator();
         mDistanceListener = rootView.getDistanceIndicator();
+        mPositionMarker = rootView.getPositionMarker();
 
         /* Create the instance of the OrientationSensor */
         if (mOrientationSensor == null) {
             mOrientationSensor = new OrientationSensor(getActivity());
+
+            /* Register the position marker as an OrientationListener */
+            mOrientationSensor.setOrientationListener((OrientationSensor.OrientationListener) mPositionMarker);
+            if (savedInstanceState != null) {
+                boolean shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION);
+                if (shouldDisplayOrientation) {
+                    mOrientationSensor.start();
+                }
+            }
         }
 
         /* Create the marker layer */
@@ -242,6 +253,7 @@ public class MapViewFragment extends Fragment implements
         if (hidden) {
             mSpeedListener.hideSpeed();
             mDistanceLayer.hide();
+            mOrientationSensor.stop();
         } else {
             updateMapIfNecessary();
         }
@@ -294,6 +306,7 @@ public class MapViewFragment extends Fragment implements
         mMapProvider = null;
         mSpeedListener = null;
         mOrientationSensor.stop();
+        mOrientationSensor = null;
     }
 
     @Override
@@ -377,11 +390,6 @@ public class MapViewFragment extends Fragment implements
         rootView.addView(mTileView, 0);
         mTileView.setSingleTapListener(rootView);
         mTileView.setScrollListener(rootView);
-
-        /**
-         * Register the position marker as an {@link OrientationListener}
-         */
-        mOrientationSensor.setOrientationListener((OrientationSensor.OrientationListener) mPositionMarker);
     }
 
     private void removeCurrentTileView() {
@@ -442,8 +450,13 @@ public class MapViewFragment extends Fragment implements
         /* The BitmapProvider */
         tileView.setBitmapProvider(map.getBitmapProvider());
 
-        /* The position reticule */
-        mPositionMarker = rootView.getDetachedPositionMarker();
+        /* The position + orientation reticule */
+        try {
+            ViewGroup parent = (ViewGroup) mPositionMarker.getParent();
+            parent.removeView(mPositionMarker);
+        } catch (Exception e) {
+            // don't care
+        }
         tileView.addMarker(mPositionMarker, 0, 0, -0.5f, -0.5f);
 
         /* Remove the existing TileView, then add the new one */
@@ -456,8 +469,10 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, mOrientationSensor.isStarted());
     }
 
     /**

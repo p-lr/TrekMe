@@ -146,13 +146,7 @@ public class FrameLayoutMapView extends FrameLayout implements
         mLockViewListener = listener;
     }
 
-    public View getDetachedPositionMarker() {
-        try {
-            ViewGroup parent = (ViewGroup) mPositionMarker.getParent();
-            parent.removeView(mPositionMarker);
-        } catch (Exception e) {
-            // don't care
-        }
+    public View getPositionMarker() {
         return mPositionMarker;
     }
 

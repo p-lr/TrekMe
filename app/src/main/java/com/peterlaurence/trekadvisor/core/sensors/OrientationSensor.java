@@ -6,9 +6,12 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
 import android.view.Surface;
 
-import java.lang.ref.WeakReference;
 
 /**
  * A facility object that retrieves the orientation of the phone.
@@ -17,19 +20,17 @@ import java.lang.ref.WeakReference;
  */
 public class OrientationSensor implements SensorEventListener {
 
-    private WeakReference<OrientationListener> mOrientationListenerWeakReference;
+    private OrientationListener mOrientationListener;
 
-    /* object internals */
+    private HandlerThread mOrientationThread;
+    private LimitedHandler mHandler;
     private boolean mStarted;
     private Activity mActivity;
-    private float[] orientationValues;
-    private float[] rMat;
 
 
     public OrientationSensor(Activity context) {
         mActivity = context;
-        orientationValues = new float[3];
-        rMat = new float[9];
+        mStarted = false;
 
         start();
     }
@@ -40,7 +41,7 @@ public class OrientationSensor implements SensorEventListener {
      * @param listener a {@link OrientationListener} object
      */
     public void setOrientationListener(OrientationListener listener) {
-        mOrientationListenerWeakReference = new WeakReference<>(listener);
+        mOrientationListener = listener;
         if (mStarted) {
             listener.onOrientationEnable();
         } else {
@@ -62,43 +63,133 @@ public class OrientationSensor implements SensorEventListener {
     }
 
     public void start() {
-        mStarted = true;
+        /* If no listener, no need to go further */
+        if (mOrientationListener == null) return;
 
-        /* First subscribe to orientation events */
+        mOrientationThread = new HandlerThread("Orientation calculation thread", Thread.MIN_PRIORITY);
+        mOrientationThread.start();
+
+        /* Create a handler on the ui thread */
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        /* This runnable will be executed on ui thread after each distance calculation */
+        UpdateOrientationListenerRunnable updateUiRunnable = new UpdateOrientationListenerRunnable(mOrientationListener);
+
+        /* The task to be executed on the dedicated thread */
+        OrientationCalculationRunnable runnable = new OrientationCalculationRunnable(mActivity, handler, updateUiRunnable);
+
+        mHandler = new LimitedHandler(runnable);
+
+        /* Subscribe to orientation events */
         SensorManager sensorManager = (SensorManager) mActivity.getSystemService(Context.SENSOR_SERVICE);
         Sensor mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        sensorManager.registerListener(this, mSensor, 100);
+        sensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_UI);
 
         /* Then update the listener (view) */
-        if (mOrientationListenerWeakReference != null) {
-            OrientationListener listener = mOrientationListenerWeakReference.get();
-            if (listener != null) {
-                listener.onOrientationEnable();
-            }
+        if (mOrientationListener != null) {
+            mOrientationListener.onOrientationEnable();
         }
+
+        mStarted = true;
     }
 
     public void stop() {
-        mStarted = false;
-
         /* First update the listener (view) */
-        if (mOrientationListenerWeakReference != null) {
-            OrientationListener listener = mOrientationListenerWeakReference.get();
-            if (listener != null) {
-                listener.onOrientationDisable();
-            }
+        if (mOrientationListener != null) {
+            mOrientationListener.onOrientationDisable();
         }
 
         /* Then unsubscribe */
         SensorManager sensorManager = (SensorManager) mActivity.getSystemService(Context.SENSOR_SERVICE);
         sensorManager.unregisterListener(this);
+
+        /* Stop dedicated calculation thread */
+        if (mOrientationThread != null) {
+            mOrientationThread.quit();
+        }
+        mOrientationThread = null;
+        mHandler = null;
+
+        mStarted = false;
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+        /* Schedule orientation calculation */
+        if (mHandler != null) {
+            mHandler.submit(event);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    public interface OrientationListener {
+        void onOrientation(int azimuth);
+
+        void onOrientationEnable();
+
+        void onOrientationDisable();
+    }
+
+    /**
+     * A custom {@link Handler} that executes a {@link OrientationCalculationRunnable} at a maximum rate. <p>
+     * To submit a new orientation calculation, call {@link #submit(SensorEvent)}.
+     */
+    private static class LimitedHandler extends Handler {
+        private static final int ORIENTATION_CALCULATION_TIMEOUT = 32;
+        private static final int MESSAGE = 0;
+        private OrientationCalculationRunnable mOrientationRunnable;
+
+        LimitedHandler(OrientationCalculationRunnable task) {
+            mOrientationRunnable = task;
+        }
+
+        void submit(SensorEvent event) {
+            mOrientationRunnable.setSensorValues(event.values);
+            if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR && !hasMessages(MESSAGE)) {
+                sendEmptyMessageDelayed(MESSAGE, ORIENTATION_CALCULATION_TIMEOUT);
+            }
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            mOrientationRunnable.run();
+        }
+    }
+
+    /**
+     * Process the values from the {@code Sensor.TYPE_ROTATION_VECTOR}. <br>
+     * This objects holds a reference to an {@link Activity}. Be careful not to hold a reference to
+     * it upon configuration change.
+     */
+    private static class OrientationCalculationRunnable implements Runnable {
+        private Activity mActivity;
+        private Handler mPostExecuteHandler;
+        private UpdateOrientationListenerRunnable mPostExecuteTask;
+        private transient float[] mValues;
+        private float[] mOrientationValues;
+        private float[] mrMat;
+
+        OrientationCalculationRunnable(Activity activity, Handler postExecuteHandler,
+                                       UpdateOrientationListenerRunnable postExecuteTask) {
+            mOrientationValues = new float[3];
+            mrMat = new float[9];
+            mActivity = activity;
+            mPostExecuteHandler = postExecuteHandler;
+            mPostExecuteTask = postExecuteTask;
+        }
+
+        void setSensorValues(float[] values) {
+            mValues = values;
+        }
+
+        @Override
+        public void run() {
             /* Calculate the rotation matrix */
-            SensorManager.getRotationMatrixFromVector(rMat, event.values);
+            SensorManager.getRotationMatrixFromVector(mrMat, mValues);
 
             int screenRotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
             int fix = 0;
@@ -120,28 +211,34 @@ public class OrientationSensor implements SensorEventListener {
             }
 
             /* Get the azimuth value (orientation[0]) in degree */
-            int mAzimuth = (int) (Math.toDegrees(SensorManager.getOrientation(rMat, orientationValues)[0]) + 360 + fix) % 360;
+            int azimuth = (int) (Math.toDegrees(SensorManager.getOrientation(mrMat, mOrientationValues)[0]) + 360 + fix) % 360;
 
-            /* Call the listener */
-            if (mOrientationListenerWeakReference != null) {
-                OrientationListener listener = mOrientationListenerWeakReference.get();
-                if (listener != null) {
-                    listener.onOrientation(mAzimuth);
-                }
-            }
+            /* Post task on ui thread */
+            mPostExecuteTask.setAzimuth(azimuth);
+            mPostExecuteHandler.post(mPostExecuteTask);
         }
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    /**
+     * This task is executed on ui thread after each orientation calculation.
+     */
+    private static class UpdateOrientationListenerRunnable implements Runnable {
+        private int mAzimuth;
+        private OrientationListener mOrientationListener;
 
-    }
+        UpdateOrientationListenerRunnable(OrientationListener listener) {
+            mOrientationListener = listener;
+        }
 
-    public interface OrientationListener {
-        void onOrientation(int azimuth);
+        void setAzimuth(int azimuth) {
+            mAzimuth = azimuth;
+        }
 
-        void onOrientationEnable();
-
-        void onOrientationDisable();
+        @Override
+        public void run() {
+            if (mOrientationListener != null) {
+                mOrientationListener.onOrientation(mAzimuth);
+            }
+        }
     }
 }
