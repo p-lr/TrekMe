@@ -42,8 +42,6 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
     private MapCalibrationRequestListener mMapCalibrationRequestListener;
     private MapLoader.DeleteMapListener mDeleteMapListener;
 
-    private LinearLayout rootView;
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -55,7 +53,9 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
     }
 
     /**
-     * Factory method to create a new instance of this fragment.
+     * Factory method to create a new instance of this fragment. <br>
+     * Arguments supplied here will be retained across fragment destroy and
+     * creation.
      *
      * @param mapName the name of the {@link Map}
      * @return A new instance of {@code MapSettingsFragment}
@@ -68,15 +68,14 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
         return fragment;
     }
 
+    /**
+     * Get the {@link Map} name from arguments bundle and init a {@code WeakReference}
+     * from it.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
 
-        /**
-         * Get the {@link Map} name from arguments bundle and init a {@code WeakReference}
-         * from it.
-         */
         Bundle args = getArguments();
         String mapName = "";
         if (args != null) {
@@ -91,11 +90,7 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (savedInstanceState != null && rootView != null) {
-            return rootView;
-        }
-
-        rootView = (LinearLayout) inflater.inflate(R.layout.fragment_map_settings, container, false);
+        LinearLayout rootView = (LinearLayout) inflater.inflate(R.layout.fragment_map_settings, container, false);
         return rootView;
     }
 

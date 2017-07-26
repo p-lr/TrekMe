@@ -437,7 +437,7 @@ public class MainActivity extends AppCompatActivity
         transaction.show(mapSettingsFragment);
 
         /* Manually manage the back action*/
-        mBackFragmentTag = MAP_FRAGMENT_TAG;
+        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -521,6 +521,12 @@ public class MainActivity extends AppCompatActivity
         Fragment mapImportFragment = fragmentManager.findFragmentByTag(MAP_IMPORT_FRAGMENT_TAG);
         if (mapImportFragment != null) {
             transaction.remove(mapImportFragment);
+        }
+
+        /* Remove the map-settings fragment */
+        Fragment mapSettingsFragment = fragmentManager.findFragmentByTag(MAP_SETTINGS_FRAGMENT_TAG);
+        if(mapSettingsFragment != null) {
+            transaction.remove(mapSettingsFragment);
         }
 
         transaction.commit();
