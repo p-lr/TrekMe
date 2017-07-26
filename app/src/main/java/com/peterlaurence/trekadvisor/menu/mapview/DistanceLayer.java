@@ -107,10 +107,12 @@ public class DistanceLayer {
      * Hide the two {@link DistanceMarker} and the {@link DistanceView}.
      */
     public void hide() {
-        mTileView.removeMarker(mDistanceMarkerFirst);
-        mTileView.removeMarker(mDistanceMarkerSecond);
-        mTileView.removeView(mDistanceView);
-        mTileView.removeScaleChangeLisetner(mDistanceView);
+        if (mTileView != null) {
+            mTileView.removeMarker(mDistanceMarkerFirst);
+            mTileView.removeMarker(mDistanceMarkerSecond);
+            mTileView.removeView(mDistanceView);
+            mTileView.removeScaleChangeLisetner(mDistanceView);
+        }
 
         mDistanceMarkerFirst = null;
         mDistanceMarkerSecond = null;
@@ -120,7 +122,6 @@ public class DistanceLayer {
         /* Stop the thread that process distance calculation */
         stopDistanceCalculation();
 
-        /* */
         mDistanceListener.hideDistance();
     }
 

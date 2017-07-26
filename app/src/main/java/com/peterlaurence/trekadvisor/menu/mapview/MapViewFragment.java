@@ -465,7 +465,9 @@ public class MapViewFragment extends Fragment implements
     }
 
     public void centerOnPosition() {
-        mTileView.moveToMarker(mPositionMarker, true);
+        if (mTileView != null) {
+            mTileView.moveToMarker(mPositionMarker, true);
+        }
     }
 
     @Override

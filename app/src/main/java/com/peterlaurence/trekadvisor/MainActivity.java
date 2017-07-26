@@ -661,7 +661,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void removeLocationListener(LocationListener listener) {
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, listener);
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, listener);
+        }
     }
 
     @Override
