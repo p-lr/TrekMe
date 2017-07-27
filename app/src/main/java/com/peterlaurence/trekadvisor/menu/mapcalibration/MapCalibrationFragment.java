@@ -3,6 +3,8 @@ package com.peterlaurence.trekadvisor.menu.mapcalibration;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +43,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     private CalibrationMarker mCalibrationMarker;
     private List<MapGson.Calibration.CalibrationPoint> mCalibrationPointList;
     private int mCurrentCalibrationPoint;
+    private View mView;
 
     /**
      * Before telling the {@link TileView} to move a marker, we save its relative coordinates so we
@@ -77,6 +80,13 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mView = view;
     }
 
     @Override
@@ -303,8 +313,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
     private void showSaveConfirmation() {
         String saveOkMsg = getString(R.string.calibration_point_saved);
-        Toast toast = Toast.makeText(this.getContext(), saveOkMsg, Toast.LENGTH_SHORT);
-        toast.show();
+        Snackbar snackbar = Snackbar.make(mView, saveOkMsg, Snackbar.LENGTH_SHORT);
+        snackbar.show();
     }
 
 

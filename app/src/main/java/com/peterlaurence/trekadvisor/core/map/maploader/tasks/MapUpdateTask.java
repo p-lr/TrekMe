@@ -69,7 +69,7 @@ public class MapUpdateTask extends AsyncTask<File, Void, Void> {
                 map.setBitmapProvider(MapLoader.makeBitmapProvider(map));
 
                 mMapList.add(map);
-            } catch (JsonSyntaxException e) {
+            } catch (JsonSyntaxException | NullPointerException e) {
                 Log.e(TAG, e.getMessage(), e);
             }
         }
