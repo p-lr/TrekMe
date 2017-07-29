@@ -55,7 +55,9 @@
             android:layout_marginTop="8dp"
             android:visibility="gone"
             card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
-            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name" />
+            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintVertical_bias="0.0"/>
 
         <ProgressBar
             android:id="@+id/extraction_ind_progressbar"
@@ -67,6 +69,8 @@
             android:visibility="gone"
             card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
             card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintVertical_bias="0.0"
             tools:layout_editor_absoluteX="21dp"
             tools:layout_height="8dp"
             tools:layout_width="8dp" />
@@ -81,19 +85,23 @@
             android:visibility="gone"
             card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
             card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintVertical_bias="0.0"
             tools:layout_height="8dp"
             tools:layout_width="8dp" />
 
         <ImageView
             android:id="@+id/extraction_error"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="18sp"
+            android:layout_height="18sp"
             android:layout_marginTop="24dp"
-            android:src="@drawable/ic_error_black_18sp"
+            android:src="@drawable/ic_error_outline_black_24dp"
             android:tint="@color/colorError"
             android:visibility="gone"
             card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
             card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintVertical_bias="0.0"
             tools:layout_editor_absoluteX="5dp"
             tools:layout_editor_absoluteY="86dp" />
 
@@ -107,6 +115,8 @@
             android:visibility="gone"
             card_view:layout_constraintLeft_toLeftOf="parent"
             card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintVertical_bias="0.0"
             tools:layout_editor_absoluteX="5dp" />
 
         <ProgressBar
@@ -115,7 +125,7 @@
             android:layout_width="18sp"
             android:layout_height="18sp"
             android:layout_gravity="center"
-            android:layout_marginLeft="0dp"
+            android:layout_marginStart="0dp"
             android:layout_marginTop="0dp"
             android:visibility="gone"
             card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
@@ -129,8 +139,6 @@
             android:visibility="gone"
             card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
             card_view:layout_constraintTop_toBottomOf="@+id/extraction_done"
-            card_view:layout_constraintBottom_toTopOf="@id/unzip_archive_btn"
-            card_view:layout_constraintVertical_bias="0.0"
             tools:layout_editor_absoluteX="5dp"
             tools:layout_editor_absoluteY="86dp" />
 
@@ -143,12 +151,8 @@
             android:visibility="gone"
             card_view:layout_constraintTop_toBottomOf="@+id/extraction_done"
             card_view:layout_constraintLeft_toLeftOf="parent"
-            card_view:layout_constraintBottom_toTopOf="@id/unzip_archive_btn"
-            card_view:layout_constraintVertical_bias="0.0"
             tools:layout_height="16dp"
             tools:layout_width="36dp" />
-
-
     </android.support.constraint.ConstraintLayout>
 
 

@@ -103,6 +103,7 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
             progressBarIndMapCreation.setVisibility(View.GONE);
             iconMapCreated.setVisibility(View.VISIBLE);
             mapCreationLabel.setVisibility(View.VISIBLE);
+            importButton.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -164,7 +165,13 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
                 MapArchiveAdapter mapArchiveAdapter = mMapArchiveAdapterWeakReference.get();
 
                 if (mapArchiveAdapter != null && mapArchiveViewHolder != null) {
+                    mapArchiveViewHolder.importButton.setVisibility(View.GONE);
                     MapArchive mapArchive = mapArchiveAdapter.mMapArchiveList.get(mapArchiveViewHolder.getAdapterPosition());
+                    mapArchiveViewHolder.iconMapExtracted.setVisibility(View.GONE);
+                    mapArchiveViewHolder.extractionLabel.setVisibility(View.GONE);
+                    mapArchiveViewHolder.iconMapExtractionError.setVisibility(View.GONE);
+                    mapArchiveViewHolder.iconMapCreated.setVisibility(View.GONE);
+                    mapArchiveViewHolder.mapCreationLabel.setVisibility(View.GONE);
                     mapArchiveViewHolder.progressBarHorizontal.setVisibility(View.VISIBLE);
                     mapArchiveViewHolder.progressBarIndUnzip.setVisibility(View.VISIBLE);
                     mapArchiveViewHolder.extractionLabel.setVisibility(View.VISIBLE);
