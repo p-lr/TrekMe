@@ -39,11 +39,11 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
     public static class MapArchiveViewHolder extends RecyclerView.ViewHolder implements UnzipTask.UnzipProgressionListener,
             MapImporter.MapImportListener {
         CardView cardView;
-        GridLayout gridLayout;
         TextView mapArchiveName;
         ProgressBar progressBarHorizontal;
         ProgressBar progressBarIndUnzip;
         ImageView iconMapExtracted;
+        ImageView iconMapExtractionError;
         TextView extractionLabel;
         ProgressBar progressBarIndMapCreation;
         ImageView iconMapCreated;
@@ -54,13 +54,13 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
         public MapArchiveViewHolder(View itemView) {
             super(itemView);
             cardView = (CardView) itemView.findViewById(R.id.cv_map_archive);
-            gridLayout = (GridLayout) itemView.findViewById(R.id.status_grid);
             mapArchiveName = (TextView) itemView.findViewById(R.id.map_archive_name);
             progressBarHorizontal = (ProgressBar) itemView.findViewById(R.id.unzip_progressbar);
             progressBarHorizontal.setMax(100);
             progressBarIndUnzip = (ProgressBar) itemView.findViewById(R.id.extraction_ind_progressbar);
             progressBarIndUnzip.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
             iconMapExtracted = (ImageView) itemView.findViewById(R.id.extraction_done);
+            iconMapExtractionError = (ImageView) itemView.findViewById(R.id.extraction_error);
             extractionLabel = (TextView) itemView.findViewById(R.id.extraction_txtview);
             progressBarIndMapCreation = (ProgressBar) itemView.findViewById(R.id.mapcreation_ind_progressbar);
             progressBarIndMapCreation.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
@@ -86,7 +86,13 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
             // TODO : for instance we only import LIBVIPS maps
             MapImporter.importFromFile(outputDirectory, MapImporter.MapProvider.LIBVIPS, this);
             progressBarIndMapCreation.setVisibility(View.VISIBLE);
-            mapCreationLabel.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onUnzipError() {
+            progressBarIndUnzip.setVisibility(View.GONE);
+            iconMapExtractionError.setVisibility(View.VISIBLE);
+            extractionLabel.setText(R.string.extraction_error);
         }
 
         @Override
@@ -96,6 +102,7 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
             }
             progressBarIndMapCreation.setVisibility(View.GONE);
             iconMapCreated.setVisibility(View.VISIBLE);
+            mapCreationLabel.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -158,7 +165,6 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
 
                 if (mapArchiveAdapter != null && mapArchiveViewHolder != null) {
                     MapArchive mapArchive = mapArchiveAdapter.mMapArchiveList.get(mapArchiveViewHolder.getAdapterPosition());
-                    mapArchiveViewHolder.gridLayout.setVisibility(View.VISIBLE);
                     mapArchiveViewHolder.progressBarHorizontal.setVisibility(View.VISIBLE);
                     mapArchiveViewHolder.progressBarIndUnzip.setVisibility(View.VISIBLE);
                     mapArchiveViewHolder.extractionLabel.setVisibility(View.VISIBLE);

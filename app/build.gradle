@@ -31,4 +31,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:11.0.2'
     compile project(':tileview-release')
     compile 'com.google.code.gson:gson:2.7'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 }

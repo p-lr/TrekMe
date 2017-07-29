@@ -11,11 +11,11 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
- * Utility class to unzip
+ * Utility class to unzip a map archive.
  *
  * @author peterLaurence on 12/06/16.
  */
-public class UnzipTask extends AsyncTask<Void, Integer, Void> {
+public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
     public interface UnzipProgressionListener {
         void onProgress(int p);
 
@@ -24,6 +24,11 @@ public class UnzipTask extends AsyncTask<Void, Integer, Void> {
          * @param outputDirectory the (just created) parent folder
          */
         void onUnzipFinished(File outputDirectory);
+
+        /**
+         * Called whenever an error happens during extraction.
+         */
+        void onUnzipError();
     }
 
     private File mZipFile;
@@ -37,7 +42,7 @@ public class UnzipTask extends AsyncTask<Void, Integer, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected Boolean doInBackground(Void... params) {
         byte[] buffer = new byte[1024];
 
         try {
@@ -76,15 +81,17 @@ public class UnzipTask extends AsyncTask<Void, Integer, Void> {
                     fos.close();
                 } catch (IOException e) {
                     // something went wrong during extraction
+                    return false;
                 }
             }
 
             zis.closeEntry();
             zis.close();
         } catch (IOException ex) {
-            // don't care
+            return false;
         }
-        return null;
+
+        return true;
     }
 
     @Override
@@ -93,7 +100,11 @@ public class UnzipTask extends AsyncTask<Void, Integer, Void> {
     }
 
     @Override
-    protected void onPostExecute(Void result) {
-        mUnzipProgressionListener.onUnzipFinished(mOutputFolder);
+    protected void onPostExecute(Boolean result) {
+        if (result) {
+            mUnzipProgressionListener.onUnzipFinished(mOutputFolder);
+        } else {
+            mUnzipProgressionListener.onUnzipError();
+        }
     }
 }

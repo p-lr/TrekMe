@@ -1,109 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cv_map_archive"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
+
     card_view:cardCornerRadius="5dp">
 
-    <RelativeLayout
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/map_archive_contraint_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true"
-        android:padding="0dp">
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="0dp">
+
+        <Button
+            android:id="@+id/unzip_archive_btn"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/import_btn"
+            card_view:layout_constraintLeft_toLeftOf="parent"
+            card_view:layout_constraintBottom_toBottomOf="parent"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/map_archive_name"
-            android:layout_alignParentTop="true"
-            android:text="A map archive"
             android:textSize="18sp"
             android:textColor="@color/colorPrimaryTextBlack"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
-            />
+            card_view:layout_constraintTop_toTopOf="parent"
+            card_view:layout_constraintBottom_toTopOf="@id/unzip_archive_btn"
+            card_view:layout_constraintVertical_bias="0.0"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginBottom="8dp"
+            card_view:layout_constraintLeft_toLeftOf="parent"
+            tools:text="A map archive"/>
 
         <ProgressBar
             android:id="@+id/unzip_progressbar"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/map_archive_name"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:layout_marginTop="8dp"
-            android:layout_marginStart="17dp"
-            android:layout_marginEnd="17dp"
             android:visibility="gone"
-            />
+            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name" />
 
-        <GridLayout
-            android:id="@+id/status_grid"
-            android:columnCount="3"
+        <ProgressBar
+            android:id="@+id/extraction_ind_progressbar"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="18sp"
+            android:layout_height="18sp"
+            android:layout_marginTop="24dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            tools:layout_editor_absoluteX="21dp"
+            tools:layout_height="8dp"
+            tools:layout_width="8dp" />
+
+        <ImageView
+            android:id="@+id/extraction_done"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_below="@id/unzip_progressbar"
-            android:layout_marginTop="18dp"
-            android:layout_marginStart="17dp"
-            android:visibility="gone">
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="24dp"
+            android:src="@drawable/ic_done_grey_18sp"
+            android:visibility="gone"
+            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            tools:layout_height="8dp"
+            tools:layout_width="8dp" />
 
-            <ProgressBar
-                android:id="@+id/extraction_ind_progressbar"
-                style="@style/Widget.AppCompat.ProgressBar"
-                android:layout_width="18sp"
-                android:layout_height="18sp"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                />
-
-            <ImageView
-                android:id="@+id/extraction_done"
-                android:src="@drawable/ic_done_grey_18sp"
-                android:visibility="gone"
-                />
-
-            <TextView
-                android:id="@+id/extraction_txtview"
-                android:layout_marginStart="8dp"
-                android:text="@string/extraction_lbl"
-                android:visibility="gone"
-                />
-
-            <ProgressBar
-                android:id="@+id/mapcreation_ind_progressbar"
-                style="@style/Widget.AppCompat.ProgressBar"
-                android:layout_width="18sp"
-                android:layout_height="18sp"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                />
-
-            <ImageView
-                android:id="@+id/mapcreation_done"
-                android:src="@drawable/ic_done_grey_18sp"
-                android:visibility="gone"
-                />
-
-            <TextView
-                android:id="@+id/mapcreation_txtview"
-                android:layout_marginStart="8dp"
-                android:text="@string/map_created_lbl"
-                android:visibility="gone"
-                />
-        </GridLayout>
-
-        <Button style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        <ImageView
+            android:id="@+id/extraction_error"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/unzip_archive_btn"
-            android:text="@string/import_btn"
-            android:layout_below="@id/status_grid"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            />
-    </RelativeLayout>
+            android:layout_marginTop="24dp"
+            android:src="@drawable/ic_error_black_18sp"
+            android:tint="@color/colorError"
+            android:visibility="gone"
+            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            tools:layout_editor_absoluteX="5dp"
+            tools:layout_editor_absoluteY="86dp" />
+
+        <TextView
+            android:id="@+id/extraction_txtview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/extraction_lbl"
+            android:visibility="gone"
+            card_view:layout_constraintLeft_toLeftOf="parent"
+            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+            tools:layout_editor_absoluteX="5dp" />
+
+        <ProgressBar
+            android:id="@+id/mapcreation_ind_progressbar"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="18sp"
+            android:layout_height="18sp"
+            android:layout_gravity="center"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="0dp"
+            android:visibility="gone"
+            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+            card_view:layout_constraintTop_toBottomOf="@+id/extraction_done" />
+
+        <ImageView
+            android:id="@+id/mapcreation_done"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_done_grey_18sp"
+            android:visibility="gone"
+            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+            card_view:layout_constraintTop_toBottomOf="@+id/extraction_done"
+            card_view:layout_constraintBottom_toTopOf="@id/unzip_archive_btn"
+            card_view:layout_constraintVertical_bias="0.0"
+            tools:layout_editor_absoluteX="5dp"
+            tools:layout_editor_absoluteY="86dp" />
+
+        <TextView
+            android:id="@+id/mapcreation_txtview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:text="@string/map_created_lbl"
+            android:visibility="gone"
+            card_view:layout_constraintTop_toBottomOf="@+id/extraction_done"
+            card_view:layout_constraintLeft_toLeftOf="parent"
+            card_view:layout_constraintBottom_toTopOf="@id/unzip_archive_btn"
+            card_view:layout_constraintVertical_bias="0.0"
+            tools:layout_height="16dp"
+            tools:layout_width="36dp" />
+
+
+    </android.support.constraint.ConstraintLayout>
+
+
 
 </android.support.v7.widget.CardView>
