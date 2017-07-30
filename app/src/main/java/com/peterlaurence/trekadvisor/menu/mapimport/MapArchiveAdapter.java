@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -27,7 +28,10 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
- * Adapter to provide access to the data set (here a list of {@link MapArchive}).
+ * Adapter to provide access to the data set (here a list of {@link MapArchive}). <br>
+ * For example purpose, one of the view components that is only visible when the user extracts a map
+ * is loaded using a {@link ViewStub}. So it is only inflated at the very last moment, not at layout
+ * inflation.
  *
  * @author peterLaurence on 08/06/16.
  */
@@ -40,8 +44,14 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
             MapImporter.MapImportListener {
         CardView cardView;
         TextView mapArchiveName;
-        ProgressBar progressBarHorizontal;
+        Button importButton;
+
+        /* The indeterminate unzip progressBar and its stub */
+        ViewStub stubProgressBarUnzip;
         ProgressBar progressBarIndUnzip;
+
+        /* Those view below could also be loaded later using ViewStub */
+        ProgressBar progressBarHorizontal;
         ImageView iconMapExtracted;
         ImageView iconMapExtractionError;
         TextView extractionLabel;
@@ -49,7 +59,6 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
         ImageView iconMapCreated;
         TextView mapCreationLabel;
 
-        Button importButton;
 
         public MapArchiveViewHolder(View itemView) {
             super(itemView);
@@ -57,8 +66,7 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
             mapArchiveName = (TextView) itemView.findViewById(R.id.map_archive_name);
             progressBarHorizontal = (ProgressBar) itemView.findViewById(R.id.unzip_progressbar);
             progressBarHorizontal.setMax(100);
-            progressBarIndUnzip = (ProgressBar) itemView.findViewById(R.id.extraction_ind_progressbar);
-            progressBarIndUnzip.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+            stubProgressBarUnzip = (ViewStub) itemView.findViewById(R.id.stub_extraction_ind_progressbar);
             iconMapExtracted = (ImageView) itemView.findViewById(R.id.extraction_done);
             iconMapExtractionError = (ImageView) itemView.findViewById(R.id.extraction_error);
             extractionLabel = (TextView) itemView.findViewById(R.id.extraction_txtview);
@@ -67,6 +75,16 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
             iconMapCreated = (ImageView) itemView.findViewById(R.id.mapcreation_done);
             mapCreationLabel = (TextView) itemView.findViewById(R.id.mapcreation_txtview);
             importButton = (Button) itemView.findViewById(R.id.unzip_archive_btn);
+        }
+
+        /**
+         * Init views based on view stubs.
+         */
+        void init() {
+            if (progressBarIndUnzip == null) {
+                progressBarIndUnzip = (ProgressBar) stubProgressBarUnzip.inflate();
+                progressBarIndUnzip.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+            }
         }
 
         @Override
@@ -165,6 +183,8 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
                 MapArchiveAdapter mapArchiveAdapter = mMapArchiveAdapterWeakReference.get();
 
                 if (mapArchiveAdapter != null && mapArchiveViewHolder != null) {
+                    mapArchiveViewHolder.init();
+
                     mapArchiveViewHolder.importButton.setVisibility(View.GONE);
                     MapArchive mapArchive = mapArchiveAdapter.mMapArchiveList.get(mapArchiveViewHolder.getAdapterPosition());
                     mapArchiveViewHolder.iconMapExtracted.setVisibility(View.GONE);

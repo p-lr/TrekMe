@@ -59,14 +59,14 @@
             card_view:layout_constraintBottom_toBottomOf="parent"
             card_view:layout_constraintVertical_bias="0.0"/>
 
-        <ProgressBar
-            android:id="@+id/extraction_ind_progressbar"
-            style="@style/Widget.AppCompat.ProgressBar"
+        <ViewStub
+            android:id="@+id/stub_extraction_ind_progressbar"
+            android:inflatedId="@+id/extraction_ind_progressbar"
+            android:layout="@layout/component_progressbar"
             android:layout_width="18sp"
             android:layout_height="18sp"
             android:layout_marginTop="24dp"
             android:layout_gravity="center"
-            android:visibility="gone"
             card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
             card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
             card_view:layout_constraintBottom_toBottomOf="parent"
