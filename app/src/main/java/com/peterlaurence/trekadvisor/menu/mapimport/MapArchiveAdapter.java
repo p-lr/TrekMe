@@ -3,7 +3,6 @@ package com.peterlaurence.trekadvisor.menu.mapimport;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.Button;
-import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -128,10 +126,6 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
         public void onMapImportError(MapImporter.MapParseException e) {
             // TODO : show an error message that something went wrong
         }
-    }
-
-    public MapArchiveAdapter(@Nullable List<MapArchive> mapArchives) {
-        mMapArchiveList = mapArchives;
     }
 
     @Override

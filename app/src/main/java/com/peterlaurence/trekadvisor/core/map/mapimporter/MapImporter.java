@@ -32,6 +32,7 @@ public class MapImporter {
     private static final String[] IMAGE_EXTENSIONS = new String[]{
             "jpg", "gif", "png", "bmp"
     };
+    private static List<MapImportListener> mMapImportListenerList;
 
     private static final String TAG = "MapImporter";
 
@@ -85,6 +86,7 @@ public class MapImporter {
         java.util.Map<MapProvider, MapParser> map = new HashMap<>();
         map.put(MapProvider.LIBVIPS, new LibvipsMapParser());
         mProviderToParserMap = Collections.unmodifiableMap(map);
+        mMapImportListenerList = new ArrayList<>();
     }
 
     /* Don't allow instantiation */
@@ -97,6 +99,14 @@ public class MapImporter {
             MapParseTask mapParseTask = new MapParseTask(parser, dir, listener);
             mapParseTask.execute();
         }
+    }
+
+    public static void addMapImportListener(MapImportListener listener) {
+        mMapImportListenerList.add(listener);
+    }
+
+    public static void clearMapImportListenerList() {
+        mMapImportListenerList.clear();
     }
 
     /**
@@ -178,22 +188,35 @@ public class MapImporter {
             return null;
         }
 
+        /**
+         * Call the provided {@link MapImportListener}, and other listeners set at {@link MapImporter}
+         * level.
+         */
         @Override
         protected void onPostExecute(Map map) {
-            if (mMapParseListenerWeakReference == null) return;
-            MapImportListener mapImportListener = mMapParseListenerWeakReference.get();
-
             if (mException != null) {
                 MapLoader.getInstance().onMapImportError(mException);
-                if (mapImportListener != null) {
-                    mapImportListener.onMapImportError(mException);
-                }
-                return;
+            } else {
+                MapLoader.getInstance().onMapImported(map, mMapParser.getStatus());
             }
 
-            MapLoader.getInstance().onMapImported(map, mMapParser.getStatus());
-            if (mapImportListener != null) {
-                mapImportListener.onMapImported(map, mMapParser.getStatus());
+            if (mMapParseListenerWeakReference != null) {
+                MapImportListener mapImportListener = mMapParseListenerWeakReference.get();
+                if (mapImportListener != null) {
+                    if (mException != null) {
+                        mapImportListener.onMapImportError(mException);
+                    } else {
+                        mapImportListener.onMapImported(map, mMapParser.getStatus());
+                    }
+                }
+            }
+
+            for (MapImportListener listener : mMapImportListenerList) {
+                if (mException != null) {
+                    listener.onMapImportError(mException);
+                } else {
+                    listener.onMapImported(map, mMapParser.getStatus());
+                }
             }
         }
     }

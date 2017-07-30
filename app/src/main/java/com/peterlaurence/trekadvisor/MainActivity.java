@@ -46,6 +46,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         MapListFragment.OnMapListFragmentInteractionListener,
+        MapImportFragment.OnMapArchiveFragmentInteractionListener,
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
         MapLoader.DeleteMapListener,
@@ -565,6 +566,11 @@ public class MainActivity extends AppCompatActivity
     public void onMapCalibrationRequest() {
         /* A map has been selected from the MapSettingsFragment to be calibrated. */
         showMapCalibrationFragment();
+    }
+
+    @Override
+    public void onMapArchiveFragmentInteraction() {
+        showMapListFragment();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

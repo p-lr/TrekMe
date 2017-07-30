@@ -57,4 +57,5 @@
     <string name="mapview_orientation_enable">Afficher l\'orientation</string>
     <string name="imported_untouched">Carte importée sans modifications</string>
     <string name="extraction_error">Erreur d\'extraction</string>
+    <string name="snack_msg_show_map_list">Afficher la liste des cartes ?</string>
 </resources>

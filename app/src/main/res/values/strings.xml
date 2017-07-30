@@ -54,6 +54,7 @@
     <string name="import_btn">Import</string>
     <string name="imported_untouched">Imported without modification</string>
     <string name="extraction_error">Extraction error</string>
+    <string name="snack_msg_show_map_list">Show map list?</string>
 
     <!-- Menu of the map view fragment -->
     <string name="manage_tracks_menu">Manage tracks</string>
