@@ -92,6 +92,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
             holder.cardView.setCardBackgroundColor(mColorAccent);
             holder.mapName.setTextColor(mColorWhiteText);
             holder.editButton.setTextColor(mColorWhiteText);
+            holder.calibrationStatus.setTextColor(mColorWhiteText);
         } else {
             holder.cardView.setCardBackgroundColor(Color.WHITE);
             holder.mapName.setTextColor(mColorBlackText);
