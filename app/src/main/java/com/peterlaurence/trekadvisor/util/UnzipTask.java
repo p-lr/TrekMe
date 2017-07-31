@@ -11,7 +11,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
- * Utility class to unzip a map archive.
+ * Utility class used to unzip a map archive, but can be used with any zip file.
  *
  * @author peterLaurence on 12/06/16.
  */
