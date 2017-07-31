@@ -20,8 +20,8 @@ import java.util.zip.ZipOutputStream;
 public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
     public interface ZipProgressionListener {
         /**
-         * Before extraction, the list of files in the archive is acquired. This step can take some
-         * time. <br>
+         * Before compression, the list of files in the parent folder is acquired. This step can
+         * take some time. <br>
          * This is called when this step is finished.
          */
         void fileListAcquired();
