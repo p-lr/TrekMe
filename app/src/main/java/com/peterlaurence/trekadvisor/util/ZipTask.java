@@ -97,7 +97,9 @@ public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
                 zos.closeEntry();
                 fis.close();
             }
+            zos.close();
         } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
         return true;

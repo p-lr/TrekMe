@@ -48,7 +48,7 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
         try {
             /* Create output directory if necessary */
             if (!mOutputFolder.exists()) {
-                mOutputFolder.mkdir();
+                mOutputFolder.mkdirs();
             }
 
             ZipFile zip = new ZipFile(mZipFile);
@@ -65,10 +65,16 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
                 File newFile = new File(mOutputFolder, fileName);
 
                 try {
-                    if (entry.isDirectory()) {
-                        newFile.mkdirs();
-                        continue;
+                    if (!newFile.exists()) {
+                        if (entry.isDirectory()) {
+                            newFile.mkdirs();
+                            continue;
+                        } else {
+                            newFile.getParentFile().mkdirs();
+                            newFile.createNewFile();
+                        }
                     }
+
                     FileOutputStream fos = new FileOutputStream(newFile);
 
                     int len;
@@ -81,6 +87,7 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
                     fos.close();
                 } catch (IOException e) {
                     // something went wrong during extraction
+                    e.printStackTrace();
                     return false;
                 }
             }
@@ -88,6 +95,7 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
             zis.closeEntry();
             zis.close();
         } catch (IOException ex) {
+            ex.printStackTrace();
             return false;
         }
 
