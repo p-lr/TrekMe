@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.util;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,21 +17,7 @@ import java.util.zip.ZipInputStream;
  * @author peterLaurence on 12/06/16.
  */
 public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
-    public interface UnzipProgressionListener {
-        void onProgress(int p);
-
-        /**
-         * Called once the extraction is done.
-         * @param outputDirectory the (just created) parent folder
-         */
-        void onUnzipFinished(File outputDirectory);
-
-        /**
-         * Called whenever an error happens during extraction.
-         */
-        void onUnzipError();
-    }
-
+    private static final String TAG = "UnzipTask";
     private File mZipFile;
     private File mOutputFolder;
     private UnzipProgressionListener mUnzipProgressionListener;
@@ -86,8 +73,8 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
 
                     fos.close();
                 } catch (IOException e) {
-                    // something went wrong during extraction
-                    e.printStackTrace();
+                    /* Something went wrong during extraction */
+                    Log.e(TAG, Tools.stackTraceToString(e));
                     return false;
                 }
             }
@@ -95,7 +82,7 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
             zis.closeEntry();
             zis.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Log.e(TAG, Tools.stackTraceToString(ex));
             return false;
         }
 
@@ -114,5 +101,21 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
         } else {
             mUnzipProgressionListener.onUnzipError();
         }
+    }
+
+    public interface UnzipProgressionListener {
+        void onProgress(int p);
+
+        /**
+         * Called once the extraction is done.
+         *
+         * @param outputDirectory the (just created) parent folder
+         */
+        void onUnzipFinished(File outputDirectory);
+
+        /**
+         * Called whenever an error happens during extraction.
+         */
+        void onUnzipError();
     }
 }

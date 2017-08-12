@@ -262,11 +262,7 @@ public class MapLoader implements MapImporter.MapImportListener {
         saveMap(map);
 
         /* Notify for view update */
-        if (mMapListUpdateListeners != null) {
-            for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
-                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
-            }
-        }
+        notifyMapListUpdateListeners();
     }
 
     @Override
@@ -276,10 +272,10 @@ public class MapLoader implements MapImporter.MapImportListener {
     }
 
     /**
-     * Save the content of a {@link Map}, so the changes persist upon application restart.
-     * <p>
+     * Save the content of a {@link Map}, so the changes persist upon application restart. <br>
      * Here, it writes to the corresponding json file.
-     * </p>
+     * <p>
+     * Then, call all registered {@link MapListUpdateListener}.
      *
      * @param map The {@link Map} to save.
      */
@@ -295,6 +291,8 @@ public class MapLoader implements MapImporter.MapImportListener {
             Log.e(TAG, "Error while saving the map");
             Log.e(TAG, e.getMessage(), e);
         }
+
+        notifyMapListUpdateListeners();
     }
 
     /**
@@ -435,6 +433,14 @@ public class MapLoader implements MapImporter.MapImportListener {
 
     public interface DeleteMapListener {
         void onMapDeleted();
+    }
+
+    private void notifyMapListUpdateListeners() {
+        if (mMapListUpdateListeners != null) {
+            for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
+                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
+            }
+        }
     }
 
     /* Singleton implementation */

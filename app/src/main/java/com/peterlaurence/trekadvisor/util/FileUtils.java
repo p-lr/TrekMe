@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
 /**
  * Utility class.
  *
- * Created by pla on 02/01/16.
+ * @author peterLaurence on 02/01/16.
  */
 public class FileUtils {
     /**

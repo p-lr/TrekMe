@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.util;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,38 +19,28 @@ import java.util.zip.ZipOutputStream;
  */
 
 public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
-    public interface ZipProgressionListener {
-        /**
-         * Before compression, the list of files in the parent folder is acquired. This step can
-         * take some time. <br>
-         * This is called when this step is finished.
-         */
-        void fileListAcquired();
-
-        void onProgress(int p);
-
-        /**
-         * Called once the compression is done.
-         *
-         * @param outputDirectory the (just created) parent folder
-         */
-        void onZipFinished(File outputDirectory);
-
-        /**
-         * Called whenever an error happens during compression.
-         */
-        void onZipError();
-    }
-
+    private static final String TAG = "ZipTask";
     private File mFolderToZip;
     private File mOutputFolder;
     private ZipProgressionListener mZipProgressionListener;
-
 
     public ZipTask(File folderToZip, File outputFolder, ZipProgressionListener listener) {
         mFolderToZip = folderToZip;
         mOutputFolder = outputFolder;
         mZipProgressionListener = listener;
+    }
+
+    private static void getFileList(File directory, List<String> filePathList) {
+        File[] files = directory.listFiles();
+        if (files != null && files.length > 0) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    filePathList.add(file.getAbsolutePath());
+                } else {
+                    getFileList(file, filePathList);
+                }
+            }
+        }
     }
 
     @Override
@@ -99,23 +90,10 @@ public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
             }
             zos.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, Tools.stackTraceToString(e));
             return false;
         }
         return true;
-    }
-
-    private static void getFileList(File directory, List<String> filePathList) {
-        File[] files = directory.listFiles();
-        if (files != null && files.length > 0) {
-            for (File file : files) {
-                if (file.isFile()) {
-                    filePathList.add(file.getAbsolutePath());
-                } else {
-                    getFileList(file, filePathList);
-                }
-            }
-        }
     }
 
     @Override
@@ -130,5 +108,28 @@ public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
         } else {
             mZipProgressionListener.onZipError();
         }
+    }
+
+    public interface ZipProgressionListener {
+        /**
+         * Before compression, the list of files in the parent folder is acquired. This step can
+         * take some time. <br>
+         * This is called when this step is finished.
+         */
+        void fileListAcquired();
+
+        void onProgress(int p);
+
+        /**
+         * Called once the compression is done.
+         *
+         * @param outputDirectory the (just created) parent folder
+         */
+        void onZipFinished(File outputDirectory);
+
+        /**
+         * Called whenever an error happens during compression.
+         */
+        void onZipError();
     }
 }
