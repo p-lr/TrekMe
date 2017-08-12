@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,6 +30,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     private List<Map> maps;
     private MapSelectionListener mMapSelectionListener;
     private MapSettingsListener mMapSettingsListener;
+    private MapSaveListener mMapSaveListener;
 
     private int selectedMapIndex = -1;
     private int previousSelectedMapIndex = -1;
@@ -38,11 +40,13 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     private int mColorBlackText;
 
     MapAdapter(@Nullable List<Map> maps, MapSelectionListener mapSelectionListener,
-               MapSettingsListener mapSettingsListener, int accentColor, int whiteTextColor,
+               MapSettingsListener mapSettingsListener, MapSaveListener mapSaveListener,
+               int accentColor, int whiteTextColor,
                int blackTextColor) {
         this.maps = maps;
         mMapSelectionListener = mapSelectionListener;
         mMapSettingsListener = mapSettingsListener;
+        mMapSaveListener = mapSaveListener;
 
         mColorAccent = accentColor;
         mColorWhiteText = whiteTextColor;
@@ -92,11 +96,13 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
             holder.cardView.setCardBackgroundColor(mColorAccent);
             holder.mapName.setTextColor(mColorWhiteText);
             holder.editButton.setTextColor(mColorWhiteText);
+            holder.saveButton.setColorFilter(mColorWhiteText);
             holder.calibrationStatus.setTextColor(mColorWhiteText);
         } else {
             holder.cardView.setCardBackgroundColor(Color.WHITE);
             holder.mapName.setTextColor(mColorBlackText);
             holder.editButton.setTextColor(mColorAccent);
+            holder.saveButton.setColorFilter(mColorAccent);
         }
         switch (map.getCalibrationStatus()) {
             case OK:
@@ -113,6 +119,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
         /* Set click listeners */
         holder.itemView.setOnClickListener(new MapViewHolderClickListener(holder, this));
         holder.editButton.setOnClickListener(new SettingsButtonClickListener(holder, this));
+        holder.saveButton.setOnClickListener(new SaveButtonClickListener(holder, this));
     }
 
     @Override
@@ -137,6 +144,14 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     }
 
     /**
+     * When the save button of an item is clicked, the {@link MapSaveListener} is called with the
+     * corresponding {@link Map}.
+     */
+    public interface MapSaveListener {
+        void onMapSave(Map map);
+    }
+
+    /**
      * The view for each {@link Map}
      */
     public static class MapViewHolder extends RecyclerView.ViewHolder {
@@ -145,6 +160,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
         TextView calibrationStatus;
         ImageView mapImage;
         Button editButton;
+        ImageButton saveButton;
 
         public MapViewHolder(View itemView) {
             super(itemView);
@@ -153,18 +169,20 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
             calibrationStatus = (TextView) itemView.findViewById(R.id.map_calibration_status);
             mapImage = (ImageView) itemView.findViewById(R.id.map_preview_image);
             editButton = (Button) itemView.findViewById(R.id.map_edit_btn);
+            saveButton = (ImageButton) itemView.findViewById(R.id.map_save_btn);
         }
     }
 
     /**
-     * The click listener for a settings button of a {@link MapViewHolder}
+     * The generic click listener for a button of a {@link MapViewHolder}. <br>
      * It has a reference to the {@link MapAdapter} as it needs to access the {@link Map} container.
+     * <p>
      */
-    private static class SettingsButtonClickListener implements View.OnClickListener {
+    private static abstract class ButtonClickListener implements View.OnClickListener {
         WeakReference<MapViewHolder> mMapViewHolderWeakReference;
         WeakReference<MapAdapter> mMapAdapterWeakReference;
 
-        SettingsButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
+        ButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
             mMapViewHolderWeakReference = new WeakReference<>(mapViewHolder);
             mMapAdapterWeakReference = new WeakReference<>(mapAdapter);
         }
@@ -178,10 +196,40 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
                 if (mapViewHolder != null && mapAdapter != null) {
                     Map map = mapAdapter.maps.get(mapViewHolder.getAdapterPosition());
                     if (mapAdapter.mMapSettingsListener != null) {
-                        mapAdapter.mMapSettingsListener.onMapSettings(map);
+                        clickAction(mapAdapter, map);
                     }
                 }
             }
+        }
+
+        public abstract void clickAction(MapAdapter mapAdapter, Map map);
+    }
+
+    /**
+     * The click listener for the settings button of a {@link MapViewHolder}
+     */
+    private static class SettingsButtonClickListener extends ButtonClickListener {
+        SettingsButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
+            super(mapViewHolder, mapAdapter);
+        }
+
+        @Override
+        public void clickAction(MapAdapter mapAdapter, Map map) {
+            mapAdapter.mMapSettingsListener.onMapSettings(map);
+        }
+    }
+
+    /**
+     * The click listener for the save button of a {@link MapViewHolder}
+     */
+    private static class SaveButtonClickListener extends ButtonClickListener {
+        SaveButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
+            super(mapViewHolder, mapAdapter);
+        }
+
+        @Override
+        public void clickAction(MapAdapter mapAdapter, Map map) {
+            mapAdapter.mMapSaveListener.onMapSave(map);
         }
     }
 

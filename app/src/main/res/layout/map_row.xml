@@ -64,6 +64,21 @@
             tools:layout_constraintBottom_creator="1"
             tools:layout_constraintLeft_creator="1" />
 
+        <ImageButton
+            android:id="@+id/map_save_btn"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:src="@drawable/ic_save_white_24dp"
+            card_view:layout_constraintRight_toLeftOf="parent"
+            card_view:layout_constraintTop_toTopOf="@+id/guideline"
+            android:layout_marginRight="16dp"
+            tools:background="@color/colorAccent"
+            android:layout_marginTop="0dp"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="0dp" />
+
         <android.support.constraint.Guideline
             android:id="@+id/guideline"
             android:layout_width="wrap_content"

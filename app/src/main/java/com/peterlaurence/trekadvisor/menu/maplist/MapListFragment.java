@@ -26,6 +26,7 @@ import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 public class MapListFragment extends Fragment implements
         MapAdapter.MapSelectionListener,
         MapAdapter.MapSettingsListener,
+        MapAdapter.MapSaveListener,
         MapLoader.MapListUpdateListener {
 
     private FrameLayout rootView;
@@ -105,7 +106,7 @@ public class MapListFragment extends Fragment implements
         LinearLayoutManager llm = new LinearLayoutManager(ctx);
         recyclerView.setLayoutManager(llm);
 
-        MapAdapter adapter = new MapAdapter(null, this, this,
+        MapAdapter adapter = new MapAdapter(null, this, this, this,
                 ctx.getColor(R.color.colorAccent),
                 ctx.getColor(R.color.colorPrimaryTextWhite),
                 ctx.getColor(R.color.colorPrimaryTextBlack));
@@ -163,6 +164,11 @@ public class MapListFragment extends Fragment implements
         if (mListener != null) {
             mListener.onMapSettingsFragmentInteraction(map);
         }
+    }
+
+    @Override
+    public void onMapSave(Map map) {
+        System.out.println("Save the map " + map.getName());
     }
 
     /**
