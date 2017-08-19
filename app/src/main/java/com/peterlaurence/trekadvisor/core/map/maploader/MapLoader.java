@@ -272,6 +272,22 @@ public class MapLoader implements MapImporter.MapImportListener {
     }
 
     /**
+     * Get a {@link Map} from its id.
+     *
+     * @return the {@link Map} or {@code null} if the given id is unknown.
+     */
+    public
+    @Nullable
+    Map getMap(int mapId) {
+        for (Map map : mMapList) {
+            if (mapId == map.getId()) {
+                return map;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Save the content of a {@link Map}, so the changes persist upon application restart. <br>
      * Here, it writes to the corresponding json file.
      * <p>

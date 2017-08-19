@@ -29,19 +29,7 @@ import java.util.List;
  *
  * @author peterLaurence
  */
-public class Map implements Parcelable {
-
-    public static final Creator<Map> CREATOR = new Creator<Map>() {
-        @Override
-        public Map createFromParcel(Parcel in) {
-            return new Map(in);
-        }
-
-        @Override
-        public Map[] newArray(int size) {
-            return new Map[size];
-        }
-    };
+public class Map {
     private static final String UNDEFINED = "undefined";
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
@@ -349,15 +337,15 @@ public class Map implements Parcelable {
         return mConfigFile;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mConfigFile.getAbsolutePath());
-        dest.writeParcelable(mImage, flags);
+    /**
+     * For instance, the {@link MapLoader} is designed so that two different maps can't have the
+     * same config file path.
+     *
+     * @return the unique id that identifies the {@link Map}. It can later be used to retrieve the
+     * {@link Map} instance from the {@link MapLoader}.
+     */
+    public int getId() {
+        return mConfigFile.getPath().hashCode();
     }
 
     public enum CalibrationStatus {

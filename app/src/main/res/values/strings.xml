@@ -5,16 +5,22 @@
     <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
     <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
 
-    <string name="map_edit_btn_string">Edit</string>
-
     <string name="map_menu_title">Map</string>
     <string name="select_map_menu_title">Select map</string>
     <string name="import_menu_title">Import</string>
 
+    <!-- Map list fragment -->
     <string name="no_maps_found_warning">No maps found on the SD card, "trekadvisor" folder.
         Please refer to the documentation to learn how to import maps.</string>
     <string name="ok_dialog">OK</string>
+    <string name="map_edit_btn_string">Edit</string>
 
+    <!-- Save map dialog fragment -->
+    <string name="archive_dialog_title">Save map</string>
+    <string name="archive_dialog_description">Saving a map will create an archive from it, which can be later
+        restored using the import menu.</string>
+
+    <!-- Calibration fragment -->
     <string name="calibration_status_ok">Calibrated</string>
     <string name="calibration_status_none">Not calibrated</string>
     <string name="calibration_status_error">Calibration error</string>

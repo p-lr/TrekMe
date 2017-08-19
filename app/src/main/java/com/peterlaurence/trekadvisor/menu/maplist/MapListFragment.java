@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 
 /**
  * A {@link Fragment} subclass that displays the list of available maps, using a {@link RecyclerView}.
@@ -27,7 +28,8 @@ public class MapListFragment extends Fragment implements
         MapAdapter.MapSelectionListener,
         MapAdapter.MapSettingsListener,
         MapAdapter.MapSaveListener,
-        MapLoader.MapListUpdateListener {
+        MapLoader.MapListUpdateListener,
+        ArchiveMapDialog.ArchiveMapListener {
 
     private FrameLayout rootView;
     private RecyclerView recyclerView;
@@ -168,7 +170,13 @@ public class MapListFragment extends Fragment implements
 
     @Override
     public void onMapSave(Map map) {
-        System.out.println("Save the map " + map.getName());
+        ArchiveMapDialog archiveMapDialog = ArchiveMapDialog.newInstance(map.getId());
+        archiveMapDialog.show(getFragmentManager(), "ArchiveMapDialog");
+    }
+
+    @Override
+    public void onMapArchived() {
+
     }
 
     /**
