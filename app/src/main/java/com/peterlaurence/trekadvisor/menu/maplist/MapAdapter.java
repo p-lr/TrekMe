@@ -30,7 +30,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     private List<Map> maps;
     private MapSelectionListener mMapSelectionListener;
     private MapSettingsListener mMapSettingsListener;
-    private MapSaveListener mMapSaveListener;
+    private MapArchiveListener mMapArchiveListener;
 
     private int selectedMapIndex = -1;
     private int previousSelectedMapIndex = -1;
@@ -40,13 +40,13 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     private int mColorBlackText;
 
     MapAdapter(@Nullable List<Map> maps, MapSelectionListener mapSelectionListener,
-               MapSettingsListener mapSettingsListener, MapSaveListener mapSaveListener,
+               MapSettingsListener mapSettingsListener, MapArchiveListener mapArchiveListener,
                int accentColor, int whiteTextColor,
                int blackTextColor) {
         this.maps = maps;
         mMapSelectionListener = mapSelectionListener;
         mMapSettingsListener = mapSettingsListener;
-        mMapSaveListener = mapSaveListener;
+        mMapArchiveListener = mapArchiveListener;
 
         mColorAccent = accentColor;
         mColorWhiteText = whiteTextColor;
@@ -119,7 +119,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
         /* Set click listeners */
         holder.itemView.setOnClickListener(new MapViewHolderClickListener(holder, this));
         holder.editButton.setOnClickListener(new SettingsButtonClickListener(holder, this));
-        holder.saveButton.setOnClickListener(new SaveButtonClickListener(holder, this));
+        holder.saveButton.setOnClickListener(new ArchiveButtonClickListener(holder, this));
     }
 
     @Override
@@ -144,11 +144,11 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     }
 
     /**
-     * When the save button of an item is clicked, the {@link MapSaveListener} is called with the
+     * When the save button of an item is clicked, the {@link MapArchiveListener} is called with the
      * corresponding {@link Map}.
      */
-    public interface MapSaveListener {
-        void onMapSave(Map map);
+    public interface MapArchiveListener {
+        void onMapArchive(Map map);
     }
 
     /**
@@ -220,16 +220,16 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
     }
 
     /**
-     * The click listener for the save button of a {@link MapViewHolder}
+     * The click listener for the archive button of a {@link MapViewHolder}
      */
-    private static class SaveButtonClickListener extends ButtonClickListener {
-        SaveButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
+    private static class ArchiveButtonClickListener extends ButtonClickListener {
+        ArchiveButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
             super(mapViewHolder, mapAdapter);
         }
 
         @Override
         public void clickAction(MapAdapter mapAdapter, Map map) {
-            mapAdapter.mMapSaveListener.onMapSave(map);
+            mapAdapter.mMapArchiveListener.onMapArchive(map);
         }
     }
 

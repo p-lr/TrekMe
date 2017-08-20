@@ -21,12 +21,17 @@ import java.util.zip.ZipOutputStream;
 public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
     private static final String TAG = "ZipTask";
     private File mFolderToZip;
-    private File mOutputFolder;
+    private File mOutputFile;
     private ZipProgressionListener mZipProgressionListener;
 
-    public ZipTask(File folderToZip, File outputFolder, ZipProgressionListener listener) {
+    /**
+     * @param folderToZip The directory to archive.
+     * @param outputFile  The zip {@link File} to write into. This file must exist.
+     * @param listener    The {@link ZipProgressionListener} will be called back.
+     */
+    public ZipTask(File folderToZip, File outputFile, ZipProgressionListener listener) {
         mFolderToZip = folderToZip;
-        mOutputFolder = outputFolder;
+        mOutputFile = outputFile;
         mZipProgressionListener = listener;
     }
 
@@ -53,13 +58,13 @@ public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
 
         try {
 
-            /* Create output directory if necessary */
-            if (!mOutputFolder.exists()) {
-                if (!mOutputFolder.mkdir()) {
+            /* Create parent directory if necessary */
+            if (!mOutputFile.exists()) {
+                if (!mOutputFile.mkdir()) {
                     return false;
                 }
             }
-            FileOutputStream fos = new FileOutputStream(mOutputFolder);
+            FileOutputStream fos = new FileOutputStream(mOutputFile);
             ZipOutputStream zos = new ZipOutputStream(fos);
 
 
@@ -104,7 +109,7 @@ public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
     @Override
     protected void onPostExecute(Boolean result) {
         if (result) {
-            mZipProgressionListener.onZipFinished(mOutputFolder);
+            mZipProgressionListener.onZipFinished(mOutputFile);
         } else {
             mZipProgressionListener.onZipError();
         }

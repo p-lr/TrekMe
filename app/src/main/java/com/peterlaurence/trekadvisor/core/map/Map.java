@@ -3,8 +3,8 @@ package com.peterlaurence.trekadvisor.core.map;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
@@ -12,10 +12,17 @@ import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
+import com.peterlaurence.trekadvisor.util.Tools;
+import com.peterlaurence.trekadvisor.util.ZipTask;
 import com.qozix.tileview.graphics.BitmapProvider;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * A {@code Map} contains all the information that defines a map. That includes :
@@ -30,6 +37,7 @@ import java.util.List;
  * @author peterLaurence
  */
 public class Map {
+    private static final String TAG = "Map";
     private static final String UNDEFINED = "undefined";
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
@@ -187,6 +195,9 @@ public class Map {
         }
     }
 
+    /**
+     * @return the {@link File} which is the folder containing the map.
+     */
     public File getDirectory() {
         return mConfigFile.getParentFile();
     }
@@ -346,6 +357,35 @@ public class Map {
      */
     public int getId() {
         return mConfigFile.getPath().hashCode();
+    }
+
+    /**
+     * Archives the map. <p>
+     * Creates a zip file named with this {@link Map} name and the date. This file is placed in the
+     * parent folder of the {@link Map}.
+     *
+     * @param listener The {@link com.peterlaurence.trekadvisor.util.ZipTask.ZipProgressionListener}.
+     */
+    public void zip(ZipTask.ZipProgressionListener listener) {
+        /* Generate an output zip file named with the map name and the date */
+        Date date = new Date();
+        DateFormat dateFormat = new SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH);
+        String zipFileName = getName() + "-" + dateFormat.format(date) + ".zip";
+
+        /* By default and for instance, the archive is placed in the parent folder of the map */
+        File zipDirectory = mConfigFile.getParentFile().getParentFile();
+        File outputFile = new File(zipDirectory, zipFileName);
+        try {
+            if (!outputFile.createNewFile()) {
+                listener.onZipError();
+            }
+        } catch (IOException e) {
+            Log.e(TAG, Tools.stackTraceToString(e));
+            listener.onZipError();
+        }
+
+        ZipTask zipTask = new ZipTask(mConfigFile.getParentFile(), outputFile, listener);
+        zipTask.execute();
     }
 
     public enum CalibrationStatus {

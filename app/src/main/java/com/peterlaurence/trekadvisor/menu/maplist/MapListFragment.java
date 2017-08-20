@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,6 +16,9 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
+import com.peterlaurence.trekadvisor.util.ZipTask;
+
+import java.io.File;
 
 /**
  * A {@link Fragment} subclass that displays the list of available maps, using a {@link RecyclerView}.
@@ -27,7 +31,7 @@ import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 public class MapListFragment extends Fragment implements
         MapAdapter.MapSelectionListener,
         MapAdapter.MapSettingsListener,
-        MapAdapter.MapSaveListener,
+        MapAdapter.MapArchiveListener,
         MapLoader.MapListUpdateListener,
         ArchiveMapDialog.ArchiveMapListener {
 
@@ -169,14 +173,49 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
-    public void onMapSave(Map map) {
+    public void onMapArchive(Map map) {
         ArchiveMapDialog archiveMapDialog = ArchiveMapDialog.newInstance(map.getId());
         archiveMapDialog.show(getFragmentManager(), "ArchiveMapDialog");
     }
 
-    @Override
-    public void onMapArchived() {
 
+    /**
+     * Process a request to archive a {@link Map}. This is typically called from a
+     * {@link ArchiveMapDialog}.
+     *
+     * @param mapId The id of the {@link Map}.
+     */
+    @Override
+    public void doArchiveMap(int mapId) {
+        Map map = MapLoader.getInstance().getMap(mapId);
+        if (map == null) return;
+        map.zip(new ZipTask.ZipProgressionListener() {
+            @Override
+            public void fileListAcquired() {
+
+            }
+
+            @Override
+            public void onProgress(int p) {
+                //TODO : update an Android Notification to display the progression to the user.
+            }
+
+            @Override
+            public void onZipFinished(File outputDirectory) {
+                String archiveOkMsg = getContext().getString(R.string.archive_toast_finished);
+
+                View view = getView();
+                if (view != null) {
+                    Snackbar snackbar = Snackbar.make(view, archiveOkMsg, Snackbar.LENGTH_SHORT);
+                    snackbar.show();
+                }
+            }
+
+            @Override
+            public void onZipError() {
+
+            }
+        });
     }
 
     /**

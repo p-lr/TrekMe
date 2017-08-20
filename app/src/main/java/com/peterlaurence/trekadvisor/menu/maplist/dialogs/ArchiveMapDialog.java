@@ -7,11 +7,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 
 import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.util.ZipTask;
 
 /**
  * This dialog is shown when the user chose to save a {@link Map}. <br>
@@ -25,7 +27,7 @@ public class ArchiveMapDialog extends DialogFragment {
     private static final String MAP_ID = "map_id";
 
     private String mTitle;
-    private Map mMap;
+    private int mMapId;
     private ArchiveMapListener mListener;
 
     public static ArchiveMapDialog newInstance(int mapId) {
@@ -57,17 +59,15 @@ public class ArchiveMapDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        int mapId = getArguments().getInt(MAP_ID);
-        mMap = MapLoader.getInstance().getMap(mapId);
+        mMapId = getArguments().getInt(MAP_ID);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        builder.setView(inflater.inflate(R.layout.archive_map_dialog, null))
-                .setTitle(mTitle).setPositiveButton(R.string.ok_dialog,
+        builder.setTitle(mTitle)
+                .setMessage(R.string.archive_dialog_description)
+                .setPositiveButton(R.string.ok_dialog,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        System.out.println("archiving " + mMap.getName());
-                        // TODO : implement
+                        mListener.doArchiveMap(mMapId);
                     }
                 })
                 .setNegativeButton(R.string.cancel_dialog_string,
@@ -82,6 +82,6 @@ public class ArchiveMapDialog extends DialogFragment {
     }
 
     public interface ArchiveMapListener {
-        void onMapArchived();
+        void doArchiveMap(int mapId);
     }
 }

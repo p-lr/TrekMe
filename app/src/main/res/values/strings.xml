@@ -19,6 +19,7 @@
     <string name="archive_dialog_title">Save map</string>
     <string name="archive_dialog_description">Saving a map will create an archive from it, which can be later
         restored using the import menu.</string>
+    <string name="archive_toast_finished">Map successfully archived</string>
 
     <!-- Calibration fragment -->
     <string name="calibration_status_ok">Calibrated</string>
