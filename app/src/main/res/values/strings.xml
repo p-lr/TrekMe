@@ -18,7 +18,7 @@
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>
     <string name="archive_dialog_description">Saving a map will create an archive from it, which can be later
-        restored using the import menu.</string>
+        restored using the import menu.\n\nThe progress will appear in a notification.</string>
     <string name="archive_snackbar_finished">Map successfully archived</string>
     <string name="archive_notification_title">Archiving</string>
     <string name="archive_notification_msg" formatted="false">Saving the map %s in progress</string>

@@ -217,8 +217,6 @@ public class MainActivity extends AppCompatActivity
             actionBar.setDisplayShowTitleEnabled(true);
         }
 
-        /* Add items to the toolbar */
-        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
@@ -246,22 +244,6 @@ public class MainActivity extends AppCompatActivity
     protected void onStop() {
         mGoogleApiClient.disconnect();
         super.onStop();
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -532,7 +514,7 @@ public class MainActivity extends AppCompatActivity
 
         /* Remove the map-settings fragment */
         Fragment mapSettingsFragment = fragmentManager.findFragmentByTag(MAP_SETTINGS_FRAGMENT_TAG);
-        if(mapSettingsFragment != null) {
+        if (mapSettingsFragment != null) {
             transaction.remove(mapSettingsFragment);
         }
 
