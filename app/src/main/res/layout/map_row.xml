@@ -17,12 +17,17 @@
 
         <TextView
             android:id="@+id/map_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="120dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:textSize="24sp"
+            card_view:layout_constraintHorizontal_bias="0"
             card_view:layout_constraintLeft_toLeftOf="parent"
+            card_view:layout_constraintRight_toRightOf="parent"
             card_view:layout_constraintTop_toTopOf="parent"
             tools:layout_constraintLeft_creator="1"
             tools:layout_constraintTop_creator="1"
@@ -42,7 +47,7 @@
             android:id="@+id/map_preview_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="17dp"
+            android:layout_marginEnd="16dp"
             android:layout_marginTop="16dp"
             card_view:layout_constraintRight_toRightOf="parent"
             card_view:layout_constraintTop_toTopOf="parent"
@@ -61,23 +66,21 @@
             android:text="@string/map_edit_btn_string"
             card_view:layout_constraintLeft_toLeftOf="parent"
             card_view:layout_constraintTop_toTopOf="@+id/guideline"
-            tools:layout_constraintBottom_creator="1"
             tools:layout_constraintLeft_creator="1" />
 
         <ImageButton
             android:id="@+id/map_save_btn"
-            android:background="?attr/selectableItemBackgroundBorderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="start|center_vertical"
+            android:layout_marginEnd="13dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:gravity="end|center_vertical"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_save_white_24dp"
-            card_view:layout_constraintRight_toLeftOf="parent"
-            card_view:layout_constraintTop_toTopOf="@+id/guideline"
-            android:layout_marginRight="16dp"
-            tools:background="@color/colorAccent"
-            android:layout_marginTop="0dp"
             card_view:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="0dp" />
+            card_view:layout_constraintRight_toRightOf="parent"
+            card_view:layout_constraintTop_toTopOf="@+id/guideline"
+            tools:background="@color/colorAccent" />
 
         <android.support.constraint.Guideline
             android:id="@+id/guideline"
