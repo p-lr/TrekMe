@@ -2,6 +2,8 @@ package com.peterlaurence.trekadvisor.menu.maplist;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -19,6 +21,8 @@ import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.util.ZipTask;
 
 import java.io.File;
+
+import static android.content.Context.NOTIFICATION_SERVICE;
 
 /**
  * A {@link Fragment} subclass that displays the list of available maps, using a {@link RecyclerView}.
@@ -181,7 +185,10 @@ public class MapListFragment extends Fragment implements
 
     /**
      * Process a request to archive a {@link Map}. This is typically called from a
-     * {@link ArchiveMapDialog}.
+     * {@link ArchiveMapDialog}. <p>
+     * A {@link Notification} is sent to the user showing the progression in percent. The
+     * {@link NotificationManager} only process one notification at a time, which is handy since
+     * it prevents the application from using too much cpu.
      *
      * @param mapId The id of the {@link Map}.
      */
@@ -189,6 +196,19 @@ public class MapListFragment extends Fragment implements
     public void doArchiveMap(int mapId) {
         Map map = MapLoader.getInstance().getMap(mapId);
         if (map == null) return;
+
+        /* Build the notification and issue it */
+        final Notification.Builder builder = new Notification.Builder(getActivity())
+                .setSmallIcon(R.drawable.ic_map_black_24dp)
+                .setContentTitle(getString(R.string.archive_dialog_title))
+                .setContentText(String.format(getString(R.string.archive_notification_msg), map.getName()));
+
+        final int notificationId = mapId;
+        final NotificationManager notifyMgr =
+                (NotificationManager) getActivity().getSystemService(NOTIFICATION_SERVICE);
+        notifyMgr.notify(notificationId, builder.build());
+
+        /* Effectively launch the archive task */
         map.zip(new ZipTask.ZipProgressionListener() {
             @Override
             public void fileListAcquired() {
@@ -197,12 +217,19 @@ public class MapListFragment extends Fragment implements
 
             @Override
             public void onProgress(int p) {
-                //TODO : update an Android Notification to display the progression to the user.
+                builder.setProgress(100, p, false);
+                notifyMgr.notify(notificationId, builder.build());
             }
 
             @Override
             public void onZipFinished(File outputDirectory) {
-                String archiveOkMsg = getContext().getString(R.string.archive_toast_finished);
+                String archiveOkMsg = getContext().getString(R.string.archive_snackbar_finished);
+
+                /* When the loop is finished, updates the notification */
+                builder.setContentText(archiveOkMsg)
+                        // Removes the progress bar
+                        .setProgress(0, 0, false);
+                notifyMgr.notify(notificationId, builder.build());
 
                 View view = getView();
                 if (view != null) {
