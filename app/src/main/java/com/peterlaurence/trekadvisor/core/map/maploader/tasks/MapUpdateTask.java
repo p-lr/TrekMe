@@ -60,7 +60,9 @@ public class MapUpdateTask extends AsyncTask<File, Void, Void> {
                 /* json deserialization */
                 MapGson mapGson = mGson.fromJson(jsonString, MapGson.class);
 
-                Map map = new Map(mapGson, f, new File(f.getParent(), mapGson.thumbnail));
+                /* Map creation */
+                Map map = mapGson.thumbnail == null ? new Map(mapGson, f, null) :
+                        new Map(mapGson, f, new File(f.getParent(), mapGson.thumbnail));
 
                 /* Calibration */
                 map.calibrate();
