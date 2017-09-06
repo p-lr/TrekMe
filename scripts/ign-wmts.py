@@ -28,10 +28,16 @@ import requests
 
 url = "https://wxs.ign.fr/{}/geoportail/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&LAYER={}&EXCEPTIONS=text/xml&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={}&TILEROW={}&TILECOL={}&"
 
-web_mercator_resolutions = {'10': 152.8740565704, '11': 76.4370282852, '12': 38.2185141426,
-                            '13': 19.1092570713,
-                            '14': 9.5546285356, '15': 4.7773142678, '16': 2.3886571339,
-                            '17': 1.1943285670}
+web_mercator_resolutions = {'0': 156543.0339280410, '1': 78271.5169640205, '2': 39135.7584820102,
+                            '3': 19567.8792410051,
+                            '4': 9783.9396205026, '5': 4891.9698102513, '6': 2445.9849051256,
+                            '7': 1222.9924525628,
+                            '8': 611.4962262814, '9': 305.7481131407, '10': 152.8740565704,
+                            '11': 76.4370282852,
+                            '12': 38.2185141426, '13': 19.1092570713, '14': 9.5546285356,
+                            '15': 4.7773142678,
+                            '16': 2.3886571339, '17': 1.1943285670, '18': 0.5971642835,
+                            '19': 0.2985821417}
 
 # The top left corner
 # TODO : this looks the same for each zoom level, so this is statically set here. But ultimately this data should be
