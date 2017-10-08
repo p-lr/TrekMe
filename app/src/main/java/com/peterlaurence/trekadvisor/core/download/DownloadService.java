@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
+import android.support.annotation.Nullable;
 
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
 
@@ -29,6 +30,7 @@ import java.net.URLConnection;
  * @author peterLaurence on 07/10/17.
  */
 public class DownloadService extends IntentService {
+    public static volatile boolean isRunning;
     public static final String URL_PARAM = "url";
     public static final String RECEIVER_PARAM = "receiver";
     public static final String FILE_NAME = "file_name";
@@ -40,6 +42,11 @@ public class DownloadService extends IntentService {
         super(DownloadService.class.getName());
     }
 
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        isRunning = true;
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -83,5 +90,6 @@ public class DownloadService extends IntentService {
             //TODO : alert user, send an error signal to the receiver.
         }
         stopSelf();
+        isRunning = false;
     }
 }

@@ -58,6 +58,7 @@ public class MapListFragment extends Fragment implements
 
     private Map mCurrentMap;   // The map selected by the user in the list
     private Map mSettingsMap;  // The map that the user wants to calibrate
+    private DownloadReceiver mDownloadReceiver;
 
     public MapListFragment() {
         // Required empty public constructor
@@ -93,6 +94,14 @@ public class MapListFragment extends Fragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        /* A download was pending when screen orientation happened.
+         * We want the progression to continue on the new instance of the dialog fragment.
+         */
+        if (DownloadService.isRunning && mDownloadReceiver != null) {
+            Fragment fragment = getActivity().getFragmentManager().findFragmentByTag(MapDownloadDialog.class.getName());
+            mDownloadReceiver.setMapDownloadDialog((MapDownloadDialog) fragment);
+        }
     }
 
     @Override
@@ -204,7 +213,8 @@ public class MapListFragment extends Fragment implements
         Intent intent = new Intent(getActivity(), DownloadService.class);
         intent.putExtra(URL_PARAM, "https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1");
         intent.putExtra(FILE_NAME, "world-map.zip");
-        intent.putExtra(RECEIVER_PARAM, new DownloadReceiver(new Handler(), mapDownloadDialog));
+        mDownloadReceiver = new DownloadReceiver(new Handler(), mapDownloadDialog);
+        intent.putExtra(RECEIVER_PARAM, mDownloadReceiver);
 
         getActivity().startService(intent);
     }

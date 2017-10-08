@@ -18,6 +18,15 @@ public class DownloadReceiver extends ResultReceiver {
         mMapDownloadDialog = mapDownloadDialog;
     }
 
+    /**
+     * If the activity is re-created while this receiver gets progression from the service, the
+     * {@link MapDownloadDialog} is destroyed and another instance is created. <br>
+     * This method is then used to pass the new instance of {@link MapDownloadDialog}.
+     */
+    public void setMapDownloadDialog(MapDownloadDialog mapDownloadDialog) {
+        mMapDownloadDialog = mapDownloadDialog;
+    }
+
     @Override
     protected void onReceiveResult(int resultCode, Bundle resultData) {
         super.onReceiveResult(resultCode, resultData);
@@ -28,7 +37,7 @@ public class DownloadReceiver extends ResultReceiver {
                 try {
                     mMapDownloadDialog.dismiss();
                 } catch (NullPointerException e) {
-                    //Bandaid before proper solution to handle screen orientation change
+                    e.printStackTrace();
                 }
             }
         }
