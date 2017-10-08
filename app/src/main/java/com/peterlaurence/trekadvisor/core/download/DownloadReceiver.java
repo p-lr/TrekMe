@@ -25,7 +25,11 @@ public class DownloadReceiver extends ResultReceiver {
             int progress = resultData.getInt(DownloadService.PROGRESS_SIG);
             mMapDownloadDialog.setProgress(progress);
             if (progress == 100) {
-                mMapDownloadDialog.dismiss();
+                try {
+                    mMapDownloadDialog.dismiss();
+                } catch (NullPointerException e) {
+                    //Bandaid before proper solution to handle screen orientation change
+                }
             }
         }
     }

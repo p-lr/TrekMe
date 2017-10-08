@@ -13,6 +13,9 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -75,6 +78,7 @@ public class MapListFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -89,6 +93,28 @@ public class MapListFragment extends Fragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        /* Clear the existing action menu */
+        menu.clear();
+
+        /* Fill the new one */
+        inflater.inflate(R.menu.menu_fragment_map_list, menu);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.sample_map_menu_id:
+                showSampleMapDownloadDialog();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -161,23 +187,26 @@ public class MapListFragment extends Fragment implements
                     .setPositiveButton(getString(R.string.ok_dialog), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-
-                            MapDownloadDialog mapDownloadDialog = MapDownloadDialog.newInstance("World map");
-                            mapDownloadDialog.show(getFragmentManager(), MapDownloadDialog.class.getName());
-
-                            //TODO : put this in strings xml
-                            Intent intent = new Intent(getActivity(), DownloadService.class);
-                            intent.putExtra(URL_PARAM, "https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1");
-                            intent.putExtra(FILE_NAME, "world-map.zip");
-                            intent.putExtra(RECEIVER_PARAM, new DownloadReceiver(new Handler(), mapDownloadDialog));
-
-                            getActivity().startService(intent);
+                            showSampleMapDownloadDialog();
                         }
                     })
                     .setNegativeButton(getString(R.string.cancel_dialog_string), null);
             AlertDialog alert = builder.create();
             alert.show();
         }
+    }
+
+    private void showSampleMapDownloadDialog() {
+        MapDownloadDialog mapDownloadDialog = MapDownloadDialog.newInstance("World map");
+        mapDownloadDialog.show(getFragmentManager(), MapDownloadDialog.class.getName());
+
+        //TODO : put this in strings xml
+        Intent intent = new Intent(getActivity(), DownloadService.class);
+        intent.putExtra(URL_PARAM, "https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1");
+        intent.putExtra(FILE_NAME, "world-map.zip");
+        intent.putExtra(RECEIVER_PARAM, new DownloadReceiver(new Handler(), mapDownloadDialog));
+
+        getActivity().startService(intent);
     }
 
     @Override

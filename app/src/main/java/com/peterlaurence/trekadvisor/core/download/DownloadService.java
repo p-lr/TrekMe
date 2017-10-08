@@ -1,14 +1,9 @@
 package com.peterlaurence.trekadvisor.core.download;
 
-import android.Manifest;
 import android.app.IntentService;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
 
@@ -39,32 +34,15 @@ public class DownloadService extends IntentService {
     public static final String FILE_NAME = "file_name";
     public static final String PROGRESS_SIG = "progress";
     public static final int UPDATE_PROGRESS = 8344;
-    private boolean mDownloadPermissionGranted = false;
 
 
     public DownloadService() {
         super(DownloadService.class.getName());
     }
 
-    private static boolean checkInternetPermission(final Context context) {
-        return ActivityCompat.checkSelfPermission(context, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    @Override
-    public void onStart(@Nullable Intent intent, int startId) {
-        super.onStart(intent, startId);
-
-        mDownloadPermissionGranted = checkInternetPermission(getApplicationContext());
-    }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-
-        if (!mDownloadPermissionGranted) {
-            stopSelf();
-            return;
-        }
-
         String urlToDownload = intent.getStringExtra(URL_PARAM);
         ResultReceiver receiver = intent.getParcelableExtra(RECEIVER_PARAM);
         String fileName = intent.getStringExtra(FILE_NAME);
@@ -104,5 +82,6 @@ public class DownloadService extends IntentService {
         if (percentProgress != 100) {
             //TODO : alert user, send an error signal to the receiver.
         }
+        stopSelf();
     }
 }
