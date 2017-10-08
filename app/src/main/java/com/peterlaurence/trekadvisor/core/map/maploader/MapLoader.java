@@ -1,6 +1,5 @@
 package com.peterlaurence.trekadvisor.core.map.maploader;
 
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -32,6 +31,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_APP_DIR;
+import static com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_MAPS_DIR;
+
 /**
  * Singleton object that provides utility methods to read json files that describe each map.
  * <p/>
@@ -62,11 +64,6 @@ public class MapLoader implements MapImporter.MapImportListener {
         put(MercatorProjection.NAME, MercatorProjection.class);
         put(UniversalTransverseMercator.NAME, UniversalTransverseMercator.class);
     }};
-    private static final String APP_FOLDER_NAME = "trekadvisor";
-    private static final File DEFAULT_APP_DIR = new File(Environment.getExternalStorageDirectory(),
-            APP_FOLDER_NAME);
-    /* For instance maps are searched anywhere under the app folder */
-    private static final File DEFAULT_MAPS_DIR = DEFAULT_APP_DIR;
     private static final String TAG = "MapLoader";
     private Gson mGson;
     private List<Map> mMapList;
@@ -409,6 +406,14 @@ public class MapLoader implements MapImporter.MapImportListener {
         return true;
     }
 
+    private void notifyMapListUpdateListeners() {
+        if (mMapListUpdateListeners != null) {
+            for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
+                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
+            }
+        }
+    }
+
     public enum CALIBRATION_METHOD {
         SIMPLE_2_POINTS,
         UNKNOWN;
@@ -449,14 +454,6 @@ public class MapLoader implements MapImporter.MapImportListener {
 
     public interface DeleteMapListener {
         void onMapDeleted();
-    }
-
-    private void notifyMapListUpdateListeners() {
-        if (mMapListUpdateListeners != null) {
-            for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
-                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
-            }
-        }
     }
 
     /* Singleton implementation */

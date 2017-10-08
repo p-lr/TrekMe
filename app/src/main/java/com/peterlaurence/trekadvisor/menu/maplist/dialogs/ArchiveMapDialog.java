@@ -6,14 +6,10 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
 
 import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
-import com.peterlaurence.trekadvisor.util.ZipTask;
 
 /**
  * This dialog is shown when the user chose to save a {@link Map}. <br>
@@ -65,11 +61,11 @@ public class ArchiveMapDialog extends DialogFragment {
         builder.setTitle(mTitle)
                 .setMessage(R.string.archive_dialog_description)
                 .setPositiveButton(R.string.ok_dialog,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        mListener.doArchiveMap(mMapId);
-                    }
-                })
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                mListener.doArchiveMap(mMapId);
+                            }
+                        })
                 .setNegativeButton(R.string.cancel_dialog_string,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {

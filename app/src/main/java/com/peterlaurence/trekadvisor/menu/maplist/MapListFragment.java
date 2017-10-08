@@ -5,7 +5,10 @@ import android.app.Fragment;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,14 +18,20 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.core.download.DownloadReceiver;
+import com.peterlaurence.trekadvisor.core.download.DownloadService;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
+import com.peterlaurence.trekadvisor.menu.maplist.dialogs.MapDownloadDialog;
 import com.peterlaurence.trekadvisor.util.ZipTask;
 
 import java.io.File;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
+import static com.peterlaurence.trekadvisor.core.download.DownloadService.FILE_NAME;
+import static com.peterlaurence.trekadvisor.core.download.DownloadService.RECEIVER_PARAM;
+import static com.peterlaurence.trekadvisor.core.download.DownloadService.URL_PARAM;
 
 /**
  * A {@link Fragment} subclass that displays the list of available maps, using a {@link RecyclerView}.
@@ -144,12 +153,28 @@ public class MapListFragment extends Fragment implements
     public void onMapListUpdate(boolean mapsFound) {
         rootView.findViewById(R.id.loadingPanel).setVisibility(View.GONE);
 
-        /* If no maps found, display a warning */
+        /* If no maps found, suggest to download a sample map */
         if (!mapsFound) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
             builder.setMessage(getString(R.string.no_maps_found_warning))
                     .setCancelable(false)
-                    .setPositiveButton(getString(R.string.ok_dialog), null);
+                    .setPositiveButton(getString(R.string.ok_dialog), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            MapDownloadDialog mapDownloadDialog = MapDownloadDialog.newInstance("World map");
+                            mapDownloadDialog.show(getFragmentManager(), MapDownloadDialog.class.getName());
+
+                            //TODO : put this in strings xml
+                            Intent intent = new Intent(getActivity(), DownloadService.class);
+                            intent.putExtra(URL_PARAM, "https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1");
+                            intent.putExtra(FILE_NAME, "world-map.zip");
+                            intent.putExtra(RECEIVER_PARAM, new DownloadReceiver(new Handler(), mapDownloadDialog));
+
+                            getActivity().startService(intent);
+                        }
+                    })
+                    .setNegativeButton(getString(R.string.cancel_dialog_string), null);
             AlertDialog alert = builder.create();
             alert.show();
         }

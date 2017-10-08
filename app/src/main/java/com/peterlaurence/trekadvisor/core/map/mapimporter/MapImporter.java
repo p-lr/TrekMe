@@ -30,7 +30,7 @@ public class MapImporter {
     private static final java.util.Map<MapProvider, MapParser> mProviderToParserMap;
     private static final int THUMBNAIL_ACCEPT_SIZE = 256;
     private static final String[] IMAGE_EXTENSIONS = new String[]{
-            "jpg", "gif", "png", "bmp"
+            "jpg", "gif", "png", "bmp", "webp"
     };
     private static List<MapImportListener> mMapImportListenerList;
 

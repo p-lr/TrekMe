@@ -10,10 +10,11 @@
     <string name="import_menu_title">Import</string>
 
     <!-- Map list fragment -->
-    <string name="no_maps_found_warning">No maps found on the SD card, "trekadvisor" folder.
-        Please refer to the documentation to learn how to import maps.</string>
+    <string name="no_maps_found_warning">No maps found on the SD card, "trekadvisor" folder.\nDo you wish to download a sample map? (~14.5Mb)</string>
     <string name="ok_dialog">OK</string>
     <string name="map_edit_btn_string">Edit</string>
+    <string name="download_map_dialog_title">Map download</string>
+    <string name="download_map_dialog_msg">Downloading %s…</string>
 
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>
