@@ -6,9 +6,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,20 +19,20 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
-import com.peterlaurence.trekadvisor.core.download.DownloadReceiver;
-import com.peterlaurence.trekadvisor.core.download.DownloadService;
+import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
+import com.peterlaurence.trekadvisor.core.download.DownloadTask;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.MapDownloadDialog;
+import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
 import com.peterlaurence.trekadvisor.util.ZipTask;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
-import static com.peterlaurence.trekadvisor.core.download.DownloadService.FILE_NAME;
-import static com.peterlaurence.trekadvisor.core.download.DownloadService.RECEIVER_PARAM;
-import static com.peterlaurence.trekadvisor.core.download.DownloadService.URL_PARAM;
 
 /**
  * A {@link Fragment} subclass that displays the list of available maps, using a {@link RecyclerView}.
@@ -58,7 +56,6 @@ public class MapListFragment extends Fragment implements
 
     private Map mCurrentMap;   // The map selected by the user in the list
     private Map mSettingsMap;  // The map that the user wants to calibrate
-    private DownloadReceiver mDownloadReceiver;
 
     public MapListFragment() {
         // Required empty public constructor
@@ -89,19 +86,6 @@ public class MapListFragment extends Fragment implements
             rootView = (FrameLayout) inflater.inflate(R.layout.fragment_map_list, container, false);
         }
         return rootView;
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        /* A download was pending when screen orientation happened.
-         * We want the progression to continue on the new instance of the dialog fragment.
-         */
-        if (DownloadService.isRunning && mDownloadReceiver != null) {
-            Fragment fragment = getActivity().getFragmentManager().findFragmentByTag(MapDownloadDialog.class.getName());
-            mDownloadReceiver.setMapDownloadDialog((MapDownloadDialog) fragment);
-        }
     }
 
     @Override
@@ -210,13 +194,15 @@ public class MapListFragment extends Fragment implements
         mapDownloadDialog.show(getFragmentManager(), MapDownloadDialog.class.getName());
 
         //TODO : put this in strings xml
-        Intent intent = new Intent(getActivity(), DownloadService.class);
-        intent.putExtra(URL_PARAM, "https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1");
-        intent.putExtra(FILE_NAME, "world-map.zip");
-        mDownloadReceiver = new DownloadReceiver(new Handler(), mapDownloadDialog);
-        intent.putExtra(RECEIVER_PARAM, mDownloadReceiver);
-
-        getActivity().startService(intent);
+        String url = "https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1";
+        File outputFile = new File(TrekAdvisorContext.DEFAULT_APP_DIR, "world-map.zip");
+        DownloadTask downloadTask = new DownloadTask(url, outputFile, new DownloadTask.UrlDownloadListener() {
+            @Override
+            public void onDownloadProgress(int percent) {
+                EventBus.getDefault().post(new UrlDownloadEvent(percent));
+            }
+        });
+        downloadTask.start();
     }
 
     @Override

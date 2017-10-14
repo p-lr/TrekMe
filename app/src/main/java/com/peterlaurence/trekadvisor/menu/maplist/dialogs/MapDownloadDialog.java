@@ -10,9 +10,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
- * A {@link Dialog} that shows the progression of a map download.
+ * A {@link Dialog} that shows the progression of a map download. <p>
+ * It relies on the {@link EventBus} to get {@link UrlDownloadEvent} messages.
  *
  * @author peterLaurence on 07/10/17.
  */
@@ -29,8 +35,13 @@ public class MapDownloadDialog extends DialogFragment {
         return frag;
     }
 
-    public void setProgress(int p) {
-        mProgressBar.setProgress(p);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProgressEvent(UrlDownloadEvent event) {
+        mProgressBar.setProgress(event.percentProgress);
+
+        if (event.percentProgress == 100) {
+            dismiss();
+        }
     }
 
     @Override
@@ -38,6 +49,18 @@ public class MapDownloadDialog extends DialogFragment {
         super.onAttach(context);
 
         mTitle = context.getString(R.string.download_map_dialog_title);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
     }
 
     @Override
