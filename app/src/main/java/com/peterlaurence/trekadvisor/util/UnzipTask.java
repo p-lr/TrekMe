@@ -1,6 +1,5 @@
 package com.peterlaurence.trekadvisor.util;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.File;
@@ -12,11 +11,11 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
- * Utility class used to unzip a map archive, but can be used with any zip file.
+ * Utility class used to unzip any zip file.
  *
  * @author peterLaurence on 12/06/16.
  */
-public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
+public class UnzipTask extends Thread {
     private static final String TAG = "UnzipTask";
     private File mZipFile;
     private File mOutputFolder;
@@ -29,8 +28,9 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(Void... params) {
+    public void run() {
         byte[] buffer = new byte[1024];
+        boolean result = true;
 
         try {
             /* Create output directory if necessary */
@@ -69,13 +69,13 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
                         fos.write(buffer, 0, len);
                     }
 
-                    publishProgress((int) ((entryCount / (float) totalEntries) * 100));
+                    mUnzipProgressionListener.onProgress((int) ((entryCount / (float) totalEntries) * 100));
 
                     fos.close();
                 } catch (IOException e) {
                     /* Something went wrong during extraction */
                     Log.e(TAG, Tools.stackTraceToString(e));
-                    return false;
+                    result = false;
                 }
             }
 
@@ -83,25 +83,16 @@ public class UnzipTask extends AsyncTask<Void, Integer, Boolean> {
             zis.close();
         } catch (IOException ex) {
             Log.e(TAG, Tools.stackTraceToString(ex));
-            return false;
+            result = false;
         }
 
-        return true;
-    }
-
-    @Override
-    protected void onProgressUpdate(Integer... progress) {
-        mUnzipProgressionListener.onProgress(progress[0]);
-    }
-
-    @Override
-    protected void onPostExecute(Boolean result) {
         if (result) {
             mUnzipProgressionListener.onUnzipFinished(mOutputFolder);
         } else {
             mUnzipProgressionListener.onUnzipError();
         }
     }
+
 
     public interface UnzipProgressionListener {
         void onProgress(int p);

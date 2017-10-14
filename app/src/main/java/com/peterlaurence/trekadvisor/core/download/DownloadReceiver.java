@@ -7,6 +7,9 @@ import android.os.ResultReceiver;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.MapDownloadDialog;
 
 /**
+ * This object is given to the {@link DownloadService}, to process back the progression of the
+ * download.
+ *
  * @author peterLaurence on 08/10/17.
  */
 public class DownloadReceiver extends ResultReceiver {

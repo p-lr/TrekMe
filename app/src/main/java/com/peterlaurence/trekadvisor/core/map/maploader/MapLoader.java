@@ -238,6 +238,10 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapRouteUpdateListener = null;
     }
 
+    public void clearMapArchiveListUpdateListener() {
+        mMapArchiveListUpdateListeners.clear();
+    }
+
     /**
      * Add a {@link Map} to the internal list and generated the json file. <br>
      * This is typically called after an import, after a {@link Map} has been generated from a file

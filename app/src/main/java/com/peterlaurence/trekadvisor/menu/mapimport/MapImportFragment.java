@@ -73,6 +73,7 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
         super.onDetach();
 
         MapImporter.clearMapImportListenerList();
+        MapLoader.getInstance().clearMapArchiveListUpdateListener();
     }
 
     private void generateMapList() {
@@ -115,5 +116,18 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
 
     public interface OnMapArchiveFragmentInteractionListener {
         void onMapArchiveFragmentInteraction();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        if (mRecyclerView == null) return;
+        for (int i = 0; i < mRecyclerView.getAdapter().getItemCount(); i++) {
+            MapArchiveAdapter.MapArchiveViewHolder holder = (MapArchiveAdapter.MapArchiveViewHolder) mRecyclerView.findViewHolderForAdapterPosition(i);
+            if (holder != null) {
+                holder.unSubscribe();
+            }
+        }
     }
 }

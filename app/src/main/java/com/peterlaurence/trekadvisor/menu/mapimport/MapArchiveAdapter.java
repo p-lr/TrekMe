@@ -17,9 +17,17 @@ import android.widget.TextView;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
+import com.peterlaurence.trekadvisor.core.map.maparchiver.MapArchiver;
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.menu.mapimport.events.UnzipErrorEvent;
+import com.peterlaurence.trekadvisor.menu.mapimport.events.UnzipFinishedEvent;
+import com.peterlaurence.trekadvisor.menu.mapimport.events.UnzipProgressionEvent;
 import com.peterlaurence.trekadvisor.util.UnzipTask;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -38,8 +46,40 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
 
     private List<MapArchive> mMapArchiveList;
 
-    public static class MapArchiveViewHolder extends RecyclerView.ViewHolder implements UnzipTask.UnzipProgressionListener,
+    @Override
+    public MapArchiveViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Context ctx = parent.getContext();
+        View v = LayoutInflater.from(ctx).inflate(R.layout.map_archive_card, parent, false);
+
+        return new MapArchiveViewHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(MapArchiveViewHolder holder, int position) {
+        final MapArchive mapArchive = mMapArchiveList.get(position);
+        holder.mArchiveId = mapArchive.getId();
+        holder.mapArchiveName.setText(mapArchive.getName());
+
+        holder.importButton.setOnClickListener(new UnzipButtonClickListener(holder, this));
+        holder.subscribe();
+    }
+
+    @Override
+    public int getItemCount() {
+        return mMapArchiveList == null ? 0 : mMapArchiveList.size();
+    }
+
+    @Override
+    public void onMapArchiveListUpdate() {
+        mMapArchiveList = MapLoader.getInstance().getMapArchives();
+        if (mMapArchiveList != null) {
+            notifyDataSetChanged();
+        }
+    }
+
+    public static class MapArchiveViewHolder extends RecyclerView.ViewHolder implements
             MapImporter.MapImportListener {
+        int mArchiveId;
         CardView cardView;
         TextView mapArchiveName;
         Button importButton;
@@ -85,30 +125,40 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
             }
         }
 
-        @Override
-        public void onProgress(int p) {
-            progressBarHorizontal.setProgress(p);
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onProgressionEvent(UnzipProgressionEvent event) {
+            if (event.archiveId == mArchiveId) {
+                init();
+                progressBarHorizontal.setVisibility(View.VISIBLE);
+                progressBarIndUnzip.setVisibility(View.VISIBLE);
+                extractionLabel.setVisibility(View.VISIBLE);
+                progressBarHorizontal.setProgress(event.progression);
+            }
         }
 
-        @Override
-        public void onUnzipFinished(File outputDirectory) {
-            progressBarHorizontal.setVisibility(View.GONE);
-            progressBarIndUnzip.setVisibility(View.GONE);
-            extractionLabel.setVisibility(View.VISIBLE);
-            mapCreationLabel.setVisibility(View.VISIBLE);
-            iconMapExtracted.setVisibility(View.VISIBLE);
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onUnzipFinishedEvent(UnzipFinishedEvent event) {
+            if (event.archiveId == mArchiveId) {
+                progressBarHorizontal.setVisibility(View.GONE);
+                progressBarIndUnzip.setVisibility(View.GONE);
+                extractionLabel.setVisibility(View.VISIBLE);
+                mapCreationLabel.setVisibility(View.VISIBLE);
+                iconMapExtracted.setVisibility(View.VISIBLE);
 
-            /* Import the extracted map */
-            // TODO : for instance we only import LIBVIPS maps
-            MapImporter.importFromFile(outputDirectory, MapImporter.MapProvider.LIBVIPS, this);
-            progressBarIndMapCreation.setVisibility(View.VISIBLE);
+                /* Import the extracted map */
+                // TODO : for instance we only import LIBVIPS maps
+                MapImporter.importFromFile(event.outputFolder, MapImporter.MapProvider.LIBVIPS, this);
+                progressBarIndMapCreation.setVisibility(View.VISIBLE);
+            }
         }
 
-        @Override
-        public void onUnzipError() {
-            progressBarIndUnzip.setVisibility(View.GONE);
-            iconMapExtractionError.setVisibility(View.VISIBLE);
-            extractionLabel.setText(R.string.extraction_error);
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onUnzipError(UnzipErrorEvent event) {
+            if (event.archiveId == mArchiveId) {
+                progressBarIndUnzip.setVisibility(View.GONE);
+                iconMapExtractionError.setVisibility(View.VISIBLE);
+                extractionLabel.setText(R.string.extraction_error);
+            }
         }
 
         @Override
@@ -126,34 +176,13 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
         public void onMapImportError(MapImporter.MapParseException e) {
             // TODO : show an error message that something went wrong
         }
-    }
 
-    @Override
-    public MapArchiveViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context ctx = parent.getContext();
-        View v = LayoutInflater.from(ctx).inflate(R.layout.map_archive_card, parent, false);
+        void subscribe() {
+            EventBus.getDefault().register(this);
+        }
 
-        return new MapArchiveViewHolder(v);
-    }
-
-    @Override
-    public void onBindViewHolder(MapArchiveViewHolder holder, int position) {
-        final MapArchive mapArchive = mMapArchiveList.get(position);
-        holder.mapArchiveName.setText(mapArchive.getName());
-
-        holder.importButton.setOnClickListener(new UnzipButtonClickListener(holder, this));
-    }
-
-    @Override
-    public int getItemCount() {
-        return mMapArchiveList == null ? 0 : mMapArchiveList.size();
-    }
-
-    @Override
-    public void onMapArchiveListUpdate() {
-        mMapArchiveList = MapLoader.getInstance().getMapArchives();
-        if (mMapArchiveList != null) {
-            notifyDataSetChanged();
+        void unSubscribe() {
+            EventBus.getDefault().unregister(this);
         }
     }
 
@@ -180,17 +209,30 @@ public class MapArchiveAdapter extends RecyclerView.Adapter<MapArchiveAdapter.Ma
                     mapArchiveViewHolder.init();
 
                     mapArchiveViewHolder.importButton.setVisibility(View.GONE);
-                    MapArchive mapArchive = mapArchiveAdapter.mMapArchiveList.get(mapArchiveViewHolder.getAdapterPosition());
+                    final MapArchive mapArchive = mapArchiveAdapter.mMapArchiveList.get(mapArchiveViewHolder.getAdapterPosition());
                     mapArchiveViewHolder.iconMapExtracted.setVisibility(View.GONE);
                     mapArchiveViewHolder.extractionLabel.setVisibility(View.GONE);
                     mapArchiveViewHolder.iconMapExtractionError.setVisibility(View.GONE);
                     mapArchiveViewHolder.iconMapCreated.setVisibility(View.GONE);
                     mapArchiveViewHolder.mapCreationLabel.setVisibility(View.GONE);
-                    mapArchiveViewHolder.progressBarHorizontal.setVisibility(View.VISIBLE);
-                    mapArchiveViewHolder.progressBarIndUnzip.setVisibility(View.VISIBLE);
-                    mapArchiveViewHolder.extractionLabel.setVisibility(View.VISIBLE);
 
-                    mapArchive.unZip(mapArchiveViewHolder);
+                    MapArchiver.archiveMap(mapArchive, new UnzipTask.UnzipProgressionListener() {
+
+                        @Override
+                        public void onProgress(int p) {
+                            EventBus.getDefault().post(new UnzipProgressionEvent(mapArchive.getId(), p));
+                        }
+
+                        @Override
+                        public void onUnzipFinished(File outputDirectory) {
+                            EventBus.getDefault().post(new UnzipFinishedEvent(mapArchive.getId(), outputDirectory));
+                        }
+
+                        @Override
+                        public void onUnzipError() {
+                            EventBus.getDefault().post(new UnzipErrorEvent(mapArchive.getId()));
+                        }
+                    });
                 }
             }
         }
