@@ -28,6 +28,7 @@ public class DownloadTask extends Thread {
     private String mUrlToDownload;
     private File mOutputFile;
     private UrlDownloadListener mUrlDownloadListener;
+    private volatile boolean mCancelSig = false;
 
     public DownloadTask(String urlToDownload, File outputFile, UrlDownloadListener listener) {
         mUrlToDownload = urlToDownload;
@@ -53,6 +54,8 @@ public class DownloadTask extends Thread {
             long total = 0;
             int count;
             while ((count = input.read(data)) != -1) {
+                if (mCancelSig) break;
+
                 total += count;
                 output.write(data, 0, count);
 
@@ -65,15 +68,24 @@ public class DownloadTask extends Thread {
             output.close();
             input.close();
         } catch (IOException e) {
+            /* In that case the progress is lower than 100.. */
             e.printStackTrace();
         }
 
-        if (percentProgress != 100) {
-            //TODO : alert user, send an error signal to the receiver.
+        if (percentProgress == 100) {
+            mUrlDownloadListener.onDownloadFinished(true);
+        } else {
+            mUrlDownloadListener.onDownloadFinished(false);
         }
+    }
+
+    public void cancel() {
+        mCancelSig = true;
     }
 
     public interface UrlDownloadListener {
         void onDownloadProgress(int percent);
+
+        void onDownloadFinished(boolean success);
     }
 }

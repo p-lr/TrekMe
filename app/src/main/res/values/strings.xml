@@ -16,6 +16,7 @@
     <string name="download_map_dialog_title">Map download</string>
     <string name="download_map_dialog_msg">Downloading %s…</string>
     <string name="menu_sample_map">Download sample map</string>
+    <string name="default_map_url">https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1</string>
 
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>

@@ -20,15 +20,12 @@ import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
-import com.peterlaurence.trekadvisor.core.download.DownloadTask;
+import com.peterlaurence.trekadvisor.core.download.UrlDownloadTaskExecutor;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.MapDownloadDialog;
-import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
 import com.peterlaurence.trekadvisor.util.ZipTask;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
@@ -56,6 +53,7 @@ public class MapListFragment extends Fragment implements
 
     private Map mCurrentMap;   // The map selected by the user in the list
     private Map mSettingsMap;  // The map that the user wants to calibrate
+    private String mDefaultMapUrl;
 
     public MapListFragment() {
         // Required empty public constructor
@@ -77,6 +75,8 @@ public class MapListFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
+
+        mDefaultMapUrl = getString(R.string.default_map_url);
     }
 
     @Override
@@ -190,19 +190,11 @@ public class MapListFragment extends Fragment implements
     }
 
     private void showSampleMapDownloadDialog() {
-        MapDownloadDialog mapDownloadDialog = MapDownloadDialog.newInstance("World map");
+        MapDownloadDialog mapDownloadDialog = MapDownloadDialog.newInstance("World map", mDefaultMapUrl);
         mapDownloadDialog.show(getFragmentManager(), MapDownloadDialog.class.getName());
 
-        //TODO : put this in strings xml
-        String url = "https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1";
         File outputFile = new File(TrekAdvisorContext.DEFAULT_APP_DIR, "world-map.zip");
-        DownloadTask downloadTask = new DownloadTask(url, outputFile, new DownloadTask.UrlDownloadListener() {
-            @Override
-            public void onDownloadProgress(int percent) {
-                EventBus.getDefault().post(new UrlDownloadEvent(percent));
-            }
-        });
-        downloadTask.start();
+        UrlDownloadTaskExecutor.startUrlDownload(mDefaultMapUrl, outputFile);
     }
 
     @Override
