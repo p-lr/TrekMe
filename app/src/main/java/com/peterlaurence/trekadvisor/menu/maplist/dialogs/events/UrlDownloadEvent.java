@@ -5,8 +5,10 @@ package com.peterlaurence.trekadvisor.menu.maplist.dialogs.events;
  */
 public class UrlDownloadEvent {
     public int percentProgress;
+    public int urlHash;
 
-    public UrlDownloadEvent(int percentProgress) {
+    public UrlDownloadEvent(int percentProgress, int urlHash) {
         this.percentProgress = percentProgress;
+        this.urlHash = urlHash;
     }
 }

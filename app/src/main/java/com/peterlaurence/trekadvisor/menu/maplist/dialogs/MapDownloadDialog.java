@@ -30,6 +30,7 @@ public class MapDownloadDialog extends DialogFragment {
     private static final String URL = "url";
     private String mTitle;
     private String mUrl;
+    private int mUrlHashCode;
     private ProgressBar mProgressBar;
 
     public static MapDownloadDialog newInstance(String mapName, String url) {
@@ -43,6 +44,7 @@ public class MapDownloadDialog extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProgressEvent(UrlDownloadEvent event) {
+        if (event.urlHash != mUrlHashCode) return;
         mProgressBar.setProgress(event.percentProgress);
 
         if (event.percentProgress == 100) {
@@ -52,6 +54,7 @@ public class MapDownloadDialog extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadFinished(UrlDownloadFinishedEvent event) {
+        if (event.urlHash != mUrlHashCode) return;
         if (!event.success) {
             //TODO : alert the user
         }
@@ -62,6 +65,8 @@ public class MapDownloadDialog extends DialogFragment {
         super.onAttach(context);
 
         mTitle = context.getString(R.string.download_map_dialog_title);
+        mUrl = getArguments().getString(URL);
+        mUrlHashCode = mUrl.hashCode();
     }
 
     @Override
@@ -92,7 +97,7 @@ public class MapDownloadDialog extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 /* Download canceled by user */
-                UrlDownloadTaskExecutor.stopUrlDownload(getArguments().getString(URL));
+                UrlDownloadTaskExecutor.stopUrlDownload(mUrl);
             }
         });
         builder.setCancelable(false);

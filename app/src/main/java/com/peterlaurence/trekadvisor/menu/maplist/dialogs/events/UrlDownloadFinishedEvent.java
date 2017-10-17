@@ -5,8 +5,10 @@ package com.peterlaurence.trekadvisor.menu.maplist.dialogs.events;
  */
 public class UrlDownloadFinishedEvent {
     public boolean success;
+    public int urlHash;
 
-    public UrlDownloadFinishedEvent(boolean success) {
+    public UrlDownloadFinishedEvent(boolean success, int urlHash) {
         this.success = success;
+        this.urlHash = urlHash;
     }
 }

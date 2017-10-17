@@ -20,12 +20,17 @@ import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
+import com.peterlaurence.trekadvisor.core.download.DownloadTask;
 import com.peterlaurence.trekadvisor.core.download.UrlDownloadTaskExecutor;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.MapDownloadDialog;
+import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
+import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadFinishedEvent;
 import com.peterlaurence.trekadvisor.util.ZipTask;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
@@ -194,7 +199,18 @@ public class MapListFragment extends Fragment implements
         mapDownloadDialog.show(getFragmentManager(), MapDownloadDialog.class.getName());
 
         File outputFile = new File(TrekAdvisorContext.DEFAULT_APP_DIR, "world-map.zip");
-        UrlDownloadTaskExecutor.startUrlDownload(mDefaultMapUrl, outputFile);
+        final int urlHash = mDefaultMapUrl.hashCode();
+        UrlDownloadTaskExecutor.startUrlDownload(mDefaultMapUrl, outputFile, new DownloadTask.UrlDownloadListener() {
+            @Override
+            public void onDownloadProgress(int percent) {
+                EventBus.getDefault().post(new UrlDownloadEvent(percent, urlHash));
+            }
+
+            @Override
+            public void onDownloadFinished(boolean success) {
+                EventBus.getDefault().post(new UrlDownloadFinishedEvent(success, urlHash));
+            }
+        });
     }
 
     @Override

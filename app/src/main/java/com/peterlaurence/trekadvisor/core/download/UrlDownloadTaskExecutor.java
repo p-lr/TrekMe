@@ -2,11 +2,6 @@ package com.peterlaurence.trekadvisor.core.download;
 
 import android.util.SparseArray;
 
-import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
-import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadFinishedEvent;
-
-import org.greenrobot.eventbus.EventBus;
-
 import java.io.File;
 
 
@@ -25,18 +20,23 @@ import java.io.File;
 public final class UrlDownloadTaskExecutor {
     private static SparseArray<DownloadTask> mDownloadTaskArray = new SparseArray<>();
 
-    public static int startUrlDownload(final String url, File outputFile) {
+    /**
+     * Launch a {@link DownloadTask}. Two {@link DownloadTask.UrlDownloadListener} are chained so that
+     * this component is able to react on {@link DownloadTask.UrlDownloadListener#onDownloadFinished(boolean)}
+     * while still calling the original listener.
+     */
+    public static int startUrlDownload(final String url, File outputFile, final DownloadTask.UrlDownloadListener listener) {
         final int threadId = getThreadId(url);
         DownloadTask downloadTask = new DownloadTask(url, outputFile, new DownloadTask.UrlDownloadListener() {
             @Override
             public void onDownloadProgress(int percent) {
-                EventBus.getDefault().post(new UrlDownloadEvent(percent));
+                listener.onDownloadProgress(percent);
             }
 
             @Override
             public void onDownloadFinished(boolean success) {
                 removeTask(threadId);
-                EventBus.getDefault().post(new UrlDownloadFinishedEvent(success));
+                listener.onDownloadFinished(success);
             }
         });
 
