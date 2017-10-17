@@ -198,7 +198,7 @@ public class MapListFragment extends Fragment implements
         MapDownloadDialog mapDownloadDialog = MapDownloadDialog.newInstance("World map", mDefaultMapUrl);
         mapDownloadDialog.show(getFragmentManager(), MapDownloadDialog.class.getName());
 
-        File outputFile = new File(TrekAdvisorContext.DEFAULT_APP_DIR, "world-map.zip");
+        final File outputFile = new File(TrekAdvisorContext.DEFAULT_APP_DIR, "world-map.zip");
         final int urlHash = mDefaultMapUrl.hashCode();
         UrlDownloadTaskExecutor.startUrlDownload(mDefaultMapUrl, outputFile, new DownloadTask.UrlDownloadListener() {
             @Override
@@ -209,6 +209,11 @@ public class MapListFragment extends Fragment implements
             @Override
             public void onDownloadFinished(boolean success) {
                 EventBus.getDefault().post(new UrlDownloadFinishedEvent(success, urlHash));
+
+                /* If success, notify the activity */
+                if (success) {
+                    mListener.onDefaultMapDownloaded();
+                }
             }
         });
     }
@@ -313,5 +318,7 @@ public class MapListFragment extends Fragment implements
         void onMapSelectedFragmentInteraction(Map map);
 
         void onMapSettingsFragmentInteraction(Map map);
+
+        void onDefaultMapDownloaded();
     }
 }

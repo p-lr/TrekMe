@@ -9,7 +9,7 @@ import java.io.File;
  * A helper class to manage {@link DownloadTask}s, which can be cancelled. <br>
  * It is made so that :
  * <ul>
- * <li>A given url download can be cancelled at any time, whith {@link #stopUrlDownload(String)}</li>
+ * <li>A given url download can be cancelled at any time, with {@link #stopUrlDownload(String)}</li>
  * <li>When a {@link DownloadTask} finishes either normally or not, {@link #removeTask(int)} is called upon
  * {@link DownloadTask.UrlDownloadListener#onDownloadFinished(boolean)} callback. <br>
  * This guaranties to keep the internal dataset clean.</li>

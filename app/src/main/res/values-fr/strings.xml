@@ -66,4 +66,5 @@
     <string name="download_map_dialog_title">Téléchargement</string>
     <string name="download_map_dialog_msg">Téléchargement de la carte %s…</string>
     <string name="menu_sample_map">Télécharger carte du monde</string>
+    <string name="go_to_import">Vous pouvez maintenant importer la carte</string>
 </resources>

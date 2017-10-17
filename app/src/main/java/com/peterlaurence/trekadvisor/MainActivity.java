@@ -31,6 +31,7 @@ import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
+import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
@@ -39,6 +40,8 @@ import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -548,6 +551,18 @@ public class MainActivity extends AppCompatActivity
     public void onMapSettingsFragmentInteraction(Map map) {
         /* The setting button of a map has been clicked */
         showMapSettingsFragment(map.getName());
+    }
+
+    @Override
+    public void onDefaultMapDownloaded() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showMapImportFragment();
+                fragmentManager.executePendingTransactions();
+                EventBus.getDefault().post(new RequestImportMapEvent());
+            }
+        });
     }
 
     @Override

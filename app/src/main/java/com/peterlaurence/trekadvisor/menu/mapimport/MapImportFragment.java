@@ -16,6 +16,11 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * A {@link Fragment} subclass that displays the list of maps archives available for import.
@@ -69,6 +74,12 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
 
@@ -109,17 +120,21 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
         snackbar.show();
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRequestImportMapEvent(RequestImportMapEvent event) {
+        String confirmImport = getContext().getString(R.string.confirm_import);
+        Snackbar snackbar = Snackbar.make(getView(), confirmImport, Snackbar.LENGTH_LONG);
+        snackbar.show();
+    }
+
     @Override
     public void onMapImportError(MapImporter.MapParseException e) {
 
     }
 
-    public interface OnMapArchiveFragmentInteractionListener {
-        void onMapArchiveFragmentInteraction();
-    }
-
     @Override
     public void onStop() {
+        EventBus.getDefault().unregister(this);
         super.onStop();
 
         if (mRecyclerView == null) return;
@@ -129,5 +144,9 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
                 holder.unSubscribe();
             }
         }
+    }
+
+    public interface OnMapArchiveFragmentInteractionListener {
+        void onMapArchiveFragmentInteraction();
     }
 }
