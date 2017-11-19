@@ -154,6 +154,24 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
             return true;
         });
 
+        mCalibrationPointsNumberPreference.setOnPreferenceChangeListener(((preference, newValue) -> {
+            Map map_ = mMapWeakReference.get();
+            if (map_ != null) {
+                switch ((String) newValue) {
+                    case "2":
+                        map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
+                        break;
+                    case "3":
+                        map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_3_POINTS);
+                        break;
+                    default:
+                        map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
+                }
+                return true;
+            }
+            return false;
+        }));
+
         mapNamePreference.setOnPreferenceChangeListener((preference, newValue) -> {
             try {
                 mMapWeakReference.get().setName((String) newValue);

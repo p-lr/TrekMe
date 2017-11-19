@@ -269,6 +269,8 @@ public class Map {
         switch (getCalibrationMethod()) {
             case SIMPLE_2_POINTS:
                 return 2;
+            case CALIBRATION_3_POINTS:
+                return 3;
             default:
                 return 0;
         }
@@ -286,6 +288,10 @@ public class Map {
      */
     public void setCalibrationPoints(List<MapGson.Calibration.CalibrationPoint> calibrationPoints) {
         mMapGson.calibration.calibration_points = calibrationPoints;
+    }
+
+    public void setCalibrationMethod(MapLoader.CALIBRATION_METHOD method) {
+        mMapGson.calibration.calibration_method = method.name();
     }
 
     public String getImageExtension() {
