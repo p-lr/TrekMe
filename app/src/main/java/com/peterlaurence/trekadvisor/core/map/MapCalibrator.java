@@ -4,6 +4,8 @@ import android.support.annotation.Nullable;
 
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 
+import java.util.Arrays;
+
 /**
  * The {@link MapCalibrator} provides different methods to obtain a {@link Map.MapBounds} from multiple
  * {@link MapGson.Calibration.CalibrationPoint} objects.
@@ -22,7 +24,7 @@ public class MapCalibrator {
      *
      * @param calibrationPointA The calibration point at (approximately) top left corner
      * @param calibrationPointB The calibration point at (approximately) bottom right corner
-     * @return The {@link Map.MapBounds} object
+     * @return The {@link Map.MapBounds} object or null if calibration is not possible.
      */
     public static
     @Nullable
@@ -42,6 +44,48 @@ public class MapCalibrator {
         double projectionY0 = calibrationPointA.proj_y - delta_projectionY / delta_y * calibrationPointA.y;
         double projectionX1 = calibrationPointB.proj_x + delta_projectionX / delta_x * (1 - calibrationPointB.x);
         double projectionY1 = calibrationPointB.proj_y + delta_projectionY / delta_y * (1 - calibrationPointB.y);
+
+        return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
+    }
+
+    /**
+     * This calibration method uses three points. <br>
+     * To determine the projected values, it uses the points that have the greatest extent in each
+     * dimension. So the two points selected to compute de X values of the bounds may be different
+     * from the ones used to compute de Y bounds.
+     *
+     * @param calibrationPointA One calibration point
+     * @param calibrationPointB One calibration point
+     * @param calibrationPointC One calibration point
+     * @return The {@link Map.MapBounds} object or null if calibration is not possible.
+     */
+    public static
+    @Nullable
+    Map.MapBounds calibrate3Points(MapGson.Calibration.CalibrationPoint calibrationPointA,
+                                   MapGson.Calibration.CalibrationPoint calibrationPointB,
+                                   MapGson.Calibration.CalibrationPoint calibrationPointC) {
+
+        MapGson.Calibration.CalibrationPoint[] points = {calibrationPointA, calibrationPointB, calibrationPointC};
+
+        /* Find the greatest difference in x */
+        Arrays.sort(points, (p1, p2) -> p1.x > p2.x ? 1 : -1);
+        double delta_x = points[2].x - points[0].x;
+        double delta_projectionX = points[2].proj_x - points[0].proj_x;
+
+        if (delta_x == 0) return null;
+
+        double projectionX0 = points[0].proj_x - delta_projectionX / delta_x * points[0].x;
+        double projectionX1 = points[2].proj_x + delta_projectionX / delta_x * (1 - points[2].x);
+
+        /* Find the greatest difference in y */
+        Arrays.sort(points, (p1, p2) -> p1.y > p2.y ? 1 : -1);
+        double delta_y = points[2].y - points[0].y;
+        double delta_projectionY = points[2].proj_y - points[0].proj_y;
+
+        if (delta_y == 0) return null;
+
+        double projectionY0 = points[0].proj_y - delta_projectionY / delta_y * points[0].y;
+        double projectionY1 = points[2].proj_y + delta_projectionY / delta_y * (1 - points[2].y);
 
         return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
     }

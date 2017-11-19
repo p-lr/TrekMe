@@ -401,6 +401,7 @@ public class Map {
      * </ul>
      */
     public static class MapBounds {
+        static double DELTA = 0.0000001;
         public double X0;
         public double Y0;
         public double X1;
@@ -411,6 +412,22 @@ public class Map {
             Y0 = y0;
             X1 = x1;
             Y1 = y1;
+        }
+
+        private static boolean doubleIsEqual(double d1, double d2, double delta) {
+            if (Double.compare(d1, d2) == 0) {
+                return true;
+            }
+            if ((Math.abs(d1 - d2) <= delta)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        public boolean compareTo(double x0, double y0, double x1, double y1) {
+            return doubleIsEqual(X0, x0, DELTA) && doubleIsEqual(Y0, y0, DELTA) &&
+                    doubleIsEqual(X1, x1, DELTA) && doubleIsEqual(Y1, y1, DELTA);
         }
     }
 }

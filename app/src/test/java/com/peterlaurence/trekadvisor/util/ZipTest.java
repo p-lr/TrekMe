@@ -80,7 +80,7 @@ public class ZipTest {
                     @Override
                     public void onZipFinished(File outputDirectory) {
                         UnzipTask unzipTask = new UnzipTask(tempMapArchive, mTestFolder.getRoot(), unzipProgressionListener);
-                        unzipTask.execute();
+                        unzipTask.start();
                     }
 
                     @Override

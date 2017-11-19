@@ -420,6 +420,7 @@ public class MapLoader implements MapImporter.MapImportListener {
 
     public enum CALIBRATION_METHOD {
         SIMPLE_2_POINTS,
+        CALIBRATION_3_POINTS,
         UNKNOWN;
 
         public static CALIBRATION_METHOD fromCalibrationName(String name) {
