@@ -63,11 +63,11 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
         inflate(context, R.layout.fragment_map_calibration, this);
         setOrientation(VERTICAL);
 
-        mEditTextLat = (EditText) findViewById(R.id.editTextLat);
-        mEditTextLng = (EditText) findViewById(R.id.editTextLng);
+        mEditTextLat = findViewById(R.id.editTextLat);
+        mEditTextLng = findViewById(R.id.editTextLng);
 
-        mLatLabel = (TextView) findViewById(R.id.calibration_y_label);
-        mLonLabel = (TextView) findViewById(R.id.calibration_x_label);
+        mLatLabel = findViewById(R.id.calibration_y_label);
+        mLonLabel = findViewById(R.id.calibration_x_label);
 
         mLatLabelTxt = context.getString(R.string.latitude_short);
         mLonLabelTxt = context.getString(R.string.longitude_short);
@@ -75,15 +75,15 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
         mProjXLabelTxt = context.getString(R.string.projected_x_short);
         mProjYLabelTxt = context.getString(R.string.projected_y_short);
 
-        mWgs84Switch = (Switch) findViewById(R.id.wgs84_switch);
-        mWgs84SwitchLabel = (TextView) findViewById(R.id.wgs84_switch_label);
+        mWgs84Switch = findViewById(R.id.wgs84_switch);
+        mWgs84SwitchLabel = findViewById(R.id.wgs84_switch_label);
 
-        mFirstCalibrationPointButton = (ImageButton) findViewById(R.id.firstCalibPointButton);
-        mSecondCalibrationPointButton = (ImageButton) findViewById(R.id.secondCalibPointButton);
-        mThirdCalibrationPointButton = (ImageButton) findViewById(R.id.thirdCalibPointButton);
-        mFourthCalibrationPointButton = (ImageButton) findViewById(R.id.fourthCalibPointButton);
+        mFirstCalibrationPointButton = findViewById(R.id.firstCalibPointButton);
+        mSecondCalibrationPointButton = findViewById(R.id.secondCalibPointButton);
+        mThirdCalibrationPointButton = findViewById(R.id.thirdCalibPointButton);
+        mFourthCalibrationPointButton = findViewById(R.id.fourthCalibPointButton);
 
-        mSaveButton = (ImageButton) findViewById(R.id.calibration_save);
+        mSaveButton = findViewById(R.id.calibration_save);
     }
 
     @Override
@@ -150,26 +150,20 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
     }
 
     private void setupCalibrationPointSelector() {
-        mFirstCalibrationPointButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFirstCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
-                mSecondCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                mThirdCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                mFourthCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                mCalibrationModel.onFirstCalibrationPointSelected();
-            }
+        mFirstCalibrationPointButton.setOnClickListener(v -> {
+            mFirstCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
+            mSecondCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+            mThirdCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+            mFourthCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+            mCalibrationModel.onFirstCalibrationPointSelected();
         });
 
-        mSecondCalibrationPointButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mSecondCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
-                mFirstCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                mThirdCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                mFourthCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                mCalibrationModel.onSecondCalibrationPointSelected();
-            }
+        mSecondCalibrationPointButton.setOnClickListener(v -> {
+            mSecondCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
+            mFirstCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+            mThirdCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+            mFourthCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+            mCalibrationModel.onSecondCalibrationPointSelected();
         });
 
         /* Disable/enable buttons if necessary */
@@ -186,47 +180,33 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
             mFourthCalibrationPointButton.setEnabled(true);
             mFourthCalibrationPointButton.setAlpha(1f);
 
-            mThirdCalibrationPointButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mThirdCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
-                    mFirstCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                    mSecondCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                    mFourthCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                    mCalibrationModel.onThirdCalibrationPointSelected();
-                }
+            mThirdCalibrationPointButton.setOnClickListener(v -> {
+                mThirdCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
+                mFirstCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+                mSecondCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+                mFourthCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+                mCalibrationModel.onThirdCalibrationPointSelected();
             });
 
-            mFourthCalibrationPointButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mFourthCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
-                    mFirstCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                    mSecondCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                    mThirdCalibrationPointButton.getDrawable().setTint(Color.BLACK);
-                    mCalibrationModel.onFourthCalibrationPointSelected();
-                }
+            mFourthCalibrationPointButton.setOnClickListener(v -> {
+                mFourthCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
+                mFirstCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+                mSecondCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+                mThirdCalibrationPointButton.getDrawable().setTint(Color.BLACK);
+                mCalibrationModel.onFourthCalibrationPointSelected();
             });
         }
     }
 
     private void setupSaveButton() {
-        mSaveButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCalibrationModel.onSave();
-            }
-        });
+        mSaveButton.setOnClickListener(v -> mCalibrationModel.onSave());
     }
 
     private void setupSwitch() {
-        mWgs84Switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mLatLabel.setText(isChecked ? mLatLabelTxt : mProjYLabelTxt);
-                mLonLabel.setText(isChecked ? mLonLabelTxt : mProjXLabelTxt);
-                mCalibrationModel.onWgs84modeChanged(isChecked);
-            }
+        mWgs84Switch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            mLatLabel.setText(isChecked ? mLatLabelTxt : mProjYLabelTxt);
+            mLonLabel.setText(isChecked ? mLonLabelTxt : mProjXLabelTxt);
+            mCalibrationModel.onWgs84modeChanged(isChecked);
         });
     }
 }
