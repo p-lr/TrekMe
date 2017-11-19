@@ -27,7 +27,16 @@ import java.lang.ref.WeakReference;
  * Fragment that shows the settings for a given map. It provides the abilities to :
  * <ul>
  * <li>Calibrate the map</li>
+ * <ul>
+ * <li>Choose the projection</li>
+ * <li>Define the number of calibration point</li>
+ * <li>Define the calibration points</li>
+ * </ul>
+ * <li>Change map properties</li>
+ * <ul>
  * <li>Change the map name</li>
+ * <li>Delete the map</li>
+ * </ul>
  * </ul>
  * The activity that holds this fragment must implement {@code MapCalibrationRequestListener}
  * interface, to respond to a calibration request for a given {@link Map}.
@@ -43,16 +52,6 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
     private MapLoader.DeleteMapListener mDeleteMapListener;
 
     /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     */
-    public interface MapCalibrationRequestListener {
-        void onMapCalibrationRequest();
-    }
-
-    /**
      * Factory method to create a new instance of this fragment. <br>
      * Arguments supplied here will be retained across fragment destroy and
      * creation.
@@ -66,6 +65,18 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
         args.putString(ARG_MAP_NAME, mapName);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    /* Convenience method */
+    private static void setListPreferenceSummaryAndValue(ListPreference preference, String value) {
+        preference.setSummary(value);
+        preference.setValue(value);
+    }
+
+    /* Convenience method */
+    private static void setEditTextPreferenceSummaryAndValue(EditTextPreference preference, String value) {
+        preference.setSummary(value);
+        preference.setText(value);
     }
 
     /**
@@ -138,72 +149,48 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
             setEditTextPreferenceSummaryAndValue(mapNamePreference, map.getName());
         }
 
-        calibrationButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                mMapCalibrationRequestListener.onMapCalibrationRequest();
+        calibrationButton.setOnPreferenceClickListener(preference -> {
+            mMapCalibrationRequestListener.onMapCalibrationRequest();
+            return true;
+        });
+
+        mapNamePreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            try {
+                mMapWeakReference.get().setName((String) newValue);
                 return true;
+            } catch (Exception e) {
+                return false;
             }
         });
 
-        mapNamePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                try {
-                    mMapWeakReference.get().setName((String) newValue);
+        mCalibrationListPreference.setOnPreferenceChangeListener((preference, projectionName) -> {
+            try {
+                /* If the projection is set to none */
+                if (getString(R.string.projection_none).equals(projectionName)) {
+                    mMapWeakReference.get().setProjection(null);
                     return true;
-                } catch (Exception e) {
-                    return false;
                 }
-            }
-        });
 
-        mCalibrationListPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object projectionName) {
-                try {
-                    /* If the projection is set to none */
-                    if (getString(R.string.projection_none).equals(projectionName)) {
-                        mMapWeakReference.get().setProjection(null);
-                        return true;
-                    }
-
-                    if (MapLoader.getInstance().mutateMapProjection(mMapWeakReference.get(), (String) projectionName)) {
-                        String saveOkMsg = getString(R.string.calibration_projection_saved_ok);
-                        Toast toast = Toast.makeText(getContext(), saveOkMsg, Toast.LENGTH_SHORT);
-                        toast.show();
-                    } else {
-                        // TODO : show some warning ("Wrong Projection name").
-                    }
-                    return true;
-                } catch (Exception e) {
-                    return false;
+                if (MapLoader.getInstance().mutateMapProjection(mMapWeakReference.get(), (String) projectionName)) {
+                    String saveOkMsg = getString(R.string.calibration_projection_saved_ok);
+                    Toast toast = Toast.makeText(getContext(), saveOkMsg, Toast.LENGTH_SHORT);
+                    toast.show();
+                } else {
+                    // TODO : show some warning ("Wrong Projection name").
                 }
-            }
-        });
-
-        deleteButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                ConfirmDeleteFragment f = new ConfirmDeleteFragment();
-                f.setMapWeakRef(mMapWeakReference);
-                f.setDeleteMapListener(mDeleteMapListener);
-                f.show(getFragmentManager(), "delete");
                 return true;
+            } catch (Exception e) {
+                return false;
             }
         });
-    }
 
-    /* Convenience method */
-    private static void setListPreferenceSummaryAndValue(ListPreference preference, String value) {
-        preference.setSummary(value);
-        preference.setValue(value);
-    }
-
-    /* Convenience method */
-    private static void setEditTextPreferenceSummaryAndValue(EditTextPreference preference, String value) {
-        preference.setSummary(value);
-        preference.setText(value);
+        deleteButton.setOnPreferenceClickListener(preference -> {
+            ConfirmDeleteFragment f = new ConfirmDeleteFragment();
+            f.setMapWeakRef(mMapWeakReference);
+            f.setDeleteMapListener(mDeleteMapListener);
+            f.show(getFragmentManager(), "delete");
+            return true;
+        });
     }
 
     @Override
@@ -242,6 +229,16 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
             throw new RuntimeException(context.toString() +
                     "must implement MapCalibrationRequestListener");
         }
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     */
+    public interface MapCalibrationRequestListener {
+        void onMapCalibrationRequest();
     }
 
     /**
