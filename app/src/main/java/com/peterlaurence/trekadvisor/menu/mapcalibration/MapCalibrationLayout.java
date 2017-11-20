@@ -150,6 +150,7 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
     }
 
     private void setupCalibrationPointSelector() {
+        /* The first two buttons are always enabled */
         mFirstCalibrationPointButton.setOnClickListener(v -> {
             mFirstCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
             mSecondCalibrationPointButton.getDrawable().setTint(Color.BLACK);
@@ -166,20 +167,10 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
             mCalibrationModel.onSecondCalibrationPointSelected();
         });
 
-        /* Disable/enable buttons if necessary */
-        if (mCalibrationModel.getCalibrationPointNumber() < 3) {
-            mThirdCalibrationPointButton.setEnabled(false);
-            mThirdCalibrationPointButton.setAlpha(0.4f);
-
-            mFourthCalibrationPointButton.setEnabled(false);
-            mFourthCalibrationPointButton.setAlpha(0.4f);
-        } else {
+        /* Disable/enable other buttons if necessary */
+        if (mCalibrationModel.getCalibrationPointNumber() > 2) {
             mThirdCalibrationPointButton.setEnabled(true);
             mThirdCalibrationPointButton.setAlpha(1f);
-
-            mFourthCalibrationPointButton.setEnabled(true);
-            mFourthCalibrationPointButton.setAlpha(1f);
-
             mThirdCalibrationPointButton.setOnClickListener(v -> {
                 mThirdCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
                 mFirstCalibrationPointButton.getDrawable().setTint(Color.BLACK);
@@ -187,7 +178,13 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
                 mFourthCalibrationPointButton.getDrawable().setTint(Color.BLACK);
                 mCalibrationModel.onThirdCalibrationPointSelected();
             });
-
+        } else {
+            mThirdCalibrationPointButton.setEnabled(false);
+            mThirdCalibrationPointButton.setAlpha(0.4f);
+        }
+        if (mCalibrationModel.getCalibrationPointNumber() > 3) {
+            mFourthCalibrationPointButton.setEnabled(true);
+            mFourthCalibrationPointButton.setAlpha(1f);
             mFourthCalibrationPointButton.setOnClickListener(v -> {
                 mFourthCalibrationPointButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
                 mFirstCalibrationPointButton.getDrawable().setTint(Color.BLACK);
@@ -195,6 +192,9 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
                 mThirdCalibrationPointButton.getDrawable().setTint(Color.BLACK);
                 mCalibrationModel.onFourthCalibrationPointSelected();
             });
+        } else {
+            mFourthCalibrationPointButton.setEnabled(false);
+            mFourthCalibrationPointButton.setAlpha(0.4f);
         }
     }
 
