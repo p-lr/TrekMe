@@ -40,7 +40,6 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     private MapCalibrationLayout rootView;
     private TileView mTileView;
     private CalibrationMarker mCalibrationMarker;
-    private List<MapGson.Calibration.CalibrationPoint> mCalibrationPointList;
     private int mCurrentCalibrationPoint;
     private View mView;
 
@@ -117,9 +116,6 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     public void setMap(Map map) {
         /* Keep a weakRef for future references */
         mMapWeakReference = new WeakReference<>(map);
-
-        /* Get the calibration points */
-        mCalibrationPointList = map.getCalibrationPoints();
 
         TileView tileView = new TileView(this.getContext());
 
@@ -228,8 +224,13 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     }
 
     private void moveToCalibrationPoint(int calibrationPointNumber, double relativeX, double relativeY) {
-        if (mCalibrationPointList != null && mCalibrationPointList.size() > calibrationPointNumber) {
-            MapGson.Calibration.CalibrationPoint calibrationPoint = mCalibrationPointList.get(calibrationPointNumber);
+         /* Get the calibration points */
+        Map map = mMapWeakReference.get();
+        if (map == null) return;
+        List<MapGson.Calibration.CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
+
+        if (calibrationPointList != null && calibrationPointList.size() > calibrationPointNumber) {
+            MapGson.Calibration.CalibrationPoint calibrationPoint = calibrationPointList.get(calibrationPointNumber);
             moveCalibrationMarker(mTileView, mCalibrationMarker, calibrationPoint.x, calibrationPoint.y);
         } else {
             /* No calibration point defined */
@@ -255,13 +256,17 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
             return;
         }
 
+        /* Get the calibration points */
         Map map = mMapWeakReference.get();
+        if (map == null) return;
+        List<MapGson.Calibration.CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
+
         MapGson.Calibration.CalibrationPoint calibrationPoint;
-        if (mCalibrationPointList.size() > mCurrentCalibrationPoint) {
-            calibrationPoint = mCalibrationPointList.get(mCurrentCalibrationPoint);
+        if (calibrationPointList.size() > mCurrentCalibrationPoint) {
+            calibrationPoint = calibrationPointList.get(mCurrentCalibrationPoint);
         } else {
             calibrationPoint = new MapGson.Calibration.CalibrationPoint();
-            mCalibrationPointList.add(calibrationPoint);
+            map.addCalibrationPoint(calibrationPoint);
         }
         Projection projection = map.getProjection();
         if (rootView.isWgs84() && projection != null) {
@@ -289,8 +294,13 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     }
 
     private void updateCoordinateFieldsFromData(int calibrationPointNumber) {
-        if (mCalibrationPointList != null && mCalibrationPointList.size() > calibrationPointNumber) {
-            MapGson.Calibration.CalibrationPoint calibrationPoint = mCalibrationPointList.get(calibrationPointNumber);
+         /* Get the calibration points */
+        Map map = mMapWeakReference.get();
+        if (map == null) return;
+        List<MapGson.Calibration.CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
+
+        if (calibrationPointList != null && calibrationPointList.size() > calibrationPointNumber) {
+            MapGson.Calibration.CalibrationPoint calibrationPoint = calibrationPointList.get(calibrationPointNumber);
             Projection projection = mMapWeakReference.get().getProjection();
             if (rootView.isWgs84() && projection != null) {
                 double[] wgs84 = projection.undoProjection(calibrationPoint.proj_x, calibrationPoint.proj_y);

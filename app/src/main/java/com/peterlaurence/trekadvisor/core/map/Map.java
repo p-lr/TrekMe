@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -254,6 +255,10 @@ public class Map {
                 mMapGson.calibration.calibration_method);
     }
 
+    public void setCalibrationMethod(MapLoader.CALIBRATION_METHOD method) {
+        mMapGson.calibration.calibration_method = method.name();
+    }
+
     public String getOrigin() {
         try {
             return mMapGson.provider.generated_by;
@@ -277,10 +282,12 @@ public class Map {
     }
 
     /**
-     * Get the calibration points defined.
+     * Get a copy of the calibration points. <br>
+     * This returns only a copy to ensure that no modification is made to the calibration points
+     * through this call.
      */
     public List<MapGson.Calibration.CalibrationPoint> getCalibrationPoints() {
-        return mMapGson.calibration.calibration_points;
+        return new ArrayList<>(mMapGson.calibration.calibration_points);
     }
 
     /**
@@ -290,8 +297,8 @@ public class Map {
         mMapGson.calibration.calibration_points = calibrationPoints;
     }
 
-    public void setCalibrationMethod(MapLoader.CALIBRATION_METHOD method) {
-        mMapGson.calibration.calibration_method = method.name();
+    public void addCalibrationPoint(MapGson.Calibration.CalibrationPoint point) {
+        mMapGson.calibration.calibration_points.add(point);
     }
 
     public String getImageExtension() {
