@@ -191,14 +191,14 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     @Override
     public void onThirdCalibrationPointSelected() {
         updateCoordinateFieldsFromData(2);
-        moveToCalibrationPoint(0, 0.9, 0.1);
+        moveToCalibrationPoint(2, 0.9, 0.1);
         mCurrentCalibrationPoint = 2;
     }
 
     @Override
     public void onFourthCalibrationPointSelected() {
         updateCoordinateFieldsFromData(3);
-        moveToCalibrationPoint(0, 0.1, 0.9);
+        moveToCalibrationPoint(3, 0.1, 0.9);
         mCurrentCalibrationPoint = 3;
     }
 

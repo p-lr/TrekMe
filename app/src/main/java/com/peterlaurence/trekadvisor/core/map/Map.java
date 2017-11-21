@@ -146,16 +146,23 @@ public class Map {
             mMapGson.calibration.projection.init();
         }
 
+        List<MapGson.Calibration.CalibrationPoint> calibrationPoints = mMapGson.calibration.calibration_points;
+        if (calibrationPoints == null) return;
         switch (getCalibrationMethod()) {
             case SIMPLE_2_POINTS:
-                List<MapGson.Calibration.CalibrationPoint> calibrationPoints = mMapGson.calibration.calibration_points;
-                if (calibrationPoints != null && calibrationPoints.size() >= 2) {
+                if (calibrationPoints.size() >= 2) {
                     /* Correct points if necessary */
                     MapCalibrator.sanityCheck2PointsCalibration(calibrationPoints.get(0),
                             calibrationPoints.get(1));
 
                     mMapBounds = MapCalibrator.simple2PointsCalibration(calibrationPoints.get(0),
                             calibrationPoints.get(1));
+                }
+                break;
+            case CALIBRATION_3_POINTS:
+                if (calibrationPoints.size() >= 3) {
+                    mMapBounds = MapCalibrator.calibrate3Points(calibrationPoints.get(0),
+                            calibrationPoints.get(1), calibrationPoints.get(2));
                 }
                 break;
             default:
