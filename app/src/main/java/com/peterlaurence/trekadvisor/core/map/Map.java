@@ -413,6 +413,14 @@ public class Map {
     }
 
     /**
+     * Two {@link Map} are considered identical if they have the same configuration file.
+     */
+    public boolean equals(Map map) {
+        if (map == null) return false;
+        return mConfigFile.equals(map.getConfigFile());
+    }
+
+    /**
      * A MapBounds object holds the bounds coordinates of :
      * <ul>
      * <li>The top-left corner of the map : (projectionX0, projectionY0) or (lon0, lat0) depending

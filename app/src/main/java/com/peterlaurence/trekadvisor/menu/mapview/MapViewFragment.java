@@ -33,6 +33,8 @@ import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
+import com.qozix.tileview.TileView;
+import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
 
 import java.util.List;
@@ -266,9 +268,20 @@ public class MapViewFragment extends Fragment implements
      */
     private void updateMapIfNecessary() {
         Map map = mMapProvider.getCurrentMap();
-        if (map != null && mMap != map) {
-            setMap(map);
-            updateLayers();
+        if (map != null) {
+            if (mMap != null && mMap.equals(map)) {
+                Map.MapBounds newBounds = map.getMapBounds();
+
+                if (mTileView != null) {
+                    CoordinateTranslater c = mTileView.getCoordinateTranslater();
+                    if (newBounds != null && !newBounds.compareTo(c.getLeft(), c.getTop(), c.getRight(), c.getBottom())) {
+                        setTileViewBounds(mTileView, map);
+                    }
+                }
+            } else {
+                setMap(map);
+                updateLayers();
+            }
         }
     }
 
@@ -437,15 +450,7 @@ public class MapViewFragment extends Fragment implements
         tileView.setShouldRenderWhilePanning(true);
 
         /* Map calibration */
-        Map.MapBounds mapBounds = map.getMapBounds();
-        if (mapBounds != null) {
-            tileView.defineBounds(mapBounds.X0,
-                    mapBounds.Y0,
-                    mapBounds.X1,
-                    mapBounds.Y1);
-        } else {
-            tileView.defineBounds(0, 0, 1, 1);
-        }
+        setTileViewBounds(tileView, map);
 
         /* The BitmapProvider */
         tileView.setBitmapProvider(map.getBitmapProvider());
@@ -496,6 +501,18 @@ public class MapViewFragment extends Fragment implements
 
     public enum SpeedUnit {
         KM_H, MPH
+    }
+
+    private void setTileViewBounds(TileView tileView, Map map) {
+        Map.MapBounds mapBounds = map.getMapBounds();
+        if (mapBounds != null) {
+            tileView.defineBounds(mapBounds.X0,
+                    mapBounds.Y0,
+                    mapBounds.X1,
+                    mapBounds.Y1);
+        } else {
+            tileView.defineBounds(0, 0, 1, 1);
+        }
     }
 
     /**
