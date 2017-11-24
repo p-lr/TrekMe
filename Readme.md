@@ -40,7 +40,6 @@ is the memory available on your device (smartphone, tablet).
 ### On TODO list
 
 * GPX track recording
-* Calibration with 3+ points (when not using a projection)
 * Develop a desktop tool to assist map creation
 
 ## <a name="TOC-TrekAdvisor-Users"></a>TrekAdvisor Users

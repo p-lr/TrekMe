@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="projections_names">
+    <string-array name="projections_names" translatable="false">
         <item>Pseudo Mercator</item>
         <item>Universal Transverse Mercator</item>
         <item>@string/projection_none</item>
     </string-array>
 
-    <string-array name="calibration_points_numbers">
+    <string-array name="calibration_points_numbers" translatable="false">
         <item>2</item>
         <item>3</item>
         <item>4</item>
