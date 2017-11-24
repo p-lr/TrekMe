@@ -165,6 +165,13 @@ public class Map {
                             calibrationPoints.get(1), calibrationPoints.get(2));
                 }
                 break;
+            case CALIBRATION_4_POINTS:
+                if (calibrationPoints.size() == 4) {
+                    mMapBounds = MapCalibrator.calibrate4Points(calibrationPoints.get(0),
+                            calibrationPoints.get(1), calibrationPoints.get(2),
+                            calibrationPoints.get(3));
+                }
+                break;
             default:
                 // don't care
         }
@@ -283,6 +290,8 @@ public class Map {
                 return 2;
             case CALIBRATION_3_POINTS:
                 return 3;
+            case CALIBRATION_4_POINTS:
+                return 4;
             default:
                 return 0;
         }

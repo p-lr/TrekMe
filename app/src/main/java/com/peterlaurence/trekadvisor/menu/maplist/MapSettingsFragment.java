@@ -164,6 +164,9 @@ public class MapSettingsFragment extends PreferenceFragment implements SharedPre
                     case "3":
                         map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_3_POINTS);
                         break;
+                    case "4":
+                        map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_4_POINTS);
+                        break;
                     default:
                         map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
                 }
