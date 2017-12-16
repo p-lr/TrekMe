@@ -179,7 +179,7 @@ public class DistanceLayer {
         /* The task to be executed on the dedicated thread */
         DistanceCalculationRunnable runnable = new DistanceCalculationRunnable(mMap, handler, updateUiRunnable);
 
-        mHandler = new LimitedHandler(runnable);
+        mHandler = new LimitedHandler(mDistanceThread.getLooper(), runnable);
     }
 
     private void stopDistanceCalculation() {
@@ -216,7 +216,8 @@ public class DistanceLayer {
         private static final int MESSAGE = 0;
         private DistanceCalculationRunnable mDistanceRunnable;
 
-        LimitedHandler(DistanceCalculationRunnable task) {
+        LimitedHandler(Looper looper, DistanceCalculationRunnable task) {
+            super(looper);
             mDistanceRunnable = task;
         }
 
