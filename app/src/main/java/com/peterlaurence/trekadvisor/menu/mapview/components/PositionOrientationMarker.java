@@ -10,14 +10,14 @@ import android.graphics.Path;
 import android.view.View;
 
 import com.peterlaurence.trekadvisor.R;
-import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
+import com.peterlaurence.trekadvisor.core.events.OrientationEventManager;
 
 /**
  * Custom marker for indicating the current position, and optionally the orientation.
  *
  * @author peterLaurence on 03/04/16.
  */
-public class PositionOrientationMarker extends View implements OrientationSensor.OrientationListener {
+public class PositionOrientationMarker extends View implements OrientationEventManager.OrientationListener {
     private int mMeasureDimension;
     private int mOrientationRadius1Dimension;
     private int mPositionDimension;

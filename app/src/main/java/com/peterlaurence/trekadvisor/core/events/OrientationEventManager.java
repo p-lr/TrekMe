@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.core.sensors;
+package com.peterlaurence.trekadvisor.core.events;
 
 import android.app.Activity;
 import android.content.Context;
@@ -18,7 +18,7 @@ import android.view.Surface;
  *
  * @author peterLaurence on 09/04/16.
  */
-public class OrientationSensor implements SensorEventListener {
+public class OrientationEventManager implements SensorEventListener {
 
     private OrientationListener mOrientationListener;
 
@@ -28,7 +28,7 @@ public class OrientationSensor implements SensorEventListener {
     private Activity mActivity;
 
 
-    public OrientationSensor(Activity context) {
+    public OrientationEventManager(Activity context) {
         mActivity = context;
         mStarted = false;
 

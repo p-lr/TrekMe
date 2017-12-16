@@ -29,7 +29,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
-import com.peterlaurence.trekadvisor.core.sensors.OrientationSensor;
+import com.peterlaurence.trekadvisor.core.events.OrientationEventManager;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
@@ -70,7 +70,7 @@ public class MapViewFragment extends Fragment implements
     private MapProvider mMapProvider;
     private LocationProvider mLocationProvider;
     private LocationRequest mLocationRequest;
-    private OrientationSensor mOrientationSensor;
+    private OrientationEventManager mOrientationEventManager;
     private MarkerLayer mMarkerLayer;
     private RouteLayer mRouteLayer;
     private DistanceLayer mDistanceLayer;
@@ -137,16 +137,16 @@ public class MapViewFragment extends Fragment implements
         mDistanceListener = rootView.getDistanceIndicator();
         mPositionMarker = rootView.getPositionMarker();
 
-        /* Create the instance of the OrientationSensor */
-        if (mOrientationSensor == null) {
-            mOrientationSensor = new OrientationSensor(getActivity());
+        /* Create the instance of the OrientationEventManager */
+        if (mOrientationEventManager == null) {
+            mOrientationEventManager = new OrientationEventManager(getActivity());
 
             /* Register the position marker as an OrientationListener */
-            mOrientationSensor.setOrientationListener((OrientationSensor.OrientationListener) mPositionMarker);
+            mOrientationEventManager.setOrientationListener((OrientationEventManager.OrientationListener) mPositionMarker);
             if (savedInstanceState != null) {
                 boolean shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION);
                 if (shouldDisplayOrientation) {
-                    mOrientationSensor.start();
+                    mOrientationEventManager.start();
                 }
             }
         }
@@ -187,7 +187,7 @@ public class MapViewFragment extends Fragment implements
         item.setChecked(mDistanceLayer.isVisible());
 
         MenuItem itemOrientation = menu.findItem(R.id.orientation_enable_id);
-        itemOrientation.setChecked(mOrientationSensor.isStarted());
+        itemOrientation.setChecked(mOrientationEventManager.isStarted());
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -214,7 +214,7 @@ public class MapViewFragment extends Fragment implements
                 }
                 return true;
             case R.id.orientation_enable_id:
-                item.setChecked(mOrientationSensor.toggleOrientation());
+                item.setChecked(mOrientationEventManager.toggleOrientation());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -255,7 +255,7 @@ public class MapViewFragment extends Fragment implements
         if (hidden) {
             mSpeedListener.hideSpeed();
             mDistanceLayer.hide();
-            mOrientationSensor.stop();
+            mOrientationEventManager.stop();
         } else {
             updateMapIfNecessary();
         }
@@ -318,8 +318,8 @@ public class MapViewFragment extends Fragment implements
         mRequestManageMarkerListener = null;
         mMapProvider = null;
         mSpeedListener = null;
-        mOrientationSensor.stop();
-        mOrientationSensor = null;
+        mOrientationEventManager.stop();
+        mOrientationEventManager = null;
     }
 
     @Override
@@ -479,7 +479,7 @@ public class MapViewFragment extends Fragment implements
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, mOrientationSensor.isStarted());
+        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, mOrientationEventManager.isStarted());
     }
 
     /**
