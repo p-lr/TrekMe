@@ -78,7 +78,7 @@ public class OrientationSensor implements SensorEventListener {
         /* The task to be executed on the dedicated thread */
         OrientationCalculationRunnable runnable = new OrientationCalculationRunnable(mActivity, handler, updateUiRunnable);
 
-        mHandler = new LimitedHandler(runnable);
+        mHandler = new LimitedHandler(mOrientationThread.getLooper(), runnable);
 
         /* Subscribe to orientation events */
         SensorManager sensorManager = (SensorManager) mActivity.getSystemService(Context.SENSOR_SERVICE);
@@ -143,7 +143,8 @@ public class OrientationSensor implements SensorEventListener {
         private static final int MESSAGE = 0;
         private OrientationCalculationRunnable mOrientationRunnable;
 
-        LimitedHandler(OrientationCalculationRunnable task) {
+        LimitedHandler(Looper looper, OrientationCalculationRunnable task) {
+            super(looper);
             mOrientationRunnable = task;
         }
 
@@ -156,7 +157,7 @@ public class OrientationSensor implements SensorEventListener {
 
         @Override
         public void handleMessage(Message msg) {
-            mOrientationRunnable.run();
+            post(mOrientationRunnable);
         }
     }
 
