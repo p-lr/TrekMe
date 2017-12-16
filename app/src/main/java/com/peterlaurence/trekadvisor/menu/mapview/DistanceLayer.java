@@ -230,7 +230,7 @@ public class DistanceLayer {
 
         @Override
         public void handleMessage(Message msg) {
-            mDistanceRunnable.run();
+            post(mDistanceRunnable);
         }
     }
 
