@@ -9,6 +9,10 @@
     <string name="select_map_menu_title">Select map</string>
     <string name="import_menu_title">Import</string>
 
+    <!-- LocationService -->
+    <string name="service_description">Location service</string>
+    <string name="service_action">GPX recording</string>
+
     <!-- Map list fragment -->
     <string name="no_maps_found_warning">No maps found on the SD card, "trekadvisor" folder.\nDo you wish to download a sample map? (~14.5Mb)</string>
     <string name="ok_dialog">OK</string>
@@ -86,6 +90,8 @@
     <string name="mapview_add_marker">Add marker</string>
     <string name="mapview_measure_distance">Measure distance</string>
     <string name="mapview_orientation_enable">Show orientation</string>
+    <string name="record_gpx_start">Record track</string>
+    <string name="record_gpx_stop">Stop track record</string>
     <string name="move_marker">Move</string>
     <string name="delete_marker_question">Delete marker?</string>
     <string name="km_h">km/h</string>

@@ -32,4 +32,14 @@
         app:showAsAction="never"
         android:title="@string/mapview_orientation_enable" />
 
+    <item
+        android:id="@+id/record_gpx_start_id"
+        app:showAsAction="never"
+        android:title="@string/record_gpx_start" />
+
+    <item
+        android:id="@+id/record_gpx_stop_id"
+        app:showAsAction="never"
+        android:title="@string/record_gpx_stop" />
+
 </menu>
