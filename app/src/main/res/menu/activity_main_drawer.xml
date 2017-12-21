@@ -14,6 +14,10 @@
             android:id="@+id/nav_import"
             android:icon="@drawable/import_24dp"
             android:title="@string/import_menu_title" />
+        <item
+            android:id="@+id/nav_record"
+            android:icon="@drawable/record_rec"
+            android:title="@string/record_menu_title" />
     </group>
 
 </menu>

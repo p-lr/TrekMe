@@ -40,6 +40,7 @@ import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
+import com.peterlaurence.trekadvisor.menu.record.RecordFragment;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_SETTINGS_FRAGMENT_TAG = "mapSettingsFragment";
     private static final String MAP_CALIBRATION_FRAGMENT_TAG = "mapCalibrationFragment";
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
+    private static final String RECORD_FRAGMENT_TAG = "gpxFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_IMPORT_FRAGMENT_TAG);
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
                 add(MARKER_MANAGE_FRAGMENT_TAG);
+                add(RECORD_FRAGMENT_TAG);
             }});
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -145,10 +148,10 @@ public class MainActivity extends AppCompatActivity
 
         fragmentManager = this.getFragmentManager();
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         if (drawer != null) {
@@ -156,7 +159,7 @@ public class MainActivity extends AppCompatActivity
         }
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
         }
@@ -264,6 +267,10 @@ public class MainActivity extends AppCompatActivity
                 showMapImportFragment();
                 break;
 
+            case R.id.nav_record:
+                showRecordFragment();
+                break;
+
             default:
                 break;
         }
@@ -303,6 +310,12 @@ public class MainActivity extends AppCompatActivity
         Fragment mapCalibrationFragment = new MapImportFragment();
         transaction.add(R.id.content_frame, mapCalibrationFragment, MAP_IMPORT_FRAGMENT_TAG);
         return mapCalibrationFragment;
+    }
+
+    private Fragment createRecordFragment(FragmentTransaction transaction) {
+        Fragment gpxFragment = new RecordFragment();
+        transaction.add(R.id.content_frame, gpxFragment, RECORD_FRAGMENT_TAG);
+        return gpxFragment;
     }
 
     @Override
@@ -469,6 +482,24 @@ public class MainActivity extends AppCompatActivity
         transaction.commit();
     }
 
+    private void showRecordFragment() {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
+        /* Hide other fragments */
+        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
+        hideOtherFragments(hideTransaction, RECORD_FRAGMENT_TAG);
+        hideTransaction.commit();
+
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        Fragment recordFragment = createRecordFragment(transaction);
+        transaction.show(recordFragment);
+
+        /* Manually manage the back action*/
+        mBackFragmentTag = RECORD_FRAGMENT_TAG;
+        transaction.commit();
+    }
+
     /**
      * Hides all fragments except the one which tag is {@code fragmentTag}.
      *
@@ -519,6 +550,12 @@ public class MainActivity extends AppCompatActivity
         Fragment mapSettingsFragment = fragmentManager.findFragmentByTag(MAP_SETTINGS_FRAGMENT_TAG);
         if (mapSettingsFragment != null) {
             transaction.remove(mapSettingsFragment);
+        }
+
+        /* Remove the record fragment */
+        Fragment recordFragment = fragmentManager.findFragmentByTag(RECORD_FRAGMENT_TAG);
+        if (recordFragment != null) {
+            transaction.remove(recordFragment);
         }
 
         transaction.commit();
