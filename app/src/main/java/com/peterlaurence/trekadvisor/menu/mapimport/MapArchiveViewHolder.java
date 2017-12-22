@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
+import com.peterlaurence.trekadvisor.menu.events.MapImportedEvent;
 import com.peterlaurence.trekadvisor.menu.mapimport.events.UnzipErrorEvent;
 import com.peterlaurence.trekadvisor.menu.mapimport.events.UnzipFinishedEvent;
 import com.peterlaurence.trekadvisor.menu.mapimport.events.UnzipProgressionEvent;
@@ -25,8 +26,7 @@ import org.greenrobot.eventbus.ThreadMode;
 /**
  * @author peterLaurence on 22/12/17.
  */
-public class MapArchiveViewHolder extends RecyclerView.ViewHolder implements
-        MapImporter.MapImportListener {
+public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
     int mArchiveId;
     CardView cardView;
     TextView mapArchiveName;
@@ -93,9 +93,20 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder implements
             mapCreationLabel.setVisibility(View.VISIBLE);
             iconMapExtracted.setVisibility(View.VISIBLE);
 
-                /* Import the extracted map */
+            /* Import the extracted map */
             // TODO : for instance we only import LIBVIPS maps
-            MapImporter.importFromFile(event.outputFolder, MapImporter.MapProvider.LIBVIPS, this);
+            MapImporter.importFromFile(event.outputFolder, MapImporter.MapProvider.LIBVIPS,
+                    new MapImporter.MapImportListener() {
+                        @Override
+                        public void onMapImported(Map map, MapImporter.MapParserStatus status) {
+                            EventBus.getDefault().post(new MapImportedEvent(map, status));
+                        }
+
+                        @Override
+                        public void onMapImportError(MapImporter.MapParseException e) {
+                            // TODO : show an error message that something went wrong and send an event.
+                        }
+                    });
             progressBarIndMapCreation.setVisibility(View.VISIBLE);
         }
     }
@@ -109,20 +120,15 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder implements
         }
     }
 
-    @Override
-    public void onMapImported(Map map, MapImporter.MapParserStatus status) {
-        if (status == MapImporter.MapParserStatus.EXISTING_MAP) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMapImported(MapImportedEvent event) {
+        if (event.status == MapImporter.MapParserStatus.EXISTING_MAP) {
             mapCreationLabel.setText(R.string.imported_untouched);
         }
         progressBarIndMapCreation.setVisibility(View.GONE);
         iconMapCreated.setVisibility(View.VISIBLE);
         mapCreationLabel.setVisibility(View.VISIBLE);
         importButton.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onMapImportError(MapImporter.MapParseException e) {
-        // TODO : show an error message that something went wrong
     }
 
     void subscribe() {

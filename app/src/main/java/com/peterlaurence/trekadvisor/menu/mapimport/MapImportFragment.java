@@ -18,6 +18,7 @@ import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
+import com.peterlaurence.trekadvisor.menu.events.MapImportedEvent;
 import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -29,7 +30,7 @@ import org.greenrobot.eventbus.ThreadMode;
  *
  * @author peterLaurence on 08/06/16.
  */
-public class MapImportFragment extends Fragment implements MapImporter.MapImportListener {
+public class MapImportFragment extends Fragment {
 
     private static String CREATE_FROM_SCREEN_ROTATE = "create";
     private FrameLayout rootView;
@@ -37,6 +38,7 @@ public class MapImportFragment extends Fragment implements MapImporter.MapImport
     private MapArchiveAdapter mMapArchiveAdapter;
     private OnMapArchiveFragmentInteractionListener mListener;
     private View mView;
+    private boolean mCreateAfterScreenRotation = false;
 
     @Override
     public void onAttach(Context context) {
@@ -48,9 +50,6 @@ public class MapImportFragment extends Fragment implements MapImporter.MapImport
             throw new RuntimeException(context.toString()
                     + " must implement OnMapArchiveFragmentInteractionListener");
         }
-
-        MapImporter.clearMapImportListenerList();
-        MapImporter.addMapImportListener(this);
     }
 
     @Override
@@ -90,7 +89,7 @@ public class MapImportFragment extends Fragment implements MapImporter.MapImport
          */
         if (savedInstanceState != null) {
             if (savedInstanceState.getBoolean(CREATE_FROM_SCREEN_ROTATE)) {
-                generateMapList();
+                mCreateAfterScreenRotation = true;
             }
         }
     }
@@ -102,14 +101,20 @@ public class MapImportFragment extends Fragment implements MapImporter.MapImport
         if (mMapArchiveAdapter != null) {
             mMapArchiveAdapter.subscribeEventBus();
         }
+        /* Request archive generation after EventBus registration to be 100% sure to get notified
+         * if this fragment is still registered when the job finishes.
+         */
+        if (mCreateAfterScreenRotation) {
+            generateMapList();
+        }
     }
 
     private void generateMapList() {
         MapLoader.getInstance().generateMapArchives();
     }
 
-    @Override
-    public void onMapImported(Map map, MapImporter.MapParserStatus status) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMapImported(MapImportedEvent event) {
         Snackbar snackbar = Snackbar.make(mView, R.string.snack_msg_show_map_list, Snackbar.LENGTH_LONG);
         snackbar.setAction(R.string.ok_dialog, v -> mListener.onMapArchiveFragmentInteraction());
         snackbar.show();
@@ -138,11 +143,6 @@ public class MapImportFragment extends Fragment implements MapImporter.MapImport
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMapArchiveListUpdate(MapArchiveListUpdateEvent event) {
         hideProgressBar();
-    }
-
-    @Override
-    public void onMapImportError(MapImporter.MapParseException e) {
-
     }
 
     @Override

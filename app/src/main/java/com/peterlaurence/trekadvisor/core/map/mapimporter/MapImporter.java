@@ -32,7 +32,6 @@ public class MapImporter {
     private static final String[] IMAGE_EXTENSIONS = new String[]{
             "jpg", "gif", "png", "bmp", "webp"
     };
-    private static List<MapImportListener> mMapImportListenerList;
 
     private static final String TAG = "MapImporter";
 
@@ -86,7 +85,6 @@ public class MapImporter {
         java.util.Map<MapProvider, MapParser> map = new HashMap<>();
         map.put(MapProvider.LIBVIPS, new LibvipsMapParser());
         mProviderToParserMap = Collections.unmodifiableMap(map);
-        mMapImportListenerList = new ArrayList<>();
     }
 
     /* Don't allow instantiation */
@@ -99,14 +97,6 @@ public class MapImporter {
             MapParseTask mapParseTask = new MapParseTask(parser, dir, listener);
             mapParseTask.execute();
         }
-    }
-
-    public static void addMapImportListener(MapImportListener listener) {
-        mMapImportListenerList.add(listener);
-    }
-
-    public static void clearMapImportListenerList() {
-        mMapImportListenerList.clear();
     }
 
     /**
@@ -189,8 +179,7 @@ public class MapImporter {
         }
 
         /**
-         * Call the provided {@link MapImportListener}, and other listeners set at {@link MapImporter}
-         * level.
+         * Call back the provided {@link MapImportListener}.
          */
         @Override
         protected void onPostExecute(Map map) {
@@ -208,14 +197,6 @@ public class MapImporter {
                     } else {
                         mapImportListener.onMapImported(map, mMapParser.getStatus());
                     }
-                }
-            }
-
-            for (MapImportListener listener : mMapImportListenerList) {
-                if (mException != null) {
-                    listener.onMapImportError(mException);
-                } else {
-                    listener.onMapImported(map, mMapParser.getStatus());
                 }
             }
         }
