@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.core.map.maploader.tasks;
 
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
@@ -11,31 +12,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Finds maps archives, as {@link MapArchive} list, in the provided list of folders to took into. <br>
+ * For instance, it only looks for zip files and don't check whether those are real map archives or
+ * not. But attempting to extract a wrong file is correctly reported to the user.
+ *
  * @author peterLaurence on 30/04/17.
  */
-public class MapArchiveSearchTask extends AsyncTask<File, Void, Void> {
+public class MapArchiveSearchTask extends Thread {
     private static final int MAX_RECURSION_DEPTH = 6;
-    private List<MapLoader.MapArchiveListUpdateListener> mMapArchiveListUpdateListeners;
+    private static final List<String> mArchiveFormatList;
+    private MapLoader.MapArchiveListUpdateListener mMapArchiveUpdateListener;
     private List<MapArchive> mMapArchiveList;
     private List<File> mMapArchiveFilesFoundList;
-    private static final List<String> mArchiveFormatList;
+    private File[] mFoldersToLookInto;
 
     static {
         mArchiveFormatList = new ArrayList<>();
         mArchiveFormatList.add("zip");
     }
 
-    public MapArchiveSearchTask(@Nullable List<MapLoader.MapArchiveListUpdateListener> listeners, List<MapArchive> mapArchiveList) {
+    public MapArchiveSearchTask(MapLoader.MapArchiveListUpdateListener listener,
+                                List<MapArchive> mapArchiveList, File... dirsToLookInto) {
         super();
         mMapArchiveList = mapArchiveList;
         mMapArchiveFilesFoundList = new ArrayList<>();
-        mMapArchiveListUpdateListeners = listeners;
+        mMapArchiveUpdateListener = listener;
+        mFoldersToLookInto = dirsToLookInto;
     }
 
     @Override
-    protected Void doInBackground(File... dirs) {
+    public void run() {
+        super.run();
         /* Search for archive files on SD card */
-        for (File dir : dirs) {
+        for (File dir : mFoldersToLookInto) {
             findArchives(dir, 1);
         }
 
@@ -43,7 +52,13 @@ public class MapArchiveSearchTask extends AsyncTask<File, Void, Void> {
             mMapArchiveList.add(new MapArchive(archiveFile));
         }
 
-        return null;
+        /* Run on UI thread */
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            if (mMapArchiveUpdateListener != null) {
+                mMapArchiveUpdateListener.onMapArchiveListUpdate();
+            }
+        });
     }
 
     private void findArchives(File root, int depth) {
@@ -74,15 +89,6 @@ public class MapArchiveSearchTask extends AsyncTask<File, Void, Void> {
                         // don't care
                     }
                 }
-            }
-        }
-    }
-
-    @Override
-    protected void onPostExecute(Void result) {
-        if (mMapArchiveListUpdateListeners != null) {
-            for (MapLoader.MapArchiveListUpdateListener listener : mMapArchiveListUpdateListeners) {
-                listener.onMapArchiveListUpdate();
             }
         }
     }

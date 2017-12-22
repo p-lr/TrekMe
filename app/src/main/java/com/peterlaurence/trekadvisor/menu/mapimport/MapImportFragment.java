@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.core.events.MapArchiveListUpdateEvent;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
@@ -28,12 +29,12 @@ import org.greenrobot.eventbus.ThreadMode;
  *
  * @author peterLaurence on 08/06/16.
  */
-public class MapImportFragment extends Fragment implements MapLoader.MapArchiveListUpdateListener,
-        MapImporter.MapImportListener {
+public class MapImportFragment extends Fragment implements MapImporter.MapImportListener {
 
     private static String CREATE_FROM_SCREEN_ROTATE = "create";
     private FrameLayout rootView;
     private RecyclerView mRecyclerView;
+    private MapArchiveAdapter mMapArchiveAdapter;
     private OnMapArchiveFragmentInteractionListener mListener;
     private View mView;
 
@@ -49,7 +50,6 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
         }
 
         MapImporter.clearMapImportListenerList();
-        MapLoader.getInstance().clearMapArchiveListUpdateListener();
         MapImporter.addMapImportListener(this);
     }
 
@@ -72,10 +72,8 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(llm);
 
-        MapArchiveAdapter mapArchiveAdapter = new MapArchiveAdapter();
-        MapLoader.getInstance().addMapArchiveListUpdateListener(this);
-        MapLoader.getInstance().addMapArchiveListUpdateListener(mapArchiveAdapter);
-        mRecyclerView.setAdapter(mapArchiveAdapter);
+        mMapArchiveAdapter = new MapArchiveAdapter();
+        mRecyclerView.setAdapter(mMapArchiveAdapter);
 
         rootView.addView(mRecyclerView, 0);
         return rootView;
@@ -101,15 +99,13 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+        if (mMapArchiveAdapter != null) {
+            mMapArchiveAdapter.subscribeEventBus();
+        }
     }
 
     private void generateMapList() {
         MapLoader.getInstance().generateMapArchives();
-    }
-
-    @Override
-    public void onMapArchiveListUpdate() {
-        hideProgressBar();
     }
 
     @Override
@@ -135,6 +131,15 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
         generateMapList();
     }
 
+    /**
+     * A {@link MapArchiveListUpdateEvent} is emitted from the {@link MapLoader} when the list of
+     * map archives is updated.
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMapArchiveListUpdate(MapArchiveListUpdateEvent event) {
+        hideProgressBar();
+    }
+
     @Override
     public void onMapImportError(MapImporter.MapParseException e) {
 
@@ -143,11 +148,14 @@ public class MapImportFragment extends Fragment implements MapLoader.MapArchiveL
     @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
+        if (mMapArchiveAdapter != null) {
+            mMapArchiveAdapter.unSubscribeEventBus();
+        }
         super.onStop();
 
         if (mRecyclerView == null) return;
         for (int i = 0; i < mRecyclerView.getAdapter().getItemCount(); i++) {
-            MapArchiveAdapter.MapArchiveViewHolder holder = (MapArchiveAdapter.MapArchiveViewHolder) mRecyclerView.findViewHolderForAdapterPosition(i);
+            MapArchiveViewHolder holder = (MapArchiveViewHolder) mRecyclerView.findViewHolderForAdapterPosition(i);
             if (holder != null) {
                 holder.unSubscribe();
             }

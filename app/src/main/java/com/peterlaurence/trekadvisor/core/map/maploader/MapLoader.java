@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.peterlaurence.trekadvisor.core.events.MapArchiveListUpdateEvent;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
@@ -23,6 +24,8 @@ import com.peterlaurence.trekadvisor.core.providers.BitmapProviderDummy;
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderLibVips;
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderOsm;
 import com.qozix.tileview.graphics.BitmapProvider;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +74,6 @@ public class MapLoader implements MapImporter.MapImportListener {
     private MapMarkerUpdateListener mMapMarkerUpdateListener;
     private MapRouteUpdateListener mMapRouteUpdateListener;
     private List<MapArchive> mMapArchiveList;
-    private List<MapArchiveListUpdateListener> mMapArchiveListUpdateListeners;
 
     /**
      * Create once for all the {@link Gson} object, that is used to serialize/deserialize json content.
@@ -87,7 +89,6 @@ public class MapLoader implements MapImporter.MapImportListener {
                 registerTypeAdapterFactory(factory).create();
 
         mMapListUpdateListeners = new ArrayList<>();
-        mMapArchiveListUpdateListeners = new ArrayList<>();
         mMapList = new ArrayList<>();
 
         /* Create the app folder if it doesn't exist */
@@ -183,12 +184,16 @@ public class MapLoader implements MapImporter.MapImportListener {
     public void generateMapArchives(File... dirs) {
         mMapArchiveList = new ArrayList<>();
 
-        MapArchiveSearchTask searchTask = new MapArchiveSearchTask(mMapArchiveListUpdateListeners, mMapArchiveList);
         if (dirs.length == 0) { // No directories specified? We take the default value.
             dirs = new File[1];
             dirs[0] = DEFAULT_APP_DIR;
         }
-        searchTask.execute(dirs);
+        MapArchiveSearchTask searchTask = new MapArchiveSearchTask(
+                () -> EventBus.getDefault().post(
+                        new MapArchiveListUpdateEvent()),
+                mMapArchiveList, dirs);
+
+        searchTask.start();
     }
 
     public List<MapArchive> getMapArchives() {
@@ -222,10 +227,6 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapRouteUpdateListener = listener;
     }
 
-    public void addMapArchiveListUpdateListener(MapArchiveListUpdateListener listener) {
-        mMapArchiveListUpdateListeners.add(listener);
-    }
-
     public void clearMapListUpdateListener() {
         mMapListUpdateListeners.clear();
     }
@@ -236,10 +237,6 @@ public class MapLoader implements MapImporter.MapImportListener {
 
     public void clearMapRouteUpdateListener() {
         mMapRouteUpdateListener = null;
-    }
-
-    public void clearMapArchiveListUpdateListener() {
-        mMapArchiveListUpdateListeners.clear();
     }
 
     /**
