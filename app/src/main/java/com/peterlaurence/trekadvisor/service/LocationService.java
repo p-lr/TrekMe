@@ -31,6 +31,7 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.events.LocationEvent;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
+import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -43,6 +44,8 @@ public class LocationService extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
+
+    private boolean mStarted = false;
 
     public LocationService() {
     }
@@ -127,6 +130,9 @@ public class LocationService extends Service {
 
         startForeground(SERVICE_ID, notification);
 
+        mStarted = true;
+        sendStatus();
+
         return START_NOT_STICKY;
     }
 
@@ -167,6 +173,10 @@ public class LocationService extends Service {
 
     private void stopLocationUpdates() {
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+    }
+
+    private void sendStatus() {
+        EventBus.getDefault().post(new LocationServiceStatus(mStarted));
     }
 
     /**

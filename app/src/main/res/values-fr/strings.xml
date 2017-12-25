@@ -72,4 +72,6 @@
     <string name="service_description">Service de localisation</string>
     <string name="service_action">Enregistrement GPX</string>
     <string name="record_menu_title">Enregistrement GPX</string>
+    <string name="control_card_title">Commandes</string>
+    <string name="control_card_subtitle">Démarrer ou arrêter l\'enregistrement</string>
 </resources>
