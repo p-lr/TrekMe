@@ -1,0 +1,92 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="playtopause"
+            android:width="48dp"
+            android:height="48dp"
+            android:viewportHeight="48"
+            android:viewportWidth="48">
+            <path
+                android:name="background-circle"
+                android:fillAlpha="0.2"
+                android:fillColor="#4CAF50"
+                android:pathData="M 24 4 A20,20 0 1,1 24,44 A20,20 0 1,1 24,4"
+                android:strokeWidth="3" />
+            <group
+                android:name="play-icon"
+                android:pivotX="24"
+                android:pivotY="24">
+                <path
+                    android:name="path"
+                    android:fillColor="#4CAF50"
+                    android:pathData="M 19 33 L 19 15 L 33 24 Z"
+                    android:strokeWidth="1" />
+            </group>
+            <group>
+                <path
+                    android:name="circle"
+                    android:pathData="M 24 4 A20,20 0 1,1 24,44 A20,20 0 1,1 24,4"
+                    android:strokeColor="#F44336"
+                    android:strokeWidth="3"
+                    android:trimPathEnd="0" />
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="background-circle">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:propertyName="fillColor"
+                android:valueFrom="#4CAF50"
+                android:valueTo="#F44336" />
+        </aapt:attr>
+    </target>
+    <target android:name="path">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:propertyName="pathData"
+                    android:valueFrom="M 19 33 L 19 15 L 33 24 L 33 24 Z"
+                    android:valueTo="M 17 31 L 17 17 L 31 17 L 31 31 Z"
+                    android:valueType="pathType" />
+                <objectAnimator
+                    android:duration="300"
+                    android:propertyName="fillColor"
+                    android:valueFrom="#4CAF50"
+                    android:valueTo="#F44336" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="play-icon">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="300"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="rotation"
+                android:valueFrom="0"
+                android:valueTo="90"
+                android:valueType="floatType" />
+        </aapt:attr>
+    </target>
+    <target android:name="circle">
+        <aapt:attr name="android:animation">
+            <set android:ordering="sequentially">
+                <objectAnimator
+                    android:duration="1000"
+                    android:propertyName="trimPathEnd"
+                    android:valueFrom="0"
+                    android:valueTo="1"
+                    android:valueType="floatType" />
+                <objectAnimator
+                    android:duration="1"
+                    android:propertyName="strokeAlpha"
+                    android:valueFrom="1"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>
