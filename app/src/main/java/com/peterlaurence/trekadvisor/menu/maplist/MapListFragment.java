@@ -3,9 +3,11 @@ package com.peterlaurence.trekadvisor.menu.maplist;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -260,6 +262,8 @@ public class MapListFragment extends Fragment implements
         Map map = MapLoader.getInstance().getMap(mapId);
         if (map == null) return;
 
+        final String notificationChannelId = "trekadvisor_map_save";
+
         /* Build the notification and issue it */
         final Notification.Builder builder = new Notification.Builder(getActivity())
                 .setSmallIcon(R.drawable.ic_map_black_24dp)
@@ -269,7 +273,22 @@ public class MapListFragment extends Fragment implements
         final int notificationId = mapId;
         final NotificationManager notifyMgr =
                 (NotificationManager) getActivity().getSystemService(NOTIFICATION_SERVICE);
-        notifyMgr.notify(notificationId, builder.build());
+
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            //This only needs to be run on Devices on Android O and above
+            NotificationChannel mChannel = new NotificationChannel(notificationChannelId,
+                    getText(R.string.service_description), NotificationManager.IMPORTANCE_LOW);
+            mChannel.enableLights(true);
+            mChannel.setLightColor(Color.YELLOW);
+            if (notifyMgr != null) {
+                notifyMgr.createNotificationChannel(mChannel);
+            }
+            builder.setChannelId(notificationChannelId);
+        }
+
+        if (notifyMgr != null) {
+            notifyMgr.notify(notificationId, builder.build());
+        }
 
         /* Effectively launch the archive task */
         map.zip(new ZipTask.ZipProgressionListener() {
