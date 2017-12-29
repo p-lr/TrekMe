@@ -33,6 +33,7 @@ import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadFini
 import com.peterlaurence.trekadvisor.util.ZipTask;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 
@@ -50,8 +51,7 @@ public class MapListFragment extends Fragment implements
         MapAdapter.MapSelectionListener,
         MapAdapter.MapSettingsListener,
         MapAdapter.MapArchiveListener,
-        MapLoader.MapListUpdateListener,
-        ArchiveMapDialog.ArchiveMapListener {
+        MapLoader.MapListUpdateListener {
 
     private FrameLayout rootView;
     private RecyclerView recyclerView;
@@ -120,6 +120,7 @@ public class MapListFragment extends Fragment implements
     @Override
     public void onStart() {
         super.onStart();
+        EventBus.getDefault().register(this);
 
         if (recyclerView != null) {
             return;
@@ -221,6 +222,12 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
 
@@ -255,11 +262,12 @@ public class MapListFragment extends Fragment implements
      * {@link NotificationManager} only process one notification at a time, which is handy since
      * it prevents the application from using too much cpu.
      *
-     * @param mapId The id of the {@link Map}.
+     * @param event The {@link com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog.SaveMapEvent}
+     *              which contains the id of the {@link Map}.
      */
-    @Override
-    public void doArchiveMap(int mapId) {
-        Map map = MapLoader.getInstance().getMap(mapId);
+    @Subscribe
+    public void onSaveMapEvent(ArchiveMapDialog.SaveMapEvent event) {
+        Map map = MapLoader.getInstance().getMap(event.mapId);
         if (map == null) return;
 
         final String notificationChannelId = "trekadvisor_map_save";
@@ -270,7 +278,7 @@ public class MapListFragment extends Fragment implements
                 .setContentTitle(getString(R.string.archive_dialog_title))
                 .setContentText(String.format(getString(R.string.archive_notification_msg), map.getName()));
 
-        final int notificationId = mapId;
+        final int notificationId = event.mapId;
         final NotificationManager notifyMgr =
                 (NotificationManager) getActivity().getSystemService(NOTIFICATION_SERVICE);
 

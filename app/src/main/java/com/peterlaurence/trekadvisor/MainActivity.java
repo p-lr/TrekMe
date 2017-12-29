@@ -38,7 +38,6 @@ import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
-import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
@@ -340,11 +339,6 @@ public class MainActivity extends AppCompatActivity
     public TracksManageFragment getTracksManageFragment() {
         Fragment fragment = fragmentManager.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG);
         return fragment != null ? (TracksManageFragment) fragment : null;
-    }
-
-    public ArchiveMapDialog.ArchiveMapListener getArchiveMapListener() {
-        Fragment fragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-        return (ArchiveMapDialog.ArchiveMapListener) fragment;
     }
 
     private void showMapViewFragment() {

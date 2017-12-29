@@ -4,12 +4,12 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 
-import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
+
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * This dialog is shown when the user chose to save a {@link Map}. <br>
@@ -24,7 +24,6 @@ public class ArchiveMapDialog extends DialogFragment {
 
     private String mTitle;
     private int mMapId;
-    private ArchiveMapListener mListener;
 
     public static ArchiveMapDialog newInstance(int mapId) {
         ArchiveMapDialog frag = new ArchiveMapDialog();
@@ -42,18 +41,6 @@ public class ArchiveMapDialog extends DialogFragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        try {
-            mListener = ((MainActivity) getActivity()).getArchiveMapListener();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(getContext()
-                    + " must implement provide a ArchiveMapListener instance");
-        }
-    }
-
-    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mMapId = getArguments().getInt(MAP_ID);
 
@@ -61,23 +48,23 @@ public class ArchiveMapDialog extends DialogFragment {
         builder.setTitle(mTitle)
                 .setMessage(R.string.archive_dialog_description)
                 .setPositiveButton(R.string.ok_dialog,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                mListener.doArchiveMap(mMapId);
-                            }
-                        })
+                        (dialog, whichButton) -> EventBus.getDefault().post(new SaveMapEvent(mMapId)))
                 .setNegativeButton(R.string.cancel_dialog_string,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                dismiss();
-                            }
-                        }
+                        (dialog, whichButton) -> dismiss()
                 );
 
         return builder.create();
     }
 
-    public interface ArchiveMapListener {
-        void doArchiveMap(int mapId);
+    /**
+     * The event that will be emitted when the user requests a {@link Map} to be saved. <br>
+     * This is processed inside the {@link com.peterlaurence.trekadvisor.menu.maplist.MapListFragment}.
+     */
+    public static class SaveMapEvent {
+        public int mapId;
+
+        public SaveMapEvent(int mapId) {
+            this.mapId = mapId;
+        }
     }
 }
