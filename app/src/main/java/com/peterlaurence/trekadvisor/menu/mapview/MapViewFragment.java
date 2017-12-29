@@ -285,6 +285,9 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onPause() {
         super.onPause();
+
+        /* Save battery */
+        stopLocationUpdates();
     }
 
     @Override
@@ -336,7 +339,6 @@ public class MapViewFragment extends Fragment implements
 
     @Override
     public void onStop() {
-        stopLocationUpdates();
         super.onStop();
         EventBus.getDefault().unregister(this);
     }
