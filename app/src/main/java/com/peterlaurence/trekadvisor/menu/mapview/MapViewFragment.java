@@ -1,12 +1,14 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
+import android.Manifest;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -16,12 +18,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.events.LocationEvent;
 import com.peterlaurence.trekadvisor.core.events.OrientationEventManager;
@@ -31,7 +34,6 @@ import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
-import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
 import com.qozix.tileview.TileView;
@@ -56,9 +58,6 @@ import java.util.List;
  * @author peterLaurence
  */
 public class MapViewFragment extends Fragment implements
-        ConnectionCallbacks,
-        OnConnectionFailedListener,
-        LocationListener,
         ProjectionTask.ProjectionUpdateLister,
         FrameLayoutMapView.PositionTouchListener,
         FrameLayoutMapView.LockViewListener {
@@ -73,7 +72,6 @@ public class MapViewFragment extends Fragment implements
     private RequestManageTracksListener mRequestManageTracksListener;
     private RequestManageMarkerListener mRequestManageMarkerListener;
     private MapProvider mMapProvider;
-    private LocationProvider mLocationProvider;
     private LocationRequest mLocationRequest;
     private OrientationEventManager mOrientationEventManager;
     private MarkerLayer mMarkerLayer;
@@ -81,6 +79,8 @@ public class MapViewFragment extends Fragment implements
     private DistanceLayer mDistanceLayer;
     private SpeedListener mSpeedListener;
     private DistanceLayer.DistanceListener mDistanceListener;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationCallback mLocationCallback;
 
     public MapViewFragment() {
     }
@@ -90,17 +90,32 @@ public class MapViewFragment extends Fragment implements
         super.onAttach(context);
         if (context instanceof RequestManageTracksListener
                 && context instanceof RequestManageMarkerListener
-                && context instanceof MapProvider
-                && context instanceof LocationProvider) {
+                && context instanceof MapProvider) {
             mRequestManageTracksListener = (RequestManageTracksListener) context;
             mRequestManageMarkerListener = (RequestManageMarkerListener) context;
             mMapProvider = (MapProvider) context;
-            mLocationProvider = (LocationProvider) context;
-            mLocationProvider.registerLocationListener(this, this);
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement RequestManageTracksListener, MapProvider and LocationProvider");
         }
+
+        /* The Google api client is re-created here as the onAttach method will always be called for
+         * a retained fragment.
+         */
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this.getActivity().getApplicationContext());
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                for (Location location : locationResult.getLocations()) {
+                    onLocationReceived(location);
+                }
+            }
+        };
     }
 
     @Override
@@ -248,6 +263,23 @@ public class MapViewFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
+
+        startLocationUpdates();
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                mLocationCallback,
+                null);
+    }
+
+    private void stopLocationUpdates() {
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
     @Override
@@ -304,7 +336,7 @@ public class MapViewFragment extends Fragment implements
 
     @Override
     public void onStop() {
-        mLocationProvider.removeLocationListener(this);
+        stopLocationUpdates();
         super.onStop();
         EventBus.getDefault().unregister(this);
     }
@@ -327,25 +359,10 @@ public class MapViewFragment extends Fragment implements
         mSpeedListener = null;
         mOrientationEventManager.stop();
         mOrientationEventManager = null;
+        mFusedLocationClient = null;
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        mLocationProvider.requestLocationUpdates(this, mLocationRequest);
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
+    private void onLocationReceived(Location location) {
         if (isHidden()) return;
 
         if (location != null) {

@@ -23,13 +23,10 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
-import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
@@ -60,8 +57,7 @@ public class MainActivity extends AppCompatActivity
         MapProvider,
         MarkerProvider,
         TracksManageFragment.TrackChangeListenerProvider,
-        MapViewFragment.RequestManageMarkerListener,
-        LocationProvider {
+        MapViewFragment.RequestManageMarkerListener {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
     private static final String MAP_LIST_FRAGMENT_TAG = "mapListFragment";
@@ -685,34 +681,6 @@ public class MainActivity extends AppCompatActivity
             return ((MapViewFragment) mapViewFragment).getTrackChangeListener();
         }
         return null;
-    }
-
-
-    @Override
-    public void registerLocationListener(GoogleApiClient.ConnectionCallbacks connectionCallbacks,
-                                         GoogleApiClient.OnConnectionFailedListener connFailedListener) {
-        mGoogleApiClient.registerConnectionCallbacks(connectionCallbacks);
-        mGoogleApiClient.registerConnectionFailedListener(connFailedListener);
-    }
-
-    @Override
-    public void requestLocationUpdates(LocationListener listener, LocationRequest request) {
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        if (mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, request, listener);
-        }
-    }
-
-    @Override
-    public void removeLocationListener(LocationListener listener) {
-        if (mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, listener);
-        }
     }
 
     @Override
