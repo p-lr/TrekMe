@@ -67,8 +67,6 @@
     <string name="download_map_dialog_msg">Téléchargement de la carte %s…</string>
     <string name="menu_sample_map">Télécharger carte du monde</string>
     <string name="confirm_import">Vous pouvez maintenant importer la carte</string>
-    <string name="record_gpx_start">Enregistrer position</string>
-    <string name="record_gpx_stop">Arrêter l\'enregistrement</string>
     <string name="service_description">Service de localisation</string>
     <string name="service_action">Enregistrement GPX</string>
     <string name="record_menu_title">Enregistrement GPX</string>

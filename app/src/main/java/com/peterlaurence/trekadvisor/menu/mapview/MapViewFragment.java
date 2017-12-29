@@ -2,7 +2,6 @@ package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,19 +24,16 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.events.LocationEvent;
+import com.peterlaurence.trekadvisor.core.events.OrientationEventManager;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
-import com.peterlaurence.trekadvisor.core.events.OrientationEventManager;
 import com.peterlaurence.trekadvisor.menu.LocationProvider;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
-import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
-import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
-import com.peterlaurence.trekadvisor.service.LocationService;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
@@ -224,14 +220,6 @@ public class MapViewFragment extends Fragment implements
                 return true;
             case R.id.orientation_enable_id:
                 item.setChecked(mOrientationEventManager.toggleOrientation());
-                return true;
-            case R.id.record_gpx_start_id:
-                Intent intent = new Intent(getActivity().getBaseContext(), LocationService.class);
-                getActivity().startService(intent);
-                EventBus.getDefault().post(new RecordGpxStartEvent());
-                return true;
-            case R.id.record_gpx_stop_id:
-                EventBus.getDefault().post(new RecordGpxStopEvent());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -507,6 +495,22 @@ public class MapViewFragment extends Fragment implements
         outState.putBoolean(WAS_DISPLAYING_ORIENTATION, mOrientationEventManager.isStarted());
     }
 
+    private void setTileViewBounds(TileView tileView, Map map) {
+        Map.MapBounds mapBounds = map.getMapBounds();
+        if (mapBounds != null) {
+            tileView.defineBounds(mapBounds.X0,
+                    mapBounds.Y0,
+                    mapBounds.X1,
+                    mapBounds.Y1);
+        } else {
+            tileView.defineBounds(0, 0, 1, 1);
+        }
+    }
+
+    public enum SpeedUnit {
+        KM_H, MPH
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -522,22 +526,6 @@ public class MapViewFragment extends Fragment implements
      */
     public interface RequestManageMarkerListener {
         void onRequestManageMarker(MarkerGson.Marker marker);
-    }
-
-    public enum SpeedUnit {
-        KM_H, MPH
-    }
-
-    private void setTileViewBounds(TileView tileView, Map map) {
-        Map.MapBounds mapBounds = map.getMapBounds();
-        if (mapBounds != null) {
-            tileView.defineBounds(mapBounds.X0,
-                    mapBounds.Y0,
-                    mapBounds.X1,
-                    mapBounds.Y1);
-        } else {
-            tileView.defineBounds(0, 0, 1, 1);
-        }
     }
 
     /**

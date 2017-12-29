@@ -91,8 +91,6 @@
     <string name="mapview_add_marker">Add marker</string>
     <string name="mapview_measure_distance">Measure distance</string>
     <string name="mapview_orientation_enable">Show orientation</string>
-    <string name="record_gpx_start">Record track</string>
-    <string name="record_gpx_stop">Stop track record</string>
     <string name="move_marker">Move</string>
     <string name="delete_marker_question">Delete marker?</string>
     <string name="km_h">km/h</string>
