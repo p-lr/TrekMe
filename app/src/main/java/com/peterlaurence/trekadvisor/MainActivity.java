@@ -22,8 +22,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
@@ -91,7 +89,6 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private String mBackFragmentTag;
     private FragmentManager fragmentManager;
-    private GoogleApiClient mGoogleApiClient;
 
     /**
      * Checks whether the app has permission to access fine location.
@@ -134,13 +131,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        /* Create the instance of GoogleAPIClient BEFORE fragments are attached */
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(LocationServices.API)
-                    .build();
-        }
-
         super.onCreate(savedInstanceState);
 
         fragmentManager = this.getFragmentManager();
@@ -232,9 +222,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onStart() {
-        /* Start the location service */
-        mGoogleApiClient.connect();
-
         super.onStart();
 
         /* Show the map list fragment if we have the right to read the sd card */
@@ -248,12 +235,6 @@ public class MainActivity extends AppCompatActivity
                 showMapListFragment();
             }
         }
-    }
-
-    @Override
-    protected void onStop() {
-        mGoogleApiClient.disconnect();
-        super.onStop();
     }
 
     @Override
