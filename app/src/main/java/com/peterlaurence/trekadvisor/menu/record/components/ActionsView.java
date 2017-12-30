@@ -8,7 +8,7 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStartEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStopEvent;
-import com.peterlaurence.trekadvisor.menu.tools.DelayedButton;
+import com.peterlaurence.trekadvisor.menu.record.components.widgets.DelayedButton;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
 
 import org.greenrobot.eventbus.EventBus;

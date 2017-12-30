@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.menu.tools;
+package com.peterlaurence.trekadvisor.menu.record.components.widgets;
 
 import android.content.Context;
 import android.graphics.drawable.Animatable2;

@@ -143,6 +143,8 @@ public class LocationService extends Service {
     @Subscribe
     public void onRecordGpxStopEvent(RecordGpxStopEvent event) {
         stopSelf();
+        mStarted = false;
+        sendStatus();
     }
 
     @Override

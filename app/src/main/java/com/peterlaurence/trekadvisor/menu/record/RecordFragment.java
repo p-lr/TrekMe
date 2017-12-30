@@ -13,9 +13,11 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.ActionsView;
+import com.peterlaurence.trekadvisor.menu.record.components.StatusView;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStartEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStopEvent;
 import com.peterlaurence.trekadvisor.service.LocationService;
+import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -26,6 +28,7 @@ import org.greenrobot.eventbus.Subscribe;
  */
 public class RecordFragment extends Fragment {
     ActionsView mActionsView;
+    StatusView mStatusView;
 
     /* Required empty public constructor */
     public RecordFragment() {
@@ -47,6 +50,7 @@ public class RecordFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mActionsView = view.findViewById(R.id.record_actionsView);
+        mStatusView = view.findViewById(R.id.record_statusView);
     }
 
     @Override
@@ -73,5 +77,14 @@ public class RecordFragment extends Fragment {
     @Subscribe
     public void onRequestStopEvent(RequestStopEvent event) {
         EventBus.getDefault().post(new RecordGpxStopEvent());
+    }
+
+    @Subscribe
+    public void onLocationServiceStatusEvent(LocationServiceStatus event) {
+        if (event.started) {
+            mStatusView.onServiceStarted();
+        } else {
+            mStatusView.onServiceStopped();
+        }
     }
 }
