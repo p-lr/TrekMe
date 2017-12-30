@@ -1,11 +1,11 @@
-package com.peterlaurence.trekadvisor.util.gpxparser;
+package com.peterlaurence.trekadvisor.util.gpx;
 
 import android.util.Xml;
 
-import com.peterlaurence.trekadvisor.util.gpxparser.model.Gpx;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.Track;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.TrackPoint;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.TrackSegment;
+import com.peterlaurence.trekadvisor.util.gpx.model.Gpx;
+import com.peterlaurence.trekadvisor.util.gpx.model.Track;
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint;
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -20,30 +20,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import static com.peterlaurence.trekadvisor.util.gpx.model.GpxSchema.*;
+
 
 /**
  * A GPX parser.
  *
  * @author peterLaurence on 12/02/17.
  */
-public class GPXParser {
-
-    private static final String TAG_GPX = "gpx";
-    private static final String TAG_TRACK = "trk";
-    private static final String TAG_NAME = "name";
-    private static final String TAG_SEGMENT = "trkseg";
-    private static final String TAG_POINT = "trkpt";
-    private static final String TAG_LAT = "lat";
-    private static final String TAG_LON = "lon";
-    private static final String TAG_ELEVATION = "ele";
-    private static final String TAG_TIME = "time";
-
-    static private final String ns = null;
+public abstract class GPXParser {
+    private static final String ns = null;
 
     private static final DateFormat DATE_PARSER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
 
 
-    public Gpx parse(InputStream in) throws XmlPullParserException, IOException, ParseException {
+    public static Gpx parse(InputStream in) throws XmlPullParserException, IOException, ParseException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
@@ -55,7 +46,7 @@ public class GPXParser {
         }
     }
 
-    private Gpx readGpx(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
+    private static Gpx readGpx(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
         Gpx.Builder builder = new Gpx.Builder();
 
         List<Track> tracks = new ArrayList<>();
@@ -86,7 +77,7 @@ public class GPXParser {
      * If it encounters a title, summary, or link tag, hands them off to their respective "read"
      * methods for processing. Otherwise, skips the tag.
      */
-    private Track readTrack(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
+    private static Track readTrack(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
         Track.Builder builder = new Track.Builder();
 
         List<TrackSegment> segments = new ArrayList<>();
@@ -115,7 +106,7 @@ public class GPXParser {
     }
 
     /* Process summary tags in the feed */
-    private TrackSegment readSegment(XmlPullParser parser) throws IOException, XmlPullParserException, ParseException {
+    private static TrackSegment readSegment(XmlPullParser parser) throws IOException, XmlPullParserException, ParseException {
         TrackSegment.Builder builder = new TrackSegment.Builder();
 
         List<TrackPoint> points = new ArrayList<>();
@@ -140,12 +131,12 @@ public class GPXParser {
     }
 
     /* Process summary tags in the feed */
-    private TrackPoint readPoint(XmlPullParser parser) throws IOException, XmlPullParserException, ParseException {
+    private static TrackPoint readPoint(XmlPullParser parser) throws IOException, XmlPullParserException, ParseException {
         TrackPoint.Builder builder = new TrackPoint.Builder();
 
         parser.require(XmlPullParser.START_TAG, ns, TAG_POINT);
-        builder.setLatitude(Double.valueOf(parser.getAttributeValue(null, TAG_LAT)));
-        builder.setLongitude(Double.valueOf(parser.getAttributeValue(null, TAG_LON)));
+        builder.setLatitude(Double.valueOf(parser.getAttributeValue(null, ATTR_LAT)));
+        builder.setLongitude(Double.valueOf(parser.getAttributeValue(null, ATTR_LON)));
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -167,28 +158,28 @@ public class GPXParser {
         return builder.build();
     }
 
-    private String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
+    private static String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, ns, TAG_NAME);
         String name = readText(parser);
         parser.require(XmlPullParser.END_TAG, ns, TAG_NAME);
         return name;
     }
 
-    private Double readElevation(XmlPullParser parser) throws IOException, XmlPullParserException {
+    private static Double readElevation(XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, ns, TAG_ELEVATION);
         Double ele = Double.valueOf(readText(parser));
         parser.require(XmlPullParser.END_TAG, ns, TAG_ELEVATION);
         return ele;
     }
 
-    private Date readTime(XmlPullParser parser) throws IOException, XmlPullParserException, ParseException {
+    private static Date readTime(XmlPullParser parser) throws IOException, XmlPullParserException, ParseException {
         parser.require(XmlPullParser.START_TAG, ns, TAG_TIME);
         Date time = DATE_PARSER.parse(readText(parser));
         parser.require(XmlPullParser.END_TAG, ns, TAG_TIME);
         return time;
     }
 
-    private String readText(XmlPullParser parser) throws IOException, XmlPullParserException {
+    private static String readText(XmlPullParser parser) throws IOException, XmlPullParserException {
         String result = "";
         if (parser.next() == XmlPullParser.TEXT) {
             result = parser.getText();
@@ -197,7 +188,7 @@ public class GPXParser {
         return result;
     }
 
-    private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private static void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
         if (parser.getEventType() != XmlPullParser.START_TAG) {
             throw new IllegalStateException();
         }

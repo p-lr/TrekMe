@@ -1,10 +1,10 @@
-package com.peterlaurence.trekadvisor.util.gpxparser;
+package com.peterlaurence.trekadvisor.util.gpx;
 
 import com.peterlaurence.trekadvisor.BuildConfig;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.Gpx;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.Track;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.TrackPoint;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.TrackSegment;
+import com.peterlaurence.trekadvisor.util.gpx.model.Gpx;
+import com.peterlaurence.trekadvisor.util.gpx.model.Track;
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint;
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,9 +43,8 @@ public class GPXParserTest {
         if (mGpxFilesDirectory != null) {
             File aGpxFile = new File(mGpxFilesDirectory, "sample_gpx_1.gpx");
             if (aGpxFile.exists()) {
-                GPXParser gpxParser = new GPXParser();
                 try {
-                    Gpx gpx = gpxParser.parse(new FileInputStream(aGpxFile));
+                    Gpx gpx = GPXParser.parse(new FileInputStream(aGpxFile));
 
                     List<Track> trackList = gpx.getTracks();
                     assertEquals(1, trackList.size());

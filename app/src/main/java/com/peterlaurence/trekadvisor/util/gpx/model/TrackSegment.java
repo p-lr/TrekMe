@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.util.gpxparser.model;
+package com.peterlaurence.trekadvisor.util.gpx.model;
 
 /**
  * A Track Segment holds a list of Track Points which are logically connected in order.

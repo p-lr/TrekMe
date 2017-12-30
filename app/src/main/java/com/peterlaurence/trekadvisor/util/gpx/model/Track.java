@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.util.gpxparser.model;
+package com.peterlaurence.trekadvisor.util.gpx.model;
 
 import java.util.ArrayList;
 import java.util.Collections;

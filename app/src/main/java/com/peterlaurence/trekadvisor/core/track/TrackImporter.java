@@ -9,11 +9,11 @@ import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
-import com.peterlaurence.trekadvisor.util.gpxparser.GPXParser;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.Gpx;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.Track;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.TrackPoint;
-import com.peterlaurence.trekadvisor.util.gpxparser.model.TrackSegment;
+import com.peterlaurence.trekadvisor.util.gpx.GPXParser;
+import com.peterlaurence.trekadvisor.util.gpx.model.Gpx;
+import com.peterlaurence.trekadvisor.util.gpx.model.Track;
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint;
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -94,7 +94,6 @@ public class TrackImporter {
          */
         @Override
         protected Void doInBackground(Uri... uriList) {
-            GPXParser parser = new GPXParser();
             for (Uri uri : uriList) {
 
                 try {
@@ -105,7 +104,7 @@ public class TrackImporter {
                     }
                     FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
                     FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
-                    Gpx gpx = parser.parse(fileInputStream);
+                    Gpx gpx = GPXParser.parse(fileInputStream);
 
                     for (Track track : gpx.getTracks()) {
                         RouteGson.Route route = gpxTracktoRoute(track);
