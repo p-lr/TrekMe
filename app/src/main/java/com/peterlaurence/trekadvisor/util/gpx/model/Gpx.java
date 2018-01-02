@@ -12,13 +12,14 @@ import java.util.List;
  * @author peterLaurence on 12/02/17.
  */
 public class Gpx {
-    private final String mVersion = "1.1";
+    private String mVersion = "1.1";
     private final String mCreator;
     private final List<Track> mTracks;
 
     private Gpx(Builder builder) {
         mTracks = Collections.unmodifiableList(new ArrayList<>(builder.mTracks));
         mCreator = builder.mCreator;
+        mVersion = builder.mVersion;
     }
 
     public String getVersion() {
@@ -34,6 +35,7 @@ public class Gpx {
     }
 
     public static class Builder {
+        private String mVersion;
         private String mCreator;
         private List<Track> mTracks;
 
@@ -44,6 +46,11 @@ public class Gpx {
 
         public Builder setCreator(String creator) {
             mCreator = creator;
+            return this;
+        }
+
+        public Builder setVersion(String version) {
+            mVersion = version;
             return this;
         }
 

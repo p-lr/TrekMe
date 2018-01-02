@@ -1,48 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.0">
-	<name>Example gpx</name>
-	<wpt lon="9.860624216140083" lat="54.9328621088893">
-            <ele>0.0</ele>
-            <name>Waypoint 1</name>
-        </wpt>
-        <wpt lon="9.86092208681491" lat="54.93293237320851">
-            <ele>0.0</ele>
-            <name>Waypoint 2</name>
-        </wpt>
-        <wpt lon="9.86187816543752" lat="54.93327743521187">
-            <ele>0.0</ele>
-            <name>Waypoint 3</name>
-        </wpt>
-        <wpt lon="9.862439849679859" lat="54.93342326167919">
-            <ele>0.0</ele>
-            <name>Waypoint 4</name>
+    <name>Example gpx</name>
+    <wpt lat="54.9328621088893" lon="9.860624216140083">
+        <ele>0.0</ele>
+        <name>Waypoint 1</name>
     </wpt>
-	<trk><name>Example track</name><number>1</number><trkseg>
-		<trkpt lat="46.57608333" lon="8.89241667"><ele>2376</ele><time>2007-10-14T10:09:57Z</time></trkpt>
-		<trkpt lat="46.57619444" lon="8.89252778"><ele>2375</ele><time>2007-10-14T10:10:52Z</time></trkpt>
-		<trkpt lat="46.57641667" lon="8.89266667"><ele>2372</ele><time>2007-10-14T10:12:39Z</time></trkpt>
-		<trkpt lat="46.57650000" lon="8.89280556"><ele>2373</ele><time>2007-10-14T10:13:12Z</time></trkpt>
-		<trkpt lat="46.57638889" lon="8.89302778"><ele>2374</ele><time>2007-10-14T10:13:20Z</time></trkpt>
-		<trkpt lat="46.57652778" lon="8.89322222"><ele>2375</ele><time>2007-10-14T10:13:48Z</time></trkpt>
-		<trkpt lat="46.57661111" lon="8.89344444"><ele>2376</ele><time>2007-10-14T10:14:08Z</time></trkpt>
-	</trkseg></trk>
-	<rte>
+    <wpt lat="54.93293237320851" lon="9.86092208681491">
+        <ele>0.0</ele>
+        <name>Waypoint 2</name>
+    </wpt>
+    <wpt lat="54.93327743521187" lon="9.86187816543752">
+        <ele>0.0</ele>
+        <name>Waypoint 3</name>
+    </wpt>
+    <wpt lat="54.93342326167919" lon="9.862439849679859">
+        <ele>0.0</ele>
+        <name>Waypoint 4</name>
+    </wpt>
+    <trk>
+        <name>Example track</name>
+        <number>1</number>
+        <trkseg>
+            <trkpt lat="46.57608333" lon="8.89241667">
+                <ele>2376</ele>
+                <time>2007-10-14T10:09:57Z</time>
+            </trkpt>
+            <trkpt lat="46.57619444" lon="8.89252778">
+                <ele>2375</ele>
+                <time>2007-10-14T10:10:52Z</time>
+            </trkpt>
+            <trkpt lat="46.57641667" lon="8.89266667">
+                <ele>2372</ele>
+                <time>2007-10-14T10:12:39Z</time>
+            </trkpt>
+            <trkpt lat="46.57650000" lon="8.89280556">
+                <ele>2373</ele>
+                <time>2007-10-14T10:13:12Z</time>
+            </trkpt>
+            <trkpt lat="46.57638889" lon="8.89302778">
+                <ele>2374</ele>
+                <time>2007-10-14T10:13:20Z</time>
+            </trkpt>
+            <trkpt lat="46.57652778" lon="8.89322222">
+                <ele>2375</ele>
+                <time>2007-10-14T10:13:48Z</time>
+            </trkpt>
+            <trkpt lat="46.57661111" lon="8.89344444">
+                <ele>2376</ele>
+                <time>2007-10-14T10:14:08Z</time>
+            </trkpt>
+        </trkseg>
+    </trk>
+    <rte>
         <name>Patrick's Route</name>
-        <rtept lon="9.860624216140083" lat="54.9328621088893">
+        <rtept lat="54.9328621088893" lon="9.860624216140083">
             <ele>0.0</ele>
             <name>Position 1</name>
         </rtept>
-        <rtept lon="9.86092208681491" lat="54.93293237320851">
+        <rtept lat="54.93293237320851" lon="9.86092208681491">
             <ele>0.0</ele>
             <name>Position 2</name>
         </rtept>
-        <rtept lon="9.86187816543752" lat="54.93327743521187">
+        <rtept lat="54.93327743521187" lon="9.86187816543752">
             <ele>0.0</ele>
             <name>Position 3</name>
         </rtept>
-        <rtept lon="9.862439849679859" lat="54.93342326167919">
+        <rtept lat="54.93342326167919" lon="9.862439849679859">
             <ele>0.0</ele>
             <name>Position 4</name>
-            </rtept>
+        </rtept>
     </rte>
 </gpx>
