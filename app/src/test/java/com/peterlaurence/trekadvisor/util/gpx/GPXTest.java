@@ -58,10 +58,9 @@ public class GPXTest {
     @Test
     public void simpleFileTest() {
         if (mGpxFilesDirectory != null) {
-            File aGpxFile = new File(mGpxFilesDirectory, "sample_gpx_1.gpx");
-            if (aGpxFile.exists()) {
+            if (referenceGpxFile.exists()) {
                 try {
-                    Gpx gpx = GPXParser.parse(new FileInputStream(aGpxFile));
+                    Gpx gpx = GPXParser.parse(new FileInputStream(referenceGpxFile));
 
                     List<Track> trackList = gpx.getTracks();
                     assertEquals(1, trackList.size());
@@ -94,11 +93,10 @@ public class GPXTest {
     }
 
     /**
-     * Tests the gpw writer against the gpw parser : parse an existing gpx file, the use the gpx
+     * Tests the gpx writer against the gpx parser : parse an existing gpx file, the use the gpx
      * writer to write a gpx file somewhere in a temp folder, then use the gpx parser again to parse
      * the resulting file. <br>
-     * The resulting file should have values identical values (at least for tags that the writer
-     * supports).
+     * The resulting file should have identical values (at least for tags that the writer supports).
      */
     @Test
     public void writeTest() {
