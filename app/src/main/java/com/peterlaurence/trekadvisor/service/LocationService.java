@@ -19,7 +19,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
-import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -28,15 +27,31 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
-import com.peterlaurence.trekadvisor.core.events.LocationEvent;
+import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
+import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
+import com.peterlaurence.trekadvisor.util.gpx.GPXWriter;
+import com.peterlaurence.trekadvisor.util.gpx.model.Gpx;
+import com.peterlaurence.trekadvisor.util.gpx.model.Track;
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint;
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 public class LocationService extends Service {
+    private static final String GPX_VERSION = "1.1";
     private static final String NOTIFICATION_ID = "peterlaurence.LocationService";
     private static final int SERVICE_ID = 126585;
     private Looper mServiceLooper;
@@ -44,6 +59,8 @@ public class LocationService extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
+
+    private List<TrackPoint> mTrackPoints;
 
     private boolean mStarted = false;
 
@@ -74,11 +91,22 @@ public class LocationService extends Service {
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+        /* Create the Gpx instance */
+        mTrackPoints = new ArrayList<>();
+
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 for (Location location : locationResult.getLocations()) {
-                    EventBus.getDefault().post(new LocationEvent(location));
+                    mServiceHandler.post(() -> {
+                        TrackPoint.Builder pointBuilder = new TrackPoint.Builder();
+                        pointBuilder.setLatitude(location.getLatitude());
+                        pointBuilder.setLongitude(location.getLongitude());
+                        pointBuilder.setElevation(location.getAltitude());
+
+                        TrackPoint trackPoint = pointBuilder.build();
+                        mTrackPoints.add(trackPoint);
+                    });
                 }
             }
         };
@@ -86,18 +114,52 @@ public class LocationService extends Service {
         startLocationUpdates();
     }
 
+    /**
+     * When we stop recording the location events, create a {@link Gpx} object for further
+     * serialization.
+     */
+    private void createGpx() {
+        mServiceHandler.post(() -> {
+            TrackSegment.Builder trkSegBuilder = new TrackSegment.Builder();
+            trkSegBuilder.setTrackPoints(mTrackPoints);
+
+            ArrayList<TrackSegment> trkSegList = new ArrayList<>();
+            trkSegList.add(trkSegBuilder.build());
+
+            Track.Builder trackBuilder = new Track.Builder().setName(TrekAdvisorContext.APP_FOLDER_NAME + " track");
+            trackBuilder.setTrackSegments(trkSegList);
+
+            ArrayList<Track> trkList = new ArrayList<>();
+            trkList.add(trackBuilder.build());
+
+            Gpx.Builder gpxBuilder = new Gpx.Builder();
+            gpxBuilder.setCreator(TrekAdvisorContext.APP_FOLDER_NAME);
+            gpxBuilder.setVersion(GPX_VERSION);
+            gpxBuilder.setTracks(trkList);
+
+            Gpx gpx = gpxBuilder.build();
+            try {
+                if (!TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.exists()) {
+                    TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.mkdir();
+                }
+
+                Date date = new Date();
+                DateFormat dateFormat = new SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH);
+                String gpxFileName = "track-" + dateFormat.format(date) + ".gpx";
+                File gpxFile = new File(TrekAdvisorContext.DEFAULT_RECORDINGS_DIR, gpxFileName);
+                FileOutputStream fos = new FileOutputStream(gpxFile);
+                GPXWriter.write(gpx, fos);
+            } catch (Exception e) {
+                // for instance, don't care : we want to stop the service anyway
+                // TODO : warn the user that the gpx file could not be saved
+            } finally {
+                EventBus.getDefault().post(new GpxFileWriteEvent());
+            }
+        });
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // TODO : remove Toast
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-
-        // For each start request, send a message to start a job and deliver the
-        // start ID so we know which request we're stopping when we finish the job
-        Message msg = mServiceHandler.obtainMessage();
-        msg.arg1 = startId;
-        mServiceHandler.sendMessage(msg);
-
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(this, 0, notificationIntent, 0);
@@ -107,7 +169,6 @@ public class LocationService extends Service {
 
         Notification.Builder notificationBuilder = new Notification.Builder(getApplicationContext())
                 .setContentTitle(getText(R.string.app_name))
-                .setTicker("App Is Running")
                 .setContentText(getText(R.string.service_action))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
@@ -140,8 +201,18 @@ public class LocationService extends Service {
     public void onRecordGpxStartEvent(RecordGpxStartEvent event) {
     }
 
+    /**
+     * Create and write a new gpx file. <br>
+     * After this is done, a {@link GpxFileWriteEvent} is emitted through event bus so the service
+     * can stop properly.
+     */
     @Subscribe
     public void onRecordGpxStopEvent(RecordGpxStopEvent event) {
+        createGpx();
+    }
+
+    @Subscribe
+    public void onGpxFileWriteEvent(GpxFileWriteEvent event) {
         stopSelf();
         mStarted = false;
         sendStatus();
@@ -155,10 +226,8 @@ public class LocationService extends Service {
 
     @Override
     public void onDestroy() {
-        // TODO : remove Toast
-        Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
-
         stopLocationUpdates();
+        mServiceLooper.quitSafely();
         EventBus.getDefault().unregister(this);
     }
 

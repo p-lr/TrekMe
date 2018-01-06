@@ -16,11 +16,12 @@ import java.io.File;
  * @author peterLaurence on 07/10/17.
  */
 public final class TrekAdvisorContext {
-    private static final String APP_FOLDER_NAME = "trekadvisor";
+    public static final String APP_FOLDER_NAME = "trekadvisor";
     public static final File DEFAULT_APP_DIR = new File(Environment.getExternalStorageDirectory(),
             APP_FOLDER_NAME);
     /* For instance maps are searched anywhere under the app folder */
     public static final File DEFAULT_MAPS_DIR = DEFAULT_APP_DIR;
 
     public static final File DEFAULT_MAPS_DOWNLOAD_DIR = new File(DEFAULT_MAPS_DIR, "maps");
+    public static final File DEFAULT_RECORDINGS_DIR = new File(DEFAULT_APP_DIR, "recordings");
 }
