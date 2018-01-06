@@ -55,7 +55,7 @@ public class LocationService extends Service {
     private static final String NOTIFICATION_ID = "peterlaurence.LocationService";
     private static final int SERVICE_ID = 126585;
     private Looper mServiceLooper;
-    private ServiceHandler mServiceHandler;
+    private Handler mServiceHandler;
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
@@ -81,7 +81,7 @@ public class LocationService extends Service {
 
         // Get the HandlerThread's Looper and use it for our Handler
         mServiceLooper = thread.getLooper();
-        mServiceHandler = new ServiceHandler(mServiceLooper);
+        mServiceHandler = new Handler(mServiceLooper);
 
         mServiceHandler.handleMessage(new Message());
 
@@ -248,28 +248,5 @@ public class LocationService extends Service {
 
     private void sendStatus() {
         EventBus.getDefault().post(new LocationServiceStatus(mStarted));
-    }
-
-    /**
-     * The handler on the {@link HandlerThread} of this service.
-     */
-    private final class ServiceHandler extends Handler {
-        ServiceHandler(Looper looper) {
-            super(looper);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            /* Example of task submitting */
-            post(() -> {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    // Restore interrupt status.
-                    Thread.currentThread().interrupt();
-                }
-            });
-
-        }
     }
 }
