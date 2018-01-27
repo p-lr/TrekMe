@@ -20,12 +20,15 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_RECORDINGS_DIR;
 
 /**
  * Utility toolbox to :
@@ -39,6 +42,22 @@ import java.util.List;
 public abstract class TrackImporter {
     private static final String[] supportedTrackFilesExtensions = new String[]{
             "gpx", "xml"
+    };
+
+    private static final FilenameFilter SUPPORTED_FILE_FILTER = (dir, filename) -> {
+        /* We only look at files */
+        if (new File(dir, filename).isDirectory()) {
+            return false;
+        }
+
+        boolean accept = true;
+        for (final String ext : supportedTrackFilesExtensions) {
+            if (!filename.endsWith("." + ext)) {
+                accept = false;
+            }
+            if (accept) return true;
+        }
+        return false;
     };
 
     public static boolean isFileSupported(Uri uri) {
@@ -65,6 +84,15 @@ public abstract class TrackImporter {
                                        ContentResolver contentResolver) {
         GpxTrackFileTask gpxTrackFileTask = new GpxTrackFileTask(listener, map, contentResolver);
         gpxTrackFileTask.execute(uri);
+    }
+
+    /**
+     * Get the list of {@link File} which extension is in the list of supported extension for track
+     * file. Files are seerached into the
+     * {@link com.peterlaurence.trekadvisor.core.TrekAdvisorContext#DEFAULT_RECORDINGS_DIR}.
+     */
+    public static File[] getRecordings() {
+        return DEFAULT_RECORDINGS_DIR.listFiles(SUPPORTED_FILE_FILTER);
     }
 
     public interface TrackFileParsedListener {
