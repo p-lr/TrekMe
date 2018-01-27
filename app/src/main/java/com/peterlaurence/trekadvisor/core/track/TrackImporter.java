@@ -28,18 +28,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Manage operations related to track import.
+ * Utility toolbox to :
+ * <ul>
+ * <li>Import a gpx track file into a {@link Map}.</li>
+ * <li>Get the list of gpx files created by location recording.</li>
+ * </ul>
  *
  * @author peterLaurence on 03/03/17.
  */
-public class TrackImporter {
+public abstract class TrackImporter {
     private static final String[] supportedTrackFilesExtensions = new String[]{
-            "gpx", "json", "xml"
+            "gpx", "xml"
     };
-
-    /* Don't allow instantiation */
-    private TrackImporter() {
-    }
 
     public static boolean isFileSupported(Uri uri) {
         String path = uri.getPath();
