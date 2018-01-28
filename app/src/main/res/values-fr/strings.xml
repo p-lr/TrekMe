@@ -72,4 +72,5 @@
     <string name="record_menu_title">Enregistrement GPX</string>
     <string name="control_card_title">Commandes</string>
     <string name="control_card_subtitle">Démarrer ou arrêter l\'enregistrement</string>
+    <string name="recordings_card_title">Enregistrements GPX</string>
 </resources>

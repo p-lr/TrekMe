@@ -111,5 +111,6 @@
     <!-- Record GPX fragment -->
     <string name="control_card_title">Control</string>
     <string name="control_card_subtitle">Start or stop recording</string>
+    <string name="recordings_card_title">GPX recordings</string>
 
 </resources>

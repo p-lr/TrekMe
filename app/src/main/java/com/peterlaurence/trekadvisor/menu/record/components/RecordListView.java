@@ -5,9 +5,11 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.view.View;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
+import com.peterlaurence.trekadvisor.menu.tools.RecyclerItemClickListener;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ public class RecordListView extends CardView {
         inflate(context, R.layout.record_list_card, this);
 
         Context ctx = getContext();
-        RecyclerView recyclerView = new RecyclerView(ctx);
+        RecyclerView recyclerView = findViewById(R.id.recordings_recycler_id);
         LinearLayoutManager llm = new LinearLayoutManager(ctx);
         recyclerView.setLayoutManager(llm);
 
@@ -46,6 +48,18 @@ public class RecordListView extends CardView {
                 new ArrayList<>(Arrays.asList(TrackImporter.getRecordings())), selectedItems);
         recyclerView.setAdapter(recordingAdapter);
 
-        addView(recyclerView, 0);
+
+        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this.getContext(),
+                recyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                System.out.println("click");
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position) {
+                System.out.println("long click");
+            }
+        }));
     }
 }
