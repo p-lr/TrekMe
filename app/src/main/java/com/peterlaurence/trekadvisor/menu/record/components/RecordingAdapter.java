@@ -38,10 +38,14 @@ public class RecordingAdapter extends RecyclerView.Adapter<RecordingAdapter.Reco
     public void onBindViewHolder(RecordingViewHolder holder, int position) {
         holder.recordingName.setText(mRecordings.get(position).getName());
 
-        if (position % 2 == 0) {
-            holder.layout.setBackgroundColor(0xFFEDEDED);
+        if (mSelectedRecordings.contains(mRecordings.get(position))) {
+            holder.layout.setBackgroundColor(0x882196F3);
         } else {
-            holder.layout.setBackgroundColor(0xFFFFFFFF);
+            if (position % 2 == 0) {
+                holder.layout.setBackgroundColor(0xFFEDEDED);
+            } else {
+                holder.layout.setBackgroundColor(0xFFFFFFFF);
+            }
         }
     }
 
@@ -60,5 +64,13 @@ public class RecordingAdapter extends RecyclerView.Adapter<RecordingAdapter.Reco
             layout = itemView.findViewById(R.id.record_item_layout);
             recordingName = itemView.findViewById(R.id.recording_name_id);
         }
+    }
+
+    void setRecordings(ArrayList<File> recordings) {
+        mRecordings = recordings;
+    }
+
+    void setSelectedRecordings(ArrayList<File> selectedRecordings) {
+        mSelectedRecordings = selectedRecordings;
     }
 }

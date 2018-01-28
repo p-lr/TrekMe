@@ -1,9 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.record.components;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -23,6 +21,10 @@ import java.util.Arrays;
  * @author peterLaurence on 23/12/17.
  */
 public class RecordListView extends CardView {
+    private boolean mIsMultiSelectMode = false;
+    private ArrayList<File> mSelectedRecordings = new ArrayList<>();
+    private ArrayList<File> mRecordings;
+
     public RecordListView(Context context) {
         this(context, null);
     }
@@ -33,6 +35,8 @@ public class RecordListView extends CardView {
 
     public RecordListView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+
+        mRecordings = new ArrayList<>(Arrays.asList(TrackImporter.getRecordings()));
         init(context, attrs);
     }
 
@@ -44,23 +48,44 @@ public class RecordListView extends CardView {
         LinearLayoutManager llm = new LinearLayoutManager(ctx);
         recyclerView.setLayoutManager(llm);
 
-        ArrayList<File> selectedItems = new ArrayList<>();
-
-        RecordingAdapter recordingAdapter = new RecordingAdapter(
-                new ArrayList<>(Arrays.asList(TrackImporter.getRecordings())), selectedItems);
+        RecordingAdapter recordingAdapter = new RecordingAdapter(mRecordings, mSelectedRecordings);
         recyclerView.setAdapter(recordingAdapter);
 
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this.getContext(),
                 recyclerView, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                System.out.println("click");
+                if (mIsMultiSelectMode) {
+                    multiSelect(position);
+
+                    recordingAdapter.setSelectedRecordings(mSelectedRecordings);
+                    recordingAdapter.notifyItemChanged(position);
+                }
             }
 
             @Override
             public void onItemLongClick(View view, int position) {
-                System.out.println("long click");
+                mSelectedRecordings = new ArrayList<>();
+                if (!mIsMultiSelectMode) {
+                    mIsMultiSelectMode = true;
+                    multiSelect(position);
+                    recordingAdapter.setSelectedRecordings(mSelectedRecordings);
+                    recordingAdapter.notifyItemChanged(position);
+                } else {
+                    mIsMultiSelectMode = false;
+                    recordingAdapter.setSelectedRecordings(mSelectedRecordings);
+                    recordingAdapter.notifyDataSetChanged();
+                }
             }
         }));
+    }
+
+    private void multiSelect(int position) {
+        File recording = mRecordings.get(position);
+        if (mSelectedRecordings.contains(recording)) {
+            mSelectedRecordings.remove(recording);
+        } else {
+            mSelectedRecordings.add(recording);
+        }
     }
 }
