@@ -1,7 +1,9 @@
 package com.peterlaurence.trekadvisor.menu.record.components;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -47,7 +49,6 @@ public class RecordListView extends CardView {
         RecordingAdapter recordingAdapter = new RecordingAdapter(
                 new ArrayList<>(Arrays.asList(TrackImporter.getRecordings())), selectedItems);
         recyclerView.setAdapter(recordingAdapter);
-
 
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this.getContext(),
                 recyclerView, new RecyclerItemClickListener.OnItemClickListener() {

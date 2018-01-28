@@ -37,6 +37,12 @@ public class RecordingAdapter extends RecyclerView.Adapter<RecordingAdapter.Reco
     @Override
     public void onBindViewHolder(RecordingViewHolder holder, int position) {
         holder.recordingName.setText(mRecordings.get(position).getName());
+
+        if (position % 2 == 0) {
+            holder.layout.setBackgroundColor(0xFFEDEDED);
+        } else {
+            holder.layout.setBackgroundColor(0xFFFFFFFF);
+        }
     }
 
     @Override
