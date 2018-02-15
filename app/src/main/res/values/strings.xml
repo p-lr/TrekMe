@@ -112,5 +112,6 @@
     <string name="control_card_title">Control</string>
     <string name="control_card_subtitle">Start or stop recording</string>
     <string name="recordings_card_title">GPX recordings</string>
+    <string name="files_could_not_be_deleted">Some files could not be deleted</string>
 
 </resources>

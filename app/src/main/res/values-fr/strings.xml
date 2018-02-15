@@ -73,4 +73,5 @@
     <string name="control_card_title">Commandes</string>
     <string name="control_card_subtitle">Démarrer ou arrêter l\'enregistrement</string>
     <string name="recordings_card_title">Enregistrements GPX</string>
+    <string name="files_could_not_be_deleted">Certains fichiers n\'ont pu être supprimés</string>
 </resources>
