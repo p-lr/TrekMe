@@ -12,6 +12,10 @@ import android.widget.ImageButton;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.menu.tools.RecyclerItemClickListener;
+import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,7 +29,7 @@ import java.util.Arrays;
 public class RecordListView extends CardView {
     private boolean mIsMultiSelectMode = false;
     private ArrayList<File> mSelectedRecordings = new ArrayList<>();
-    private ArrayList<File> mRecordings;
+    private ArrayList<File> mRecordings = new ArrayList<>();
     private RecordingAdapter mRecordingAdapter;
 
     public RecordListView(Context context) {
@@ -39,8 +43,13 @@ public class RecordListView extends CardView {
     public RecordListView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        mRecordings = new ArrayList<>(Arrays.asList(TrackImporter.getRecordings()));
+        updateRecordings();
         init(context, attrs);
+    }
+
+    private void updateRecordings() {
+        mRecordings.clear();
+        mRecordings.addAll(Arrays.asList(TrackImporter.getRecordings()));
     }
 
     private void init(Context context, AttributeSet attrs) {
@@ -115,5 +124,11 @@ public class RecordListView extends CardView {
         } else {
             mSelectedRecordings.add(recording);
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGpxFileWriteEvent(GpxFileWriteEvent event) {
+        updateRecordings();
+        mRecordingAdapter.notifyDataSetChanged();
     }
 }

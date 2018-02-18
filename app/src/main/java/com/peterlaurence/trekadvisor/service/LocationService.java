@@ -71,15 +71,15 @@ public class LocationService extends Service {
     public void onCreate() {
         EventBus.getDefault().register(this);
 
-        // Start up the thread running the service.  Note that we create a
-        // separate thread because the service normally runs in the process's
-        // main thread, which we don't want to block.  We also make it
-        // background priority so CPU-intensive work will not disrupt our UI.
+        /* Start up the thread running the service.  Note that we create a separate thread because
+         * the service normally runs in the process's main thread, which we don't want to block.
+         * We also make it background priority so CPU-intensive work will not disrupt our UI.
+         */
         HandlerThread thread = new HandlerThread("LocationServiceThread",
                 Thread.MIN_PRIORITY);
         thread.start();
 
-        // Get the HandlerThread's Looper and use it for our Handler
+        /* Get the HandlerThread's Looper and use it for our Handler */
         mServiceLooper = thread.getLooper();
         mServiceHandler = new Handler(mServiceLooper);
 
@@ -116,7 +116,9 @@ public class LocationService extends Service {
 
     /**
      * When we stop recording the location events, create a {@link Gpx} object for further
-     * serialization.
+     * serialization. <br>
+     * Whatever the outcome of this process, a {@link GpxFileWriteEvent} is emitted in the
+     * LocationServiceThread.
      */
     private void createGpx() {
         mServiceHandler.post(() -> {
@@ -158,6 +160,9 @@ public class LocationService extends Service {
         });
     }
 
+    /**
+     * Called when the service is started.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -176,7 +181,7 @@ public class LocationService extends Service {
                 .setOngoing(true);
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
-            //This only needs to be run on Devices on Android O and above
+            /* This is only needed on Devices on Android O and above */
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_ID, getText(R.string.service_description), NotificationManager.IMPORTANCE_DEFAULT);
@@ -211,6 +216,10 @@ public class LocationService extends Service {
         createGpx();
     }
 
+    /**
+     * Self-respond to a {link GpxFileWriteEvent} emitted by the service. <br>
+     * When a GPX file has just been written, stop the service and send the status.
+     */
     @Subscribe
     public void onGpxFileWriteEvent(GpxFileWriteEvent event) {
         stopSelf();
@@ -246,6 +255,9 @@ public class LocationService extends Service {
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
+    /**
+     * Send the started/stopped boolean status of the service.
+     */
     private void sendStatus() {
         EventBus.getDefault().post(new LocationServiceStatus(mStarted));
     }

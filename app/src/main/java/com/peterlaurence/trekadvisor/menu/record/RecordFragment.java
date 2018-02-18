@@ -13,6 +13,7 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.ActionsView;
+import com.peterlaurence.trekadvisor.menu.record.components.RecordListView;
 import com.peterlaurence.trekadvisor.menu.record.components.StatusView;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStartEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStopEvent;
@@ -29,6 +30,7 @@ import org.greenrobot.eventbus.Subscribe;
 public class RecordFragment extends Fragment {
     ActionsView mActionsView;
     StatusView mStatusView;
+    RecordListView mRecordListView;
 
     /* Required empty public constructor */
     public RecordFragment() {
@@ -51,6 +53,7 @@ public class RecordFragment extends Fragment {
 
         mActionsView = view.findViewById(R.id.record_actionsView);
         mStatusView = view.findViewById(R.id.record_statusView);
+        mRecordListView = view.findViewById(R.id.record_listView);
     }
 
     @Override
@@ -58,11 +61,13 @@ public class RecordFragment extends Fragment {
         super.onStart();
         EventBus.getDefault().register(this);
         EventBus.getDefault().register(mActionsView);
+        EventBus.getDefault().register(mRecordListView);
     }
 
     @Override
     public void onStop() {
         EventBus.getDefault().unregister(mActionsView);
+        EventBus.getDefault().unregister(mRecordListView);
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
