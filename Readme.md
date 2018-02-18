@@ -36,15 +36,15 @@ is the memory available on your device (smartphone, tablet).
 * Orientation indicator
 * Speed indicator
 * Distance indicator
+* GPX track recording
 
 ### On TODO list
 
-* GPX track recording
 * Develop a desktop tool to assist map creation
 
 ## <a name="TOC-TrekAdvisor-Users"></a>TrekAdvisor Users
 
-TrekAdvisor is designed for people with advanced understanding of
+TrekAdvisor is designed for people with basic understanding of
 localisation on a map. However, efforts are made to make this app as easy
 to use as possible.
 
