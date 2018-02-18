@@ -50,6 +50,8 @@
     <string name="cancel_dialog_string">Cancel</string>
 
     <string name="projection_none">None</string>
+    <string name="wgs84_instead_of_projected">You entered WGS84 lat/lon instead of projected values</string>
+    <string name="projected_instead_of_wgs84">You entered projected values instead of WGS84 lat/lon</string>
 
 
     <!-- Keys and ids of graphical components -->

@@ -274,10 +274,20 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
             if (projectedValues != null) {
                 calibrationPoint.proj_x = projectedValues[0];
                 calibrationPoint.proj_y = projectedValues[1];
+            } else {
+                displayErrorMessage(R.string.projected_instead_of_wgs84);
+                return;
             }
         } else {
-            calibrationPoint.proj_x = x;
-            calibrationPoint.proj_y = y;
+            /* If no projection is defined or no mistake is detected, we continue */
+            if (projection == null || projection.undoProjection(x, y) != null) {
+                calibrationPoint.proj_x = x;
+                calibrationPoint.proj_y = y;
+            } else {
+                /* ..else, show error message and stop */
+                displayErrorMessage(R.string.wgs84_instead_of_projected);
+                return;
+            }
         }
 
         /* Save relative position */
@@ -326,6 +336,10 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         snackbar.show();
     }
 
+    private void displayErrorMessage(int stringId) {
+        Snackbar snackbar = Snackbar.make(rootView, stringId, Snackbar.LENGTH_SHORT);
+        snackbar.show();
+    }
 
     /*
      * The interface that the view associated with this fragment must implement.
