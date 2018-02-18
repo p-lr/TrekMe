@@ -18,4 +18,5 @@
     <color name="colorMarkerStroke">#B6392F</color>
     <color name="colorIndicatorOverlay">#885D4037</color>
     <color name="colorError">#F44336</color>
+    <color name="colorAccentRed">#F44336</color>
 </resources>

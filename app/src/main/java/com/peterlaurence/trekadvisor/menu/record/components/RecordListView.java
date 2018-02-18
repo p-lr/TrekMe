@@ -44,7 +44,7 @@ public class RecordListView extends CardView {
     }
 
     private void init(Context context, AttributeSet attrs) {
-        inflate(context, R.layout.record_list_card, this);
+        inflate(context, R.layout.record_list_layout, this);
 
         Context ctx = getContext();
         RecyclerView recyclerView = findViewById(R.id.recordings_recycler_id);
@@ -94,11 +94,13 @@ public class RecordListView extends CardView {
                 mSelectedRecordings = new ArrayList<>();
                 if (!mIsMultiSelectMode) {
                     mIsMultiSelectMode = true;
+                    deleteRecordingButton.setVisibility(View.VISIBLE);
                     multiSelect(position);
                     mRecordingAdapter.setSelectedRecordings(mSelectedRecordings);
                     mRecordingAdapter.notifyItemChanged(position);
                 } else {
                     mIsMultiSelectMode = false;
+                    deleteRecordingButton.setVisibility(View.GONE);
                     mRecordingAdapter.setSelectedRecordings(mSelectedRecordings);
                     mRecordingAdapter.notifyDataSetChanged();
                 }
