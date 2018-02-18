@@ -72,6 +72,8 @@
     <string name="record_menu_title">Enregistrement GPX</string>
     <string name="control_card_title">Commandes</string>
     <string name="control_card_subtitle">Démarrer ou arrêter l\'enregistrement</string>
-    <string name="recordings_card_title">Enregistrements GPX</string>
+    <string name="recordings_list_title">Enregistrements GPX</string>
     <string name="files_could_not_be_deleted">Certains fichiers n\'ont pu être supprimés</string>
+    <string name="recordings_status_title">Service de localisation</string>
+    <string name="recording_status_description">Statut démarré/arrêté</string>
 </resources>

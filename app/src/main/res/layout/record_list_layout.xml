@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
-        android:text="@string/recordings_card_title"
+        android:text="@string/recordings_list_title"
         android:textColor="@color/colorPrimaryTextBlack"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"

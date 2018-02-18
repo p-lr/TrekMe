@@ -37,7 +37,7 @@ public class ActionsView extends CardView {
 
 
     private void init(Context context, AttributeSet attrs) {
-        inflate(context, R.layout.record_actions_card, this);
+        inflate(context, R.layout.record_actions_layout, this);
 
         mButton = getRootView().findViewById(R.id.delayedButton);
         mButton.setListener(new DelayedButton.PlayStopListener() {

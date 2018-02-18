@@ -33,7 +33,7 @@ public class StatusView extends CardView {
     }
 
     private void init(Context context, AttributeSet attrs) {
-        inflate(context, R.layout.record_status_card, this);
+        inflate(context, R.layout.record_status_layout, this);
 
         mHeartBeatIndicator = findViewById(R.id.heartBeatIndicator);
 
