@@ -49,7 +49,10 @@ public class RecordListView extends CardView {
 
     private void updateRecordings() {
         mRecordings.clear();
-        mRecordings.addAll(Arrays.asList(TrackImporter.getRecordings()));
+        File[] recordings = TrackImporter.getRecordings();
+        if (recordings != null) {
+            mRecordings.addAll(Arrays.asList(recordings));
+        }
     }
 
     private void init(Context context, AttributeSet attrs) {

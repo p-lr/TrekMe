@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
+import android.support.annotation.Nullable;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
@@ -91,6 +92,7 @@ public abstract class TrackImporter {
      * file. Files are seerached into the
      * {@link com.peterlaurence.trekadvisor.core.TrekAdvisorContext#DEFAULT_RECORDINGS_DIR}.
      */
+    @Nullable
     public static File[] getRecordings() {
         return DEFAULT_RECORDINGS_DIR.listFiles(SUPPORTED_FILE_FILTER);
     }
