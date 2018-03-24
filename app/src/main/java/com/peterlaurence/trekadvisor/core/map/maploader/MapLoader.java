@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
 import com.peterlaurence.trekadvisor.core.events.MapArchiveListUpdateEvent;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.MapArchive;
@@ -91,17 +92,8 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapListUpdateListeners = new ArrayList<>();
         mMapList = new ArrayList<>();
 
-        /* Create the app folder if it doesn't exist */
-        try {
-            if (!DEFAULT_APP_DIR.exists()) {
-                boolean created = DEFAULT_APP_DIR.mkdir();
-                if (!created) {
-                    Log.e(TAG, "Could not create application folder");
-                }
-            }
-        } catch (SecurityException e) {
-            Log.e(TAG, "We don't have right access to create application folder");
-        }
+        /* Init the application context (create folders, etc) */
+        TrekAdvisorContext.init();
     }
 
     public static MapLoader getInstance() {
