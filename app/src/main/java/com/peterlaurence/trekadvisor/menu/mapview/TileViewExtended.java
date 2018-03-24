@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.mapview;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
@@ -29,8 +30,6 @@ public class TileViewExtended extends TileView {
         super(context);
 
         mScaleChangeListeners = new ArrayList<>();
-        mPathView = new PathView(context);
-        addView(mPathView, getChildCount() - 1);
     }
 
     @Override
@@ -72,6 +71,7 @@ public class TileViewExtended extends TileView {
         mScrollListenerWeakReference = new WeakReference<>(listener);
     }
 
+    @Nullable
     public PathView getPathView() {
         return mPathView;
     }
@@ -81,6 +81,9 @@ public class TileViewExtended extends TileView {
      * of type {@link PathView.DrawablePath}.
      */
     public void drawRoutes(List<RouteGson.Route> routeList) {
+        if (mPathView == null) {
+            createPathView();
+        }
         mPathView.updateRoutes(routeList);
     }
 
@@ -91,9 +94,6 @@ public class TileViewExtended extends TileView {
         for (ScaleChangeListener listener : mScaleChangeListeners) {
             listener.onScaleChanged(scale);
         }
-
-        // TODO : set the PathView as a scale listener
-        mPathView.setScale(scale);
     }
 
     public void addScaleChangeListener(ScaleChangeListener listener) {
@@ -106,6 +106,12 @@ public class TileViewExtended extends TileView {
 
     public interface ScaleChangeListener {
         void onScaleChanged(float scale);
+    }
+
+    private void createPathView() {
+        mPathView = new PathView(getContext());
+        addView(mPathView, getChildCount() - 1);
+        addScaleChangeListener(scale -> mPathView.setScale(scale));
     }
 
     /**

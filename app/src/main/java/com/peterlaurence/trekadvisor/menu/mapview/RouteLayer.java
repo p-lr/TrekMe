@@ -53,7 +53,10 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
 
     @Override
     public void onTrackVisibilityChanged() {
-        mTileView.getPathView().invalidate();
+        PathView pathView = mTileView.getPathView();
+        if (pathView != null) {
+            pathView.invalidate();
+        }
     }
 
 
