@@ -8,7 +8,6 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.view.View;
 
-import com.peterlaurence.trekadvisor.core.geotools.GeoTools;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceMarker;
@@ -16,6 +15,8 @@ import com.peterlaurence.trekadvisor.menu.mapview.components.DistanceView;
 import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
+
+import static com.peterlaurence.trekadvisor.core.geotools.GeoToolsKt.distanceApprox;
 
 /**
  * Shows two {@link DistanceMarker} and a {@link DistanceView}.
@@ -265,7 +266,7 @@ public class DistanceLayer {
             double distance;
             Projection projection = mMap.getProjection();
             if (projection == null) {
-                distance = GeoTools.distanceApprox(mRelativeX1, mRelativeY1, mRelativeX2, mRelativeY2);
+                distance = distanceApprox(mRelativeX1, mRelativeY1, mRelativeX2, mRelativeY2);
             } else {
                 double[] firstPointGeographic = projection.undoProjection(mRelativeX1, mRelativeY1);
                 if (firstPointGeographic == null) return;
@@ -277,7 +278,7 @@ public class DistanceLayer {
                 double lon1 = firstPointGeographic[0];
                 double lat2 = secondPointGeographic[1];
                 double lon2 = secondPointGeographic[0];
-                distance = GeoTools.distanceApprox(lat1, lon1, lat2, lon2);
+                distance = distanceApprox(lat1, lon1, lat2, lon2);
             }
             mPostExecuteTask.setDistance(distance);
 
