@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static com.peterlaurence.trekadvisor.util.ToolsKt.stackTraceToString;
+
 /**
  * Utility class to zip a map, but can be used with any folder.
  *
@@ -95,7 +97,7 @@ public class ZipTask extends AsyncTask<Void, Integer, Boolean> {
             }
             zos.close();
         } catch (IOException e) {
-            Log.e(TAG, Tools.stackTraceToString(e));
+            Log.e(TAG, stackTraceToString(e));
             return false;
         }
         return true;

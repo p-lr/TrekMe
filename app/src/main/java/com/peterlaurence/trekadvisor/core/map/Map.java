@@ -12,7 +12,6 @@ import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
-import com.peterlaurence.trekadvisor.util.Tools;
 import com.peterlaurence.trekadvisor.util.ZipTask;
 import com.qozix.tileview.graphics.BitmapProvider;
 
@@ -24,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import static com.peterlaurence.trekadvisor.util.ToolsKt.stackTraceToString;
 
 /**
  * A {@code Map} contains all the information that defines a map. That includes :
@@ -409,7 +410,7 @@ public class Map {
                 listener.onZipError();
             }
         } catch (IOException e) {
-            Log.e(TAG, Tools.stackTraceToString(e));
+            Log.e(TAG, stackTraceToString(e));
             listener.onZipError();
         }
 

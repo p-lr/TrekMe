@@ -10,6 +10,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import static com.peterlaurence.trekadvisor.util.ToolsKt.stackTraceToString;
+
 /**
  * Utility class used to unzip any zip file.
  *
@@ -74,7 +76,7 @@ public class UnzipTask extends Thread {
                     fos.close();
                 } catch (IOException e) {
                     /* Something went wrong during extraction */
-                    Log.e(TAG, Tools.stackTraceToString(e));
+                    Log.e(TAG, stackTraceToString(e));
                     result = false;
                 }
             }
@@ -82,7 +84,7 @@ public class UnzipTask extends Thread {
             zis.closeEntry();
             zis.close();
         } catch (IOException ex) {
-            Log.e(TAG, Tools.stackTraceToString(ex));
+            Log.e(TAG, stackTraceToString(ex));
             result = false;
         }
 
