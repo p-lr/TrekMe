@@ -86,8 +86,6 @@ object GPXParser {
     /* Process summary tags in the feed */
     @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
     private fun readSegment(parser: XmlPullParser): TrackSegment {
-        val builder = TrackSegment.Builder()
-
         val points = ArrayList<TrackPoint>()
         parser.require(XmlPullParser.START_TAG, ns, TAG_SEGMENT)
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -101,8 +99,7 @@ object GPXParser {
             }
         }
         parser.require(XmlPullParser.END_TAG, ns, TAG_SEGMENT)
-        return builder.setTrackPoints(points)
-                .build()
+        return TrackSegment(points)
     }
 
     /* Process summary tags in the feed */

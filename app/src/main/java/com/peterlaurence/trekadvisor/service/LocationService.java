@@ -122,11 +122,8 @@ public class LocationService extends Service {
      */
     private void createGpx() {
         mServiceHandler.post(() -> {
-            TrackSegment.Builder trkSegBuilder = new TrackSegment.Builder();
-            trkSegBuilder.setTrackPoints(mTrackPoints);
-
             ArrayList<TrackSegment> trkSegList = new ArrayList<>();
-            trkSegList.add(trkSegBuilder.build());
+            trkSegList.add(new TrackSegment(mTrackPoints));
 
             Track track = new Track(trkSegList, TrekAdvisorContext.APP_FOLDER_NAME + " track");
 
