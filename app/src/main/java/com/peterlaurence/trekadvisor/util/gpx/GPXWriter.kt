@@ -1,10 +1,6 @@
 package com.peterlaurence.trekadvisor.util.gpx
 
-import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
-import com.peterlaurence.trekadvisor.util.gpx.model.GpxSchema.*
-import com.peterlaurence.trekadvisor.util.gpx.model.Track
-import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint
-import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment
+import com.peterlaurence.trekadvisor.util.gpx.model.*
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import java.io.OutputStream

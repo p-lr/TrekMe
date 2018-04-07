@@ -1,24 +1,14 @@
 package com.peterlaurence.trekadvisor.util.gpx
 
 import android.util.Xml
-
-import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
-import com.peterlaurence.trekadvisor.util.gpx.model.Track
-import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint
-import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment
-
+import com.peterlaurence.trekadvisor.util.gpx.model.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
-
 import java.io.IOException
 import java.io.InputStream
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.ArrayList
-import java.util.Date
-import java.util.Locale
-
-import com.peterlaurence.trekadvisor.util.gpx.model.GpxSchema.*
+import java.util.*
 
 
 /**
