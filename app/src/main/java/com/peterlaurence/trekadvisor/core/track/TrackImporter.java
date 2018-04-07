@@ -134,7 +134,7 @@ public abstract class TrackImporter {
                     }
                     FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
                     FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
-                    Gpx gpx = GPXParser.parse(fileInputStream);
+                    Gpx gpx = GPXParser.INSTANCE.parse(fileInputStream);
 
                     for (Track track : gpx.getTracks()) {
                         RouteGson.Route route = gpxTracktoRoute(track);

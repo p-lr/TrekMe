@@ -1,6 +1,5 @@
 package com.peterlaurence.trekadvisor.util.gpx;
 
-import com.peterlaurence.trekadvisor.BuildConfig;
 import com.peterlaurence.trekadvisor.util.gpx.model.Gpx;
 import com.peterlaurence.trekadvisor.util.gpx.model.Track;
 import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint;
@@ -11,7 +10,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
@@ -21,7 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,7 +34,6 @@ import static junit.framework.Assert.fail;
  * @author peterLaurence on 12/02/17.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class GPXTest {
     private static File mGpxFilesDirectory;
 
@@ -60,7 +56,7 @@ public class GPXTest {
         if (mGpxFilesDirectory != null) {
             if (referenceGpxFile.exists()) {
                 try {
-                    Gpx gpx = GPXParser.parse(new FileInputStream(referenceGpxFile));
+                    Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(referenceGpxFile));
 
                     List<Track> trackList = gpx.getTracks();
                     assertEquals(1, trackList.size());
@@ -104,7 +100,7 @@ public class GPXTest {
             /* First read an existing gpx file */
             Gpx gpxInput = null;
             try {
-                gpxInput = GPXParser.parse(new FileInputStream(referenceGpxFile));
+                gpxInput = GPXParser.INSTANCE.parse(new FileInputStream(referenceGpxFile));
             } catch (Exception e) {
                 e.printStackTrace();
                 fail();
@@ -113,10 +109,10 @@ public class GPXTest {
             /* Write it in a temporary folder */
             File testFile = mTestFolder.newFile();
             FileOutputStream fos = new FileOutputStream(testFile);
-            GPXWriter.write(gpxInput, fos);
+            GPXWriter.INSTANCE.write(gpxInput, fos);
 
             /* Now read it back */
-            Gpx gpx = GPXParser.parse(new FileInputStream(testFile));
+            Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(testFile));
             List<Track> trackList = gpx.getTracks();
             assertEquals(1, trackList.size());
 

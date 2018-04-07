@@ -134,12 +134,7 @@ public class LocationService extends Service {
             ArrayList<Track> trkList = new ArrayList<>();
             trkList.add(trackBuilder.build());
 
-            Gpx.Builder gpxBuilder = new Gpx.Builder();
-            gpxBuilder.setCreator(TrekAdvisorContext.APP_FOLDER_NAME);
-            gpxBuilder.setVersion(GPX_VERSION);
-            gpxBuilder.setTracks(trkList);
-
-            Gpx gpx = gpxBuilder.build();
+            Gpx gpx = new Gpx(trkList, TrekAdvisorContext.APP_FOLDER_NAME, GPX_VERSION);
             try {
                 if (!TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.exists()) {
                     TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.mkdir();
@@ -150,7 +145,7 @@ public class LocationService extends Service {
                 String gpxFileName = "track-" + dateFormat.format(date) + ".gpx";
                 File gpxFile = new File(TrekAdvisorContext.DEFAULT_RECORDINGS_DIR, gpxFileName);
                 FileOutputStream fos = new FileOutputStream(gpxFile);
-                GPXWriter.write(gpx, fos);
+                GPXWriter.INSTANCE.write(gpx, fos);
             } catch (Exception e) {
                 // for instance, don't care : we want to stop the service anyway
                 // TODO : warn the user that the gpx file could not be saved
