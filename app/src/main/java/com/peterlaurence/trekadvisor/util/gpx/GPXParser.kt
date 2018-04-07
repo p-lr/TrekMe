@@ -64,25 +64,23 @@ object GPXParser {
      */
     @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
     private fun readTrack(parser: XmlPullParser): Track {
-        val builder = Track.Builder()
-
         val segments = ArrayList<TrackSegment>()
         parser.require(XmlPullParser.START_TAG, ns, TAG_TRACK)
+        var trackName = ""
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
             }
             val name = parser.name
             when (name) {
-                TAG_NAME -> builder.setName(readName(parser))
+                TAG_NAME -> trackName = readName(parser)
                 TAG_SEGMENT -> segments.add(readSegment(parser))
                 else -> skip(parser)
             }
         }
         parser.require(XmlPullParser.END_TAG, ns, TAG_TRACK)
 
-        return builder.setTrackSegments(segments)
-                .build()
+        return Track(trackSegments = segments, name = trackName)
     }
 
     /* Process summary tags in the feed */

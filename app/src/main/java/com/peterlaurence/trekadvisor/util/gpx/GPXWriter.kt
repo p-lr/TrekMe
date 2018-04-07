@@ -61,16 +61,14 @@ object GPXWriter {
     private fun addTrackToNode(trk: Track, n: Node, doc: Document) {
         val trkNode = doc.createElement(TAG_TRACK)
 
-        if (trk.name != null) {
-            val node = doc.createElement(TAG_NAME)
-            node.appendChild(doc.createTextNode(trk.name))
-            trkNode.appendChild(node)
-        }
+        /* Track name */
+        val node = doc.createElement(TAG_NAME)
+        node.appendChild(doc.createTextNode(trk.name))
+        trkNode.appendChild(node)
 
-        if (trk.trackSegments != null) {
-            for (ts in trk.trackSegments) {
-                addTrackSegmentToNode(ts, trkNode, doc)
-            }
+        /* Track segments */
+        for (ts in trk.trackSegments) {
+            addTrackSegmentToNode(ts, trkNode, doc)
         }
         n.appendChild(trkNode)
     }

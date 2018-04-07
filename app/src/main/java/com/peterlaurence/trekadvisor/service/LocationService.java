@@ -128,11 +128,10 @@ public class LocationService extends Service {
             ArrayList<TrackSegment> trkSegList = new ArrayList<>();
             trkSegList.add(trkSegBuilder.build());
 
-            Track.Builder trackBuilder = new Track.Builder().setName(TrekAdvisorContext.APP_FOLDER_NAME + " track");
-            trackBuilder.setTrackSegments(trkSegList);
+            Track track = new Track(trkSegList, TrekAdvisorContext.APP_FOLDER_NAME + " track");
 
             ArrayList<Track> trkList = new ArrayList<>();
-            trkList.add(trackBuilder.build());
+            trkList.add(track);
 
             Gpx gpx = new Gpx(trkList, TrekAdvisorContext.APP_FOLDER_NAME, GPX_VERSION);
             try {
