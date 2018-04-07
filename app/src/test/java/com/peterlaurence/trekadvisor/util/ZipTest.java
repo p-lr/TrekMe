@@ -1,13 +1,8 @@
 package com.peterlaurence.trekadvisor.util;
 
-import com.peterlaurence.trekadvisor.BuildConfig;
-
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +19,6 @@ import static org.junit.Assert.fail;
  * @author peterLaurence on 10/08/17.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class ZipTest {
     private static final String MAP_NAME = "libvips-with-json";
     private static File mMapsDirectory;
@@ -38,8 +32,7 @@ public class ZipTest {
         }
     }
 
-    @Rule
-    public TemporaryFolder mTestFolder = new TemporaryFolder();
+    private File mTestFolder = new File(System.getProperty("java.io.tmpdir"), "junit_ziptest");
 
     @Test
     public void zipTest() {
@@ -55,16 +48,20 @@ public class ZipTest {
                 @Override
                 public void onUnzipFinished(File outputDirectory) {
                     System.out.println("Unzip finished");
+                    FileUtils.deleteRecursive(mTestFolder);
                 }
 
                 @Override
                 public void onUnzipError() {
                     fail();
+                    FileUtils.deleteRecursive(mTestFolder);
                 }
             };
 
             try {
-                final File tempMapArchive = mTestFolder.newFile();
+                final File tempMapArchive = new File(mTestFolder, "testmap.zip");
+                tempMapArchive.getParentFile().mkdirs();
+                tempMapArchive.createNewFile();
 
                 ZipTask.ZipProgressionListener progressionListener = new ZipTask.ZipProgressionListener() {
                     @Override
@@ -79,7 +76,7 @@ public class ZipTest {
 
                     @Override
                     public void onZipFinished(File outputDirectory) {
-                        UnzipTask unzipTask = new UnzipTask(tempMapArchive, mTestFolder.getRoot(), unzipProgressionListener);
+                        UnzipTask unzipTask = new UnzipTask(tempMapArchive, mTestFolder, unzipProgressionListener);
                         unzipTask.start();
                     }
 
@@ -95,7 +92,6 @@ public class ZipTest {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         } else {
             fail();
         }
