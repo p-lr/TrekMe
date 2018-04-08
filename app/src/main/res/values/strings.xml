@@ -7,8 +7,9 @@
 
     <string name="map_menu_title">Map</string>
     <string name="select_map_menu_title">Select map</string>
-    <string name="import_menu_title">Import</string>
+    <string name="create_menu_title">Create</string>
     <string name="record_menu_title">Gpx Record</string>
+    <string name="import_menu_title">Import</string>
 
     <!-- LocationService -->
     <string name="service_description">Location service</string>

@@ -78,4 +78,5 @@
     <string name="recording_status_description">Statut démarré/arrêté</string>
     <string name="wgs84_instead_of_projected">Vous avez mis des coordonnées WGS84 au lieu de coordonnées de projection</string>
     <string name="projected_instead_of_wgs84">Vous avez mis des coordonnées de projection au lieu de coordonnées WGS84 lat/lon</string>
+    <string name="create_menu_title">Créer une carte</string>
 </resources>

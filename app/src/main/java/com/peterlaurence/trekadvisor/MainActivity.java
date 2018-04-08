@@ -30,6 +30,7 @@ import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
 import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
+import com.peterlaurence.trekadvisor.menu.mapcreate.MapCreateFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_SETTINGS_FRAGMENT_TAG = "mapSettingsFragment";
     private static final String MAP_CALIBRATION_FRAGMENT_TAG = "mapCalibrationFragment";
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
+    private static final String MAP_CREATE_FRAGMENT_TAG = "mapCreateFragment";
     private static final String RECORD_FRAGMENT_TAG = "gpxFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_SETTINGS_FRAGMENT_TAG);
                 add(MAP_CALIBRATION_FRAGMENT_TAG);
                 add(MAP_IMPORT_FRAGMENT_TAG);
+                add(MAP_CREATE_FRAGMENT_TAG);
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
                 add(MARKER_MANAGE_FRAGMENT_TAG);
                 add(RECORD_FRAGMENT_TAG);
@@ -174,7 +177,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else if (mBackFragmentTag != null) {
@@ -251,12 +254,16 @@ public class MainActivity extends AppCompatActivity
                 showMapListFragment();
                 break;
 
-            case R.id.nav_import:
-                showMapImportFragment();
+            case R.id.nav_create:
+                showMapCreateFragment();
                 break;
 
             case R.id.nav_record:
                 showRecordFragment();
+                break;
+
+            case R.id.nav_import:
+                showMapImportFragment();
                 break;
 
             default:
@@ -294,10 +301,16 @@ public class MainActivity extends AppCompatActivity
         return mapCalibrationFragment;
     }
 
+    private Fragment createMapCreateFragment(FragmentTransaction transaction) {
+        Fragment mapCreateFragment = new MapCreateFragment();
+        transaction.add(R.id.content_frame, mapCreateFragment, MAP_CREATE_FRAGMENT_TAG);
+        return mapCreateFragment;
+    }
+
     private Fragment createMapImportFragment(FragmentTransaction transaction) {
-        Fragment mapCalibrationFragment = new MapImportFragment();
-        transaction.add(R.id.content_frame, mapCalibrationFragment, MAP_IMPORT_FRAGMENT_TAG);
-        return mapCalibrationFragment;
+        Fragment mapImportFragment = new MapImportFragment();
+        transaction.add(R.id.content_frame, mapImportFragment, MAP_IMPORT_FRAGMENT_TAG);
+        return mapImportFragment;
     }
 
     private Fragment createRecordFragment(FragmentTransaction transaction) {
@@ -447,6 +460,24 @@ public class MainActivity extends AppCompatActivity
         transaction.commit();
     }
 
+    private void showMapCreateFragment() {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
+        /* Hide other fragments */
+        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
+        hideOtherFragments(hideTransaction, MAP_CREATE_FRAGMENT_TAG);
+        hideTransaction.commit();
+
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        Fragment mapImportFragment = createMapCreateFragment(transaction);
+        transaction.show(mapImportFragment);
+
+        /* Manually manage the back action*/
+        mBackFragmentTag = MAP_CREATE_FRAGMENT_TAG;
+        transaction.commit();
+    }
+
     private void showMapImportFragment() {
         /* Remove single-usage fragments */
         removeSingleUsageFragments();
@@ -539,6 +570,12 @@ public class MainActivity extends AppCompatActivity
         Fragment recordFragment = fragmentManager.findFragmentByTag(RECORD_FRAGMENT_TAG);
         if (recordFragment != null) {
             transaction.remove(recordFragment);
+        }
+
+        /* Remove the create fragment */
+        Fragment createFragment = fragmentManager.findFragmentByTag(MAP_CREATE_FRAGMENT_TAG);
+        if (recordFragment != null) {
+            transaction.remove(createFragment);
         }
 
         transaction.commit();
