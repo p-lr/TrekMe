@@ -133,6 +133,9 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        /* Setup default eventbus to use an index */
+        EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
+
         fragmentManager = this.getFragmentManager();
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
