@@ -40,7 +40,7 @@ is the memory available on your device (smartphone, tablet).
 
 ### On TODO list
 
-* Develop a desktop tool to assist map creation
+* Develop in-app map creation
 
 ## <a name="TOC-TrekAdvisor-Users"></a>TrekAdvisor Users
 
@@ -65,10 +65,6 @@ external storage (SD card). The format of the map is discussed later.
 For instance, that step is manual so you have to do the copy/paste of the map on your phone by yourself.
 Hopefully this will be simplified on a future version, so a map located on your computer would be
 imported from the app.
-
-## <a name="TOC-Create-a-map"></a>Download
-
-The application is hosted on Bintray : https://dl.bintray.com/peterlaurence/Android
 
 ## <a name="TOC-Create-a-map"></a>Create a map
 
