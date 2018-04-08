@@ -50,6 +50,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * A <a href="https://developer.android.com/guide/components/services.html#CreatingAService">Started service</a>
+ * to perform Gpx recordings, even if the user is not interacting with the main application. <br>
+ * It is started in the foreground to avoid Android 8.0 (API lvl 26)
+ * <a href="https://developer.android.com/about/versions/oreo/background.html">background
+ * execution limits</a>. <br>
+ * So when there is a Gpx recording, the user can always see it with the icon on the upper left
+ * corner of the device.
+ */
 public class LocationService extends Service {
     private static final String GPX_VERSION = "1.1";
     private static final String NOTIFICATION_ID = "peterlaurence.LocationService";
