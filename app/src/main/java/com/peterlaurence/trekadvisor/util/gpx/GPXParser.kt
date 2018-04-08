@@ -105,24 +105,24 @@ object GPXParser {
     /* Process summary tags in the feed */
     @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
     private fun readPoint(parser: XmlPullParser): TrackPoint {
-        val builder = TrackPoint.Builder()
+        val trackPoint = TrackPoint()
 
         parser.require(XmlPullParser.START_TAG, ns, TAG_POINT)
-        builder.setLatitude(java.lang.Double.valueOf(parser.getAttributeValue(null, ATTR_LAT)))
-        builder.setLongitude(java.lang.Double.valueOf(parser.getAttributeValue(null, ATTR_LON)))
+        trackPoint.latitude = java.lang.Double.valueOf(parser.getAttributeValue(null, ATTR_LAT))
+        trackPoint.longitude = java.lang.Double.valueOf(parser.getAttributeValue(null, ATTR_LON))
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
             }
             val name = parser.name
             when (name) {
-                TAG_ELEVATION -> builder.setElevation(readElevation(parser))
-                TAG_TIME -> builder.setTime(readTime(parser))
+                TAG_ELEVATION -> trackPoint.elevation = readElevation(parser)
+                TAG_TIME -> trackPoint.time = readTime(parser)
                 else -> skip(parser)
             }
         }
         parser.require(XmlPullParser.END_TAG, ns, TAG_POINT)
-        return builder.build()
+        return trackPoint
     }
 
     @Throws(IOException::class, XmlPullParserException::class)

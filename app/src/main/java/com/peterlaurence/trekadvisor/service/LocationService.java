@@ -108,12 +108,8 @@ public class LocationService extends Service {
             public void onLocationResult(LocationResult locationResult) {
                 for (Location location : locationResult.getLocations()) {
                     mServiceHandler.post(() -> {
-                        TrackPoint.Builder pointBuilder = new TrackPoint.Builder();
-                        pointBuilder.setLatitude(location.getLatitude());
-                        pointBuilder.setLongitude(location.getLongitude());
-                        pointBuilder.setElevation(location.getAltitude());
-
-                        TrackPoint trackPoint = pointBuilder.build();
+                        TrackPoint trackPoint = new TrackPoint(location.getLatitude(),
+                                location.getLongitude(), location.getAltitude(), null);
                         mTrackPoints.add(trackPoint);
                     });
                 }
