@@ -85,4 +85,5 @@
     <string name="ign_api_category">API</string>
     <string name="ign_api_key">Clé</string>
     <string name="store_credentials">Enregistrer ces informations</string>
+    <string name="next_button">Continuer</string>
 </resources>

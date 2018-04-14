@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="map_sources">
+        <item>IGN (France et ses territories)</item>
+    </string-array>
+</resources>

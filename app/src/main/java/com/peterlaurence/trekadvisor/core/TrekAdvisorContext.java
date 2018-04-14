@@ -26,6 +26,7 @@ public final class TrekAdvisorContext {
 
     public static final File DEFAULT_MAPS_DOWNLOAD_DIR = new File(DEFAULT_MAPS_DIR, "maps");
     public static final File DEFAULT_RECORDINGS_DIR = new File(DEFAULT_APP_DIR, "recordings");
+    public static final File CREDENTIALS_DIR = new File(DEFAULT_APP_DIR, "credentials");
     private static final String TAG = "TrekAdvisorContext";
 
     /**

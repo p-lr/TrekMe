@@ -120,6 +120,7 @@
     <string name="recording_status_description">Started/stopped status</string>
 
     <!-- MapCreate fragment -->
+    <string name="next_button">Next</string>
     <string name="ign_user_catergory">IGN credentials</string>
     <string name="ign_user">IGN user</string>
     <string name="ign_pwd">IGN password</string>
