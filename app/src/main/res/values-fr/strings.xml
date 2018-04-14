@@ -79,4 +79,10 @@
     <string name="wgs84_instead_of_projected">Vous avez mis des coordonnées WGS84 au lieu de coordonnées de projection</string>
     <string name="projected_instead_of_wgs84">Vous avez mis des coordonnées de projection au lieu de coordonnées WGS84 lat/lon</string>
     <string name="create_menu_title">Créer une carte</string>
+    <string name="ign_user_catergory">Identification IGN</string>
+    <string name="ign_user">Utilisateur IGN</string>
+    <string name="ign_pwd">Mot de passe</string>
+    <string name="ign_api_category">API</string>
+    <string name="ign_api_key">Clé</string>
+    <string name="store_credentials">Enregistrer ces informations</string>
 </resources>

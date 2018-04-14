@@ -119,4 +119,12 @@
     <string name="recordings_status_title">Location service</string>
     <string name="recording_status_description">Started/stopped status</string>
 
+    <!-- MapCreate fragment -->
+    <string name="ign_user_catergory">IGN credentials</string>
+    <string name="ign_user">IGN user</string>
+    <string name="ign_pwd">IGN password</string>
+    <string name="ign_api_category">API</string>
+    <string name="ign_api_key">Key</string>
+    <string name="store_credentials">Store credentials</string>
+
 </resources>
