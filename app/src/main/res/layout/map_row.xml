@@ -9,7 +9,8 @@
     android:layout_margin="5dp"
     android:clickable="true"
     android:foreground="?android:selectableItemBackground"
-    card_view:cardCornerRadius="5dp">
+    card_view:cardCornerRadius="5dp"
+    android:focusable="true">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
@@ -54,7 +55,9 @@
             tools:ignore="ContentDescription"
             tools:layout_constraintRight_creator="1"
             tools:layout_constraintTop_creator="1"
-            tools:src="@drawable/paris" />
+            tools:layout_height="100dp"
+            tools:layout_width="100dp"
+            tools:background="@drawable/ic_terrain_black_24dp"/>
 
         <Button
             android:id="@+id/map_edit_btn"
