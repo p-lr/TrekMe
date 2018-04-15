@@ -93,6 +93,11 @@ public class MainActivity extends AppCompatActivity
     private String mBackFragmentTag;
     private FragmentManager fragmentManager;
 
+    static {
+        /* Setup default eventbus to use an index */
+        EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
+    }
+
     /**
      * Checks whether the app has permission to access fine location.
      * If the app does not have the requested permissions then the user will be prompted.
@@ -135,9 +140,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        /* Setup default eventbus to use an index */
-        EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
 
         fragmentManager = this.getFragmentManager();
         setContentView(R.layout.activity_main);
@@ -510,7 +512,7 @@ public class MainActivity extends AppCompatActivity
         transaction.show(recordFragment);
 
         /* Manually manage the back action*/
-        mBackFragmentTag = RECORD_FRAGMENT_TAG;
+        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -574,7 +576,7 @@ public class MainActivity extends AppCompatActivity
 
         /* Remove the create fragment */
         Fragment createFragment = fragmentManager.findFragmentByTag(MAP_CREATE_FRAGMENT_TAG);
-        if (recordFragment != null) {
+        if (createFragment != null) {
             transaction.remove(createFragment);
         }
 

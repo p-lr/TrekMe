@@ -128,4 +128,9 @@
     <string name="ign_api_key">Key</string>
     <string name="store_credentials">Store credentials</string>
 
+    <string name="ign_source">IGN</string>
+    <string name="ign_source_description">France and its territories</string>
+    <string name="open_street_map_source" translatable="false">OpenStreetMap</string>
+    <string name="open_street_map_source_description">Free map</string>
+
 </resources>
