@@ -29,7 +29,7 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>) :
             MapSource.IGN -> {
                 holder?.title?.text = parentView.resources.getText(R.string.ign_source)
                 holder?.description?.text = parentView.resources.getText(R.string.ign_source_description)
-                holder?.image?.setImageResource(R.drawable.ign)
+                holder?.image?.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_logo, null))
             }
             MapSource.OPEN_STREET_MAP -> {
                 holder?.title?.text = parentView.resources.getText(R.string.open_street_map_source)
