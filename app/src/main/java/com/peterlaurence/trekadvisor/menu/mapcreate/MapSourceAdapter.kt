@@ -35,6 +35,7 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>) :
                 holder?.title?.text = parentView.resources.getText(R.string.open_street_map_source)
                 holder?.description?.text = parentView.resources.getText(
                         R.string.open_street_map_source_description)
+                holder?.image?.setImageDrawable(parentView.resources.getDrawable(R.drawable.openstreetmap_logo, null))
             }
         }
     }
