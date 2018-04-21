@@ -11,8 +11,9 @@ import android.view.ViewGroup
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader
+import com.peterlaurence.trekadvisor.menu.mapcreate.MapSourceAdapter.MapSourceSelectionListener
 
-class MapCreateFragment : Fragment() {
+class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
@@ -31,7 +32,8 @@ class MapCreateFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewManager = LinearLayoutManager(context)
-        viewAdapter = MapSourceAdapter(mapSourceSet)
+        viewAdapter = MapSourceAdapter(mapSourceSet, this, context.getColor(R.color.colorAccent),
+                context.getColor(R.color.colorPrimaryTextWhite), context.getColor(R.color.colorPrimaryTextBlack))
 
         /* Item decoration : divider */
         val dividerItemDecoration = DividerItemDecoration(context,
@@ -47,5 +49,9 @@ class MapCreateFragment : Fragment() {
             adapter = viewAdapter
             addItemDecoration(dividerItemDecoration)
         }
+    }
+
+    override fun onMapSelected(m: MapSource) {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
