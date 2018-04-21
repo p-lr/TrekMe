@@ -101,12 +101,12 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
 
                 /* Call the listener for MapSource selection */
                 val mapSource = mapAdapter.mapSourceSet[position]
-                mapAdapter.mapSourceSelectionListener.onMapSelected(mapSource)
+                mapAdapter.mapSourceSelectionListener.onMapSourceSelected(mapSource)
             }
         }
     }
 
     interface MapSourceSelectionListener {
-        fun onMapSelected(m: MapSource)
+        fun onMapSourceSelected(m: MapSource)
     }
 }

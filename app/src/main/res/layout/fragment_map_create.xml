@@ -13,6 +13,7 @@
         android:text="@string/next_button"
         android:backgroundTint="@color/colorPrimary"
         android:textColor="@android:color/background_light"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

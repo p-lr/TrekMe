@@ -25,6 +25,7 @@ import android.view.View;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.core.mapsource.MapSource;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
@@ -40,6 +41,7 @@ import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.Tracks
 import com.peterlaurence.trekadvisor.menu.record.RecordFragment;
 
 import org.greenrobot.eventbus.EventBus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +58,8 @@ public class MainActivity extends AppCompatActivity
         MapProvider,
         MarkerProvider,
         TracksManageFragment.TrackChangeListenerProvider,
-        MapViewFragment.RequestManageMarkerListener {
+        MapViewFragment.RequestManageMarkerListener,
+        MapCreateFragment.MapCreateFragmentInteractionListener {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
     private static final String MAP_LIST_FRAGMENT_TAG = "mapListFragment";
@@ -714,5 +717,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapDeleted() {
         showMapListFragment();
+    }
+
+    @Override
+    public void onMapSourceSelected(@NotNull MapSource mapSource) {
     }
 }
