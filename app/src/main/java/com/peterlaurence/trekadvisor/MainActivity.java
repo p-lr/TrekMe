@@ -25,13 +25,16 @@ import android.view.View;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource;
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
 import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.MapCreateFragment;
+import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnCredentialsFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
@@ -67,6 +70,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_CALIBRATION_FRAGMENT_TAG = "mapCalibrationFragment";
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
     private static final String MAP_CREATE_FRAGMENT_TAG = "mapCreateFragment";
+    private static final String IGN_CREDENTIALS_FRAGMENT_TAG = "ignCredentialsFragment";
     private static final String RECORD_FRAGMENT_TAG = "gpxFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
@@ -78,6 +82,7 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_CALIBRATION_FRAGMENT_TAG);
                 add(MAP_IMPORT_FRAGMENT_TAG);
                 add(MAP_CREATE_FRAGMENT_TAG);
+                add(IGN_CREDENTIALS_FRAGMENT_TAG);
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
                 add(MARKER_MANAGE_FRAGMENT_TAG);
                 add(RECORD_FRAGMENT_TAG);
@@ -205,6 +210,9 @@ public class MainActivity extends AppCompatActivity
                 case MARKER_MANAGE_FRAGMENT_TAG:
                     showMapViewFragment();
                     break;
+                case IGN_CREDENTIALS_FRAGMENT_TAG:
+                    showMapCreateFragment();
+                    break;
                 default:
                     showMapListFragment();
             }
@@ -275,7 +283,7 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer != null) {
             drawer.closeDrawer(GravityCompat.START);
         }
@@ -310,6 +318,12 @@ public class MainActivity extends AppCompatActivity
         Fragment mapCreateFragment = new MapCreateFragment();
         transaction.add(R.id.content_frame, mapCreateFragment, MAP_CREATE_FRAGMENT_TAG);
         return mapCreateFragment;
+    }
+
+    private Fragment createIgnCredentialsFragment(FragmentTransaction transaction) {
+        Fragment ignCredentialsFragment = new IgnCredentialsFragment();
+        transaction.add(R.id.content_frame, ignCredentialsFragment, IGN_CREDENTIALS_FRAGMENT_TAG);
+        return ignCredentialsFragment;
     }
 
     private Fragment createMapImportFragment(FragmentTransaction transaction) {
@@ -483,6 +497,24 @@ public class MainActivity extends AppCompatActivity
         transaction.commit();
     }
 
+    private void showIgnCredentialsFragment() {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
+        /* Hide other fragments */
+        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
+        hideOtherFragments(hideTransaction, IGN_CREDENTIALS_FRAGMENT_TAG);
+        hideTransaction.commit();
+
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        Fragment ignCredentialsFragment = createIgnCredentialsFragment(transaction);
+        transaction.show(ignCredentialsFragment);
+
+        /* Manually manage the back action*/
+        mBackFragmentTag = IGN_CREDENTIALS_FRAGMENT_TAG;
+        transaction.commit();
+    }
+
     private void showMapImportFragment() {
         /* Remove single-usage fragments */
         removeSingleUsageFragments();
@@ -583,6 +615,12 @@ public class MainActivity extends AppCompatActivity
             transaction.remove(createFragment);
         }
 
+        /* Remove the IGN credentials fragment */
+        Fragment ignCredentialsFragment = fragmentManager.findFragmentByTag(IGN_CREDENTIALS_FRAGMENT_TAG);
+        if (ignCredentialsFragment != null) {
+            transaction.remove(ignCredentialsFragment);
+        }
+
         transaction.commit();
     }
 
@@ -644,7 +682,7 @@ public class MainActivity extends AppCompatActivity
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_EXTERNAL_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
+                /* If request is cancelled, the result arrays are empty */
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     showMapListFragment();
@@ -656,9 +694,6 @@ public class MainActivity extends AppCompatActivity
                     // functionality that depends on this permission.
                 }
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
@@ -721,5 +756,23 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onMapSourceSelected(@NotNull MapSource mapSource) {
+        switch (mapSource) {
+            case IGN:
+                /* Check whether credentials are already set or not */
+                IGNCredentials ignCredentials = MapSourceLoader.INSTANCE.getIGNCredentials(this);
+                if (ignCredentials == null) {
+                    System.out.println("No IGN credentials set");
+                    showIgnCredentialsFragment();
+                } else {
+                    System.out.println("IGN credentials are set");
+                    // TODO : show fragment to select the area of the map
+                }
+                break;
+            case OPEN_STREET_MAP:
+                // TODO : show fragment to select the area of the map
+                break;
+            default:
+                /* Unknown map source */
+        }
     }
 }
