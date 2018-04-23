@@ -18,6 +18,8 @@
 
 ## <a name="TOC-Overview"></a>Overview
 
+![Logo](Logo/horizontal.png)
+
 TrekAdvisor is an Android app to get live position on a map and other useful information, without
 ever needing an internet connection.
 It differs from other map apps in the source of maps.
