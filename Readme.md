@@ -1,4 +1,4 @@
-# TrekAdvisor
+![Logo](Logo/horizontal.png)
 
 1. [Overview](#TOC-Overview)
 2. [Features summary](#TOC-Features-sum)
