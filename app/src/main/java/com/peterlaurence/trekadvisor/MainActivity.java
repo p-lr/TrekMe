@@ -759,7 +759,7 @@ public class MainActivity extends AppCompatActivity
         switch (mapSource) {
             case IGN:
                 /* Check whether credentials are already set or not */
-                IGNCredentials ignCredentials = MapSourceLoader.INSTANCE.getIGNCredentials(this);
+                IGNCredentials ignCredentials = MapSourceLoader.INSTANCE.getIGNCredentials();
                 if (ignCredentials == null) {
                     System.out.println("No IGN credentials set");
                     showIgnCredentialsFragment();

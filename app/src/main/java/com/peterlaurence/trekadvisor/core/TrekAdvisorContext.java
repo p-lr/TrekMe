@@ -34,18 +34,26 @@ public final class TrekAdvisorContext {
      */
     public static void init() {
         try {
-            createAppDir();
+            createAppDirs();
             createNomediaFile();
         } catch (SecurityException | IOException e) {
             Log.e(TAG, "We don't have right access to create application folder");
         }
     }
 
-    private static void createAppDir() throws SecurityException {
-        if (!DEFAULT_APP_DIR.exists()) {
-            boolean created = DEFAULT_APP_DIR.mkdir();
+    private static void createAppDirs() throws SecurityException {
+        /* Root */
+        createDir(DEFAULT_APP_DIR, "application");
+
+        /* Credentials */
+        createDir(CREDENTIALS_DIR, "credentials");
+    }
+
+    private static void createDir(File dir, String label) {
+        if (!dir.exists()) {
+            boolean created = dir.mkdir();
             if (!created) {
-                Log.e(TAG, "Could not create application folder");
+                Log.e(TAG, "Could not create " + label + " folder");
             }
         }
     }

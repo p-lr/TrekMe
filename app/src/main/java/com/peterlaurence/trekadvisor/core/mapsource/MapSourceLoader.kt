@@ -1,28 +1,45 @@
 package com.peterlaurence.trekadvisor.core.mapsource
 
-import android.content.Context
-import android.preference.PreferenceManager
+import android.util.Log
 import com.google.gson.GsonBuilder
+import com.peterlaurence.trekadvisor.core.TrekAdvisorContext
+import com.peterlaurence.trekadvisor.util.FileUtils
+import java.io.File
+import java.io.IOException
+import java.io.PrintWriter
 
 object MapSourceLoader {
     val supportedMapSource = MapSource.values()
-    private val CREDENTIAL_KEY = "mapSourceCredentials"
     val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
+    private val TAG = javaClass.toString()
+    private val configFile = File(TrekAdvisorContext.CREDENTIALS_DIR, "ign.json")
 
-    fun getIGNCredentials(context: Context): IGNCredentials? {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-        val jsonString = preferences.getString(CREDENTIAL_KEY, null)
-        return gson.fromJson(jsonString, Credentials::class.java)?.ignCredentials
+    lateinit var credentials: Credentials
+
+
+    fun getIGNCredentials(): IGNCredentials? {
+        val jsonString = FileUtils.getStringFromFile(configFile)
+        credentials = gson.fromJson(jsonString, Credentials::class.java)
+        return credentials.ignCredentials
     }
 
-    fun saveIGNCredentials(context: Context, ignCredentials: IGNCredentials?) {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context).edit()
-        val jsonString = gson.toJson(ignCredentials)
-        preferences.putString(CREDENTIAL_KEY, jsonString).apply()
+    fun saveIGNCredentials(ignCredentials: IGNCredentials) {
+        credentials.ignCredentials = ignCredentials
+
+        val jsonString = gson.toJson(credentials)
+
+        try {
+            val writer = PrintWriter(configFile)
+            writer.print(jsonString)
+            writer.close()
+        } catch (e: IOException) {
+            Log.e(TAG, "Error while saving the IGN credentials")
+            Log.e(TAG, e.message, e)
+        }
     }
 }
 
-data class Credentials(val ignCredentials: IGNCredentials?)
+data class Credentials(var ignCredentials: IGNCredentials?)
 
 data class IGNCredentials(val user: String?, val pwd: String?, val api: String?)
 
