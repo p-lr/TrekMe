@@ -35,6 +35,7 @@ import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.MapCreateFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnCredentialsFragment;
+import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
     private static final String MAP_CREATE_FRAGMENT_TAG = "mapCreateFragment";
     private static final String IGN_CREDENTIALS_FRAGMENT_TAG = "ignCredentialsFragment";
+    private static final String IGN_VIEW_FRAGMENT_TAG = "ignViewFragment";
     private static final String RECORD_FRAGMENT_TAG = "gpxFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
@@ -83,6 +85,7 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_IMPORT_FRAGMENT_TAG);
                 add(MAP_CREATE_FRAGMENT_TAG);
                 add(IGN_CREDENTIALS_FRAGMENT_TAG);
+                add(IGN_VIEW_FRAGMENT_TAG);
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
                 add(MARKER_MANAGE_FRAGMENT_TAG);
                 add(RECORD_FRAGMENT_TAG);
@@ -90,12 +93,18 @@ public class MainActivity extends AppCompatActivity
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_LOCATION = 2;
+    private static final int REQUEST_MAP_CREATION = 3;
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
     };
     private static final String[] PERMISSIONS_LOCATION = {
             Manifest.permission.ACCESS_FINE_LOCATION
+    };
+    private static final String[] PERMISSIONS_MAP_CREATION = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET
     };
     private static final String TAG = "MainActivity";
     private String mBackFragmentTag;
@@ -138,6 +147,23 @@ public class MainActivity extends AppCompatActivity
                     activity,
                     PERMISSIONS_STORAGE,
                     REQUEST_EXTERNAL_STORAGE
+            );
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean checkInternetPermission() {
+        // Check whether we have write permission or not
+        int permissionWrite = ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+
+        if (permissionWrite != PackageManager.PERMISSION_GRANTED) {
+            // We don't have the required permissions, so we prompt the user
+            ActivityCompat.requestPermissions(
+                    this,
+                    PERMISSIONS_MAP_CREATION,
+                    REQUEST_MAP_CREATION
             );
             return false;
         } else {
@@ -324,6 +350,12 @@ public class MainActivity extends AppCompatActivity
         Fragment ignCredentialsFragment = new IgnCredentialsFragment();
         transaction.add(R.id.content_frame, ignCredentialsFragment, IGN_CREDENTIALS_FRAGMENT_TAG);
         return ignCredentialsFragment;
+    }
+
+    private Fragment createIgnViewFragment(FragmentTransaction transaction) {
+        Fragment ignViewFragment = new IgnViewFragment();
+        transaction.add(R.id.content_frame, ignViewFragment, IGN_VIEW_FRAGMENT_TAG);
+        return ignViewFragment;
     }
 
     private Fragment createMapImportFragment(FragmentTransaction transaction) {
@@ -515,6 +547,24 @@ public class MainActivity extends AppCompatActivity
         transaction.commit();
     }
 
+    private void showIgnViewFragment() {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
+        /* Hide other fragments */
+        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
+        hideOtherFragments(hideTransaction, IGN_VIEW_FRAGMENT_TAG);
+        hideTransaction.commit();
+
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        Fragment ignViewFragment = createIgnViewFragment(transaction);
+        transaction.show(ignViewFragment);
+
+        /* Manually manage the back action*/
+        mBackFragmentTag = IGN_VIEW_FRAGMENT_TAG;
+        transaction.commit();
+    }
+
     private void showMapImportFragment() {
         /* Remove single-usage fragments */
         removeSingleUsageFragments();
@@ -619,6 +669,12 @@ public class MainActivity extends AppCompatActivity
         Fragment ignCredentialsFragment = fragmentManager.findFragmentByTag(IGN_CREDENTIALS_FRAGMENT_TAG);
         if (ignCredentialsFragment != null) {
             transaction.remove(ignCredentialsFragment);
+        }
+
+        /* Remove the IGN view fragment */
+        Fragment ignViewFragment = fragmentManager.findFragmentByTag(IGN_VIEW_FRAGMENT_TAG);
+        if (ignViewFragment != null) {
+            transaction.remove(ignViewFragment);
         }
 
         transaction.commit();
@@ -761,11 +817,10 @@ public class MainActivity extends AppCompatActivity
                 /* Check whether credentials are already set or not */
                 IGNCredentials ignCredentials = MapSourceLoader.INSTANCE.getIGNCredentials();
                 if (ignCredentials == null) {
-                    System.out.println("No IGN credentials set");
                     showIgnCredentialsFragment();
                 } else {
-                    System.out.println("IGN credentials are set");
-                    // TODO : show fragment to select the area of the map
+                    checkInternetPermission();
+                    showIgnViewFragment();
                 }
                 break;
             case OPEN_STREET_MAP:

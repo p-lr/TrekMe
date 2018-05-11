@@ -30,31 +30,31 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
         return mapSourceSet.size
     }
 
-    override fun onBindViewHolder(holder: MapSourceViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: MapSourceViewHolder, position: Int) {
         val mapSource = mapSourceSet[position]
         when (mapSource) {
             MapSource.IGN -> {
-                holder?.title?.text = parentView.resources.getText(R.string.ign_source)
-                holder?.description?.text = parentView.resources.getText(R.string.ign_source_description)
-                holder?.image?.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_logo, null))
+                holder.title.text = parentView.resources.getText(R.string.ign_source)
+                holder.description.text = parentView.resources.getText(R.string.ign_source_description)
+                holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_logo, null))
             }
             MapSource.OPEN_STREET_MAP -> {
-                holder?.title?.text = parentView.resources.getText(R.string.open_street_map_source)
-                holder?.description?.text = parentView.resources.getText(
+                holder.title.text = parentView.resources.getText(R.string.open_street_map_source)
+                holder.description.text = parentView.resources.getText(
                         R.string.open_street_map_source_description)
-                holder?.image?.setImageDrawable(parentView.resources.getDrawable(R.drawable.openstreetmap_logo, null))
+                holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.openstreetmap_logo, null))
             }
         }
 
         /* Take the selection into account to set colors */
-        if (holder?.layoutPosition == selectedMapSourceIndex) {
+        if (holder.layoutPosition == selectedMapSourceIndex) {
             holder.cardView.setCardBackgroundColor(accentColor)
             holder.description.setTextColor(whiteTextColor)
             holder.title.setTextColor(whiteTextColor)
         } else {
-            holder?.cardView?.setCardBackgroundColor(Color.WHITE)
-            holder?.description?.setTextColor(blackTextColor)
-            holder?.title?.setTextColor(blackTextColor)
+            holder.cardView.setCardBackgroundColor(Color.WHITE)
+            holder.description.setTextColor(blackTextColor)
+            holder.title.setTextColor(blackTextColor)
         }
     }
 
