@@ -10,7 +10,13 @@ import com.squareup.picasso.Picasso
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 
-
+/**
+ * Luckily, IGN's [WMTS service](https://geoservices.ign.fr/documentation/geoservices/wmts.html) has
+ * a grid coordinates that is exactly the same as the one [TileView] uses. <br>
+ * Consequently, to make a valid HTTP request, we just have to format the URL with raw zoom-level,
+ * row and col numbers. <br>
+ * Additional information have to be provided though, like IGN credentials.
+ */
 class BitmapProviderIgn(private val credentials: IGNCredentials, context: Context) : BitmapProvider {
     var picasso: Picasso
 
