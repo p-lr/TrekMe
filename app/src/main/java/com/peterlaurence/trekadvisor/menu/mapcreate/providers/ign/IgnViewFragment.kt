@@ -21,6 +21,7 @@ class IgnViewFragment : Fragment() {
 
     /* Size of level 18 */
     private val mapSize = 67108864
+    private val highestLevel = 18
 
     private val tileSize = 256
     private val x0 = -20037508.3427892476320267
@@ -41,21 +42,22 @@ class IgnViewFragment : Fragment() {
         /* IGN wmts maps are square */
         tileView.setSize(mapSize, mapSize)
 
-        /* Lowest scale */
-        val levelCount = 18
-        var scale = 1 / Math.pow(2.0, (levelCount - 1).toDouble()).toFloat()
+        /* We will display levels 1..18 */
+        val levelCount = highestLevel
+        val minScale = 1 / Math.pow(2.0, (levelCount - 1).toDouble()).toFloat()
 
         /* Scale limits */
-        tileView.setScaleLimits(scale, 1f)
+        tileView.setScaleLimits(minScale, 1f)
 
         /* Starting scale */
-        tileView.scale = scale
+        tileView.scale = minScale
 
         /* DetailLevel definition */
         for (level in 0 until levelCount) {
-            tileView.addDetailLevel(scale, level, tileSize, tileSize)
             /* Calculate each level scale for best precision */
-            scale = 1 / Math.pow(2.0, (levelCount - level - 1).toDouble()).toFloat()
+            val scale = 1 / Math.pow(2.0, (levelCount - level - 1).toDouble()).toFloat()
+
+            tileView.addDetailLevel(scale, level + 1, tileSize, tileSize)
         }
 
         /* Allow the scale to be no less to see the entire map */

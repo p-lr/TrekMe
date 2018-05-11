@@ -460,19 +460,20 @@ public class MapViewFragment extends Fragment implements
 
         /* Lowest scale */
         List<MapGson.Level> levelList = map.getLevelList();
-        float scale = 1 / (float) Math.pow(2, levelList.size() - 1);
+        float minScale = 1 / (float) Math.pow(2, levelList.size() - 1);
 
         /* Scale limits */
-        tileView.setScaleLimits(scale, 2);
+        tileView.setScaleLimits(minScale, 2);
 
         /* Starting scale */
-        tileView.setScale(scale);
+        tileView.setScale(minScale);
 
         /* DetailLevel definition */
         for (MapGson.Level level : levelList) {
-            tileView.addDetailLevel(scale, level.level, level.tile_size.x, level.tile_size.y);
             /* Calculate each level scale for best precision */
-            scale = 1 / (float) Math.pow(2, levelList.size() - level.level - 2);
+            float scale = 1 / (float) Math.pow(2, levelList.size() - level.level - 1);
+
+            tileView.addDetailLevel(scale, level.level, level.tile_size.x, level.tile_size.y);
         }
 
         /* Allow the scale to be no less to see the entire map */
