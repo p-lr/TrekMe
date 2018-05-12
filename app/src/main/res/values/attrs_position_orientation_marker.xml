@@ -28,4 +28,16 @@
         <attr name="sightColor" />
         <attr name="sightBackgroundColor" />
     </declare-styleable>
+
+    <declare-styleable name="AreaMarker">
+        <attr name="measureDimension" />
+        <attr name="lineWidth" />
+        <attr name="sightColor" />
+        <attr name="sightBackgroundColor" />
+    </declare-styleable>
+
+    <declare-styleable name="AreaView">
+        <attr name="backgroundColor" />
+        <attr name="strokeColor" />
+    </declare-styleable>
 </resources>

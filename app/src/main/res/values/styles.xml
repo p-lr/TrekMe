@@ -40,4 +40,14 @@
         <item name="sightBackgroundColor">@color/colorDistanceMarker</item>
     </style>
 
+    <style name="AreaMarkerStyle">
+        <item name="measureDimension">50dp</item>
+        <item name="sightBackgroundColor">@color/colorAreaMarker</item>
+    </style>
+
+    <style name="AreaViewStyle">
+        <item name="backgroundColor">@color/colorBackgroundAreaView</item>
+        <item name="strokeColor">@color/colorStrokeAreaView</item>
+    </style>
+
 </resources>

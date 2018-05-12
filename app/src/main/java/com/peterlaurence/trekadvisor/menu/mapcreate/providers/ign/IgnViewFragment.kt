@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgn
+import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
+import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaListener
 import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended
 import com.qozix.tileview.TileView
 import com.qozix.tileview.widgets.ZoomPanLayout
@@ -39,6 +41,7 @@ import com.qozix.tileview.widgets.ZoomPanLayout
 class IgnViewFragment : Fragment() {
     private lateinit var rootView: ConstraintLayout
     private lateinit var tileView: TileViewExtended
+    private lateinit var areaLayer: AreaLayer
 
     /* Size of level 18 */
     private val mapSize = 67108864
@@ -55,6 +58,26 @@ class IgnViewFragment : Fragment() {
 
         addTileView()
         return rootView
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        /* This is temporary, just a proof of concept */
+        // TODO : refactor
+        view.post {
+            areaLayer = AreaLayer(context, object : AreaListener {
+                override fun areaChanged() {
+                    println("are changed")
+                }
+
+                override fun hideArea() {
+                    println("hide area")
+                }
+
+            })
+            areaLayer.show(tileView)
+        }
     }
 
     private fun addTileView() {
