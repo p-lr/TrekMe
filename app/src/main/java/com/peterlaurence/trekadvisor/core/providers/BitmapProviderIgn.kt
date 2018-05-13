@@ -2,13 +2,16 @@ package com.peterlaurence.trekadvisor.core.providers
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials
 import com.qozix.tileview.graphics.BitmapProvider
 import com.qozix.tileview.tiles.Tile
-import com.squareup.picasso.OkHttp3Downloader
-import com.squareup.picasso.Picasso
-import okhttp3.Credentials
-import okhttp3.OkHttpClient
+import java.io.BufferedInputStream
+import java.net.Authenticator
+import java.net.HttpURLConnection
+import java.net.PasswordAuthentication
+import java.net.URL
+
 
 /**
  * Luckily, IGN's [WMTS service](https://geoservices.ign.fr/documentation/geoservices/wmts.html) has
@@ -18,27 +21,32 @@ import okhttp3.OkHttpClient
  * Additional information have to be provided though, like IGN credentials.
  */
 class BitmapProviderIgn(private val credentials: IGNCredentials, context: Context) : BitmapProvider {
-    var picasso: Picasso
+    private var bitmapLoadingOptions = BitmapFactory.Options()
 
     init {
-        val okHttpClient = OkHttpClient.Builder()
-                .authenticator { route, response ->
-                    val credential = Credentials.basic(credentials.user, credentials.pwd)
-                    response.request().newBuilder()
-                            .header("Authorization", credential)
-                            .build()
-                }
-                .build()
-        picasso = Picasso.Builder(context).downloader(OkHttp3Downloader(okHttpClient)).build()
+        bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
+
+        Authenticator.setDefault(object : Authenticator() {
+            override fun getPasswordAuthentication(): PasswordAuthentication {
+                return PasswordAuthentication(credentials.user, credentials.pwd?.toCharArray())
+            }
+        })
     }
 
     override fun getBitmap(tile: Tile, p1: Context?): Bitmap? {
         return try {
             val zoomLvl = tile.data as Int
 
-            val url = "https://wxs.ign.fr/${credentials.api}/geoportail/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD&EXCEPTIONS=text/xml&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX=${zoomLvl}&TILEROW=${tile.row}&TILECOL=${tile.column}&"
+            val src = "https://wxs.ign.fr/${credentials.api}/geoportail/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD&EXCEPTIONS=text/xml&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX=${zoomLvl}&TILEROW=${tile.row}&TILECOL=${tile.column}&"
 
-            picasso.load(url).config(android.graphics.Bitmap.Config.RGB_565).get()
+            val url = URL(src)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.doInput = true
+            connection.connect()
+            val inputStream = BufferedInputStream(connection.inputStream)
+            val myBitmap = BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
+            inputStream.close()
+            myBitmap
         } catch (e: Exception) {
             e.printStackTrace()
             null
