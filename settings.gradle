@@ -1,1 +1,1 @@
-include ':app', ':tileview-release'
+include ':app', ':tileview'
