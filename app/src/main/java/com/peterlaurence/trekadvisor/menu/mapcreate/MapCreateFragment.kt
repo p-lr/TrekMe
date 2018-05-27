@@ -1,8 +1,9 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate
 
-import android.app.Fragment
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -38,8 +39,8 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         mapSourceSet = MapSourceLoader.supportedMapSource
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_map_create, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_map_create, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -49,13 +50,16 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         nextButton.setOnClickListener { fragmentListener.onMapSourceSelected(selectedMapSource) }
 
         val viewManager = LinearLayoutManager(context)
-        viewAdapter = MapSourceAdapter(mapSourceSet, this, context.getColor(R.color.colorAccent),
-                context.getColor(R.color.colorPrimaryTextWhite), context.getColor(R.color.colorPrimaryTextBlack))
+        viewAdapter = MapSourceAdapter(mapSourceSet, this, context?.getColor(R.color.colorAccent)
+                ?: Color.BLUE,
+                context?.getColor(R.color.colorPrimaryTextWhite)
+                        ?: Color.WHITE, context?.getColor(R.color.colorPrimaryTextBlack)
+                ?: Color.BLACK)
 
         /* Item decoration : divider */
         val dividerItemDecoration = DividerItemDecoration(context,
                 DividerItemDecoration.VERTICAL)
-        val divider = this.context.getDrawable(R.drawable.divider)
+        val divider = this.context?.getDrawable(R.drawable.divider)
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider)
         }

@@ -1,13 +1,12 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
 
 import android.os.Bundle
-import android.preference.PreferenceFragment
-import android.view.View
+import android.support.v7.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader
 
-class IgnCredentialsFragment : PreferenceFragment() {
+class IgnCredentialsFragment : PreferenceFragmentCompat() {
     private lateinit var ignUser: String
     private lateinit var ignPwd: String
     private lateinit var ignApiKey: String
@@ -18,9 +17,7 @@ class IgnCredentialsFragment : PreferenceFragment() {
         addPreferencesFromResource(R.xml.ign_credentials_settings)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val ignUserPreference = findPreference(getString(R.string.ign_user))
         ignUserPreference.setOnPreferenceChangeListener { _, ignUser ->
             this.ignUser = ignUser as String

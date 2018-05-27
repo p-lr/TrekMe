@@ -1,10 +1,10 @@
 package com.peterlaurence.trekadvisor.menu.mapimport;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,8 +14,6 @@ import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.events.MapArchiveListUpdateEvent;
-import com.peterlaurence.trekadvisor.core.map.Map;
-import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
 import com.peterlaurence.trekadvisor.menu.events.MapImportedEvent;

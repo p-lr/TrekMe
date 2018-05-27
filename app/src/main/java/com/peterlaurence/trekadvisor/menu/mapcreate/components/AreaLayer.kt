@@ -1,8 +1,11 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate.components
 
 import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
 import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended
 import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener
+import java.io.Serializable
 
 class AreaLayer(val context: Context, val areaListener: AreaListener) {
     lateinit var tileView: TileViewExtended
@@ -87,8 +90,8 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
                 translater.translateY(secondMarkerRelativeY).toFloat())
 
         /* Notify the listener */
-        areaListener.areaChanged(firstMarkerRelativeX, firstMarkerRelativeY, secondMarkerRelativeX,
-                secondMarkerRelativeY)
+        areaListener.areaChanged(Area(firstMarkerRelativeX, firstMarkerRelativeY, secondMarkerRelativeX,
+                secondMarkerRelativeY))
     }
 
     private fun initAreaMarkers() {
@@ -114,6 +117,35 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
 }
 
 interface AreaListener {
-    fun areaChanged(relativeX1: Double, relativeY1: Double, relativeX2: Double, relativeY2: Double)
+    fun areaChanged(area: Area)
     fun hideArea()
+}
+
+data class Area(val relativeX1: Double, val relativeY1: Double, val relativeX2: Double, val relativeY2: Double): Parcelable {
+    constructor(parcel: Parcel) : this(
+            parcel.readDouble(),
+            parcel.readDouble(),
+            parcel.readDouble(),
+            parcel.readDouble())
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeDouble(relativeX1)
+        parcel.writeDouble(relativeY1)
+        parcel.writeDouble(relativeX2)
+        parcel.writeDouble(relativeY2)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Area> {
+        override fun createFromParcel(parcel: Parcel): Area {
+            return Area(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Area?> {
+            return arrayOfNulls(size)
+        }
+    }
 }

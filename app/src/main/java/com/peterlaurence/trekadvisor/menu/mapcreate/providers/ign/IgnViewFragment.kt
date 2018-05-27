@@ -1,14 +1,15 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
 
-import android.app.Fragment
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.FloatingActionButton
+import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.view.*
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgn
+import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaListener
 import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended
@@ -43,6 +44,8 @@ class IgnViewFragment : Fragment() {
     private lateinit var tileView: TileViewExtended
     private lateinit var areaLayer: AreaLayer
     private lateinit var saveFab: FloatingActionButton
+
+    private lateinit var area: Area
 
     /* Size of level 18 */
     private val mapSize = 67108864
@@ -133,7 +136,7 @@ class IgnViewFragment : Fragment() {
 
         /* The BitmapProvider */
         val ignCredentials = MapSourceLoader.getIGNCredentials()!!
-        tileView.setBitmapProvider(BitmapProviderIgn(ignCredentials, context))
+        tileView.setBitmapProvider(BitmapProviderIgn(ignCredentials, context!!))
 
         /* Add the view */
         setTileView(tileView)
@@ -151,10 +154,10 @@ class IgnViewFragment : Fragment() {
     }
 
     private fun addAreaLayer() {
-        view.post {
-            areaLayer = AreaLayer(context, object : AreaListener {
-                override fun areaChanged(relativeX1: Double, relativeY1: Double, relativeX2: Double,
-                                         relativeY2: Double) {
+        view?.post {
+            areaLayer = AreaLayer(context!!, object : AreaListener {
+                override fun areaChanged(area: Area) {
+                    this@IgnViewFragment.area = area
                     println("are changed")
                 }
 
@@ -171,6 +174,11 @@ class IgnViewFragment : Fragment() {
      * Called when the user validates his area by clicking on the floating action button.
      */
     private fun validateArea() {
+        if (this::area.isInitialized) {
+            val fm = activity?.supportFragmentManager
+            val ignWmtsDialog = IgnWmtsDialog.newInstance(area)
+            ignWmtsDialog.show(fm, "fragment")
+        }
 
     }
 }
