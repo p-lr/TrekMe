@@ -89,4 +89,5 @@
     <string name="ign_source">IGN</string>
     <string name="ign_source_description">France et ses territoires</string>
     <string name="open_street_map_source_description">Cartes libres</string>
+    <string name="mapcreate_define_area">Définir une zone</string>
 </resources>

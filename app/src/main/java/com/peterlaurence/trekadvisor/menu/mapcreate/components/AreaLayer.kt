@@ -19,7 +19,7 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
     /**
      * Shows the two [AreaMarker] and the [AreaView].
      */
-    fun show(tileView: TileViewExtended) {
+    fun attachTo(tileView: TileViewExtended) {
         this.tileView = tileView
 
         /* Create the area view between the two markers */
@@ -62,9 +62,9 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
     }
 
     /**
-     * Hide the two [AreaMarker] and the [AreaView].
+     * Removes the two [AreaMarker] and the [AreaView] from the [TileViewExtended].
      */
-    fun hide() {
+    fun detach() {
         if (this::tileView.isInitialized) {
             tileView.removeMarker(areaMarkerFirst)
             tileView.removeMarker(areaMarkerSecond)
@@ -85,6 +85,10 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
                 translater.translateY(firstMarkerRelativeY).toFloat(),
                 translater.translateX(secondMarkerRelativeX).toFloat(),
                 translater.translateY(secondMarkerRelativeY).toFloat())
+
+        /* Notify the listener */
+        areaListener.areaChanged(firstMarkerRelativeX, firstMarkerRelativeY, secondMarkerRelativeX,
+                secondMarkerRelativeY)
     }
 
     private fun initAreaMarkers() {
@@ -110,6 +114,6 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
 }
 
 interface AreaListener {
-    fun areaChanged()
+    fun areaChanged(relativeX1: Double, relativeY1: Double, relativeX2: Double, relativeY2: Double)
     fun hideArea()
 }

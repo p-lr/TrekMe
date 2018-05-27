@@ -3,9 +3,8 @@ package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
 import android.app.Fragment
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.support.v7.app.AppCompatActivity
+import android.view.*
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgn
@@ -53,6 +52,12 @@ class IgnViewFragment : Fragment() {
     private val x1 = -x0
     private val y1 = x0
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setHasOptionsMenu(true)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         rootView = inflater.inflate(R.layout.fragment_ign_view, container, false) as ConstraintLayout
 
@@ -60,24 +65,30 @@ class IgnViewFragment : Fragment() {
         return rootView
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        /* Hide the app title */
+        val actionBar = (activity as AppCompatActivity).supportActionBar
+        actionBar?.setDisplayShowTitleEnabled(false)
 
-        /* This is temporary, just a proof of concept */
-        // TODO : refactor
-        view.post {
-            areaLayer = AreaLayer(context, object : AreaListener {
-                override fun areaChanged() {
-                    println("are changed")
+        /* Clear the existing action menu */
+        menu.clear()
+
+        /* Fill the new one */
+        inflater.inflate(R.menu.menu_fragment_map_create, menu)
+
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.map_area_widget_id -> {
+                if (this::areaLayer.isInitialized) {
+                    areaLayer.detach()
                 }
-
-                override fun hideArea() {
-                    println("hide area")
-                }
-
-            })
-            areaLayer.show(tileView)
+                addAreaLayer()
+            }
         }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun addTileView() {
@@ -130,5 +141,22 @@ class IgnViewFragment : Fragment() {
         this.tileView.id = R.id.tileview_ign_id
         this.tileView.isSaveEnabled = true
         rootView.addView(tileView, 0)
+    }
+
+    private fun addAreaLayer() {
+        view.post {
+            areaLayer = AreaLayer(context, object : AreaListener {
+                override fun areaChanged(relativeX1: Double, relativeY1: Double, relativeX2: Double,
+                                         relativeY2: Double) {
+                    println("are changed")
+                }
+
+                override fun hideArea() {
+                    println("hide area")
+                }
+
+            })
+            areaLayer.attachTo(tileView)
+        }
     }
 }
