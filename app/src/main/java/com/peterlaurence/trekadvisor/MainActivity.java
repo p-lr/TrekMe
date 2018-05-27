@@ -16,6 +16,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -603,6 +604,8 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * Hides all fragments except the one which tag is {@code fragmentTag}.
+     * Oddly, with the exception of fragments extending {@link android.support.v7.preference.PreferenceFragmentCompat},
+     * or it would cause an exception (hard to explain).
      *
      * @param transaction The {@link FragmentTransaction} object
      * @param fragmentTag The tag of the fragment that should not be hidden
@@ -614,7 +617,7 @@ public class MainActivity extends AppCompatActivity
         for (String tag : FRAGMENT_TAGS) {
             if (tag.equals(fragmentTag)) continue;
             Fragment otherFragment = fragmentManager.findFragmentByTag(tag);
-            if (otherFragment != null) {
+            if (otherFragment != null && !(otherFragment instanceof PreferenceFragmentCompat)) {
                 transaction.hide(otherFragment);
             }
         }

@@ -93,21 +93,13 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
             mapName = args.getString(ARG_MAP_NAME);
         }
 
-        /* The Preferences layout */
-        addPreferencesFromResource(R.xml.calibration_settings);
-
         setMap(mapName);
     }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        LinearLayout rootView = (LinearLayout) inflater.inflate(R.layout.fragment_map_settings, container, false);
-        return rootView;
+        /* The Preferences layout */
+        addPreferencesFromResource(R.xml.calibration_settings);
     }
 
     /**
