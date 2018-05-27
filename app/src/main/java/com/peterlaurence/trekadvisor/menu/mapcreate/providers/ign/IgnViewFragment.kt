@@ -3,6 +3,7 @@ package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
 import android.app.Fragment
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
+import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
 import android.view.*
 import com.peterlaurence.trekadvisor.R
@@ -41,6 +42,7 @@ class IgnViewFragment : Fragment() {
     private lateinit var rootView: ConstraintLayout
     private lateinit var tileView: TileViewExtended
     private lateinit var areaLayer: AreaLayer
+    private lateinit var saveFab: FloatingActionButton
 
     /* Size of level 18 */
     private val mapSize = 67108864
@@ -60,6 +62,10 @@ class IgnViewFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         rootView = inflater.inflate(R.layout.fragment_ign_view, container, false) as ConstraintLayout
+
+        /* Configure the floating action button */
+        saveFab = rootView.findViewById(R.id.fab_save)
+        saveFab.setOnClickListener { validateArea() }
 
         addTileView()
         return rootView
@@ -86,6 +92,7 @@ class IgnViewFragment : Fragment() {
                     areaLayer.detach()
                 }
                 addAreaLayer()
+                saveFab.visibility = View.VISIBLE
             }
         }
         return super.onOptionsItemSelected(item)
@@ -158,5 +165,12 @@ class IgnViewFragment : Fragment() {
             })
             areaLayer.attachTo(tileView)
         }
+    }
+
+    /**
+     * Called when the user validates his area by clicking on the floating action button.
+     */
+    private fun validateArea() {
+
     }
 }
