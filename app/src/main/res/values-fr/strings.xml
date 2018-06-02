@@ -90,4 +90,6 @@
     <string name="ign_source_description">France et ses territoires</string>
     <string name="open_street_map_source_description">Cartes libres</string>
     <string name="mapcreate_define_area">Définir une zone</string>
+    <string name="starting_zoom">Zoom minimum</string>
+    <string name="ign_wmts_settings_dialog">Taille de la carte</string>
 </resources>

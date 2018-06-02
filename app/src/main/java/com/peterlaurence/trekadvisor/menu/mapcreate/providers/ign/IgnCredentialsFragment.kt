@@ -11,13 +11,10 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
     private lateinit var ignPwd: String
     private lateinit var ignApiKey: String
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        addPreferencesFromResource(R.xml.ign_credentials_settings)
-    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        addPreferencesFromResource(R.xml.ign_credentials_settings)
+
         val ignUserPreference = findPreference(getString(R.string.ign_user))
         ignUserPreference.setOnPreferenceChangeListener { _, ignUser ->
             this.ignUser = ignUser as String

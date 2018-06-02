@@ -134,5 +134,7 @@
     <string name="open_street_map_source_description">Free map</string>
 
     <string name="mapcreate_define_area">Choose area</string>
+    <string name="ign_wmts_settings_dialog">Map size settings</string>
+    <string name="starting_zoom">Minimum zoom</string>
 
 </resources>
