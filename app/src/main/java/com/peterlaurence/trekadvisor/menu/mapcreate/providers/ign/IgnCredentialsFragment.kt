@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.support.v7.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials
-import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 
 class IgnCredentialsFragment : PreferenceFragmentCompat() {
     private lateinit var ignUser: String
@@ -39,7 +39,7 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
 
     private fun saveCredentials() {
         if (this::ignUser.isInitialized && this::ignPwd.isInitialized && this::ignApiKey.isInitialized) {
-            MapSourceLoader.saveIGNCredentials(IGNCredentials(ignUser, ignPwd, ignApiKey))
+            MapSourceCredentials.saveIGNCredentials(IGNCredentials(ignUser, ignPwd, ignApiKey))
             println("credentials saved")
         }
     }

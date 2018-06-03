@@ -13,7 +13,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
-import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.menu.mapcreate.MapSourceAdapter.MapSourceSelectionListener
 
 class MapCreateFragment : Fragment(), MapSourceSelectionListener {
@@ -36,7 +36,7 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mapSourceSet = MapSourceLoader.supportedMapSource
+        mapSourceSet = MapSourceCredentials.supportedMapSource
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

@@ -8,7 +8,7 @@ import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
 
-object MapSourceLoader {
+object MapSourceCredentials {
     val supportedMapSource = MapSource.values()
     val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
     private val TAG = javaClass.toString()
@@ -47,6 +47,3 @@ data class Credentials(var ignCredentials: IGNCredentials?)
 
 data class IGNCredentials(val user: String?, val pwd: String?, val api: String?)
 
-enum class MapSource {
-    IGN, OPEN_STREET_MAP
-}

@@ -7,7 +7,7 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.view.*
 import com.peterlaurence.trekadvisor.R
-import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgn
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
@@ -135,7 +135,7 @@ class IgnViewFragment : Fragment() {
         setTileViewBounds(tileView)
 
         /* The BitmapProvider */
-        val ignCredentials = MapSourceLoader.getIGNCredentials()!!
+        val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
         tileView.setBitmapProvider(BitmapProviderIgn(ignCredentials, context!!))
 
         /* Add the view */

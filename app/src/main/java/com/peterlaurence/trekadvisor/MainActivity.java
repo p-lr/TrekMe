@@ -28,7 +28,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource;
-import com.peterlaurence.trekadvisor.core.mapsource.MapSourceLoader;
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
@@ -818,7 +818,7 @@ public class MainActivity extends AppCompatActivity
         switch (mapSource) {
             case IGN:
                 /* Check whether credentials are already set or not */
-                IGNCredentials ignCredentials = MapSourceLoader.INSTANCE.getIGNCredentials();
+                IGNCredentials ignCredentials = MapSourceCredentials.INSTANCE.getIGNCredentials();
                 if (ignCredentials == null) {
                     showIgnCredentialsFragment();
                 } else {
