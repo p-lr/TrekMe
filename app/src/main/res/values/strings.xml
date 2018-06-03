@@ -135,6 +135,7 @@
 
     <string name="mapcreate_define_area">Choose area</string>
     <string name="ign_wmts_settings_dialog">Map size settings</string>
-    <string name="starting_zoom">Minimum zoom</string>
+    <string name="min_zoom">Minimum zoom</string>
+    <string name="max_zoom">Maximun zoom</string>
 
 </resources>

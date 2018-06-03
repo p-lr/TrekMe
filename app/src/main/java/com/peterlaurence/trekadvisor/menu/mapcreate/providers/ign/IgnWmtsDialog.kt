@@ -18,8 +18,12 @@ import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
  */
 class IgnWmtsDialog : DialogFragment() {
     private val startMinLevel = 12
+    private val startMaxLevel = 17
     private val minLevel = 1
     private val maxLevel = 18
+
+    private var currentMinLevel = startMinLevel
+    private var currentMaxLevel = startMaxLevel
 
     companion object {
         private val ARG_AREA = "IgnWmtsDialog_area"
@@ -56,15 +60,49 @@ class IgnWmtsDialog : DialogFragment() {
         barMinLevel.progress = startMinLevel - minLevel
         barMinLevel.max = maxLevel - minLevel
 
+        val barMaxLevel = view.findViewById<SeekBar>(R.id.seekBarMaxLevel)
+        barMaxLevel.progress = startMaxLevel - minLevel
+        barMaxLevel.max = maxLevel - minLevel
+
+        /* The text indicator of the current min level */
         val minLevel = view.findViewById<TextView>(R.id.minLevel)
         minLevel.text = startMinLevel.toString()
 
-        barMinLevel.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            var progressChanged = this@IgnWmtsDialog.minLevel
+        /* The text indicator of the current mex level */
+        val maxLevel = view.findViewById<TextView>(R.id.maxLevel)
+        maxLevel.text = startMaxLevel.toString()
 
+        barMinLevel.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
-                progressChanged = this@IgnWmtsDialog.minLevel + i
-                minLevel.text = progressChanged.toString()
+                currentMinLevel = this@IgnWmtsDialog.minLevel + i
+                minLevel.text = currentMinLevel.toString()
+
+                /* If the min level becomes greater than the max level, update the max level */
+                if (currentMinLevel > currentMaxLevel) {
+                    currentMaxLevel = currentMinLevel
+                    maxLevel.text = currentMaxLevel.toString()
+                    barMaxLevel.progress = currentMaxLevel - this@IgnWmtsDialog.minLevel
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+            }
+        })
+
+        barMaxLevel.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
+                currentMaxLevel = this@IgnWmtsDialog.minLevel + i
+                maxLevel.text = currentMaxLevel.toString()
+
+                /* If the max level becomes smaller than the min level, update the min level */
+                if (currentMaxLevel < currentMinLevel) {
+                    currentMinLevel = currentMaxLevel
+                    minLevel.text = currentMinLevel.toString()
+                    barMinLevel.progress = currentMinLevel - this@IgnWmtsDialog.minLevel
+                }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
