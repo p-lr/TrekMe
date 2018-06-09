@@ -6,7 +6,9 @@ import org.junit.Test
 class IgnTest {
     @Test
     fun tilesTest() {
-        val tileIterable = getTileIterable(18, 18, 275951.78, 6241946.52, 276951.78, 6240946.52)
+        val p1 = Point(275951.78, 6241946.52)
+        val p2 = Point(276951.78, 6240946.52)
+        val tileIterable = getTileIterable(18, 18, p1, p2)
 
         val firstTile = tileIterable.first()
         Assert.assertEquals(132877, firstTile.col)

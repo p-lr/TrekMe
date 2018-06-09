@@ -10,7 +10,14 @@ import android.view.View
 import android.widget.SeekBar
 import android.widget.TextView
 import com.peterlaurence.trekadvisor.R
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.Point
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTiles
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTransactions
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileIterable
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /**
  * This dialog fragment holds the settings of the minimum and maximum zoom level of the map, before
@@ -83,6 +90,8 @@ class IgnWmtsDialog : DialogFragment() {
                     maxLevel.text = currentMaxLevel.toString()
                     barMaxLevel.progress = currentMaxLevel - this@IgnWmtsDialog.minLevel
                 }
+
+                EventBus.getDefault().post(TransactionCalculationRequest())
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -103,6 +112,8 @@ class IgnWmtsDialog : DialogFragment() {
                     minLevel.text = currentMinLevel.toString()
                     barMinLevel.progress = currentMinLevel - this@IgnWmtsDialog.minLevel
                 }
+
+                EventBus.getDefault().post(TransactionCalculationRequest())
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -112,4 +123,33 @@ class IgnWmtsDialog : DialogFragment() {
             }
         })
     }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onTransactionCalculationRequest(event: TransactionCalculationRequest) {
+        val area = arguments?.get(ARG_AREA) as Area
+
+        val p1 = Point(area.relativeX1, area.relativeY1)
+        val p2 = Point(area.relativeX2, area.relativeY2)
+
+        val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
+        EventBus.getDefault().post(NumberOfTransactions(getNumberOfTransactions(tileCount)))
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNumberOfTransactions(event: NumberOfTransactions) {
+        println("Number of transactions ${event.number}")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        EventBus.getDefault().unregister(this)
+        super.onStop()
+    }
+
+    class TransactionCalculationRequest
+    class NumberOfTransactions(val number: Long)
 }
