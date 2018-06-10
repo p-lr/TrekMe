@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dialog_ign_wmts"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/dialog_ign_wmts">
+    android:layout_height="match_parent">
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:text="@string/min_zoom"
-        android:textColor="?attr/colorAccent"
+        android:textColor="@color/colorAccent"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -25,7 +24,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="parent"
@@ -45,19 +44,19 @@
         android:layout_marginStart="8dp"
         android:textColor="@android:color/black"
         android:textStyle="bold"
-        tools:text="12"
         app:layout_constraintBottom_toBottomOf="@+id/seekBarMinLevel"
         app:layout_constraintStart_toEndOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/seekBarMinLevel" />
+        app:layout_constraintTop_toTopOf="@+id/seekBarMinLevel"
+        tools:text="12" />
 
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:text="@string/max_zoom"
-        android:textColor="?attr/colorAccent"
+        android:textColor="@color/colorAccent"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/seekBarMinLevel" />
@@ -68,7 +67,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="parent"
@@ -81,9 +80,33 @@
         android:layout_marginStart="8dp"
         android:textColor="@android:color/black"
         android:textStyle="bold"
-        tools:text="18"
         app:layout_constraintBottom_toBottomOf="@+id/seekBarMaxLevel"
         app:layout_constraintStart_toEndOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/seekBarMaxLevel" />
+        app:layout_constraintTop_toTopOf="@+id/seekBarMaxLevel"
+        tools:text="18" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/total_transactions"
+        android:textColor="@color/colorAccent"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/seekBarMaxLevel" />
+
+    <TextView
+        android:id="@+id/transactions_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/colorPrimaryTextBlack"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/textView3"
+        app:layout_constraintStart_toEndOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/textView3"
+        tools:text="0" />
 
 </android.support.constraint.ConstraintLayout>

@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
+import android.support.v4.os.ConfigurationCompat
 import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
@@ -13,11 +14,12 @@ import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Point
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTransactions
-import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileIterable
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.text.NumberFormat
+
 
 /**
  * This dialog fragment holds the settings of the minimum and maximum zoom level of the map, before
@@ -31,6 +33,8 @@ class IgnWmtsDialog : DialogFragment() {
 
     private var currentMinLevel = startMinLevel
     private var currentMaxLevel = startMaxLevel
+
+    private lateinit var transactionsTextView: TextView
 
     companion object {
         private val ARG_AREA = "IgnWmtsDialog_area"
@@ -122,6 +126,8 @@ class IgnWmtsDialog : DialogFragment() {
             override fun onStopTrackingTouch(seekBar: SeekBar) {
             }
         })
+
+        transactionsTextView = view.findViewById(R.id.transactions_text_view)
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -137,12 +143,16 @@ class IgnWmtsDialog : DialogFragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNumberOfTransactions(event: NumberOfTransactions) {
-        println("Number of transactions ${event.number}")
+        /* Format the number of transactions according to the current locale */
+        val currentLocale = ConfigurationCompat.getLocales(resources.configuration).get(0)
+        val formattedNumber = NumberFormat.getNumberInstance(currentLocale).format(event.number)
+        transactionsTextView.text = formattedNumber
     }
 
     override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
+        EventBus.getDefault().post(TransactionCalculationRequest())
     }
 
     override fun onStop() {
