@@ -142,5 +142,6 @@
     <string name="min_zoom">Minimum zoom</string>
     <string name="max_zoom">Maximun zoom</string>
     <string name="total_transactions">Total transactions</string>
+    <string name="download">Download</string>
 
 </resources>

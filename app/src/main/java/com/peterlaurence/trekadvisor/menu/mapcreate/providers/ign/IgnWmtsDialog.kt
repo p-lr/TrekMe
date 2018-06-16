@@ -67,8 +67,9 @@ class IgnWmtsDialog : DialogFragment() {
         return AlertDialog.Builder(context!!)
                 .setTitle(R.string.ign_wmts_settings_dialog)
                 .setView(view)
-                .setPositiveButton(R.string.ok_dialog
+                .setPositiveButton(R.string.download
                 ) { _, _ -> onDownloadFormConfirmed() }
+                .setNegativeButton(R.string.cancel_dialog_string) { _, _ -> dismiss() }
                 .create()
     }
 
