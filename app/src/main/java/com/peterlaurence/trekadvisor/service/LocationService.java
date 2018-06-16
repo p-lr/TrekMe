@@ -19,6 +19,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -168,10 +169,10 @@ public class LocationService extends Service {
         Bitmap icon = BitmapFactory.decodeResource(getResources(),
                 R.mipmap.ic_launcher);
 
-        Notification.Builder notificationBuilder = new Notification.Builder(getApplicationContext())
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), NOTIFICATION_ID)
                 .setContentTitle(getText(R.string.app_name))
-                .setContentText(getText(R.string.service_action))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentText(getText(R.string.service_location_action))
+                .setSmallIcon(R.drawable.ic_my_location_black_24dp)
                 .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
                 .setContentIntent(pendingIntent)
                 .setOngoing(true);
@@ -180,7 +181,7 @@ public class LocationService extends Service {
             /* This is only needed on Devices on Android O and above */
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_ID, getText(R.string.service_description), NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_ID, getText(R.string.service_location_name), NotificationManager.IMPORTANCE_DEFAULT);
             mChannel.enableLights(true);
             mChannel.setLightColor(Color.MAGENTA);
             if (notificationManager != null) {

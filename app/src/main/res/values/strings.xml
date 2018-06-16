@@ -12,8 +12,12 @@
     <string name="import_menu_title">Import</string>
 
     <!-- LocationService -->
-    <string name="service_description">Location service</string>
-    <string name="service_action">GPX recording</string>
+    <string name="service_location_name">Location service</string>
+    <string name="service_location_action">GPX recording</string>
+
+    <!-- DownloadService -->
+    <string name="service_download_name">Download service</string>
+    <string name="service_download_action">Map download</string>
 
     <!-- Map list fragment -->
     <string name="no_maps_found_warning">No maps found on the SD card, "trekadvisor" folder.\nDo you wish to download a sample map? (~14.5Mb)</string>

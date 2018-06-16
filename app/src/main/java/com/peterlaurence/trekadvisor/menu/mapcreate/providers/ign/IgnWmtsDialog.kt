@@ -1,7 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
 
 import android.app.Dialog
-import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v4.os.ConfigurationCompat
@@ -11,10 +11,14 @@ import android.view.View
 import android.widget.SeekBar
 import android.widget.TextView
 import com.peterlaurence.trekadvisor.R
+import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Point
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTransactions
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileIterable
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
+import com.peterlaurence.trekadvisor.service.DownloadService
+import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -26,10 +30,13 @@ import java.text.NumberFormat
  * it is downloaded.
  */
 class IgnWmtsDialog : DialogFragment() {
-    private val startMinLevel = 12
-    private val startMaxLevel = 17
+    /* Level thresholds */
     private val minLevel = 1
     private val maxLevel = 18
+
+    /* Start values */
+    private val startMinLevel = 12
+    private val startMaxLevel = 17
 
     private var currentMinLevel = startMinLevel
     private var currentMaxLevel = startMaxLevel
@@ -60,9 +67,8 @@ class IgnWmtsDialog : DialogFragment() {
         return AlertDialog.Builder(context!!)
                 .setTitle(R.string.ign_wmts_settings_dialog)
                 .setView(view)
-                .setPositiveButton(R.string.ok_dialog,
-                        DialogInterface.OnClickListener { dialog, whichButton -> println("positive click") }
-                )
+                .setPositiveButton(R.string.ok_dialog
+                ) { _, _ -> onDownloadFormConfirmed() }
                 .create()
     }
 
@@ -132,10 +138,7 @@ class IgnWmtsDialog : DialogFragment() {
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onTransactionCalculationRequest(event: TransactionCalculationRequest) {
-        val area = arguments?.get(ARG_AREA) as Area
-
-        val p1 = Point(area.relativeX1, area.relativeY1)
-        val p2 = Point(area.relativeX2, area.relativeY2)
+        val (p1, p2) = getPointsOfArea()
 
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
         EventBus.getDefault().post(NumberOfTransactions(getNumberOfTransactions(tileCount)))
@@ -158,6 +161,24 @@ class IgnWmtsDialog : DialogFragment() {
     override fun onStop() {
         EventBus.getDefault().unregister(this)
         super.onStop()
+    }
+
+    fun onDownloadFormConfirmed() {
+        activity?.apply {
+            val intent = Intent(baseContext, DownloadService::class.java)
+            startService(intent)
+        }
+
+        val (p1, p2) = getPointsOfArea()
+        val tileIterable = getTileIterable(currentMinLevel, currentMaxLevel, p1, p2)
+        EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileIterable))
+    }
+
+    private fun getPointsOfArea(): Pair<Point, Point> {
+        val area = arguments?.get(ARG_AREA) as Area
+        val p1 = Point(area.relativeX1, area.relativeY1)
+        val p2 = Point(area.relativeX2, area.relativeY2)
+        return Pair(p1, p2)
     }
 
     class TransactionCalculationRequest
