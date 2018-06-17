@@ -88,7 +88,7 @@ class DownloadService : Service() {
     @Subscribe
     public fun onRequestDownloadMapEvent(event: RequestDownloadMapEvent) {
         val source = event.source
-        var tileIterable = event.tileIterable
+        var tileSequence = event.tileSequence
 
         println("Download service : request download for $source")
 

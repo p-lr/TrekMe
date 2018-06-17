@@ -25,7 +25,7 @@ data class Point(val X: Double, val Y: Double)
  *    --------------------------
  *                             X1 = -X0
  *                             Y1 = X0
- * This function builds the map as an [Iterable] of [Tile] which contain the area defined by the two
+ * This function builds the map as an [Sequence] of [Tile] which contain the area defined by the two
  * supplied points. The build method is:
  *
  * * Start by finding the tiles at min level that overlap the area.
@@ -41,10 +41,10 @@ data class Point(val X: Double, val Y: Double)
  * @param point1 A [Point] at any corner
  * @param point2 A [Point] at the opposite corner of [point1]
  */
-fun getTileIterable(levelMin: Int, levelMax: Int, point1: Point, point2: Point): Iterable<Tile> {
+fun getTileSequence(levelMin: Int, levelMax: Int, point1: Point, point2: Point): Sequence<Tile> {
     val (XLeft, YTop, XRight, YBottom) = orderCoordinates(point1, point2)
 
-    return getTileIterable(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
+    return getTileSequence(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 }
 
 fun getNumberOfTiles(levelMin: Int, levelMax: Int, point1: Point, point2: Point): Long {
@@ -69,8 +69,8 @@ private fun orderCoordinates(point1: Point, point2: Point): TopLeftToBottomRight
     return TopLeftToBottomRight(XLeft, YTop, XRight, YBottom)
 }
 
-private fun getTileIterable(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): Iterable<Tile> {
-    return Iterable {
+private fun getTileSequence(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): Sequence<Tile> {
+    return Sequence {
         buildIterator {
             /* Level min */
             var (colLeft, rowTop, colRight, rowBottom) = getLevelArea(levelMin, XLeft, YTop, XRight, YBottom)

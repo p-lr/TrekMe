@@ -15,7 +15,7 @@ import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Point
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTransactions
-import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileIterable
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileSequence
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.service.DownloadService
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
@@ -171,8 +171,8 @@ class IgnWmtsDialog : DialogFragment() {
         }
 
         val (p1, p2) = getPointsOfArea()
-        val tileIterable = getTileIterable(currentMinLevel, currentMaxLevel, p1, p2)
-        EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileIterable))
+        val tileSequence = getTileSequence(currentMinLevel, currentMaxLevel, p1, p2)
+        EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileSequence))
     }
 
     private fun getPointsOfArea(): Pair<Point, Point> {
