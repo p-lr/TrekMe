@@ -13,6 +13,11 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import com.peterlaurence.trekadvisor.MainActivity
 import com.peterlaurence.trekadvisor.R
+import com.peterlaurence.trekadvisor.core.mapsource.MapSource
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.Tile
+import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvider
+import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderIgn
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatus
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
 import org.greenrobot.eventbus.EventBus
@@ -31,6 +36,7 @@ class DownloadService : Service() {
     private val NOTIFICATION_ID = "peterlaurence.DownloadService"
     private val SERVICE_ID = 128565
     private var started = false
+    private val threadCount = 4
 
     override fun onCreate() {
         EventBus.getDefault().register(this)
@@ -86,17 +92,59 @@ class DownloadService : Service() {
     }
 
     @Subscribe
-    public fun onRequestDownloadMapEvent(event: RequestDownloadMapEvent) {
+    fun onRequestDownloadMapEvent(event: RequestDownloadMapEvent) {
         val source = event.source
         var tileSequence = event.tileSequence
 
-        println("Download service : request download for $source")
-
-        // Use Glide, Picasso, or a thread pool to download the tiles
-        // TODO : handle the case when a download is already pending
+        val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator())
+        launchDownloadTask(threadCount, source, threadSafeTileIterator)
     }
 
     private fun sendStartedStatus() {
         EventBus.getDefault().post(DownloadServiceStatus(started))
+    }
+}
+
+private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator: ThreadSafeTileIterator) {
+    for (i in 0 until threadCount) {
+        when (source) {
+            MapSource.IGN -> {
+                val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
+
+                val bitmapProvider = GenericBitmapProviderIgn(ignCredentials)
+                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider)
+                downloadThread.start()
+            }
+            else -> {
+            }
+        }
+    }
+}
+
+
+private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterator, private val bitmapProvider: GenericBitmapProvider) : Thread() {
+    val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565)
+
+    init {
+        val options = BitmapFactory.Options()
+        options.inBitmap = bitmap
+        options.inPreferredConfig = Bitmap.Config.RGB_565
+        bitmapProvider.setBitmapOptions(options)
+    }
+
+    override fun run() {
+        while (true) {
+            val tile = tileIterator.next() ?: break
+            bitmapProvider.getBitmap(tile.level, tile.row, tile.col)
+            println("downloaded tile ${tile.row}-${tile.col}")
+        }
+    }
+}
+
+private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>) {
+    fun next(): Tile? {
+        return synchronized(this) {
+            if (tileIterator.hasNext()) tileIterator.next() else null
+        }
     }
 }

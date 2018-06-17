@@ -136,7 +136,7 @@ class IgnViewFragment : Fragment() {
 
         /* The BitmapProvider */
         val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
-        tileView.setBitmapProvider(BitmapProviderIgn(ignCredentials, context!!))
+        tileView.setBitmapProvider(BitmapProviderIgn(ignCredentials))
 
         /* Add the view */
         setTileView(tileView)
