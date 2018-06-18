@@ -53,6 +53,14 @@ fun getNumberOfTiles(levelMin: Int, levelMax: Int, point1: Point, point2: Point)
     return getNumberOfTiles(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 }
 
+/**
+ * One transaction is equivalent to [TILES_PER_TRANSACTION] tiles.
+ */
+fun Long.toTransactionsNumber(): Long {
+    return Math.ceil(this / TILES_PER_TRANSACTION).toLong()
+}
+
+
 private data class TopLeftToBottomRight(val XLeft: Double, val YTop: Double, val XRight: Double, val YBottom: Double)
 
 private fun orderCoordinates(point1: Point, point2: Point): TopLeftToBottomRight {
@@ -101,7 +109,11 @@ private fun getNumberOfTiles(levelMin: Int, levelMax: Int, XLeft: Double, YTop: 
     val tilesAtLevelMin =  (rowBottom - rowTop + 1).toLong() * (colRight - colLeft + 1).toLong()
     var count =  tilesAtLevelMin
     for (level in (levelMin + 1)..levelMax) {
-        count += count * 2
+        colLeft *= 2
+        rowTop *= 2
+        colRight = (colRight + 1) * 2 - 1
+        rowBottom = (rowBottom + 1) * 2 - 1
+        count += (rowBottom - rowTop + 1).toLong() * (colRight - colLeft + 1).toLong()
     }
     return count
 }
@@ -115,13 +127,6 @@ private fun getLevelArea(level: Int, XLeft: Double, YTop: Double, XRight: Double
     val colRight = Math.ceil((XRight - X0) / tileSize).toInt()
     val rowBottom = Math.ceil((Y0 - YBottom) / tileSize).toInt()
     return LevelArea(colLeft, rowTop, colRight, rowBottom)
-}
-
-/**
- * One transaction is equivalent to [TILES_PER_TRANSACTION] tiles.
- */
-fun getNumberOfTransactions(tileNumber: Long): Long {
-    return Math.ceil(tileNumber / TILES_PER_TRANSACTION).toLong()
 }
 
 /**

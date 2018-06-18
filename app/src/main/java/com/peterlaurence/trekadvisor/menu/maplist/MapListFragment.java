@@ -285,7 +285,7 @@ public class MapListFragment extends Fragment implements
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             //This only needs to be run on Devices on Android O and above
             NotificationChannel mChannel = new NotificationChannel(notificationChannelId,
-                    getText(R.string.service_location_name), NotificationManager.IMPORTANCE_LOW);
+                    getText(R.string.archive_dialog_title), NotificationManager.IMPORTANCE_LOW);
             mChannel.enableLights(true);
             mChannel.setLightColor(Color.YELLOW);
             if (notifyMgr != null) {

@@ -14,14 +14,13 @@ import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Point
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTiles
-import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTransactions
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileSequence
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.toTransactionsNumber
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.service.DownloadService
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.text.NumberFormat
 
 
@@ -102,7 +101,7 @@ class IgnWmtsDialog : DialogFragment() {
                     barMaxLevel.progress = currentMaxLevel - this@IgnWmtsDialog.minLevel
                 }
 
-                EventBus.getDefault().post(TransactionCalculationRequest())
+                updateTransactionCount()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -124,7 +123,7 @@ class IgnWmtsDialog : DialogFragment() {
                     barMinLevel.progress = currentMinLevel - this@IgnWmtsDialog.minLevel
                 }
 
-                EventBus.getDefault().post(TransactionCalculationRequest())
+                updateTransactionCount()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -137,26 +136,27 @@ class IgnWmtsDialog : DialogFragment() {
         transactionsTextView = view.findViewById(R.id.transactions_text_view)
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onTransactionCalculationRequest(event: TransactionCalculationRequest) {
+    /**
+     * This can be done in UI thread as even for billions of tiles the calculation is almost
+     * instantly done.
+     */
+    fun updateTransactionCount() {
         val (p1, p2) = getPointsOfArea()
 
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
-        EventBus.getDefault().post(NumberOfTransactions(getNumberOfTransactions(tileCount)))
-    }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onNumberOfTransactions(event: NumberOfTransactions) {
+        val numberOfTransactions = tileCount.toTransactionsNumber()
+
         /* Format the number of transactions according to the current locale */
         val currentLocale = ConfigurationCompat.getLocales(resources.configuration).get(0)
-        val formattedNumber = NumberFormat.getNumberInstance(currentLocale).format(event.number)
+        val formattedNumber = NumberFormat.getNumberInstance(currentLocale).format(numberOfTransactions)
         transactionsTextView.text = formattedNumber
     }
 
     override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
-        EventBus.getDefault().post(TransactionCalculationRequest())
+        updateTransactionCount()
     }
 
     override fun onStop() {
@@ -185,7 +185,9 @@ class IgnWmtsDialog : DialogFragment() {
     fun onDownloadSpecRequest(event: DownloadSpecRequest) {
         val (p1, p2) = getPointsOfArea()
         val tileSequence = getTileSequence(currentMinLevel, currentMaxLevel, p1, p2)
-        EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileSequence))
+        val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
+
+        EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileSequence, tileCount))
     }
 
     private fun getPointsOfArea(): Pair<Point, Point> {
@@ -195,7 +197,5 @@ class IgnWmtsDialog : DialogFragment() {
         return Pair(p1, p2)
     }
 
-    class TransactionCalculationRequest
     class DownloadSpecRequest
-    class NumberOfTransactions(val number: Long)
 }

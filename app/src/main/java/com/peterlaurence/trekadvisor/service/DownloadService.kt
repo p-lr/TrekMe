@@ -99,7 +99,7 @@ class DownloadService : Service() {
         val source = event.source
         var tileSequence = event.tileSequence
 
-        val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator())
+        val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles)
         launchDownloadTask(threadCount, source, threadSafeTileIterator)
     }
 
@@ -148,10 +148,26 @@ private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterato
     }
 }
 
-private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>) {
+private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>, val totalSize: Long) {
+    /* Progress in percent */
+    var progress = 0.0
+    private var tileIndex: Long = 0
+
     fun next(): Tile? {
         return synchronized(this) {
-            if (tileIterator.hasNext()) tileIterator.next() else null
+            if (tileIterator.hasNext()) {
+                updateProgress()
+                tileIterator.next()
+            } else {
+                progress = 100.0
+                null
+            }
         }
+    }
+
+    private fun updateProgress() {
+        tileIndex++
+        progress = tileIndex * 100.0 / totalSize
+        println("progress  : $progress")
     }
 }
