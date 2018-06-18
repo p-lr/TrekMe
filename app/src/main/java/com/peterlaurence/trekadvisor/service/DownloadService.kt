@@ -18,6 +18,7 @@ import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Tile
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvider
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderIgn
+import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnWmtsDialog
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatus
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
 import org.greenrobot.eventbus.EventBus
@@ -78,7 +79,7 @@ class DownloadService : Service() {
             val mChannel = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_download_name), NotificationManager.IMPORTANCE_DEFAULT)
             mChannel.enableLights(true)
             mChannel.lightColor = Color.MAGENTA
-            notificationManager?.createNotificationChannel(mChannel)
+            notificationManager.createNotificationChannel(mChannel)
             notificationBuilder.setChannelId(NOTIFICATION_ID)
         }
         val notification = notificationBuilder.build()
@@ -87,6 +88,8 @@ class DownloadService : Service() {
 
         started = true
         sendStartedStatus()
+
+        requestDownloadSpec()
 
         return Service.START_NOT_STICKY
     }
@@ -102,6 +105,10 @@ class DownloadService : Service() {
 
     private fun sendStartedStatus() {
         EventBus.getDefault().post(DownloadServiceStatus(started))
+    }
+
+    private fun requestDownloadSpec() {
+        EventBus.getDefault().post(IgnWmtsDialog.DownloadSpecRequest())
     }
 }
 

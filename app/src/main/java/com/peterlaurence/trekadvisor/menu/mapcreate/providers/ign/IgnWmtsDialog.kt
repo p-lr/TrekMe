@@ -164,12 +164,25 @@ class IgnWmtsDialog : DialogFragment() {
         super.onStop()
     }
 
+    /**
+     * We will start the download with the [DownloadService]
+     *
+     * IgnWmtsDialog                            DownloadService
+     *      Intent                    ----->          (service start)
+     *      onDownloadSpecRequest     <-----          DownloadSpecRequest
+     *      RequestDownloadMapEvent   ----->          onRequestDownloadMapEvent
+     *
+     * Such communication is necessary because the service isn't started synchronously.
+     */
     fun onDownloadFormConfirmed() {
         activity?.apply {
             val intent = Intent(baseContext, DownloadService::class.java)
             startService(intent)
         }
+    }
 
+    @Subscribe
+    fun onDownloadSpecRequest(event: DownloadSpecRequest) {
         val (p1, p2) = getPointsOfArea()
         val tileSequence = getTileSequence(currentMinLevel, currentMaxLevel, p1, p2)
         EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileSequence))
@@ -183,5 +196,6 @@ class IgnWmtsDialog : DialogFragment() {
     }
 
     class TransactionCalculationRequest
+    class DownloadSpecRequest
     class NumberOfTransactions(val number: Long)
 }
