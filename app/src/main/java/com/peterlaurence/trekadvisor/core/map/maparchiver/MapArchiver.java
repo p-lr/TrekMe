@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Helper class to handler unzipping of a {@link MapArchive}.
+ * Helper class to handle unzipping of a {@link MapArchive}.
  *
  * @author peterLaurence on 14/10/17.
  */

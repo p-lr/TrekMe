@@ -12,6 +12,7 @@ import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import com.peterlaurence.trekadvisor.MainActivity
 import com.peterlaurence.trekadvisor.R
+import com.peterlaurence.trekadvisor.core.TrekAdvisorContext
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Tile
@@ -22,6 +23,10 @@ import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatus
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 /**
@@ -130,7 +135,43 @@ class DownloadService : Service() {
         /* Init the progress bar */
         onDownloadProgress(0.0)
 
-        launchDownloadTask(threadCount, source, threadSafeTileIterator)
+        /* Create the destination folder */
+        val destDir = createDestDir()
+
+        /* A writer which has a folder for each level, and a folder for each row */
+        val tileWriter = object : TileWriter(destDir) {
+            override fun write(tile: Tile, bitmap: Bitmap) {
+                val tileDir = File(destDir, tile.level.toString() + File.separator + tile.row.toString())
+                tileDir.mkdirs()
+                val tileFile = File(tileDir, tile.col.toString() + ".jpg")
+                try {
+                    val out = FileOutputStream(tileFile)
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                    out.flush()
+                    out.close()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        launchDownloadTask(threadCount, source, threadSafeTileIterator, tileWriter)
+    }
+
+    private fun createDestDir(): File {
+        /* Create the download dir if it doesn't exists */
+        if (!TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR.exists()) {
+            TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR.mkdir()
+        }
+
+        /* Create a new folder */
+        val date = Date()
+        val dateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
+        val folderName = "map-" + dateFormat.format(date)
+        val destFolder = File(TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR, folderName)
+        destFolder.mkdir()
+
+        return destFolder
     }
 
     private fun onDownloadProgress(progress: Double) {
@@ -146,14 +187,15 @@ class DownloadService : Service() {
     }
 }
 
-private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator: ThreadSafeTileIterator) {
+private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator: ThreadSafeTileIterator,
+                               tileWriter: TileWriter) {
     for (i in 0 until threadCount) {
         when (source) {
             MapSource.IGN -> {
                 val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
 
                 val bitmapProvider = GenericBitmapProviderIgn(ignCredentials)
-                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider)
+                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }
             else -> {
@@ -163,7 +205,9 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
 }
 
 
-private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterator, private val bitmapProvider: GenericBitmapProvider) : Thread() {
+private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterator,
+                                 private val bitmapProvider: GenericBitmapProvider,
+                                 private val tileWriter: TileWriter) : Thread() {
     val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565)
 
     init {
@@ -177,7 +221,7 @@ private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterato
         while (DownloadService.started) {
             val tile = tileIterator.next() ?: break
             bitmapProvider.getBitmap(tile.level, tile.row, tile.col)
-            println("downloaded tile ${tile.row}-${tile.col}")
+            tileWriter.write(tile, bitmap)
         }
     }
 }
@@ -205,4 +249,8 @@ private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>, v
         progress = tileIndex * 100.0 / totalSize
         progressListener(progress)
     }
+}
+
+private abstract class TileWriter(val destDir: File) {
+    abstract fun write(tile: Tile, bitmap: Bitmap)
 }
