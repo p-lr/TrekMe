@@ -24,18 +24,18 @@ class GenericBitmapProviderIgn(private val credentials: IGNCredentials, options:
     }
 
     override fun getBitmap(level: Int, row: Int, col: Int): Bitmap? {
+        val src = "https://wxs.ign.fr/${credentials.api}/geoportail/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD&EXCEPTIONS=text/xml&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX=$level&TILEROW=$row&TILECOL=$col&"
+        val url = URL(src)
+        val connection = url.openConnection() as HttpURLConnection
+        connection.doInput = true
         return try {
-            val src = "https://wxs.ign.fr/${credentials.api}/geoportail/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD&EXCEPTIONS=text/xml&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX=$level&TILEROW=$row&TILECOL=$col&"
-
-            val url = URL(src)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.doInput = true
             connection.connect()
             val inputStream = BufferedInputStream(connection.inputStream)
             val myBitmap = BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
             inputStream.close()
             myBitmap
         } catch (e: Exception) {
+            connection.disconnect()
             e.printStackTrace()
             null
         }

@@ -97,4 +97,5 @@
     <string name="service_download_name">Service de téléchargement de TrekAdvisor</string>
     <string name="service_download_action">Téléchargement de carte</string>
     <string name="download">Télécharger</string>
+    <string name="service_download_stop">Arrêter</string>
 </resources>

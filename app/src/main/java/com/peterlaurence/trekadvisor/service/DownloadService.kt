@@ -34,13 +34,30 @@ import org.greenrobot.eventbus.Subscribe
  * corner of the device.
  */
 class DownloadService : Service() {
+
     private val NOTIFICATION_ID = "peterlaurence.DownloadService"
     private val SERVICE_ID = 128565
     private var started = false
     private val threadCount = 4
+    private val STOP_ACTION = "stop"
+
+    private lateinit var onTapPendingIntent: PendingIntent
+    private lateinit var onStopPendingIntent: PendingIntent
+    private lateinit var icon: Bitmap
 
     override fun onCreate() {
         EventBus.getDefault().register(this)
+
+        /* Init */
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        onTapPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val stopIntent = Intent(this, DownloadService::class.java)
+        stopIntent.action = STOP_ACTION
+        onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+        icon = BitmapFactory.decodeResource(resources,
+                R.mipmap.ic_launcher)
 
         super.onCreate()
     }
@@ -59,18 +76,21 @@ class DownloadService : Service() {
      * Called when the service is started.
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+        /* If the user used the notification action-stop button, stop the service */
+        if (intent.action == STOP_ACTION) {
+            stopForeground(true)
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
-        val icon = BitmapFactory.decodeResource(resources,
-                R.mipmap.ic_launcher)
-
+        /* From here, we know that the service is being created by the activity */
         val notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
                 .setContentTitle(getText(R.string.app_name))
                 .setContentText(getText(R.string.service_download_action))
                 .setSmallIcon(R.drawable.ic_file_download_24dp)
                 .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
-                .setContentIntent(pendingIntent)
+                .setContentIntent(onTapPendingIntent)
+                .addAction(R.drawable.ic_stop_black_24dp, getString(R.string.service_download_stop), onStopPendingIntent)
                 .setOngoing(true)
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
