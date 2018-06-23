@@ -1,16 +1,15 @@
 package com.peterlaurence.trekadvisor.service
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.support.v4.app.NotificationCompat
+import android.support.v4.app.NotificationManagerCompat
 import com.peterlaurence.trekadvisor.MainActivity
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
@@ -24,6 +23,7 @@ import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 
+
 /**
  * A [Started service](https://developer.android.com/guide/components/services.html#CreatingAService)
  * to perform map download, even if the user is not interacting with the main application.
@@ -34,16 +34,25 @@ import org.greenrobot.eventbus.Subscribe
  * corner of the device.
  */
 class DownloadService : Service() {
-
     private val NOTIFICATION_ID = "peterlaurence.DownloadService"
     private val SERVICE_ID = 128565
-    private var started = false
     private val threadCount = 4
     private val STOP_ACTION = "stop"
 
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
     private lateinit var icon: Bitmap
+
+    private lateinit var notificationBuilder: NotificationCompat.Builder
+    private lateinit var notificationManager: NotificationManagerCompat
+
+    private val handler = Handler(Looper.getMainLooper())
+
+    companion object {
+        @JvmStatic
+        @Volatile
+        var started = false
+    }
 
     override fun onCreate() {
         EventBus.getDefault().register(this)
@@ -55,6 +64,8 @@ class DownloadService : Service() {
         val stopIntent = Intent(this, DownloadService::class.java)
         stopIntent.action = STOP_ACTION
         onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+        notificationManager = NotificationManagerCompat.from(this)
 
         icon = BitmapFactory.decodeResource(resources,
                 R.mipmap.ic_launcher)
@@ -78,33 +89,24 @@ class DownloadService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         /* If the user used the notification action-stop button, stop the service */
         if (intent.action == STOP_ACTION) {
+            started = false
             stopForeground(true)
             stopSelf()
             return START_NOT_STICKY
         }
 
         /* From here, we know that the service is being created by the activity */
-        val notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
+        notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
                 .setContentTitle(getText(R.string.app_name))
                 .setContentText(getText(R.string.service_download_action))
                 .setSmallIcon(R.drawable.ic_file_download_24dp)
-                .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
+                .setLargeIcon(icon)
                 .setContentIntent(onTapPendingIntent)
                 .addAction(R.drawable.ic_stop_black_24dp, getString(R.string.service_download_stop), onStopPendingIntent)
                 .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            /* This is only needed on Devices on Android O and above */
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val mChannel = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_download_name), NotificationManager.IMPORTANCE_DEFAULT)
-            mChannel.enableLights(true)
-            mChannel.lightColor = Color.MAGENTA
-            notificationManager.createNotificationChannel(mChannel)
-            notificationBuilder.setChannelId(NOTIFICATION_ID)
-        }
-        val notification = notificationBuilder.build()
-
-        startForeground(SERVICE_ID, notification)
+        startForeground(SERVICE_ID, notificationBuilder.build())
 
         started = true
         sendStartedStatus()
@@ -119,8 +121,20 @@ class DownloadService : Service() {
         val source = event.source
         var tileSequence = event.tileSequence
 
-        val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles)
+        val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles) { p ->
+            if (started) {
+                handler.post { (this::onDownloadProgress)(p) }
+            }
+        }
+
+        /* Init the progress bar */
+        onDownloadProgress(0.0)
+
         launchDownloadTask(threadCount, source, threadSafeTileIterator)
+    }
+
+    private fun onDownloadProgress(progress: Double) {
+        println("on progress $progress")
     }
 
     private fun sendStartedStatus() {
@@ -160,7 +174,7 @@ private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterato
     }
 
     override fun run() {
-        while (true) {
+        while (DownloadService.started) {
             val tile = tileIterator.next() ?: break
             bitmapProvider.getBitmap(tile.level, tile.row, tile.col)
             println("downloaded tile ${tile.row}-${tile.col}")
@@ -168,7 +182,8 @@ private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterato
     }
 }
 
-private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>, val totalSize: Long) {
+private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>, val totalSize: Long,
+                                     val progressListener: (Double) -> Unit) {
     /* Progress in percent */
     var progress = 0.0
     private var tileIndex: Long = 0
@@ -188,6 +203,6 @@ private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>, v
     private fun updateProgress() {
         tileIndex++
         progress = tileIndex * 100.0 / totalSize
-        println("progress  : $progress")
+        progressListener(progress)
     }
 }
