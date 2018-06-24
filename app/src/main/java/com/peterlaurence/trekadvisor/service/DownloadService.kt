@@ -13,6 +13,8 @@ import android.support.v4.app.NotificationManagerCompat
 import com.peterlaurence.trekadvisor.MainActivity
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext
+import com.peterlaurence.trekadvisor.core.map.Map
+import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Tile
@@ -20,6 +22,7 @@ import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvide
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderIgn
 import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnWmtsDialog
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatus
+import com.peterlaurence.trekadvisor.service.event.PostProcessImportedEvent
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -52,6 +55,7 @@ class DownloadService : Service() {
     private lateinit var notificationManager: NotificationManagerCompat
 
     private val handler = Handler(Looper.getMainLooper())
+    private lateinit var destDir: File
 
     companion object {
         @JvmStatic
@@ -136,7 +140,7 @@ class DownloadService : Service() {
         onDownloadProgress(0.0)
 
         /* Create the destination folder */
-        val destDir = createDestDir()
+        destDir = createDestDir()
 
         /* A writer which has a folder for each level, and a folder for each row */
         val tileWriter = object : TileWriter(destDir) {
@@ -176,6 +180,23 @@ class DownloadService : Service() {
 
     private fun onDownloadProgress(progress: Double) {
         println("on progress $progress")
+
+        if (progress == 100.0) {
+            postProcess()
+        }
+    }
+
+    private fun postProcess() {
+        MapImporter.importFromFile(destDir, MapImporter.MapProvider.LIBVIPS,
+                object : MapImporter.MapImportListener {
+                    override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
+                        EventBus.getDefault().post(PostProcessImportedEvent(map, status))
+                    }
+
+                    override fun onMapImportError(e: MapImporter.MapParseException) {
+                        // TODO : show an error message that something went wrong and send an event.
+                    }
+                })
     }
 
     private fun sendStartedStatus() {
@@ -184,6 +205,13 @@ class DownloadService : Service() {
 
     private fun requestDownloadSpec() {
         EventBus.getDefault().post(IgnWmtsDialog.DownloadSpecRequest())
+    }
+
+    @Subscribe
+    fun onPostProcessImported(event: PostProcessImportedEvent) {
+        println("post process imported ${event.map.name} with code ${event.status}")
+
+        // TODO : the map needs to be calibrated
     }
 }
 

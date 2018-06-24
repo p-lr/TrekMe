@@ -20,9 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * The {@link MapImporter} is created by a {@link MapProvider}. Then, the corresponding map parser
- * is used to parse the map (given as a {@link File}). <br>
- * This is typically used after a {@link MapArchive} has been extracted.
+ * The {@link MapImporter} exposes a single method : {@link #importFromFile(File, MapProvider, MapImportListener)}.
+ * To use the appropriate parser, the {@link MapProvider} enum type must be given. But for instance,
+ * only {@link MapProvider#LIBVIPS} is supported. <br>
+ * This is typically used after a {@link MapArchive} has been extracted, or by the
+ * {@link com.peterlaurence.trekadvisor.service.DownloadService}.
  *
  * @author peterLaurence on 23/06/16.
  */
