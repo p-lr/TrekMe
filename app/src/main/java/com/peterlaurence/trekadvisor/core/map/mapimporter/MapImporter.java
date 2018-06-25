@@ -289,7 +289,6 @@ public class MapImporter {
             mapGson.name = parentFolder.getName();
 
             /* Set default calibration */
-            mapGson.calibration = new MapGson.Calibration();
             mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name();
 
             /* The json file */

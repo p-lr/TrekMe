@@ -35,6 +35,7 @@ public class MapGson {
 
     public MapGson() {
         levels = new ArrayList<>();
+        calibration = new Calibration();
     }
 
     public static class MapSize {

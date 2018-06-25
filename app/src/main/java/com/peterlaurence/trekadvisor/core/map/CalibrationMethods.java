@@ -7,12 +7,12 @@ import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import java.util.Arrays;
 
 /**
- * The {@link MapCalibrator} provides different methods to obtain a {@link Map.MapBounds} from multiple
+ * The {@link CalibrationMethods} provides different methods to obtain a {@link Map.MapBounds} from multiple
  * {@link MapGson.Calibration.CalibrationPoint} objects.
  *
  * @author peterLaurence
  */
-public class MapCalibrator {
+public class CalibrationMethods {
     /**
      * This method calculates the {@link Map.MapBounds} by extrapolating the projected values of
      * the two {@link MapGson.Calibration.CalibrationPoint} provided, so the returned {@link Map.MapBounds} contains

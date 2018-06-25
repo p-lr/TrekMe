@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class)
-public class MapCalibratorTest {
+public class CalibrationMethodsTest {
 
     @Test
     public void calibration3Points() {
@@ -40,13 +40,13 @@ public class MapCalibratorTest {
         pC.proj_x = 10;
         pC.proj_y = 90;
 
-        Map.MapBounds bounds = MapCalibrator.calibrate3Points(pA, pB, pC);
+        Map.MapBounds bounds = CalibrationMethods.calibrate3Points(pA, pB, pC);
         assertNotNull(bounds);
         assertTrue(bounds.compareTo(0, 0, 100, 100));
 
         pC.x = 0.95;
         pC.proj_x = 95;
-        bounds = MapCalibrator.calibrate3Points(pA, pB, pC);
+        bounds = CalibrationMethods.calibrate3Points(pA, pB, pC);
         assertNotNull(bounds);
         assertTrue(bounds.compareTo(0, 0, 100, 100));
 
@@ -54,7 +54,7 @@ public class MapCalibratorTest {
         pA.proj_y = 5;
         pB.y = 0.95;
         pB.proj_y = 85;
-        bounds = MapCalibrator.calibrate3Points(pA, pB, pC);
+        bounds = CalibrationMethods.calibrate3Points(pA, pB, pC);
         assertNotNull(bounds);
         assertTrue(bounds.compareTo(-5.9375, -4.411764706, 100.3125, 89.70588235294119));
     }

@@ -153,22 +153,22 @@ public class Map {
             case SIMPLE_2_POINTS:
                 if (calibrationPoints.size() >= 2) {
                     /* Correct points if necessary */
-                    MapCalibrator.sanityCheck2PointsCalibration(calibrationPoints.get(0),
+                    CalibrationMethods.sanityCheck2PointsCalibration(calibrationPoints.get(0),
                             calibrationPoints.get(1));
 
-                    mMapBounds = MapCalibrator.simple2PointsCalibration(calibrationPoints.get(0),
+                    mMapBounds = CalibrationMethods.simple2PointsCalibration(calibrationPoints.get(0),
                             calibrationPoints.get(1));
                 }
                 break;
             case CALIBRATION_3_POINTS:
                 if (calibrationPoints.size() >= 3) {
-                    mMapBounds = MapCalibrator.calibrate3Points(calibrationPoints.get(0),
+                    mMapBounds = CalibrationMethods.calibrate3Points(calibrationPoints.get(0),
                             calibrationPoints.get(1), calibrationPoints.get(2));
                 }
                 break;
             case CALIBRATION_4_POINTS:
                 if (calibrationPoints.size() == 4) {
-                    mMapBounds = MapCalibrator.calibrate4Points(calibrationPoints.get(0),
+                    mMapBounds = CalibrationMethods.calibrate4Points(calibrationPoints.get(0),
                             calibrationPoints.get(1), calibrationPoints.get(2),
                             calibrationPoints.get(3));
                 }
