@@ -2,7 +2,8 @@ package com.peterlaurence.trekadvisor.core.mapsource.wmts
 
 import kotlin.coroutines.experimental.buildIterator
 
-data class Tile(val level: Int, val row: Int, val col: Int)
+data class Tile(val level: Int, val row: Int, val col: Int, val indexLevel: Int, val indexRow: Int,
+                val indexCol: Int)
 data class Point(val X: Double, val Y: Double)
 
 /**
@@ -82,9 +83,9 @@ private fun getTileSequence(levelMin: Int, levelMax: Int, XLeft: Double, YTop: D
         buildIterator {
             /* Level min */
             var (colLeft, rowTop, colRight, rowBottom) = getLevelArea(levelMin, XLeft, YTop, XRight, YBottom)
-            for (i in rowTop..rowBottom) {
-                for (j in colLeft..colRight) {
-                    yield(Tile(levelMin, i, j))
+            for ((indexRow, i) in (rowTop..rowBottom).withIndex()) {
+                for ((indexCol, j) in (colLeft..colRight).withIndex()) {
+                    yield(Tile(levelMin, i, j, 0, indexRow, indexCol))
                 }
             }
 
@@ -94,9 +95,9 @@ private fun getTileSequence(levelMin: Int, levelMax: Int, XLeft: Double, YTop: D
                 rowTop *= 2
                 colRight = (colRight + 1) * 2 - 1
                 rowBottom = (rowBottom + 1) * 2 - 1
-                for (i in rowTop..rowBottom) {
-                    for (j in colLeft..colRight) {
-                        yield(Tile(level, i, j))
+                for ((indexRow, i) in (rowTop..rowBottom).withIndex()) {
+                    for ((indexCol, j) in (colLeft..colRight).withIndex()) {
+                        yield(Tile(level, i, j, level-levelMin, indexRow, indexCol))
                     }
                 }
             }

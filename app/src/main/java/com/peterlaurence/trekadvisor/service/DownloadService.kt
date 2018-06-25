@@ -142,12 +142,14 @@ class DownloadService : Service() {
         /* Create the destination folder */
         destDir = createDestDir()
 
-        /* A writer which has a folder for each level, and a folder for each row */
+        /* A writer which has a folder for each level, and a folder for each row. It does that with
+         * using indexes instead of real level, row and col numbers. This greatly simplifies how a
+         * tile is later retrieved from a bitmap provider. */
         val tileWriter = object : TileWriter(destDir) {
             override fun write(tile: Tile, bitmap: Bitmap) {
-                val tileDir = File(destDir, tile.level.toString() + File.separator + tile.row.toString())
+                val tileDir = File(destDir, tile.indexLevel.toString() + File.separator + tile.indexRow.toString())
                 tileDir.mkdirs()
-                val tileFile = File(tileDir, tile.col.toString() + ".jpg")
+                val tileFile = File(tileDir, tile.indexCol.toString() + ".jpg")
                 try {
                     val out = FileOutputStream(tileFile)
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
