@@ -14,7 +14,7 @@ import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Point
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTiles
-import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileSequence
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileSequenceAndCalibration
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.toTransactionsNumber
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.service.DownloadService
@@ -184,10 +184,11 @@ class IgnWmtsDialog : DialogFragment() {
     @Subscribe
     fun onDownloadSpecRequest(event: DownloadSpecRequest) {
         val (p1, p2) = getPointsOfArea()
-        val tileSequence = getTileSequence(currentMinLevel, currentMaxLevel, p1, p2)
+        val tileSequenceAndCalibration = getTileSequenceAndCalibration(currentMinLevel, currentMaxLevel, p1, p2)
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
 
-        EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileSequence, tileCount))
+        EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileSequenceAndCalibration.tileSequence,
+                tileSequenceAndCalibration.calibrationPoints, tileCount))
     }
 
     private fun getPointsOfArea(): Pair<Point, Point> {

@@ -1,10 +1,13 @@
 package com.peterlaurence.trekadvisor.core.mapsource.wmts
 
+import com.peterlaurence.trekadvisor.core.map.gson.MapGson.Calibration.CalibrationPoint
 import kotlin.coroutines.experimental.buildIterator
 
 data class Tile(val level: Int, val row: Int, val col: Int, val indexLevel: Int, val indexRow: Int,
                 val indexCol: Int)
+
 data class Point(val X: Double, val Y: Double)
+data class IgnMetadata(val tileSequence: Sequence<Tile>, val calibrationPoints: Pair<CalibrationPoint, CalibrationPoint>)
 
 /**
  * At level 0, an IGN map (which use WebMercator projection) is contained in a single tile of
@@ -39,13 +42,19 @@ data class Point(val X: Double, val Y: Double)
  *
  * A rule of thumb is to set the min level to 12 or higher, and max level no more than 18.
  *
+ * Calibration points are set on top-left and bottom-right corners. They are computed with the tiles
+ * of the min level since this is the level used for getting the boundaries of the map.
+ *
  * @param point1 A [Point] at any corner
  * @param point2 A [Point] at the opposite corner of [point1]
  */
-fun getTileSequence(levelMin: Int, levelMax: Int, point1: Point, point2: Point): Sequence<Tile> {
+fun getTileSequenceAndCalibration(levelMin: Int, levelMax: Int, point1: Point, point2: Point): IgnMetadata {
     val (XLeft, YTop, XRight, YBottom) = orderCoordinates(point1, point2)
 
-    return getTileSequence(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
+    val tileSequence = getTileSequenceAndCalibration(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
+    val calibrationPoints = getCalibrationPoints(levelMin, XLeft, YTop, XRight, YBottom)
+
+    return IgnMetadata(tileSequence, calibrationPoints)
 }
 
 fun getNumberOfTiles(levelMin: Int, levelMax: Int, point1: Point, point2: Point): Long {
@@ -78,7 +87,7 @@ private fun orderCoordinates(point1: Point, point2: Point): TopLeftToBottomRight
     return TopLeftToBottomRight(XLeft, YTop, XRight, YBottom)
 }
 
-private fun getTileSequence(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): Sequence<Tile> {
+private fun getTileSequenceAndCalibration(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): Sequence<Tile> {
     return Sequence {
         buildIterator {
             /* Level min */
@@ -97,7 +106,7 @@ private fun getTileSequence(levelMin: Int, levelMax: Int, XLeft: Double, YTop: D
                 rowBottom = (rowBottom + 1) * 2 - 1
                 for ((indexRow, i) in (rowTop..rowBottom).withIndex()) {
                     for ((indexCol, j) in (colLeft..colRight).withIndex()) {
-                        yield(Tile(level, i, j, level-levelMin, indexRow, indexCol))
+                        yield(Tile(level, i, j, level - levelMin, indexRow, indexCol))
                     }
                 }
             }
@@ -107,8 +116,8 @@ private fun getTileSequence(levelMin: Int, levelMax: Int, XLeft: Double, YTop: D
 
 private fun getNumberOfTiles(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): Long {
     var (colLeft, rowTop, colRight, rowBottom) = getLevelArea(levelMin, XLeft, YTop, XRight, YBottom)
-    val tilesAtLevelMin =  (rowBottom - rowTop + 1).toLong() * (colRight - colLeft + 1).toLong()
-    var count =  tilesAtLevelMin
+    val tilesAtLevelMin = (rowBottom - rowTop + 1).toLong() * (colRight - colLeft + 1).toLong()
+    var count = tilesAtLevelMin
     for (level in (levelMin + 1)..levelMax) {
         colLeft *= 2
         rowTop *= 2
@@ -117,6 +126,26 @@ private fun getNumberOfTiles(levelMin: Int, levelMax: Int, XLeft: Double, YTop: 
         count += (rowBottom - rowTop + 1).toLong() * (colRight - colLeft + 1).toLong()
     }
     return count
+}
+
+private fun getCalibrationPoints(level: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double):
+        Pair<CalibrationPoint, CalibrationPoint> {
+    val (colLeft, rowTop, colRight, rowBottom) = getLevelArea(level, XLeft, YTop, XRight, YBottom)
+    val tileSize = getTileInMetersForZoom(level)
+
+    val topLeftCalibrationPoint = CalibrationPoint()
+    topLeftCalibrationPoint.x = 0.0
+    topLeftCalibrationPoint.y = 0.0
+    topLeftCalibrationPoint.proj_x = colLeft * tileSize
+    topLeftCalibrationPoint.proj_y = rowTop * tileSize
+
+    val bottomRightCalibrationPoint = CalibrationPoint()
+    bottomRightCalibrationPoint.x = 1.0
+    bottomRightCalibrationPoint.y = 1.0
+    bottomRightCalibrationPoint.proj_x = (colRight + 1) * tileSize
+    bottomRightCalibrationPoint.proj_y = (rowBottom + 1) * tileSize
+
+    return Pair(topLeftCalibrationPoint, bottomRightCalibrationPoint)
 }
 
 private data class LevelArea(val colLeft: Int, val rowTop: Int, val colRight: Int, val rowBottom: Int)
