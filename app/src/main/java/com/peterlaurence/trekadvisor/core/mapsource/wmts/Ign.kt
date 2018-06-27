@@ -136,14 +136,14 @@ private fun getCalibrationPoints(level: Int, XLeft: Double, YTop: Double, XRight
     val topLeftCalibrationPoint = CalibrationPoint()
     topLeftCalibrationPoint.x = 0.0
     topLeftCalibrationPoint.y = 0.0
-    topLeftCalibrationPoint.proj_x = colLeft * tileSize
-    topLeftCalibrationPoint.proj_y = rowTop * tileSize
+    topLeftCalibrationPoint.proj_x = colLeft * tileSize + X0
+    topLeftCalibrationPoint.proj_y = Y0 - rowTop * tileSize
 
     val bottomRightCalibrationPoint = CalibrationPoint()
     bottomRightCalibrationPoint.x = 1.0
     bottomRightCalibrationPoint.y = 1.0
-    bottomRightCalibrationPoint.proj_x = (colRight + 1) * tileSize
-    bottomRightCalibrationPoint.proj_y = (rowBottom + 1) * tileSize
+    bottomRightCalibrationPoint.proj_x = (colRight + 1) * tileSize + X0
+    bottomRightCalibrationPoint.proj_y = Y0 - (rowBottom + 1) * tileSize
 
     return Pair(topLeftCalibrationPoint, bottomRightCalibrationPoint)
 }

@@ -15,14 +15,15 @@ import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext
 import com.peterlaurence.trekadvisor.core.map.Map
 import com.peterlaurence.trekadvisor.core.map.mapimporter.MapImporter
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Tile
+import com.peterlaurence.trekadvisor.core.projection.MercatorProjection
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvider
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderIgn
 import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnWmtsDialog
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatus
-import com.peterlaurence.trekadvisor.service.event.PostProcessImportedEvent
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -133,6 +134,11 @@ class DownloadService : Service() {
         val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles) { p ->
             if (started) {
                 handler.post { (this::onDownloadProgress)(p) }
+
+                /* Post-process if download reaches 100% */
+                if (p == 100.0) {
+                    postProcess(event)
+                }
             }
         }
 
@@ -182,17 +188,25 @@ class DownloadService : Service() {
 
     private fun onDownloadProgress(progress: Double) {
         println("on progress $progress")
-
-        if (progress == 100.0) {
-            postProcess()
-        }
     }
 
-    private fun postProcess() {
+    private fun postProcess(event: RequestDownloadMapEvent) {
+        /* Calibrate */
+        fun calibrate(map: Map) {
+            map.projection = MercatorProjection()
+            map.mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name
+            map.mapGson.calibration.calibration_points = event.calibrationPoints.toList()
+            map.calibrate()
+            MapLoader.getInstance().saveMap(map)
+        }
+
+        /* Import */
         MapImporter.importFromFile(destDir, MapImporter.MapProvider.LIBVIPS,
                 object : MapImporter.MapImportListener {
                     override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
-                        EventBus.getDefault().post(PostProcessImportedEvent(map, status))
+                        handler.post {
+                            calibrate(map)
+                        }
                     }
 
                     override fun onMapImportError(e: MapImporter.MapParseException) {
@@ -207,13 +221,6 @@ class DownloadService : Service() {
 
     private fun requestDownloadSpec() {
         EventBus.getDefault().post(IgnWmtsDialog.DownloadSpecRequest())
-    }
-
-    @Subscribe
-    fun onPostProcessImported(event: PostProcessImportedEvent) {
-        println("post process imported ${event.map.name} with code ${event.status}")
-
-        // TODO : the map needs to be calibrated
     }
 }
 
