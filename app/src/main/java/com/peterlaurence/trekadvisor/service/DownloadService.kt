@@ -23,8 +23,10 @@ import com.peterlaurence.trekadvisor.core.projection.MercatorProjection
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvider
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderIgn
 import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnWmtsDialog
-import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatus
+import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatusEvent
+import com.peterlaurence.trekadvisor.service.event.MapDownloadEvent
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
+import com.peterlaurence.trekadvisor.service.event.Status
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
@@ -57,6 +59,8 @@ class DownloadService : Service() {
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var destDir: File
+
+    private val progressEvent = MapDownloadEvent(Status.PENDING, 0.0)
 
     companion object {
         @JvmStatic
@@ -121,6 +125,8 @@ class DownloadService : Service() {
         started = true
         sendStartedStatus()
 
+        /* Get ready for download and request download spec */
+        progressEvent.progress = 0.0
         requestDownloadSpec()
 
         return Service.START_NOT_STICKY
@@ -187,6 +193,8 @@ class DownloadService : Service() {
     }
 
     private fun onDownloadProgress(progress: Double) {
+        progressEvent.progress = progress
+        EventBus.getDefault().post(progressEvent)
         println("on progress $progress")
     }
 
@@ -200,27 +208,33 @@ class DownloadService : Service() {
             MapLoader.getInstance().saveMap(map)
         }
 
-        /* Import */
+        /* Import, and when we're done, calibrate and stop the service */
         MapImporter.importFromFile(destDir, MapImporter.MapProvider.LIBVIPS,
                 object : MapImporter.MapImportListener {
                     override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
                         handler.post {
                             calibrate(map)
+                            sendDownloadFinished()
+                            stopSelf()
                         }
                     }
 
                     override fun onMapImportError(e: MapImporter.MapParseException) {
-                        // TODO : show an error message that something went wrong and send an event.
+                        EventBus.getDefault().post(MapDownloadEvent(Status.IMPORT_ERROR))
                     }
                 })
     }
 
     private fun sendStartedStatus() {
-        EventBus.getDefault().post(DownloadServiceStatus(started))
+        EventBus.getDefault().post(DownloadServiceStatusEvent(started))
     }
 
     private fun requestDownloadSpec() {
         EventBus.getDefault().post(IgnWmtsDialog.DownloadSpecRequest())
+    }
+
+    private fun sendDownloadFinished() {
+        EventBus.getDefault().post(MapDownloadEvent(Status.FINISHED))
     }
 }
 
