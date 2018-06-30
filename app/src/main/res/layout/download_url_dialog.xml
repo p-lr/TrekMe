@@ -7,15 +7,16 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/download_map_dialog_msg"
+        android:id="@+id/download_url_dialog_msg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
+        android:text="@string/map_download_dialog_progress"
         tools:text="File download" />
 
     <ProgressBar
-        android:id="@+id/download_map_dialog_progress"
+        android:id="@+id/download_url_dialog_progress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

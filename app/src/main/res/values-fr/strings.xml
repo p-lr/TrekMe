@@ -98,4 +98,7 @@
     <string name="service_download_action">Téléchargement de carte</string>
     <string name="download">Télécharger</string>
     <string name="service_download_stop">Arrêter</string>
+    <string name="service_download_see_progress">Voir Progression</string>
+    <string name="map_download_dialog_title">Téléchargement en cours</string>
+    <string name="map_download_dialog_progress">Progression</string>
 </resources>

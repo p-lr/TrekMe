@@ -49,9 +49,11 @@ class DownloadService : Service() {
     private val SERVICE_ID = 128565
     private val threadCount = 4
     private val STOP_ACTION = "stop"
+    private val SHOW_PROGRESS_ACTION = "show-progress"
 
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
+    private lateinit var showProgressPendingIntent: PendingIntent
     private lateinit var icon: Bitmap
 
     private lateinit var notificationBuilder: NotificationCompat.Builder
@@ -78,6 +80,10 @@ class DownloadService : Service() {
         val stopIntent = Intent(this, DownloadService::class.java)
         stopIntent.action = STOP_ACTION
         onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+        val showProgressionIntent = Intent(this, MainActivity::class.java)
+        showProgressionIntent.action = SHOW_PROGRESS_ACTION
+        showProgressPendingIntent = PendingIntent.getActivity(this, 0, showProgressionIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         notificationManager = NotificationManagerCompat.from(this)
 
@@ -116,6 +122,8 @@ class DownloadService : Service() {
                 .setSmallIcon(R.drawable.ic_file_download_24dp)
                 .setLargeIcon(icon)
                 .setContentIntent(onTapPendingIntent)
+                .setColor(getColor(R.color.colorAccent))
+                .addAction(R.drawable.download_progress, getString(R.string.service_download_see_progress), showProgressPendingIntent)
                 .addAction(R.drawable.ic_stop_black_24dp, getString(R.string.service_download_stop), onStopPendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -195,7 +203,6 @@ class DownloadService : Service() {
     private fun onDownloadProgress(progress: Double) {
         progressEvent.progress = progress
         EventBus.getDefault().post(progressEvent)
-        println("on progress $progress")
     }
 
     private fun postProcess(event: RequestDownloadMapEvent) {

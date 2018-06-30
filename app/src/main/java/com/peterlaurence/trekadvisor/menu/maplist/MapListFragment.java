@@ -27,7 +27,7 @@ import com.peterlaurence.trekadvisor.core.download.UrlDownloadTaskExecutor;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
-import com.peterlaurence.trekadvisor.menu.maplist.dialogs.MapDownloadDialog;
+import com.peterlaurence.trekadvisor.menu.maplist.dialogs.UrlDownloadDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadFinishedEvent;
 import com.peterlaurence.trekadvisor.util.ZipTask;
@@ -198,8 +198,8 @@ public class MapListFragment extends Fragment implements
     }
 
     private void showSampleMapDownloadDialog() {
-        MapDownloadDialog mapDownloadDialog = MapDownloadDialog.newInstance("World map", mDefaultMapUrl);
-        mapDownloadDialog.show(getFragmentManager(), MapDownloadDialog.class.getName());
+        UrlDownloadDialog urlDownloadDialog = UrlDownloadDialog.newInstance("World map", mDefaultMapUrl);
+        urlDownloadDialog.show(getFragmentManager(), UrlDownloadDialog.class.getName());
 
         final File outputFile = new File(TrekAdvisorContext.DEFAULT_APP_DIR, "world-map.zip");
         final int urlHash = mDefaultMapUrl.hashCode();

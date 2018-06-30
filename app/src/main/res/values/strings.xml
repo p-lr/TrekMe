@@ -19,6 +19,11 @@
     <string name="service_download_name">Download service</string>
     <string name="service_download_action">Map download</string>
     <string name="service_download_stop">Stop</string>
+    <string name="service_download_see_progress">See Progress</string>
+
+    <!-- MapDownloadDialog -->
+    <string name="map_download_dialog_title">Current map download</string>
+    <string name="map_download_dialog_progress">Progress</string>
 
     <!-- Map list fragment -->
     <string name="no_maps_found_warning">No maps found on the SD card, "trekadvisor" folder.\nDo you wish to download a sample map? (~14.5Mb)</string>

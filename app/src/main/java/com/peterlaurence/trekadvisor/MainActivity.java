@@ -2,6 +2,7 @@ package com.peterlaurence.trekadvisor;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -31,6 +32,7 @@ import com.peterlaurence.trekadvisor.core.mapsource.MapSource;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
+import com.peterlaurence.trekadvisor.menu.dialogs.MapDownloadDialog;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
 import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity
     private static final String RECORD_FRAGMENT_TAG = "gpxFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
+    private static final String MAP_DOWNLOAD_DIALOG_TAG = "mapDownloadDialog";
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
             new ArrayList<String>() {{
                 add(MAP_FRAGMENT_TAG);
@@ -90,6 +93,7 @@ public class MainActivity extends AppCompatActivity
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
                 add(MARKER_MANAGE_FRAGMENT_TAG);
                 add(RECORD_FRAGMENT_TAG);
+                add(MAP_DOWNLOAD_DIALOG_TAG);
             }});
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -264,6 +268,18 @@ public class MainActivity extends AppCompatActivity
         }
 
         return true;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if ("show-progress".equals(intent.getAction())) {
+            if (getSupportFragmentManager().findFragmentByTag(MAP_DOWNLOAD_DIALOG_TAG) == null) {
+                MapDownloadDialog mapDownloadDialog = new MapDownloadDialog();
+                mapDownloadDialog.show(getSupportFragmentManager(), MAP_DOWNLOAD_DIALOG_TAG);
+            }
+        }
     }
 
     @Override
