@@ -46,10 +46,17 @@ public class DownloadTask extends Thread {
             /* This will be useful so that you can show a typical 0-100% progress bar */
             int fileLength = connection.getContentLength();
 
-            /* Download the file */
-            InputStream input = new BufferedInputStream(connection.getInputStream());
+            /* Create the output file if it doesn't exists */
+            if (!mOutputFile.exists()) {
+                /* Silently exit if the file could not be created */
+                if (!mOutputFile.createNewFile()) {
+                    mCancelSig = true;
+                }
+            }
             OutputStream output = new FileOutputStream(mOutputFile);
 
+            /* Download the file */
+            InputStream input = new BufferedInputStream(connection.getInputStream());
             byte data[] = new byte[1024];
             long total = 0;
             int count;
