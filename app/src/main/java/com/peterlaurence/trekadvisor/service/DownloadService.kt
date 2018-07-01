@@ -1,10 +1,11 @@
 package com.peterlaurence.trekadvisor.service
 
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -128,6 +129,16 @@ class DownloadService : Service() {
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
+        /* This is only needed on Devices on Android O and above */
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val chan = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_download_name), NotificationManager.IMPORTANCE_DEFAULT)
+            chan.enableLights(true)
+            chan.lightColor = Color.MAGENTA
+            notificationManager.createNotificationChannel(chan)
+            notificationBuilder.setChannelId(NOTIFICATION_ID)
+        }
+
         startForeground(SERVICE_ID, notificationBuilder.build())
 
         started = true
@@ -228,6 +239,7 @@ class DownloadService : Service() {
 
                     override fun onMapImportError(e: MapImporter.MapParseException) {
                         EventBus.getDefault().post(MapDownloadEvent(Status.IMPORT_ERROR))
+                        e.printStackTrace()
                     }
                 })
     }
