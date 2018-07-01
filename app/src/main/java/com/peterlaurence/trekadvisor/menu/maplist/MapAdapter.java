@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author peterLaurence on 26/12/15.
  */
-public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> implements MapLoader.MapListUpdateListener {
+public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     private List<Map> maps;
     private MapSelectionListener mMapSelectionListener;
     private MapSettingsListener mMapSettingsListener;
@@ -53,8 +53,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> i
         mColorBlackText = blackTextColor;
     }
 
-    @Override
-    public void onMapListUpdate(boolean mapsFound) {
+    void onMapListUpdate(boolean mapsFound) {
         if (mapsFound) {
             maps = MapLoader.getInstance().getMaps();
             notifyDataSetChanged();

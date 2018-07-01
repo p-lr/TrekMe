@@ -26,6 +26,7 @@ import com.peterlaurence.trekadvisor.core.download.DownloadTask;
 import com.peterlaurence.trekadvisor.core.download.UrlDownloadTaskExecutor;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.core.map.maploader.events.MapListUpdateEvent;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.UrlDownloadDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
@@ -50,11 +51,11 @@ import static android.content.Context.NOTIFICATION_SERVICE;
 public class MapListFragment extends Fragment implements
         MapAdapter.MapSelectionListener,
         MapAdapter.MapSettingsListener,
-        MapAdapter.MapArchiveListener,
-        MapLoader.MapListUpdateListener {
+        MapAdapter.MapArchiveListener {
 
     private FrameLayout rootView;
     private RecyclerView recyclerView;
+    private MapAdapter adapter;
 
     private OnMapListFragmentInteractionListener mListener;
 
@@ -152,16 +153,12 @@ public class MapListFragment extends Fragment implements
         LinearLayoutManager llm = new LinearLayoutManager(ctx);
         recyclerView.setLayoutManager(llm);
 
-        MapAdapter adapter = new MapAdapter(null, this, this, this,
+        adapter = new MapAdapter(null, this, this, this,
                 ctx.getColor(R.color.colorAccent),
                 ctx.getColor(R.color.colorPrimaryTextWhite),
                 ctx.getColor(R.color.colorPrimaryTextBlack));
 
-        /**
-         * The {@link MapAdapter} and this fragment are interested by the map list update event.
-         */
-        MapLoader.getInstance().addMapListUpdateListener(adapter);
-        MapLoader.getInstance().addMapListUpdateListener(this);
+
         MapLoader.getInstance().clearAndGenerateMaps();
         recyclerView.setAdapter(adapter);
 
@@ -176,12 +173,16 @@ public class MapListFragment extends Fragment implements
         }
     }
 
-    @Override
-    public void onMapListUpdate(boolean mapsFound) {
+    /**
+     * This fragment and its {@link MapAdapter} are interested by the map list update event.
+     */
+    @Subscribe
+    public void onMapListUpdate(MapListUpdateEvent event) {
         rootView.findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        adapter.onMapListUpdate(event.mapsFound);
 
         /* If no maps found, suggest to download a sample map */
-        if (!mapsFound) {
+        if (!event.mapsFound) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
             builder.setMessage(getString(R.string.no_maps_found_warning))
                     .setCancelable(false)
@@ -230,8 +231,6 @@ public class MapListFragment extends Fragment implements
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
-        MapLoader.getInstance().clearMapListUpdateListener();
     }
 
     @Override

@@ -29,9 +29,7 @@ class MapDownloadDialog : DialogFragment() {
         when (event.status) {
             Status.PENDING -> progressBar.progress = event.progress.toInt()
             Status.FINISHED -> {
-                if (event.status == Status.FINISHED) {
-                    dismiss()
-                }
+                dismiss()
             }
             Status.IMPORT_ERROR -> {
                 // Display an error message

@@ -19,7 +19,7 @@ import java.util.List;
  * @author peterLaurence on 30/04/17.
  */
 public class MapUpdateTask extends AsyncTask<File, Void, Void> {
-    List<MapLoader.MapListUpdateListener> mListenerList;
+    MapLoader.MapListUpdateListener mListener;
     Gson mGson;
     List<Map> mMapList;
 
@@ -27,11 +27,11 @@ public class MapUpdateTask extends AsyncTask<File, Void, Void> {
     private static final int MAX_RECURSION_DEPTH = 6;
     private static final String TAG = "MapUpdateTask";
 
-    public MapUpdateTask(@Nullable List<MapLoader.MapListUpdateListener> listener,
+    public MapUpdateTask(@Nullable MapLoader.MapListUpdateListener listener,
                          Gson gson,
                          List<Map> mapList) {
         super();
-        mListenerList = listener;
+        mListener = listener;
         mGson = gson;
         mMapList = mapList;
         mapFilesFoundList = new ArrayList<>();
@@ -102,10 +102,8 @@ public class MapUpdateTask extends AsyncTask<File, Void, Void> {
 
     @Override
     protected void onPostExecute(Void result) {
-        if (mListenerList != null) {
-            for (MapLoader.MapListUpdateListener listUpdateListener : mListenerList) {
-                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
-            }
+        if (mListener != null) {
+            mListener.onMapListUpdate(mMapList.size() > 0);
         }
     }
 }

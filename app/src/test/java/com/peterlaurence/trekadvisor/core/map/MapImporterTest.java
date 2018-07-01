@@ -93,7 +93,7 @@ public class MapImporterTest {
                     }
                 };
                 MapLoader mapLoader = MapLoader.getInstance();
-                mapLoader.addMapListUpdateListener(mapListUpdateListener);
+                mapLoader.setMapListUpdateListener(mapListUpdateListener);
 
                 MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, null);
             }

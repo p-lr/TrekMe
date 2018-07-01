@@ -77,7 +77,7 @@ public class MapParserTest {
 
             MapLoader mapLoader = MapLoader.getInstance();
             mapLoader.setMapRouteUpdateListener(mapRouteUpdateListener);
-            mapLoader.addMapListUpdateListener(mapListUpdateListener);
+            mapLoader.setMapListUpdateListener(mapListUpdateListener);
             mapLoader.clearAndGenerateMaps(dirs);
             mapLoader.getRoutesForMap(map[0]);
         }

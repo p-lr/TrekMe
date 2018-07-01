@@ -71,7 +71,7 @@ public class MapLoader implements MapImporter.MapImportListener {
     private static final String TAG = "MapLoader";
     private Gson mGson;
     private List<Map> mMapList;
-    private List<MapListUpdateListener> mMapListUpdateListeners;
+    private MapListUpdateListener mMapListUpdateListener;
     private MapMarkerUpdateListener mMapMarkerUpdateListener;
     private MapRouteUpdateListener mMapRouteUpdateListener;
     private List<MapArchive> mMapArchiveList;
@@ -89,7 +89,6 @@ public class MapLoader implements MapImporter.MapImportListener {
         mGson = new GsonBuilder().serializeNulls().setPrettyPrinting().
                 registerTypeAdapterFactory(factory).create();
 
-        mMapListUpdateListeners = new ArrayList<>();
         mMapList = new ArrayList<>();
 
         /* Init the application context (create folders, etc) */
@@ -119,7 +118,7 @@ public class MapLoader implements MapImporter.MapImportListener {
 
     /**
      * Clear and sets the internal list of {@link Map} : {@code mMapList}. <br>
-     * Once done, all of the registered {@link MapListUpdateListener} are called.
+     * Once done, the registered {@link MapListUpdateListener} is called.
      *
      * @param dirs The directories in which to search for maps. If not specified, a default value is
      *             taken.
@@ -140,7 +139,7 @@ public class MapLoader implements MapImporter.MapImportListener {
      * @param dirs The directories in which to search for new maps.
      */
     public void generateMaps(File... dirs) {
-        MapUpdateTask updateTask = new MapUpdateTask(mMapListUpdateListeners, mGson, mMapList);
+        MapUpdateTask updateTask = new MapUpdateTask(mMapListUpdateListener, mGson, mMapList);
         updateTask.execute(dirs);
     }
 
@@ -207,8 +206,8 @@ public class MapLoader implements MapImporter.MapImportListener {
         return null;
     }
 
-    public void addMapListUpdateListener(MapListUpdateListener listener) {
-        mMapListUpdateListeners.add(listener);
+    public void setMapListUpdateListener(MapListUpdateListener listener) {
+        mMapListUpdateListener = listener;
     }
 
     public void setMapMarkerUpdateListener(MapMarkerUpdateListener listener) {
@@ -217,10 +216,6 @@ public class MapLoader implements MapImporter.MapImportListener {
 
     public void setMapRouteUpdateListener(MapRouteUpdateListener listener) {
         mMapRouteUpdateListener = listener;
-    }
-
-    public void clearMapListUpdateListener() {
-        mMapListUpdateListeners.clear();
     }
 
     public void clearMapMarkerUpdateListener() {
@@ -355,11 +350,7 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapList.remove(map);
 
         /* Notify for view update */
-        if (mMapListUpdateListeners != null) {
-            for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
-                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
-            }
-        }
+        notifyMapListUpdateListeners();
 
         /* Delete the map directory in a separate thread */
         MapDeleteTask mapDeleteTask = new MapDeleteTask(mapDirectory);
@@ -400,10 +391,8 @@ public class MapLoader implements MapImporter.MapImportListener {
     }
 
     private void notifyMapListUpdateListeners() {
-        if (mMapListUpdateListeners != null) {
-            for (MapListUpdateListener listUpdateListener : mMapListUpdateListeners) {
-                listUpdateListener.onMapListUpdate(mMapList.size() > 0);
-            }
+        if (mMapListUpdateListener != null) {
+            mMapListUpdateListener.onMapListUpdate(mMapList.size() > 0);
         }
     }
 

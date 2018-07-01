@@ -27,6 +27,7 @@ import android.view.View;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.core.map.maploader.events.MapListUpdateEvent;
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials;
@@ -180,6 +181,8 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        initMapLoader();
+
         fragmentManager = this.getSupportFragmentManager();
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -204,6 +207,14 @@ public class MainActivity extends AppCompatActivity
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
         }
+    }
+
+    /**
+     * The {@link MapLoader} is agnostic of the way events are propagated.
+     */
+    private void initMapLoader() {
+        MapLoader.getInstance().setMapListUpdateListener(
+                mapsFound -> EventBus.getDefault().post(new MapListUpdateEvent(mapsFound)));
     }
 
     /**
