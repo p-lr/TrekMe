@@ -8,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.download.UrlDownloadTaskExecutor;
@@ -55,7 +56,11 @@ public class UrlDownloadDialog extends DialogFragment {
     public void onDownloadFinished(UrlDownloadFinishedEvent event) {
         if (event.urlHash != mUrlHashCode) return;
         if (!event.success) {
-            //TODO : alert the user
+            /* Use toast here, easier than a SnackBar which requires a view reference */
+            Toast toast = Toast.makeText(getContext(), R.string.import_error, Toast.LENGTH_SHORT);
+            toast.show();
+
+            dismiss();
         }
     }
 

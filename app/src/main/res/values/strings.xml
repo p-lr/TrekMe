@@ -86,6 +86,7 @@
     <string name="extraction_error">Extraction error</string>
     <string name="snack_msg_show_map_list">Show map list?</string>
     <string name="confirm_import">You can now import the map</string>
+    <string name="import_error">An error occurred. Try restart the app.</string>
 
     <!-- Menu of the map view fragment -->
     <string name="manage_tracks_menu">Manage tracks</string>

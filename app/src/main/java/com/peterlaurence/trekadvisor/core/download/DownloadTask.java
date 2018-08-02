@@ -75,14 +75,19 @@ public class DownloadTask extends Thread {
             output.close();
             input.close();
         } catch (IOException e) {
+            mCancelSig = true;
             /* In that case the progress is lower than 100.. */
             e.printStackTrace();
         }
 
-        if (percentProgress == 100) {
-            mUrlDownloadListener.onDownloadFinished(true);
-        } else {
+        if (mCancelSig) {
             mUrlDownloadListener.onDownloadFinished(false);
+        } else {
+            if (percentProgress == 100) {
+                mUrlDownloadListener.onDownloadFinished(true);
+            } else {
+                mUrlDownloadListener.onDownloadFinished(false);
+            }
         }
     }
 

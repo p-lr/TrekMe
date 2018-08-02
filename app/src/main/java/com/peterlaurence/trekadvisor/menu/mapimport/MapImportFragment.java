@@ -3,6 +3,7 @@ package com.peterlaurence.trekadvisor.menu.mapimport;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,7 +11,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.events.MapArchiveListUpdateEvent;
@@ -31,7 +31,7 @@ import org.greenrobot.eventbus.ThreadMode;
 public class MapImportFragment extends Fragment {
 
     private static String CREATE_FROM_SCREEN_ROTATE = "create";
-    private FrameLayout rootView;
+    private ConstraintLayout rootView;
     private RecyclerView mRecyclerView;
     private MapArchiveAdapter mMapArchiveAdapter;
     private OnMapArchiveFragmentInteractionListener mListener;
@@ -61,7 +61,7 @@ public class MapImportFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        rootView = (FrameLayout) inflater.inflate(R.layout.fragment_map_import, container, false);
+        rootView = (ConstraintLayout) inflater.inflate(R.layout.fragment_map_import, container, false);
 
         mRecyclerView = new RecyclerView(getContext());
         mRecyclerView.setHasFixedSize(false);
@@ -161,7 +161,7 @@ public class MapImportFragment extends Fragment {
     }
 
     private void hideProgressBar() {
-        rootView.findViewById(R.id.import_main_panel).setVisibility(View.GONE);
+        rootView.findViewById(R.id.progress_import_frgmt).setVisibility(View.GONE);
     }
 
     @Override
