@@ -2,13 +2,12 @@
 
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cv_map_archive"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-
-    card_view:cardCornerRadius="5dp">
+    card_view:cardCornerRadius="0dp"
+    card_view:cardElevation="0dp">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/map_archive_contraint_layout"
@@ -151,6 +150,7 @@
             android:visibility="gone"
             card_view:layout_constraintTop_toBottomOf="@+id/extraction_done"
             card_view:layout_constraintLeft_toLeftOf="parent"
+            card_view:layout_constraintBottom_toTopOf="@+id/unzip_archive_btn"
             tools:layout_height="16dp"
             tools:layout_width="36dp" />
     </android.support.constraint.ConstraintLayout>

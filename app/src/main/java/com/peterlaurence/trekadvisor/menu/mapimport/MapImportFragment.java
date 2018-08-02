@@ -1,11 +1,13 @@
 package com.peterlaurence.trekadvisor.menu.mapimport;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -31,7 +33,6 @@ import org.greenrobot.eventbus.ThreadMode;
 public class MapImportFragment extends Fragment {
 
     private static String CREATE_FROM_SCREEN_ROTATE = "create";
-    private ConstraintLayout rootView;
     private RecyclerView mRecyclerView;
     private MapArchiveAdapter mMapArchiveAdapter;
     private OnMapArchiveFragmentInteractionListener mListener;
@@ -61,23 +62,11 @@ public class MapImportFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        rootView = (ConstraintLayout) inflater.inflate(R.layout.fragment_map_import, container, false);
-
-        mRecyclerView = new RecyclerView(getContext());
-        mRecyclerView.setHasFixedSize(false);
-
-        LinearLayoutManager llm = new LinearLayoutManager(getContext());
-        mRecyclerView.setLayoutManager(llm);
-
-        mMapArchiveAdapter = new MapArchiveAdapter();
-        mRecyclerView.setAdapter(mMapArchiveAdapter);
-
-        rootView.addView(mRecyclerView, 0);
-        return rootView;
+        return inflater.inflate(R.layout.fragment_map_import, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mView = view;
@@ -90,6 +79,24 @@ public class MapImportFragment extends Fragment {
                 mCreateAfterScreenRotation = true;
             }
         }
+
+        mRecyclerView = view.findViewById(R.id.recyclerview_map_import);
+        mRecyclerView.setHasFixedSize(false);
+
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
+        mRecyclerView.setLayoutManager(llm);
+
+        mMapArchiveAdapter = new MapArchiveAdapter();
+        mRecyclerView.setAdapter(mMapArchiveAdapter);
+
+        /* Item decoration : divider */
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(view.getContext(),
+                DividerItemDecoration.VERTICAL);
+        Drawable divider = view.getContext().getDrawable(R.drawable.divider);
+        if (divider != null) {
+            dividerItemDecoration.setDrawable(divider);
+        }
+        mRecyclerView.addItemDecoration(dividerItemDecoration);
     }
 
     @Override
@@ -161,7 +168,7 @@ public class MapImportFragment extends Fragment {
     }
 
     private void hideProgressBar() {
-        rootView.findViewById(R.id.progress_import_frgmt).setVisibility(View.GONE);
+        mView.findViewById(R.id.progress_import_frgmt).setVisibility(View.GONE);
     }
 
     @Override
