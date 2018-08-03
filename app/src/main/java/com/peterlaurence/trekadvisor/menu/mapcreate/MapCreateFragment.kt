@@ -21,6 +21,7 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var mapSourceSet: Array<MapSource>
     private lateinit var nextButton: Button
+    private lateinit var settingsButton: Button
 
     private lateinit var selectedMapSource: MapSource
     private lateinit var fragmentListener: MapCreateFragmentInteractionListener
@@ -49,6 +50,9 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         nextButton = view.findViewById(R.id.next_button)
         nextButton.setOnClickListener { fragmentListener.onMapSourceSelected(selectedMapSource) }
 
+        settingsButton = view.findViewById(R.id.mapcreate_settings_button)
+        settingsButton.setOnClickListener { fragmentListener.onMapSourceSettings(selectedMapSource) }
+
         val viewManager = LinearLayoutManager(context)
         viewAdapter = MapSourceAdapter(mapSourceSet, this, context?.getColor(R.color.colorAccent)
                 ?: Color.BLUE,
@@ -74,6 +78,7 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
 
     override fun onMapSourceSelected(m: MapSource) {
         selectedMapSource = m
+        settingsButton.visibility = View.VISIBLE
         nextButton.visibility = View.VISIBLE
     }
 
@@ -85,5 +90,6 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
      */
     interface MapCreateFragmentInteractionListener {
         fun onMapSourceSelected(mapSource: MapSource)
+        fun onMapSourceSettings(mapSource: MapSource)
     }
 }

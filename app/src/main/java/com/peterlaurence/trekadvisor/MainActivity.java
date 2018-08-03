@@ -860,4 +860,19 @@ public class MainActivity extends AppCompatActivity
                 /* Unknown map source */
         }
     }
+
+
+    @Override
+    public void onMapSourceSettings(@NotNull MapSource mapSource) {
+        switch (mapSource) {
+            case IGN:
+                showIgnCredentialsFragment();
+                break;
+            case OPEN_STREET_MAP:
+                // show OSM settings
+                break;
+            default:
+                /* Unknown map source */
+        }
+    }
 }
