@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
 
 import android.os.Bundle
+import android.support.v7.preference.EditTextPreference
 import android.support.v7.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials
@@ -15,21 +16,30 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.ign_credentials_settings)
 
-        val ignUserPreference = findPreference(getString(R.string.ign_user))
+        /* Init values from the credentials */
+        val ignCredentials = MapSourceCredentials.getIGNCredentials()
+        ignUser = ignCredentials?.user ?: ""
+        ignPwd = ignCredentials?.pwd ?: ""
+        ignApiKey = ignCredentials?.api ?: ""
+
+        val ignUserPreference = findPreference(getString(R.string.ign_user)) as EditTextPreference
+        ignUserPreference.text = ignUser
         ignUserPreference.setOnPreferenceChangeListener { _, ignUser ->
             this.ignUser = ignUser as String
             saveCredentials()
             true
         }
 
-        val ignPwdPreference = findPreference(getString(R.string.ign_pwd))
+        val ignPwdPreference = findPreference(getString(R.string.ign_pwd)) as EditTextPreference
+        ignPwdPreference.text = ignPwd
         ignPwdPreference.setOnPreferenceChangeListener { _, ignPwd ->
             this.ignPwd = ignPwd as String
             saveCredentials()
             true
         }
 
-        val ignApiKeyPreference = findPreference(getString(R.string.ign_api_key))
+        val ignApiKeyPreference = findPreference(getString(R.string.ign_api_key)) as EditTextPreference
+        ignApiKeyPreference.text = ignApiKey
         ignApiKeyPreference.setOnPreferenceChangeListener { _, ignApiKey ->
             this.ignApiKey = ignApiKey as String
             saveCredentials()
@@ -40,7 +50,6 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
     private fun saveCredentials() {
         if (this::ignUser.isInitialized && this::ignPwd.isInitialized && this::ignApiKey.isInitialized) {
             MapSourceCredentials.saveIGNCredentials(IGNCredentials(ignUser, ignPwd, ignApiKey))
-            println("credentials saved")
         }
     }
 }
