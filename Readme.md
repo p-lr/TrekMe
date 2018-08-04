@@ -43,10 +43,52 @@ The only limitation is the memory available on your device (smartphone, tablet).
 
 * Support more map sources (USGS, OpenStreetMap, etc.)
 
-## <a name="TOC-TrekAdvisor-Users"></a>TrekAdvisor Users
+## <a name="TOC-Create-a-map"></a>Create a map
 
-TrekAdvisor is designed for people with basic understanding of
-localisation on a map. However, efforts are made to make this app as easy
+The are three ways to create a map:
+1. Select an area from an official source provider like IGN or USGS
+2. Import from an archive
+3. Make it yourself (the hard way)
+
+The preferred and easiest way is the first one. Below are detailed each methods.
+
+### <a name="TOC-Select-area"></a>Select an area
+
+In this mode, you use a specific map provider. Google map is a well known example of map provider. 
+But their map aren't ideal for hiking. When possible, it is better to use maps with more terrain
+details. 
+
+For example, France's IGN is ideal when you are in France and its territories (Guadeloupe, Martinique,
+Réunion, Tahiti, etc.). There is also USGS for the USA. But not all countries have similar service, 
+so sometimes you will have to fallback to OpenStreetMap or Google map.
+
+Some providers require you to subscribe to download their maps. This step is free for individuals, 
+unless you have specific needs like heavy loads for your organization.
+
+[TODO: link here a guide]()
+
+### <a name="TOC-Import-from-archive"></a>Import from an archive
+
+In this mode you use an archive made from an existing TrekAdvisor map. The archive can be made by
+yourself or someone else.
+A map can be archived from the map list menu, using the save button at the bottom right corner:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/43673418-3522e7da-97c3-11e8-8173-0fecd1d02fbd.jpg">
+</p>
+
+This creates a zip file (which we call archive) inside the `trekadvisor/archives` folder of your device's SD card.
+To use someone else's archive:
+1. Copy the zip file inside the `trekadvisor` folder or any of its subdirectories
+2. Menu > Import
+3. Click the import button of the archive of your choice
+
+This archive feature can also be used for backup purposes, as everything related to the map is saved
+(calibration, routes, points of interest, etc.).
+
+### <a name="TOC-The-hard-way"></a>Manual map creation - the hard way
+
+In this mode, basic understanding of localisation on a map is required. However, efforts are made to make this app as easy
 to use as possible.
 
 Without any cartographic knowledge, e.g if terms of
@@ -58,144 +100,8 @@ It is not as complicated as it looks.
 
 Beginners are strongly advised to read the Technical Basis from the [User Guide](UserGuide.md).
 
+Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
 
-## <a name="TOC-How-does-it-work"></a>How does it work?
-
-TrekAdvisor works with maps that you put on your SD card in the "trekadvisor" folder on the devices's 
-external storage (SD card). The format of the map is discussed later.
-For instance, that step is manual so you have to do the copy/paste of the map on your phone by yourself.
-Hopefully this will be simplified on a future version, so a map located on your computer would be
-imported from the app.
-
-## <a name="TOC-Create-a-map"></a>Create a map
-
-TrekAdvisor can load maps that were originally (huge) files. As no device is able to show a huge
-image without running out of memory, it is cut into tiles and only the visible subset of them are
-displayed.
-
-The process of tiling a huge image can be resources demanding, and may require quite some time on
-an android device. Not to mention that the original file would have to fit in memory.
-To reduce the time needed for map preparation and have less limitations, that part is made on a computer.
-Then, when the image is tiled, the map is (almost) ready to be put on the phone. 
-The next section is the recommended way to do this.
-
-### <a name="TOC-Image-tiling"></a>Image tiling
-
-An excellent tool for image processing, and by extension image tiling, is [Libvips](https://github.com/jcupitt/libvips).
-Actually, TrekAdvisor only supports maps produced with that tool (for instance, but that may change in the future).
-
-#### <a name="TOC-Libvips"></a>Libvips installation
-
-Libvips is supported on Linux and Windows. It can be used from the command line (the most easy way).
-
-* For Linux
-
-  Libvips is packaged in most distributions. For example, on Ubuntu it can be installed with :
-  ```
-  sudo apt install libvips
-  ```
-* For Windows
-
-  Libvips binaries can be downloaded from [here](http://www.vips.ecs.soton.ac.uk/supported/current/win32/).
-  The executables are under the "bin" folder of the extracted archive.
-
-#### <a name="TOC-Using-Libvips"></a>Using Libvips
-
-If we want to tile the image named big_image.png :
-
-* On Linux
-
-  ```
-  vips dzsave big_image.png output --layout=google --tile-size=256 --suffix .jpg --vips-progress
-  ```
-
-* On Windows
-
-  For convenience, you can execute `vips.exe` in the image's parent directory. You can right-click
-  in the folder while holding the left Shift keystroke, then "Execute a command here".
-
-  ```
-  vips.exe dzsave big_image.png output --layout=google --tile-size=256 --suffix .jpg --vips-progress
-  ```
-In that command, you can specify :
-* the size of tiles, with the option `--tile-size`
-* the quality and format of the tiles. For example, using `.jpg[Q=90]` will increase the quality but
-also the size in MB of map.
-
-At the end of the tiling process, a folder "output" is created. You can rename it to whatever name
-you like. That folder contains several subfolders that are number-named (0, 1, 2, etc). Each subfolder
-corresponds to a level of the map. This is important for the next step.
-
-### <a name="TOC-Import-the-map"></a>Import the map on your device
-
-Once the map is tiled and the configuration file created, we just have to put it on the device,
-under the <b>trekadvisor</b> folder.<br>
-However, transfering a folder containing numerous little files may be (very) slow. This is why
-it is recommended to create a zip archive from the produced "output" folder, and put it in
-<b>trekadvisor</b> folder. That will be much faster.
-
-Then, launch TrekAdvisor and open the Import menu. You should see the zip file in the list. Just
-press the "Import" button, and at the end of the process the map will appear in the list of available
-maps.
-
-Imported maps are extracted in the same directory the of the zip file. To avoid accidental overrides of
-existing maps, it is recommended to place zip files in a subdirectory under the "trekadvisor" folder.
-You can give this subdirectory the name you want.
-
-Once a map is imported, it can be viewed by selecting it in the "Map Choice" panel of the app. But,
-it's not yet calibrated (sadly, that part can't be automated). See next section.
-
-
-### <a name="TOC-Calibration"></a>Map calibration
-
-The last step. A lot of effort has been made to simplify this. The map is on the device, it can be
-displayed, but TrekAdvisor needs to know at least two calibration points for the location functionality
-to work.<br>
-In TrekAdvisor, under the list of maps, a settings button for each map gives access to the calibration, 
-among other things.
-
-For example, if you only know the latitude and longitude of two points and you have no idea what projection
-was used to make this map, just set the projection to "None", the number of calibration points to 2 (the
-default), and press the "Define calibration points" button to access the calibration screen.
-
-The map will appear with a reticule on it, with an interface to select the calibration point currently
-edited. Drag the reticule to the exact position of the first calibration point and enter the values of
-latitude and longitude in <b>decimal degrees</b>. You can enter negative values.<br>
-Beware not to confuse between latitude and longitude. When you are satisfied with the values, save your
-changes and hit the second calibration point button and repeat the procedure.
-
-Don't forget to save your changes!
-
-Once the two calibration points are defined <b>and</b> saved, the map is ready to use (go back to the map
-list and open the calibrated map).
-
-PS : for best accuracy, it is advised to zoom the map during the calibration process before positioning
-the reticule. You can edit the calibration of a map at any time and fix the position of each calibration
-if needed. Again, don't forget to save your changes.
-
-
-## <a name="TOC-Supported_projections"></a>Supported projections
-
-
-1. Popular Visualisation Pseudo-Mercator (EPSG:3856)
-
-   This projection is very popular as it is used by Google for their projected CRS EPSG:3857, used
-   in Google Map for example.
-
-2. Universal Transverse Mercator (UTM).
-
-   It can be used with setting, for example, the projection in map.json (advanced usage only):
-
-   ```
-   "projection": {
-     "projection_name": "Universal Transverse Mercator",
-     "zone": 14,
-     "hemisphere": "N"
-   }
-   ```
-
-   Possible values for "hemisphere" are "N" or "S".
-   Possible values for "zone" are 1 to 60.
    
 ## <a name="TOC-Features"></a>Features
 
