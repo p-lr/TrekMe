@@ -22,14 +22,15 @@ TrekAdvisor is an Android app to get live position on a map and other useful inf
 ever needing an internet connection.
 It differs from other map apps in the source of maps.
 Usually, a map is downloaded from the internet and is sometimes cached for an offline access (e.g google map).
-TrekAdvisor is designed for people willing to use <b>their own</b> map. If you
-possess a paper map and you want to use it for your next trek, just scan it,
-prepare and view it in TrekAdvisor. It also works if you possess a map as a huge single file (several Gb),
-as TrekAdvisor is designed to work with arbitrary map size. The only limitation
-is the memory available on your device (smartphone, tablet).
+TrekAdvisor is designed for people willing to use particular maps like USGS in USA, or IGN in France for example.
+You can also use your own map if you possess a paper map and you want to use it for your next trek.
+In this case, just scan it, then prepare and view it in TrekAdvisor (see below). It also works if you
+possess a huge single file (several Gb), as TrekAdvisor is designed to work with arbitrary map size.
+The only limitation is the memory available on your device (smartphone, tablet).
 
 ## <a name="TOC-Features-sum"></a>Features summary
 
+* Support in-app map creation from France's IGN source
 * Marker support (with optional comments)
 * GPX tracks import
 * Lock the view to the current position
@@ -40,7 +41,7 @@ is the memory available on your device (smartphone, tablet).
 
 ### On TODO list
 
-* Develop in-app map creation
+* Support more map sources (USGS, OpenStreetMap, etc.)
 
 ## <a name="TOC-TrekAdvisor-Users"></a>TrekAdvisor Users
 
