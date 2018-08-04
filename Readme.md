@@ -39,7 +39,7 @@ The only limitation is the memory available on your device (smartphone, tablet).
 
 ## <a name="TOC-Create-a-map"></a>Create a map
 
-The are three ways to create a map:
+There are three ways to create a map:
 1. Select an area from an official source provider like IGN or USGS
 2. Import from an archive
 3. Make it yourself (the hard way)
@@ -49,7 +49,7 @@ The preferred and easiest way is the first one. Below are detailed each methods.
 ### <a name="TOC-Select-area"></a>Select an area
 
 In this mode, you use a specific map provider. Google map is a well known example of map provider. 
-But their map aren't ideal for hiking. When possible, it is better to use maps with more terrain
+But their maps aren't ideal for hiking. When possible, it is better to use maps with more terrain
 details. 
 
 For example, France's IGN is ideal when you are in France and its territories (Guadeloupe, Martinique,

@@ -1,3 +1,7 @@
+# Manual map creation
+
+**Summary**
+
 1. [Introduction](#TOC-Intro)
 2. [Create a map](#TOC-Create-a-map)
   * [Image tiling](#TOC-Image-tiling)
@@ -8,7 +12,7 @@
   * [Map calibration](#TOC-Calibration)
 3. [Supported projections](#TOC-Supported_projections)
 
-# <a name="TOC-Intro"></a>Manual map creation
+# <a name="TOC-Intro"></a>Introduction
 
 Manual map creation is required when no suitable map provider can produce the desired map, or we have
 a file that we want to put inside TrekAdvisor.
