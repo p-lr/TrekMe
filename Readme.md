@@ -2,17 +2,11 @@
 
 1. [Overview](#TOC-Overview)
 2. [Features summary](#TOC-Features-sum)
-3. [TrekAdvisor Users](#TOC-TrekAdvisor-Users)
-4. [How does it work?](#TOC-How-does-it-work)
-5. [Create a map](#TOC-Create-a-map)
-  * [Image tiling](#TOC-Image-tiling)
-    * [Libvips installation](#TOC-Libvips)
-    * [Using Libvips](#TOC-Using-Libvips)
-  * [Configure the map](#TOC-Configure-the-map)
-  * [Import](#TOC-Import)
-  * [Map calibration](#TOC-Calibration)
-6. [Supported projections](#TOC-Supported_projections)
-7. [Features](#TOC-Features)
+3. [Create a map](#TOC-Create-a-map)
+  * [Select an area](#TOC-Select-area)
+  * [From an archive](#TOC-Import-from-archive)
+  * [Manual map creation](#TOC-The-hard-way)
+4. [Features](#TOC-Features)
   * [Import a GPX track](#TOC-GPX-track-import)
 
 
