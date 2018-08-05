@@ -22,7 +22,8 @@ import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Tile
 import com.peterlaurence.trekadvisor.core.projection.MercatorProjection
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvider
-import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderIgn
+import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderAuth
+import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderIgn
 import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnWmtsDialog
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekadvisor.service.event.MapDownloadEvent
@@ -264,7 +265,8 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
             MapSource.IGN -> {
                 val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
 
-                val bitmapProvider = GenericBitmapProviderIgn(ignCredentials)
+                val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "")
+                val bitmapProvider = GenericBitmapProviderAuth(urlTileBuilder, ignCredentials.user ?: "", ignCredentials.pwd ?: "")
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }

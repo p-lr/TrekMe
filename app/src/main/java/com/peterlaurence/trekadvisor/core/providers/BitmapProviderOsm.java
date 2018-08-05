@@ -11,7 +11,7 @@ import com.qozix.tileview.tiles.Tile;
 import java.io.File;
 
 /**
- * An implementation of {@link BitmapProvider}, able to read maps from OpenStreetMap servers.
+ * An implementation of {@link BitmapProvider}, able to read maps made using OpenStreetMap format.
  */
 public class BitmapProviderOsm implements BitmapProvider {
     private final File mDirectory;

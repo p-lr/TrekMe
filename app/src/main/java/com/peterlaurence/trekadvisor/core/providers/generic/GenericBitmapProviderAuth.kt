@@ -2,26 +2,26 @@ package com.peterlaurence.trekadvisor.core.providers.generic
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Base64
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilder
 import java.io.BufferedInputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Given the level, row and col numbers, this object returns a [Bitmap] using the provided [UrlTileBuilder]
- * to build an [URL] and make an HTTP request.
+ * Same as [GenericBitmapProvider], but using basic authentication.
  */
-open class GenericBitmapProvider(open val urlTileBuilder: UrlTileBuilder, options: BitmapFactory.Options? = null) {
-    var bitmapLoadingOptions = options ?: BitmapFactory.Options()
+class GenericBitmapProviderAuth(override val urlTileBuilder: UrlTileBuilder, private val user: String, private val pwd: String,
+                                options: BitmapFactory.Options? = null) : GenericBitmapProvider(urlTileBuilder, options) {
 
-    init {
-        bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
-    }
+    override fun getBitmap(level: Int, row: Int, col: Int): Bitmap? {
 
-    open fun getBitmap(level: Int, row: Int, col: Int): Bitmap? {
         val url = URL(urlTileBuilder.build(level, row, col))
         val connection = url.openConnection() as HttpURLConnection
         connection.doInput = true
+
+        /* Set authentication */
+        connection.setAuth()
 
         return try {
             connection.connect()
@@ -36,7 +36,9 @@ open class GenericBitmapProvider(open val urlTileBuilder: UrlTileBuilder, option
         }
     }
 
-    open fun setBitmapOptions(options: BitmapFactory.Options) {
-        bitmapLoadingOptions = options
+    private fun HttpURLConnection.setAuth() {
+        val authString = "$user:$pwd"
+        val authStringEnc = String(Base64.encode(authString.toByteArray(), Base64.NO_WRAP))
+        setRequestProperty("Authorization", "Basic $authStringEnc")
     }
 }

@@ -3,7 +3,8 @@ package com.peterlaurence.trekadvisor.core.providers
 import android.content.Context
 import android.graphics.Bitmap
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials
-import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderIgn
+import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderAuth
+import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderIgn
 import com.qozix.tileview.graphics.BitmapProvider
 import com.qozix.tileview.tiles.Tile
 
@@ -16,7 +17,13 @@ import com.qozix.tileview.tiles.Tile
  * Additional information have to be provided though, like IGN credentials.
  */
 class BitmapProviderIgn(credentials: IGNCredentials) : BitmapProvider {
-    private val genericProvider = GenericBitmapProviderIgn(credentials)
+    private val genericProvider: GenericBitmapProviderAuth
+
+    init {
+        val urlTileBuilder = UrlTileBuilderIgn(credentials.api ?: "")
+        genericProvider = GenericBitmapProviderAuth(urlTileBuilder, credentials.user ?: "", credentials.pwd ?: "")
+    }
+
 
     override fun getBitmap(tile: Tile, p1: Context?): Bitmap? {
         val zoomLvl = tile.data as Int
