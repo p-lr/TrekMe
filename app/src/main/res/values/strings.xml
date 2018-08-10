@@ -144,6 +144,8 @@
     <string name="ign_source_description">France and its territories</string>
     <string name="open_street_map_source" translatable="false">OpenStreetMap</string>
     <string name="open_street_map_source_description">Free map</string>
+    <string name="usgs_map_source" translatable="false">USGS</string>
+    <string name="usgs_map_source_description">U.S. Geological Survey</string>
 
     <string name="mapcreate_define_area">Choose area</string>
     <string name="ign_wmts_settings_dialog">Map configuration</string>

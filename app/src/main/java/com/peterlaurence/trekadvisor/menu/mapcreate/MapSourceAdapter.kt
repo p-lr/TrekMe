@@ -44,6 +44,12 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
                         R.string.open_street_map_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.openstreetmap_logo, null))
             }
+            MapSource.USGS -> {
+                holder.title.text = parentView.resources.getText(R.string.usgs_map_source)
+                holder.description.text = parentView.resources.getText(
+                        R.string.usgs_map_source_description)
+                holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.usgs_logo, null))
+            }
         }
 
         /* Take the selection into account to set colors */
