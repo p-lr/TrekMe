@@ -30,6 +30,7 @@ import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.map.maploader.events.MapListUpdateEvent;
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource;
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceBundle;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
@@ -39,7 +40,7 @@ import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.MapCreateFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnCredentialsFragment;
-import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnViewFragment;
+import com.peterlaurence.trekadvisor.menu.mapcreate.providers.GoogleMapWmtsViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity
     private static final String MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment";
     private static final String MAP_CREATE_FRAGMENT_TAG = "mapCreateFragment";
     private static final String IGN_CREDENTIALS_FRAGMENT_TAG = "ignCredentialsFragment";
-    private static final String IGN_VIEW_FRAGMENT_TAG = "ignViewFragment";
+    private static final String WMTS_VIEW_FRAGMENT_TAG = "wmtsViewFragment";
     private static final String RECORD_FRAGMENT_TAG = "gpxFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_IMPORT_FRAGMENT_TAG);
                 add(MAP_CREATE_FRAGMENT_TAG);
                 add(IGN_CREDENTIALS_FRAGMENT_TAG);
-                add(IGN_VIEW_FRAGMENT_TAG);
+                add(WMTS_VIEW_FRAGMENT_TAG);
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
                 add(MARKER_MANAGE_FRAGMENT_TAG);
                 add(RECORD_FRAGMENT_TAG);
@@ -380,10 +381,10 @@ public class MainActivity extends AppCompatActivity
         return ignCredentialsFragment;
     }
 
-    private Fragment createIgnViewFragment(FragmentTransaction transaction) {
-        Fragment ignViewFragment = new IgnViewFragment();
-        transaction.add(R.id.content_frame, ignViewFragment, IGN_VIEW_FRAGMENT_TAG);
-        return ignViewFragment;
+    private Fragment createWmtsViewFragment(FragmentTransaction transaction, MapSource mapSource) {
+        Fragment wmtsViewFragment = GoogleMapWmtsViewFragment.newInstance(new MapSourceBundle(mapSource));
+        transaction.add(R.id.content_frame, wmtsViewFragment, WMTS_VIEW_FRAGMENT_TAG);
+        return wmtsViewFragment;
     }
 
     private Fragment createMapImportFragment(FragmentTransaction transaction) {
@@ -575,21 +576,21 @@ public class MainActivity extends AppCompatActivity
         transaction.commit();
     }
 
-    private void showIgnViewFragment() {
+    private void showWmtsViewFragment(MapSource mapSource) {
         /* Remove single-usage fragments */
         removeSingleUsageFragments();
 
         /* Hide other fragments */
         FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
-        hideOtherFragments(hideTransaction, IGN_VIEW_FRAGMENT_TAG);
+        hideOtherFragments(hideTransaction, WMTS_VIEW_FRAGMENT_TAG);
         hideTransaction.commit();
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment ignViewFragment = createIgnViewFragment(transaction);
-        transaction.show(ignViewFragment);
+        Fragment wmtsViewFragment = createWmtsViewFragment(transaction, mapSource);
+        transaction.show(wmtsViewFragment);
 
         /* Manually manage the back action*/
-        mBackFragmentTag = IGN_VIEW_FRAGMENT_TAG;
+        mBackFragmentTag = WMTS_VIEW_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -701,10 +702,10 @@ public class MainActivity extends AppCompatActivity
             transaction.remove(ignCredentialsFragment);
         }
 
-        /* Remove the IGN view fragment */
-        Fragment ignViewFragment = fragmentManager.findFragmentByTag(IGN_VIEW_FRAGMENT_TAG);
-        if (ignViewFragment != null) {
-            transaction.remove(ignViewFragment);
+        /* Remove the WMTS view fragment */
+        Fragment wmtsViewFragment = fragmentManager.findFragmentByTag(WMTS_VIEW_FRAGMENT_TAG);
+        if (wmtsViewFragment != null) {
+            transaction.remove(wmtsViewFragment);
         }
 
         transaction.commit();
@@ -850,11 +851,14 @@ public class MainActivity extends AppCompatActivity
                     showIgnCredentialsFragment();
                 } else {
                     checkInternetPermission();
-                    showIgnViewFragment();
+                    showWmtsViewFragment(mapSource);
                 }
                 break;
             case OPEN_STREET_MAP:
                 // TODO : show fragment to select the area of the map
+                break;
+            case USGS:
+                showWmtsViewFragment(mapSource);
                 break;
             default:
                 /* Unknown map source */

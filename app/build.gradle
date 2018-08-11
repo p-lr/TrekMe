@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
@@ -27,6 +28,10 @@ android {
             includeAndroidResources = true
         }
     }
+}
+
+androidExtensions {
+    experimental = true
 }
 
 kotlin { experimental { coroutines 'enable' } }

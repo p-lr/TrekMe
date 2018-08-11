@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
+package com.peterlaurence.trekadvisor.menu.mapcreate.providers
 
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
@@ -7,20 +7,24 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.view.*
 import com.peterlaurence.trekadvisor.R
+import com.peterlaurence.trekadvisor.core.mapsource.MapSource
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgn
+import com.peterlaurence.trekadvisor.core.providers.BitmapProviderUSGS
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaListener
+import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnWmtsDialog
 import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended
 import com.qozix.tileview.TileView
 import com.qozix.tileview.widgets.ZoomPanLayout
 
 /**
- * Displays [IGN](https://www.geoportail.gouv.fr/carte) using a [TileView] and a specific
- * [BitmapProviderIgn]. <br>
- * See the documentation of their
- * [WMTS service](https://geoservices.ign.fr/documentation/geoservices/wmts.html). A `GetCapabilities`
+ * Displays Google Maps - compatible tile matrix sets.
+ * For example :
+ *
+ * [IGN WMTS](https://geoservices.ign.fr/documentation/geoservices/wmts.html). A `GetCapabilities`
  * request reveals that each level is square area. Here is an example for level 18 :
  * ```
  * <TileMatrix>
@@ -38,8 +42,12 @@ import com.qozix.tileview.widgets.ZoomPanLayout
  * This level correspond to a 256 * 262144 = 67108864 px wide and height area.
  * The `TopLeftCorner` corner contains the WebMercator coordinates. The bottom right corner has
  * implicitly the opposite coordinates.
+ *
+ * The same settings can be seen at [USGS WMTS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/WMTS/1.0.0/WMTSCapabilities.xml)
+ * for the "GoogleMapsCompatible" TileMatrixSet (and not the "default028mm" one).
  */
-class IgnViewFragment : Fragment() {
+class GoogleMapWmtsViewFragment : Fragment() {
+    private var mapSource: MapSource? = null
     private lateinit var rootView: ConstraintLayout
     private lateinit var tileView: TileViewExtended
     private lateinit var areaLayer: AreaLayer
@@ -57,8 +65,24 @@ class IgnViewFragment : Fragment() {
     private val x1 = -x0
     private val y1 = x0
 
+    companion object {
+        private const val ARG_MAP_SOURCE = "mapSource"
+
+        @JvmStatic
+        fun newInstance(mapSource: MapSourceBundle): GoogleMapWmtsViewFragment {
+            val fragment = GoogleMapWmtsViewFragment()
+            val args = Bundle()
+            args.putParcelable(ARG_MAP_SOURCE, mapSource)
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
 
         setHasOptionsMenu(true)
     }
@@ -135,8 +159,15 @@ class IgnViewFragment : Fragment() {
         setTileViewBounds(tileView)
 
         /* The BitmapProvider */
-        val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
-        tileView.setBitmapProvider(BitmapProviderIgn(ignCredentials))
+        tileView.setBitmapProvider(
+                when (mapSource) {
+                    MapSource.IGN -> {
+                        val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
+                        BitmapProviderIgn(ignCredentials)
+                    }
+                    MapSource.USGS -> BitmapProviderUSGS()
+                    else -> null
+                })
 
         /* Add the view */
         setTileView(tileView)
@@ -157,7 +188,7 @@ class IgnViewFragment : Fragment() {
         view?.post {
             areaLayer = AreaLayer(context!!, object : AreaListener {
                 override fun areaChanged(area: Area) {
-                    this@IgnViewFragment.area = area
+                    this@GoogleMapWmtsViewFragment.area = area
                     println("are changed")
                 }
 
