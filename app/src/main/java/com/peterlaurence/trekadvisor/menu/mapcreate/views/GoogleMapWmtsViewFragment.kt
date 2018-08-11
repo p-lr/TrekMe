@@ -204,16 +204,12 @@ class GoogleMapWmtsViewFragment : Fragment() {
      * Called when the user validates his area by clicking on the floating action button.
      */
     private fun validateArea() {
-        if (mapSource == null) {
-            //TODO : alert the user that the map source is unknow. This shouldn't ever happen though.
-            return
-        }
-
         if (this::area.isInitialized) {
             val fm = activity?.supportFragmentManager
-            val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(area, MapSourceBundle(mapSource!!))
-            wmtsLevelsDialog.show(fm, "fragment")
+            mapSource?.let {
+                val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(area, MapSourceBundle(it))
+                wmtsLevelsDialog.show(fm, "fragment")
+            }
         }
-
     }
 }

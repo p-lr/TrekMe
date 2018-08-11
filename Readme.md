@@ -24,7 +24,7 @@ The only limitation is the memory available on your device (smartphone, tablet).
 
 ## <a name="TOC-Features-sum"></a>Features summary
 
-* Support in-app map creation from France's IGN source
+* Support in-app map creation from United States's USGS and France's IGN map servers.
 * Marker support (with optional comments)
 * GPX tracks import
 * Lock the view to the current position
@@ -35,7 +35,7 @@ The only limitation is the memory available on your device (smartphone, tablet).
 
 ### On TODO list
 
-* Support more map sources (USGS, OpenStreetMap, etc.)
+* Support more map sources (OpenStreetMap, etc.)
 
 ## <a name="TOC-Create-a-map"></a>Create a map
 
@@ -90,7 +90,6 @@ Without any cartographic knowledge, e.g if terms of
 [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84),
 [Mercator](https://en.wikipedia.org/wiki/Mercator_projection?oldid=9506890) don't
 mean anything to you, using TrekAdvisor may introduce you to the world of cartography.
-It is not as complicated as it looks.
 
 Beginners are strongly advised to read the Technical Basis from the [User Guide](UserGuide.md).
 
