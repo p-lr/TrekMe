@@ -91,7 +91,7 @@
     <string name="open_street_map_source_description">Cartes libres</string>
     <string name="mapcreate_define_area">Définir une zone</string>
     <string name="min_zoom">Zoom minimum</string>
-    <string name="ign_wmts_settings_dialog">Configuration de la carte</string>
+    <string name="wmts_settings_dialog">Configuration de la carte</string>
     <string name="max_zoom">Zoom maximum</string>
     <string name="total_transactions">Total transactions</string>
     <string name="service_download_name">Service de téléchargement de TrekAdvisor</string>

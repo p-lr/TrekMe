@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
+package com.peterlaurence.trekadvisor.menu.mapcreate.views
 
 import android.app.Dialog
 import android.content.Intent
@@ -12,6 +12,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
+import com.peterlaurence.trekadvisor.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.Point
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileSequenceAndCalibration
@@ -28,7 +29,7 @@ import java.text.NumberFormat
  * This dialog fragment holds the settings of the minimum and maximum zoom level of the map, before
  * it is downloaded.
  */
-class IgnWmtsDialog : DialogFragment() {
+class WmtsLevelsDialog : DialogFragment() {
     /* Level thresholds */
     private val minLevel = 1
     private val maxLevel = 18
@@ -41,16 +42,19 @@ class IgnWmtsDialog : DialogFragment() {
     private var currentMaxLevel = startMaxLevel
 
     private lateinit var transactionsTextView: TextView
+    private var mapSource: MapSource? = null
 
     companion object {
-        private val ARG_AREA = "IgnWmtsDialog_area"
+        private const val ARG_AREA = "WmtsLevelsDialog_area"
+        private const val ARG_MAP_SOURCE = "WmtsLevelsDialog_mapSource"
 
-        fun newInstance(area: Area): IgnWmtsDialog {
-            val f = IgnWmtsDialog()
+        fun newInstance(area: Area, mapSourceBundle: MapSourceBundle): WmtsLevelsDialog {
+            val f = WmtsLevelsDialog()
 
             // Supply num input as an argument.
             val args = Bundle()
             args.putParcelable(ARG_AREA, area)
+            args.putParcelable(ARG_MAP_SOURCE, mapSourceBundle)
             f.arguments = args
 
             return f
@@ -59,12 +63,13 @@ class IgnWmtsDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
-        val view = inflater.inflate(R.layout.dialog_ign_wmts, null)
+        val view = inflater.inflate(R.layout.dialog_wmts, null)
+        mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
 
         configureComponents(view)
 
         return AlertDialog.Builder(context!!)
-                .setTitle(R.string.ign_wmts_settings_dialog)
+                .setTitle(R.string.wmts_settings_dialog)
                 .setView(view)
                 .setPositiveButton(R.string.download
                 ) { _, _ -> onDownloadFormConfirmed() }
@@ -91,14 +96,14 @@ class IgnWmtsDialog : DialogFragment() {
 
         barMinLevel.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
-                currentMinLevel = this@IgnWmtsDialog.minLevel + i
+                currentMinLevel = this@WmtsLevelsDialog.minLevel + i
                 minLevel.text = currentMinLevel.toString()
 
                 /* If the min level becomes greater than the max level, update the max level */
                 if (currentMinLevel > currentMaxLevel) {
                     currentMaxLevel = currentMinLevel
                     maxLevel.text = currentMaxLevel.toString()
-                    barMaxLevel.progress = currentMaxLevel - this@IgnWmtsDialog.minLevel
+                    barMaxLevel.progress = currentMaxLevel - this@WmtsLevelsDialog.minLevel
                 }
 
                 updateTransactionCount()
@@ -113,14 +118,14 @@ class IgnWmtsDialog : DialogFragment() {
 
         barMaxLevel.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
-                currentMaxLevel = this@IgnWmtsDialog.minLevel + i
+                currentMaxLevel = this@WmtsLevelsDialog.minLevel + i
                 maxLevel.text = currentMaxLevel.toString()
 
                 /* If the max level becomes smaller than the min level, update the min level */
                 if (currentMaxLevel < currentMinLevel) {
                     currentMinLevel = currentMaxLevel
                     minLevel.text = currentMinLevel.toString()
-                    barMinLevel.progress = currentMinLevel - this@IgnWmtsDialog.minLevel
+                    barMinLevel.progress = currentMinLevel - this@WmtsLevelsDialog.minLevel
                 }
 
                 updateTransactionCount()
@@ -167,7 +172,7 @@ class IgnWmtsDialog : DialogFragment() {
     /**
      * We will start the download with the [DownloadService]
      *
-     * IgnWmtsDialog                            DownloadService
+     * WmtsLevelsDialog                            DownloadService
      *      Intent                    ----->          (service start)
      *      onDownloadSpecRequest     <-----          DownloadSpecRequest
      *      RequestDownloadMapEvent   ----->          onRequestDownloadMapEvent
@@ -187,8 +192,10 @@ class IgnWmtsDialog : DialogFragment() {
         val tileSequenceAndCalibration = getTileSequenceAndCalibration(currentMinLevel, currentMaxLevel, p1, p2)
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
 
-        EventBus.getDefault().post(RequestDownloadMapEvent(MapSource.IGN, tileSequenceAndCalibration.tileSequence,
-                tileSequenceAndCalibration.calibrationPoints, tileCount))
+        mapSource?.let {
+            EventBus.getDefault().post(RequestDownloadMapEvent(it, tileSequenceAndCalibration.tileSequence,
+                    tileSequenceAndCalibration.calibrationPoints, tileCount))
+        }
     }
 
     private fun getPointsOfArea(): Pair<Point, Point> {

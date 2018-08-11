@@ -24,7 +24,8 @@ import com.peterlaurence.trekadvisor.core.projection.MercatorProjection
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvider
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderAuth
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderIgn
-import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnWmtsDialog
+import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderUSGS
+import com.peterlaurence.trekadvisor.menu.mapcreate.views.WmtsLevelsDialog
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekadvisor.service.event.MapDownloadEvent
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
@@ -250,7 +251,7 @@ class DownloadService : Service() {
     }
 
     private fun requestDownloadSpec() {
-        EventBus.getDefault().post(IgnWmtsDialog.DownloadSpecRequest())
+        EventBus.getDefault().post(WmtsLevelsDialog.DownloadSpecRequest())
     }
 
     private fun sendDownloadFinished() {
@@ -267,6 +268,12 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
 
                 val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "")
                 val bitmapProvider = GenericBitmapProviderAuth(urlTileBuilder, ignCredentials.user ?: "", ignCredentials.pwd ?: "")
+                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
+                downloadThread.start()
+            }
+            MapSource.USGS -> {
+                val urlTileBuilder = UrlTileBuilderUSGS()
+                val bitmapProvider = GenericBitmapProvider(urlTileBuilder)
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }

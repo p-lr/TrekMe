@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign
+package com.peterlaurence.trekadvisor.menu.mapcreate.views.ign
 
 import android.os.Bundle
 import android.support.v7.preference.EditTextPreference

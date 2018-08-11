@@ -148,7 +148,7 @@
     <string name="usgs_map_source_description">U.S. Geological Survey</string>
 
     <string name="mapcreate_define_area">Choose area</string>
-    <string name="ign_wmts_settings_dialog">Map configuration</string>
+    <string name="wmts_settings_dialog">Map configuration</string>
     <string name="min_zoom">Minimum zoom</string>
     <string name="max_zoom">Maximun zoom</string>
     <string name="total_transactions">Total transactions</string>

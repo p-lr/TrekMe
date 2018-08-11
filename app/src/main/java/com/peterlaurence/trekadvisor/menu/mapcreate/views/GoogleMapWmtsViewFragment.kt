@@ -1,4 +1,4 @@
-package com.peterlaurence.trekadvisor.menu.mapcreate.providers
+package com.peterlaurence.trekadvisor.menu.mapcreate.views
 
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
@@ -15,7 +15,6 @@ import com.peterlaurence.trekadvisor.core.providers.BitmapProviderUSGS
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaListener
-import com.peterlaurence.trekadvisor.menu.mapcreate.providers.ign.IgnWmtsDialog
 import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended
 import com.qozix.tileview.TileView
 import com.qozix.tileview.widgets.ZoomPanLayout
@@ -205,10 +204,15 @@ class GoogleMapWmtsViewFragment : Fragment() {
      * Called when the user validates his area by clicking on the floating action button.
      */
     private fun validateArea() {
+        if (mapSource == null) {
+            //TODO : alert the user that the map source is unknow. This shouldn't ever happen though.
+            return
+        }
+
         if (this::area.isInitialized) {
             val fm = activity?.supportFragmentManager
-            val ignWmtsDialog = IgnWmtsDialog.newInstance(area)
-            ignWmtsDialog.show(fm, "fragment")
+            val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(area, MapSourceBundle(mapSource!!))
+            wmtsLevelsDialog.show(fm, "fragment")
         }
 
     }
