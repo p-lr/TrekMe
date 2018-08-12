@@ -1,11 +1,15 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate.views.ign
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v7.preference.EditTextPreference
 import android.support.v7.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
+
 
 class IgnCredentialsFragment : PreferenceFragmentCompat() {
     private lateinit var ignUser: String
@@ -51,5 +55,17 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
         if (this::ignUser.isInitialized && this::ignPwd.isInitialized && this::ignApiKey.isInitialized) {
             MapSourceCredentials.saveIGNCredentials(IGNCredentials(ignUser, ignPwd, ignApiKey))
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        /* Display the link to the IGN API tutorial */
+        val snackBar = Snackbar.make(view!!, R.string.ign_help_msg, Snackbar.LENGTH_INDEFINITE)
+        snackBar.setAction(R.string.ign_help_action) {
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.ign_help_link)))
+            startActivity(browserIntent)
+        }
+        snackBar.show()
     }
 }

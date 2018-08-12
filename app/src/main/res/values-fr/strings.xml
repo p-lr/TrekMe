@@ -103,4 +103,7 @@
     <string name="map_download_dialog_progress">Progression</string>
     <string name="import_error">Une erreur est survenue. Essayez de redémarrer l\'application.</string>
     <string name="mapcreate_settings">Paramètres</string>
+    <string name="ign_help_msg">Pourquoi ceci ? Obtenez vos identifiants</string>
+    <string name="ign_help_action">GO</string>
+    <string name="ign_help_link">https://github.com/peterLaurence/TrekAdvisor/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN</string>
 </resources>
