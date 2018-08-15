@@ -23,7 +23,6 @@ import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.UniversalTransverseMercator;
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderDummy;
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderLibVips;
-import com.peterlaurence.trekadvisor.core.providers.BitmapProviderOsm;
 import com.qozix.tileview.graphics.BitmapProvider;
 
 import org.greenrobot.eventbus.EventBus;
@@ -109,8 +108,6 @@ public class MapLoader implements MapImporter.MapImportListener {
         switch (map.getOrigin()) {
             case BitmapProviderLibVips.GENERATOR_NAME:
                 return new BitmapProviderLibVips(map);
-            case BitmapProviderOsm.GENERATOR_NAME:
-                return new BitmapProviderOsm(map);
             default:
                 return new BitmapProviderDummy();
         }

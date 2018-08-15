@@ -24,6 +24,7 @@ import com.peterlaurence.trekadvisor.core.projection.MercatorProjection
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvider
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderAuth
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderIgn
+import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderOSM
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderUSGS
 import com.peterlaurence.trekadvisor.menu.mapcreate.views.WmtsLevelsDialog
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatusEvent
@@ -307,7 +308,11 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }
-            else -> {
+            MapSource.OPEN_STREET_MAP -> {
+                val urlTileBuilder = UrlTileBuilderOSM()
+                val bitmapProvider = GenericBitmapProvider(urlTileBuilder)
+                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
+                downloadThread.start()
             }
         }
     }

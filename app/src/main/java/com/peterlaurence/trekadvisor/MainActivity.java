@@ -855,7 +855,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
             case OPEN_STREET_MAP:
-                // TODO : show fragment to select the area of the map
+                showWmtsViewFragment(mapSource);
                 break;
             case USGS:
                 showWmtsViewFragment(mapSource);

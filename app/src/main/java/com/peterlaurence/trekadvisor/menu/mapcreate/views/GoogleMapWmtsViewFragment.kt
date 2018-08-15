@@ -11,6 +11,7 @@ import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgn
+import com.peterlaurence.trekadvisor.core.providers.BitmapProviderOSM
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderUSGS
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
@@ -165,6 +166,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
                         BitmapProviderIgn(ignCredentials)
                     }
                     MapSource.USGS -> BitmapProviderUSGS()
+                    MapSource.OPEN_STREET_MAP -> BitmapProviderOSM()
                     else -> null
                 })
 
