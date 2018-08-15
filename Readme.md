@@ -24,7 +24,7 @@ The only limitation is the memory available on your device (smartphone, tablet).
 
 ## <a name="TOC-Features-sum"></a>Features summary
 
-* Support in-app map creation from United States's USGS and France's IGN map servers.
+* Support in-app map creation from United States's USGS, France's IGN map servers, and OpenStreetMap.
 * Marker support (with optional comments)
 * GPX tracks import
 * Lock the view to the current position
@@ -35,7 +35,7 @@ The only limitation is the memory available on your device (smartphone, tablet).
 
 ### On TODO list
 
-* Support more map sources (OpenStreetMap, etc.)
+* Publish the app on Google Play.
 
 ## <a name="TOC-Create-a-map"></a>Create a map
 
