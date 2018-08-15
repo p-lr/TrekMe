@@ -106,4 +106,6 @@
     <string name="ign_help_msg">Pourquoi ceci ? Obtenez vos identifiants</string>
     <string name="ign_help_action">GO</string>
     <string name="ign_help_link">https://github.com/peterLaurence/TrekAdvisor/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN</string>
+    <string name="image_preferences_category">Image de présentation</string>
+    <string name="image_change_btn_txt">Changer l\'image</string>
 </resources>

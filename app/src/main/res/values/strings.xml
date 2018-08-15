@@ -49,6 +49,8 @@
     <string name="calibration_point_saved">Calibration point saved</string>
     <string name="calibration_projection_saved_ok">Projection successfully changed</string>
 
+    <string name="image_preferences_category">Thumbnail image</string>
+    <string name="image_change_btn_txt">Change thumbnail image</string>
     <string name="calibration_preferences_category">Calibration</string>
     <string name="projection_preferences_title">Projection</string>
     <string name="points_number_preferences_title">Number of calibration points</string>
@@ -66,6 +68,7 @@
 
 
     <!-- Keys and ids of graphical components -->
+    <string name="preference_change_image_key" translatable="false">pref_image_preference</string>
     <string name="preference_projection_key" translatable="false">pref_projection_preference</string>
     <string name="preference_numpoints_key" translatable="false">pref_points_number_preference</string>
     <string name="preference_map_title_key" translatable="false">pref_map_title_key</string>
@@ -148,7 +151,7 @@
     <string name="open_street_map_source" translatable="false">OpenStreetMap</string>
     <string name="open_street_map_source_description">Free map</string>
     <string name="usgs_map_source" translatable="false">USGS</string>
-    <string name="usgs_map_source_description">U.S. Geological Survey</string>
+    <string name="usgs_map_source_description" translatable="false">U.S. Geological Survey</string>
 
     <string name="mapcreate_define_area">Choose area</string>
     <string name="wmts_settings_dialog">Map configuration</string>

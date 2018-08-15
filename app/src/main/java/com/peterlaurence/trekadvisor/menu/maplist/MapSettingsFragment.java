@@ -1,9 +1,12 @@
 package com.peterlaurence.trekadvisor.menu.maplist;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -11,10 +14,6 @@ import android.support.v7.preference.EditTextPreference;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.peterlaurence.trekadvisor.R;
@@ -46,6 +45,7 @@ import java.lang.ref.WeakReference;
 public class MapSettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String ARG_MAP_NAME = "arg_map_name";
+    private static final int IMAGE_REQUEST_CODE = 1338;
     private WeakReference<Map> mMapWeakReference;
 
     private MapCalibrationRequestListener mMapCalibrationRequestListener;
@@ -121,6 +121,8 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     }
 
     private void initComponents() {
+        Preference changeImageButton = getPreferenceManager().findPreference(
+                getString(R.string.preference_change_image_key));
         ListPreference mCalibrationListPreference = (ListPreference) getPreferenceManager().findPreference(
                 getString(R.string.preference_projection_key));
         ListPreference mCalibrationPointsNumberPreference = (ListPreference) getPreferenceManager().findPreference(
@@ -132,6 +134,16 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
 
         Preference deleteButton = getPreferenceManager().findPreference(
                 getString(R.string.preference_delete_button_key));
+
+        changeImageButton.setOnPreferenceClickListener(preference -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+            /* Search for all documents available via installed storage providers */
+            intent.setType("image/*");
+            startActivityForResult(intent, IMAGE_REQUEST_CODE);
+            return true;
+        });
 
         /* Set the summaries and the values of preferences according to the Map object */
         final Map map = mMapWeakReference.get();
@@ -226,14 +238,29 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        /* Check if the request code is the one we are interested in */
+        if (requestCode == IMAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (resultData != null) {
+                Uri uri = resultData.getData();
+
+                try {
+                    mMapWeakReference.get().setImage(uri, getContext().getContentResolver());
+                    saveChanges();
+                } catch (Exception e) {
+                    // no-op
+                }
+            }
+        }
+    }
+
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Preference pref = findPreference(key);
         if (pref != null) {
             pref.setSummary(sharedPreferences.getString(key, "default"));
 
-            /* Save the Map content */
-            Map map = mMapWeakReference.get();
-            MapLoader.getInstance().saveMap(map);
+            saveChanges();
         }
     }
 
@@ -257,6 +284,14 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      */
     public interface MapCalibrationRequestListener {
         void onMapCalibrationRequest();
+    }
+
+    /**
+     * Save the Map content
+     */
+    private void saveChanges() {
+        Map map = mMapWeakReference.get();
+        MapLoader.getInstance().saveMap(map);
     }
 
     /**

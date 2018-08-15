@@ -119,6 +119,15 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        /* When modifications happened outside of the context of this fragment, e.g if a map image
+         * was changed in the settings fragment, we need to refresh the view. */
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);

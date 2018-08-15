@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/image_preferences_category">
+        <Preference
+            android:key="@string/preference_change_image_key"
+            android:title="@string/image_change_btn_txt"/>
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/calibration_preferences_category">
         <ListPreference
             android:entries="@array/projections_names"

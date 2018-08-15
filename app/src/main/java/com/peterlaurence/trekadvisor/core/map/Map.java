@@ -1,8 +1,12 @@
 package com.peterlaurence.trekadvisor.core.map;
 
+import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Parcel;
+import android.os.ParcelFileDescriptor;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -16,7 +20,11 @@ import com.peterlaurence.trekadvisor.util.ZipTask;
 import com.qozix.tileview.graphics.BitmapProvider;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,9 +49,10 @@ import static com.peterlaurence.trekadvisor.util.ToolsKt.stackTraceToString;
 public class Map {
     private static final String TAG = "Map";
     private static final String UNDEFINED = "undefined";
+    private static final int THUMBNAIL_SIZE = 256;
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
-    private final Bitmap mImage;
+    private Bitmap mImage;
     private BitmapProvider mBitmapProvider;
     private MapBounds mMapBounds;
     /* The Java Object corresponding to the json configuration file */
@@ -259,6 +268,29 @@ public class Map {
 
     public Bitmap getImage() {
         return mImage;
+    }
+
+    public void setImage(Uri imageUri, ContentResolver resolver) {
+        try {
+            ParcelFileDescriptor parcelFileDescriptor = resolver.openFileDescriptor(imageUri, "r");
+            if (parcelFileDescriptor == null) {
+                return;
+            }
+            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+            FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
+
+            Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeStream(fileInputStream),
+                    THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+
+            File targetFile = new File(getDirectory(), "image.jpg");
+            OutputStream outStream = new FileOutputStream(targetFile);
+            thumbnail.compress(Bitmap.CompressFormat.JPEG, 80, outStream);
+
+            mImage = thumbnail;
+            mMapGson.thumbnail = targetFile.getName();
+        } catch (Exception e) {
+            //TODO: alert the user that the new image could not be set
+        }
     }
 
     public List<MapGson.Level> getLevelList() {
