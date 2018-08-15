@@ -18,6 +18,7 @@
     <!-- DownloadService -->
     <string name="service_download_name">Download service</string>
     <string name="service_download_action">Map download</string>
+    <string name="service_download_finished">Map download finished</string>
     <string name="service_download_stop">Stop</string>
     <string name="service_download_see_progress">See Progress</string>
 

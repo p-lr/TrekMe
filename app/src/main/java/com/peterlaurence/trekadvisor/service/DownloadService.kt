@@ -49,7 +49,8 @@ import java.util.*
  */
 class DownloadService : Service() {
     private val NOTIFICATION_ID = "peterlaurence.DownloadService"
-    private val SERVICE_ID = 128565
+    private val SERVICE_START_ID = 128565
+    private val SERVICE_FINISHED_ID = 128577
     private val threadCount = 4
     private val STOP_ACTION = "stop"
     private val SHOW_PROGRESS_ACTION = "show-progress"
@@ -141,7 +142,7 @@ class DownloadService : Service() {
             notificationBuilder.setChannelId(NOTIFICATION_ID)
         }
 
-        startForeground(SERVICE_ID, notificationBuilder.build())
+        startForeground(SERVICE_START_ID, notificationBuilder.build())
 
         started = true
         sendStartedStatus()
@@ -228,14 +229,13 @@ class DownloadService : Service() {
             MapLoader.getInstance().saveMap(map)
         }
 
-        /* Import, and when we're done, calibrate and stop the service */
+        /* Import, and when we're done, calibrate the map */
         MapImporter.importFromFile(destDir, MapImporter.MapProvider.LIBVIPS,
                 object : MapImporter.MapImportListener {
                     override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
                         handler.post {
                             calibrate(map)
                             sendDownloadFinished()
-                            stopSelf()
                         }
                     }
 
@@ -244,6 +244,36 @@ class DownloadService : Service() {
                         e.printStackTrace()
                     }
                 })
+
+        /* Notify that the download is finished */
+        notifyDonwloadFinished()
+
+        /* Finally, stop the service */
+        stopSelf()
+    }
+
+    private fun notifyDonwloadFinished() {
+        notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
+                .setContentTitle(getText(R.string.app_name))
+                .setContentText(getText(R.string.service_download_finished))
+                .setSmallIcon(R.drawable.ic_file_download_24dp)
+                .setLargeIcon(icon)
+                .setContentIntent(onTapPendingIntent)
+                .setColor(getColor(R.color.colorAccent))
+                .setOngoing(false)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        /* This is only needed on Devices on Android O and above */
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val chan = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_download_name), NotificationManager.IMPORTANCE_DEFAULT)
+            chan.enableLights(true)
+            chan.lightColor = Color.MAGENTA
+            notificationManager.createNotificationChannel(chan)
+            notificationBuilder.setChannelId(NOTIFICATION_ID)
+        }
+
+        notificationManager.notify(SERVICE_FINISHED_ID, notificationBuilder.build())
     }
 
     private fun sendStartedStatus() {
