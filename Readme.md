@@ -103,14 +103,18 @@ Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
 While viewing a map, select the option menu on the upper right corner :
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/27984165-a9ee2658-63ce-11e7-9ae5-c64b3e750ce4.png">
+<img src="https://user-images.githubusercontent.com/15638794/44299790-b5c75d00-a2fc-11e8-8c7b-058009d466eb.jpg" width="300">
 </p>
 
-Then, a list of currently available tracks opens up. There is a button to import a new track from a 
-.gpx file :
+Then, a list of currently available tracks opens up: 
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/27984164-a9eb421c-63ce-11e7-97c6-b11a8dbdcd79.png">
+<img src="https://user-images.githubusercontent.com/15638794/44299811-f1622700-a2fc-11e8-8bf0-a2118243755c.jpg" width="300">
 </p>
+
+Here you can:
+
+* Import a new gpx files using the import button
+* Manage track visibility
 
 
