@@ -37,10 +37,6 @@ The only limitation is the memory available on your device (smartphone, tablet).
 * Distance indicator
 * GPX track recording
 
-### On TODO list
-
-* Publish the app on Google Play.
-
 ## <a name="TOC-Create-a-map"></a>Create a map
 
 There are three ways to create a map:
@@ -169,14 +165,14 @@ The speed indicator overlays the speed in km/h at the top of the screen. Note th
 
 ### <a name="TOC-Add-markers"></a>Add markers
 
-Pressing the marker button adds a new marker at the center of the screen:
+Press the marker button to add a new marker at the center of the screen:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/15638794/44300147-62f0a400-a302-11e8-9df3-9eba5c866268.jpg" width="300">
 </p>
 
 With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
-When you're satisfied with its position, tap on red circle at the center. It then morphs to its static form.
+When you're satisfied with its position, tap on the red circle at the center. It then morphs to its static form.
 
 Tapping a marker displays a popup:
 
@@ -229,7 +225,7 @@ From the "GPX Record" option menu, you get the following interface:
 </p>
 
 The recording can be started or stopped from the control panel. When recording, the location service
-runs in the background, the recording continues even if TrekAdvisor is stopped or paused.
-An indicator reports backs the status of the location service. A panel shows the list of recordings.
-To delete a recording, long press on it. The panel transitions into a selection mode, where there is a
+runs in the background. It continues even if TrekAdvisor is stopped or paused.
+An indicator reports back the status of the location service. A panel shows the list of recordings.
+To delete a recording, long-press on it. The panel transitions into a selection mode, where there is a
 remove button at the bottom.
