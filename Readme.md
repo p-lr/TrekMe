@@ -62,7 +62,54 @@ so sometimes you will have to fallback to OpenStreetMap or Google map.
 Some providers require you to subscribe to download their maps. This step is free for individuals, 
 unless you have specific needs like heavy loads for your organization.
 
-[TODO: link here a guide]()
+From the "Create map" option menu, you get to choose between available providers:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44301221-79532b80-a313-11e8-9553-1019a5613aba.jpg" width="300">
+</p>
+
+Except for France's IGN, for which a (free) subscription is required, you can directly select the
+provider and continue.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44301262-4493a400-a314-11e8-948a-ec173eb64ab0.jpg" width="300">
+</p>
+
+From there, you can zoom into the area in the world you want to capture. Then, press the area button
+so an erea of selection appears on the screen. This area can be resized. When you're done, press
+the download button, at the bottom right. A configuration menu pops up:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44301322-14003a00-a315-11e8-8d11-7495dab2c416.jpg" width="300">
+</p>
+
+WMTS map providers have different zoom levels, generally from 1 to 18. In most cases, you don't want
+levels 1 to 10 for your hike, and level 18 is not always necessary. This is why the default presets
+have the minimum and maximum levels to 12 and 17 respectively. 
+
+The number of tiles that will be downloaded depends on your choice of minimum and maximum levels.
+The lower the minimum zoom, and the higher the maximum zoom, the greater is number of tiles. This
+is indicated by the "number of transactions". Downloading thousands of transactions may take hours..
+so choose carefully your area and your levels to only download the tiles you actually need.
+
+Finally, press the download button. A download service is launched and you get a notification. From
+the notification center of your Android device, you can either:
+
+* See the download progression
+* Cancel the download
+
+When the service finishes the download, you get a notification and a new map is available in the map
+list. It is already calibrated and ready to be used. You can set a presentation image so you can
+easily identify it in the map list. To do so, press the edit button at the bottom left of the map
+card (in the map list menu). 
+
+From the map configuration view, you can:
+* Change the thumbnail image
+* Change the projection (only if you known what you're doing)
+* Change the calibration points (only if you known what you're doing)
+* Change the name
+* Delete the map
+
 
 ### <a name="TOC-Import-from-archive"></a>Import from an archive
 
@@ -117,7 +164,7 @@ The speed indicator overlays the speed in km/h at the top of the screen. Note th
 <img src="https://user-images.githubusercontent.com/15638794/44300033-9c281480-a300-11e8-87fd-efa53f197161.jpg" width="300">
 </p>
 
-### <a name="TOC-Add-merkers"></a>Add markers
+### <a name="TOC-Add-markers"></a>Add markers
 
 Pressing the marker button adds a new marker at the center of the screen:
 
