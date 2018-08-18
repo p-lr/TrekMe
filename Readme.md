@@ -11,6 +11,7 @@
   * [Show the speed](#TOC-Show-speed)
   * [Add markers](#TOC-Add-markers)
   * [Import a GPX track](#TOC-GPX-track-import)
+  * [GPX recording](#TOC-GPX-recording)
 
 
 ## <a name="TOC-Overview"></a>Overview
@@ -76,8 +77,10 @@ provider and continue.
 </p>
 
 From there, you can zoom into the area in the world you want to capture. Then, press the area button
-so an erea of selection appears on the screen. This area can be resized. When you're done, press
-the download button, at the bottom right. A configuration menu pops up:
+so an erea of selection appears on the screen. This area can be resized. Beware that USGS only provides
+detailed levels for USA, the same way that IGN details France and its territories. OpenStreetMap covers
+the entire world.
+When you're done, press the download button, at the bottom right. A configuration menu pops up:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/15638794/44301322-14003a00-a315-11e8-8d11-7495dab2c416.jpg" width="300">
@@ -90,7 +93,7 @@ have the minimum and maximum levels to 12 and 17 respectively.
 The number of tiles that will be downloaded depends on your choice of minimum and maximum levels.
 The lower the minimum zoom, and the higher the maximum zoom, the greater is number of tiles. This
 is indicated by the "number of transactions". Downloading thousands of transactions may take hours..
-so choose carefully your area and your levels to only download the tiles you actually need.
+so choose carefully your area and levels to only download the tiles you actually need.
 
 Finally, press the download button. A download service is launched and you get a notification. From
 the notification center of your Android device, you can either:
@@ -214,4 +217,19 @@ Here you can:
 * Manage track visibility
 * Remove tracks by swiping them left or right
 
+### <a name="TOC-GPX-recording"></a>GPX recording
 
+It is possible to record your position and create a GPX file, to later import into a map or share
+with other people.
+
+From the "GPX Record" option menu, you get the following interface:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44301595-32b4ff80-a31a-11e8-9d2a-76fd305bf6b3.jpg" width="300">
+</p>
+
+The recording can be started or stopped from the control panel. When recording, the location service
+runs in the background, the recording continues even if TrekAdvisor is stopped or paused.
+An indicator reports backs the status of the location service. A panel shows the list of recordings.
+To delete a recording, long press on it. The panel transitions into a selection mode, where there is a
+remove button at the bottom.
