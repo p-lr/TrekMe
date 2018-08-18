@@ -8,13 +8,15 @@
   * [Manual map creation](#TOC-The-hard-way)
 4. [Features](#TOC-Features)
   * [Measure a distance](#TOC-Measure-distance)
+  * [Show the speed](#TOC-Show-speed)
+  * [Add markers](#TOC-Add-markers)
   * [Import a GPX track](#TOC-GPX-track-import)
 
 
 ## <a name="TOC-Overview"></a>Overview
 
 TrekAdvisor is an Android app to get live position on a map and other useful information, without
-ever needing an internet connection.
+ever needing an internet connection (except when creating a map).
 It differs from other map apps in the source of maps.
 Usually, a map is downloaded from the internet and is sometimes cached for an offline access (e.g google map).
 TrekAdvisor is designed for people willing to use particular maps like USGS in USA, or IGN in France for example.
@@ -86,11 +88,10 @@ This archive feature can also be used for backup purposes, as everything related
 In this mode, basic understanding of localisation on a map is required. However, efforts are made to make this app as easy
 to use as possible.
 
-Without any cartographic knowledge, e.g if terms of
+It is advised to be familiar with the following terms:
 [Map projection](https://en.wikipedia.org/wiki/Map_projection),
 [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84),
-[Mercator](https://en.wikipedia.org/wiki/Mercator_projection?oldid=9506890) don't
-mean anything to you, using TrekAdvisor may introduce you to the world of cartography.
+[Mercator](https://en.wikipedia.org/wiki/Mercator_projection?oldid=9506890).
 
 Beginners are strongly advised to read the Technical Basis from the [User Guide](UserGuide.md).
 
@@ -108,13 +109,43 @@ Adjust the distance by dragging two blue circles. This is a "as the crow flies" 
 <img src="https://user-images.githubusercontent.com/15638794/44299931-d0023a80-a2fe-11e8-8964-91f1a16c0664.jpg" width="300">
 </p>
 
-### <a name="TOC-Measure-distance"></a>Show the speed
+### <a name="TOC-Show-speed"></a>Show the speed
 
 The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few seconds before the speed can be displayed.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/15638794/44300033-9c281480-a300-11e8-87fd-efa53f197161.jpg" width="300">
 </p>
+
+### <a name="TOC-Add-merkers"></a>Add markers
+
+Pressing the marker button adds a new marker at the center of the screen:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44300147-62f0a400-a302-11e8-9df3-9eba5c866268.jpg" width="300">
+</p>
+
+With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
+When you're satisfied with its position, tap on red circle at the center. It then morphs to its static form.
+
+Tapping a marker displays a popup:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44300166-d4305700-a302-11e8-8df1-fa9761315c50.jpg" width="300">
+</p>
+
+From here you can:
+* Edit the marker (change its name and set a comment, see below)
+* Delete it
+* Move it
+
+Here is the marker edition view:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44300180-1b1e4c80-a303-11e8-984f-2ce2c32c5976.jpg" width="300">
+</p>
+
+Nothing is changed until you save your changes.
 
 ### <a name="TOC-GPX-track-import"></a>Import a GPX track
 
