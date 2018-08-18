@@ -101,10 +101,19 @@ Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
 
 ### <a name="TOC-Measure-distance"></a>Measure a distance
 
-The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few seconds before the speed can be displayed.
+This is an option from the top-right menu while viewing a map.
+Adjust the distance by dragging two blue circles. This is a "as the crow flies" distance.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/15638794/44299931-d0023a80-a2fe-11e8-8964-91f1a16c0664.jpg" width="300">
+</p>
+
+### <a name="TOC-Measure-distance"></a>Show the speed
+
+The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few seconds before the speed can be displayed.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44300033-9c281480-a300-11e8-87fd-efa53f197161.jpg" width="300">
 </p>
 
 ### <a name="TOC-GPX-track-import"></a>Import a GPX track
