@@ -7,6 +7,7 @@
   * [From an archive](#TOC-Import-from-archive)
   * [Manual map creation](#TOC-The-hard-way)
 4. [Features](#TOC-Features)
+  * [Measure a distance](#TOC-Measure-distance)
   * [Import a GPX track](#TOC-GPX-track-import)
 
 
@@ -68,7 +69,7 @@ yourself or someone else.
 A map can be archived from the map list menu, using the save button at the bottom right corner:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/43673418-3522e7da-97c3-11e8-8173-0fecd1d02fbd.jpg">
+<img src="https://user-images.githubusercontent.com/15638794/44299901-59653d00-a2fe-11e8-8dc7-cc1d664bd60c.jpg" width="300">
 </p>
 
 This creates a zip file (which we call archive) inside the `trekadvisor/archives` folder of your device's SD card.
@@ -98,6 +99,14 @@ Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
    
 ## <a name="TOC-Features"></a>Features
 
+### <a name="TOC-Measure-distance"></a>Measure a distance
+
+The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few seconds before the speed can be displayed.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/15638794/44299931-d0023a80-a2fe-11e8-8964-91f1a16c0664.jpg" width="300">
+</p>
+
 ### <a name="TOC-GPX-track-import"></a>Import a GPX track
 
 While viewing a map, select the option menu on the upper right corner :
@@ -106,7 +115,7 @@ While viewing a map, select the option menu on the upper right corner :
 <img src="https://user-images.githubusercontent.com/15638794/44299790-b5c75d00-a2fc-11e8-8c7b-058009d466eb.jpg" width="300">
 </p>
 
-Then, a list of currently available tracks opens up: 
+Choose "Manage tracks" option. Then, a list of currently available tracks opens up: 
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/15638794/44299811-f1622700-a2fc-11e8-8bf0-a2118243755c.jpg" width="300">
@@ -116,5 +125,6 @@ Here you can:
 
 * Import a new gpx files using the import button
 * Manage track visibility
+* Remove tracks by swiping them left or right
 
 
