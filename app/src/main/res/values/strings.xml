@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">TrekAdvisor</string>
-    <string name="app_author" translatable="false">https://github.com/peterLaurence</string>
+    <string name="app_author" translatable="false"><a href="https://github.com/peterLaurence/TrekAdvisor/blob/master/Readme.md">View on GitHub</a></string>
 
     <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
     <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>

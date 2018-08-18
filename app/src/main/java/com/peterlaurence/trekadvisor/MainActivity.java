@@ -19,10 +19,12 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
@@ -39,8 +41,8 @@ import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
 import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.MapCreateFragment;
-import com.peterlaurence.trekadvisor.menu.mapcreate.views.ign.IgnCredentialsFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.views.GoogleMapWmtsViewFragment;
+import com.peterlaurence.trekadvisor.menu.mapcreate.views.ign.IgnCredentialsFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapListFragment;
 import com.peterlaurence.trekadvisor.menu.maplist.MapSettingsFragment;
@@ -207,6 +209,10 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
+
+            View headerView = navigationView.getHeaderView(0);
+            TextView githubLink = headerView.findViewById(R.id.githubLink);
+            githubLink.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 
