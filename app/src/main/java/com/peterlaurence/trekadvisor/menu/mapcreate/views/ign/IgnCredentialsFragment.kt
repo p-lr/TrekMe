@@ -61,11 +61,14 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
         super.onStart()
 
         /* Display the link to the IGN API tutorial */
-        val snackBar = Snackbar.make(view!!, R.string.ign_help_msg, Snackbar.LENGTH_INDEFINITE)
-        snackBar.setAction(R.string.ign_help_action) {
-            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.ign_help_link)))
-            startActivity(browserIntent)
+        view?.let { it ->
+            val snackBar = Snackbar.make(it, R.string.ign_help_msg, Snackbar.LENGTH_LONG)
+            snackBar.setAction(R.string.ign_help_action) {
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.ign_help_link)))
+                startActivity(browserIntent)
+            }
+            snackBar.show()
         }
-        snackBar.show()
+
     }
 }
