@@ -59,7 +59,7 @@
 
     <string name="map_summary_category">Map</string>
     <string name="map_title">Name</string>
-    <string name="map_delete_string">Delete</string>
+    <string name="map_save_string">Save</string>
     <string name="map_delete_question">Are you sure to delete this map?</string>
     <string name="cancel_dialog_string">Cancel</string>
 
@@ -74,7 +74,7 @@
     <string name="preference_numpoints_key" translatable="false">pref_points_number_preference</string>
     <string name="preference_map_title_key" translatable="false">pref_map_title_key</string>
     <string name="preference_calibration_button_key" translatable="false">pref_calib_btn_key</string>
-    <string name="preference_delete_button_key" translatable="false">pref_delete_map</string>
+    <string name="preference_save_button_key" translatable="false">pref_save_map</string>
     <string name="calibration_enter_values">Enter values after choosing a calibration point</string>
     <string name="wgs84_switch">WGS84 lat/lng</string>
     <string name="latitude_short">Lat</string>

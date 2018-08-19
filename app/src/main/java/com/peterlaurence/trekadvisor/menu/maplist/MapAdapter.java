@@ -30,7 +30,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     private List<Map> maps;
     private MapSelectionListener mMapSelectionListener;
     private MapSettingsListener mMapSettingsListener;
-    private MapArchiveListener mMapArchiveListener;
+    private MapDeleteListener mMapDeleteListener;
 
     private int selectedMapIndex = -1;
     private int previousSelectedMapIndex = -1;
@@ -40,13 +40,13 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     private int mColorBlackText;
 
     MapAdapter(@Nullable List<Map> maps, MapSelectionListener mapSelectionListener,
-               MapSettingsListener mapSettingsListener, MapArchiveListener mapArchiveListener,
+               MapSettingsListener mapSettingsListener, MapDeleteListener mapDeleteListener,
                int accentColor, int whiteTextColor,
                int blackTextColor) {
         this.maps = maps;
         mMapSelectionListener = mapSelectionListener;
         mMapSettingsListener = mapSettingsListener;
-        mMapArchiveListener = mapArchiveListener;
+        mMapDeleteListener = mapDeleteListener;
 
         mColorAccent = accentColor;
         mColorWhiteText = whiteTextColor;
@@ -95,13 +95,13 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
             holder.cardView.setCardBackgroundColor(mColorAccent);
             holder.mapName.setTextColor(mColorWhiteText);
             holder.editButton.setTextColor(mColorWhiteText);
-            holder.saveButton.setColorFilter(mColorWhiteText);
+            holder.deleteButton.setColorFilter(mColorWhiteText);
             holder.calibrationStatus.setTextColor(mColorWhiteText);
         } else {
             holder.cardView.setCardBackgroundColor(Color.WHITE);
             holder.mapName.setTextColor(mColorBlackText);
             holder.editButton.setTextColor(mColorAccent);
-            holder.saveButton.setColorFilter(mColorAccent);
+            holder.deleteButton.setColorFilter(mColorAccent);
         }
         switch (map.getCalibrationStatus()) {
             case OK:
@@ -118,7 +118,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         /* Set click listeners */
         holder.itemView.setOnClickListener(new MapViewHolderClickListener(holder, this));
         holder.editButton.setOnClickListener(new SettingsButtonClickListener(holder, this));
-        holder.saveButton.setOnClickListener(new ArchiveButtonClickListener(holder, this));
+        holder.deleteButton.setOnClickListener(new DeleteButtonClickListener(holder, this));
     }
 
     @Override
@@ -143,11 +143,11 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     }
 
     /**
-     * When the save button of an item is clicked, the {@link MapArchiveListener} is called with the
+     * When the save button of an item is clicked, the {@link MapDeleteListener} is called with the
      * corresponding {@link Map}.
      */
-    public interface MapArchiveListener {
-        void onMapArchive(Map map);
+    public interface MapDeleteListener {
+        void onMapDelete(Map map);
     }
 
     /**
@@ -159,7 +159,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         TextView calibrationStatus;
         ImageView mapImage;
         Button editButton;
-        ImageButton saveButton;
+        ImageButton deleteButton;
 
         public MapViewHolder(View itemView) {
             super(itemView);
@@ -168,7 +168,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
             calibrationStatus = itemView.findViewById(R.id.map_calibration_status);
             mapImage = itemView.findViewById(R.id.map_preview_image);
             editButton = itemView.findViewById(R.id.map_manage_btn);
-            saveButton = itemView.findViewById(R.id.map_save_btn);
+            deleteButton = itemView.findViewById(R.id.map_delete_btn);
         }
     }
 
@@ -219,16 +219,16 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     }
 
     /**
-     * The click listener for the archive button of a {@link MapViewHolder}
+     * The click listener for the delete button of a {@link MapViewHolder}
      */
-    private static class ArchiveButtonClickListener extends ButtonClickListener {
-        ArchiveButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
+    private static class DeleteButtonClickListener extends ButtonClickListener {
+        DeleteButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
             super(mapViewHolder, mapAdapter);
         }
 
         @Override
         public void clickAction(MapAdapter mapAdapter, Map map) {
-            mapAdapter.mMapArchiveListener.onMapArchive(map);
+            mapAdapter.mMapDeleteListener.onMapDelete(map);
         }
     }
 

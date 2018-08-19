@@ -37,6 +37,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
@@ -51,7 +52,7 @@ import static android.content.Context.NOTIFICATION_SERVICE;
 public class MapListFragment extends Fragment implements
         MapAdapter.MapSelectionListener,
         MapAdapter.MapSettingsListener,
-        MapAdapter.MapArchiveListener {
+        MapAdapter.MapDeleteListener {
 
     private FrameLayout rootView;
     private RecyclerView recyclerView;
@@ -257,9 +258,10 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
-    public void onMapArchive(Map map) {
-        ArchiveMapDialog archiveMapDialog = ArchiveMapDialog.newInstance(map.getId());
-        archiveMapDialog.show(getFragmentManager(), "ArchiveMapDialog");
+    public void onMapDelete(Map map) {
+        MapSettingsFragment.ConfirmDeleteFragment f = new MapSettingsFragment.ConfirmDeleteFragment();
+        f.setMapWeakRef(new WeakReference<>(map));
+        f.show(getFragmentManager(), "delete");
     }
 
 

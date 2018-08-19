@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
+import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 
 import java.lang.ref.WeakReference;
 
@@ -49,7 +50,6 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     private WeakReference<Map> mMapWeakReference;
 
     private MapCalibrationRequestListener mMapCalibrationRequestListener;
-    private MapLoader.DeleteMapListener mDeleteMapListener;
 
     /**
      * Factory method to create a new instance of this fragment. <br>
@@ -132,8 +132,8 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         Preference calibrationButton = getPreferenceManager().findPreference(
                 getString(R.string.preference_calibration_button_key));
 
-        Preference deleteButton = getPreferenceManager().findPreference(
-                getString(R.string.preference_delete_button_key));
+        Preference saveButton = getPreferenceManager().findPreference(
+                getString(R.string.preference_save_button_key));
 
         changeImageButton.setOnPreferenceClickListener(preference -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -214,11 +214,9 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
             }
         });
 
-        deleteButton.setOnPreferenceClickListener(preference -> {
-            ConfirmDeleteFragment f = new ConfirmDeleteFragment();
-            f.setMapWeakRef(mMapWeakReference);
-            f.setDeleteMapListener(mDeleteMapListener);
-            f.show(getFragmentManager(), "delete");
+        saveButton.setOnPreferenceClickListener(preference -> {
+            ArchiveMapDialog archiveMapDialog = ArchiveMapDialog.newInstance(map.getId());
+            archiveMapDialog.show(getFragmentManager(), "ArchiveMapDialog");
             return true;
         });
     }
@@ -269,7 +267,6 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         super.onAttach(context);
         if (context instanceof MapCalibrationRequestListener) {
             mMapCalibrationRequestListener = (MapCalibrationRequestListener) context;
-            mDeleteMapListener = (MapLoader.DeleteMapListener) context;
         } else {
             throw new RuntimeException(context.toString() +
                     "must implement MapCalibrationRequestListener");
@@ -305,7 +302,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.map_delete_question)
-                    .setPositiveButton(R.string.map_delete_string, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.map_save_string, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             /* Delete the map */
                             if (mMapWeakReference != null) {

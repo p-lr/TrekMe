@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity
         MapImportFragment.OnMapArchiveFragmentInteractionListener,
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
-        MapLoader.DeleteMapListener,
         MarkerManageFragment.MarkerManageFragmentInteractionListener,
         MapProvider,
         MarkerProvider,
@@ -840,11 +839,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void showCurrentMap() {
         showMapViewFragment();
-    }
-
-    @Override
-    public void onMapDeleted() {
-        showMapListFragment();
     }
 
     @Override
