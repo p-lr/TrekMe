@@ -1,4 +1,4 @@
-![Logo](Logo/horizontal.png)
+![Logo](logo/app_name.png)
 
 1. [Overview](#TOC-Overview)
 2. [Features summary](#TOC-Features-sum)
@@ -76,6 +76,7 @@ From there, you can zoom into the area in the world you want to capture. Then, p
 so an erea of selection appears on the screen. This area can be resized. Beware that USGS only provides
 detailed levels for USA, the same way that IGN details France and its territories. OpenStreetMap covers
 the entire world.
+
 When you're done, press the download button, at the bottom right. A configuration menu pops up:
 
 <p align="center">
@@ -104,8 +105,8 @@ card (in the map list menu).
 
 From the map configuration view, you can:
 * Change the thumbnail image
-* Change the projection (only if you known what you're doing)
-* Change the calibration points (only if you known what you're doing)
+* Change the projection (only if you know what you're doing)
+* Change the calibration points (only if you know what you're doing)
 * Change the name
 * Delete the map
 
