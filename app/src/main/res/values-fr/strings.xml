@@ -109,4 +109,5 @@
     <string name="image_preferences_category">Image de présentation</string>
     <string name="image_change_btn_txt">Changer l\'image</string>
     <string name="service_download_finished">Téléchargment de la carte terminé</string>
+    <string name="map_size">Taille de la carte</string>
 </resources>

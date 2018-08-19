@@ -13,10 +13,7 @@ import android.widget.TextView
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceBundle
-import com.peterlaurence.trekadvisor.core.mapsource.wmts.Point
-import com.peterlaurence.trekadvisor.core.mapsource.wmts.getNumberOfTiles
-import com.peterlaurence.trekadvisor.core.mapsource.wmts.getTileSequenceAndCalibration
-import com.peterlaurence.trekadvisor.core.mapsource.wmts.toTransactionsNumber
+import com.peterlaurence.trekadvisor.core.mapsource.wmts.*
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.service.DownloadService
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
@@ -42,6 +39,7 @@ class WmtsLevelsDialog : DialogFragment() {
     private var currentMaxLevel = startMaxLevel
 
     private lateinit var transactionsTextView: TextView
+    private lateinit var mapSizeTextView: TextView
     private var mapSource: MapSource? = null
 
     companion object {
@@ -139,6 +137,7 @@ class WmtsLevelsDialog : DialogFragment() {
         })
 
         transactionsTextView = view.findViewById(R.id.transactions_text_view)
+        mapSizeTextView = view.findViewById(R.id.map_size_text_view)
     }
 
     /**
@@ -154,8 +153,13 @@ class WmtsLevelsDialog : DialogFragment() {
 
         /* Format the number of transactions according to the current locale */
         val currentLocale = ConfigurationCompat.getLocales(resources.configuration).get(0)
-        val formattedNumber = NumberFormat.getNumberInstance(currentLocale).format(numberOfTransactions)
+        val numberFormat = NumberFormat.getNumberInstance(currentLocale)
+        val formattedNumber = numberFormat.format(numberOfTransactions)
         transactionsTextView.text = formattedNumber
+
+        /* Show the map size in Mo */
+        val mapSizeInMo = "${numberFormat.format(tileCount.toSizeInMo())} Mo"
+        mapSizeTextView.text = mapSizeInMo
     }
 
     override fun onStart() {
