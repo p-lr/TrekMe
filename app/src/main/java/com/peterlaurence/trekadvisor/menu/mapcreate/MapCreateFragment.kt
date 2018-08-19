@@ -76,10 +76,22 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         }
     }
 
+    /**
+     * For instance, settings are only relevant for [MapSource.IGN] provider.
+     */
+    private fun setButtonsAvailability(m: MapSource) {
+        nextButton.visibility = View.VISIBLE
+
+        settingsButton.visibility = if (m == MapSource.IGN) {
+            View.VISIBLE
+        } else {
+            View.INVISIBLE
+        }
+    }
+
     override fun onMapSourceSelected(m: MapSource) {
         selectedMapSource = m
-        settingsButton.visibility = View.VISIBLE
-        nextButton.visibility = View.VISIBLE
+        setButtonsAvailability(m)
     }
 
     /**
