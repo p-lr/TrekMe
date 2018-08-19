@@ -173,7 +173,7 @@ public class MapViewFragment extends Fragment implements
 
         /* Create the marker layer */
         if (mMarkerLayer == null) {
-            mMarkerLayer = new MarkerLayer(view, getContext());
+            mMarkerLayer = new MarkerLayer(getContext());
         }
         mMarkerLayer.setRequestManageMarkerListener(mRequestManageMarkerListener);
 

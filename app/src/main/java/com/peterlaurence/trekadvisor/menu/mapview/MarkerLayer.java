@@ -29,7 +29,6 @@ import java.util.List;
  */
 class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     List<MarkerGson.Marker> mMarkers;
-    private View mParentView;
     private Context mContext;
     private MapViewFragment.RequestManageMarkerListener mRequestManageMarkerListener;
     private TileView mTileView;
@@ -40,8 +39,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     /**
      * After being created, the method {@link #init(Map, TileView)} has to be called.
      */
-    MarkerLayer(View parentView, Context context) {
-        mParentView = parentView;
+    MarkerLayer(Context context) {
         mContext = context;
     }
 
@@ -102,7 +100,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                             mTileView, mContext, mMap));
                     markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
                             markerCallout, mTileView, mRequestManageMarkerListener));
-                    markerCallout.setDeleteAction(new DeleteMarkerRunnable(mParentView, movableMarker, markerCallout,
+                    markerCallout.setDeleteAction(new DeleteMarkerRunnable(movableMarker, markerCallout,
                             tileView, mMap));
                     MarkerGson.Marker marker = movableMarker.getMarker();
                     markerCallout.setTitle(marker.name);
@@ -382,15 +380,13 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
      * be deleted. <br>Here, this component is a {@link MarkerCallout}.
      */
     private static class DeleteMarkerRunnable implements Runnable {
-        private View mParentView;
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
         private TileView mTileView;
         private Map mMap;
 
-        DeleteMarkerRunnable(View parentView, MovableMarker movableMarker, MarkerCallout markerCallout,
+        DeleteMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout,
                              TileView tileView, Map map) {
-            mParentView = parentView;
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
             mTileView = tileView;
@@ -405,22 +401,15 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                 mTileView.removeCallout(markerCallout);
             }
 
-            /* Make the user confirm his choice */
-            Snackbar snackbar = Snackbar.make(mParentView, R.string.delete_marker_question, Snackbar.LENGTH_SHORT);
-            snackbar.setAction(R.string.ok_dialog, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    MovableMarker movableMarker = mMovableMarkerWeakReference.get();
+            /* Delete the marker */
+            MovableMarker movableMarker = mMovableMarkerWeakReference.get();
 
-                    if (movableMarker != null) {
-                        mTileView.removeMarker(movableMarker);
+            if (movableMarker != null) {
+                mTileView.removeMarker(movableMarker);
 
-                        MarkerGson.Marker marker = movableMarker.getMarker();
-                        MapLoader.getInstance().deleteMarker(mMap, marker);
-                    }
-                }
-            });
-            snackbar.show();
+                MarkerGson.Marker marker = movableMarker.getMarker();
+                MapLoader.getInstance().deleteMarker(mMap, marker);
+            }
         }
     }
 }
