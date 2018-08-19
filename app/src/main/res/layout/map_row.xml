@@ -60,13 +60,13 @@
             tools:background="@drawable/ic_terrain_black_24dp"/>
 
         <Button
-            android:id="@+id/map_edit_btn"
+            android:id="@+id/map_manage_btn"
             style="@style/Widget.AppCompat.Button.Borderless.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:gravity="start|center_vertical"
-            android:text="@string/map_edit_btn_string"
+            android:text="@string/map_manage_btn_string"
             card_view:layout_constraintLeft_toLeftOf="parent"
             card_view:layout_constraintTop_toTopOf="@+id/guideline"
             tools:layout_constraintLeft_creator="1" />

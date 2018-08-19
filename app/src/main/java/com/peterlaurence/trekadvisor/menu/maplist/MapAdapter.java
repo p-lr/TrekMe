@@ -163,12 +163,12 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
 
         public MapViewHolder(View itemView) {
             super(itemView);
-            cardView = (CardView) itemView.findViewById(R.id.cv);
-            mapName = (TextView) itemView.findViewById(R.id.map_name);
-            calibrationStatus = (TextView) itemView.findViewById(R.id.map_calibration_status);
-            mapImage = (ImageView) itemView.findViewById(R.id.map_preview_image);
-            editButton = (Button) itemView.findViewById(R.id.map_edit_btn);
-            saveButton = (ImageButton) itemView.findViewById(R.id.map_save_btn);
+            cardView = itemView.findViewById(R.id.cv);
+            mapName = itemView.findViewById(R.id.map_name);
+            calibrationStatus = itemView.findViewById(R.id.map_calibration_status);
+            mapImage = itemView.findViewById(R.id.map_preview_image);
+            editButton = itemView.findViewById(R.id.map_manage_btn);
+            saveButton = itemView.findViewById(R.id.map_save_btn);
         }
     }
 

@@ -27,7 +27,7 @@
     <string name="import_btn">Importer</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Création de la carte</string>
-    <string name="map_edit_btn_string">Modifier</string>
+    <string name="map_manage_btn_string">Gérer</string>
     <string name="map_delete_string">Supprimer</string>
     <string name="map_delete_question">Confirmer la suppression de la carte</string>
     <string name="cancel_dialog_string">Annuler</string>
