@@ -758,6 +758,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onGoToMapCreation() {
+        showMapCreateFragment();
+    }
+
+    @Override
     public void onMapCalibrationRequest() {
         /* A map has been selected from the MapSettingsFragment to be calibrated. */
         showMapCalibrationFragment();

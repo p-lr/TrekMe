@@ -27,8 +27,10 @@
     <string name="map_download_dialog_progress">Progress</string>
 
     <!-- Map list fragment -->
-    <string name="no_maps_found_warning">No maps found on the SD card, "trekadvisor" folder.\nDo you wish to download a sample map? (~14.5Mb)</string>
+    <string name="no_maps_found_warning">You haven\'t created any map yet</string>
+    <string name="go_to_map_creation_btn">Create a map</string>
     <string name="ok_dialog">OK</string>
+    <string name="delete_dialog">Delete</string>
     <string name="map_manage_btn_string">Manage</string>
     <string name="download_map_dialog_title">Map download</string>
     <string name="download_map_dialog_msg">Downloading %s…</string>

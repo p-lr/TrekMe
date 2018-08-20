@@ -4,12 +4,10 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.peterlaurence.trekadvisor.R;
@@ -52,7 +51,8 @@ import static android.content.Context.NOTIFICATION_SERVICE;
 public class MapListFragment extends Fragment implements
         MapAdapter.MapSelectionListener,
         MapAdapter.MapSettingsListener,
-        MapAdapter.MapDeleteListener {
+        MapAdapter.MapDeleteListener,
+        MapLoader.MapDeletedListener {
 
     private FrameLayout rootView;
     private RecyclerView recyclerView;
@@ -191,20 +191,13 @@ public class MapListFragment extends Fragment implements
         rootView.findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         adapter.onMapListUpdate(event.mapsFound);
 
-        /* If no maps found, suggest to download a sample map */
+        /* If no maps found, suggest to navigate to map creation */
         if (!event.mapsFound) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
-            builder.setMessage(getString(R.string.no_maps_found_warning))
-                    .setCancelable(false)
-                    .setPositiveButton(getString(R.string.ok_dialog), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            showSampleMapDownloadDialog();
-                        }
-                    })
-                    .setNegativeButton(getString(R.string.cancel_dialog_string), null);
-            AlertDialog alert = builder.create();
-            alert.show();
+            rootView.findViewById(R.id.emptyMapPanel).setVisibility(View.VISIBLE);
+            Button btn = rootView.findViewById(R.id.button_go_to_map_create);
+            btn.setOnClickListener((e) -> mListener.onGoToMapCreation());
+        } else {
+            rootView.findViewById(R.id.emptyMapPanel).setVisibility(View.GONE);
         }
     }
 
@@ -261,9 +254,14 @@ public class MapListFragment extends Fragment implements
     public void onMapDelete(Map map) {
         MapSettingsFragment.ConfirmDeleteFragment f = new MapSettingsFragment.ConfirmDeleteFragment();
         f.setMapWeakRef(new WeakReference<>(map));
+        f.setDeleteMapListener(this);
         f.show(getFragmentManager(), "delete");
     }
 
+    @Override
+    public void onMapDeleted() {
+        adapter.notifyDataSetChanged();
+    }
 
     /**
      * Process a request to archive a {@link Map}. This is typically called from a
@@ -357,5 +355,7 @@ public class MapListFragment extends Fragment implements
         void onMapSettingsFragmentInteraction(Map map);
 
         void onDefaultMapDownloaded();
+
+        void onGoToMapCreation();
     }
 }

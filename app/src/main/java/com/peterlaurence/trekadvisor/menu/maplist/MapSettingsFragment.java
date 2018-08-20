@@ -296,13 +296,13 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      */
     public static class ConfirmDeleteFragment extends DialogFragment {
         private WeakReference<Map> mMapWeakReference;
-        private MapLoader.DeleteMapListener mDeleteMapListener;
+        private MapLoader.MapDeletedListener mDeleteMapListener;
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.map_delete_question)
-                    .setPositiveButton(R.string.map_save_string, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.delete_dialog, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             /* Delete the map */
                             if (mMapWeakReference != null) {
@@ -326,7 +326,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
             mMapWeakReference = mapWr;
         }
 
-        public void setDeleteMapListener(MapLoader.DeleteMapListener listener) {
+        public void setDeleteMapListener(MapLoader.MapDeletedListener listener) {
             mDeleteMapListener = listener;
         }
     }

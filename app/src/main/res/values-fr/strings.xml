@@ -21,7 +21,6 @@
     <string name="projected_y_short">N</string>
     <string name="projection_none">Aucune</string>
     <string name="calibration_projection_saved_ok">Projection changée</string>
-    <string name="no_maps_found_warning">Aucune carte touvée sur la carte SD dans le dossier \"trekadvisor\".\nVoulez-vous télécharger la carte du monde ? (14.5 Mo)</string>
     <string name="ok_dialog">OK</string>
     <string name="import_menu_title">Importer</string>
     <string name="import_btn">Importer</string>
@@ -110,4 +109,7 @@
     <string name="image_change_btn_txt">Changer l\'image</string>
     <string name="service_download_finished">Téléchargment de la carte terminé</string>
     <string name="map_size">Taille de la carte</string>
+    <string name="delete_dialog">Supprimer</string>
+    <string name="no_maps_found_warning">Vous n\'avez pas encore créé de carte</string>
+    <string name="go_to_map_creation_btn">Créer une carte</string>
 </resources>

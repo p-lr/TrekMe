@@ -342,7 +342,7 @@ public class MapLoader implements MapImporter.MapImportListener {
      *
      * @param map The {@link Map} to delete.
      */
-    public void deleteMap(Map map, DeleteMapListener listener) {
+    public void deleteMap(Map map, MapDeletedListener listener) {
         File mapDirectory = map.getDirectory();
         mMapList.remove(map);
 
@@ -433,7 +433,7 @@ public class MapLoader implements MapImporter.MapImportListener {
         void onMapArchiveListUpdate();
     }
 
-    public interface DeleteMapListener {
+    public interface MapDeletedListener {
         void onMapDeleted();
     }
 
