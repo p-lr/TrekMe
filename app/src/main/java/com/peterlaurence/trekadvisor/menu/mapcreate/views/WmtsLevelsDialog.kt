@@ -8,6 +8,7 @@ import android.support.v4.os.ConfigurationCompat
 import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
 import com.peterlaurence.trekadvisor.R
@@ -33,7 +34,7 @@ class WmtsLevelsDialog : DialogFragment() {
 
     /* Start values */
     private val startMinLevel = 12
-    private val startMaxLevel = 17
+    private val startMaxLevel = 16
 
     private var currentMinLevel = startMinLevel
     private var currentMaxLevel = startMaxLevel
@@ -91,6 +92,22 @@ class WmtsLevelsDialog : DialogFragment() {
         /* The text indicator of the current mex level */
         val maxLevel = view.findViewById<TextView>(R.id.maxLevel)
         maxLevel.text = startMaxLevel.toString()
+
+        /* The minus button for the min level */
+        val minLevelMinus = view.findViewById<ImageButton>(R.id.min_level_min_btn)
+        minLevelMinus.setOnClickListener { barMinLevel.incrementProgressBy(-1) }
+
+        /* The plus button for the max level */
+        val minLevelPlus = view.findViewById<ImageButton>(R.id.min_level_plus_btn)
+        minLevelPlus.setOnClickListener { barMinLevel.incrementProgressBy(1) }
+
+        /* The minus button for the max level */
+        val maxLevelMinus = view.findViewById<ImageButton>(R.id.max_level_min_btn)
+        maxLevelMinus.setOnClickListener { barMaxLevel.incrementProgressBy(-1) }
+
+        /* The plus button for the max level */
+        val maxLevelPlus = view.findViewById<ImageButton>(R.id.max_level_plus_btn)
+        maxLevelPlus.setOnClickListener { barMaxLevel.incrementProgressBy(1) }
 
         barMinLevel.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {

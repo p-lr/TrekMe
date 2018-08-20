@@ -40,12 +40,12 @@
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/min_level_min_btn"
-        app:layout_constraintEnd_toStartOf="@+id/min_level_max_btn"
+        app:layout_constraintEnd_toStartOf="@+id/min_level_plus_btn"
         app:layout_constraintStart_toEndOf="@+id/min_level_min_btn"
         app:layout_constraintTop_toTopOf="@+id/min_level_min_btn" />
 
     <ImageButton
-        android:id="@+id/min_level_max_btn"
+        android:id="@+id/min_level_plus_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -111,12 +111,12 @@
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/max_level_min_btn"
-        app:layout_constraintEnd_toStartOf="@+id/max_level_max_btn"
+        app:layout_constraintEnd_toStartOf="@+id/max_level_plus_btn"
         app:layout_constraintStart_toEndOf="@+id/max_level_min_btn"
         app:layout_constraintTop_toTopOf="@+id/max_level_min_btn" />
 
     <ImageButton
-        android:id="@+id/max_level_max_btn"
+        android:id="@+id/max_level_plus_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
