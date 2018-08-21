@@ -112,4 +112,5 @@
     <string name="delete_dialog">Supprimer</string>
     <string name="no_maps_found_warning">Vous n\'avez pas encore créé de carte</string>
     <string name="go_to_map_creation_btn">Créer une carte</string>
+    <string name="download_confirm">Téléchargement lancé. Voir le statut dans les notifications.</string>
 </resources>

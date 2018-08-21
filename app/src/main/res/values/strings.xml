@@ -163,5 +163,6 @@
     <string name="total_transactions">Total transactions</string>
     <string name="map_size">Map size</string>
     <string name="download">Download</string>
+    <string name="download_confirm">Download started. See the status in your notifications.</string>
 
 </resources>

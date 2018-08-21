@@ -3,6 +3,7 @@ package com.peterlaurence.trekadvisor.menu.mapcreate.views
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.FloatingActionButton
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.view.*
@@ -17,8 +18,11 @@ import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaListener
 import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended
+import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatusEvent
 import com.qozix.tileview.TileView
 import com.qozix.tileview.widgets.ZoomPanLayout
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 
 /**
  * Displays Google Maps - compatible tile matrix sets.
@@ -123,6 +127,29 @@ class GoogleMapWmtsViewFragment : Fragment() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        EventBus.getDefault().unregister(this)
+        super.onStop()
+    }
+
+    /**
+     * Confirm to the user that the download started.
+     */
+    @Subscribe
+    fun onDownloadServiceStatus(e: DownloadServiceStatusEvent) {
+        if (e.started) {
+            view?.let {
+                val snackBar = Snackbar.make(it, R.string.download_confirm, Snackbar.LENGTH_SHORT)
+                snackBar.show()
+            }
+        }
     }
 
     private fun addTileView() {
