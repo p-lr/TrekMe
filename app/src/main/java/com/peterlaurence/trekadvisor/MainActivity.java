@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity
             Manifest.permission.INTERNET
     };
     private static final String TAG = "MainActivity";
+    private static final String KEY_BUNDLE_BACK = "keyBackFragmentTag";
     private String mBackFragmentTag;
     private FragmentManager fragmentManager;
     private Snackbar mSnackBarExit;
@@ -894,5 +895,19 @@ public class MainActivity extends AppCompatActivity
             default:
                 /* Unknown map source */
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(KEY_BUNDLE_BACK, mBackFragmentTag);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        mBackFragmentTag = savedInstanceState.getString(KEY_BUNDLE_BACK);
     }
 }
