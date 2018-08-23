@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -117,6 +118,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private String mBackFragmentTag;
     private FragmentManager fragmentManager;
+    private Snackbar mSnackBarExit;
 
     static {
         /* Setup default eventbus to use an index */
@@ -213,6 +215,8 @@ public class MainActivity extends AppCompatActivity
             TextView githubLink = headerView.findViewById(R.id.githubLink);
             githubLink.setMovementMethod(LinkMovementMethod.getInstance());
         }
+
+        mSnackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT);
     }
 
     /**
@@ -242,6 +246,9 @@ public class MainActivity extends AppCompatActivity
             switch (mBackFragmentTag) {
                 case MAP_LIST_FRAGMENT_TAG:
                     showMapListFragment();
+                    /* Clear the tag so that the back stack is popped the next time, unless a new retained
+                     * fragment is created in the meanwhile. */
+                    mBackFragmentTag = null;
                     break;
                 case MAP_FRAGMENT_TAG:
                     showMapViewFragment();
@@ -251,6 +258,8 @@ public class MainActivity extends AppCompatActivity
                     if (map != null) {
                         showMapSettingsFragment(map.getName());
                         break;
+                    } else {
+                        mBackFragmentTag = null;
                     }
                 case TRACKS_MANAGE_FRAGMENT_TAG:
                     showMapViewFragment();
@@ -260,19 +269,22 @@ public class MainActivity extends AppCompatActivity
                     break;
                 case IGN_CREDENTIALS_FRAGMENT_TAG:
                     showMapCreateFragment();
+                    mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
                     break;
                 default:
                     showMapListFragment();
+                    mBackFragmentTag = null;
             }
 
-            /* Clear the tag so that the back stack is popped the next time, unless a new retained
-             * fragment is created in the meanwhile.
-             */
-            mBackFragmentTag = null;
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
         } else {
-            showMapListFragment();
+            /* BACK button twice to exit */
+            if (mSnackBarExit.isShown()) {
+                super.onBackPressed();
+            } else {
+                mSnackBarExit.show();
+            }
         }
     }
 
@@ -312,6 +324,7 @@ public class MainActivity extends AppCompatActivity
             Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
             if (mapListFragment == null) {
                 showMapListFragment();
+                mBackFragmentTag = null;
             }
         }
     }
@@ -496,8 +509,6 @@ public class MainActivity extends AppCompatActivity
         }
         transaction.show(mapListFragment);
 
-        /* Manually manage the back action*/
-        mBackFragmentTag = MAP_FRAGMENT_TAG;
         transaction.commit();
     }
 
@@ -559,7 +570,7 @@ public class MainActivity extends AppCompatActivity
         transaction.show(mapImportFragment);
 
         /* Manually manage the back action*/
-        mBackFragmentTag = MAP_CREATE_FRAGMENT_TAG;
+        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
         transaction.commit();
     }
 
