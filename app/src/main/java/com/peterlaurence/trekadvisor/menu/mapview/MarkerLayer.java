@@ -145,8 +145,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                 movableMarker.setRelativeX(marker.lon);
                 movableMarker.setRelativeY(marker.lat);
             } else {
-                movableMarker.setRelativeX(marker.proj_x);
-                movableMarker.setRelativeY(marker.proj_y);
+                /* Take proj values, and fallback to lat-lon if they are null */
+                movableMarker.setRelativeX(marker.proj_x != null ? marker.proj_x : marker.lon);
+                movableMarker.setRelativeY(marker.proj_y != null ? marker.proj_y : marker.lat);
             }
             movableMarker.initStatic();
 
