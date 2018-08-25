@@ -22,4 +22,6 @@
     <color name="colorIndicatorOverlay">#885D4037</color>
     <color name="colorError">#F44336</color>
     <color name="colorAccentRed">#F44336</color>
+    <color name="colorWarningPanelBg">#EF6C00</color>
+    <color name="colorWarningPanelBorder">#E65100</color>
 </resources>

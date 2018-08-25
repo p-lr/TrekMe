@@ -83,7 +83,6 @@
     <string name="ign_pwd">Mot de passe</string>
     <string name="ign_api_category">API</string>
     <string name="ign_api_key">Clé</string>
-    <string name="store_credentials">Enregistrer ces informations</string>
     <string name="next_button">Continuer</string>
     <string name="ign_source">IGN</string>
     <string name="ign_source_description">France et ses territoires</string>
@@ -102,8 +101,8 @@
     <string name="map_download_dialog_progress">Progression</string>
     <string name="import_error">Une erreur est survenue. Essayez de redémarrer l\'application.</string>
     <string name="mapcreate_settings">Paramètres</string>
-    <string name="ign_help_msg">Tutoriel pour obtenir vos identifiants IGN</string>
-    <string name="ign_help_action">GO</string>
+    <string name="ign_help_msg">Des identifiants sont nécessaires pour créer une carte IGN.
+    C\'est <b>gratuit</b>, mais il faut suivre scrupuleusement le tutoriel.</string>
     <string name="ign_help_link">https://github.com/peterLaurence/TrekAdvisor/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN</string>
     <string name="image_preferences_category">Image de présentation</string>
     <string name="image_change_btn_txt">Changer l\'image</string>
@@ -114,4 +113,5 @@
     <string name="go_to_map_creation_btn">Créer une carte</string>
     <string name="download_confirm">Téléchargement lancé. Voir le statut dans les notifications.</string>
     <string name="confirm_exit">Appuyez à nouveau sur RETOUR pour quitter TrekAdvisor</string>
+    <string name="ign_tutorial"><u>Suivre le tutoriel</u></string>
 </resources>
