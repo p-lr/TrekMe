@@ -114,4 +114,5 @@
     <string name="download_confirm">Téléchargement lancé. Voir le statut dans les notifications.</string>
     <string name="confirm_exit">Appuyez à nouveau sur RETOUR pour quitter TrekAdvisor</string>
     <string name="ign_tutorial"><u>Suivre le tutoriel</u></string>
+    <string name="ign_spain_source">IGN Espagne</string>
 </resources>

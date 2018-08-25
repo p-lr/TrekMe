@@ -871,14 +871,9 @@ public class MainActivity extends AppCompatActivity
                     showWmtsViewFragment(mapSource);
                 }
                 break;
-            case OPEN_STREET_MAP:
-                showWmtsViewFragment(mapSource);
-                break;
-            case USGS:
-                showWmtsViewFragment(mapSource);
-                break;
             default:
-                /* Unknown map source */
+                showWmtsViewFragment(mapSource);
+                break;
         }
     }
 

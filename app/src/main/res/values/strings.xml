@@ -155,6 +155,8 @@
     <string name="open_street_map_source_description">Free map</string>
     <string name="usgs_map_source" translatable="false">USGS</string>
     <string name="usgs_map_source_description" translatable="false">U.S. Geological Survey</string>
+    <string name="ign_spain_source">IGN Spain</string>
+    <string name="ign_spain_source_description" translatable="false">Instituto Geográfico Nacional</string>
 
     <string name="mapcreate_define_area">Choose area</string>
     <string name="wmts_settings_dialog">Map configuration</string>

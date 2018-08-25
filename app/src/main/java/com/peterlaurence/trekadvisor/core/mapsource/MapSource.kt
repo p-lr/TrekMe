@@ -5,7 +5,7 @@ import kotlinx.android.parcel.Parcelize
 
 
 enum class MapSource {
-    IGN, OPEN_STREET_MAP, USGS
+    IGN, OPEN_STREET_MAP, USGS, IGN_SPAIN
 }
 
 @Parcelize

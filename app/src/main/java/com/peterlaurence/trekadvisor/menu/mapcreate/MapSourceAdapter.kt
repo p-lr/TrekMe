@@ -50,6 +50,11 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
                         R.string.usgs_map_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.usgs_logo, null))
             }
+            MapSource.IGN_SPAIN -> {
+                holder.title.text = parentView.resources.getText(R.string.ign_spain_source)
+                holder.description.text = parentView.resources.getText(R.string.ign_spain_source_description)
+                holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_spain_logo, null))
+            }
         }
 
         /* Take the selection into account to set colors */

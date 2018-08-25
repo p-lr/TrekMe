@@ -12,6 +12,7 @@ import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgn
+import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgnSpain
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderOSM
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderUSGS
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
@@ -194,6 +195,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
                     }
                     MapSource.USGS -> BitmapProviderUSGS()
                     MapSource.OPEN_STREET_MAP -> BitmapProviderOSM()
+                    MapSource.IGN_SPAIN -> BitmapProviderIgnSpain()
                     else -> null
                 })
 
