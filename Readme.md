@@ -28,7 +28,11 @@ The only limitation is the memory available on your device (smartphone, tablet).
 
 ## <a name="TOC-Features-sum"></a>Features summary
 
-* Support in-app map creation from United States's USGS, France's IGN map servers, and OpenStreetMap.
+* Support in-app map creation from:
+	- United States's USGS
+	- France IGN (requires a ** free ** registration)
+ 	- Spain IGN 
+ 	- OpenStreetMap
 * Marker support (with optional comments)
 * GPX tracks import
 * Lock the view to the current position
@@ -62,14 +66,14 @@ unless you have specific needs like heavy loads for your organization.
 From the "Create map" option menu, you get to choose between available providers:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44301221-79532b80-a313-11e8-9553-1019a5613aba.jpg" width="300">
+<img src="doc/tuto/wmts-providers.jpg" width="300">
 </p>
 
 Except for France's IGN, for which a (free) subscription is required, you can directly select the
 provider and continue.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44301262-4493a400-a314-11e8-948a-ec173eb64ab0.jpg" width="300">
+<img src="doc/tuto/select-area.jpg" width="300">
 </p>
 
 From there, you can zoom into the area in the world you want to capture. Then, press the area button
@@ -80,7 +84,7 @@ the entire world.
 When you're done, press the download button, at the bottom right. A configuration menu pops up:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44301322-14003a00-a315-11e8-8d11-7495dab2c416.jpg" width="300">
+<img src="doc/tuto/map-configuration.jpg" width="300">
 </p>
 
 WMTS map providers have different zoom levels, generally from 1 to 18. In most cases, you don't want
@@ -104,6 +108,7 @@ easily identify it in the map list. To do so, press the edit button at the botto
 card (in the map list menu). 
 
 From the map configuration view, you can:
+
 * Change the thumbnail image
 * Change the projection (only if you know what you're doing)
 * Change the calibration points (only if you know what you're doing)
@@ -118,7 +123,7 @@ yourself or someone else.
 A map can be archived from the map list menu, using the save button at the bottom right corner:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44299901-59653d00-a2fe-11e8-8dc7-cc1d664bd60c.jpg" width="300">
+<img src="doc/tuto/bali.jpg" width="300">
 </p>
 
 This creates a zip file (which we call archive) inside the `trekadvisor/archives` folder of your device's SD card.
@@ -153,7 +158,7 @@ This is an option from the top-right menu while viewing a map.
 Adjust the distance by dragging two blue circles. This is a "as the crow flies" distance.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44299931-d0023a80-a2fe-11e8-8964-91f1a16c0664.jpg" width="300">
+<img src="doc/tuto/distance.jpg" width="300">
 </p>
 
 ### <a name="TOC-Show-speed"></a>Show the speed
@@ -161,7 +166,7 @@ Adjust the distance by dragging two blue circles. This is a "as the crow flies" 
 The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few seconds before the speed can be displayed.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44300033-9c281480-a300-11e8-87fd-efa53f197161.jpg" width="300">
+<img src="doc/tuto/speed-indicator.jpg" width="300">
 </p>
 
 ### <a name="TOC-Add-markers"></a>Add markers
@@ -169,7 +174,7 @@ The speed indicator overlays the speed in km/h at the top of the screen. Note th
 Press the marker button to add a new marker at the center of the screen:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44300147-62f0a400-a302-11e8-9df3-9eba5c866268.jpg" width="300">
+<img src="doc/tuto/new-marker.jpg" width="300">
 </p>
 
 With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
@@ -178,10 +183,11 @@ When you're satisfied with its position, tap on the red circle at the center. It
 Tapping a marker displays a popup:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44300166-d4305700-a302-11e8-8df1-fa9761315c50.jpg" width="300">
+<img src="doc/tuto/marker-popup2.jpg" width="300">
 </p>
 
 From here you can:
+
 * Edit the marker (change its name and set a comment, see below)
 * Delete it
 * Move it
@@ -189,7 +195,7 @@ From here you can:
 Here is the marker edition view:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44300180-1b1e4c80-a303-11e8-984f-2ce2c32c5976.jpg" width="300">
+<img src="doc/tuto/marker-edit.jpg" width="300">
 </p>
 
 Nothing is changed until you save your changes.
@@ -199,13 +205,13 @@ Nothing is changed until you save your changes.
 While viewing a map, select the option menu on the upper right corner :
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44299790-b5c75d00-a2fc-11e8-8c7b-058009d466eb.jpg" width="300">
+<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
 </p>
 
 Choose "Manage tracks" option. Then, a list of currently available tracks opens up: 
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44299811-f1622700-a2fc-11e8-8bf0-a2118243755c.jpg" width="300">
+<img src="doc/tuto/track-list.jpg" width="300">
 </p>
 
 Here you can:
@@ -222,7 +228,7 @@ with other people.
 From the "GPX Record" option menu, you get the following interface:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/15638794/44301595-32b4ff80-a31a-11e8-9d2a-76fd305bf6b3.jpg" width="300">
+<img src="doc/tuto/gpx-recording.jpg" width="300">
 </p>
 
 The recording can be started or stopped from the control panel. When recording, the location service
