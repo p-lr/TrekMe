@@ -5,20 +5,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.menu.dialogs.EditFieldDialog;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.ActionsView;
 import com.peterlaurence.trekadvisor.menu.record.components.RecordListView;
 import com.peterlaurence.trekadvisor.menu.record.components.StatusView;
+import com.peterlaurence.trekadvisor.menu.record.components.events.RecordingNameChangeEvent;
+import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStartEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStopEvent;
 import com.peterlaurence.trekadvisor.service.LocationService;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
+import com.peterlaurence.trekadvisor.util.FileUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -90,6 +95,20 @@ public class RecordFragment extends Fragment {
             mStatusView.onServiceStarted();
         } else {
             mStatusView.onServiceStopped();
+        }
+    }
+
+    /**
+     * The {@link RecordFragment} is only used here to show the dialog.
+     */
+    @Subscribe
+    public void onRequestEditRecording(RequestEditRecording event) {
+        FragmentActivity fragmentActivity = getActivity();
+        if (fragmentActivity != null) {
+            String recordingName = FileUtils.getFileNameWithoutExtention(event.recording);
+            RecordingNameChangeEvent eventBack = new RecordingNameChangeEvent("", "");
+            EditFieldDialog editFieldDialog = EditFieldDialog.newInstance(getString(R.string.track_file_name_change), recordingName, eventBack);
+            editFieldDialog.show(fragmentActivity.getSupportFragmentManager(), "EditFieldDialog" + event.recording.getName());
         }
     }
 }

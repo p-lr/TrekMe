@@ -11,6 +11,11 @@ import com.peterlaurence.trekadvisor.service.event.Status
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 
+/**
+ * Dialog that shows the progression of a download.
+ *
+ * @author perterLaurence on 30/06/2018
+ */
 class MapDownloadDialog : DialogFragment() {
     private lateinit var progressBar: ProgressBar
 

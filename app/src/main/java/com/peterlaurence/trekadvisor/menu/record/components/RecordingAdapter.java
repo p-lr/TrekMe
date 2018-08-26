@@ -68,6 +68,7 @@ public class RecordingAdapter extends RecyclerView.Adapter<RecordingAdapter.Reco
 
     void setRecordings(ArrayList<File> recordings) {
         mRecordings = recordings;
+        notifyDataSetChanged();
     }
 
     void setSelectedRecordings(ArrayList<File> selectedRecordings) {

@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.record.components;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,9 +12,14 @@ import android.widget.ImageButton;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
+import com.peterlaurence.trekadvisor.core.track.TrackTools;
+import com.peterlaurence.trekadvisor.menu.record.components.events.RecordingNameChangeEvent;
+import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording;
 import com.peterlaurence.trekadvisor.menu.tools.RecyclerItemClickListener;
 import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent;
+import com.peterlaurence.trekadvisor.util.FileUtils;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -60,7 +66,16 @@ public class RecordListView extends CardView {
 
         Context ctx = getContext();
         RecyclerView recyclerView = findViewById(R.id.recordings_recycler_id);
+        ImageButton editNameButton = findViewById(R.id.edit_recording_button);
         ImageButton deleteRecordingButton = findViewById(R.id.delete_recording_button);
+
+        editNameButton.setEnabled(false);
+        editNameButton.setOnClickListener(v -> {
+            if (mSelectedRecordings.size() == 1) {
+                File recording = mSelectedRecordings.get(0);
+                EventBus.getDefault().post(new RequestEditRecording(recording));
+            }
+        });
 
         deleteRecordingButton.setOnClickListener(v -> {
             boolean success = true;
@@ -98,6 +113,13 @@ public class RecordListView extends CardView {
 
                     mRecordingAdapter.setSelectedRecordings(mSelectedRecordings);
                     mRecordingAdapter.notifyItemChanged(position);
+                } else {
+                    singleSelect(position);
+                    editNameButton.setEnabled(true);
+                    editNameButton.getDrawable().setTint(getResources().getColor(R.color.colorAccent, null));
+
+                    mRecordingAdapter.setSelectedRecordings(mSelectedRecordings);
+                    mRecordingAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -106,10 +128,12 @@ public class RecordListView extends CardView {
                 mSelectedRecordings = new ArrayList<>();
                 if (!mIsMultiSelectMode) {
                     mIsMultiSelectMode = true;
+                    editNameButton.setEnabled(false);
+                    editNameButton.getDrawable().setTint(Color.GRAY);
                     deleteRecordingButton.setVisibility(View.VISIBLE);
                     multiSelect(position);
                     mRecordingAdapter.setSelectedRecordings(mSelectedRecordings);
-                    mRecordingAdapter.notifyItemChanged(position);
+                    mRecordingAdapter.notifyDataSetChanged();
                 } else {
                     mIsMultiSelectMode = false;
                     deleteRecordingButton.setVisibility(View.GONE);
@@ -129,9 +153,26 @@ public class RecordListView extends CardView {
         }
     }
 
+    private void singleSelect(int position) {
+        File recording = mRecordings.get(position);
+        mSelectedRecordings.clear();
+        mSelectedRecordings.add(recording);
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGpxFileWriteEvent(GpxFileWriteEvent event) {
         updateRecordings();
         mRecordingAdapter.notifyDataSetChanged();
+    }
+
+    @Subscribe
+    public void onRecordingNameChangeEvent(RecordingNameChangeEvent event) {
+        for (File recording : mRecordings) {
+            if (FileUtils.getFileNameWithoutExtention(recording).equals(event.getInitialValue())) {
+                TrackTools.INSTANCE.renameTrack(recording, event.getNewValue());
+            }
+        }
+        updateRecordings();
+        mRecordingAdapter.setRecordings(mRecordings);
     }
 }

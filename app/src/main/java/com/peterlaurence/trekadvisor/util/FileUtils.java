@@ -89,6 +89,20 @@ public class FileUtils {
     }
 
     /**
+     * Get a {@link File} name without extension.
+     * @param file
+     * @return the file name, or an empty {@link String} if any.
+     */
+    public static String getFileNameWithoutExtention(File file) {
+        String name = file.getName();
+        try {
+            return name.substring(0, name.lastIndexOf("."));
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
      * Retrieve a {@link Bitmap} given its relative path from the external storage directory.
      * Usually, this directory is "/storage/emulated/0".
      * For example : if {@code imagePath} is "trekavisor/maps/paris/paris.jpg", the full path of

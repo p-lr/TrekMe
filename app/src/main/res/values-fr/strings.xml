@@ -115,4 +115,5 @@
     <string name="confirm_exit">Appuyez à nouveau sur RETOUR pour quitter TrekAdvisor</string>
     <string name="ign_tutorial"><u>Suivre le tutoriel</u></string>
     <string name="ign_spain_source">IGN Espagne</string>
+    <string name="track_file_name_change">Nom du fichier</string>
 </resources>

@@ -89,7 +89,7 @@ public abstract class TrackImporter {
 
     /**
      * Get the list of {@link File} which extension is in the list of supported extension for track
-     * file. Files are seerached into the
+     * file. Files are searched into the
      * {@link com.peterlaurence.trekadvisor.core.TrekAdvisorContext#DEFAULT_RECORDINGS_DIR}.
      */
     @Nullable
