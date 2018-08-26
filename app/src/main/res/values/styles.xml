@@ -19,7 +19,7 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="PositionMarkerStyle">
-        <item name="mesureDimension">30dp</item>
+        <item name="mesureDimension">60dp</item>
         <item name="positionDimension">15dp</item>
         <item name="orientationRadius1Dimension">18dp</item>
         <item name="backgroundCircleDimension">28dp</item>
