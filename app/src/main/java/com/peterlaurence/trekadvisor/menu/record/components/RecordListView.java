@@ -67,6 +67,7 @@ public class RecordListView extends CardView {
         Context ctx = getContext();
         RecyclerView recyclerView = findViewById(R.id.recordings_recycler_id);
         ImageButton editNameButton = findViewById(R.id.edit_recording_button);
+        ImageButton importButton = findViewById(R.id.import_track_button);
         ImageButton deleteRecordingButton = findViewById(R.id.delete_recording_button);
 
         editNameButton.setEnabled(false);
@@ -118,6 +119,9 @@ public class RecordListView extends CardView {
                     editNameButton.setEnabled(true);
                     editNameButton.getDrawable().setTint(getResources().getColor(R.color.colorAccent, null));
 
+                    importButton.setEnabled(true);
+                    importButton.getDrawable().setTint(getResources().getColor(R.color.colorAccent, null));
+
                     mRecordingAdapter.setSelectedRecordings(mSelectedRecordings);
                     mRecordingAdapter.notifyDataSetChanged();
                 }
@@ -130,6 +134,8 @@ public class RecordListView extends CardView {
                     mIsMultiSelectMode = true;
                     editNameButton.setEnabled(false);
                     editNameButton.getDrawable().setTint(Color.GRAY);
+                    importButton.setEnabled(false);
+                    importButton.getDrawable().setTint(Color.GRAY);
                     deleteRecordingButton.setVisibility(View.VISIBLE);
                     multiSelect(position);
                     mRecordingAdapter.setSelectedRecordings(mSelectedRecordings);
