@@ -14,6 +14,8 @@ import android.widget.TextView
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.map.Map
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader
+import com.peterlaurence.trekadvisor.menu.record.components.events.MapSelectedForRecord
+import org.greenrobot.eventbus.EventBus
 
 private const val KEY_BUNDLE_MAP_INDEX = "mapIndex"
 
@@ -27,6 +29,8 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var mapChoiceAdapter: MapChoiceAdapter
     private var selectedIndex: Int = -1
+
+    private var mapSelected: Map? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         selectedIndex = savedInstanceState?.getInt(KEY_BUNDLE_MAP_INDEX) ?: -1
@@ -44,12 +48,21 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         val builder = AlertDialog.Builder(activity!!)
         builder.setTitle(getString(R.string.choose_a_map))
         builder.setView(recyclerView)
+        builder.setPositiveButton(getString(R.string.ok_dialog)) { _, _ ->
+            if (mapSelected != null) {
+                EventBus.getDefault().post(MapSelectedForRecord(mapSelected?.id!!))
+            }
+        }
+        builder.setNegativeButton(getString(R.string.cancel_dialog_string)) { _, _ ->
+            dismiss()
+        }
 
         return builder.create()
     }
 
     override fun onMapSelected(map: Map, position: Int) {
         selectedIndex = position
+        mapSelected = map
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -11,8 +11,12 @@ import android.view.View;
 import android.widget.ImageButton;
 
 import com.peterlaurence.trekadvisor.R;
+import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.core.track.TrackTools;
+import com.peterlaurence.trekadvisor.menu.record.components.events.MapSelectedForRecord;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RecordingNameChangeEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestChooseMap;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording;
@@ -27,6 +31,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * List of recordings.
@@ -184,5 +189,29 @@ public class RecordListView extends CardView {
         }
         updateRecordings();
         mRecordingAdapter.setRecordings(mRecordings);
+    }
+
+    @Subscribe
+    public void onMapSelectedForRecord(MapSelectedForRecord event) {
+        Map map = MapLoader.getInstance().getMap(event.getMapId());
+        TrackImporter.TrackFileParsedListener listener = new TrackImporter.TrackFileParsedListener() {
+            @Override
+            public void onTrackFileParsed(Map map, List<RouteGson.Route> routeList) {
+                TrackTools.INSTANCE.updateRouteList(map, routeList);
+                MapLoader.getInstance().saveRoutes(map);
+            }
+
+            @Override
+            public void onError(String message) {
+                // TODO : log this error
+            }
+        };
+        File recording = mSelectedRecordings.get(0);
+
+        TrackImporter.importTrackFile(recording, listener, map);
+
+        /* Tell the user that the track will be shortly available in the map */
+        Snackbar snackbar = Snackbar.make(getRootView(), R.string.track_is_being_added, Snackbar.LENGTH_LONG);
+        snackbar.show();
     }
 }

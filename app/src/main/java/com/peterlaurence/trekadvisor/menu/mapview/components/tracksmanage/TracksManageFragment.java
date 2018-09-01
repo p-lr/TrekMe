@@ -31,9 +31,9 @@ import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
+import com.peterlaurence.trekadvisor.core.track.TrackTools;
 import com.peterlaurence.trekadvisor.menu.MapProvider;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -151,7 +151,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
                 }
 
                 /* Import the file */
-                importTrack(uri);
+                TrackImporter.importTrackUri(uri, this, mMap, getContext().getContentResolver());
             }
         }
     }
@@ -209,10 +209,6 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         rootView.addView(recyclerView, 0);
     }
 
-    private void importTrack(Uri uri) {
-        TrackImporter.importTrackFile(uri, this, mMap, getContext().getContentResolver());
-    }
-
     private void saveChanges() {
         MapLoader.getInstance().saveRoutes(mMap);
     }
@@ -229,7 +225,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         /* We want to append new routes, so the index to add new routes is equal to current length
          * of the data set. */
         int positionStart = mTrackAdapter.getItemCount();
-        int newRouteCount = updateRouteList(map, routeList);
+        int newRouteCount = TrackTools.INSTANCE.updateRouteList(map, routeList);
         if (mTrackChangeListener != null) {
             mTrackChangeListener.onTrackChanged(map, routeList);
         }
@@ -237,35 +233,6 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
         /* Save */
         saveChanges();
-    }
-
-    /**
-     * Add new {@link RouteGson.Route}s to a {@link Map}.
-     *
-     * @return the number of {@link RouteGson.Route} that have been appended to the list.
-     */
-    private int updateRouteList(Map map, List<RouteGson.Route> newRouteList) {
-        if (newRouteList == null) return 0;
-        java.util.Map<String, RouteGson.Route> hashMap = new HashMap<>();
-        List<RouteGson.Route> routeList = map.getRoutes();
-        if (routeList != null) {
-            for (RouteGson.Route route : routeList) {
-                hashMap.put(route.name, route);
-            }
-        }
-
-        int newRouteCount = 0;
-        for (RouteGson.Route route : newRouteList) {
-            if (hashMap.containsKey(route.name)) {
-                RouteGson.Route existingRoute = hashMap.get(route.name);
-                existingRoute.copyRoute(route);
-            } else {
-                map.addRoute(route);
-                newRouteCount++;
-            }
-        }
-
-        return newRouteCount;
     }
 
     @Override

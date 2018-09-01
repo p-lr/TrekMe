@@ -21,8 +21,10 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
@@ -81,10 +83,41 @@ public abstract class TrackImporter {
      * @param listener a {@link TrackFileParsedListener}
      * @param map      the {@link Map} to which the routes will be added.
      */
-    public static void importTrackFile(Uri uri, TrackFileParsedListener listener, Map map,
-                                       ContentResolver contentResolver) {
-        GpxTrackFileTask gpxTrackFileTask = new GpxTrackFileTask(listener, map, contentResolver);
-        gpxTrackFileTask.execute(uri);
+    public static void importTrackUri(Uri uri, TrackFileParsedListener listener, Map map,
+                                      ContentResolver contentResolver) {
+
+        try {
+            ParcelFileDescriptor parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r");
+            if (parcelFileDescriptor == null) {
+                listener.onError("Could not read content of file");
+                return;
+            }
+            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+            FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
+
+            GpxTrackFileTask gpxTrackFileTask = new GpxTrackFileTask(listener, map, () ->
+            {
+                try {
+                    parcelFileDescriptor.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            gpxTrackFileTask.execute(fileInputStream);
+        } catch (IOException e) {
+            listener.onError("Error when opening the file");
+        }
+    }
+
+    public static void importTrackFile(File file, TrackFileParsedListener listener, Map map) {
+        try {
+            FileInputStream fileInputStream = new FileInputStream(file);
+
+            GpxTrackFileTask gpxTrackFileTask = new GpxTrackFileTask(listener, map, null);
+            gpxTrackFileTask.execute(fileInputStream);
+        } catch (FileNotFoundException e) {
+            listener.onError("The file doesn't exists");
+        }
     }
 
     /**
@@ -103,17 +136,17 @@ public abstract class TrackImporter {
         void onError(String message);
     }
 
-    private static class GpxTrackFileTask extends AsyncTask<Uri, Void, Void> {
+    private static class GpxTrackFileTask extends AsyncTask<InputStream, Void, Void> {
         private TrackFileParsedListener mListener;
         private Map mMap;
-        private ContentResolver mContentResolver;
         private LinkedList<RouteGson.Route> mNewRouteList;
+        private Runnable mPostExecuteTask;
 
-        GpxTrackFileTask(TrackFileParsedListener listener, Map map, ContentResolver contentResolver) {
+        GpxTrackFileTask(TrackFileParsedListener listener, Map map, Runnable postExecuteTask) {
             mListener = listener;
             mMap = map;
-            mContentResolver = contentResolver;
             mNewRouteList = new LinkedList<>();
+            mPostExecuteTask = postExecuteTask;
         }
 
         /**
@@ -123,25 +156,17 @@ public abstract class TrackImporter {
          * are added to a single {@link RouteGson.Route}.
          */
         @Override
-        protected Void doInBackground(Uri... uriList) {
-            for (Uri uri : uriList) {
+        protected Void doInBackground(InputStream... inputStreamList) {
+            for (InputStream stream : inputStreamList) {
 
                 try {
-                    ParcelFileDescriptor parcelFileDescriptor = mContentResolver.openFileDescriptor(uri, "r");
-                    if (parcelFileDescriptor == null) {
-                        mListener.onError("Could not read content of file");
-                        continue;
-                    }
-                    FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-                    FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
-                    Gpx gpx = GPXParser.INSTANCE.parse(fileInputStream);
+                    Gpx gpx = GPXParser.INSTANCE.parse(stream);
 
                     for (Track track : gpx.getTracks()) {
                         RouteGson.Route route = gpxTracktoRoute(track);
                         mNewRouteList.add(route);
                     }
-                    fileInputStream.close();
-                    parcelFileDescriptor.close();
+                    stream.close();
                 } catch (XmlPullParserException | IOException | ParseException e) {
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
@@ -155,6 +180,9 @@ public abstract class TrackImporter {
         @Override
         protected void onPostExecute(Void result) {
             mListener.onTrackFileParsed(mMap, mNewRouteList);
+            if (mPostExecuteTask != null) {
+                mPostExecuteTask.run();
+            }
         }
 
         /**

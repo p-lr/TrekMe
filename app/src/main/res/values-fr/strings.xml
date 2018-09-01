@@ -117,4 +117,5 @@
     <string name="ign_spain_source">IGN Espagne</string>
     <string name="track_file_name_change">Nom du fichier</string>
     <string name="choose_a_map">Choisissez une carte</string>
+    <string name="track_is_being_added">La trace est en cours d\'import dans la carte</string>
 </resources>
