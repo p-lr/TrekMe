@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog
 import android.view.WindowManager
 import android.widget.EditText
 import com.peterlaurence.trekadvisor.R
+import com.peterlaurence.trekadvisor.menu.dialogs.EditFieldDialog.Companion.newInstance
 import kotlinx.android.parcel.Parcelize
 import org.greenrobot.eventbus.EventBus
 
@@ -74,6 +75,7 @@ class EditFieldDialog : DialogFragment() {
                 EventBus.getDefault().post(editFieldEvent)
             }
         }
+        builder.setNegativeButton(getText(R.string.cancel_dialog_string)) { _, _ -> dismiss() }
 
         builder.setView(view)
 
