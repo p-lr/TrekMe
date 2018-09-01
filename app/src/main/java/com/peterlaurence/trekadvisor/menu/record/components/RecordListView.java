@@ -14,6 +14,7 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.core.track.TrackTools;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RecordingNameChangeEvent;
+import com.peterlaurence.trekadvisor.menu.record.components.events.RequestChooseMap;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording;
 import com.peterlaurence.trekadvisor.menu.tools.RecyclerItemClickListener;
 import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent;
@@ -77,6 +78,9 @@ public class RecordListView extends CardView {
                 EventBus.getDefault().post(new RequestEditRecording(recording));
             }
         });
+
+        importButton.setEnabled(false);
+        importButton.setOnClickListener(v -> EventBus.getDefault().post(new RequestChooseMap()));
 
         deleteRecordingButton.setOnClickListener(v -> {
             boolean success = true;

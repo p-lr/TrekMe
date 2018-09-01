@@ -116,4 +116,5 @@
     <string name="ign_tutorial"><u>Suivre le tutoriel</u></string>
     <string name="ign_spain_source">IGN Espagne</string>
     <string name="track_file_name_change">Nom du fichier</string>
+    <string name="choose_a_map">Choisissez une carte</string>
 </resources>

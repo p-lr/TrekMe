@@ -17,7 +17,9 @@ import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.ActionsView;
 import com.peterlaurence.trekadvisor.menu.record.components.RecordListView;
 import com.peterlaurence.trekadvisor.menu.record.components.StatusView;
+import com.peterlaurence.trekadvisor.menu.record.components.dialogs.MapChoiceDialog;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RecordingNameChangeEvent;
+import com.peterlaurence.trekadvisor.menu.record.components.events.RequestChooseMap;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStartEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStopEvent;
@@ -109,6 +111,15 @@ public class RecordFragment extends Fragment {
             RecordingNameChangeEvent eventBack = new RecordingNameChangeEvent("", "");
             EditFieldDialog editFieldDialog = EditFieldDialog.newInstance(getString(R.string.track_file_name_change), recordingName, eventBack);
             editFieldDialog.show(fragmentActivity.getSupportFragmentManager(), "EditFieldDialog" + event.recording.getName());
+        }
+    }
+
+    @Subscribe
+    public void onRequestChooseMap(RequestChooseMap event) {
+        FragmentActivity fragmentActivity = getActivity();
+        if (fragmentActivity != null) {
+            MapChoiceDialog dialog = new MapChoiceDialog();
+            dialog.show(fragmentActivity.getSupportFragmentManager(), "MapChoiceDialog");
         }
     }
 }
