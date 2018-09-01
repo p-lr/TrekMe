@@ -234,5 +234,11 @@ From the "GPX Record" option menu, you get the following interface:
 The recording can be started or stopped from the control panel. When recording, the location service
 runs in the background. It continues even if TrekAdvisor is stopped or paused.
 An indicator reports back the status of the location service. A panel shows the list of recordings.
+
+From there, when selecting a track, there are two buttons at the bottom which enable you to :
+
+* rename it
+* import it into an existing map (press the import button at the bottom of the list, then choose the map)
+
 To delete a recording, long-press on it. The panel transitions into a selection mode, where there is a
-remove button at the bottom.
+remove button at the bottom. To go back to selection mode, long-press again somewhere in the list.
