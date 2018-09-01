@@ -131,7 +131,12 @@ public class LocationService extends Service {
             ArrayList<TrackSegment> trkSegList = new ArrayList<>();
             trkSegList.add(new TrackSegment(mTrackPoints));
 
-            Track track = new Track(trkSegList, TrekAdvisorContext.APP_FOLDER_NAME + " track");
+            /* Name the track using the current date */
+            Date date = new Date();
+            DateFormat dateFormat = new SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH);
+            String trackName = "track-" + dateFormat.format(date);
+
+            Track track = new Track(trkSegList, trackName);
 
             ArrayList<Track> trkList = new ArrayList<>();
             trkList.add(track);
@@ -141,10 +146,7 @@ public class LocationService extends Service {
                 if (!TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.exists()) {
                     TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.mkdir();
                 }
-
-                Date date = new Date();
-                DateFormat dateFormat = new SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH);
-                String gpxFileName = "track-" + dateFormat.format(date) + ".gpx";
+                String gpxFileName = trackName + ".gpx";
                 File gpxFile = new File(TrekAdvisorContext.DEFAULT_RECORDINGS_DIR, gpxFileName);
                 FileOutputStream fos = new FileOutputStream(gpxFile);
                 GPXWriter.INSTANCE.write(gpx, fos);

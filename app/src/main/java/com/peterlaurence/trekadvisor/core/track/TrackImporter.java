@@ -196,6 +196,9 @@ public abstract class TrackImporter {
             /* The route name is the track name */
             route.name = track.getName();
 
+            /* The route should be visible by default */
+            route.visible = true;
+
             /* All track segments are concatenated */
             List<TrackSegment> trackSegmentList = track.getTrackSegments();
             for (TrackSegment trackSegment : trackSegmentList) {
