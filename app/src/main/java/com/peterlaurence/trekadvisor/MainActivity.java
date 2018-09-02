@@ -316,9 +316,18 @@ public class MainActivity extends AppCompatActivity
     public void onStart() {
         super.onStart();
 
-        checkStoragePermission(this);
         checkLocationPermissions(this);
-        showMapListFragment();
+        if (checkStoragePermission(this)) {
+            /* If the list fragment already exists, the activity might have been recreated because
+             * of a configuration change. Then we don't want to show this fragment, as another
+             * one is probably already visible.
+             */
+            Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
+            if (mapListFragment == null) {
+                showMapListFragment();
+                mBackFragmentTag = null;
+            }
+        }
     }
 
     @Override
