@@ -316,18 +316,9 @@ public class MainActivity extends AppCompatActivity
     public void onStart() {
         super.onStart();
 
-        /* Show the map list fragment if we have the right to read the sd card */
-        if (checkStoragePermission(this)) {
-            /* If the list fragment already exists, the activity might have been recreated because
-             * of a configuration change. Then we don't want to show this fragment, as another
-             * one is probably already visible.
-             */
-            Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-            if (mapListFragment == null) {
-                showMapListFragment();
-                mBackFragmentTag = null;
-            }
-        }
+        checkStoragePermission(this);
+        checkLocationPermissions(this);
+        showMapListFragment();
     }
 
     @Override
@@ -790,19 +781,28 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
-            case REQUEST_EXTERNAL_STORAGE: {
+            case REQUEST_EXTERNAL_STORAGE:
                 /* If request is cancelled, the result arrays are empty */
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    showMapListFragment();
-
-                    /* For instance check the location permission here */
-                    checkLocationPermissions(this);
+                    /* Restart the activity to ensure that every component can access local storage
+                     * This may not be required in future versions of Android, since lifecycle around
+                     * this callback has been improved after api lvl 23 (excluded) */
+                    Intent intent = getIntent();
+                    finish();
+                    startActivity(intent);
                 } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    // permission denied
+                    // TODO : alert the user of the consequences
                 }
-            }
+                break;
+            case REQUEST_LOCATION:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                } else {
+                    // permission denied
+                    // TODO : alert the user of the consequences
+                }
         }
     }
 
