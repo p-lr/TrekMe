@@ -9,6 +9,7 @@
     <color name="colorPrimaryTextWhite">#FFFFFF</color>
     <color name="colorDarkGrey">#616161</color>
     <color name="colorGrey">#888888</color>
+    <color name="colorLightGrey">#BBBBBB</color>
     <color name="colorPositionMarker">#448AFF</color>
     <color name="colorPositionMarkerBg">#55448AFF</color>
     <color name="colorCalibrationMarker">#CC448AFF</color>
