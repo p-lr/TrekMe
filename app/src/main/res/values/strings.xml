@@ -120,6 +120,9 @@
     <string name="km">km</string>
     <string name="m">m</string>
     <string name="mile">ml</string>
+    <string name="no_track_message">You haven\'t created nor imported any track yet.
+        You can import a gpx track downloaded from a website using the import button above, or you can import
+    a recording of your own using the recording menu.</string>
 
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>

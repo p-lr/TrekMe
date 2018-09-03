@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -48,6 +49,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     private static final int TRACK_REQUEST_CODE = 1337;
     private static final String ROUTE_INDEX = "routeIndex";
     private FrameLayout rootView;
+    private ConstraintLayout emptyRoutePanel;
     private Map mMap;
     private MapProvider mMapProvider;
     private MenuItem mTrackRenameMenuItem;
@@ -78,6 +80,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
                              Bundle savedInstanceState) {
 
         rootView = (FrameLayout) inflater.inflate(R.layout.fragment_tracks_manage, container, false);
+        emptyRoutePanel = rootView.findViewById(R.id.emptyRoutePanel);
         mMap = mMapProvider.getCurrentMap();
         generateTracks(mMap);
 
@@ -110,6 +113,8 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
          * because at that moment the FragmentManager is not fully initialized (it may not have
          * attached all needed fragments) */
         mTrackChangeListener = mTrackChangeListenerProvider.getTrackChangeListener();
+
+        updateEmptyRoutePanelVisibility();
     }
 
     @Override
@@ -231,6 +236,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         }
         mTrackAdapter.notifyItemRangeInserted(positionStart, newRouteCount);
 
+        /* Since new routes may have added, update the empty panel visibility */
+        updateEmptyRoutePanelVisibility();
+
         /* Save */
         saveChanges();
     }
@@ -263,6 +271,15 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     public interface TrackChangeListenerProvider {
         TrackChangeListener getTrackChangeListener();
+    }
+
+    /* Show or hide the panel indicating that there is no routes */
+    private void updateEmptyRoutePanelVisibility() {
+        if (mTrackAdapter.getItemCount() > 0) {
+            emptyRoutePanel.setVisibility(View.GONE);
+        } else {
+            emptyRoutePanel.setVisibility(View.VISIBLE);
+        }
     }
 
     public interface TrackChangeListener {
