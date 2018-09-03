@@ -10,8 +10,9 @@
     <item
         android:id="@+id/manage_tracks_id"
         android:orderInCategory="0"
+        android:icon="@drawable/ic_gesture_white_24dp"
         android:title="@string/manage_tracks_menu"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/speedometer_id"
