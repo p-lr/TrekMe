@@ -5,8 +5,8 @@ import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 
 import com.peterlaurence.trekadvisor.R;
-import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.widgets.HeartBeatIndicator;
+import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -41,12 +41,13 @@ public class StatusView extends CardView {
     }
 
     /**
-     * If there is a subscriber for the {@link RecordGpxStartEvent}, we assume that
-     * the {@link com.peterlaurence.trekadvisor.service.LocationService} is started. <br>
-     * Else we assume that the service isn't started.
+     * If the sticky {@link LocationServiceStatus} event reports that the
+     * {@link com.peterlaurence.trekadvisor.service.LocationService} is started, we init the view
+     * accordingly.
      */
     private void initState() {
-        if (EventBus.getDefault().hasSubscriberForEvent(RecordGpxStartEvent.class)) {
+        LocationServiceStatus event = EventBus.getDefault().getStickyEvent(LocationServiceStatus.class);
+        if (event != null && event.started) {
             onServiceStarted();
         } else {
             onServiceStopped();

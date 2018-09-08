@@ -29,7 +29,6 @@ import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
-import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
@@ -201,10 +200,6 @@ public class LocationService extends Service {
         return START_NOT_STICKY;
     }
 
-    @Subscribe
-    public void onRecordGpxStartEvent(RecordGpxStartEvent event) {
-    }
-
     /**
      * Create and write a new gpx file. <br>
      * After this is done, a {@link GpxFileWriteEvent} is emitted through event bus so the service
@@ -221,9 +216,9 @@ public class LocationService extends Service {
      */
     @Subscribe
     public void onGpxFileWriteEvent(GpxFileWriteEvent event) {
-        stopSelf();
         mStarted = false;
         sendStatus();
+        stopSelf();
     }
 
     @Override
@@ -258,6 +253,6 @@ public class LocationService extends Service {
      * Send the started/stopped boolean status of the service.
      */
     private void sendStatus() {
-        EventBus.getDefault().post(new LocationServiceStatus(mStarted));
+        EventBus.getDefault().postSticky(new LocationServiceStatus(mStarted));
     }
 }

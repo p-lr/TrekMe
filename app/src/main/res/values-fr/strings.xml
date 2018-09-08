@@ -119,4 +119,5 @@
     <string name="choose_a_map">Choisissez une carte</string>
     <string name="track_is_being_added">La trace est en cours d\'import dans la carte</string>
     <string name="no_track_message">Vous n\'avez pas encore importé de trace. Vous pouvez créer votre propre trace en enregistrant votre parcours, depuis le menu. Ou bien vous pouvez télécharger des traces au format gpx sur un site internet de randonnée, et l\'importer avec le bouton "NOUVELLE TRACE" ci-dessus.</string>
+    <string name="track_stats_menu_title">Statistiques enregistrement en cours</string>
 </resources>

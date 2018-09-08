@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.menu.dialogs.EditFieldDialog;
-import com.peterlaurence.trekadvisor.menu.events.RecordGpxStartEvent;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.menu.record.components.ActionsView;
 import com.peterlaurence.trekadvisor.menu.record.components.RecordListView;
@@ -83,7 +82,6 @@ public class RecordFragment extends Fragment {
     public void onRequestStartEvent(RequestStartEvent event) {
         Intent intent = new Intent(getActivity().getBaseContext(), LocationService.class);
         getActivity().startService(intent);
-        EventBus.getDefault().post(new RecordGpxStartEvent());
     }
 
     @Subscribe

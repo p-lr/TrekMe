@@ -9,6 +9,7 @@
     <string name="select_map_menu_title">Select map</string>
     <string name="create_menu_title">Create</string>
     <string name="record_menu_title">Gpx Record</string>
+    <string name="track_stats_menu_title">Recording stats</string>
     <string name="import_menu_title">Import a map</string>
     <string name="confirm_exit">Click BACK again to exit</string>
 

@@ -51,8 +51,10 @@ import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
 import com.peterlaurence.trekadvisor.menu.record.RecordFragment;
+import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -120,6 +122,7 @@ public class MainActivity extends AppCompatActivity
     private String mBackFragmentTag;
     private FragmentManager fragmentManager;
     private Snackbar mSnackBarExit;
+    private NavigationView mNavigationView;
 
     static {
         /* Setup default eventbus to use an index */
@@ -208,16 +211,33 @@ public class MainActivity extends AppCompatActivity
         }
         toggle.syncState();
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        if (navigationView != null) {
-            navigationView.setNavigationItemSelectedListener(this);
+        mNavigationView = findViewById(R.id.nav_view);
+        if (mNavigationView != null) {
+            mNavigationView.setNavigationItemSelectedListener(this);
 
-            View headerView = navigationView.getHeaderView(0);
+            View headerView = mNavigationView.getHeaderView(0);
             TextView githubLink = headerView.findViewById(R.id.githubLink);
             githubLink.setMovementMethod(LinkMovementMethod.getInstance());
         }
 
         mSnackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT);
+    }
+
+    /**
+     * Check whether the {@link com.peterlaurence.trekadvisor.service.LocationService} started status.
+     * If it's started, show the menu that navigates to current track statistics. Otherwise, hide it.
+     * This method is executed both at initialization of the activity, and upon reception of a
+     * {@link LocationServiceStatus} event, which triggers {@link #invalidateOptionsMenu()}, thus
+     * this method.
+     */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        LocationServiceStatus event = EventBus.getDefault().getStickyEvent(LocationServiceStatus.class);
+        if (event != null) {
+            setTrackStatsMenuVisibility(event.started);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     /**
@@ -316,6 +336,9 @@ public class MainActivity extends AppCompatActivity
     public void onStart() {
         super.onStart();
 
+        /* Register eventbus */
+        EventBus.getDefault().register(this);
+
         checkLocationPermissions(this);
         if (checkStoragePermission(this)) {
             /* If the list fragment already exists, the activity might have been recreated because
@@ -328,6 +351,12 @@ public class MainActivity extends AppCompatActivity
                 mBackFragmentTag = null;
             }
         }
+    }
+
+    @Override
+    protected void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
     }
 
     @Override
@@ -886,6 +915,15 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Subscribe
+    public void onLocationServiceStatus(LocationServiceStatus event) {
+        supportInvalidateOptionsMenu();
+    }
+
+    private void setTrackStatsMenuVisibility(boolean visibility) {
+        Menu menu = mNavigationView.getMenu();
+        menu.findItem(R.id.nav_track_stats).setVisible(visibility);
+    }
 
     @Override
     public void onMapSourceSettings(@NotNull MapSource mapSource) {
