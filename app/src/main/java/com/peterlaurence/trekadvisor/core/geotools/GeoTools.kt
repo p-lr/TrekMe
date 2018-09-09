@@ -40,6 +40,7 @@ fun distanceApprox(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Doub
  * @param lon1 the longitude of the first point, in decimal degrees
  * @param lat2 the latitude of the second point, in decimal degrees
  * @param lon2 the longitude of the second point, in decimal degrees
+ * @return the distance between the two points, in meters
  */
 fun deltaTwoPoints(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
     val r = 6371000
@@ -58,6 +59,7 @@ fun deltaTwoPoints(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Doub
  * @param lat2 the latitude of the second point, in decimal degrees
  * @param lon2 the longitude of the second point, in decimal degrees
  * @param ele2 the elevation of the second point, in meters
+ * @return the distance between the two points, in meters
  */
 fun deltaTwoPoints(lat1: Double, lon1: Double, ele1: Double, lat2: Double, lon2: Double, ele2: Double): Double {
     val x = deltaTwoPoints(lat1, lon1, lat2, lon2)

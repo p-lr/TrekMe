@@ -29,6 +29,7 @@ import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
+import com.peterlaurence.trekadvisor.core.track.TrackStatCalculator;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
@@ -70,6 +71,7 @@ public class LocationService extends Service {
     private LocationCallback mLocationCallback;
 
     private List<TrackPoint> mTrackPoints;
+    private TrackStatCalculator mTrackStatCalculator;
 
     private boolean mStarted = false;
 
@@ -103,6 +105,9 @@ public class LocationService extends Service {
         /* Create the Gpx instance */
         mTrackPoints = new ArrayList<>();
 
+        /* Prepare the stat calculator */
+        mTrackStatCalculator = new TrackStatCalculator();
+
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -111,6 +116,7 @@ public class LocationService extends Service {
                         TrackPoint trackPoint = new TrackPoint(location.getLatitude(),
                                 location.getLongitude(), location.getAltitude(), null);
                         mTrackPoints.add(trackPoint);
+                        mTrackStatCalculator.addTrackPoint(trackPoint);
                     });
                 }
             }
