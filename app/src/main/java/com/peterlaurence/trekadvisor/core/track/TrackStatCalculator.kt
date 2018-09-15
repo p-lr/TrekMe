@@ -1,7 +1,10 @@
 package com.peterlaurence.trekadvisor.core.track
 
+import android.os.Parcelable
 import com.peterlaurence.trekadvisor.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint
+import kotlinx.android.parcel.Parcelize
+import kotlin.properties.Delegates
 
 /**
  * Calculates statistics for a track:
@@ -12,9 +15,20 @@ import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint
  * @author peterLaurence on 09/09/18
  */
 class TrackStatCalculator {
-    var distance: Double = 0.0
+    private val trackStatistics = TrackStatistics(0.0)
+
+    /**
+     * Whenever the distance property changes, update the statistics.
+     */
+    var distance: Double by Delegates.observable(0.0) { prop, old, new ->
+        trackStatistics.distance = new
+    }
 
     private var lastTrackPoint: TrackPoint? = null
+
+    fun getStatistics(): TrackStatistics {
+        return trackStatistics
+    }
 
     fun addTrackPointList(trkPtList: List<TrackPoint>) {
         trkPtList.forEach { addTrackPoint(it) }
@@ -45,3 +59,6 @@ class TrackStatCalculator {
         lastTrackPoint = trkPt
     }
 }
+
+@Parcelize
+data class TrackStatistics(var distance: Double) : Parcelable
