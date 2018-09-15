@@ -19,6 +19,7 @@ const val TAG_WAYPOINT = "wpt"
 /* Track nodes */
 const val TAG_NAME = "name"
 const val TAG_SEGMENT = "trkseg"
+const val TAG_EXTENSIONS = "extensions"
 
 /* Track segment nodes */
 const val TAG_POINT = "trkpt"
@@ -28,3 +29,7 @@ const val ATTR_LAT = "lat"
 const val ATTR_LON = "lon"
 const val TAG_ELEVATION = "ele"
 const val TAG_TIME = "time"
+
+/* Track custom extensions nodes and attributes */
+const val TAG_TRACK_STATISTICS = "statistics"
+const val ATTR_TRK_STAT_DIST = "distance"

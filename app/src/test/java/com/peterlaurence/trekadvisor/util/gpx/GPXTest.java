@@ -26,6 +26,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.fail;
 
 /**
@@ -80,6 +81,10 @@ public class GPXTest {
                     assertEquals(firstTrackPoint.getTime(),
                             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).
                                     parse("2007-10-14T10:09:57Z"));
+
+                    /* Check that the track has statistics */
+                    assertNotNull(track.getStatistics());
+                    assertEquals(track.getStatistics().getDistance(), 102.0);
                 } catch (Exception e) {
                     e.printStackTrace();
                     fail();

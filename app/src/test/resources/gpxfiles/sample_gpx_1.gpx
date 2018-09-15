@@ -50,6 +50,10 @@
                 <time>2007-10-14T10:14:08Z</time>
             </trkpt>
         </trkseg>
+        <extensions>
+            <statistics distance="102">
+            </statistics>
+        </extensions>
     </trk>
     <rte>
         <name>Patrick's Route</name>

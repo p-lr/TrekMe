@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.util.gpx
 
 import android.util.Xml
+import com.peterlaurence.trekadvisor.core.track.TrackStatistics
 import com.peterlaurence.trekadvisor.util.gpx.model.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -12,7 +13,7 @@ import java.util.*
 
 
 /**
- * A GPX parser.
+ * A GPX parser compliant with the [GPX 1.1 schema](https://www.topografix.com/gpx/1/1/)
  *
  * @author peterLaurence on 12/02/17.
  */
@@ -57,8 +58,6 @@ object GPXParser {
     /**
      * Parses the contents of an entry.
      *
-     *
-     *
      * If it encounters a title, summary, or link tag, hands them off to their respective "read"
      * methods for processing. Otherwise, skips the tag.
      */
@@ -67,6 +66,7 @@ object GPXParser {
         val segments = ArrayList<TrackSegment>()
         parser.require(XmlPullParser.START_TAG, ns, TAG_TRACK)
         var trackName = ""
+        var trackStatistics: TrackStatistics? = null
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
@@ -75,12 +75,45 @@ object GPXParser {
             when (name) {
                 TAG_NAME -> trackName = readName(parser)
                 TAG_SEGMENT -> segments.add(readSegment(parser))
+                TAG_EXTENSIONS -> trackStatistics = readTrackExtensions(parser)
                 else -> skip(parser)
             }
         }
         parser.require(XmlPullParser.END_TAG, ns, TAG_TRACK)
 
-        return Track(trackSegments = segments, name = trackName)
+        return Track(trackSegments = segments, name = trackName, statistics = trackStatistics)
+    }
+
+    @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
+    private fun readTrackExtensions(parser: XmlPullParser): TrackStatistics? {
+        parser.require(XmlPullParser.START_TAG, ns, TAG_EXTENSIONS)
+        var trackStatistics: TrackStatistics? = null
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) {
+                continue
+            }
+            when (parser.name) {
+                TAG_TRACK_STATISTICS -> trackStatistics = readTrackStatistics(parser)
+                else -> skip(parser)
+            }
+        }
+        parser.require(XmlPullParser.END_TAG, ns, TAG_EXTENSIONS)
+        return trackStatistics
+    }
+
+    @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
+    private fun readTrackStatistics(parser: XmlPullParser): TrackStatistics {
+        parser.require(XmlPullParser.START_TAG, ns, TAG_TRACK_STATISTICS)
+        val trackStatistics = TrackStatistics(0.0)
+        trackStatistics.distance = parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble() ?: 0.0
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) {
+                continue
+            }
+            skip(parser)
+        }
+        parser.require(XmlPullParser.END_TAG, ns, TAG_TRACK_STATISTICS)
+        return trackStatistics
     }
 
     /* Process summary tags in the feed */
