@@ -140,6 +140,9 @@ public class GPXTest {
             assertEquals(firstTrackPoint.getTime(),
                     new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).
                             parse("2007-10-14T10:09:57Z"));
+
+            assertNotNull(track.getStatistics());
+            assertEquals(track.getStatistics().getDistance(), 102.0);
         } catch (IOException | ParserConfigurationException | TransformerException | ParseException | XmlPullParserException e) {
             e.printStackTrace();
             fail();

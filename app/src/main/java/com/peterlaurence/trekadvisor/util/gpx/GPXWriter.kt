@@ -1,5 +1,6 @@
 package com.peterlaurence.trekadvisor.util.gpx
 
+import com.peterlaurence.trekadvisor.core.track.TrackStatistics
 import com.peterlaurence.trekadvisor.util.gpx.model.*
 import org.w3c.dom.Document
 import org.w3c.dom.Node
@@ -70,7 +71,25 @@ object GPXWriter {
         for (ts in trk.trackSegments) {
             addTrackSegmentToNode(ts, trkNode, doc)
         }
+
+        /* Track statistics */
+        if (trk.statistics != null) {
+            val nodeExtensions = doc.createElement(TAG_EXTENSIONS)
+            addTrackstatisticsToNode(trk.statistics!!, nodeExtensions, doc)
+            trkNode.appendChild(nodeExtensions)
+        }
         n.appendChild(trkNode)
+    }
+
+    private fun addTrackstatisticsToNode(statistics: TrackStatistics, n: Node, doc: Document) {
+        val statisticsNode = doc.createElement(TAG_TRACK_STATISTICS)
+        val statisticsNodeAttr = statisticsNode.attributes
+
+        val distanceAttribute = doc.createAttribute(ATTR_TRK_STAT_DIST)
+        distanceAttribute.nodeValue = statistics.distance.toString()
+        statisticsNodeAttr.setNamedItem(distanceAttribute)
+
+        n.appendChild(statisticsNode)
     }
 
     private fun addTrackSegmentToNode(ts: TrackSegment, n: Node, doc: Document) {
