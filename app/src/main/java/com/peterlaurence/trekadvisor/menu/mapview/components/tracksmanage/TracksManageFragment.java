@@ -144,8 +144,9 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
             Uri uri = null;
             if (resultData != null) {
                 uri = resultData.getData();
+                if (uri == null) return;
 
-                if (!TrackImporter.isFileSupported(uri)) {
+                if (!TrackImporter.INSTANCE.isFileSupported(uri)) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
                     LayoutInflater inflater = getActivity().getLayoutInflater();
                     builder.setView(inflater.inflate(R.layout.track_warning, null));
@@ -156,7 +157,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
                 }
 
                 /* Import the file */
-                TrackImporter.importTrackUri(uri, this, mMap, getContext().getContentResolver());
+                TrackImporter.INSTANCE.importTrackUri(uri, this, mMap, getContext().getContentResolver());
             }
         }
     }

@@ -25,14 +25,12 @@ object GPXParser {
 
     @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
     fun parse(`in`: InputStream): Gpx {
-        try {
+        `in`.use {
             val parser = Xml.newPullParser()
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
-            parser.setInput(`in`, null)
+            parser.setInput(it, null)
             parser.nextTag()
             return readGpx(parser)
-        } finally {
-            `in`.close()
         }
     }
 

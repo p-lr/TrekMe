@@ -61,7 +61,7 @@ public class RecordListView extends CardView {
 
     private void updateRecordings() {
         mRecordings.clear();
-        File[] recordings = TrackImporter.getRecordings();
+        File[] recordings = TrackImporter.INSTANCE.getRecordings();
         if (recordings != null) {
             mRecordings.addAll(Arrays.asList(recordings));
         }
@@ -208,7 +208,7 @@ public class RecordListView extends CardView {
         };
         File recording = mSelectedRecordings.get(0);
 
-        TrackImporter.importTrackFile(recording, listener, map);
+        TrackImporter.INSTANCE.importTrackFile(recording, listener, map);
 
         /* Tell the user that the track will be shortly available in the map */
         Snackbar snackbar = Snackbar.make(getRootView(), R.string.track_is_being_added, Snackbar.LENGTH_LONG);
