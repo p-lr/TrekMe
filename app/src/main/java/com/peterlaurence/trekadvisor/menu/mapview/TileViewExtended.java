@@ -112,6 +112,7 @@ public class TileViewExtended extends TileView {
         mPathView = new PathView(getContext());
         addView(mPathView, getChildCount() - 1);
         addScaleChangeListener(scale -> mPathView.setScale(scale));
+        mPathView.setScale(getScale());
     }
 
     /**
