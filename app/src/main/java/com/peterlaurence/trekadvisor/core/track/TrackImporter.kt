@@ -8,8 +8,10 @@ import com.peterlaurence.trekadvisor.core.map.Map
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson
 import com.peterlaurence.trekadvisor.util.gpx.GPXParser
+import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
 import com.peterlaurence.trekadvisor.util.gpx.model.Track
 import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment
+import kotlinx.coroutines.experimental.Runnable
 import java.io.*
 import java.util.*
 
@@ -18,11 +20,40 @@ import java.util.*
  *
  *  * Import a gpx track file into a [Map].
  *  * Get the list of gpx files created by location recording.
- *
+ *  * Get the content of each gpx file as [Gpx] instances.
  *
  * @author peterLaurence on 03/03/17 -- converted to Kotlin on 16/09/18
  */
 object TrackImporter {
+    /**
+     * Get the list of [File] which extension is in the list of supported extension for track
+     * file. Files are searched into the
+     * [com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_RECORDINGS_DIR].
+     */
+    val recordings: Array<File>?
+        get() = DEFAULT_RECORDINGS_DIR.listFiles(SUPPORTED_FILE_FILTER)
+
+    private val recordingsToGpx: kotlin.collections.MutableMap<File, Gpx> = mutableMapOf()
+
+    /**
+     * The first call parses all recordings. Subsequent calls only parse new files.
+     * This is a blocking call, so it should be called inside a coroutine.
+     */
+    fun getRecordingsToGpxMap(): kotlin.collections.Map<File, Gpx> {
+        if (recordingsToGpx.isEmpty()) {
+            recordings?.forEach {
+                val gpx = GPXParser.parse(FileInputStream(it))
+                recordingsToGpx[it] = gpx
+            }
+        } else {
+            recordings?.filter { !recordingsToGpx.keys.contains(it) }?.forEach {
+                val gpx = GPXParser.parse(FileInputStream(it))
+                recordingsToGpx[it] = gpx
+            }
+        }
+        return recordingsToGpx.toMap()
+    }
+
     private val supportedTrackFilesExtensions = arrayOf("gpx", "xml")
 
     private val SUPPORTED_FILE_FILTER = filter@{ dir: File, filename: String ->
@@ -33,14 +64,6 @@ object TrackImporter {
 
         supportedTrackFilesExtensions.any { filename.endsWith(".$it") }
     }
-
-    /**
-     * Get the list of [File] which extension is in the list of supported extension for track
-     * file. Files are searched into the
-     * [com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_RECORDINGS_DIR].
-     */
-    val recordings: Array<File>?
-        get() = DEFAULT_RECORDINGS_DIR.listFiles(SUPPORTED_FILE_FILTER)
 
     fun isFileSupported(uri: Uri): Boolean {
         val path = uri.path

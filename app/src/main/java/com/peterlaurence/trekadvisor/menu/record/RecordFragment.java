@@ -75,6 +75,7 @@ public class RecordFragment extends Fragment {
         EventBus.getDefault().unregister(mActionsView);
         EventBus.getDefault().unregister(mRecordListView);
         EventBus.getDefault().unregister(this);
+        mRecordListView.cancelPendingJobs();
         super.onStop();
     }
 
