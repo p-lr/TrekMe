@@ -42,7 +42,7 @@ import java.util.*
 class RecordListView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : CardView(context, attrs, defStyleAttr) {
     private var isMultiSelectMode = false
     private var selectedRecordings = ArrayList<File>()
-    private var recordingAdapter: RecordingAdapter? = null
+    private lateinit var recordingAdapter: RecordingAdapter
     private var recordingDataList = arrayListOf<RecordingData>()
     private var job: Job? = null
 
@@ -85,7 +85,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         }
 
         /* Update the recycle view */
-        recordingAdapter?.setRecordingsData(recordingDataList)
+        recordingAdapter.setRecordingsData(recordingDataList)
     }
 
     fun cancelPendingJobs() {
@@ -128,7 +128,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     }
                 }
             }
-            recordingAdapter!!.notifyDataSetChanged()
+            recordingAdapter.notifyDataSetChanged()
 
             /* Alert the user that some files could not be deleted */
             if (!success) {
@@ -150,8 +150,8 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                 if (isMultiSelectMode) {
                     multiSelect(position)
 
-                    recordingAdapter!!.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter!!.notifyItemChanged(position)
+                    recordingAdapter.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter.notifyItemChanged(position)
                 } else {
                     singleSelect(position)
                     editNameButton.isEnabled = true
@@ -160,8 +160,8 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     importButton.isEnabled = true
                     importButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
 
-                    recordingAdapter!!.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter!!.notifyDataSetChanged()
+                    recordingAdapter.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter.notifyDataSetChanged()
                 }
             }
 
@@ -175,13 +175,13 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     importButton.drawable.setTint(Color.GRAY)
                     deleteRecordingButton.visibility = View.VISIBLE
                     multiSelect(position)
-                    recordingAdapter!!.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter!!.notifyDataSetChanged()
+                    recordingAdapter.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter.notifyDataSetChanged()
                 } else {
                     isMultiSelectMode = false
                     deleteRecordingButton.visibility = View.GONE
-                    recordingAdapter!!.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter!!.notifyDataSetChanged()
+                    recordingAdapter.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter.notifyDataSetChanged()
                 }
             }
         }))
@@ -205,7 +205,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
         updateRecordings()
-        recordingAdapter!!.notifyDataSetChanged()
+        recordingAdapter.notifyDataSetChanged()
     }
 
     @Subscribe
@@ -216,7 +216,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
             }
         }
         updateRecordings()
-        recordingAdapter!!.setRecordingsData(recordingDataList)
+        recordingAdapter.setRecordingsData(recordingDataList)
     }
 
     @Subscribe
