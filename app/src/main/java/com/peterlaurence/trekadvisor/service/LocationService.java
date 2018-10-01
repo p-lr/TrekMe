@@ -142,6 +142,7 @@ public class LocationService extends Service {
             String trackName = "track-" + dateFormat.format(date);
 
             Track track = new Track(trkSegList, trackName);
+            track.setStatistics(mTrackStatCalculator.getStatistics());
 
             ArrayList<Track> trkList = new ArrayList<>();
             trkList.add(track);

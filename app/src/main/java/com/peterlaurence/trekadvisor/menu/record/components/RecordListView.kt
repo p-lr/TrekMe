@@ -40,10 +40,10 @@ import java.util.*
  * @author peterLaurence on 23/12/17 -- Converted to Kotlin on 30/09/18
  */
 class RecordListView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : CardView(context, attrs, defStyleAttr) {
-    private var mIsMultiSelectMode = false
-    private var mSelectedRecordings = ArrayList<File>()
-    private val mRecordings = ArrayList<File>()
-    private var mRecordingAdapter: RecordingAdapter? = null
+    private var isMultiSelectMode = false
+    private var selectedRecordings = ArrayList<File>()
+    private var recordingAdapter: RecordingAdapter? = null
+    private var recordingDataList = arrayListOf<RecordingData>()
     private var job: Job? = null
 
     init {
@@ -51,11 +51,17 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         init(context, attrs)
     }
 
+    /**
+     * A [RecordingData] is just wrapper on the [File] and its corresponding [Gpx] data.
+     */
+    data class RecordingData(val recording: File, val gpx: Gpx? = null)
+
     private fun updateRecordings() {
-        mRecordings.clear()
+        recordingDataList.clear()
         val recordings = TrackImporter.recordings
         if (recordings != null) {
-            mRecordings.addAll(Arrays.asList(*recordings))
+            /* For instance, only fill the file attribute, the gpx data will be retrieved later */
+            recordingDataList.addAll(recordings.map { RecordingData(it) })
         }
 
         /* Recording to Gpx conversion */
@@ -68,9 +74,18 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         }
     }
 
+    /**
+     * Once we receive the [Gpx] data for each recording [File], fill the model object.
+     */
     private fun setGpxForRecording(recordingsToGpx: kotlin.collections.Map<File, Gpx>) {
-        println("update UI GPX : ${recordingsToGpx.size}")
-        //TODO: display statistics
+        /* Re-write the model object */
+        recordingDataList.clear()
+        for ((file, gpx) in recordingsToGpx) {
+            recordingDataList.add(RecordingData(file, gpx))
+        }
+
+        /* Update the recycle view */
+        recordingAdapter?.setRecordingsData(recordingDataList)
     }
 
     fun cancelPendingJobs() {
@@ -93,8 +108,8 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
         editNameButton.isEnabled = false
         editNameButton.setOnClickListener { v ->
-            if (mSelectedRecordings.size == 1) {
-                val recording = mSelectedRecordings[0]
+            if (selectedRecordings.size == 1) {
+                val recording = selectedRecordings[0]
                 EventBus.getDefault().post(RequestEditRecording(recording))
             }
         }
@@ -104,16 +119,16 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
         deleteRecordingButton.setOnClickListener { v ->
             var success = true
-            for (file in mSelectedRecordings) {
+            for (file in selectedRecordings) {
                 if (file.exists()) {
                     if (file.delete()) {
-                        mRecordings.remove(file)
+                        recordingDataList.removeAll { it.recording == file }
                     } else {
                         success = false
                     }
                 }
             }
-            mRecordingAdapter!!.notifyDataSetChanged()
+            recordingAdapter!!.notifyDataSetChanged()
 
             /* Alert the user that some files could not be deleted */
             if (!success) {
@@ -126,17 +141,17 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         val llm = LinearLayoutManager(ctx)
         recyclerView.layoutManager = llm
 
-        mRecordingAdapter = RecordingAdapter(mRecordings, mSelectedRecordings)
-        recyclerView.adapter = mRecordingAdapter
+        recordingAdapter = RecordingAdapter(recordingDataList, selectedRecordings)
+        recyclerView.adapter = recordingAdapter
 
         recyclerView.addOnItemTouchListener(RecyclerItemClickListener(this.context,
                 recyclerView, object : RecyclerItemClickListener.OnItemClickListener {
             override fun onItemClick(view: View, position: Int) {
-                if (mIsMultiSelectMode) {
+                if (isMultiSelectMode) {
                     multiSelect(position)
 
-                    mRecordingAdapter!!.setSelectedRecordings(mSelectedRecordings)
-                    mRecordingAdapter!!.notifyItemChanged(position)
+                    recordingAdapter!!.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter!!.notifyItemChanged(position)
                 } else {
                     singleSelect(position)
                     editNameButton.isEnabled = true
@@ -145,63 +160,63 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     importButton.isEnabled = true
                     importButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
 
-                    mRecordingAdapter!!.setSelectedRecordings(mSelectedRecordings)
-                    mRecordingAdapter!!.notifyDataSetChanged()
+                    recordingAdapter!!.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter!!.notifyDataSetChanged()
                 }
             }
 
             override fun onItemLongClick(view: View, position: Int) {
-                mSelectedRecordings = ArrayList()
-                if (!mIsMultiSelectMode) {
-                    mIsMultiSelectMode = true
+                selectedRecordings = ArrayList()
+                if (!isMultiSelectMode) {
+                    isMultiSelectMode = true
                     editNameButton.isEnabled = false
                     editNameButton.drawable.setTint(Color.GRAY)
                     importButton.isEnabled = false
                     importButton.drawable.setTint(Color.GRAY)
                     deleteRecordingButton.visibility = View.VISIBLE
                     multiSelect(position)
-                    mRecordingAdapter!!.setSelectedRecordings(mSelectedRecordings)
-                    mRecordingAdapter!!.notifyDataSetChanged()
+                    recordingAdapter!!.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter!!.notifyDataSetChanged()
                 } else {
-                    mIsMultiSelectMode = false
+                    isMultiSelectMode = false
                     deleteRecordingButton.visibility = View.GONE
-                    mRecordingAdapter!!.setSelectedRecordings(mSelectedRecordings)
-                    mRecordingAdapter!!.notifyDataSetChanged()
+                    recordingAdapter!!.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter!!.notifyDataSetChanged()
                 }
             }
         }))
     }
 
     private fun multiSelect(position: Int) {
-        val recording = mRecordings[position]
-        if (mSelectedRecordings.contains(recording)) {
-            mSelectedRecordings.remove(recording)
+        val recording = recordingDataList[position].recording
+        if (selectedRecordings.contains(recording)) {
+            selectedRecordings.remove(recording)
         } else {
-            mSelectedRecordings.add(recording)
+            selectedRecordings.add(recording)
         }
     }
 
     private fun singleSelect(position: Int) {
-        val recording = mRecordings[position]
-        mSelectedRecordings.clear()
-        mSelectedRecordings.add(recording)
+        val recording = recordingDataList[position].recording
+        selectedRecordings.clear()
+        selectedRecordings.add(recording)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
         updateRecordings()
-        mRecordingAdapter!!.notifyDataSetChanged()
+        recordingAdapter!!.notifyDataSetChanged()
     }
 
     @Subscribe
     fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) {
-        for (recording in mRecordings) {
+        for (recording in recordingDataList.map { it.recording }) {
             if (FileUtils.getFileNameWithoutExtention(recording) == event.initialValue) {
                 TrackTools.renameTrack(recording, event.newValue)
             }
         }
         updateRecordings()
-        mRecordingAdapter!!.setRecordings(mRecordings)
+        recordingAdapter!!.setRecordingsData(recordingDataList)
     }
 
     @Subscribe
@@ -217,7 +232,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                 // TODO : log this error
             }
         }
-        val recording = mSelectedRecordings[0]
+        val recording = selectedRecordings[0]
 
         TrackImporter.importTrackFile(recording, listener, map!!)
 
