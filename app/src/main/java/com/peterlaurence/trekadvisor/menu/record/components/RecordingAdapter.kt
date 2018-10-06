@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.peterlaurence.trekadvisor.R
+import com.peterlaurence.trekadvisor.core.track.TrackStatistics
+import com.peterlaurence.trekadvisor.util.UnitFormatter
 import java.io.File
 import java.util.*
 
@@ -26,7 +28,13 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
     override fun onBindViewHolder(holder: RecordingViewHolder, position: Int) {
         holder.recordingName.text = recordingDataList[position].recording.name
 
-        if (selectedRecordings!!.contains(recordingDataList!!.map { it.recording }[position])) {
+        /* If there is some statistics attached to the first track, show the corresponding view */
+        holder.statView.visibility = recordingDataList[position].gpx?.tracks?.firstOrNull()?.statistics?.let {
+            holder.statView.setStatistics(it)
+            View.VISIBLE
+        } ?: View.GONE
+
+        if (selectedRecordings!!.contains(recordingDataList.map { it.recording }[position])) {
             holder.layout.setBackgroundColor(-0x77de690d)
         } else {
             if (position % 2 == 0) {
@@ -38,12 +46,13 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
     }
 
     override fun getItemCount(): Int {
-        return recordingDataList!!.size
+        return recordingDataList.size
     }
 
     class RecordingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var layout: ConstraintLayout = itemView.findViewById(R.id.record_item_layout)
         var recordingName: TextView = itemView.findViewById(R.id.recording_name_id)
+        var statView: ConstraintLayout = itemView.findViewById(R.id.stats_view_holder)
     }
 
     internal fun setRecordingsData(recordingDataList: ArrayList<RecordListView.RecordingData>) {
@@ -53,5 +62,10 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
 
     internal fun setSelectedRecordings(selectedRecordings: ArrayList<File>) {
         this.selectedRecordings = selectedRecordings
+    }
+
+    private fun ConstraintLayout.setStatistics(stat: TrackStatistics) {
+        val distanceText = findViewById<TextView>(R.id.distance_stat)
+        distanceText.text = UnitFormatter.formatDistance(stat.distance)
     }
 }
