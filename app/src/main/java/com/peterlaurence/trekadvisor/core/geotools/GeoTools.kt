@@ -1,6 +1,6 @@
 package com.peterlaurence.trekadvisor.core.geotools
 
-import kotlin.math.pow
+import kotlin.math.*
 
 /**
  * Set of utility functions for geographic computations.
@@ -9,6 +9,11 @@ import kotlin.math.pow
  */
 
 private const val toRad = 0.017453292519943295 // 2*pi/360
+
+/* WGS 84 ellipsoid parameters */
+private const val a: Double = 6_378_137.0       // radius at the equator, in meters
+private const val b: Double = 6_356_752.3142    // radius at the poles, in meters
+private const val radiusAvg: Double = 6_371_000.0  // radius average
 
 /**
  * Computes the approximated distance between two points given their latitude and longitude. <br></br>
@@ -28,12 +33,14 @@ fun distanceApprox(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Doub
     val a = Math.pow(Math.sin((lat2 - lat1) * toRad / 2), 2.0) + Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
             Math.pow(Math.sin((lon2 - lon1) * toRad / 2), 2.0)
     val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return 6371000 * c
+    return radiusAvg * c
 }
 
 /**
  * Compute the approximated distance between <b>two near points</b>, without taking the elevation
  * into account. The earth is considered as a sphere of 6371 km radius.<br>
+ * The precision could be improved with using the radius of the WGS84 ellipsoid at the corresponding
+ * latitude, using [earthRadius] function.
  * This formula should not be used for two points separated by a long distance.
  *
  * @param lat1 the latitude of the first point, in decimal degrees
@@ -43,10 +50,9 @@ fun distanceApprox(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Doub
  * @return the distance between the two points, in meters
  */
 fun deltaTwoPoints(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-    val r = 6371000
-    val x = r * Math.cos(lat1 * toRad) * Math.abs(lon2 - lon1) * toRad
-    val y = r * Math.abs(lat2 - lat1) * toRad
-    return Math.sqrt(x.pow(2) + y.pow(2))
+    val x = radiusAvg * cos(lat1 * toRad) * abs(lon2 - lon1) * toRad
+    val y = radiusAvg * abs(lat2 - lat1) * toRad
+    return sqrt(x.pow(2) + y.pow(2))
 }
 
 /**
@@ -63,6 +69,21 @@ fun deltaTwoPoints(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Doub
  */
 fun deltaTwoPoints(lat1: Double, lon1: Double, ele1: Double, lat2: Double, lon2: Double, ele2: Double): Double {
     val x = deltaTwoPoints(lat1, lon1, lat2, lon2)
-    val y = Math.abs(ele2 - ele1)
-    return Math.sqrt(x.pow(2) + y.pow(2))
+    val y = abs(ele2 - ele1)
+    return sqrt(x.pow(2) + y.pow(2))
+}
+
+/**
+ * Given a latitude in decimal degrees, get the radius of the WGS84 ellipsoid.
+ * See this [source](https://rechneronline.de/earth-radius/)
+ *
+ * @param lat the latitude, in decimal degrees
+ * @return the radius in meters of the ellipsoid for the given latitude
+ */
+fun earthRadius(lat: Double): Double {
+    val aSq = a.pow(2)
+    val bSq = b.pow(2)
+    val num = (aSq * cos(lat)).pow(2) + (bSq * sin(lat)).pow(2)
+    val den = aSq * cos(lat).pow(2) + bSq * sin(lat).pow(2)
+    return sqrt(num / den)
 }
