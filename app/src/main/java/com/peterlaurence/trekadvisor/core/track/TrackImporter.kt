@@ -36,6 +36,10 @@ object TrackImporter {
     private val recordingsToGpx: kotlin.collections.MutableMap<File, Gpx> = mutableMapOf()
 
     /**
+     * In the context of this call, new recordings have been added, or this is the first time
+     * this function is called in the lifecycle of the  app.
+     * The list of recordings, [recordings], is considered up to date. The map between each
+     * recording and its corresponding parsed object, [recordingsToGpx] needs to be updated.
      * The first call parses all recordings. Subsequent calls only parse new files.
      * This is a blocking call, so it should be called inside a coroutine.
      */
@@ -51,6 +55,29 @@ object TrackImporter {
                 recordingsToGpx[it] = gpx
             }
         }
+        return recordingsToGpx.toMap()
+    }
+
+    /**
+     * The user may have imported a regular gpx file (so it doesn't have any statistics).
+     * In this call, we consider that each gpx file has already been parsed, and that the
+     * [recordingsToGpx] Map is up to date. So typically, [getRecordingsToGpxMap] should be called
+     * first.
+     * First, we only keep the entries for which the [Gpx] value has no statistics for the first
+     * track.
+     * Then, we calculate the statistics for the first track.
+     */
+    fun computeMissingStatistics(): kotlin.collections.Map<File, Gpx> {
+        recordingsToGpx.filter { it.value.tracks.firstOrNull()?.statistics == null }.forEach {
+            val statCalculator = TrackStatCalculator()
+            it.value.tracks.firstOrNull()?.let { track ->
+                track.trackSegments.forEach { trackSegment ->
+                    statCalculator.addTrackPointList(trackSegment.trackPoints)
+                }
+                track.statistics = statCalculator.getStatistics()
+            }
+        }
+
         return recordingsToGpx.toMap()
     }
 

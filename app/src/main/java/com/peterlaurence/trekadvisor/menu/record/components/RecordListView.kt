@@ -67,8 +67,15 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         /* Recording to Gpx conversion */
         val ref = this.asReference()
         job = launch(UI) {
-            val recordingsToGpx = async {
+            /* First, read all tracks than already have statistics */
+            var recordingsToGpx = async {
                 TrackImporter.getRecordingsToGpxMap()
+            }
+            ref().setGpxForRecording(recordingsToGpx.await())
+
+            /* Then, ask for the computation of the statistics for the tracks that don't have any */
+            recordingsToGpx = async {
+                TrackImporter.computeMissingStatistics()
             }
             ref().setGpxForRecording(recordingsToGpx.await())
         }
