@@ -39,7 +39,7 @@ object TrackImporter {
      * In the context of this call, new recordings have been added, or this is the first time
      * this function is called in the lifecycle of the  app.
      * The list of recordings, [recordings], is considered up to date. The map between each
-     * recording and its corresponding parsed object, [recordingsToGpx] needs to be updated.
+     * recording and its corresponding parsed object, [recordingsToGpx], needs to be updated.
      * The first call parses all recordings. Subsequent calls only parse new files.
      * This is a blocking call, so it should be called inside a coroutine.
      */

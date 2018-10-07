@@ -35,7 +35,7 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         selectedIndex = savedInstanceState?.getInt(KEY_BUNDLE_MAP_INDEX) ?: -1
 
-        recyclerView = RecyclerView(activity)
+        recyclerView = RecyclerView(activity!!.baseContext)
         val llm = LinearLayoutManager(activity)
         recyclerView.layoutManager = llm
 
