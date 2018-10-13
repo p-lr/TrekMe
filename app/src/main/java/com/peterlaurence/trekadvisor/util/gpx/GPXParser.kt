@@ -102,7 +102,7 @@ object GPXParser {
     @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
     private fun readTrackStatistics(parser: XmlPullParser): TrackStatistics {
         parser.require(XmlPullParser.START_TAG, ns, TAG_TRACK_STATISTICS)
-        val trackStatistics = TrackStatistics(0.0)
+        val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0)
         trackStatistics.distance = parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble() ?: 0.0
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {

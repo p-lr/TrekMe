@@ -4,27 +4,25 @@ import android.os.Parcelable
 import com.peterlaurence.trekadvisor.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint
 import kotlinx.android.parcel.Parcelize
-import kotlin.properties.Delegates
+import kotlin.math.abs
 
 /**
  * Calculates statistics for a track:
  * * distance
- * * TODO: height difference (max and stack)
+ * * elevation difference (max and stack)
  * * TODO: mean speed
  *
  * @author peterLaurence on 09/09/18
  */
 class TrackStatCalculator {
-    private val trackStatistics = TrackStatistics(0.0)
+    private val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0)
 
-    /**
-     * Whenever the distance property changes, update the statistics.
-     */
-    var distance: Double by Delegates.observable(0.0) { prop, old, new ->
-        trackStatistics.distance = new
-    }
+    private lateinit var lastTrackPoint: TrackPoint
 
-    private var lastTrackPoint: TrackPoint? = null
+    /* Elevation statistics */
+    private var lastKnownElevation: Double? = null
+    private lateinit var lowestPoint: TrackPoint
+    private lateinit var highestPoint: TrackPoint
 
     fun getStatistics(): TrackStatistics {
         return trackStatistics
@@ -36,6 +34,7 @@ class TrackStatCalculator {
 
     fun addTrackPoint(trkPt: TrackPoint) {
         updateDistance(trkPt)
+        updateElevationStatistics(trkPt)
     }
 
     /**
@@ -43,22 +42,61 @@ class TrackStatCalculator {
      * rough (but fast) formulas.
      */
     private fun updateDistance(trkPt: TrackPoint) {
-        if (lastTrackPoint != null) {
-            val p1 = lastTrackPoint!!
+        if (::lastTrackPoint.isInitialized) {
+            val p = lastTrackPoint
 
             /* If we have elevation information for both points, use it */
-            distance += if (p1.elevation != null && trkPt.elevation != null) {
-                deltaTwoPoints(p1.latitude, p1.longitude, p1.elevation!!, trkPt.latitude,
+            trackStatistics.distance += if (p.elevation != null && trkPt.elevation != null) {
+                deltaTwoPoints(p.latitude, p.longitude, p.elevation!!, trkPt.latitude,
                         trkPt.longitude, trkPt.elevation!!)
             } else {
-                deltaTwoPoints(p1.latitude, p1.longitude, trkPt.latitude, trkPt.longitude)
+                deltaTwoPoints(p.latitude, p.longitude, trkPt.latitude, trkPt.longitude)
             }
         }
 
         /* Update the last track point reference */
         lastTrackPoint = trkPt
     }
+
+    private fun updateElevationStatistics(trkPt: TrackPoint) {
+        if (trkPt.elevation != null) {
+            val ele = trkPt.elevation!!
+
+            /* Lowest point update */
+            if (::lowestPoint.isInitialized) {
+                if (ele <= lowestPoint.elevation!!) {
+                    this.lowestPoint = trkPt
+                }
+            } else {
+                this.lowestPoint = trkPt
+            }
+
+            /* Highest point update */
+            if (::highestPoint.isInitialized) {
+                if (ele >= highestPoint.elevation!!) {
+                    this.highestPoint = trkPt
+                }
+            } else {
+                this.highestPoint = trkPt
+            }
+
+            /* .. then we can update the elevation maximum difference*/
+            trackStatistics.elevationDifferenceMax = highestPoint.elevation!! - lowestPoint.elevation!!
+
+            /* Elevation stack update */
+            if (lastKnownElevation != null) {
+                val diff = abs(ele - lastKnownElevation!!)
+                if (ele > lastKnownElevation!!) {
+                    trackStatistics.elevationUpStack += diff
+                } else {
+                    trackStatistics.elevationDownStack += diff
+                }
+            }
+            lastKnownElevation = trkPt.elevation!!
+        }
+    }
 }
 
 @Parcelize
-data class TrackStatistics(var distance: Double) : Parcelable
+data class TrackStatistics(var distance: Double, var elevationDifferenceMax: Double,
+                           var elevationUpStack: Double, var elevationDownStack: Double) : Parcelable
