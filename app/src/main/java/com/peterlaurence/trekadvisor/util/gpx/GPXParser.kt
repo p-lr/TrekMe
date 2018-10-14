@@ -104,6 +104,9 @@ object GPXParser {
         parser.require(XmlPullParser.START_TAG, ns, TAG_TRACK_STATISTICS)
         val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0)
         trackStatistics.distance = parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble() ?: 0.0
+        trackStatistics.elevationDifferenceMax = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DIFF_MAX)?.toDouble() ?: 0.0
+        trackStatistics.elevationUpStack = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_UP_STACK)?.toDouble() ?: 0.0
+        trackStatistics.elevationDownStack = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DOWN_STACK)?.toDouble() ?: 0.0
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue

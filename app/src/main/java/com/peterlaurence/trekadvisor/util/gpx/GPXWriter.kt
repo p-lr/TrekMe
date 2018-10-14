@@ -89,6 +89,18 @@ object GPXWriter {
         distanceAttribute.nodeValue = statistics.distance.toString()
         statisticsNodeAttr.setNamedItem(distanceAttribute)
 
+        val elevationDiffMax = doc.createAttribute(ATTR_TRK_STAT_ELE_DIFF_MAX)
+        elevationDiffMax.nodeValue = statistics.elevationDifferenceMax.toString()
+        statisticsNodeAttr.setNamedItem(elevationDiffMax)
+
+        val elevationUpStatck = doc.createAttribute(ATTR_TRK_STAT_ELE_UP_STACK)
+        elevationUpStatck.nodeValue = statistics.elevationUpStack.toString()
+        statisticsNodeAttr.setNamedItem(elevationUpStatck)
+
+        val elevationDownStack = doc.createAttribute(ATTR_TRK_STAT_ELE_DOWN_STACK)
+        elevationDownStack.nodeValue = statistics.elevationDownStack.toString()
+        statisticsNodeAttr.setNamedItem(elevationDownStack)
+
         n.appendChild(statisticsNode)
     }
 

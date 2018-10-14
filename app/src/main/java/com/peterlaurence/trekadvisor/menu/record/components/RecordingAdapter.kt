@@ -65,7 +65,13 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
     }
 
     private fun ConstraintLayout.setStatistics(stat: TrackStatistics) {
-        val distanceText = findViewById<TextView>(R.id.distance_stat)
+        val distanceText = findViewById<TextView>(R.id.record_item_distance_stat)
         distanceText.text = UnitFormatter.formatDistance(stat.distance)
+
+        val elevationUpStackText = findViewById<TextView>(R.id.record_item_up_stat)
+        elevationUpStackText.text = UnitFormatter.formatDistance(stat.elevationUpStack)
+
+        val elevationDownStackText = findViewById<TextView>(R.id.record_item_down_stat)
+        elevationDownStackText.text = UnitFormatter.formatDistance(stat.elevationDownStack)
     }
 }

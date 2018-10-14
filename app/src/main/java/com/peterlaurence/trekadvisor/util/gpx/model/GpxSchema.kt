@@ -33,3 +33,6 @@ const val TAG_TIME = "time"
 /* Track custom extensions nodes and attributes */
 const val TAG_TRACK_STATISTICS = "statistics"
 const val ATTR_TRK_STAT_DIST = "distance"
+const val ATTR_TRK_STAT_ELE_DIFF_MAX = "eleDiffMax"
+const val ATTR_TRK_STAT_ELE_UP_STACK = "eleUpStack"
+const val ATTR_TRK_STAT_ELE_DOWN_STACK = "eleDownStack"

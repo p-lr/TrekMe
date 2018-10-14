@@ -32,8 +32,22 @@
         app:layout_constraintTop_toBottomOf="@id/recording_name_id">
 
 
+        <android.support.constraint.Guideline
+            android:id="@+id/record_item_guideline_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="95dp" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/record_item_guideline_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="185dp" />
+
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/record_item_distance_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -45,15 +59,59 @@
             app:srcCompat="@drawable/distance" />
 
         <TextView
-            android:id="@+id/distance_stat"
+            android:id="@+id/record_item_distance_stat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            app:layout_constraintBottom_toBottomOf="@+id/record_item_distance_icon"
+            app:layout_constraintStart_toEndOf="@+id/record_item_distance_icon"
+            app:layout_constraintTop_toTopOf="@+id/record_item_distance_icon"
+            tools:text="2 km" />
+        <ImageView
+            android:id="@+id/record_item_up_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/imageView"
-            app:layout_constraintStart_toEndOf="@+id/imageView"
-            app:layout_constraintTop_toTopOf="@+id/imageView"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/record_item_guideline_up"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/elevation_up" />
+
+        <TextView
+            android:id="@+id/record_item_up_stat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            app:layout_constraintBottom_toBottomOf="@+id/record_item_up_icon"
+            app:layout_constraintStart_toEndOf="@+id/record_item_up_icon"
+            app:layout_constraintTop_toTopOf="@+id/record_item_up_icon"
+            tools:text="2 km" />
+
+        <ImageView
+            android:id="@+id/record_item_down_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/record_item_guideline_down"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/elevation_down" />
+
+        <TextView
+            android:id="@+id/record_item_down_stat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            app:layout_constraintBottom_toBottomOf="@+id/record_item_down_icon"
+            app:layout_constraintStart_toEndOf="@+id/record_item_down_icon"
+            app:layout_constraintTop_toTopOf="@+id/record_item_down_icon"
             tools:text="2 km" />
     </android.support.constraint.ConstraintLayout>
+
 
 
 </android.support.constraint.ConstraintLayout>
