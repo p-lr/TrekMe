@@ -69,9 +69,9 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
         distanceText.text = UnitFormatter.formatDistance(stat.distance)
 
         val elevationUpStackText = findViewById<TextView>(R.id.record_item_up_stat)
-        elevationUpStackText.text = UnitFormatter.formatDistance(stat.elevationUpStack)
+        elevationUpStackText.text = "+".plus(UnitFormatter.formatDistance(stat.elevationUpStack))
 
         val elevationDownStackText = findViewById<TextView>(R.id.record_item_down_stat)
-        elevationDownStackText.text = UnitFormatter.formatDistance(stat.elevationDownStack)
+        elevationDownStackText.text = "-".plus(UnitFormatter.formatDistance(stat.elevationDownStack))
     }
 }
