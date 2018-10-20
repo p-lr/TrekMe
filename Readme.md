@@ -203,13 +203,13 @@ Nothing is changed until you save your changes.
 
 ### <a name="TOC-GPX-track-import"></a>Import a GPX track
 
-While viewing a map, select the option menu on the upper right corner :
+While viewing a map, press the button below on the upper right corner :
 
 <p align="center">
 <img src="doc/tuto/manage-tracks.jpg" width="300">
 </p>
 
-Choose "Manage tracks" option. Then, a list of currently available tracks opens up: 
+Then, a list of currently available tracks opens up: 
 
 <p align="center">
 <img src="doc/tuto/track-list.jpg" width="300">
