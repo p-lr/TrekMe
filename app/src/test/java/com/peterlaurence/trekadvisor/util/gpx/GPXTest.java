@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -79,7 +81,7 @@ public class GPXTest {
                     assertEquals(2376.0, elevation);
 
                     assertEquals(firstTrackPoint.getTime(),
-                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).
+                            GPXParser.INSTANCE.getDateParser().
                                     parse("2007-10-14T10:09:57Z"));
 
                     /* Check that the track has statistics */
@@ -138,7 +140,7 @@ public class GPXTest {
             assertEquals(2376.0, elevation);
 
             assertEquals(firstTrackPoint.getTime(),
-                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).
+                    GPXParser.INSTANCE.getDateParser().
                             parse("2007-10-14T10:09:57Z"));
 
             assertNotNull(track.getStatistics());
@@ -149,4 +151,23 @@ public class GPXTest {
         }
     }
 
+    @Test
+    public void dateParse() {
+        String aDate = "2017-09-26T08:38:12+02:00";
+        try {
+            Date date = GPXParser.INSTANCE.getDateParser().parse(aDate);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            int year = cal.get(Calendar.YEAR);
+            int month = cal.get(Calendar.MONTH);
+            int day = cal.get(Calendar.DAY_OF_MONTH);
+            int secs = cal.get(Calendar.SECOND);
+            assertEquals(2017, year);
+            assertEquals(8, month);
+            assertEquals(26, day);
+            assertEquals(12, secs);
+        } catch (ParseException e) {
+            fail();
+        }
+    }
 }

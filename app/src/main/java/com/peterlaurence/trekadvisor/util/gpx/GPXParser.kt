@@ -20,7 +20,7 @@ import java.util.*
 object GPXParser {
     private val ns: String? = null
 
-    private val DATE_PARSER = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
+    private val DATE_PARSER = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
 
 
     @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
@@ -205,5 +205,12 @@ object GPXParser {
                 XmlPullParser.START_TAG -> depth++
             }
         }
+    }
+
+    /**
+     * For unit test purposes
+     */
+    fun getDateParser(): SimpleDateFormat {
+        return DATE_PARSER
     }
 }
