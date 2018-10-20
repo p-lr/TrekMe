@@ -166,8 +166,9 @@ Adjust the distance by dragging two blue circles. This is a "as the crow flies" 
 The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few seconds before the speed can be displayed.
 
 <p align="center">
-<img src="doc/tuto/speed-indicator.jpg" width="300">
+<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
 </p>
+Then choose "Show the speed". If your screen is large enough, there is an icon to directly access it.
 
 ### <a name="TOC-Add-markers"></a>Add markers
 
@@ -205,7 +206,7 @@ Nothing is changed until you save your changes.
 While viewing a map, select the option menu on the upper right corner :
 
 <p align="center">
-<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
+<img src="doc/tuto/manage-tracks.jpg" width="300">
 </p>
 
 Choose "Manage tracks" option. Then, a list of currently available tracks opens up: 
