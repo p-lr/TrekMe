@@ -1,8 +1,12 @@
 package com.peterlaurence.trekadvisor.util;
 
+import android.content.ContentResolver;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.OpenableColumns;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,7 +27,7 @@ public class FileUtils {
      * @return the content of the file as {@code String}
      * @throws Exception
      */
-    public static String getStringFromFile (File file) throws Exception {
+    public static String getStringFromFile(File file) throws Exception {
         FileInputStream fis = new FileInputStream(file);
         BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
         StringBuilder sb = new StringBuilder();
@@ -46,7 +50,7 @@ public class FileUtils {
      * @return the content of the file as {@code String}
      * @throws Exception
      */
-    public static String getStringFromInputStream (InputStream inputStream) throws Exception {
+    public static String getStringFromInputStream(InputStream inputStream) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder sb = new StringBuilder();
 
@@ -76,6 +80,7 @@ public class FileUtils {
 
     /**
      * Get a {@link File} extension.
+     *
      * @param file
      * @return the file extension, or an empty {@link String} if any.
      */
@@ -90,6 +95,7 @@ public class FileUtils {
 
     /**
      * Get a {@link File} name without extension.
+     *
      * @param file
      * @return the file name, or an empty {@link String} if any.
      */
@@ -119,5 +125,30 @@ public class FileUtils {
         File image = new File(sd, imagePath);
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         return BitmapFactory.decodeFile(image.getAbsolutePath(), bmOptions);
+    }
+
+    /**
+     * Extract the file name from URI returned from Intent.ACTION_GET_CONTENT
+     */
+    public static String getFileRealPathFromURI(ContentResolver contentResolver, Uri uri) {
+        String result = null;
+        String scheme = uri.getScheme();
+        if (scheme != null && scheme.equals("content")) {
+            try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            }
+        }
+        if (result == null) {
+            String uriPath = uri.getPath();
+            if (uriPath != null) {
+                int cut = uriPath.lastIndexOf('/');
+                if (cut != -1) {
+                    result = uriPath.substring(cut + 1);
+                }
+            }
+        }
+        return result;
     }
 }

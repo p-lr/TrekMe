@@ -176,11 +176,15 @@ object GPXParser {
     }
 
     @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
-    private fun readTime(parser: XmlPullParser): Date {
-        parser.require(XmlPullParser.START_TAG, ns, TAG_TIME)
-        val time = DATE_PARSER.parse(readText(parser))
-        parser.require(XmlPullParser.END_TAG, ns, TAG_TIME)
-        return time
+    private fun readTime(parser: XmlPullParser): Date? {
+        return try {
+            parser.require(XmlPullParser.START_TAG, ns, TAG_TIME)
+            val time = DATE_PARSER.parse(readText(parser))
+            parser.require(XmlPullParser.END_TAG, ns, TAG_TIME)
+            time
+        } catch (e: Exception) {
+            null
+        }
     }
 
     @Throws(IOException::class, XmlPullParserException::class)

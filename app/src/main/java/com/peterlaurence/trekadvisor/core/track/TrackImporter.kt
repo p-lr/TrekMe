@@ -7,6 +7,7 @@ import com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_RECORDINGS_
 import com.peterlaurence.trekadvisor.core.map.Map
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson
+import com.peterlaurence.trekadvisor.util.FileUtils
 import com.peterlaurence.trekadvisor.util.gpx.GPXParser
 import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
 import com.peterlaurence.trekadvisor.util.gpx.model.Track
@@ -120,8 +121,9 @@ object TrackImporter {
             }
             val fileDescriptor = parcelFileDescriptor.fileDescriptor
             val fileInputStream = FileInputStream(fileDescriptor)
+            val fileName = FileUtils.getFileRealPathFromURI(contentResolver, uri) ?: "A track"
 
-            val gpxTrackFileToRoutesTask = GpxTrackFileToRoutesTask(listener, map, Runnable {
+            val gpxTrackFileToRoutesTask = GpxTrackFileToRoutesTask(listener, map, fileName, Runnable {
                 try {
                     parcelFileDescriptor.close()
                 } catch (e: IOException) {
@@ -139,7 +141,7 @@ object TrackImporter {
         try {
             val fileInputStream = FileInputStream(file)
 
-            val gpxTrackFileToRoutesTask = GpxTrackFileToRoutesTask(listener, map, null)
+            val gpxTrackFileToRoutesTask = GpxTrackFileToRoutesTask(listener, map, file.name, null)
             gpxTrackFileToRoutesTask.execute(fileInputStream)
         } catch (e: FileNotFoundException) {
             listener.onError("The file doesn't exists")
@@ -153,7 +155,10 @@ object TrackImporter {
         fun onError(message: String)
     }
 
-    private class GpxTrackFileToRoutesTask internal constructor(private val mListener: TrackFileParsedListener, private val mMap: Map, private val mPostExecuteTask: Runnable?) : AsyncTask<InputStream, Void, Void?>() {
+    private class GpxTrackFileToRoutesTask internal constructor(private val mListener: TrackFileParsedListener,
+                                                                private val mMap: Map,
+                                                                private val defaultName: String,
+                                                                private val mPostExecuteTask: Runnable?) : AsyncTask<InputStream, Void, Void?>() {
         private val mNewRouteList: LinkedList<RouteGson.Route> = LinkedList()
 
         /**
@@ -168,10 +173,11 @@ object TrackImporter {
                 try {
                     val gpx = GPXParser.parse(stream)
 
-                    for (track in gpx.tracks) {
-                        val route = gpxTracktoRoute(track)
+                    gpx.tracks.mapIndexed { index, track ->
+                        val route = gpxTracktoRoute(track, index)
                         mNewRouteList.add(route)
                     }
+
                     stream.close()
                 } catch (e: Exception) {
                     val sw = StringWriter()
@@ -192,12 +198,16 @@ object TrackImporter {
          * Converts a [Track] into a [RouteGson.Route]. <br></br>
          * A single [Track] may contain several [TrackSegment].
          */
-        private fun gpxTracktoRoute(track: Track): RouteGson.Route {
+        private fun gpxTracktoRoute(track: Track, index: Int): RouteGson.Route {
             /* Create a new route */
             val route = RouteGson.Route()
 
-            /* The route name is the track name */
-            route.name = track.name
+            /* The route name is the track name if it has one. Otherwise we take the default name */
+            route.name = if (track.name.isNotEmpty()) {
+                track.name
+            } else {
+                "$defaultName#$index"
+            }
 
             /* The route should be visible by default */
             route.visible = true
