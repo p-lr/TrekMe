@@ -18,9 +18,13 @@ object MapSourceCredentials {
 
 
     fun getIGNCredentials(): IGNCredentials? {
-        val jsonString = if (configFile.exists()) {
-            FileUtils.getStringFromFile(configFile)
-        } else {
+        val jsonString = try {
+            if (configFile.exists()) {
+                FileUtils.getStringFromFile(configFile)
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
             ""
         }
         credentials = gson.fromJson(jsonString, Credentials::class.java) ?: Credentials(null)
