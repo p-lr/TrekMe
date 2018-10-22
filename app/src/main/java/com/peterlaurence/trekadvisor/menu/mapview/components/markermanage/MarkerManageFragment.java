@@ -22,8 +22,8 @@ import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
-import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
+import com.peterlaurence.trekadvisor.model.MapProvider;
 
 import static android.view.View.GONE;
 
@@ -41,7 +41,6 @@ import static android.view.View.GONE;
 public class MarkerManageFragment extends Fragment {
     private View rootView;
     private MarkerProvider mMarkerProvider;
-    private MapProvider mMapProvider;
     private MarkerManageFragmentInteractionListener mMarkerManageFragmentInteractionListener;
 
     private Map mMap;
@@ -62,9 +61,7 @@ public class MarkerManageFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof MapProvider && context instanceof MarkerProvider &&
-                context instanceof MarkerManageFragmentInteractionListener) {
-            mMapProvider = (MapProvider) context;
+        if (context instanceof MarkerProvider && context instanceof MarkerManageFragmentInteractionListener) {
             mMarkerProvider = (MarkerProvider) context;
             mMarkerManageFragmentInteractionListener = (MarkerManageFragmentInteractionListener) context;
         } else {
@@ -94,7 +91,7 @@ public class MarkerManageFragment extends Fragment {
         mProjectionY = (TextInputEditText) rootView.findViewById(R.id.marker_proj_y_id);
         mComment = (EditText) rootView.findViewById(R.id.marker_comment_id);
 
-        mMap = mMapProvider.getCurrentMap();
+        mMap = MapProvider.INSTANCE.getCurrentMap();
         mMarker = mMarkerProvider.getCurrentMarker();
 
         updateView();

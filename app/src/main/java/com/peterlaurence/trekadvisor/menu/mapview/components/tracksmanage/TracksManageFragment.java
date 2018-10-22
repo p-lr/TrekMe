@@ -33,7 +33,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.core.track.TrackTools;
-import com.peterlaurence.trekadvisor.menu.MapProvider;
+import com.peterlaurence.trekadvisor.model.MapProvider;
 
 import java.util.List;
 
@@ -51,7 +51,6 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     private FrameLayout rootView;
     private ConstraintLayout emptyRoutePanel;
     private Map mMap;
-    private MapProvider mMapProvider;
     private MenuItem mTrackRenameMenuItem;
     private TrackChangeListenerProvider mTrackChangeListenerProvider;
     private TrackChangeListener mTrackChangeListener;
@@ -60,8 +59,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof MapProvider && context instanceof TrackChangeListenerProvider) {
-            mMapProvider = (MapProvider) context;
+        if (context instanceof TrackChangeListenerProvider) {
             mTrackChangeListenerProvider = (TrackChangeListenerProvider) context;
         } else {
             throw new RuntimeException(context.toString()
@@ -81,7 +79,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
         rootView = (FrameLayout) inflater.inflate(R.layout.fragment_tracks_manage, container, false);
         emptyRoutePanel = rootView.findViewById(R.id.emptyRoutePanel);
-        mMap = mMapProvider.getCurrentMap();
+        mMap = MapProvider.INSTANCE.getCurrentMap();
         generateTracks(mMap);
 
         if (savedInstanceState != null) {
@@ -222,7 +220,6 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onDetach() {
         super.onDetach();
-        mMapProvider = null;
         mTrackChangeListenerProvider = null;
     }
 

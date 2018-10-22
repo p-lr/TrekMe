@@ -35,7 +35,6 @@ import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSource;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceBundle;
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials;
-import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.MarkerProvider;
 import com.peterlaurence.trekadvisor.menu.dialogs.MapDownloadDialog;
 import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
@@ -51,6 +50,7 @@ import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
 import com.peterlaurence.trekadvisor.menu.record.RecordFragment;
+import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
 
 import org.greenrobot.eventbus.EventBus;
@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
         MarkerManageFragment.MarkerManageFragmentInteractionListener,
-        MapProvider,
         MarkerProvider,
         TracksManageFragment.TrackChangeListenerProvider,
         MapViewFragment.RequestManageMarkerListener,
@@ -275,7 +274,7 @@ public class MainActivity extends AppCompatActivity
                     showMapViewFragment();
                     break;
                 case MAP_SETTINGS_FRAGMENT_TAG:
-                    Map map = getSettingsMap();
+                    Map map = MapProvider.INSTANCE.getSettingsMap();
                     if (map != null) {
                         showMapSettingsFragment(map.getName());
                         break;
@@ -464,7 +463,7 @@ public class MainActivity extends AppCompatActivity
 
     private void showMapViewFragment() {
         /* Don't show the fragment if no map has been selected yet */
-        if (getCurrentMap() == null) {
+        if (MapProvider.INSTANCE.getCurrentMap() == null) {
             return;
         }
 
@@ -842,26 +841,6 @@ public class MainActivity extends AppCompatActivity
                     // TODO : alert the user of the consequences
                 }
         }
-    }
-
-    @Override
-    @Nullable
-    public Map getCurrentMap() {
-        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-        if (mapListFragment != null && mapListFragment instanceof MapListFragment) {
-            return ((MapListFragment) mapListFragment).getCurrentMap();
-        }
-        return null;
-    }
-
-    @Override
-    @Nullable
-    public Map getSettingsMap() {
-        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-        if (mapListFragment != null && mapListFragment instanceof MapListFragment) {
-            return ((MapListFragment) mapListFragment).getSettingsMap();
-        }
-        return null;
     }
 
     @Nullable

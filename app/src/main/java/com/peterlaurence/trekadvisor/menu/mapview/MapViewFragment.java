@@ -34,8 +34,8 @@ import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
-import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
+import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
@@ -71,7 +71,6 @@ public class MapViewFragment extends Fragment implements
     private boolean mLockView = false;
     private RequestManageTracksListener mRequestManageTracksListener;
     private RequestManageMarkerListener mRequestManageMarkerListener;
-    private MapProvider mMapProvider;
     private LocationRequest mLocationRequest;
     private OrientationEventManager mOrientationEventManager;
     private MarkerLayer mMarkerLayer;
@@ -89,11 +88,9 @@ public class MapViewFragment extends Fragment implements
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof RequestManageTracksListener
-                && context instanceof RequestManageMarkerListener
-                && context instanceof MapProvider) {
+                && context instanceof RequestManageMarkerListener) {
             mRequestManageTracksListener = (RequestManageTracksListener) context;
             mRequestManageMarkerListener = (RequestManageMarkerListener) context;
-            mMapProvider = (MapProvider) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement RequestManageTracksListener, MapProvider and LocationProvider");
@@ -243,7 +240,9 @@ public class MapViewFragment extends Fragment implements
 
     @Override
     public void onPositionTouch() {
-        mTileView.setScale(1f);
+        if (mTileView != null) {
+            mTileView.setScale(1f);
+        }
         centerOnPosition();
     }
 
@@ -308,7 +307,7 @@ public class MapViewFragment extends Fragment implements
      * updated.
      */
     private void updateMapIfNecessary() {
-        Map map = mMapProvider.getCurrentMap();
+        Map map = MapProvider.INSTANCE.getCurrentMap();
         if (map != null) {
             if (mMap != null && mMap.equals(map)) {
                 Map.MapBounds newBounds = map.getMapBounds();
@@ -357,7 +356,6 @@ public class MapViewFragment extends Fragment implements
 
         mRequestManageTracksListener = null;
         mRequestManageMarkerListener = null;
-        mMapProvider = null;
         mSpeedListener = null;
         mOrientationEventManager.stop();
         mOrientationEventManager = null;

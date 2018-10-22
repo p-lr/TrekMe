@@ -95,7 +95,7 @@ object TrackImporter {
 
     fun isFileSupported(uri: Uri): Boolean {
         val path = uri.path
-        val extension = path.substring(path.lastIndexOf(".") + 1)
+        val extension = path?.substring(path.lastIndexOf(".") + 1) ?: ""
 
         if ("" == extension) return false
 

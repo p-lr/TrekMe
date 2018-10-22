@@ -30,6 +30,7 @@ import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.UrlDownloadDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadFinishedEvent;
+import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.peterlaurence.trekadvisor.util.ZipTask;
 
 import org.greenrobot.eventbus.EventBus;
@@ -60,8 +61,6 @@ public class MapListFragment extends Fragment implements
 
     private OnMapListFragmentInteractionListener mListener;
 
-    private Map mCurrentMap;   // The map selected by the user in the list
-    private Map mSettingsMap;  // The map that the user wants to calibrate
     private String mDefaultMapUrl;
 
     public MapListFragment() {
@@ -140,21 +139,6 @@ public class MapListFragment extends Fragment implements
         generateMapList();
     }
 
-    /**
-     * Get a reference to the last {@link Map} that has been selected.
-     */
-    public Map getCurrentMap() {
-        return mCurrentMap;
-    }
-
-    /**
-     * Get a reference to the last {@link Map} that the user selected to edit (with the
-     * settings button).
-     */
-    public Map getSettingsMap() {
-        return mSettingsMap;
-    }
-
     private void generateMapList() {
         Context ctx = getContext();
         recyclerView = new RecyclerView(ctx);
@@ -177,7 +161,7 @@ public class MapListFragment extends Fragment implements
 
     @Override
     public void onMapSelected(Map map) {
-        mCurrentMap = map;
+        MapProvider.INSTANCE.setCurrentMap(map);
         if (mListener != null) {
             mListener.onMapSelectedFragmentInteraction(map);
         }
@@ -244,7 +228,7 @@ public class MapListFragment extends Fragment implements
 
     @Override
     public void onMapSettings(Map map) {
-        mSettingsMap = map;
+        MapProvider.INSTANCE.setSettingsMap(map);
         if (mListener != null) {
             mListener.onMapSettingsFragmentInteraction(map);
         }

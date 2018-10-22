@@ -1,6 +1,5 @@
 package com.peterlaurence.trekadvisor.menu.mapcalibration;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -14,9 +13,9 @@ import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
-import com.peterlaurence.trekadvisor.menu.MapProvider;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekadvisor.menu.tools.MarkerTouchMoveListener;
+import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.qozix.tileview.TileView;
 
 import java.lang.ref.WeakReference;
@@ -35,7 +34,6 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     /* To restore the state upon configuration change */
     private static final String CALIBRATION_MARKER_X = "calibration_marker_x";
     private static final String CALIBRATION_MARKER_Y = "calibration_marker_y";
-    private MapProvider mMapProvider;
     private WeakReference<Map> mMapWeakReference;
     private MapCalibrationLayout rootView;
     private TileView mTileView;
@@ -62,7 +60,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         rootView.setCalibrationModel(this);
 
         /* Set the map to calibrate */
-        Map map = mMapProvider.getSettingsMap();
+        Map map = MapProvider.INSTANCE.getSettingsMap();
         setMap(map);
 
         /* If the fragment is created for the first time (e.g not re-created after a configuration
@@ -85,17 +83,6 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         super.onViewCreated(view, savedInstanceState);
 
         mView = view;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof MapProvider) {
-            mMapProvider = (MapProvider) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement MapProvider");
-        }
     }
 
     @Override
