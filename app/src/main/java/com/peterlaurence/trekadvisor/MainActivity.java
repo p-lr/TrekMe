@@ -50,6 +50,7 @@ import com.peterlaurence.trekadvisor.menu.mapview.MapViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
 import com.peterlaurence.trekadvisor.menu.record.RecordFragment;
+import com.peterlaurence.trekadvisor.menu.trackview.TrackViewFragment;
 import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
 
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity
     private static final String IGN_CREDENTIALS_FRAGMENT_TAG = "ignCredentialsFragment";
     private static final String WMTS_VIEW_FRAGMENT_TAG = "wmtsViewFragment";
     private static final String RECORD_FRAGMENT_TAG = "gpxFragment";
+    private static final String TRACK_VIEW_FRAGMENT_TAG = "trackViewFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
     private static final String MAP_DOWNLOAD_DIALOG_TAG = "mapDownloadDialog";
@@ -99,6 +101,7 @@ public class MainActivity extends AppCompatActivity
                 add(MARKER_MANAGE_FRAGMENT_TAG);
                 add(RECORD_FRAGMENT_TAG);
                 add(MAP_DOWNLOAD_DIALOG_TAG);
+                add(TRACK_VIEW_FRAGMENT_TAG);
             }});
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -381,6 +384,10 @@ public class MainActivity extends AppCompatActivity
                 showMapImportFragment();
                 break;
 
+            case R.id.nav_track_stats:
+                showTrackViewFragment();
+                break;
+
             default:
                 break;
         }
@@ -410,40 +417,19 @@ public class MainActivity extends AppCompatActivity
         return mapSettingsFragment;
     }
 
-    private Fragment createMapCalibrationFragment(FragmentTransaction transaction) {
-        Fragment mapCalibrationFragment = new MapCalibrationFragment();
-        transaction.add(R.id.content_frame, mapCalibrationFragment, MAP_CALIBRATION_FRAGMENT_TAG);
-        return mapCalibrationFragment;
-    }
-
-    private Fragment createMapCreateFragment(FragmentTransaction transaction) {
-        Fragment mapCreateFragment = new MapCreateFragment();
-        transaction.add(R.id.content_frame, mapCreateFragment, MAP_CREATE_FRAGMENT_TAG);
-        return mapCreateFragment;
-    }
-
-    private Fragment createIgnCredentialsFragment(FragmentTransaction transaction) {
-        Fragment ignCredentialsFragment = new IgnCredentialsFragment();
-        transaction.add(R.id.content_frame, ignCredentialsFragment, IGN_CREDENTIALS_FRAGMENT_TAG);
-        return ignCredentialsFragment;
+    /**
+     * Generic strategy to create a {@link Fragment}.
+     */
+    private <T extends Fragment> Fragment createFragment(FragmentTransaction transaction, String tag, Class<T> fragmentType) throws InstantiationException, IllegalAccessException {
+        Fragment fragment = fragmentType.newInstance();
+        transaction.add(R.id.content_frame, fragment, tag);
+        return fragment;
     }
 
     private Fragment createWmtsViewFragment(FragmentTransaction transaction, MapSource mapSource) {
         Fragment wmtsViewFragment = GoogleMapWmtsViewFragment.newInstance(new MapSourceBundle(mapSource));
         transaction.add(R.id.content_frame, wmtsViewFragment, WMTS_VIEW_FRAGMENT_TAG);
         return wmtsViewFragment;
-    }
-
-    private Fragment createMapImportFragment(FragmentTransaction transaction) {
-        Fragment mapImportFragment = new MapImportFragment();
-        transaction.add(R.id.content_frame, mapImportFragment, MAP_IMPORT_FRAGMENT_TAG);
-        return mapImportFragment;
-    }
-
-    private Fragment createRecordFragment(FragmentTransaction transaction) {
-        Fragment gpxFragment = new RecordFragment();
-        transaction.add(R.id.content_frame, gpxFragment, RECORD_FRAGMENT_TAG);
-        return gpxFragment;
     }
 
     @Override
@@ -567,58 +553,46 @@ public class MainActivity extends AppCompatActivity
         transaction.commit();
     }
 
-    private void showMapCalibrationFragment() {
+    /**
+     * Generic way of showing a fragment.
+     *
+     * @param tag             the tag of the {@link Fragment} to show
+     * @param backFragmentTag the tag of the {@link Fragment} the back press should lead to
+     * @param fragmentType    the class of the {@link Fragment} to instantiate (if needed)
+     */
+    private <T extends Fragment> void showFragment(String tag, String backFragmentTag, Class<T> fragmentType) {
         /* Remove single-usage fragments */
         removeSingleUsageFragments();
 
         /* Hide other fragments */
         FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
-        hideOtherFragments(hideTransaction, MAP_CALIBRATION_FRAGMENT_TAG);
+        hideOtherFragments(hideTransaction, tag);
         hideTransaction.commit();
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment mapCalibrationFragment = createMapCalibrationFragment(transaction);
-        transaction.show(mapCalibrationFragment);
+        Fragment fragment;
+        try {
+            fragment = createFragment(transaction, tag, fragmentType);
+            transaction.show(fragment);
 
-        /* Manually manage the back action*/
-        mBackFragmentTag = MAP_SETTINGS_FRAGMENT_TAG;
-        transaction.commit();
+            /* Manually manage the back action */
+            mBackFragmentTag = backFragmentTag;
+            transaction.commit();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showMapCalibrationFragment() {
+        showFragment(MAP_CALIBRATION_FRAGMENT_TAG, MAP_SETTINGS_FRAGMENT_TAG, MapCalibrationFragment.class);
     }
 
     private void showMapCreateFragment() {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments();
-
-        /* Hide other fragments */
-        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
-        hideOtherFragments(hideTransaction, MAP_CREATE_FRAGMENT_TAG);
-        hideTransaction.commit();
-
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment mapImportFragment = createMapCreateFragment(transaction);
-        transaction.show(mapImportFragment);
-
-        /* Manually manage the back action*/
-        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
-        transaction.commit();
+        showFragment(MAP_CREATE_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, MapCreateFragment.class);
     }
 
     private void showIgnCredentialsFragment() {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments();
-
-        /* Hide other fragments */
-        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
-        hideOtherFragments(hideTransaction, IGN_CREDENTIALS_FRAGMENT_TAG);
-        hideTransaction.commit();
-
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment ignCredentialsFragment = createIgnCredentialsFragment(transaction);
-        transaction.show(ignCredentialsFragment);
-
-        /* Manually manage the back action*/
-        mBackFragmentTag = IGN_CREDENTIALS_FRAGMENT_TAG;
-        transaction.commit();
+        showFragment(IGN_CREDENTIALS_FRAGMENT_TAG, IGN_CREDENTIALS_FRAGMENT_TAG, IgnCredentialsFragment.class);
     }
 
     private void showWmtsViewFragment(MapSource mapSource) {
@@ -640,39 +614,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMapImportFragment() {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments();
-
-        /* Hide other fragments */
-        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
-        hideOtherFragments(hideTransaction, MAP_IMPORT_FRAGMENT_TAG);
-        hideTransaction.commit();
-
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment mapImportFragment = createMapImportFragment(transaction);
-        transaction.show(mapImportFragment);
-
-        /* Manually manage the back action*/
-        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
-        transaction.commit();
+        showFragment(MAP_IMPORT_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, MapImportFragment.class);
     }
 
     private void showRecordFragment() {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments();
+        showFragment(RECORD_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, RecordFragment.class);
+    }
 
-        /* Hide other fragments */
-        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
-        hideOtherFragments(hideTransaction, RECORD_FRAGMENT_TAG);
-        hideTransaction.commit();
-
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment recordFragment = createRecordFragment(transaction);
-        transaction.show(recordFragment);
-
-        /* Manually manage the back action*/
-        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
-        transaction.commit();
+    private void showTrackViewFragment() {
+        showFragment(TRACK_VIEW_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, TrackViewFragment.class);
     }
 
     /**
@@ -696,6 +646,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Only remove fragments that are NOT retained.
+     */
     private void removeSingleUsageFragments() {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
 
