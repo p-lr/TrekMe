@@ -2,8 +2,11 @@ package com.peterlaurence.trekadvisor;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -117,7 +120,7 @@ public class MainActivity extends AppCompatActivity
     private static final String[] PERMISSIONS_MAP_CREATION = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.INTERNET
+            Manifest.permission.INTERNET,
     };
     private static final String TAG = "MainActivity";
     private static final String KEY_BUNDLE_BACK = "keyBackFragmentTag";
@@ -170,20 +173,49 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public boolean checkInternetPermission() {
-        // Check whether we have write permission or not
-        int permissionWrite = ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+    public boolean checkMapCreationPermission() {
+        return hasPermissions(this, PERMISSIONS_MAP_CREATION);
+    }
 
-        if (permissionWrite != PackageManager.PERMISSION_GRANTED) {
-            // We don't have the required permissions, so we prompt the user
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_MAP_CREATION,
-                    REQUEST_MAP_CREATION
-            );
-            return false;
-        } else {
-            return true;
+    /**
+     * Request all the required permissions for map creation.
+     */
+    private void requestMapCreationPermission() {
+        ActivityCompat.requestPermissions(
+                this,
+                PERMISSIONS_MAP_CREATION,
+                REQUEST_MAP_CREATION
+        );
+    }
+
+    private static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Determine if we have an internet connection.
+     */
+    private boolean checkInternet() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (cm != null) {
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnected();
+        }
+        return false;
+    }
+
+    private void warnIfNotInternet() {
+        if (!checkInternet()) {
+            showMessage(getString(R.string.no_internet));
         }
     }
 
@@ -222,7 +254,9 @@ public class MainActivity extends AppCompatActivity
             githubLink.setMovementMethod(LinkMovementMethod.getInstance());
         }
 
-        mSnackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT);
+        if (drawer != null) {
+            mSnackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT);
+        }
     }
 
     /**
@@ -303,7 +337,7 @@ public class MainActivity extends AppCompatActivity
             fragmentManager.popBackStack();
         } else {
             /* BACK button twice to exit */
-            if (mSnackBarExit.isShown()) {
+            if (mSnackBarExit == null || mSnackBarExit.isShown()) {
                 super.onBackPressed();
             } else {
                 mSnackBarExit.show();
@@ -362,7 +396,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.nav_map:
                 showMapViewFragment();
@@ -589,10 +623,15 @@ public class MainActivity extends AppCompatActivity
 
     private void showMapCreateFragment() {
         showFragment(MAP_CREATE_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, MapCreateFragment.class);
+
+        if (!checkMapCreationPermission()) {
+            requestMapCreationPermission();
+        }
     }
 
     private void showIgnCredentialsFragment() {
         showFragment(IGN_CREDENTIALS_FRAGMENT_TAG, IGN_CREDENTIALS_FRAGMENT_TAG, IgnCredentialsFragment.class);
+        warnIfNotInternet();
     }
 
     private void showWmtsViewFragment(MapSource mapSource) {
@@ -611,6 +650,8 @@ public class MainActivity extends AppCompatActivity
         /* Manually manage the back action*/
         mBackFragmentTag = WMTS_VIEW_FRAGMENT_TAG;
         transaction.commit();
+
+        warnIfNotInternet();
     }
 
     private void showMapImportFragment() {
@@ -676,6 +717,13 @@ public class MainActivity extends AppCompatActivity
         hideTransaction.commit();
     }
 
+    private void showMessage(String message) {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer == null) return;
+        Snackbar snackbar = Snackbar.make(drawer, message, Snackbar.LENGTH_LONG);
+        snackbar.show();
+    }
+
     /**
      * A map has been selected from the {@link MapListFragment}. <br>
      * Updates the current map reference and show the {@link MapViewFragment}.
@@ -693,13 +741,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDefaultMapDownloaded() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                showMapImportFragment();
-                fragmentManager.executePendingTransactions();
-                EventBus.getDefault().post(new RequestImportMapEvent());
-            }
+        runOnUiThread(() -> {
+            showMapImportFragment();
+            fragmentManager.executePendingTransactions();
+            EventBus.getDefault().post(new RequestImportMapEvent());
         });
     }
 
@@ -753,7 +798,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public MarkerGson.Marker getCurrentMarker() {
         Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapViewFragment != null && mapViewFragment instanceof MapViewFragment) {
+        if (mapViewFragment instanceof MapViewFragment) {
             return ((MapViewFragment) mapViewFragment).getCurrentMarker();
         }
         return null;
@@ -762,7 +807,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void currentMarkerEdited() {
         Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapViewFragment != null && mapViewFragment instanceof MapViewFragment) {
+        if (mapViewFragment instanceof MapViewFragment) {
             ((MapViewFragment) mapViewFragment).currentMarkerEdited();
         }
     }
@@ -790,7 +835,6 @@ public class MainActivity extends AppCompatActivity
                 if (ignCredentials == null) {
                     showIgnCredentialsFragment();
                 } else {
-                    checkInternetPermission();
                     showWmtsViewFragment(mapSource);
                 }
                 break;
