@@ -652,58 +652,11 @@ public class MainActivity extends AppCompatActivity
     private void removeSingleUsageFragments() {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
 
-        /* Remove the calibration fragment */
-        Fragment mapCalibrationFragment = fragmentManager.findFragmentByTag(MAP_CALIBRATION_FRAGMENT_TAG);
-        if (mapCalibrationFragment != null) {
-            transaction.remove(mapCalibrationFragment);
-        }
-
-        /* Remove the fragment for tracks management */
-        Fragment tracksManageFragment = fragmentManager.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG);
-        if (tracksManageFragment != null) {
-            transaction.remove(tracksManageFragment);
-        }
-
-        /* Remove the fragment for marker management */
-        Fragment markerManageFragment = fragmentManager.findFragmentByTag(MARKER_MANAGE_FRAGMENT_TAG);
-        if (markerManageFragment != null) {
-            transaction.remove(markerManageFragment);
-        }
-
-        /* Remove the map-import fragment */
-        Fragment mapImportFragment = fragmentManager.findFragmentByTag(MAP_IMPORT_FRAGMENT_TAG);
-        if (mapImportFragment != null) {
-            transaction.remove(mapImportFragment);
-        }
-
-        /* Remove the map-settings fragment */
-        Fragment mapSettingsFragment = fragmentManager.findFragmentByTag(MAP_SETTINGS_FRAGMENT_TAG);
-        if (mapSettingsFragment != null) {
-            transaction.remove(mapSettingsFragment);
-        }
-
-        /* Remove the record fragment */
-        Fragment recordFragment = fragmentManager.findFragmentByTag(RECORD_FRAGMENT_TAG);
-        if (recordFragment != null) {
-            transaction.remove(recordFragment);
-        }
-
-        /* Remove the create fragment */
-        Fragment createFragment = fragmentManager.findFragmentByTag(MAP_CREATE_FRAGMENT_TAG);
-        if (createFragment != null) {
-            transaction.remove(createFragment);
-        }
-
-        /* Remove the IGN credentials fragment */
-        Fragment ignCredentialsFragment = fragmentManager.findFragmentByTag(IGN_CREDENTIALS_FRAGMENT_TAG);
-        if (ignCredentialsFragment != null) {
-            transaction.remove(ignCredentialsFragment);
-        }
-
-        /* Remove the WMTS view fragment */
-        Fragment wmtsViewFragment = fragmentManager.findFragmentByTag(WMTS_VIEW_FRAGMENT_TAG);
-        if (wmtsViewFragment != null) {
-            transaction.remove(wmtsViewFragment);
+        for (String tag : FRAGMENT_TAGS) {
+            Fragment fragment = fragmentManager.findFragmentByTag(tag);
+            if (fragment != null && !fragment.getRetainInstance()) {
+                transaction.remove(fragment);
+            }
         }
 
         transaction.commit();
