@@ -30,6 +30,7 @@ import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
 import com.peterlaurence.trekadvisor.core.track.TrackStatCalculator;
+import com.peterlaurence.trekadvisor.core.track.TrackStatistics;
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent;
 import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
@@ -117,6 +118,7 @@ public class LocationService extends Service {
                                 location.getLongitude(), location.getAltitude(), null);
                         mTrackPoints.add(trackPoint);
                         mTrackStatCalculator.addTrackPoint(trackPoint);
+                        sendTrackStatistics(mTrackStatCalculator.getStatistics());
                     });
                 }
             }
@@ -261,5 +263,12 @@ public class LocationService extends Service {
      */
     private void sendStatus() {
         EventBus.getDefault().postSticky(new LocationServiceStatus(mStarted));
+    }
+
+    /**
+     * Send updated track statistics.
+     */
+    private void sendTrackStatistics(TrackStatistics stats) {
+        EventBus.getDefault().postSticky(stats);
     }
 }

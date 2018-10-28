@@ -175,4 +175,7 @@
     <string name="download">Download</string>
     <string name="download_confirm">Download started. See the status in your notifications.</string>
 
+    <!-- TrackViewFragment -->
+    <string name="distance">Distance</string>
+
 </resources>
