@@ -12,6 +12,11 @@ import kotlinx.android.synthetic.main.fragment_track_view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 
+/**
+ * This fragment provides a view of a track's statistics.
+ *
+ * @author peterLaurence on 28/10/18
+ */
 class TrackViewFragment : Fragment() {
 
     companion object {
@@ -53,7 +58,11 @@ class TrackViewFragment : Fragment() {
     }
 
     private fun setStatistics(statistics: TrackStatistics) {
-        val formattedDistance = UnitFormatter.formatDistance(statistics.distance)
-        trackDistanceView.setDistanceText(formattedDistance)
+        trackDistanceView.setDistanceText(
+                UnitFormatter.formatDistance(statistics.distance))
+
+        trackElevationStackView.setElevationStack(
+                UnitFormatter.formatDistance(statistics.elevationUpStack),
+                UnitFormatter.formatDistance(statistics.elevationDownStack))
     }
 }
