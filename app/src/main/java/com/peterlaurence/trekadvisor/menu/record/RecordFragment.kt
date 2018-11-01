@@ -7,32 +7,23 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.track.TrackImporter
 import com.peterlaurence.trekadvisor.core.track.TrackTools
 import com.peterlaurence.trekadvisor.menu.dialogs.EditFieldDialog
 import com.peterlaurence.trekadvisor.menu.events.RecordGpxStopEvent
-import com.peterlaurence.trekadvisor.menu.record.components.ActionsView
-import com.peterlaurence.trekadvisor.menu.record.components.RecordListView
-import com.peterlaurence.trekadvisor.menu.record.components.StatusView
 import com.peterlaurence.trekadvisor.menu.record.components.dialogs.MapChoiceDialog
-import com.peterlaurence.trekadvisor.menu.record.components.events.RecordingNameChangeEvent
-import com.peterlaurence.trekadvisor.menu.record.components.events.RequestChooseMap
-import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording
-import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStartEvent
-import com.peterlaurence.trekadvisor.menu.record.components.events.RequestStopEvent
+import com.peterlaurence.trekadvisor.menu.record.components.events.*
 import com.peterlaurence.trekadvisor.service.LocationService
 import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus
 import com.peterlaurence.trekadvisor.util.FileUtils
+import kotlinx.android.synthetic.main.fragment_record.*
 import kotlinx.coroutines.*
-
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import kotlin.coroutines.CoroutineContext
-import kotlinx.android.synthetic.main.fragment_record.*
 
 /**
  * Holds controls and displays information about the [LocationService].
@@ -44,7 +35,7 @@ class RecordFragment : Fragment(), CoroutineScope {
     private val job: Job = Job()
 
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Default + job
+        get() = Dispatchers.Main + job
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -126,24 +117,23 @@ class RecordFragment : Fragment(), CoroutineScope {
         updateRecordings()
     }
 
-    private fun updateRecordings() {
+    private fun CoroutineScope.updateRecordings() = launch {
         TrackImporter.recordings?.let {
             recordListView.setRecordings(it)
         }
 
-        /* Recording to Gpx conversion */
-        launch(Dispatchers.Main) {
-            /* First, read all tracks which already have statistics */
-            var recordingsToGpx = async {
-                TrackImporter.getRecordingsToGpxMap()
-            }
-            recordingsToGpx.await()
-
-            /* Then, ask for the computation of the statistics for the tracks that don't have any */
-            recordingsToGpx = async {
-                TrackImporter.computeMissingStatistics()
-            }
-            recordListView.setGpxForRecording(recordingsToGpx.await())
+        /* Recording to Gpx conversion.
+         * First, read all tracks which already have statistics */
+        var recordingsToGpx = launch(Dispatchers.Default) {
+            TrackImporter.getRecordingsToGpxMap()
         }
+        recordingsToGpx.join()
+
+        /* Then, ask for the computation of the statistics for the tracks that don't have any */
+        recordingsToGpx = async(Dispatchers.Default) {
+            TrackImporter.computeMissingStatistics()
+        }
+
+        recordListView.setGpxForRecording(recordingsToGpx.await())
     }
 }
