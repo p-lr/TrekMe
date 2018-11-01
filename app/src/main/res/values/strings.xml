@@ -177,5 +177,6 @@
 
     <!-- TrackViewFragment -->
     <string name="distance">Distance</string>
+    <string name="current_recording">Current recording</string>
 
 </resources>

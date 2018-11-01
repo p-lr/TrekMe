@@ -12,7 +12,7 @@ import com.peterlaurence.trekadvisor.util.gpx.GPXParser
 import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
 import com.peterlaurence.trekadvisor.util.gpx.model.Track
 import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment
-import kotlinx.coroutines.experimental.Runnable
+import kotlinx.coroutines.Runnable
 import java.io.*
 import java.util.*
 

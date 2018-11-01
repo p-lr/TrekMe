@@ -122,4 +122,5 @@
     <string name="track_stats_menu_title">Statistiques enregistrement en cours</string>
     <string name="no_internet">Vous devez être connecté à internet pour créer une carte</string>
     <string name="distance">Distance</string>
+    <string name="current_recording">Enregistrement en cours</string>
 </resources>

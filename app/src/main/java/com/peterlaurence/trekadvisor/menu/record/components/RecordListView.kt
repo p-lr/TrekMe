@@ -23,10 +23,7 @@ import com.peterlaurence.trekadvisor.menu.tools.RecyclerItemClickListener
 import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekadvisor.util.FileUtils
 import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -66,7 +63,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
         /* Recording to Gpx conversion */
         val ref = this.asReference()
-        job = launch(UI) {
+        job = GlobalScope.launch(Dispatchers.Main) {
             /* First, read all tracks which already have statistics */
             var recordingsToGpx = async {
                 TrackImporter.getRecordingsToGpxMap()

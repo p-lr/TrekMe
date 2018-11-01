@@ -21,12 +21,14 @@ class TrackViewFragment : Fragment() {
 
     companion object {
         private const val ARG_STATS = "stats"
+        private const val ARG_TITLE = "title"
 
         @JvmStatic
-        fun newInstance(trackStats: TrackStatistics): Fragment {
+        fun newInstance(trackStats: TrackStatistics, title: String): Fragment {
             val fragment = Fragment()
             val args = Bundle()
             args.putParcelable(ARG_STATS, trackStats)
+            args.putString(ARG_TITLE, title)
             fragment.arguments = args
             return fragment
         }
@@ -34,6 +36,11 @@ class TrackViewFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_track_view, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        trackStatsTitle.text = savedInstanceState?.getString(ARG_TITLE) ?: getText(R.string.current_recording)
+        super.onViewCreated(view, savedInstanceState)
     }
 
     override fun onStart() {

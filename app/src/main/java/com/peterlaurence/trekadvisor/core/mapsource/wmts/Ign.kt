@@ -1,7 +1,6 @@
 package com.peterlaurence.trekadvisor.core.mapsource.wmts
 
 import com.peterlaurence.trekadvisor.core.map.gson.MapGson.Calibration.CalibrationPoint
-import kotlin.coroutines.experimental.buildIterator
 
 data class Tile(val level: Int, val row: Int, val col: Int, val indexLevel: Int, val indexRow: Int,
                 val indexCol: Int)
@@ -97,7 +96,7 @@ private fun orderCoordinates(point1: Point, point2: Point): TopLeftToBottomRight
 
 private fun getTileSequenceAndCalibration(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): Sequence<Tile> {
     return Sequence {
-        buildIterator {
+        iterator {
             /* Level min */
             var (colLeft, rowTop, colRight, rowBottom) = getLevelArea(levelMin, XLeft, YTop, XRight, YBottom)
             for ((indexRow, i) in (rowTop..rowBottom).withIndex()) {
