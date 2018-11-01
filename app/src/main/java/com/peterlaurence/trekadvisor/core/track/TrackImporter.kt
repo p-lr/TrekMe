@@ -55,6 +55,9 @@ object TrackImporter {
                 val gpx = GPXParser.parse(FileInputStream(it))
                 recordingsToGpx[it] = gpx
             }
+            recordingsToGpx.keys.filter { !(recordings?.contains(it) ?: false) }.forEach {
+                recordingsToGpx.remove(it)
+            }
         }
         return recordingsToGpx.toMap()
     }

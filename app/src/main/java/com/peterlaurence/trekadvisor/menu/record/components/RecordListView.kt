@@ -16,18 +16,12 @@ import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader
 import com.peterlaurence.trekadvisor.core.track.TrackImporter
 import com.peterlaurence.trekadvisor.core.track.TrackTools
 import com.peterlaurence.trekadvisor.menu.record.components.events.MapSelectedForRecord
-import com.peterlaurence.trekadvisor.menu.record.components.events.RecordingNameChangeEvent
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestChooseMap
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording
 import com.peterlaurence.trekadvisor.menu.tools.RecyclerItemClickListener
-import com.peterlaurence.trekadvisor.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekadvisor.util.FileUtils
 import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
-import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
-import org.jetbrains.anko.coroutines.experimental.asReference
 import java.io.File
 import java.util.*
 
@@ -40,11 +34,9 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
     private var isMultiSelectMode = false
     private var selectedRecordings = ArrayList<File>()
     private lateinit var recordingAdapter: RecordingAdapter
-    private var recordingDataList = arrayListOf<RecordingData>()
-    private var job: Job? = null
+    internal val recordingDataList = arrayListOf<RecordingData>()
 
     init {
-        updateRecordings()
         init(context, attrs)
     }
 
@@ -53,35 +45,19 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
      */
     data class RecordingData(val recording: File, val gpx: Gpx? = null)
 
-    private fun updateRecordings() {
+    fun setRecordings(recordings: Array<File>) {
         recordingDataList.clear()
-        val recordings = TrackImporter.recordings
-        if (recordings != null) {
-            /* For instance, only fill the file attribute, the gpx data will be retrieved later */
-            recordingDataList.addAll(recordings.map { RecordingData(it) })
-        }
+        /* For instance, only fill the file attribute, the gpx data will be retrieved later */
+        recordingDataList.addAll(recordings.map { RecordingData(it) })
 
-        /* Recording to Gpx conversion */
-        val ref = this.asReference()
-        job = GlobalScope.launch(Dispatchers.Main) {
-            /* First, read all tracks which already have statistics */
-            var recordingsToGpx = async {
-                TrackImporter.getRecordingsToGpxMap()
-            }
-            ref().setGpxForRecording(recordingsToGpx.await())
-
-            /* Then, ask for the computation of the statistics for the tracks that don't have any */
-            recordingsToGpx = async {
-                TrackImporter.computeMissingStatistics()
-            }
-            ref().setGpxForRecording(recordingsToGpx.await())
-        }
+        /* Update the recycle view */
+        recordingAdapter.setRecordingsData(recordingDataList)
     }
 
     /**
      * Once we receive the [Gpx] data for each recording [File], fill the model object.
      */
-    private fun setGpxForRecording(recordingsToGpx: kotlin.collections.Map<File, Gpx>) {
+    fun setGpxForRecording(recordingsToGpx: kotlin.collections.Map<File, Gpx>) {
         /* Re-write the model object */
         recordingDataList.clear()
         for ((file, gpx) in recordingsToGpx) {
@@ -90,15 +66,6 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
         /* Update the recycle view */
         recordingAdapter.setRecordingsData(recordingDataList)
-    }
-
-    fun cancelPendingJobs() {
-        val job = job
-        job?.let {
-            if (it.isActive) {
-                it.cancel()
-            }
-        }
     }
 
     private fun init(context: Context, attrs: AttributeSet?) {
@@ -204,23 +171,6 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         val recording = recordingDataList[position].recording
         selectedRecordings.clear()
         selectedRecordings.add(recording)
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
-        updateRecordings()
-        recordingAdapter.notifyDataSetChanged()
-    }
-
-    @Subscribe
-    fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) {
-        for (recording in recordingDataList.map { it.recording }) {
-            if (FileUtils.getFileNameWithoutExtention(recording) == event.initialValue) {
-                TrackTools.renameTrack(recording, event.newValue)
-            }
-        }
-        updateRecordings()
-        recordingAdapter.setRecordingsData(recordingDataList)
     }
 
     @Subscribe

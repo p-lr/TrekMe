@@ -16,7 +16,7 @@
         app:layout_constraintGuide_percent="0.5" />
 
     <com.peterlaurence.trekadvisor.menu.record.components.ActionsView
-        android:id="@+id/record_actionsView"
+        android:id="@+id/actionsView"
         android:layout_width="0dp"
         android:layout_height="150dp"
         android:layout_marginEnd="4dp"
@@ -27,7 +27,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.peterlaurence.trekadvisor.menu.record.components.StatusView
-        android:id="@+id/record_statusView"
+        android:id="@+id/statusView"
         android:layout_width="0dp"
         android:layout_height="150dp"
         android:layout_marginEnd="8dp"
@@ -39,7 +39,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.peterlaurence.trekadvisor.menu.record.components.RecordListView
-        android:id="@+id/record_listView"
+        android:id="@+id/recordListView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
@@ -47,7 +47,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/record_statusView"
+        app:layout_constraintTop_toBottomOf="@id/statusView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
