@@ -2,6 +2,11 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/map_layer_menu_id"
+        android:icon="@drawable/layer"
+        android:title="@string/mapcreate_define_area"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/map_area_widget_id"
         android:icon="@drawable/ic_crop_free_white_24dp"
         android:title="@string/mapcreate_define_area"

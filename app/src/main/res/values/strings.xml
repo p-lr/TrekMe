@@ -165,8 +165,10 @@
     <string name="usgs_map_source_description" translatable="false">U.S. Geological Survey</string>
     <string name="ign_spain_source">IGN Spain</string>
     <string name="ign_spain_source_description" translatable="false">Instituto Geográfico Nacional</string>
+    <string name="ign_select_layer_title">Choose a layer</string>
 
     <string name="mapcreate_define_area">Choose area</string>
+    <string name="mapcreate_define_layer">Choose layer</string>
     <string name="wmts_settings_dialog">Map configuration</string>
     <string name="min_zoom">Minimum zoom</string>
     <string name="max_zoom">Maximun zoom</string>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderAuth
+import com.peterlaurence.trekadvisor.core.providers.layers.IgnLayers
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderIgn
 import com.qozix.tileview.graphics.BitmapProvider
 import com.qozix.tileview.tiles.Tile
@@ -16,11 +17,11 @@ import com.qozix.tileview.tiles.Tile
  * row and col numbers. <br>
  * Additional information have to be provided though, like IGN credentials.
  */
-class BitmapProviderIgn(credentials: IGNCredentials) : BitmapProvider {
+class BitmapProviderIgn(credentials: IGNCredentials, layer: String = IgnLayers.ScanExpressStandard.realName) : BitmapProvider {
     private val genericProvider: GenericBitmapProviderAuth
 
     init {
-        val urlTileBuilder = UrlTileBuilderIgn(credentials.api ?: "")
+        val urlTileBuilder = UrlTileBuilderIgn(credentials.api ?: "", layer)
         genericProvider = GenericBitmapProviderAuth(urlTileBuilder, credentials.user ?: "", credentials.pwd ?: "")
     }
 

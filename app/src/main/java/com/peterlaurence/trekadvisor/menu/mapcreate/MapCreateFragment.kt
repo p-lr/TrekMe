@@ -16,6 +16,11 @@ import com.peterlaurence.trekadvisor.core.mapsource.MapSource
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekadvisor.menu.mapcreate.MapSourceAdapter.MapSourceSelectionListener
 
+/**
+ * This fragment is used for displaying available WMTS map sources.
+ *
+ * @author peterLaurence on 08/04/18
+ */
 class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>

@@ -123,4 +123,6 @@
     <string name="no_internet">Vous devez être connecté à internet pour créer une carte</string>
     <string name="distance">Distance</string>
     <string name="current_recording">Enregistrement en cours</string>
+    <string name="mapcreate_define_layer">Couches</string>
+    <string name="ign_select_layer_title">Choix de la couche</string>
 </resources>

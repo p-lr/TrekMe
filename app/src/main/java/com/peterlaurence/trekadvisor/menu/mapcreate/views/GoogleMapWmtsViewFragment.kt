@@ -1,5 +1,6 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate.views
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.FloatingActionButton
@@ -15,12 +16,16 @@ import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgn
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderIgnSpain
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderOSM
 import com.peterlaurence.trekadvisor.core.providers.BitmapProviderUSGS
+import com.peterlaurence.trekadvisor.core.providers.layers.IgnLayers
+import com.peterlaurence.trekadvisor.menu.dialogs.SelectDialog
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaListener
+import com.peterlaurence.trekadvisor.menu.mapcreate.views.events.IgnLayerSelectEvent
 import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatusEvent
 import com.qozix.tileview.TileView
+import com.qozix.tileview.graphics.BitmapProvider
 import com.qozix.tileview.widgets.ZoomPanLayout
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -50,6 +55,8 @@ import org.greenrobot.eventbus.Subscribe
  *
  * The same settings can be seen at [USGS WMTS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/WMTS/1.0.0/WMTSCapabilities.xml)
  * for the "GoogleMapsCompatible" TileMatrixSet (and not the "default028mm" one).
+ *
+ * @author peterLaurence on 11/05/18
  */
 class GoogleMapWmtsViewFragment : Fragment() {
     private var mapSource: MapSource? = null
@@ -99,7 +106,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         saveFab = rootView.findViewById(R.id.fab_save)
         saveFab.setOnClickListener { validateArea() }
 
-        addTileView()
+        addTileView(createBitmapProvider())
         return rootView
     }
 
@@ -117,6 +124,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    @SuppressLint("RestrictedApi")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.map_area_widget_id -> {
@@ -125,6 +133,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 }
                 addAreaLayer()
                 saveFab.visibility = View.VISIBLE
+            }
+            R.id.map_layer_menu_id -> {
+                val event = IgnLayerSelectEvent(arrayListOf())
+                val title = getString(R.string.ign_select_layer_title)
+                val values = IgnLayers.values().map { it.publicName }
+                val layerSelectDialog = SelectDialog.newInstance(title, values, event)
+                layerSelectDialog.show(activity!!.supportFragmentManager, "SelectDialog-${event.javaClass.canonicalName}")
             }
         }
         return super.onOptionsItemSelected(item)
@@ -153,7 +168,15 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
     }
 
-    private fun addTileView() {
+    @Subscribe
+    fun onIgnLayerDefined(e: IgnLayerSelectEvent) {
+        removeTileView()
+        val realLayerName = IgnLayers.values().first { it.publicName == e.getSelection() }.realName
+        val bitmapProvider = createBitmapProvider(realLayerName)
+        addTileView(bitmapProvider)
+    }
+
+    private fun addTileView(bitmapProvider: BitmapProvider?) {
         val tileView = TileViewExtended(this.context)
 
         /* IGN wmts maps are square */
@@ -187,17 +210,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         setTileViewBounds(tileView)
 
         /* The BitmapProvider */
-        tileView.setBitmapProvider(
-                when (mapSource) {
-                    MapSource.IGN -> {
-                        val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
-                        BitmapProviderIgn(ignCredentials)
-                    }
-                    MapSource.USGS -> BitmapProviderUSGS()
-                    MapSource.OPEN_STREET_MAP -> BitmapProviderOSM()
-                    MapSource.IGN_SPAIN -> BitmapProviderIgnSpain()
-                    else -> null
-                })
+        tileView.setBitmapProvider(bitmapProvider)
 
         /* Add the view */
         setTileView(tileView)
@@ -214,16 +227,35 @@ class GoogleMapWmtsViewFragment : Fragment() {
         rootView.addView(tileView, 0)
     }
 
+    private fun createBitmapProvider(layer: String? = null): BitmapProvider? {
+        return when (mapSource) {
+            MapSource.IGN -> {
+                val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
+                if (layer != null) {
+                    BitmapProviderIgn(ignCredentials, layer)
+                } else {
+                    BitmapProviderIgn(ignCredentials)
+                }
+            }
+            MapSource.USGS -> BitmapProviderUSGS()
+            MapSource.OPEN_STREET_MAP -> BitmapProviderOSM()
+            MapSource.IGN_SPAIN -> BitmapProviderIgnSpain()
+            else -> null
+        }
+    }
+
+    private fun removeTileView() {
+        rootView.removeViewAt(0)
+    }
+
     private fun addAreaLayer() {
         view?.post {
             areaLayer = AreaLayer(context!!, object : AreaListener {
                 override fun areaChanged(area: Area) {
                     this@GoogleMapWmtsViewFragment.area = area
-                    println("are changed")
                 }
 
                 override fun hideArea() {
-                    println("hide area")
                 }
 
             })

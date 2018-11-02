@@ -90,6 +90,8 @@ class EditFieldDialog : DialogFragment() {
 
 /**
  * The event that must be subclassed by every events passed to [EditFieldDialog.newInstance]
+ * This is to ensure that listeners for one type of [EditFieldEvent] are not mistaken by other
+ * type [EditFieldEvent] that have a different purpose.
  * It is sent when the user presses the "OK" button of the dialog.
  */
 @Parcelize
