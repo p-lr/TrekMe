@@ -4,20 +4,25 @@ import android.os.Parcelable
 import com.peterlaurence.trekadvisor.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint
 import kotlinx.android.parcel.Parcelize
+import java.util.*
 import kotlin.math.abs
 
 /**
  * Calculates statistics for a track:
  * * distance
  * * elevation difference (max and stack)
+ * * duration
  * * TODO: mean speed
  *
  * @author peterLaurence on 09/09/18
  */
 class TrackStatCalculator {
-    private val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0)
+    private val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0, 0)
 
     private lateinit var lastTrackPoint: TrackPoint
+
+    /* Duration statistic */
+    private var firstPointDate: Date? = null
 
     /* Elevation statistics */
     private var lastKnownElevation: Double? = null
@@ -35,6 +40,7 @@ class TrackStatCalculator {
     fun addTrackPoint(trkPt: TrackPoint) {
         updateDistance(trkPt)
         updateElevationStatistics(trkPt)
+        updateDuration(trkPt)
     }
 
     /**
@@ -95,8 +101,22 @@ class TrackStatCalculator {
             lastKnownElevation = trkPt.elevation!!
         }
     }
+
+    /**
+     * Remember the [Date] of the first track point, and use it as reference to get the duration.
+     */
+    private fun updateDuration(trktPt: TrackPoint) {
+        trktPt.time?.let {
+            if (firstPointDate == null) {
+                firstPointDate = trktPt.time
+            } else {
+                trackStatistics.durationInSecond = (it.time - firstPointDate!!.time) / 1000
+            }
+        }
+    }
 }
 
 @Parcelize
 data class TrackStatistics(var distance: Double, var elevationDifferenceMax: Double,
-                           var elevationUpStack: Double, var elevationDownStack: Double) : Parcelable
+                           var elevationUpStack: Double, var elevationDownStack: Double,
+                           var durationInSecond: Long) : Parcelable

@@ -71,5 +71,9 @@ class TrackViewFragment : Fragment() {
         trackElevationStackView.setElevationStack(
                 UnitFormatter.formatDistance(statistics.elevationUpStack),
                 UnitFormatter.formatDistance(statistics.elevationDownStack))
+
+        trackDurationView.setDurationText(
+                UnitFormatter.formationDuration(statistics.durationInSecond)
+        )
     }
 }

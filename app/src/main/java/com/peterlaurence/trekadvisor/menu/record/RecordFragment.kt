@@ -30,6 +30,8 @@ import kotlin.coroutines.CoroutineContext
  * Also, various coroutines are launched in the context of this fragment to perform asynchronous
  * operations to fetch and update data, etc. They are automatically cancelled when this fragment is
  * stopped, to avoid memory leaks. See [this link](https://kotlinlang.org/docs/reference/coroutines/coroutine-context-and-dispatchers.html#cancellation-via-explicit-job)
+ *
+ * @author peterLaurence -- converted to Kotlin on 01/11/18
  */
 class RecordFragment : Fragment(), CoroutineScope {
     private val job: Job = Job()

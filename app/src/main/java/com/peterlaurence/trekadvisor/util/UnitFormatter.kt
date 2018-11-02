@@ -1,5 +1,7 @@
 package com.peterlaurence.trekadvisor.util
 
+import android.text.format.DateUtils
+
 object UnitFormatter {
     /**
      * Given a distance in meters, format this distance to return a value expressed either in meters
@@ -11,5 +13,9 @@ object UnitFormatter {
         } else {
             return "%.2f km".format(dist / 1000.0)
         }
+    }
+
+    fun formationDuration(durationInSec: Long): String {
+        return DateUtils.formatElapsedTime(durationInSec)
     }
 }

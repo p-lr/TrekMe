@@ -101,6 +101,10 @@ object GPXWriter {
         elevationDownStack.nodeValue = statistics.elevationDownStack.toString()
         statisticsNodeAttr.setNamedItem(elevationDownStack)
 
+        val durationInSec = doc.createAttribute(ATTR_TRK_STAT_DURATION)
+        durationInSec.nodeValue = statistics.durationInSecond.toString()
+        statisticsNodeAttr.setNamedItem(durationInSec)
+
         n.appendChild(statisticsNode)
     }
 
