@@ -177,12 +177,12 @@ object GPXParser {
     }
 
     @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
-    private fun readTime(parser: XmlPullParser): Date? {
+    private fun readTime(parser: XmlPullParser): Long? {
         return try {
             parser.require(XmlPullParser.START_TAG, ns, TAG_TIME)
             val time = DATE_PARSER.parse(readText(parser))
             parser.require(XmlPullParser.END_TAG, ns, TAG_TIME)
-            time
+            time.time
         } catch (e: Exception) {
             null
         }

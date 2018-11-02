@@ -22,7 +22,7 @@ class TrackStatCalculator {
     private lateinit var lastTrackPoint: TrackPoint
 
     /* Duration statistic */
-    private var firstPointDate: Date? = null
+    private var firstPointTime: Long? = null
 
     /* Elevation statistics */
     private var lastKnownElevation: Double? = null
@@ -107,10 +107,10 @@ class TrackStatCalculator {
      */
     private fun updateDuration(trktPt: TrackPoint) {
         trktPt.time?.let {
-            if (firstPointDate == null) {
-                firstPointDate = trktPt.time
+            if (firstPointTime == null) {
+                firstPointTime = trktPt.time
             } else {
-                trackStatistics.durationInSecond = (it.time - firstPointDate!!.time) / 1000
+                trackStatistics.durationInSecond = (it - firstPointTime!!) / 1000
             }
         }
     }

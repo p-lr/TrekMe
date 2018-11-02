@@ -80,9 +80,9 @@ public class GPXTest {
                     assertEquals(8.89241667, lon);
                     assertEquals(2376.0, elevation);
 
-                    assertEquals(firstTrackPoint.getTime(),
-                            GPXParser.INSTANCE.getDateParser().
-                                    parse("2007-10-14T10:09:57Z"));
+                    assertEquals(GPXParser.INSTANCE.getDateParser().
+                                    parse("2007-10-14T10:09:57Z").getTime(),
+                            firstTrackPoint.getTime(), 0.0);
 
                     /* Check that the track has statistics */
                     assertNotNull(track.getStatistics());
@@ -139,9 +139,8 @@ public class GPXTest {
             assertEquals(8.89241667, lon);
             assertEquals(2376.0, elevation);
 
-            assertEquals(firstTrackPoint.getTime(),
-                    GPXParser.INSTANCE.getDateParser().
-                            parse("2007-10-14T10:09:57Z"));
+            assertEquals(GPXParser.INSTANCE.getDateParser().
+                            parse("2007-10-14T10:09:57Z").getTime(), firstTrackPoint.getTime(), 0.0);
 
             assertNotNull(track.getStatistics());
             assertEquals(track.getStatistics().getDistance(), 102.0);
