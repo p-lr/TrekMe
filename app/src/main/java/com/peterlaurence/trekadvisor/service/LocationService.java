@@ -114,8 +114,9 @@ public class LocationService extends Service {
             public void onLocationResult(LocationResult locationResult) {
                 for (Location location : locationResult.getLocations()) {
                     mServiceHandler.post(() -> {
+                        Double altitude = location.getAltitude() != 0.0 ? location.getAltitude() : null;
                         TrackPoint trackPoint = new TrackPoint(location.getLatitude(),
-                                location.getLongitude(), location.getAltitude(), location.getTime());
+                                location.getLongitude(), altitude, location.getTime());
                         mTrackPoints.add(trackPoint);
                         mTrackStatCalculator.addTrackPoint(trackPoint);
                         sendTrackStatistics(mTrackStatCalculator.getStatistics());

@@ -25,7 +25,12 @@ class TrackStatCalculator {
     private var firstPointTime: Long? = null
 
     /* Elevation statistics */
+    private var firstElevationReceived = false
+    private var firstElevation: Double? = null
+    private var lastTrustedElevation: Double? = null
     private var lastKnownElevation: Double? = null
+    private var descendingCount: Int = 0
+    private var ascendingCount: Int = 0
     private lateinit var lowestPoint: TrackPoint
     private lateinit var highestPoint: TrackPoint
 
@@ -68,6 +73,13 @@ class TrackStatCalculator {
         if (trkPt.elevation != null) {
             val ele = trkPt.elevation!!
 
+            /* Filter out the first point with elevation information -- not trusted */
+            if (!firstElevationReceived || ele == firstElevation) {
+                firstElevation = ele
+                firstElevationReceived = true
+                return
+            }
+
             /* Lowest point update */
             if (::lowestPoint.isInitialized) {
                 if (ele <= lowestPoint.elevation!!) {
@@ -90,15 +102,28 @@ class TrackStatCalculator {
             trackStatistics.elevationDifferenceMax = highestPoint.elevation!! - lowestPoint.elevation!!
 
             /* Elevation stack update */
-            if (lastKnownElevation != null) {
-                val diff = abs(ele - lastKnownElevation!!)
+            if (lastTrustedElevation != null) {
+                val diff = abs(ele - lastTrustedElevation!!)
                 if (ele > lastKnownElevation!!) {
-                    trackStatistics.elevationUpStack += diff
-                } else {
-                    trackStatistics.elevationDownStack += diff
+                    ascendingCount++
+                    descendingCount = 0
+                    if (ascendingCount > 3) {
+                        lastTrustedElevation = ele
+                        trackStatistics.elevationUpStack += diff
+                    }
+
+                } else if (ele < lastKnownElevation!!) {
+                    descendingCount++
+                    ascendingCount = 0
+                    if (descendingCount > 3) {
+                        lastTrustedElevation = ele
+                        trackStatistics.elevationDownStack += diff
+                    }
                 }
+            } else {
+                lastTrustedElevation = ele
             }
-            lastKnownElevation = trkPt.elevation!!
+            lastKnownElevation = ele
         }
     }
 
