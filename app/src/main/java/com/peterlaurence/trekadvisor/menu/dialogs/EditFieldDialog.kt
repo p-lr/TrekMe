@@ -68,7 +68,7 @@ class EditFieldDialog : DialogFragment() {
         editText.setText(initialValue)
         editText.setSelection(initialValue.length)
 
-        builder.setPositiveButton(getText(R.string.ok_dialog)) { dialogInterface: DialogInterface, i: Int ->
+        builder.setPositiveButton(getText(R.string.ok_dialog)) { _: DialogInterface, _: Int ->
             if (this@EditFieldDialog::editFieldEvent.isInitialized) {
                 editFieldEvent.initialValue = initialValue
                 editFieldEvent.newValue = editText.text.toString()

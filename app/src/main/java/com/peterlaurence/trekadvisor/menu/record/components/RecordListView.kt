@@ -37,7 +37,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
     internal val recordingDataList = arrayListOf<RecordingData>()
 
     init {
-        init(context, attrs)
+        init(context)
     }
 
     /**
@@ -68,7 +68,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         recordingAdapter.setRecordingsData(recordingDataList)
     }
 
-    private fun init(context: Context, attrs: AttributeSet?) {
+    private fun init(context: Context) {
         View.inflate(context, R.layout.record_list_layout, this)
 
         val ctx = getContext()
@@ -78,7 +78,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         val deleteRecordingButton = findViewById<ImageButton>(R.id.delete_recording_button)
 
         editNameButton.isEnabled = false
-        editNameButton.setOnClickListener { v ->
+        editNameButton.setOnClickListener {
             if (selectedRecordings.size == 1) {
                 val recording = selectedRecordings[0]
                 EventBus.getDefault().post(RequestEditRecording(recording))
@@ -86,9 +86,9 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         }
 
         importButton.isEnabled = false
-        importButton.setOnClickListener { v -> EventBus.getDefault().post(RequestChooseMap()) }
+        importButton.setOnClickListener { EventBus.getDefault().post(RequestChooseMap()) }
 
-        deleteRecordingButton.setOnClickListener { v ->
+        deleteRecordingButton.setOnClickListener {
             var success = true
             for (file in selectedRecordings) {
                 if (file.exists()) {

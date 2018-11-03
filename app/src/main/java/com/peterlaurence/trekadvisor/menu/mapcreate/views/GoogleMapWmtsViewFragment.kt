@@ -286,7 +286,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private fun validateArea() {
         if (this::area.isInitialized) {
             val fm = activity?.supportFragmentManager
-            mapSource?.let {
+            mapSource.let {
                 val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(area, MapSourceBundle(it))
                 wmtsLevelsDialog.show(fm, "fragment")
             }

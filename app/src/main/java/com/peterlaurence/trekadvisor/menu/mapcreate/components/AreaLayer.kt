@@ -32,10 +32,10 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
 
         /* Setup the first marker */
         areaMarkerFirst = AreaMarker(context)
-        val firstMarkerMoveCallback = MarkerTouchMoveListener.MarkerMoveCallback { tileView, view, x, y ->
+        val firstMarkerMoveCallback = MarkerTouchMoveListener.MarkerMoveCallback { tileView_, _, x, y ->
             firstMarkerRelativeX = x
             firstMarkerRelativeY = y
-            tileView.moveMarker(areaMarkerFirst, x, y)
+            tileView_.moveMarker(areaMarkerFirst, x, y)
             onMarkerMoved()
         }
         val firstMarkerTouchMoveListener = MarkerTouchMoveListener(tileView, firstMarkerMoveCallback)
@@ -43,10 +43,10 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
 
         /* Setup the second marker */
         areaMarkerSecond = AreaMarker(context)
-        val secondMarkerMoveCallback = MarkerTouchMoveListener.MarkerMoveCallback { tileView, view, x, y ->
+        val secondMarkerMoveCallback = MarkerTouchMoveListener.MarkerMoveCallback { tileView_, _, x, y ->
             secondMarkerRelativeX = x
             secondMarkerRelativeY = y
-            tileView.moveMarker(areaMarkerSecond, x, y)
+            tileView_.moveMarker(areaMarkerSecond, x, y)
             onMarkerMoved()
         }
         val secondMarkerTouchMoveListener = MarkerTouchMoveListener(tileView, secondMarkerMoveCallback)
