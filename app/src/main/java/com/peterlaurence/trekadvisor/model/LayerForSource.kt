@@ -13,7 +13,7 @@ import com.peterlaurence.trekadvisor.core.providers.layers.IgnLayers
  */
 object LayerForSource {
     /**
-     * Default layers are set there.
+     * Layers are set there, with their startup values.
      */
     private val layerForSource = mutableMapOf(
             MapSource.IGN to IgnLayers.ScanExpressStandard.publicName
@@ -38,7 +38,8 @@ object LayerForSource {
                 try {
                     IgnLayers.values().first { it.publicName == layerPublicName }.realName
                 } catch (e: Exception) {
-                    ""
+                    /* Default value just in case */
+                    IgnLayers.ScanExpressStandard.realName
                 }
             }
             else -> ""

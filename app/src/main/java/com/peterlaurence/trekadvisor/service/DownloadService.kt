@@ -300,7 +300,8 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
             MapSource.IGN -> {
                 val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
 
-                val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", IgnLayers.ScanExpressStandard.realName)
+                val layerRealName = LayerForSource.resolveLayerName(source)
+                val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", layerRealName)
                 val bitmapProvider = GenericBitmapProviderAuth(urlTileBuilder, ignCredentials.user ?: "", ignCredentials.pwd ?: "")
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()

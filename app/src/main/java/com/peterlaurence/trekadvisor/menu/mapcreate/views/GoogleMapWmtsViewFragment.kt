@@ -123,6 +123,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* Fill the new one */
         inflater.inflate(R.menu.menu_fragment_map_create, menu)
 
+        /* Only show the layer menu for IGN France for instance */
+        val layerMenu = menu.findItem(R.id.map_layer_menu_id)
+        layerMenu.isVisible = when (mapSource) {
+            MapSource.IGN -> true
+            else -> false
+        }
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
