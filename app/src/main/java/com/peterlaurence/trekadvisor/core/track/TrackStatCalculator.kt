@@ -43,8 +43,9 @@ class TrackStatCalculator {
     }
 
     fun addTrackPoint(trkPt: TrackPoint) {
-        updateDistance(trkPt)
-        updateElevationStatistics(trkPt)
+        updateElevationStatistics(trkPt).also {
+            updateDistance(trkPt, it)
+        }
         updateDuration(trkPt)
     }
 
@@ -52,12 +53,12 @@ class TrackStatCalculator {
      * As the distance is computed incrementally, track points are considered near enough to use
      * rough (but fast) formulas.
      */
-    private fun updateDistance(trkPt: TrackPoint) {
+    private fun updateDistance(trkPt: TrackPoint, useElevation: Boolean) {
         if (::lastTrackPoint.isInitialized) {
             val p = lastTrackPoint
 
             /* If we have elevation information for both points, use it */
-            trackStatistics.distance += if (p.elevation != null && trkPt.elevation != null) {
+            trackStatistics.distance += if (p.elevation != null && trkPt.elevation != null && useElevation) {
                 deltaTwoPoints(p.latitude, p.longitude, p.elevation!!, trkPt.latitude,
                         trkPt.longitude, trkPt.elevation!!)
             } else {
@@ -69,7 +70,8 @@ class TrackStatCalculator {
         lastTrackPoint = trkPt
     }
 
-    private fun updateElevationStatistics(trkPt: TrackPoint) {
+    private fun updateElevationStatistics(trkPt: TrackPoint): Boolean {
+        var elevationTrusted = false
         if (trkPt.elevation != null) {
             val ele = trkPt.elevation!!
 
@@ -77,7 +79,7 @@ class TrackStatCalculator {
             if (!firstElevationReceived || ele == firstElevation) {
                 firstElevation = ele
                 firstElevationReceived = true
-                return
+                return false
             }
 
             /* Lowest point update */
@@ -108,6 +110,7 @@ class TrackStatCalculator {
                     ascendingCount++
                     descendingCount = 0
                     if (ascendingCount > 3) {
+                        elevationTrusted = true
                         lastTrustedElevation = ele
                         trackStatistics.elevationUpStack += diff
                     }
@@ -116,6 +119,7 @@ class TrackStatCalculator {
                     descendingCount++
                     ascendingCount = 0
                     if (descendingCount > 3) {
+                        elevationTrusted = true
                         lastTrustedElevation = ele
                         trackStatistics.elevationDownStack += diff
                     }
@@ -125,6 +129,7 @@ class TrackStatCalculator {
             }
             lastKnownElevation = ele
         }
+        return elevationTrusted
     }
 
     /**
