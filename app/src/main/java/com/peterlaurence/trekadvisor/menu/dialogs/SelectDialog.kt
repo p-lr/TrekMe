@@ -14,19 +14,22 @@ import java.lang.Exception
 class SelectDialog : DialogFragment() {
     private lateinit var title: String
     private lateinit var values: List<String>
+    private lateinit var valueSelected: String
     private lateinit var selectDialogEvent: SelectDialogEvent
 
     companion object {
         private const val ARG_TITLE = "title"
         private const val ARG_VALUES = "values"
+        private const val ARG_VALUE_SELECTED = "valueSelected"
         private const val ARG_EVENT = "event"
 
         @JvmStatic
-        fun newInstance(title: String, values: List<String>, event: SelectDialogEvent): SelectDialog {
+        fun newInstance(title: String, values: List<String>, valueSelected: String, event: SelectDialogEvent): SelectDialog {
             val fragment = SelectDialog()
             val args = Bundle()
             args.putString(ARG_TITLE, title)
             args.putStringArrayList(ARG_VALUES, ArrayList(values))
+            args.putString(ARG_VALUE_SELECTED, valueSelected)
             args.putParcelable(ARG_EVENT, event)
             fragment.arguments = args
             return fragment
@@ -38,6 +41,7 @@ class SelectDialog : DialogFragment() {
 
         title = arguments?.getString(ARG_TITLE) ?: ""
         values = arguments?.getStringArrayList(ARG_VALUES) ?: listOf()
+        valueSelected = arguments?.getString(ARG_VALUE_SELECTED) ?: ""
         try {
             selectDialogEvent = arguments?.getParcelable(ARG_EVENT)!!
         } catch (e: Exception) {
@@ -48,8 +52,8 @@ class SelectDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(activity!!)
         builder.setTitle(title)
-        builder.setSingleChoiceItems(values.toTypedArray(), 0) { _ : DialogInterface, i: Int ->
-            println("dialog selection : $i")
+        val indexSelected = values.indexOf(valueSelected)
+        builder.setSingleChoiceItems(values.toTypedArray(), indexSelected) { _: DialogInterface, i: Int ->
             selectDialogEvent.selection.clear()
             selectDialogEvent.selection.add(values[i])
         }
@@ -71,4 +75,4 @@ class SelectDialog : DialogFragment() {
  * It is sent when the user presses the "OK" button of the dialog.
  */
 @Parcelize
-open class SelectDialogEvent(val selection: ArrayList<String>): Parcelable
+open class SelectDialogEvent(val selection: ArrayList<String>) : Parcelable

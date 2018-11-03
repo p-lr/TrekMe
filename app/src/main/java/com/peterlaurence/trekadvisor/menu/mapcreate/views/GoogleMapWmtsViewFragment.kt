@@ -21,8 +21,9 @@ import com.peterlaurence.trekadvisor.menu.dialogs.SelectDialog
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.Area
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaLayer
 import com.peterlaurence.trekadvisor.menu.mapcreate.components.AreaListener
-import com.peterlaurence.trekadvisor.menu.mapcreate.views.events.IgnLayerSelectEvent
+import com.peterlaurence.trekadvisor.menu.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekadvisor.menu.mapview.TileViewExtended
+import com.peterlaurence.trekadvisor.model.LayerForSource
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatusEvent
 import com.qozix.tileview.TileView
 import com.qozix.tileview.graphics.BitmapProvider
@@ -59,7 +60,7 @@ import org.greenrobot.eventbus.Subscribe
  * @author peterLaurence on 11/05/18
  */
 class GoogleMapWmtsViewFragment : Fragment() {
-    private var mapSource: MapSource? = null
+    private lateinit var mapSource: MapSource
     private lateinit var rootView: ConstraintLayout
     private lateinit var tileView: TileViewExtended
     private lateinit var areaLayer: AreaLayer
@@ -94,7 +95,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
+        mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource ?: MapSource.OPEN_STREET_MAP
 
         setHasOptionsMenu(true)
     }
@@ -106,7 +107,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
         saveFab = rootView.findViewById(R.id.fab_save)
         saveFab.setOnClickListener { validateArea() }
 
-        addTileView(createBitmapProvider())
+        createTileView()
+
         return rootView
     }
 
@@ -135,10 +137,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 saveFab.visibility = View.VISIBLE
             }
             R.id.map_layer_menu_id -> {
-                val event = IgnLayerSelectEvent(arrayListOf())
+                val event = LayerSelectEvent(arrayListOf())
                 val title = getString(R.string.ign_select_layer_title)
                 val values = IgnLayers.values().map { it.publicName }
-                val layerSelectDialog = SelectDialog.newInstance(title, values, event)
+                val layerPublicName = LayerForSource.getLayerPublicNameForSource(mapSource)
+                val layerSelectDialog = SelectDialog.newInstance(title, values, layerPublicName, event)
                 layerSelectDialog.show(activity!!.supportFragmentManager, "SelectDialog-${event.javaClass.canonicalName}")
             }
         }
@@ -169,10 +172,18 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     @Subscribe
-    fun onIgnLayerDefined(e: IgnLayerSelectEvent) {
+    fun onLayerDefined(e: LayerSelectEvent) {
+        /* Update the layer preference */
+        LayerForSource.setLayerPublicNameForSource(mapSource, e.getSelection())
+
+        /* The re-create the tileview */
         removeTileView()
-        val realLayerName = IgnLayers.values().first { it.publicName == e.getSelection() }.realName
-        val bitmapProvider = createBitmapProvider(realLayerName)
+        createTileView()
+    }
+
+    private fun createTileView() {
+        val layerRealName = LayerForSource.resolveLayerName(mapSource)
+        val bitmapProvider = createBitmapProvider(layerRealName)
         addTileView(bitmapProvider)
     }
 
@@ -227,11 +238,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
         rootView.addView(tileView, 0)
     }
 
-    private fun createBitmapProvider(layer: String? = null): BitmapProvider? {
+    private fun createBitmapProvider(layer: String): BitmapProvider? {
         return when (mapSource) {
             MapSource.IGN -> {
                 val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
-                if (layer != null) {
+                if (layer.isNotEmpty()) {
                     BitmapProviderIgn(ignCredentials, layer)
                 } else {
                     BitmapProviderIgn(ignCredentials)
@@ -240,7 +251,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
             MapSource.USGS -> BitmapProviderUSGS()
             MapSource.OPEN_STREET_MAP -> BitmapProviderOSM()
             MapSource.IGN_SPAIN -> BitmapProviderIgnSpain()
-            else -> null
         }
     }
 

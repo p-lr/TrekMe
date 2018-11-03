@@ -29,6 +29,7 @@ import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilde
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderOSM
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderUSGS
 import com.peterlaurence.trekadvisor.menu.mapcreate.views.WmtsLevelsDialog
+import com.peterlaurence.trekadvisor.model.LayerForSource
 import com.peterlaurence.trekadvisor.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekadvisor.service.event.MapDownloadEvent
 import com.peterlaurence.trekadvisor.service.event.RequestDownloadMapEvent
