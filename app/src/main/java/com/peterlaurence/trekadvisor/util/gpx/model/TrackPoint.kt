@@ -5,7 +5,7 @@ package com.peterlaurence.trekadvisor.util.gpx.model
  *
  * @author peterLaurence on 12/02/17.
  */
-class TrackPoint(
+data class TrackPoint(
         var latitude: Double = 0.0,
         var longitude: Double = 0.0,
         var elevation: Double? = null,

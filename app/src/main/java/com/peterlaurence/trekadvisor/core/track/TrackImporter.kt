@@ -9,6 +9,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson
 import com.peterlaurence.trekadvisor.util.FileUtils
 import com.peterlaurence.trekadvisor.util.gpx.GPXParser
+import com.peterlaurence.trekadvisor.util.gpx.GPXWriter
 import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
 import com.peterlaurence.trekadvisor.util.gpx.model.Track
 import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment
@@ -67,18 +68,27 @@ object TrackImporter {
      * In this call, we consider that each gpx file has already been parsed, and that the
      * [recordingsToGpx] Map is up to date. So typically, [getRecordingsToGpxMap] should be called
      * first.
-     * First, we only keep the entries for which the [Gpx] value has no statistics for the first
-     * track.
-     * Then, we calculate the statistics for the first track.
+     * First, we calculate the statistics for the first track.
+     * If the [GPXParser] read statistics for this track, we check is there is any difference
+     * (because the statistics calculation is subjected to be adjusted frequently), we update the
+     * gpx file.
      */
-    fun computeMissingStatistics(): kotlin.collections.Map<File, Gpx> {
-        recordingsToGpx.filter { it.value.tracks.firstOrNull()?.statistics == null }.forEach {
+    fun computeStatistics(): kotlin.collections.Map<File, Gpx> {
+        recordingsToGpx.forEach {
             val statCalculator = TrackStatCalculator()
             it.value.tracks.firstOrNull()?.let { track ->
                 track.trackSegments.forEach { trackSegment ->
                     statCalculator.addTrackPointList(trackSegment.trackPoints)
                 }
-                track.statistics = statCalculator.getStatistics()
+
+                val updatedStatistics = statCalculator.getStatistics()
+                if (track.statistics != null && track.statistics != updatedStatistics) {
+                    /* Track statistics have changed, update the file */
+                    track.statistics = updatedStatistics
+                    val fos = FileOutputStream(it.key)
+                    GPXWriter.write(it.value, fos)
+                }
+                track.statistics = updatedStatistics
             }
         }
 

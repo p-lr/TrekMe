@@ -132,7 +132,7 @@ object GPXWriter {
             longNode.nodeValue = trkPt.longitude.toString()
             attrs.setNamedItem(longNode)
         }
-        if (trkPt.elevation != 0.0) {
+        if (trkPt.elevation != null) {
             val node = doc.createElement(TAG_ELEVATION)
             node.appendChild(doc.createTextNode(trkPt.elevation.toString()))
             wptNode.appendChild(node)

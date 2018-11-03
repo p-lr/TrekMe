@@ -5,5 +5,5 @@ package com.peterlaurence.trekadvisor.util.gpx.model
  *
  * @author peterLaurence on 12/02/17.
  */
-class TrackSegment(val trackPoints: List<TrackPoint>)
+data class TrackSegment(val trackPoints: List<TrackPoint>)
 

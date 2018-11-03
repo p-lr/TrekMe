@@ -124,16 +124,15 @@ class RecordFragment : Fragment(), CoroutineScope {
             recordListView.setRecordings(it)
         }
 
-        /* Recording to Gpx conversion.
-         * First, read all tracks which already have statistics */
+        /* Recording to Gpx conversion */
         var recordingsToGpx = launch(Dispatchers.Default) {
             TrackImporter.getRecordingsToGpxMap()
         }
         recordingsToGpx.join()
 
-        /* Then, ask for the computation of the statistics for the tracks that don't have any */
+        /* Then, ask for the computation of the statistics for all tracks */
         recordingsToGpx = async(Dispatchers.Default) {
-            TrackImporter.computeMissingStatistics()
+            TrackImporter.computeStatistics()
         }
 
         recordListView.setGpxForRecording(recordingsToGpx.await())
