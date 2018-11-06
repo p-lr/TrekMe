@@ -35,6 +35,8 @@ import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.projection.Projection;
 import com.peterlaurence.trekadvisor.core.projection.ProjectionTask;
 import com.peterlaurence.trekadvisor.menu.mapview.components.tracksmanage.TracksManageFragment;
+import com.peterlaurence.trekadvisor.menu.mapview.events.TrackChangedEvent;
+import com.peterlaurence.trekadvisor.menu.mapview.events.TrackVisibilityChangedEvent;
 import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
@@ -301,6 +303,16 @@ public class MapViewFragment extends Fragment implements
         }
     }
 
+    @Subscribe
+    public void onTrackVisibilityChangedEvent(TrackVisibilityChangedEvent event) {
+        mRouteLayer.onTrackVisibilityChanged();
+    }
+
+    @Subscribe
+    public void onTrackChangedEvent(TrackChangedEvent event) {
+        mRouteLayer.onTrackChanged(event.getMap(), event.getRouteList());
+    }
+
     /**
      * Only update the map if its a new one. <br>
      * Once the map is updated, a {@link TileViewExtended} instance is created, so layers can be
@@ -386,12 +398,6 @@ public class MapViewFragment extends Fragment implements
                 mSpeedListener.onSpeed(location.getSpeed(), SpeedUnit.KM_H);
             }
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onLocationEvent(LocationEvent event) {
-        System.out.println("getting location event");
-        System.out.println(event.location);
     }
 
     @Override

@@ -15,6 +15,7 @@ import com.peterlaurence.trekadvisor.core.map.gson.RouteGson
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader
 import com.peterlaurence.trekadvisor.core.track.TrackImporter
 import com.peterlaurence.trekadvisor.core.track.TrackTools
+import com.peterlaurence.trekadvisor.menu.mapview.events.TrackChangedEvent
 import com.peterlaurence.trekadvisor.menu.record.components.events.MapSelectedForRecord
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestChooseMap
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording
@@ -180,6 +181,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
             override fun onTrackFileParsed(map: Map, routeList: List<RouteGson.Route>) {
                 TrackTools.updateRouteList(map, routeList)
                 MapLoader.getInstance().saveRoutes(map)
+                EventBus.getDefault().post(TrackChangedEvent(map, routeList))
             }
 
             override fun onError(message: String) {

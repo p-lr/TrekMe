@@ -33,7 +33,11 @@ import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
 import com.peterlaurence.trekadvisor.core.track.TrackTools;
+import com.peterlaurence.trekadvisor.menu.mapview.events.TrackChangedEvent;
+import com.peterlaurence.trekadvisor.menu.mapview.events.TrackVisibilityChangedEvent;
 import com.peterlaurence.trekadvisor.model.MapProvider;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -52,20 +56,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     private ConstraintLayout emptyRoutePanel;
     private Map mMap;
     private MenuItem mTrackRenameMenuItem;
-    private TrackChangeListenerProvider mTrackChangeListenerProvider;
-    private TrackChangeListener mTrackChangeListener;
     private TrackAdapter mTrackAdapter;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof TrackChangeListenerProvider) {
-            mTrackChangeListenerProvider = (TrackChangeListenerProvider) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement MapProvider and MapLoader.MapUpdateListener");
-        }
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -106,11 +97,6 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     @Override
     public void onStart() {
         super.onStart();
-
-        /* The listener is acquired now in this fragment's life cycle, and not during onAttach
-         * because at that moment the FragmentManager is not fully initialized (it may not have
-         * attached all needed fragments) */
-        mTrackChangeListener = mTrackChangeListenerProvider.getTrackChangeListener();
 
         updateEmptyRoutePanelVisibility();
     }
@@ -198,9 +184,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
                 mTrackAdapter.removeItem(viewHolder.getAdapterPosition());
 
                 /* Update the view */
-                if (mTrackChangeListener != null) {
-                    mTrackChangeListener.onTrackVisibilityChanged();
-                }
+                EventBus.getDefault().post(new TrackVisibilityChangedEvent());
 
                 /* Save */
                 saveChanges();
@@ -218,20 +202,12 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        mTrackChangeListenerProvider = null;
-    }
-
-    @Override
     public void onTrackFileParsed(Map map, List<RouteGson.Route> routeList) {
         /* We want to append new routes, so the index to add new routes is equal to current length
          * of the data set. */
         int positionStart = mTrackAdapter.getItemCount();
         int newRouteCount = TrackTools.INSTANCE.updateRouteList(map, routeList);
-        if (mTrackChangeListener != null) {
-            mTrackChangeListener.onTrackChanged(map, routeList);
-        }
+        EventBus.getDefault().post(new TrackChangedEvent(map, routeList));
         mTrackAdapter.notifyItemRangeInserted(positionStart, newRouteCount);
 
         /* Since new routes may have added, update the empty panel visibility */
@@ -253,9 +229,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     @Override
     public void onVisibilityToggle(RouteGson.Route route) {
-        if (mTrackChangeListener != null) {
-            mTrackChangeListener.onTrackVisibilityChanged();
-        }
+        EventBus.getDefault().post(new TrackVisibilityChangedEvent());
 
         /* Save */
         saveChanges();
@@ -265,10 +239,6 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     public void onSaveInstanceState(final Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(ROUTE_INDEX, mTrackAdapter.getSelectedRouteIndex());
-    }
-
-    public interface TrackChangeListenerProvider {
-        TrackChangeListener getTrackChangeListener();
     }
 
     /* Show or hide the panel indicating that there is no routes */

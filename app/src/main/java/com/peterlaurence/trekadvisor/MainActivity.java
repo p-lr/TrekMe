@@ -73,7 +73,6 @@ public class MainActivity extends AppCompatActivity
         MapSettingsFragment.MapCalibrationRequestListener,
         MarkerManageFragment.MarkerManageFragmentInteractionListener,
         MarkerProvider,
-        TracksManageFragment.TrackChangeListenerProvider,
         MapViewFragment.RequestManageMarkerListener,
         MapCreateFragment.MapCreateFragmentInteractionListener {
 
@@ -810,15 +809,6 @@ public class MainActivity extends AppCompatActivity
         if (mapViewFragment instanceof MapViewFragment) {
             ((MapViewFragment) mapViewFragment).currentMarkerEdited();
         }
-    }
-
-    @Override
-    public TracksManageFragment.TrackChangeListener getTrackChangeListener() {
-        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapViewFragment != null) {
-            return ((MapViewFragment) mapViewFragment).getTrackChangeListener();
-        }
-        return null;
     }
 
     @Override

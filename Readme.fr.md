@@ -4,14 +4,14 @@
 2. [Résumé des fonctionnalités](#TOC-Features-sum)
 3. [Créer une carte](#TOC-Create-a-map)
   * [Sélectionner une zone](#TOC-Select-area)
-  * [From an archive](#TOC-Import-from-archive)
-  * [Manual map creation](#TOC-The-hard-way)
-4. [Features](#TOC-Features)
-  * [Measure a distance](#TOC-Measure-distance)
-  * [Show the speed](#TOC-Show-speed)
-  * [Add markers](#TOC-Add-markers)
-  * [Import a GPX track](#TOC-GPX-track-import)
-  * [GPX recording](#TOC-GPX-recording)
+  * [Depuis une archive](#TOC-Import-from-archive)
+  * [Création manuelle](#TOC-The-hard-way)
+4. [Fonctionnalités](#TOC-Features)
+  * [Mesurer une distance](#TOC-Measure-distance)
+  * [Afficher la vitesse](#TOC-Show-speed)
+  * [Ajouter un marqueur](#TOC-Add-markers)
+  * [Importer une trace GPX](#TOC-GPX-track-import)
+  * [S'enregistrer -> GPX](#TOC-GPX-recording)
 
 
 ## <a name="TOC-Overview"></a>Introduction
@@ -89,73 +89,69 @@ Quand tout est ok, utilisez le bouton "Telecharger". Un service est alors lancé
 * Voir la progressoin du téléchargement
 * Annuler le téléchargement
 
-When the service finishes the download, you get a notification and a new map is available in the map
-list. It is already calibrated and ready to be used. You can set a presentation image so you can
-easily identify it in the map list. To do so, press the edit button at the bottom left of the map
-card (in the map list menu). 
+Quand le service a fini le téléchargement, vous recevez une notification et une nouvelle carte est disponible dans la liste des cartes. Cette carte est déjà calibrée et prête à l'emploi.
+Vous pouvez la personnaliser en lui associant une image de présentation qui apparaîtra à côté de son nom dans la liste des cartes. Pour ce faire, utilisez le bouton d'édition en dessous du nom de la carte, sur la gauche.
+Vous accédez alors à la configuration de la carte, où vous pouvez :
 
-From the map configuration view, you can:
-
-* Change the thumbnail image
-* Change the projection (only if you know what you're doing)
-* Change the calibration points (only if you know what you're doing)
-* Change the name
-* Delete the map
+* Changer l'image de présentation
+* Changer la projection de la carte (seulement si vous savez ce que vous faites)
+* Changer les points de calibration (seulement si vous savez ce que vous faites)
+* Changer le nom de la carte
+* Supprimer la carte
 
 
-### <a name="TOC-Import-from-archive"></a>Import from an archive
+### <a name="TOC-Import-from-archive"></a>Depuis une archive
 
-In this mode you use an archive made from an existing TrekAdvisor map. The archive can be made by
-yourself or someone else.
-A map can be archived from the map list menu, using the save button at the bottom right corner:
+Une carte peut aussi être créée en important une archive d'une carte existante. L'archive peut avoir été faite par vous même ou quelqu'un d'autre. 
+Pour créer une archive, depuis la liste des cartes, utilisez le bouton qui ressemble à une disquette, sous l'image de présentation :
 
 <p align="center">
 <img src="doc/tuto/bali.jpg" width="300">
 </p>
 
-This creates a zip file (which we call archive) inside the `trekadvisor/archives` folder of your device's SD card.
-To use someone else's archive:
-1. Copy the zip file inside the `trekadvisor` folder or any of its subdirectories
-2. Menu > Import
-3. Click the import button of the archive of your choice
+Cela  crée un fichier zip (que l'on appelle archive) dans le dossier `trekadvisor/archives` de la mémoire interne de votre téléphone.
+Pour utiliser une archive faite par quelqu'un d'autre que vous :
+1. Copiez le fichier zip dans le dossier `trekadvisor` ou n'importe quel de ses sous dossiers
+2. Menu > "Importer"
+3. Utilisez le bouton "Importer" de l'archive de votre choix
 
-This archive feature can also be used for backup purposes, as everything related to the map is saved
-(calibration, routes, points of interest, etc.).
+Cette fonctionnalité d'archive peut aussi être utilisée pour de la sauvegarde, puisque tout ce qui est relatif à la carte est enregistré (calibration, traces, points d'intérêt, etc).
 
-### <a name="TOC-The-hard-way"></a>Manual map creation - the hard way
+### <a name="TOC-The-hard-way"></a>Création manuelle - le plus difficile
 
-In this mode, basic understanding of localisation on a map is required. However, efforts are made to make this app as easy
-to use as possible.
+C'est réservé aux experts. Cette méthode n'est en aucun cas nécessaire, mais grâce à cette fonctionnalité, on peut mettre n'importe quelle carte dans TrekAdvisor.
+Il faut avoir des connaissances en géolocalisation, et il est recommandé d'être familiarisé avec les termes suivants :
 
-It is advised to be familiar with the following terms:
 [Map projection](https://en.wikipedia.org/wiki/Map_projection),
 [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84),
 [Mercator](https://en.wikipedia.org/wiki/Mercator_projection?oldid=9506890).
 
-Beginners are strongly advised to read the Technical Basis from the [User Guide](UserGuide.md).
+Pour les personnes voulant apprendre, il est conseillé de lire ce [guide](UserGuide.md) (en anglais).
 
 Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
 
    
-## <a name="TOC-Features"></a>Features
+## <a name="TOC-Features"></a>Fonctionnalités
 
-### <a name="TOC-Measure-distance"></a>Measure a distance
+### <a name="TOC-Measure-distance"></a>Mesurer une distance
 
-This is an option from the top-right menu while viewing a map.
-Adjust the distance by dragging two blue circles. This is a "as the crow flies" distance.
+C'est une option en haut à droite alors qu'une carte est affichée.
+Ajuster la mesure en déplaçant les deux ronds bleus. C'est une distance "à vol d'oiseau".
 
 <p align="center">
 <img src="doc/tuto/distance.jpg" width="300">
 </p>
 
-### <a name="TOC-Show-speed"></a>Show the speed
+### <a name="TOC-Show-speed"></a>Afficher la vitesse
 
-The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few seconds before the speed can be displayed.
+C'est une option en haut à droite alors qu'une carte est affichée.
+La vitesse s'affiche en km/h au bout de quelques secondes.
 
 <p align="center">
 <img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
 </p>
-Then choose "Show the speed". If your screen is large enough, there is an icon to directly access it.
+
+Selon la taille de votre écran, un bouton peut rendre cette fonctionnalité directement accessible.
 
 ### <a name="TOC-Add-markers"></a>Add markers
 
