@@ -10,6 +10,7 @@ import java.io.InputStream
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 /**
@@ -37,6 +38,7 @@ object GPXParser {
     @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
     private fun readGpx(parser: XmlPullParser): Gpx {
         val tracks = ArrayList<Track>()
+        val wayPoints = ArrayList<TrackPoint>()
         parser.require(XmlPullParser.START_TAG, ns, TAG_GPX)
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
@@ -46,11 +48,12 @@ object GPXParser {
             // Starts by looking for the entry tag
             when (name) {
                 TAG_TRACK -> tracks.add(readTrack(parser))
+                TAG_WAYPOINT -> wayPoints.add(readPoint(parser, tag = TAG_WAYPOINT))
                 else -> skip(parser)
             }
         }
         parser.require(XmlPullParser.END_TAG, ns, TAG_GPX)
-        return Gpx(tracks = tracks)
+        return Gpx(tracks = tracks, wayPoints = wayPoints)
     }
 
     /**
@@ -139,10 +142,10 @@ object GPXParser {
 
     /* Process summary tags in the feed */
     @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
-    private fun readPoint(parser: XmlPullParser): TrackPoint {
+    private fun readPoint(parser: XmlPullParser, tag: String = TAG_POINT): TrackPoint {
         val trackPoint = TrackPoint()
 
-        parser.require(XmlPullParser.START_TAG, ns, TAG_POINT)
+        parser.require(XmlPullParser.START_TAG, ns, tag)
         trackPoint.latitude = java.lang.Double.valueOf(parser.getAttributeValue(null, ATTR_LAT))
         trackPoint.longitude = java.lang.Double.valueOf(parser.getAttributeValue(null, ATTR_LON))
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -153,10 +156,11 @@ object GPXParser {
             when (name) {
                 TAG_ELEVATION -> trackPoint.elevation = readElevation(parser)
                 TAG_TIME -> trackPoint.time = readTime(parser)
+                TAG_NAME -> trackPoint.name = readName(parser)
                 else -> skip(parser)
             }
         }
-        parser.require(XmlPullParser.END_TAG, ns, TAG_POINT)
+        parser.require(XmlPullParser.END_TAG, ns, tag)
         return trackPoint
     }
 

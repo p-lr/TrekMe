@@ -2,7 +2,7 @@
 <gpx version="1.0">
     <name>Example gpx</name>
     <wpt lat="54.9328621088893" lon="9.860624216140083">
-        <ele>0.0</ele>
+        <ele>127.1</ele>
         <name>Waypoint 1</name>
     </wpt>
     <wpt lat="54.93293237320851" lon="9.86092208681491">

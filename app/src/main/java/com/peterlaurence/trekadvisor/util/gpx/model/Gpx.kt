@@ -9,8 +9,9 @@ package com.peterlaurence.trekadvisor.util.gpx.model
  *
  * @author peterLaurence on 12/02/17.
  */
-class Gpx(
+data class Gpx(
         val tracks: List<Track>,
+        val wayPoints: List<TrackPoint>,
         val creator: String = "",
         var version: String = "1.1"
 )

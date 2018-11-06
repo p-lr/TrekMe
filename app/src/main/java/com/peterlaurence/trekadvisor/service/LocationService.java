@@ -116,7 +116,7 @@ public class LocationService extends Service {
                     mServiceHandler.post(() -> {
                         Double altitude = location.getAltitude() != 0.0 ? location.getAltitude() : null;
                         TrackPoint trackPoint = new TrackPoint(location.getLatitude(),
-                                location.getLongitude(), altitude, location.getTime());
+                                location.getLongitude(), altitude, location.getTime(), "");
                         mTrackPoints.add(trackPoint);
                         mTrackStatCalculator.addTrackPoint(trackPoint);
                         sendTrackStatistics(mTrackStatCalculator.getStatistics());
@@ -150,7 +150,9 @@ public class LocationService extends Service {
             ArrayList<Track> trkList = new ArrayList<>();
             trkList.add(track);
 
-            Gpx gpx = new Gpx(trkList, TrekAdvisorContext.APP_FOLDER_NAME, GPX_VERSION);
+            ArrayList<TrackPoint> wayPoints = new ArrayList<>();
+
+            Gpx gpx = new Gpx(trkList, wayPoints, TrekAdvisorContext.APP_FOLDER_NAME, GPX_VERSION);
             try {
                 if (!TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.exists()) {
                     TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.mkdir();

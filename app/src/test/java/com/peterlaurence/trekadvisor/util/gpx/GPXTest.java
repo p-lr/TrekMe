@@ -87,6 +87,15 @@ public class GPXTest {
                     /* Check that the track has statistics */
                     assertNotNull(track.getStatistics());
                     assertEquals(track.getStatistics().getDistance(), 102.0);
+
+                    List<TrackPoint> wayPoints = gpx.getWayPoints();
+                    assertEquals(4, wayPoints.size());
+
+                    TrackPoint wayPoint1 = wayPoints.get(0);
+                    assertEquals(54.9328621088893, wayPoint1.getLatitude());
+                    assertEquals(9.860624216140083, wayPoint1.getLongitude());
+                    assertEquals("Waypoint 1", wayPoint1.getName());
+                    assertEquals(127.1, wayPoint1.getElevation());
                 } catch (Exception e) {
                     e.printStackTrace();
                     fail();
