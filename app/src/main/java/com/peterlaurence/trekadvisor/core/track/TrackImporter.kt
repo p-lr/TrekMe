@@ -167,7 +167,7 @@ object TrackImporter {
     }
 
     interface TrackFileParsedListener {
-        fun onTrackFileParsed(map: Map, routeList: List<@JvmSuppressWildcards RouteGson.Route>, wayPoints: List<MarkerGson.Marker>, newRouteCount: Int, addedMarkers: Boolean)
+        fun onTrackFileParsed(map: Map, routeList: List<@JvmSuppressWildcards RouteGson.Route>, wayPoints: List<MarkerGson.Marker>, newRouteCount: Int, addedMarkers: Int)
 
         fun onError(message: String)
     }
@@ -178,6 +178,8 @@ object TrackImporter {
                                                                 private val mPostExecuteTask: Runnable?) : AsyncTask<InputStream, Void, Void?>() {
         private val newRouteList: LinkedList<RouteGson.Route> = LinkedList()
         private val newWaypointList: LinkedList<MarkerGson.Marker> = LinkedList()
+        private var isSuccess = true
+        private var failReason = ""
 
         /**
          * Each gpx file may contain several tracks. And each [Track] may contain several
@@ -206,22 +208,27 @@ object TrackImporter {
                     val sw = StringWriter()
                     val pw = PrintWriter(sw)
                     e.printStackTrace(pw)
-                    mListener?.onError(sw.toString())
+                    isSuccess = false
+                    failReason = sw.toString()
                 }
             }
             return null
         }
 
         override fun onPostExecute(result: Void?) {
-            val newRouteCount = TrackTools.updateRouteList(mMap, newRouteList)
-            val addedMarkers = TrackTools.updateMarkerList(mMap, newWaypointList)
-            MapLoader.getInstance().saveRoutes(mMap)
-            MapLoader.getInstance().saveMarkers(mMap)
+            if (isSuccess) {
+                val newRouteCount = TrackTools.updateRouteList(mMap, newRouteList)
+                val addedMarkers = TrackTools.updateMarkerList(mMap, newWaypointList)
+                MapLoader.getInstance().saveRoutes(mMap)
+                MapLoader.getInstance().saveMarkers(mMap)
 
-            mListener?.onTrackFileParsed(mMap, newRouteList, newWaypointList, newRouteCount, addedMarkers)
+                mListener?.onTrackFileParsed(mMap, newRouteList, newWaypointList, newRouteCount, addedMarkers)
 
-            EventBus.getDefault().post(TrackChangedEvent(mMap, newRouteList, addedMarkers))
-            mPostExecuteTask?.run()
+                EventBus.getDefault().post(TrackChangedEvent(mMap, newRouteList, addedMarkers))
+                mPostExecuteTask?.run()
+            } else {
+                mListener?.onError(failReason)
+            }
         }
 
         /**

@@ -311,7 +311,7 @@ public class MapViewFragment extends Fragment implements
     @Subscribe
     public void onTrackChangedEvent(TrackChangedEvent event) {
         mRouteLayer.onTrackChanged(event.getMap(), event.getRouteList());
-        if (event.getAddedMarkers()) {
+        if (event.getAddedMarkers() > 0) {
             mMarkerLayer.onMapMarkerUpdate();
         }
     }

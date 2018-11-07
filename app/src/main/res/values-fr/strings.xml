@@ -125,4 +125,8 @@
     <string name="current_recording">Enregistrement en cours</string>
     <string name="mapcreate_define_layer">Couches</string>
     <string name="ign_select_layer_title">Choix de la couche</string>
+    <string name="import_result_title">Résultat d\'import</string>
+    <string name="tracks_label">"Nombre de traces : "</string>
+    <string name="waypoints_label">"Nombre de marqueurs : "</string>
+    <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
 </resources>

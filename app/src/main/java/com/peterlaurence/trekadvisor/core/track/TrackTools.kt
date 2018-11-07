@@ -50,17 +50,15 @@ object TrackTools {
         return newRouteCount
     }
 
-    fun updateMarkerList(map: Map, newMarkerList: List<MarkerGson.Marker>): Boolean {
+    fun updateMarkerList(map: Map, newMarkerList: List<MarkerGson.Marker>): Int {
         val toBeAdded = newMarkerList.toMutableList()
         val existing = map.markers
         existing?.let {
             toBeAdded.removeAll(existing)
         }
-        var addedMarkers = false
         toBeAdded.forEach {
             map.addMarker(it)
-            addedMarkers = true
         }
-        return addedMarkers
+        return toBeAdded.count()
     }
 }

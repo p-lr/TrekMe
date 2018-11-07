@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -25,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
@@ -202,11 +204,27 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public void onTrackFileParsed(@NotNull Map map, @NotNull List<RouteGson.Route> routeList, @NotNull List<? extends MarkerGson.Marker> wayPoints, int newRouteCount, boolean addedMarkers) {
+    public void onTrackFileParsed(@NotNull Map map, @NotNull List<RouteGson.Route> routeList, @NotNull List<? extends MarkerGson.Marker> wayPoints, int newRouteCount, int addedMarkers) {
         /* We want to append new routes, so the index to add new routes is equal to current length
          * of the data set. */
         int positionStart = mTrackAdapter.getItemCount();
         mTrackAdapter.notifyItemRangeInserted(positionStart, newRouteCount);
+
+        /* Display to the user a recap of how many tracks and waypoints were imported */
+        Activity activity = getActivity();
+        if (activity != null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            builder.setTitle(getString(R.string.import_result_title));
+            View view = activity.getLayoutInflater().inflate(R.layout.import_gpx_result, null);
+
+            TextView trackCountTextView = view.findViewById(R.id.tracksCount);
+            trackCountTextView.setText(String.valueOf(newRouteCount));
+            TextView waypointCountTextView = view.findViewById(R.id.waypointsCount);
+            waypointCountTextView.setText(String.valueOf(addedMarkers));
+
+            builder.setView(view);
+            builder.show();
+        }
 
         /* Since new routes may have added, update the empty panel visibility */
         updateEmptyRoutePanelVisibility();
@@ -217,6 +235,11 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     @Override
     public void onError(String message) {
+        View view = getView();
+        if (view != null) {
+            Snackbar snackbar = Snackbar.make(getView(), R.string.gpx_import_error_msg, Snackbar.LENGTH_LONG);
+            snackbar.show();
+        }
         Log.e(TAG, message);
     }
 

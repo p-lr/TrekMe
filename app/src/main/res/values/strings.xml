@@ -109,6 +109,10 @@
     <string name="track_name_change">Enter the name of the track</string>
     <string name="track_rename_action">Rename</string>
     <string name="track_file_name_change">File name</string>
+    <string name="import_result_title">Import result</string>
+    <string name="tracks_label">"Tracks number : "</string>
+    <string name="waypoints_label">"Waypoints number : "</string>
+    <string name="gpx_import_error_msg">Oops.. something went wrong during the import</string>
 
     <!-- MapView fragment -->
     <string name="mapview_show_speed">Show speed</string>
