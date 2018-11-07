@@ -7,13 +7,17 @@ import com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_RECORDINGS_
 import com.peterlaurence.trekadvisor.core.map.Map
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson
+import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader
+import com.peterlaurence.trekadvisor.menu.mapview.events.TrackChangedEvent
 import com.peterlaurence.trekadvisor.util.FileUtils
 import com.peterlaurence.trekadvisor.util.gpx.GPXParser
 import com.peterlaurence.trekadvisor.util.gpx.GPXWriter
 import com.peterlaurence.trekadvisor.util.gpx.model.Gpx
 import com.peterlaurence.trekadvisor.util.gpx.model.Track
+import com.peterlaurence.trekadvisor.util.gpx.model.TrackPoint
 import com.peterlaurence.trekadvisor.util.gpx.model.TrackSegment
 import kotlinx.coroutines.Runnable
+import org.greenrobot.eventbus.EventBus
 import java.io.*
 import java.util.*
 
@@ -150,29 +154,30 @@ object TrackImporter {
 
     }
 
-    fun importTrackFile(file: File, listener: TrackFileParsedListener, map: Map) {
+    fun importTrackFile(file: File, listener: TrackFileParsedListener?, map: Map) {
         try {
             val fileInputStream = FileInputStream(file)
 
             val gpxTrackFileToRoutesTask = GpxTrackFileToRoutesTask(listener, map, file.name, null)
             gpxTrackFileToRoutesTask.execute(fileInputStream)
         } catch (e: FileNotFoundException) {
-            listener.onError("The file doesn't exists")
+            listener?.onError("The file doesn't exists")
         }
 
     }
 
     interface TrackFileParsedListener {
-        fun onTrackFileParsed(map: Map, routeList: List<@JvmSuppressWildcards RouteGson.Route>)
+        fun onTrackFileParsed(map: Map, routeList: List<@JvmSuppressWildcards RouteGson.Route>, wayPoints: List<MarkerGson.Marker>, newRouteCount: Int, addedMarkers: Boolean)
 
         fun onError(message: String)
     }
 
-    private class GpxTrackFileToRoutesTask internal constructor(private val mListener: TrackFileParsedListener,
+    private class GpxTrackFileToRoutesTask internal constructor(private val mListener: TrackFileParsedListener?,
                                                                 private val mMap: Map,
                                                                 private val defaultName: String,
                                                                 private val mPostExecuteTask: Runnable?) : AsyncTask<InputStream, Void, Void?>() {
-        private val mNewRouteList: LinkedList<RouteGson.Route> = LinkedList()
+        private val newRouteList: LinkedList<RouteGson.Route> = LinkedList()
+        private val newWaypointList: LinkedList<MarkerGson.Marker> = LinkedList()
 
         /**
          * Each gpx file may contain several tracks. And each [Track] may contain several
@@ -188,7 +193,12 @@ object TrackImporter {
 
                     gpx.tracks.mapIndexed { index, track ->
                         val route = gpxTracktoRoute(track, index)
-                        mNewRouteList.add(route)
+                        newRouteList.add(route)
+                    }
+
+                    gpx.wayPoints.mapIndexed { index, wpt ->
+                        val marker = gpxWaypointsToMarker(wpt, index)
+                        newWaypointList.add(marker)
                     }
 
                     stream.close()
@@ -196,14 +206,21 @@ object TrackImporter {
                     val sw = StringWriter()
                     val pw = PrintWriter(sw)
                     e.printStackTrace(pw)
-                    mListener.onError(sw.toString())
+                    mListener?.onError(sw.toString())
                 }
             }
             return null
         }
 
         override fun onPostExecute(result: Void?) {
-            mListener.onTrackFileParsed(mMap, mNewRouteList)
+            val newRouteCount = TrackTools.updateRouteList(mMap, newRouteList)
+            val addedMarkers = TrackTools.updateMarkerList(mMap, newWaypointList)
+            MapLoader.getInstance().saveRoutes(mMap)
+            MapLoader.getInstance().saveMarkers(mMap)
+
+            mListener?.onTrackFileParsed(mMap, newRouteList, newWaypointList, newRouteCount, addedMarkers)
+
+            EventBus.getDefault().post(TrackChangedEvent(mMap, newRouteList, addedMarkers))
             mPostExecuteTask?.run()
         }
 
@@ -251,6 +268,33 @@ object TrackImporter {
                 }
             }
             return route
+        }
+
+        private fun gpxWaypointsToMarker(wpt: TrackPoint, index: Int): MarkerGson.Marker {
+            val marker = MarkerGson.Marker()
+
+            marker.name = if (wpt.name?.isNotEmpty() == true) {
+                wpt.name
+            } else {
+                "$defaultName-wpt${index + 1}"
+            }
+
+            /* If the map uses a projection, store projected values */
+            val projectedValues: DoubleArray?
+            val projection = mMap.projection
+            if (projection != null) {
+                projectedValues = projection.doProjection(wpt.latitude, wpt.longitude)
+                if (projectedValues != null) {
+                    marker.proj_x = projectedValues[0]
+                    marker.proj_y = projectedValues[1]
+                }
+            }
+
+            /* In any case, we store the wgs84 coordinates */
+            marker.lat = wpt.latitude
+            marker.lon = wpt.longitude
+
+            return marker
         }
     }
 }

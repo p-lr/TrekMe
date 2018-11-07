@@ -20,5 +20,14 @@ public class MarkerGson {
         public Double proj_x;
         public Double proj_y;
         public String comment;
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Marker)) {
+                return false;
+            }
+            Marker marker = ((Marker) obj);
+            return marker.lat == lat && marker.lon == lon;
+        }
     }
 }

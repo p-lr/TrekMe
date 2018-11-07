@@ -10,12 +10,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageButton
 import com.peterlaurence.trekadvisor.R
-import com.peterlaurence.trekadvisor.core.map.Map
-import com.peterlaurence.trekadvisor.core.map.gson.RouteGson
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader
 import com.peterlaurence.trekadvisor.core.track.TrackImporter
-import com.peterlaurence.trekadvisor.core.track.TrackTools
-import com.peterlaurence.trekadvisor.menu.mapview.events.TrackChangedEvent
 import com.peterlaurence.trekadvisor.menu.record.components.events.MapSelectedForRecord
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestChooseMap
 import com.peterlaurence.trekadvisor.menu.record.components.events.RequestEditRecording
@@ -177,20 +173,9 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
     @Subscribe
     fun onMapSelectedForRecord(event: MapSelectedForRecord) {
         val map = MapLoader.getInstance().getMap(event.mapId)
-        val listener = object : TrackImporter.TrackFileParsedListener {
-            override fun onTrackFileParsed(map: Map, routeList: List<RouteGson.Route>) {
-                TrackTools.updateRouteList(map, routeList)
-                MapLoader.getInstance().saveRoutes(map)
-                EventBus.getDefault().post(TrackChangedEvent(map, routeList))
-            }
-
-            override fun onError(message: String) {
-                // TODO : log this error
-            }
-        }
         val recording = selectedRecordings[0]
 
-        TrackImporter.importTrackFile(recording, listener, map!!)
+        TrackImporter.importTrackFile(recording, null, map!!)
 
         /* Tell the user that the track will be shortly available in the map */
         val snackbar = Snackbar.make(rootView, R.string.track_is_being_added, Snackbar.LENGTH_LONG)

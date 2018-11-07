@@ -29,15 +29,15 @@ import android.widget.FrameLayout;
 import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.map.Map;
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
 import com.peterlaurence.trekadvisor.core.track.TrackImporter;
-import com.peterlaurence.trekadvisor.core.track.TrackTools;
-import com.peterlaurence.trekadvisor.menu.mapview.events.TrackChangedEvent;
 import com.peterlaurence.trekadvisor.menu.mapview.events.TrackVisibilityChangedEvent;
 import com.peterlaurence.trekadvisor.model.MapProvider;
 
 import org.greenrobot.eventbus.EventBus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -202,12 +202,10 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public void onTrackFileParsed(Map map, List<RouteGson.Route> routeList) {
+    public void onTrackFileParsed(@NotNull Map map, @NotNull List<RouteGson.Route> routeList, @NotNull List<? extends MarkerGson.Marker> wayPoints, int newRouteCount, boolean addedMarkers) {
         /* We want to append new routes, so the index to add new routes is equal to current length
          * of the data set. */
         int positionStart = mTrackAdapter.getItemCount();
-        int newRouteCount = TrackTools.INSTANCE.updateRouteList(map, routeList);
-        EventBus.getDefault().post(new TrackChangedEvent(map, routeList));
         mTrackAdapter.notifyItemRangeInserted(positionStart, newRouteCount);
 
         /* Since new routes may have added, update the empty panel visibility */

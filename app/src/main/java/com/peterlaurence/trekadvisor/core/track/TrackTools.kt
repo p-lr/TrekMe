@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.core.track
 
 import com.peterlaurence.trekadvisor.core.map.Map
+import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson
 import com.peterlaurence.trekadvisor.util.FileUtils
 import java.io.File
@@ -47,5 +48,19 @@ object TrackTools {
         }
 
         return newRouteCount
+    }
+
+    fun updateMarkerList(map: Map, newMarkerList: List<MarkerGson.Marker>): Boolean {
+        val toBeAdded = newMarkerList.toMutableList()
+        val existing = map.markers
+        existing?.let {
+            toBeAdded.removeAll(existing)
+        }
+        var addedMarkers = false
+        toBeAdded.forEach {
+            map.addMarker(it)
+            addedMarkers = true
+        }
+        return addedMarkers
     }
 }
