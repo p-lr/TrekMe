@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -420,6 +421,10 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_track_stats:
                 showTrackViewFragment();
                 break;
+            case R.id.nav_help:
+                String url = getString(R.string.help_url);
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(browserIntent);
 
             default:
                 break;

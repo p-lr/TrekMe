@@ -11,7 +11,7 @@
   * [Afficher la vitesse](#TOC-Show-speed)
   * [Ajouter un marqueur](#TOC-Add-markers)
   * [Importer une trace GPX](#TOC-GPX-track-import)
-  * [S'enregistrer -> GPX](#TOC-GPX-recording)
+  * [S'enregistrer au format GPX](#TOC-GPX-recording)
 
 
 ## <a name="TOC-Overview"></a>Introduction
@@ -128,7 +128,7 @@ Il faut avoir des connaissances en géolocalisation, et il est recommandé d'êt
 
 Pour les personnes voulant apprendre, il est conseillé de lire ce [guide](UserGuide.md) (en anglais).
 
-Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
+Ensuite, poursuivez avec le [Guide de création manuelle de carte](MapCreation-Manual.md).
 
    
 ## <a name="TOC-Features"></a>Fonctionnalités
@@ -153,76 +153,78 @@ La vitesse s'affiche en km/h au bout de quelques secondes.
 
 Selon la taille de votre écran, un bouton peut rendre cette fonctionnalité directement accessible.
 
-### <a name="TOC-Add-markers"></a>Add markers
+### <a name="TOC-Add-markers"></a>Ajout de marqueurs
 
-Press the marker button to add a new marker at the center of the screen:
+Utilisez le bouton d'ajout de marqueur, ce qui affiche un nouveau marqueur au centre de l'écran, comme celui-ci :
 
 <p align="center">
 <img src="doc/tuto/new-marker.jpg" width="300">
 </p>
 
-With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
-When you're satisfied with its position, tap on the red circle at the center. It then morphs to its static form.
+Avec ses flèches rouge qui tournent autour, il indique qu'il peut être déplacé. Pour cela appuyez avec un doigt dans la zone bleue et déplacez le marqueur à l'endroit désiré.
+Quand vous êtes satisfait de sa position, "appuyez" une fois sur le marqueur rouge. Il change alors de forme et la zone bleur disparaît. Cela indique que le marqueur est désormais fixé à son emplacement.
 
-Tapping a marker displays a popup:
+Si on appuie sur le marqueur, une bulle comme celle-ci s'affiche :
 
 <p align="center">
 <img src="doc/tuto/marker-popup2.jpg" width="300">
 </p>
 
-From here you can:
+On peut alors :
 
-* Edit the marker (change its name and set a comment, see below)
-* Delete it
-* Move it
+* Changer le nom ou le commentaire du marqueur 
+* Supprimer le marqueur
+* Déplacer le marqueur (il reprend sa forme avec les flèches qui tournent, indiquant qu'il peut être déplacé)
 
-Here is the marker edition view:
+Voici un exemple de fiche d'un marqueur :
 
 <p align="center">
 <img src="doc/tuto/marker-edit.jpg" width="300">
 </p>
 
-Nothing is changed until you save your changes.
+La plupart du temps, on se contente de modifier seulement le nom ou le commentaire.
+Rien n'est modifié tant que vous ne sauvegardez pas vos modifications (bouton "disquette" en haut).
 
-### <a name="TOC-GPX-track-import"></a>Import a GPX track
+### <a name="TOC-GPX-track-import"></a>Import d'un fichier GPX
 
-While viewing a map, press the button below on the upper right corner :
+Alors que vous visionnez une carte, utilisez le bouton suivant :
 
 <p align="center">
 <img src="doc/tuto/manage-tracks.jpg" width="300">
 </p>
 
-Then, a list of currently available tracks opens up: 
+La liste des traces disponibles pour votre carte s'affiche alors (il est possible à ce stade qu'il y en ait aucune) :
 
 <p align="center">
 <img src="doc/tuto/track-list.jpg" width="300">
 </p>
 
-Here you can:
+Vous pouvez alors :
 
-* Import a new gpx files using the import button
-* Manage track visibility
-* Remove tracks by swiping them left or right
+* Importer un fichier gpx avec le bouton d'import en haut
+* Gérer la visibilité des traces déjà importées
+* Supprimer des traces en les faisant glisser à droite ou à gauche (cela n'affecte en rien le fichier gpx)
 
-### <a name="TOC-GPX-recording"></a>GPX recording
+### <a name="TOC-GPX-recording"></a>Enregistrement GPX
 
-It is possible to record your position and create a GPX file, to later import into a map or share
-with other people.
+Il est possible d'enregistrer votre parcours au format GPX, pour ensuite l'importer dans une carte ou le partager.
 
-From the "GPX Record" option menu, you get the following interface:
+Depuis le menu principal allez à "Enregistrement du parcours". Vous arrivez à une interface comme celle-ci :
 
 <p align="center">
 <img src="doc/tuto/gpx-recording.jpg" width="300">
 </p>
 
-The recording can be started or stopped from the control panel. When recording, the location service
-runs in the background. It continues even if TrekAdvisor is stopped or paused.
-An indicator reports back the status of the location service. A panel shows the list of recordings.
+Un enregistrement peut être démarré ou arrêté depuis le panneau "Commandes".
+Quand un enregistrement est en cours, un service spécifique est démarré, qui fonctionne même si TrekAdvisor est arrêté. Ce service s'arrête dès que vous l'arrêtez depuis le panneau "Commandes".
 
-From there, when selecting a track, there are two buttons at the bottom which enable you to :
+Un indicateur dans le panneau "Service de localisation" affiche le statut du service.
 
-* rename it
-* import it into an existing map (press the import button at the bottom of the list, then choose the map)
+Un dernier panneau affiche la liste des enregistrement effectués.
+En sélectionnant un enregistrement, deux bouton en bas à gauchent vous permettent respectivement de :
 
-To delete a recording, long-press on it. The panel transitions into a selection mode, where there is a
-remove button at the bottom. To go back to selection mode, long-press again somewhere in the list.
+* renommer le fichier gpx
+* l'importer dans une carte existante (un menu vous donne alors le choix de la carte)
+
+Pour supprimer un enregistrement, appuyez deux secondes sur un enregistrement. Un bouton rouge en bas à droite apparaît. Attention, si vous pressez ce bouton rouge, tous les enregistrement sélectionnés (cad sur fond bleu) seront **définitivement**  supprimés. 
+Pour revenir au mode de sélection normal, appuyez à nouveau deux secondes sur un enregistrement.

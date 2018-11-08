@@ -27,6 +27,10 @@
             android:id="@+id/nav_import"
             android:icon="@drawable/import_30dp"
             android:title="@string/import_menu_title" />
+        <item
+            android:id="@+id/nav_help"
+            android:icon="@drawable/help"
+            android:title="@string/help" />
     </group>
 
 </menu>

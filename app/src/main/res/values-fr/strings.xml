@@ -129,4 +129,6 @@
     <string name="tracks_label">"Nombre de traces : "</string>
     <string name="waypoints_label">"Nombre de marqueurs : "</string>
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
+    <string name="help">Aide</string>
+    <string name="help_url">https://github.com/peterLaurence/TrekAdvisor/blob/master/Readme.fr.md</string>
 </resources>

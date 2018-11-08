@@ -11,6 +11,8 @@
     <string name="record_menu_title">Gpx Record</string>
     <string name="track_stats_menu_title">Recording stats</string>
     <string name="import_menu_title">Import a map</string>
+    <string name="help">Help</string>
+    <string name="help_url">https://github.com/peterLaurence/TrekAdvisor/blob/master/Readme.md</string>
     <string name="confirm_exit">Click BACK again to exit</string>
     <string name="no_internet">You must be connected to internet to create a map</string>
 
