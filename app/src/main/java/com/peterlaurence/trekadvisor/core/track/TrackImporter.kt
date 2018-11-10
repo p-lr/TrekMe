@@ -82,6 +82,7 @@ object TrackImporter {
             val statCalculator = TrackStatCalculator()
             it.value.tracks.firstOrNull()?.let { track ->
                 track.trackSegments.forEach { trackSegment ->
+                    trackSegment.hpFilter()
                     statCalculator.addTrackPointList(trackSegment.trackPoints)
                 }
 

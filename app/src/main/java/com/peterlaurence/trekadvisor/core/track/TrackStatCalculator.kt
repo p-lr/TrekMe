@@ -27,10 +27,7 @@ class TrackStatCalculator {
     /* Elevation statistics */
     private var firstElevationReceived = false
     private var firstElevation: Double? = null
-    private var lastTrustedElevation: Double? = null
     private var lastKnownElevation: Double? = null
-    private var descendingCount: Int = 0
-    private var ascendingCount: Int = 0
     private lateinit var lowestPoint: TrackPoint
     private lateinit var highestPoint: TrackPoint
 
@@ -43,9 +40,8 @@ class TrackStatCalculator {
     }
 
     fun addTrackPoint(trkPt: TrackPoint) {
-        updateElevationStatistics(trkPt).also {
-            updateDistance(trkPt, it)
-        }
+        updateDistance(trkPt)
+        updateElevationStatistics(trkPt)
         updateDuration(trkPt)
     }
 
@@ -53,12 +49,12 @@ class TrackStatCalculator {
      * As the distance is computed incrementally, track points are considered near enough to use
      * rough (but fast) formulas.
      */
-    private fun updateDistance(trkPt: TrackPoint, useElevation: Boolean) {
+    private fun updateDistance(trkPt: TrackPoint) {
         if (::lastTrackPoint.isInitialized) {
             val p = lastTrackPoint
 
             /* If we have elevation information for both points, use it */
-            trackStatistics.distance += if (p.elevation != null && trkPt.elevation != null && useElevation) {
+            trackStatistics.distance += if (p.elevation != null && trkPt.elevation != null) {
                 deltaTwoPoints(p.latitude, p.longitude, p.elevation!!, trkPt.latitude,
                         trkPt.longitude, trkPt.elevation!!)
             } else {
@@ -70,8 +66,7 @@ class TrackStatCalculator {
         lastTrackPoint = trkPt
     }
 
-    private fun updateElevationStatistics(trkPt: TrackPoint): Boolean {
-        var elevationTrusted = false
+    private fun updateElevationStatistics(trkPt: TrackPoint) {
         if (trkPt.elevation != null) {
             val ele = trkPt.elevation!!
 
@@ -79,7 +74,7 @@ class TrackStatCalculator {
             if (!firstElevationReceived || ele == firstElevation) {
                 firstElevation = ele
                 firstElevationReceived = true
-                return false
+                return
             }
 
             /* Lowest point update */
@@ -104,32 +99,16 @@ class TrackStatCalculator {
             trackStatistics.elevationDifferenceMax = highestPoint.elevation!! - lowestPoint.elevation!!
 
             /* Elevation stack update */
-            if (lastTrustedElevation != null) {
-                val diff = abs(ele - lastTrustedElevation!!)
+            if (lastKnownElevation != null) {
+                val diff = abs(ele - lastKnownElevation!!)
                 if (ele > lastKnownElevation!!) {
-                    ascendingCount++
-                    descendingCount = 0
-                    if (ascendingCount > 3) {
-                        elevationTrusted = true
-                        lastTrustedElevation = ele
-                        trackStatistics.elevationUpStack += diff
-                    }
-
+                    trackStatistics.elevationUpStack += diff
                 } else if (ele < lastKnownElevation!!) {
-                    descendingCount++
-                    ascendingCount = 0
-                    if (descendingCount > 3) {
-                        elevationTrusted = true
-                        lastTrustedElevation = ele
-                        trackStatistics.elevationDownStack += diff
-                    }
+                    trackStatistics.elevationDownStack += diff
                 }
-            } else {
-                lastTrustedElevation = ele
             }
-            lastKnownElevation = ele
+            lastKnownElevation = trkPt.elevation!!
         }
-        return elevationTrusted
     }
 
     /**
