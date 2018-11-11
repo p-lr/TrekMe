@@ -59,6 +59,7 @@ import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
 import org.jetbrains.annotations.NotNull;
 
@@ -131,7 +132,11 @@ public class MainActivity extends AppCompatActivity
 
     static {
         /* Setup default eventbus to use an index */
-        EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
+        try {
+            EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
+        } catch (EventBusException e) {
+            // don't care
+        }
     }
 
     /**

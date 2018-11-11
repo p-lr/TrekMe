@@ -105,28 +105,6 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        /* Clear the existing action menu */
-        menu.clear();
-
-        /* Fill the new one */
-        inflater.inflate(R.menu.menu_fragment_map_list, menu);
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.sample_map_menu_id:
-                showSampleMapDownloadDialog();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
@@ -191,30 +169,6 @@ public class MapListFragment extends Fragment implements
         } else {
             rootView.findViewById(R.id.emptyMapPanel).setVisibility(View.GONE);
         }
-    }
-
-    private void showSampleMapDownloadDialog() {
-        UrlDownloadDialog urlDownloadDialog = UrlDownloadDialog.newInstance("World map", mDefaultMapUrl);
-        urlDownloadDialog.show(getFragmentManager(), UrlDownloadDialog.class.getName());
-
-        final File outputFile = new File(TrekAdvisorContext.DEFAULT_APP_DIR, "world-map.zip");
-        final int urlHash = mDefaultMapUrl.hashCode();
-        UrlDownloadTaskExecutor.startUrlDownload(mDefaultMapUrl, outputFile, new DownloadTask.UrlDownloadListener() {
-            @Override
-            public void onDownloadProgress(int percent) {
-                EventBus.getDefault().post(new UrlDownloadEvent(percent, urlHash));
-            }
-
-            @Override
-            public void onDownloadFinished(boolean success) {
-                EventBus.getDefault().post(new UrlDownloadFinishedEvent(success, urlHash));
-
-                /* If success, notify the activity */
-                if (success) {
-                    mListener.onDefaultMapDownloaded();
-                }
-            }
-        });
     }
 
     @Override
