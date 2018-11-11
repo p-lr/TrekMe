@@ -2,6 +2,7 @@
 
 * [J'ai oublié mes identifiants IGN](#TOC-id-ign)
 * [Je n'arrive pas à me localiser sur ma carte](#TOC-loc)
+* [Je voudrais savoir où j'en suis dans mon quota de téléchargement IGN](#TOC-quota-IGN)
 
 ## <a name="TOC-id-ign"></a> J'ai oublié mes identiants IGN
 
@@ -27,7 +28,16 @@ Il peut y avoir plusieurs causes à ce problème. Il faut procéder par étapes 
   * Calibrer votre carte. Un tutoriel sur ce point sera ajouté prochainement.
   * Re-télécharger votre carte
 
+## <a name="TOC-quota-IGN"></a> Je voudrais savoir où j'en suis dans mon quota de téléchargement IGN
 
+Connectez-vous à votre espace sur le site de l'IGN, puis cliquez sur "Récupérer mes clés d'accès aux services en ligne" depuis les liens rapides (sur la gauche).
+
+Sous votre clé d'Api, cliquez sur "Statistiques de consommation", puis sur "Générer les statistiques".
+
+Une page s'affiche alors avec tout en haut une période de début et de fin. Je vous recommande de changer l'année de la date de début en mettant l'année précédente, pour être sûr de couvrir toute l'année passée. 
+Défilez la page vers le bas, laissez et cochées toutes les ressources, et cochez la case "Inclure toutes les ressources ayant été utilisées dans la période choisie".
+
+Enfin cliquez sur le bouton "CALCULER LES STATISTIQUES" tout en bas. Après quelques secondes, vous pouvez défiler la page vers le bas pour voir le résultat. Pour rappel, si vous avez souscrit à l'offre gratuite, vous avez droit à 2 000 000 de transactions par an.
 
 
 

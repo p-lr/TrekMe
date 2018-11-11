@@ -12,8 +12,7 @@
   * [Ajouter un marqueur](#TOC-Add-markers)
   * [Importer une trace GPX](#TOC-GPX-track-import)
   * [S'enregistrer au format GPX](#TOC-GPX-recording)
-5. [Que faire si...](doc/troubleshoot/troubleshoot.fr
-  .md)
+5. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
 
 
 ## <a name="TOC-Overview"></a>Introduction
@@ -164,7 +163,7 @@ Utilisez le bouton d'ajout de marqueur, ce qui affiche un nouveau marqueur au ce
 </p>
 
 Avec ses flèches rouge qui tournent autour, il indique qu'il peut être déplacé. Pour cela appuyez avec un doigt dans la zone bleue et déplacez le marqueur à l'endroit désiré.
-Quand vous êtes satisfait de sa position, "appuyez" une fois sur le marqueur rouge. Il change alors de forme et la zone bleur disparaît. Cela indique que le marqueur est désormais fixé à son emplacement.
+Quand vous êtes satisfait de sa position, "appuyez" une fois sur le marqueur rouge. Il change alors de forme et la zone bleue disparaît. Cela indique que le marqueur est désormais fixé à son emplacement.
 
 Si on appuie sur le marqueur, une bulle comme celle-ci s'affiche :
 
