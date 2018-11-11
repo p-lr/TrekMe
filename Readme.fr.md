@@ -12,7 +12,8 @@
   * [Ajouter un marqueur](#TOC-Add-markers)
   * [Importer une trace GPX](#TOC-GPX-track-import)
   * [S'enregistrer au format GPX](#TOC-GPX-recording)
-  5.[Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
+5. [Que faire si...](doc/troubleshoot/troubleshoot.fr
+  .md)
 
 
 ## <a name="TOC-Overview"></a>Introduction
