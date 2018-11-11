@@ -127,7 +127,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         /* Check if the request code is the one we are interested in */
         if (requestCode == TRACK_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
 
-            Uri uri = null;
+            Uri uri;
             if (resultData != null) {
                 uri = resultData.getData();
                 if (uri == null) return;
@@ -150,6 +150,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
 
     private void generateTracks(Map map) {
         Context ctx = getContext();
+        if (ctx == null) return;
         RecyclerView recyclerView = new RecyclerView(ctx);
         recyclerView.setHasFixedSize(false);
 
@@ -160,7 +161,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         /* Apply item decoration (add an horizontal divider) */
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(ctx,
                 DividerItemDecoration.VERTICAL);
-        Drawable divider = this.getContext().getDrawable(R.drawable.divider);
+        Drawable divider = ctx.getDrawable(R.drawable.divider);
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider);
         }
