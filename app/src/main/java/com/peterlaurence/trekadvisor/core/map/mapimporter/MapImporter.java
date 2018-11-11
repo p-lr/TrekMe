@@ -119,6 +119,7 @@ public class MapImporter {
     }
 
     public enum MapParserStatus {
+        NO_MAP,         // no map could be created
         NEW_MAP,        // a new map was successfully created
         EXISTING_MAP,   // a map.json file was found
     }
@@ -211,7 +212,7 @@ public class MapImporter {
     private static class LibvipsMapParser implements MapParser {
         private static final String THUMBNAIL_EXCLUDE_NAME = "blank";
         private BitmapFactory.Options options = new BitmapFactory.Options();
-        private MapParserStatus mStatus;
+        private MapParserStatus mStatus = MapParserStatus.NO_MAP;
 
         LibvipsMapParser() {
             options.inJustDecodeBounds = true;

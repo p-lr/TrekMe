@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -30,11 +31,14 @@ import com.peterlaurence.trekadvisor.menu.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.UrlDownloadDialog;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadEvent;
 import com.peterlaurence.trekadvisor.menu.maplist.dialogs.events.UrlDownloadFinishedEvent;
+import com.peterlaurence.trekadvisor.menu.maplist.events.ZipFinishedEvent;
+import com.peterlaurence.trekadvisor.menu.maplist.events.ZipProgressEvent;
 import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.peterlaurence.trekadvisor.util.ZipTask;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -62,6 +66,10 @@ public class MapListFragment extends Fragment implements
     private OnMapListFragmentInteractionListener mListener;
 
     private String mDefaultMapUrl;
+
+    /* Used for map saving */
+    private Notification.Builder builder;
+    private NotificationManager notifyMgr;
 
     public MapListFragment() {
         // Required empty public constructor
@@ -262,69 +270,86 @@ public class MapListFragment extends Fragment implements
         Map map = MapLoader.getInstance().getMap(event.mapId);
         if (map == null) return;
 
-        final String notificationChannelId = "trekadvisor_map_save";
-
-        /* Build the notification and issue it */
-        final Notification.Builder builder = new Notification.Builder(getActivity())
-                .setSmallIcon(R.drawable.ic_map_black_24dp)
-                .setContentTitle(getString(R.string.archive_dialog_title))
-                .setContentText(String.format(getString(R.string.archive_notification_msg), map.getName()));
-
-        final int notificationId = event.mapId;
-        final NotificationManager notifyMgr =
-                (NotificationManager) getActivity().getSystemService(NOTIFICATION_SERVICE);
-
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            //This only needs to be run on Devices on Android O and above
-            NotificationChannel mChannel = new NotificationChannel(notificationChannelId,
-                    getText(R.string.archive_dialog_title), NotificationManager.IMPORTANCE_LOW);
-            mChannel.enableLights(true);
-            mChannel.setLightColor(Color.YELLOW);
-            if (notifyMgr != null) {
-                notifyMgr.createNotificationChannel(mChannel);
-            }
-            builder.setChannelId(notificationChannelId);
-        }
-
-        if (notifyMgr != null) {
-            notifyMgr.notify(notificationId, builder.build());
-        }
-
         /* Effectively launch the archive task */
         map.zip(new ZipTask.ZipProgressionListener() {
+            private String mapName = map.getName();
+            private int mapId = map.getId();
+
             @Override
             public void fileListAcquired() {
-
             }
 
             @Override
             public void onProgress(int p) {
-                builder.setProgress(100, p, false);
-                notifyMgr.notify(notificationId, builder.build());
+                EventBus.getDefault().post(new ZipProgressEvent(p, mapName, mapId));
             }
 
             @Override
-            public void onZipFinished(File outputDirectory) {
-                String archiveOkMsg = getContext().getString(R.string.archive_snackbar_finished);
-
-                /* When the loop is finished, updates the notification */
-                builder.setContentText(archiveOkMsg)
-                        // Removes the progress bar
-                        .setProgress(0, 0, false);
-                notifyMgr.notify(notificationId, builder.build());
-
-                View view = getView();
-                if (view != null) {
-                    Snackbar snackbar = Snackbar.make(view, archiveOkMsg, Snackbar.LENGTH_SHORT);
-                    snackbar.show();
-                }
+            public void onZipFinished(@NonNull File outputDirectory) {
+                EventBus.getDefault().post(new ZipFinishedEvent(mapId));
             }
 
             @Override
             public void onZipError() {
-
             }
         });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onZipProgressEvent(ZipProgressEvent event) {
+        final String notificationChannelId = "trekadvisor_map_save";
+
+        if (builder == null || notifyMgr == null) {
+            /* Build the notification and issue it */
+            builder = new Notification.Builder(getActivity())
+                    .setSmallIcon(R.drawable.ic_map_black_24dp)
+                    .setContentTitle(getString(R.string.archive_dialog_title));
+
+            try {
+                notifyMgr = (NotificationManager) getActivity().getSystemService(NOTIFICATION_SERVICE);
+            } catch (Exception e) {
+                // notifyMgr will be null
+            }
+
+            if (android.os.Build.VERSION.SDK_INT >= 26) {
+                //This only needs to be run on Devices on Android O and above
+                NotificationChannel mChannel = new NotificationChannel(notificationChannelId,
+                        getText(R.string.archive_dialog_title), NotificationManager.IMPORTANCE_LOW);
+                mChannel.enableLights(true);
+                mChannel.setLightColor(Color.YELLOW);
+                if (notifyMgr != null) {
+                    notifyMgr.createNotificationChannel(mChannel);
+                }
+                builder.setChannelId(notificationChannelId);
+            }
+
+            if (notifyMgr != null) {
+                notifyMgr.notify(event.getMapId(), builder.build());
+            }
+        }
+
+        builder.setContentText(String.format(getString(R.string.archive_notification_msg), event.getMapName()));
+        builder.setProgress(100, event.getP(), false);
+        if (notifyMgr != null) {
+            notifyMgr.notify(event.getMapId(), builder.build());
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onZipFinishedEvent(ZipFinishedEvent event) {
+        String archiveOkMsg = getString(R.string.archive_snackbar_finished);
+
+        /* When the loop is finished, updates the notification */
+        builder.setContentText(archiveOkMsg)
+                // Removes the progress bar
+                .setProgress(0, 0, false);
+        notifyMgr.notify(event.getMapId(), builder.build());
+
+        View view = getView();
+        if (view != null) {
+            Snackbar snackbar = Snackbar.make(view, archiveOkMsg, Snackbar.LENGTH_SHORT);
+            snackbar.show();
+        }
     }
 
     /**

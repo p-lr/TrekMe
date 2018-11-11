@@ -6,6 +6,10 @@ package com.peterlaurence.trekadvisor.core.statistics
 fun hpfilter(data: DoubleArray, lambda: Double = 1600.0): DoubleArray {
     val n = data.size
 
+    if (n < 3) {
+        return data
+    }
+
     val a = DoubleArray(n)
     val b = DoubleArray(n)
     val c = DoubleArray(n)
