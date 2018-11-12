@@ -19,7 +19,7 @@ Il peut y avoir plusieurs causes à ce problème. Il faut procéder par étapes 
 1. Etes vous dans un endroit qui peut recevoir un signal gps ? 
   Les milieux clos comme les appartement, les maisons etc.. rendent parfois difficile la réception d'un signal GPS.
 
-2. L'application a-t-elle l'autorisation d'accéder à votre position
+2. L'application a-t-elle l'autorisation d'accéder à votre position ? 
   Dans votre système Android, dans les paramètres, puis applications et pour TrekAdvisor, vérifiez que dans les autorisations tout est bien activé (notamment la position).
 
 3. La carte est-elle calibrée ?
@@ -35,7 +35,7 @@ Connectez-vous à votre espace sur le site de l'IGN, puis cliquez sur "Récupér
 Sous votre clé d'Api, cliquez sur "Statistiques de consommation", puis sur "Générer les statistiques".
 
 Une page s'affiche alors avec tout en haut une période de début et de fin. Je vous recommande de changer l'année de la date de début en mettant l'année précédente, pour être sûr de couvrir toute l'année passée. 
-Défilez la page vers le bas, laissez et cochées toutes les ressources, et cochez la case "Inclure toutes les ressources ayant été utilisées dans la période choisie".
+Défilez la page vers le bas, laissez cochées toutes les ressources, et cochez la case "Inclure toutes les ressources ayant été utilisées dans la période choisie".
 
 Enfin cliquez sur le bouton "CALCULER LES STATISTIQUES" tout en bas. Après quelques secondes, vous pouvez défiler la page vers le bas pour voir le résultat. Pour rappel, si vous avez souscrit à l'offre gratuite, vous avez droit à 2 000 000 de transactions par an.
 

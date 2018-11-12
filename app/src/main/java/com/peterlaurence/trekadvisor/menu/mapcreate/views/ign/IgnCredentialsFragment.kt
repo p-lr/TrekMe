@@ -1,6 +1,7 @@
 package com.peterlaurence.trekadvisor.menu.mapcreate.views.ign
 
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.preference.EditTextPreference
 import android.support.v7.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekadvisor.R
@@ -50,7 +51,25 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
 
     private fun saveCredentials() {
         if (this::ignUser.isInitialized && this::ignPwd.isInitialized && this::ignApiKey.isInitialized) {
-            MapSourceCredentials.saveIGNCredentials(IGNCredentials(ignUser, ignPwd, ignApiKey))
+            MapSourceCredentials.saveIGNCredentials(IGNCredentials(ignUser, ignPwd, ignApiKey)).let { success ->
+                if (!success) {
+                    showWarningDialog()
+                }
+            }
         }
+    }
+
+    /**
+     * Warn the user that we don't have storage rights.
+     */
+    private fun showWarningDialog() {
+        val builder: AlertDialog.Builder? = activity?.let {
+            AlertDialog.Builder(it)
+        }
+
+        builder?.setMessage(getString(R.string.ign_warning_storage_rights))
+
+        val dialog: AlertDialog? = builder?.create()
+        dialog?.show()
     }
 }

@@ -162,6 +162,7 @@
     <string name="ign_tutorial"><u>Follow tutorial</u></string>
     <string name="ign_help_msg">See how to get your API (french only)</string>
     <string name="ign_help_link">https://github.com/peterLaurence/TrekAdvisor/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN</string>
+    <string name="ign_warning_storage_rights">TrekAdvisor can\'t save your credentials, because it don\'t have Storage rights. In Android parameters, for Applications, look into TrekAdvisor\'s permissions.</string>
 
     <string name="ign_source">IGN</string>
     <string name="ign_source_description">France and its territories</string>

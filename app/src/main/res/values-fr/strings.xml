@@ -131,4 +131,5 @@
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
     <string name="help">Aide</string>
     <string name="help_url">https://github.com/peterLaurence/TrekAdvisor/blob/master/Readme.fr.md</string>
+    <string name="ign_warning_storage_rights">TrekAdvisor ne peut pas tenir compte de vos identifiants, parce que l\'application ne dispose pas l\'autorisation de <b>stockage</b>. Dans vos paramètres Android, pour Applications, veuillez vérifier les autorisations de TrekAdvisor.</string>
 </resources>

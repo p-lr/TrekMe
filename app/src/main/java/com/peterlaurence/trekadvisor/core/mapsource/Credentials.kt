@@ -31,18 +31,20 @@ object MapSourceCredentials {
         return credentials.ignCredentials
     }
 
-    fun saveIGNCredentials(ignCredentials: IGNCredentials) {
+    fun saveIGNCredentials(ignCredentials: IGNCredentials): Boolean {
         credentials.ignCredentials = ignCredentials
 
         val jsonString = gson.toJson(credentials)
 
-        try {
+        return try {
             val writer = PrintWriter(configFile)
             writer.print(jsonString)
             writer.close()
+            true
         } catch (e: IOException) {
             Log.e(TAG, "Error while saving the IGN credentials")
             Log.e(TAG, e.message, e)
+            false
         }
     }
 }
