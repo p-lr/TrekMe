@@ -132,4 +132,5 @@
     <string name="help">Aide</string>
     <string name="help_url">https://github.com/peterLaurence/TrekAdvisor/blob/master/Readme.fr.md</string>
     <string name="ign_warning_storage_rights">TrekAdvisor ne peut pas tenir compte de vos identifiants, parce que l\'application ne dispose pas l\'autorisation de <b>stockage</b>. Dans vos paramètres Android, pour Applications, veuillez vérifier les autorisations de TrekAdvisor.</string>
+    <string name="ign_warning_credentials">Au moins un de vos identifiants (nom, mot de passe, clé d\'API) est incorrect. Vous ne pourrez pas créer de carte IGN tant que vous n\'aurez pas entré d\'identifiants corrects.</string>
 </resources>

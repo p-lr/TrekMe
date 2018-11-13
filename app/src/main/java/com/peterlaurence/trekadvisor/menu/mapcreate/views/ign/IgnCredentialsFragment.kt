@@ -7,13 +7,27 @@ import android.support.v7.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.core.mapsource.IGNCredentials
 import com.peterlaurence.trekadvisor.core.mapsource.MapSourceCredentials
+import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderAuth
+import com.peterlaurence.trekadvisor.core.providers.layers.IgnLayers
+import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderIgn
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 
-class IgnCredentialsFragment : PreferenceFragmentCompat() {
+class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
     private lateinit var ignUser: String
     private lateinit var ignPwd: String
     private lateinit var ignApiKey: String
 
+    private val job: Job = Job()
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
+    override fun onStop() {
+        job.cancel()
+        super.onStop()
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.ign_credentials_settings)
@@ -51,23 +65,39 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
 
     private fun saveCredentials() {
         if (this::ignUser.isInitialized && this::ignPwd.isInitialized && this::ignApiKey.isInitialized) {
-            MapSourceCredentials.saveIGNCredentials(IGNCredentials(ignUser, ignPwd, ignApiKey)).let { success ->
-                if (!success) {
-                    showWarningDialog()
+            val ignCredentials = IGNCredentials(ignUser, ignPwd, ignApiKey)
+            MapSourceCredentials.saveIGNCredentials(ignCredentials).let { success ->
+                if (success) {
+                    testIgnCredentials()
+                } else {
+                    /* Warn the user that we don't have storage rights */
+                    showWarningDialog(getString(R.string.ign_warning_storage_rights))
                 }
             }
         }
     }
 
+    private fun CoroutineScope.testIgnCredentials() = launch {
+        val isOk = async(Dispatchers.IO) {
+            val urlTileBuilder = UrlTileBuilderIgn(ignApiKey, IgnLayers.ScanExpressStandard.realName)
+            val genericProvider = GenericBitmapProviderAuth(urlTileBuilder, ignUser, ignPwd)
+            genericProvider.getBitmap(1, 1, 1) != null
+        }
+
+        if (!isOk.await()) {
+            showWarningDialog(getString(R.string.ign_warning_credentials))
+        }
+    }
+
     /**
-     * Warn the user that we don't have storage rights.
+     * Warn the user: display a message.
      */
-    private fun showWarningDialog() {
+    private fun showWarningDialog(message: String) {
         val builder: AlertDialog.Builder? = activity?.let {
             AlertDialog.Builder(it)
         }
 
-        builder?.setMessage(getString(R.string.ign_warning_storage_rights))
+        builder?.setMessage(message)
 
         val dialog: AlertDialog? = builder?.create()
         dialog?.show()

@@ -6,6 +6,8 @@ package com.peterlaurence.trekadvisor.core.providers.urltilebuilder
  */
 class UrlTileBuilderOSM : UrlTileBuilder {
     override fun build(level: Int, row: Int, col: Int): String {
-        return "http://gis.sinica.edu.tw/worldmap/file-exists.php?img=OSM-png-$level-$col-$row"
+//        return "http://gis.sinica.edu.tw/worldmap/file-exists.php?img=OSM-png-$level-$col-$row"
+//        return "http://a.tile.openstreetmap.fr/osmfr/$level/$col/$row.png"
+        return "https://c.tile.openstreetmap.org/$level/$col/$row.png"
     }
 }
