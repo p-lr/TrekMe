@@ -45,6 +45,7 @@ import com.peterlaurence.trekadvisor.menu.events.DrawerClosedEvent;
 import com.peterlaurence.trekadvisor.menu.events.RequestImportMapEvent;
 import com.peterlaurence.trekadvisor.menu.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.MapCreateFragment;
+import com.peterlaurence.trekadvisor.menu.mapcreate.events.MapSourceSelectedEvent;
 import com.peterlaurence.trekadvisor.menu.mapcreate.views.GoogleMapWmtsViewFragment;
 import com.peterlaurence.trekadvisor.menu.mapcreate.views.ign.IgnCredentialsFragment;
 import com.peterlaurence.trekadvisor.menu.mapimport.MapImportFragment;
@@ -824,6 +825,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void showCurrentMap() {
         showMapViewFragment();
+    }
+
+    @Subscribe
+    public void onMapSourceSelectedEvent(MapSourceSelectedEvent event) {
+        onMapSourceSelected(event.getMapSource());
     }
 
     @Override
