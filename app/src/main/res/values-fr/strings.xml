@@ -135,4 +135,8 @@
     <string name="ign_warning_credentials">Au moins un de vos identifiants (nom, mot de passe, clé d\'API) est incorrect. Vous ne pourrez pas créer de carte IGN tant que vous n\'aurez pas entré d\'identifiants corrects.</string>
     <string name="ign_snackbar_continue">Continuer pour créer une carte ?</string>
     <string name="map_download_dialog_error">Une erreur est survenue durant l\'import de la carte, qui n\'apparaîtra probablement pas dans la liste des cartes, ou bien elle ne sera pas calibrée. Le plus simple est de télécharger à nouveau votre carte. Désolé :(</string>
+    <string name="bad_storage_status">Votre carte SD présente un problème. TrekAdvisor ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
+    <string name="storage_read_only">Votre carte SD est en lecture seule. TrekAdvisor ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
+    <string name="warning_title">Attention</string>
+    <string name="service_download_bad_storage">TrekAdvisor ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est soit un problème de permission, soit quelque chose ne va pas avec votre carte SD.</string>
 </resources>

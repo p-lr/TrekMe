@@ -179,8 +179,17 @@ class DownloadService : Service() {
         /* Init the progress bar */
         onDownloadProgress(0.0)
 
-        /* Create the destination folder */
-        destDir = createDestDir()
+        /* Create the destination folder, or else fail-fast */
+        val destDirRes = createDestDir()
+        if (destDirRes != null) {
+            destDir = destDirRes
+        } else {
+            /* Storage issue, warn and stop the service */
+            notifyDownloadFinished(getText(R.string.service_download_bad_storage))
+            EventBus.getDefault().post(MapDownloadEvent(Status.STORAGE_ERROR))
+            stopSelf()
+            return
+        }
 
         /* A writer which has a folder for each level, and a folder for each row. It does that with
          * using indexes instead of real level, row and col numbers. This greatly simplifies how a
@@ -204,7 +213,7 @@ class DownloadService : Service() {
         launchDownloadTask(threadCount, source, threadSafeTileIterator, tileWriter)
     }
 
-    private fun createDestDir(): File {
+    private fun createDestDir(): File? {
         /* Create the download dir if it doesn't exists */
         if (!TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR.exists()) {
             TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR.mkdir()
@@ -215,9 +224,12 @@ class DownloadService : Service() {
         val dateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(date)
         val destFolder = File(TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR, folderName)
-        destFolder.mkdir()
 
-        return destFolder
+        return if (destFolder.mkdir()) {
+            destFolder
+        } else {
+            null
+        }
     }
 
     private fun onDownloadProgress(progress: Double) {

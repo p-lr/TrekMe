@@ -21,6 +21,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
@@ -31,6 +32,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
 import com.peterlaurence.trekadvisor.core.map.Map;
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson;
 import com.peterlaurence.trekadvisor.core.map.maploader.MapLoader;
@@ -58,6 +60,8 @@ import com.peterlaurence.trekadvisor.menu.record.RecordFragment;
 import com.peterlaurence.trekadvisor.menu.trackview.TrackViewFragment;
 import com.peterlaurence.trekadvisor.model.MapProvider;
 import com.peterlaurence.trekadvisor.service.event.LocationServiceStatus;
+import com.peterlaurence.trekadvisor.service.event.MapDownloadEvent;
+import com.peterlaurence.trekadvisor.service.event.Status;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
@@ -221,7 +225,21 @@ public class MainActivity extends AppCompatActivity
 
     private void warnIfNotInternet() {
         if (!checkInternet()) {
-            showMessage(getString(R.string.no_internet));
+            showMessageInSnackbar(getString(R.string.no_internet));
+        }
+    }
+
+    private void warnIfBadStorageState() {
+        /* If something is wrong.. */
+        if (!TrekAdvisorContext.checkAppDir()) {
+            String warningTitle = getString(R.string.warning_title);
+            if (TrekAdvisorContext.isAppDirReadOnly()) {
+                /* If its read only for sure, be explicit */
+                showWarningDialog(getString(R.string.storage_read_only), warningTitle);
+            } else {
+                /* Else, just say there is something wrong */
+                showWarningDialog(getString(R.string.bad_storage_status), warningTitle);
+            }
         }
     }
 
@@ -390,6 +408,7 @@ public class MainActivity extends AppCompatActivity
             Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
             if (mapListFragment == null) {
                 showMapListFragment();
+                warnIfBadStorageState();
                 mBackFragmentTag = null;
             }
         }
@@ -637,6 +656,7 @@ public class MainActivity extends AppCompatActivity
         if (!checkMapCreationPermission()) {
             requestMapCreationPermission();
         }
+        warnIfNotInternet();
     }
 
     private void showIgnCredentialsFragment() {
@@ -727,11 +747,20 @@ public class MainActivity extends AppCompatActivity
         hideTransaction.commit();
     }
 
-    private void showMessage(String message) {
+    private void showMessageInSnackbar(String message) {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer == null) return;
         Snackbar snackbar = Snackbar.make(drawer, message, Snackbar.LENGTH_LONG);
         snackbar.show();
+    }
+
+    private void showWarningDialog(String message, String title) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(message).setTitle(title);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     /**
@@ -871,6 +900,13 @@ public class MainActivity extends AppCompatActivity
                 break;
             default:
                 /* Unknown map source */
+        }
+    }
+
+    @Subscribe
+    public void onMapDownloadEvent(MapDownloadEvent event) {
+        if (event.getStatus().equals(Status.STORAGE_ERROR)) {
+            showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title));
         }
     }
 

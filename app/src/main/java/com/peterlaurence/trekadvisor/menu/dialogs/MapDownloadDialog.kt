@@ -39,6 +39,7 @@ class MapDownloadDialog : DialogFragment() {
             Status.IMPORT_ERROR -> {
                 errorMsg.visibility = View.VISIBLE
             }
+            else -> dismiss()
         }
     }
 

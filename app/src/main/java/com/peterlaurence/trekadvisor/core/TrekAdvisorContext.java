@@ -41,6 +41,21 @@ public final class TrekAdvisorContext {
         }
     }
 
+    /**
+     * To function properly, the app needs to have read + write access to its root directory
+     */
+    public static boolean checkAppDir() {
+        return Environment.getExternalStorageState(DEFAULT_APP_DIR).equals(Environment.MEDIA_MOUNTED);
+    }
+
+    /**
+     * Check whether the app root dir is in read-only state or not. This is usually used only if the
+     * {@link #checkAppDir()} call returned {@code false}
+     */
+    public static boolean isAppDirReadOnly() {
+        return Environment.getExternalStorageState(DEFAULT_APP_DIR).equals(Environment.MEDIA_MOUNTED_READ_ONLY);
+    }
+
     private static void createAppDirs() throws SecurityException {
         /* Root */
         createDir(DEFAULT_APP_DIR, "application");
