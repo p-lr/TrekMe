@@ -2,6 +2,7 @@ package com.peterlaurence.trekadvisor.core.map.mapimporter;
 
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -115,6 +116,7 @@ public class MapImporter {
         @Nullable
         Map parse(File file) throws MapParseException;
 
+        @NonNull
         MapParserStatus getStatus();
     }
 
@@ -186,7 +188,7 @@ public class MapImporter {
          */
         @Override
         protected void onPostExecute(Map map) {
-            if (mException != null) {
+            if (mException != null || map == null) {
                 MapLoader.getInstance().onMapImportError(mException);
             } else {
                 MapLoader.getInstance().onMapImported(map, mMapParser.getStatus());
@@ -195,7 +197,7 @@ public class MapImporter {
             if (mMapParseListenerWeakReference != null) {
                 MapImportListener mapImportListener = mMapParseListenerWeakReference.get();
                 if (mapImportListener != null) {
-                    if (mException != null) {
+                    if (mException != null || map == null) {
                         mapImportListener.onMapImportError(mException);
                     } else {
                         mapImportListener.onMapImported(map, mMapParser.getStatus());
@@ -299,6 +301,7 @@ public class MapImporter {
             return new Map(mapGson, jsonFile, thumbnail);
         }
 
+        @NonNull
         @Override
         public MapParserStatus getStatus() {
             return mStatus;

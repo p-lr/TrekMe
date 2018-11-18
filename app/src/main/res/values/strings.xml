@@ -30,6 +30,7 @@
     <!-- MapDownloadDialog -->
     <string name="map_download_dialog_title">Current map download</string>
     <string name="map_download_dialog_progress">Progress</string>
+    <string name="map_download_dialog_error">An error occurred during map import. The map is most probably not visible or not calibrated.\nTry to download it again.</string>
 
     <!-- Map list fragment -->
     <string name="no_maps_found_warning">You haven\'t created any map yet</string>

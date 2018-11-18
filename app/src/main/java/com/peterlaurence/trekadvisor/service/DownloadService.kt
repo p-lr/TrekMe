@@ -1,6 +1,9 @@
 package com.peterlaurence.trekadvisor.service
 
-import android.app.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -23,7 +26,6 @@ import com.peterlaurence.trekadvisor.core.mapsource.wmts.Tile
 import com.peterlaurence.trekadvisor.core.projection.MercatorProjection
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProvider
 import com.peterlaurence.trekadvisor.core.providers.generic.GenericBitmapProviderAuth
-import com.peterlaurence.trekadvisor.core.providers.layers.IgnLayers
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderIgn
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderIgnSpain
 import com.peterlaurence.trekadvisor.core.providers.urltilebuilder.UrlTileBuilderOSM
@@ -236,30 +238,36 @@ class DownloadService : Service() {
         /* Import, and when we're done, calibrate the map */
         MapImporter.importFromFile(destDir, MapImporter.MapProvider.LIBVIPS,
                 object : MapImporter.MapImportListener {
+                    val okMsg = getText(R.string.service_download_finished)
+                    val koMsg = getText(R.string.map_download_dialog_error)
+
                     override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
                         handler.post {
                             calibrate(map)
                             sendDownloadFinished()
+
+                            /* Notify that the download is finished correctly*/
+                            notifyDownloadFinished(okMsg)
                         }
                     }
 
                     override fun onMapImportError(e: MapImporter.MapParseException) {
                         EventBus.getDefault().post(MapDownloadEvent(Status.IMPORT_ERROR))
-                        e.printStackTrace()
+
+                        /* Notify that the download finished with an error */
+                        notifyDownloadFinished(koMsg)
                     }
                 })
-
-        /* Notify that the download is finished */
-        notifyDonwloadFinished()
 
         /* Finally, stop the service */
         stopSelf()
     }
 
-    private fun notifyDonwloadFinished() {
+    private fun notifyDownloadFinished(message: CharSequence) {
         notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
                 .setContentTitle(getText(R.string.app_name))
-                .setContentText(getText(R.string.service_download_finished))
+                .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+                .setContentText(message)
                 .setSmallIcon(R.drawable.ic_file_download_24dp)
                 .setLargeIcon(icon)
                 .setContentIntent(onTapPendingIntent)
@@ -302,7 +310,8 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
 
                 val layerRealName = LayerForSource.resolveLayerName(source)
                 val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", layerRealName)
-                val bitmapProvider = GenericBitmapProviderAuth(urlTileBuilder, ignCredentials.user ?: "", ignCredentials.pwd ?: "")
+                val bitmapProvider = GenericBitmapProviderAuth(urlTileBuilder, ignCredentials.user
+                        ?: "", ignCredentials.pwd ?: "")
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }

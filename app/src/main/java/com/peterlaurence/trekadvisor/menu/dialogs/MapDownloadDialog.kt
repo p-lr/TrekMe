@@ -4,10 +4,11 @@ import android.app.Dialog
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.app.AlertDialog
-import android.widget.ProgressBar
+import android.view.View
 import com.peterlaurence.trekadvisor.R
 import com.peterlaurence.trekadvisor.service.event.MapDownloadEvent
 import com.peterlaurence.trekadvisor.service.event.Status
+import kotlinx.android.synthetic.main.download_map_dialog.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 
@@ -17,7 +18,6 @@ import org.greenrobot.eventbus.Subscribe
  * @author perterLaurence on 30/06/2018
  */
 class MapDownloadDialog : DialogFragment() {
-    private lateinit var progressBar: ProgressBar
 
     override fun onStart() {
         super.onStart()
@@ -37,7 +37,7 @@ class MapDownloadDialog : DialogFragment() {
                 dismiss()
             }
             Status.IMPORT_ERROR -> {
-                // Display an error message
+                errorMsg.visibility = View.VISIBLE
             }
         }
     }
@@ -46,12 +46,8 @@ class MapDownloadDialog : DialogFragment() {
         val builder = AlertDialog.Builder(activity!!)
         builder.setTitle(getString(R.string.map_download_dialog_title))
         val view = activity!!.layoutInflater.inflate(R.layout.download_map_dialog, null)
-
         builder.setView(view)
 
-        progressBar = view.findViewById(R.id.download_map_dialog_progress)
-
-        val dialog = builder.create()
-        return dialog
+        return builder.create()
     }
 }
