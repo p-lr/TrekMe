@@ -152,13 +152,10 @@ public class LocationService extends Service {
 
             ArrayList<TrackPoint> wayPoints = new ArrayList<>();
 
-            Gpx gpx = new Gpx(trkList, wayPoints, TrekAdvisorContext.APP_FOLDER_NAME, GPX_VERSION);
+            Gpx gpx = new Gpx(trkList, wayPoints, TrekAdvisorContext.INSTANCE.getAppFolderName(), GPX_VERSION);
             try {
-                if (!TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.exists()) {
-                    TrekAdvisorContext.DEFAULT_RECORDINGS_DIR.mkdir();
-                }
                 String gpxFileName = trackName + ".gpx";
-                File gpxFile = new File(TrekAdvisorContext.DEFAULT_RECORDINGS_DIR, gpxFileName);
+                File gpxFile = new File(TrekAdvisorContext.INSTANCE.getRecordingsDir(), gpxFileName);
                 FileOutputStream fos = new FileOutputStream(gpxFile);
                 GPXWriter.INSTANCE.write(gpx, fos);
             } catch (Exception e) {

@@ -34,9 +34,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_APP_DIR;
-import static com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_MAPS_DIR;
-
 /**
  * Singleton object that provides utility methods to read json files that describe each map.
  * <p/>
@@ -91,7 +88,7 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapList = new ArrayList<>();
 
         /* Init the application context (create folders, etc) */
-        TrekAdvisorContext.init();
+        TrekAdvisorContext.INSTANCE.init();
     }
 
     public static MapLoader getInstance() {
@@ -124,7 +121,7 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapList = new ArrayList<>();
         if (dirs.length == 0) { // No directories specified? We take the default value.
             dirs = new File[1];
-            dirs[0] = DEFAULT_MAPS_DIR;
+            dirs[0] = TrekAdvisorContext.INSTANCE.getDefaultMapsDir();
         }
         generateMaps(dirs);
     }
@@ -174,7 +171,7 @@ public class MapLoader implements MapImporter.MapImportListener {
 
         if (dirs.length == 0) { // No directories specified? We take the default value.
             dirs = new File[1];
-            dirs[0] = DEFAULT_APP_DIR;
+            dirs[0] = TrekAdvisorContext.INSTANCE.getDefaultAppDir();
         }
         MapArchiveSearchTask searchTask = new MapArchiveSearchTask(
                 () -> EventBus.getDefault().post(

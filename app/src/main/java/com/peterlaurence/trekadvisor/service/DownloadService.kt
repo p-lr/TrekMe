@@ -214,16 +214,11 @@ class DownloadService : Service() {
     }
 
     private fun createDestDir(): File? {
-        /* Create the download dir if it doesn't exists */
-        if (!TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR.exists()) {
-            TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR.mkdir()
-        }
-
         /* Create a new folder */
         val date = Date()
         val dateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(date)
-        val destFolder = File(TrekAdvisorContext.DEFAULT_MAPS_DOWNLOAD_DIR, folderName)
+        val destFolder = File(TrekAdvisorContext.defaultMapsDownloadDir, folderName)
 
         return if (destFolder.mkdir()) {
             destFolder

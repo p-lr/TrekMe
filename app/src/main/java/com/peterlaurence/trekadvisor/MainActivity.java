@@ -231,9 +231,9 @@ public class MainActivity extends AppCompatActivity
 
     private void warnIfBadStorageState() {
         /* If something is wrong.. */
-        if (!TrekAdvisorContext.checkAppDir()) {
+        if (!TrekAdvisorContext.INSTANCE.checkAppDir()) {
             String warningTitle = getString(R.string.warning_title);
-            if (TrekAdvisorContext.isAppDirReadOnly()) {
+            if (TrekAdvisorContext.INSTANCE.isAppDirReadOnly()) {
                 /* If its read only for sure, be explicit */
                 showWarningDialog(getString(R.string.storage_read_only), warningTitle);
             } else {

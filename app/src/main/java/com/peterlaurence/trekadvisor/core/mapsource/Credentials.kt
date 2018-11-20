@@ -12,7 +12,7 @@ object MapSourceCredentials {
     val supportedMapSource = MapSource.values()
     val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
     private val TAG = javaClass.toString()
-    private val configFile = File(TrekAdvisorContext.CREDENTIALS_DIR, "ign.json")
+    private val configFile = File(TrekAdvisorContext.credentialsDir, "ign.json")
 
     lateinit var credentials: Credentials
 

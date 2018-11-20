@@ -3,7 +3,7 @@ package com.peterlaurence.trekadvisor.core.track
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.AsyncTask
-import com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_RECORDINGS_DIR
+import com.peterlaurence.trekadvisor.core.TrekAdvisorContext.recordingsDir
 import com.peterlaurence.trekadvisor.core.map.Map
 import com.peterlaurence.trekadvisor.core.map.gson.MarkerGson
 import com.peterlaurence.trekadvisor.core.map.gson.RouteGson
@@ -34,10 +34,10 @@ object TrackImporter {
     /**
      * Get the list of [File] which extension is in the list of supported extension for track
      * file. Files are searched into the
-     * [com.peterlaurence.trekadvisor.core.TrekAdvisorContext.DEFAULT_RECORDINGS_DIR].
+     * [com.peterlaurence.trekadvisor.core.TrekAdvisorContext.recordingsDir].
      */
     val recordings: Array<File>?
-        get() = DEFAULT_RECORDINGS_DIR.listFiles(SUPPORTED_FILE_FILTER)
+        get() = recordingsDir.listFiles(SUPPORTED_FILE_FILTER)
 
     private val recordingsToGpx: kotlin.collections.MutableMap<File, Gpx> = mutableMapOf()
 
