@@ -29,7 +29,7 @@
     <string name="service_download_finished">Map download finished</string>
     <string name="service_download_stop">Stop</string>
     <string name="service_download_see_progress">See Progress</string>
-    <string name="service_download_bad_storage">TrekAdvisor can\'t write to your internal storage or your SD card. It can be a permission issue or something is wrong with your SD card.</string>
+    <string name="service_download_bad_storage">TrekAdvisor can\'t write to your internal storage or your SD card. It can be a permission issue. Please check that all permissions of TrekAdvisor are granted, and reboot your phone, if necessary.</string>
 
     <!-- MapDownloadDialog -->
     <string name="map_download_dialog_title">Current map download</string>

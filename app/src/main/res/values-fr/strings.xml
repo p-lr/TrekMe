@@ -138,5 +138,5 @@
     <string name="bad_storage_status">Votre carte SD présente un problème. TrekAdvisor ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="storage_read_only">Votre carte SD est en lecture seule. TrekAdvisor ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="warning_title">Attention</string>
-    <string name="service_download_bad_storage">TrekAdvisor ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est soit un problème de permission, soit quelque chose ne va pas avec votre carte SD.</string>
+    <string name="service_download_bad_storage">TrekAdvisor ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekAdvisor dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
 </resources>
