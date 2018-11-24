@@ -13,6 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -21,11 +24,6 @@ import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.peterlaurence.trekadvisor.MainActivity;
 import com.peterlaurence.trekadvisor.R;
 import com.peterlaurence.trekadvisor.core.TrekAdvisorContext;
@@ -60,6 +58,10 @@ import java.util.Locale;
  * execution limits</a>. <br>
  * So when there is a Gpx recording, the user can always see it with the icon on the upper left
  * corner of the device.
+ *
+ * It uses the legacy location API in android.location, not the Google Location Services API, part
+ * of Google Play Services. This is because we absolutely need to use only the {@link LocationManager#GPS_PROVIDER}.
+ * The fused provider don't give us the hand on that.
  */
 public class LocationService extends Service {
     private static final String GPX_VERSION = "1.1";
@@ -67,9 +69,9 @@ public class LocationService extends Service {
     private static final int SERVICE_ID = 126585;
     private Looper mServiceLooper;
     private Handler mServiceHandler;
-    private FusedLocationProviderClient mFusedLocationClient;
-    private LocationRequest mLocationRequest;
-    private LocationCallback mLocationCallback;
+    private LocationManager mLocationManager;
+    private LocationListener mLocationListener;
+    private long locationCounter = 0;
 
     private List<TrackPoint> mTrackPoints;
     private TrackStatCalculator mTrackStatCalculator;
@@ -97,31 +99,43 @@ public class LocationService extends Service {
 
         mServiceHandler.handleMessage(new Message());
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this.getApplicationContext());
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
         /* Create the Gpx instance */
         mTrackPoints = new ArrayList<>();
 
         /* Prepare the stat calculator */
         mTrackStatCalculator = new TrackStatCalculator();
 
-        mLocationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
-                    mServiceHandler.post(() -> {
-                        Double altitude = location.getAltitude() != 0.0 ? location.getAltitude() : null;
-                        TrackPoint trackPoint = new TrackPoint(location.getLatitude(),
-                                location.getLongitude(), altitude, location.getTime(), "");
-                        mTrackPoints.add(trackPoint);
-                        mTrackStatCalculator.addTrackPoint(trackPoint);
-                        sendTrackStatistics(mTrackStatCalculator.getStatistics());
-                    });
+        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        mLocationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                locationCounter++;
+                /* Drop points that aren't precise enough */
+                if (location.getAccuracy() > 15) {
+                    return;
                 }
+
+                /* Drop the first 3 points, so the GPS stabilizes */
+                if (locationCounter <= 3) {
+                    return;
+                }
+
+                mServiceHandler.post(() -> {
+                    Double altitude = location.getAltitude() != 0.0 ? location.getAltitude() : null;
+                    TrackPoint trackPoint = new TrackPoint(location.getLatitude(),
+                            location.getLongitude(), altitude, location.getTime(), "");
+                    mTrackPoints.add(trackPoint);
+                    mTrackStatCalculator.addTrackPoint(trackPoint);
+                    sendTrackStatistics(mTrackStatCalculator.getStatistics());
+                });
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
+            public void onProviderEnabled(String provider) {
+            }
+
+            public void onProviderDisabled(String provider) {
             }
         };
 
@@ -243,19 +257,20 @@ public class LocationService extends Service {
         EventBus.getDefault().unregister(this);
     }
 
+    /**
+     * Only use locations from the GPS.
+     */
     private void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                mLocationCallback,
-                mServiceLooper);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 2, mLocationListener, mServiceLooper);
     }
 
     private void stopLocationUpdates() {
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        mLocationManager.removeUpdates(mLocationListener);
     }
 
     /**

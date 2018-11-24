@@ -133,7 +133,7 @@ public class MapImporter {
     public interface MapImportListener {
         void onMapImported(Map map, MapParserStatus status);
 
-        void onMapImportError(MapParseException e);
+        void onMapImportError(@Nullable MapParseException e);
     }
 
     /**

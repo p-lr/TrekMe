@@ -60,7 +60,7 @@ public class MapLoader implements MapImporter.MapImportListener {
     /**
      * All {@link Projection}s are registered here.
      */
-    public static final HashMap<String, Class<? extends Projection>> PROJECTION_HASH_MAP = new HashMap<String, Class<? extends Projection>>() {{
+    private static final HashMap<String, Class<? extends Projection>> PROJECTION_HASH_MAP = new HashMap<String, Class<? extends Projection>>() {{
         put(MercatorProjection.NAME, MercatorProjection.class);
         put(UniversalTransverseMercator.NAME, UniversalTransverseMercator.class);
     }};
@@ -245,9 +245,11 @@ public class MapLoader implements MapImporter.MapImportListener {
     }
 
     @Override
-    public void onMapImportError(MapImporter.MapParseException e) {
+    public void onMapImportError(@Nullable MapImporter.MapParseException e) {
         Log.e(TAG, "Error while parsing a map");
-        Log.e(TAG, e.getMessage(), e);
+        if (e != null) {
+            Log.e(TAG, e.getMessage(), e);
+        }
     }
 
     /**

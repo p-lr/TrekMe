@@ -10,8 +10,8 @@ android {
         applicationId "com.peterlaurence.trekadvisor"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 20
-        versionName "1.2.6"
+        versionCode 21
+        versionName "1.3.0"
     }
     buildTypes {
         release {

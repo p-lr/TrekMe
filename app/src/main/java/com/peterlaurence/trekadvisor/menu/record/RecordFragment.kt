@@ -34,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
  * @author peterLaurence -- converted to Kotlin on 01/11/18
  */
 class RecordFragment : Fragment(), CoroutineScope {
-    private val job: Job = Job()
+    private lateinit var job: Job
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -46,6 +46,7 @@ class RecordFragment : Fragment(), CoroutineScope {
 
     override fun onStart() {
         super.onStart()
+        job = Job()
         EventBus.getDefault().register(this)
         EventBus.getDefault().register(actionsView)
         EventBus.getDefault().register(recordListView)

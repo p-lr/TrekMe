@@ -258,7 +258,7 @@ class DownloadService : Service() {
                         }
                     }
 
-                    override fun onMapImportError(e: MapImporter.MapParseException) {
+                    override fun onMapImportError(e: MapImporter.MapParseException?) {
                         EventBus.getDefault().post(MapDownloadEvent(Status.IMPORT_ERROR))
 
                         /* Notify that the download finished with an error */
