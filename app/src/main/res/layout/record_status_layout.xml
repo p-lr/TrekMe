@@ -9,7 +9,7 @@
     tools:paddingRight="8dp">
 
 
-    <com.peterlaurence.trekadvisor.menu.record.components.widgets.HeartBeatIndicator
+    <com.peterlaurence.trekme.ui.record.components.widgets.HeartBeatIndicator
         android:id="@+id/heartBeatIndicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

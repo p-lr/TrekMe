@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/map_view_frgmt_layout">
 
-    <com.peterlaurence.trekadvisor.menu.mapview.components.IndicatorOverlay
+    <com.peterlaurence.trekme.ui.mapview.components.IndicatorOverlay
         android:id="@+id/indicator_overlay"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"

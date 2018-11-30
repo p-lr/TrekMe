@@ -4,7 +4,7 @@
     android:id="@+id/record_fragment_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.peterlaurence.trekadvisor.menu.record.RecordFragment">
+    tools:context="com.peterlaurence.trekme.ui.record.RecordFragment">
 
 
     <android.support.constraint.Guideline
@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintGuide_percent="0.5" />
 
-    <com.peterlaurence.trekadvisor.menu.record.components.ActionsView
+    <com.peterlaurence.trekme.ui.record.components.ActionsView
         android:id="@+id/actionsView"
         android:layout_width="0dp"
         android:layout_height="150dp"
@@ -26,7 +26,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.peterlaurence.trekadvisor.menu.record.components.StatusView
+    <com.peterlaurence.trekme.ui.record.components.StatusView
         android:id="@+id/statusView"
         android:layout_width="0dp"
         android:layout_height="150dp"
@@ -38,7 +38,7 @@
         app:layout_constraintStart_toEndOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.peterlaurence.trekadvisor.menu.record.components.RecordListView
+    <com.peterlaurence.trekme.ui.record.components.RecordListView
         android:id="@+id/recordListView"
         android:layout_width="0dp"
         android:layout_height="0dp"

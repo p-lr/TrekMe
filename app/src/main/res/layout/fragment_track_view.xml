@@ -27,7 +27,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.peterlaurence.trekadvisor.menu.trackview.components.TrackDistanceView
+        <com.peterlaurence.trekme.ui.trackview.components.TrackDistanceView
             android:id="@+id/trackDistanceView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/trackStatsTitle" />
 
-        <com.peterlaurence.trekadvisor.menu.trackview.components.TrackElevationStackView
+        <com.peterlaurence.trekme.ui.trackview.components.TrackElevationStackView
             android:id="@+id/trackElevationStackView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -44,7 +44,7 @@
             app:layout_constraintStart_toEndOf="@+id/trackDistanceView"
             app:layout_constraintTop_toBottomOf="@+id/trackStatsTitle" />
 
-        <com.peterlaurence.trekadvisor.menu.trackview.components.TrackDurationView
+        <com.peterlaurence.trekme.ui.trackview.components.TrackDurationView
             android:id="@+id/trackDurationView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

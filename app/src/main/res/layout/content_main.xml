@@ -7,5 +7,5 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.peterlaurence.trekadvisor.MainActivity"
-    tools:showIn="@layout/app_bar_main"></LinearLayout>
+    tools:context="com.peterlaurence.trekme.MainActivity"
+    tools:showIn="@layout/app_bar_main" />

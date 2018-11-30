@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".menu.mapimport.MapImportFragment">
+    tools:context=".ui.mapimport.MapImportFragment">
 
     <Button
         android:id="@+id/import_next_button"
