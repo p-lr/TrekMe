@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.core.track
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.AsyncTask
+import android.util.Log
 import com.peterlaurence.trekme.core.TrekAdvisorContext.recordingsDir
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
@@ -31,6 +32,7 @@ import java.util.*
  * @author peterLaurence on 03/03/17 -- converted to Kotlin on 16/09/18
  */
 object TrackImporter {
+    const val TAG = "TrackImporter"
     /**
      * Get the list of [File] which extension is in the list of supported extension for track
      * file. Files are searched into the
@@ -52,13 +54,21 @@ object TrackImporter {
     fun getRecordingsToGpxMap(): kotlin.collections.Map<File, Gpx> {
         if (recordingsToGpx.isEmpty()) {
             recordings?.forEach {
-                val gpx = GPXParser.parse(FileInputStream(it))
-                recordingsToGpx[it] = gpx
+                try {
+                    val gpx = GPXParser.parse(FileInputStream(it))
+                    recordingsToGpx[it] = gpx
+                } catch (e: Exception) {
+                    Log.e(TAG, "The file ${it.name} was parsed with an error")
+                }
             }
         } else {
             recordings?.filter { !recordingsToGpx.keys.contains(it) }?.forEach {
-                val gpx = GPXParser.parse(FileInputStream(it))
-                recordingsToGpx[it] = gpx
+                try {
+                    val gpx = GPXParser.parse(FileInputStream(it))
+                    recordingsToGpx[it] = gpx
+                } catch (e: Exception) {
+                    Log.e(TAG, "The file ${it.name} was parsed with an error")
+                }
             }
             recordingsToGpx.keys.filter { !(recordings?.contains(it) ?: false) }.forEach {
                 recordingsToGpx.remove(it)
