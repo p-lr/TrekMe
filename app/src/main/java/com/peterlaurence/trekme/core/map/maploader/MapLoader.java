@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.peterlaurence.trekme.core.TrekAdvisorContext;
+import com.peterlaurence.trekme.core.TrekMeContext;
 import com.peterlaurence.trekme.core.events.MapArchiveListUpdateEvent;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.MapArchive;
@@ -88,7 +88,7 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapList = new ArrayList<>();
 
         /* Init the application context (create folders, etc) */
-        TrekAdvisorContext.INSTANCE.init();
+        TrekMeContext.INSTANCE.init();
     }
 
     public static MapLoader getInstance() {
@@ -121,7 +121,7 @@ public class MapLoader implements MapImporter.MapImportListener {
         mMapList = new ArrayList<>();
         if (dirs.length == 0) { // No directories specified? We take the default value.
             dirs = new File[1];
-            dirs[0] = TrekAdvisorContext.INSTANCE.getDefaultMapsDir();
+            dirs[0] = TrekMeContext.INSTANCE.getDefaultMapsDir();
         }
         generateMaps(dirs);
     }
@@ -171,7 +171,7 @@ public class MapLoader implements MapImporter.MapImportListener {
 
         if (dirs.length == 0) { // No directories specified? We take the default value.
             dirs = new File[1];
-            dirs[0] = TrekAdvisorContext.INSTANCE.getDefaultAppDir();
+            dirs[0] = TrekMeContext.INSTANCE.getDefaultAppDir();
         }
         MapArchiveSearchTask searchTask = new MapArchiveSearchTask(
                 () -> EventBus.getDefault().post(

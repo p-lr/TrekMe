@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.mapsource
 
 import android.util.Log
 import com.google.gson.GsonBuilder
-import com.peterlaurence.trekme.core.TrekAdvisorContext
+import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 import java.io.IOException
@@ -12,7 +12,7 @@ object MapSourceCredentials {
     val supportedMapSource = MapSource.values()
     val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
     private val TAG = javaClass.toString()
-    private val configFile = File(TrekAdvisorContext.credentialsDir, "ign.json")
+    private val configFile = File(TrekMeContext.credentialsDir, "ign.json")
 
     lateinit var credentials: Credentials
 

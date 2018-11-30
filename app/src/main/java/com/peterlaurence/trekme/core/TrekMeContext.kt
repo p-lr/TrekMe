@@ -18,7 +18,7 @@ import java.io.IOException
  *
  * @author peterLaurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
-object TrekAdvisorContext {
+object TrekMeContext {
     val appFolderName = "trekadvisor"
     val defaultAppDir = File(Environment.getExternalStorageDirectory(),
             appFolderName)
@@ -28,7 +28,7 @@ object TrekAdvisorContext {
     val defaultMapsDownloadDir = File(defaultMapsDir, "downloaded")
     val recordingsDir = File(defaultAppDir, "recordings")
     val credentialsDir = File(defaultAppDir, "credentials")
-    private val TAG = "TrekAdvisorContext"
+    private const val TAG = "TrekMeContext"
 
     /**
      * Check whether the app root dir is in read-only state or not. This is usually used only if the

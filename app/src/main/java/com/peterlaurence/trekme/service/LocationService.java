@@ -26,7 +26,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.peterlaurence.trekme.MainActivity;
 import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.TrekAdvisorContext;
+import com.peterlaurence.trekme.core.TrekMeContext;
 import com.peterlaurence.trekme.core.track.TrackStatCalculator;
 import com.peterlaurence.trekme.core.track.TrackStatistics;
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent;
@@ -166,10 +166,10 @@ public class LocationService extends Service {
 
             ArrayList<TrackPoint> wayPoints = new ArrayList<>();
 
-            Gpx gpx = new Gpx(trkList, wayPoints, TrekAdvisorContext.INSTANCE.getAppFolderName(), GPX_VERSION);
+            Gpx gpx = new Gpx(trkList, wayPoints, TrekMeContext.INSTANCE.getAppFolderName(), GPX_VERSION);
             try {
                 String gpxFileName = trackName + ".gpx";
-                File gpxFile = new File(TrekAdvisorContext.INSTANCE.getRecordingsDir(), gpxFileName);
+                File gpxFile = new File(TrekMeContext.INSTANCE.getRecordingsDir(), gpxFileName);
                 FileOutputStream fos = new FileOutputStream(gpxFile);
                 GPXWriter.INSTANCE.write(gpx, fos);
             } catch (Exception e) {

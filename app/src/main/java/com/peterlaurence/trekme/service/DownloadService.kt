@@ -16,7 +16,7 @@ import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.TrekAdvisorContext
+import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -218,7 +218,7 @@ class DownloadService : Service() {
         val date = Date()
         val dateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(date)
-        val destFolder = File(TrekAdvisorContext.defaultMapsDownloadDir, folderName)
+        val destFolder = File(TrekMeContext.defaultMapsDownloadDir, folderName)
 
         return if (destFolder.mkdir()) {
             destFolder

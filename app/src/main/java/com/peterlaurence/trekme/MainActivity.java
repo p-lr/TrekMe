@@ -32,7 +32,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.peterlaurence.trekme.core.TrekAdvisorContext;
+import com.peterlaurence.trekme.core.TrekMeContext;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
@@ -231,9 +231,9 @@ public class MainActivity extends AppCompatActivity
 
     private void warnIfBadStorageState() {
         /* If something is wrong.. */
-        if (!TrekAdvisorContext.INSTANCE.checkAppDir()) {
+        if (!TrekMeContext.INSTANCE.checkAppDir()) {
             String warningTitle = getString(R.string.warning_title);
-            if (TrekAdvisorContext.INSTANCE.isAppDirReadOnly()) {
+            if (TrekMeContext.INSTANCE.isAppDirReadOnly()) {
                 /* If its read only for sure, be explicit */
                 showWarningDialog(getString(R.string.storage_read_only), warningTitle);
             } else {

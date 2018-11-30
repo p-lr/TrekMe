@@ -4,7 +4,7 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.os.AsyncTask
 import android.util.Log
-import com.peterlaurence.trekme.core.TrekAdvisorContext.recordingsDir
+import com.peterlaurence.trekme.core.TrekMeContext.recordingsDir
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
@@ -36,7 +36,7 @@ object TrackImporter {
     /**
      * Get the list of [File] which extension is in the list of supported extension for track
      * file. Files are searched into the
-     * [com.peterlaurence.trekme.core.TrekAdvisorContext.recordingsDir].
+     * [com.peterlaurence.trekme.core.TrekMeContext.recordingsDir].
      */
     val recordings: Array<File>?
         get() = recordingsDir.listFiles(SUPPORTED_FILE_FILTER)

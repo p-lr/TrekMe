@@ -92,7 +92,7 @@
     <string name="wmts_settings_dialog">Configuration de la carte</string>
     <string name="max_zoom">Zoom maximum</string>
     <string name="total_transactions">Total transactions</string>
-    <string name="service_download_name">Service de téléchargement de TrekAdvisor</string>
+    <string name="service_download_name">Service de téléchargement de TrekMe</string>
     <string name="service_download_action">Téléchargement de carte</string>
     <string name="download">Télécharger</string>
     <string name="service_download_stop">Arrêter</string>
@@ -103,7 +103,7 @@
     <string name="mapcreate_settings">Paramètres</string>
     <string name="ign_help_msg">Des identifiants sont nécessaires pour créer une carte IGN.
     C\'est <b>gratuit</b>, mais il faut suivre scrupuleusement le tutoriel.</string>
-    <string name="ign_help_link">https://github.com/peterLaurence/TrekAdvisor/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN</string>
+    <string name="ign_help_link">https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN</string>
     <string name="image_preferences_category">Image de présentation</string>
     <string name="image_change_btn_txt">Changer l\'image</string>
     <string name="service_download_finished">Téléchargment de la carte terminé</string>
@@ -112,7 +112,7 @@
     <string name="no_maps_found_warning">Vous n\'avez pas encore créé de carte</string>
     <string name="go_to_map_creation_btn">Créer une carte</string>
     <string name="download_confirm">Téléchargement lancé. Voir le statut dans les notifications.</string>
-    <string name="confirm_exit">Appuyez à nouveau sur RETOUR pour quitter TrekAdvisor</string>
+    <string name="confirm_exit">Appuyez à nouveau sur RETOUR pour quitter TrekMe</string>
     <string name="ign_tutorial"><u>Suivre le tutoriel</u></string>
     <string name="ign_spain_source">IGN Espagne</string>
     <string name="track_file_name_change">Nom du fichier</string>
@@ -130,13 +130,13 @@
     <string name="waypoints_label">"Nombre de marqueurs : "</string>
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
     <string name="help">Aide</string>
-    <string name="help_url">https://github.com/peterLaurence/TrekAdvisor/blob/master/Readme.fr.md</string>
-    <string name="ign_warning_storage_rights">TrekAdvisor ne peut pas tenir compte de vos identifiants, parce que l\'application ne dispose pas l\'autorisation de <b>stockage</b>. Dans vos paramètres Android, pour Applications, veuillez vérifier les autorisations de TrekAdvisor.</string>
+    <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md</string>
+    <string name="ign_warning_storage_rights">TrekMe ne peut pas tenir compte de vos identifiants, parce que l\'application ne dispose pas l\'autorisation de <b>stockage</b>. Dans vos paramètres Android, pour Applications, veuillez vérifier les autorisations de TrekMe.</string>
     <string name="ign_warning_credentials">Au moins un de vos identifiants (nom, mot de passe, clé d\'API) est incorrect. Vous ne pourrez pas créer de carte IGN tant que vous n\'aurez pas entré d\'identifiants corrects.</string>
     <string name="ign_snackbar_continue">Continuer pour créer une carte ?</string>
     <string name="map_download_dialog_error">Une erreur est survenue durant l\'import de la carte, qui n\'apparaîtra probablement pas dans la liste des cartes, ou bien elle ne sera pas calibrée. Le plus simple est de télécharger à nouveau votre carte. Désolé :(</string>
-    <string name="bad_storage_status">Votre carte SD présente un problème. TrekAdvisor ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
-    <string name="storage_read_only">Votre carte SD est en lecture seule. TrekAdvisor ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
+    <string name="bad_storage_status">Votre carte SD présente un problème. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
+    <string name="storage_read_only">Votre carte SD est en lecture seule. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="warning_title">Attention</string>
-    <string name="service_download_bad_storage">TrekAdvisor ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekAdvisor dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
+    <string name="service_download_bad_storage">TrekMe ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekMe dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
 </resources>
