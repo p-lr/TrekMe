@@ -1,4 +1,6 @@
-![Logo](logo/app_name.png)
+<p align="center">
+<img src="logo/app_name.png"/>
+</p>
 
 1. [Introduction](#TOC-Overview)
 2. [Résumé des fonctionnalités](#TOC-Features-sum)
@@ -17,11 +19,11 @@
 
 ## <a name="TOC-Overview"></a>Introduction
 
-TrekAdvisor est une application Android permettant de se localiser sur une carte topographique, sans nécessiter de connexion internet (sauf chez soi au moment de créer la carte). La différence principale avec les autres applications de la même catégorie est la source des cartes. Il est possible de télécharger des cartes IGN, USGS, et OpenStreetMap (d'autres sources seront ajoutées). Mais il est aussi possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser avec TrekAdvisor.
+TrekMe est une application Android permettant de se localiser sur une carte topographique, sans nécessiter de connexion internet (sauf chez soi au moment de créer la carte). La différence principale avec les autres applications de la même catégorie est la source des cartes. Il est possible de télécharger des cartes IGN, USGS, et OpenStreetMap (d'autres sources seront ajoutées). Mais il est aussi possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser avec TrekMe.
 L'accent a été mis sur la faible consommation des ressources, pour maximiser l'autonomie lors d'une randonnée.
 
-Cartes IGN : contrairement à certaines applications qui font payer un abonnement, TrekAdvisor fonctionne différemment en vous guidant pour vous inscrire sur le site de l'IGN. Vous pouvez alors obtenir gratuitement vos propres identifiants, pour accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal.
-Il faut pour cela suivre scrupuleusement le [tutoriel](https://github.com/peterLaurence/TrekAdvisor/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN).
+Cartes IGN : contrairement à certaines applications qui font payer un abonnement, TrekMe fonctionne différemment en vous guidant pour vous inscrire sur le site de l'IGN. Vous pouvez alors obtenir gratuitement vos propres identifiants, pour accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal.
+Il faut pour cela suivre scrupuleusement le [tutoriel](https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN).
 
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
@@ -110,9 +112,9 @@ Pour créer une archive, depuis la liste des cartes, utilisez le bouton qui ress
 <img src="doc/tuto/bali.jpg" width="300">
 </p>
 
-Cela  crée un fichier zip (que l'on appelle archive) dans le dossier `trekadvisor/archives` de la mémoire interne de votre téléphone.
+Cela  crée un fichier zip (que l'on appelle archive) dans le dossier `trekme/archives` de la mémoire interne de votre téléphone.
 Pour utiliser une archive faite par quelqu'un d'autre que vous :
-1. Copiez le fichier zip dans le dossier `trekadvisor` ou n'importe quel de ses sous dossiers
+1. Copiez le fichier zip dans le dossier `trekme` ou n'importe quel de ses sous dossiers
 2. Menu > "Importer"
 3. Utilisez le bouton "Importer" de l'archive de votre choix
 
@@ -120,7 +122,7 @@ Cette fonctionnalité d'archive peut aussi être utilisée pour de la sauvegarde
 
 ### <a name="TOC-The-hard-way"></a>Création manuelle - le plus difficile
 
-C'est réservé aux experts. Cette méthode n'est en aucun cas nécessaire, mais grâce à cette fonctionnalité, on peut mettre n'importe quelle carte dans TrekAdvisor.
+C'est réservé aux experts. Cette méthode n'est en aucun cas nécessaire, mais grâce à cette fonctionnalité, on peut mettre n'importe quelle carte dans TrekMe.
 Il faut avoir des connaissances en géolocalisation, et il est recommandé d'être familiarisé avec les termes suivants :
 
 [Map projection](https://en.wikipedia.org/wiki/Map_projection),
@@ -217,7 +219,7 @@ Depuis le menu principal allez à "Enregistrement du parcours". Vous arrivez à 
 </p>
 
 Un enregistrement peut être démarré ou arrêté depuis le panneau "Commandes".
-Quand un enregistrement est en cours, un service spécifique est démarré, qui fonctionne même si TrekAdvisor est arrêté. Ce service s'arrête dès que vous l'arrêtez depuis le panneau "Commandes".
+Quand un enregistrement est en cours, un service spécifique est démarré, qui fonctionne même si TrekMe est arrêté. Ce service s'arrête dès que vous l'arrêtez depuis le panneau "Commandes".
 
 Un indicateur dans le panneau "Service de localisation" affiche le statut du service.
 

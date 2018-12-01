@@ -1,4 +1,6 @@
-![Logo](logo/app_name.png)
+<p align="center">
+<img src="logo/app_name.png"/>
+</p>
 
 1. [Overview](#TOC-Overview)
 2. [Features summary](#TOC-Features-sum)
@@ -16,14 +18,14 @@
 
 ## <a name="TOC-Overview"></a>Overview
 
-TrekAdvisor is an Android app to get live position on a map and other useful information, without
+TrekMe is an Android app to get live position on a map and other useful information, without
 ever needing an internet connection (except when creating a map).
 It differs from other map apps in the source of maps.
 Usually, a map is downloaded from the internet and is sometimes cached for an offline access (e.g google map).
-TrekAdvisor is designed for people willing to use particular maps like USGS in USA, or IGN in France for example.
+TrekMe is designed for people willing to use particular maps like USGS in USA, or IGN in France for example.
 You can also use your own map if you possess a paper map and you want to use it for your next trek.
-In this case, just scan it, then prepare and view it in TrekAdvisor (see below). It also works if you
-possess a huge single file (several Gb), as TrekAdvisor is designed to work with arbitrary map size.
+In this case, just scan it, then prepare and view it in TrekMe (see below). It also works if you
+possess a huge single file (several Gb), as TrekMe is designed to work with arbitrary map size.
 The only limitation is the memory available on your device (smartphone, tablet).
 
 ## <a name="TOC-Features-sum"></a>Features summary
@@ -118,7 +120,7 @@ From the map configuration view, you can:
 
 ### <a name="TOC-Import-from-archive"></a>Import from an archive
 
-In this mode you use an archive made from an existing TrekAdvisor map. The archive can be made by
+In this mode you use an archive made from an existing TrekMe map. The archive can be made by
 yourself or someone else.
 A map can be archived from the map list menu, using the save button at the bottom right corner:
 
@@ -126,9 +128,9 @@ A map can be archived from the map list menu, using the save button at the botto
 <img src="doc/tuto/bali.jpg" width="300">
 </p>
 
-This creates a zip file (which we call archive) inside the `trekadvisor/archives` folder of your device's SD card.
+This creates a zip file (which we call archive) inside the `trekme/archives` folder of your device's SD card.
 To use someone else's archive:
-1. Copy the zip file inside the `trekadvisor` folder or any of its subdirectories
+1. Copy the zip file inside the `trekme` folder or any of its subdirectories
 2. Menu > Import
 3. Click the import button of the archive of your choice
 
@@ -233,7 +235,7 @@ From the "GPX Record" option menu, you get the following interface:
 </p>
 
 The recording can be started or stopped from the control panel. When recording, the location service
-runs in the background. It continues even if TrekAdvisor is stopped or paused.
+runs in the background. It continues even if TrekMe is stopped or paused.
 An indicator reports back the status of the location service. A panel shows the list of recordings.
 
 From there, when selecting a track, there are two buttons at the bottom which enable you to :
