@@ -86,9 +86,6 @@ public class MapLoader implements MapImporter.MapImportListener {
                 registerTypeAdapterFactory(factory).create();
 
         mMapList = new ArrayList<>();
-
-        /* Init the application context (create folders, etc) */
-        TrekMeContext.INSTANCE.init();
     }
 
     public static MapLoader getInstance() {

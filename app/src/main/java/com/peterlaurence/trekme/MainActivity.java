@@ -41,6 +41,10 @@ import com.peterlaurence.trekme.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekme.core.mapsource.MapSource;
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle;
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials;
+import com.peterlaurence.trekme.model.MapProvider;
+import com.peterlaurence.trekme.service.event.LocationServiceStatus;
+import com.peterlaurence.trekme.service.event.MapDownloadEvent;
+import com.peterlaurence.trekme.service.event.Status;
 import com.peterlaurence.trekme.ui.MarkerProvider;
 import com.peterlaurence.trekme.ui.dialogs.MapDownloadDialog;
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent;
@@ -58,10 +62,6 @@ import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageF
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment;
 import com.peterlaurence.trekme.ui.record.RecordFragment;
 import com.peterlaurence.trekme.ui.trackview.TrackViewFragment;
-import com.peterlaurence.trekme.model.MapProvider;
-import com.peterlaurence.trekme.service.event.LocationServiceStatus;
-import com.peterlaurence.trekme.service.event.MapDownloadEvent;
-import com.peterlaurence.trekme.service.event.Status;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
@@ -112,16 +112,14 @@ public class MainActivity extends AppCompatActivity
                 add(MAP_DOWNLOAD_DIALOG_TAG);
                 add(TRACK_VIEW_FRAGMENT_TAG);
             }});
-    // Storage Permissions
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static final int REQUEST_LOCATION = 2;
-    private static final int REQUEST_MAP_CREATION = 3;
-    private static final String[] PERMISSIONS_STORAGE = {
+    /* Permission-group codes */
+    private static final int REQUEST_MINIMAL = 1;
+    private static final int REQUEST_MAP_CREATION = 2;
+
+    private static final String[] MINIMAL_PERMISSIONS = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-    };
-    private static final String[] PERMISSIONS_LOCATION = {
-            Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
     private static final String[] PERMISSIONS_MAP_CREATION = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -145,42 +143,26 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Checks whether the app has permission to access fine location.
+     * Checks whether the app has permission to access fine location and to write to device storage.
      * If the app does not have the requested permissions then the user will be prompted.
      */
-    public static void checkLocationPermissions(Activity activity) {
-        // Check whether we have location permission or not
+    public static void requestMinimalPermissions(Activity activity) {
         int permissionLocation = ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION);
+        int permissionWrite = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-        if (permissionLocation != PackageManager.PERMISSION_GRANTED) {
+        if (permissionLocation != PackageManager.PERMISSION_GRANTED || permissionWrite != PackageManager.PERMISSION_GRANTED) {
             // We don't have the required permissions, so we prompt the user
             ActivityCompat.requestPermissions(
                     activity,
-                    PERMISSIONS_LOCATION,
-                    REQUEST_LOCATION
+                    MINIMAL_PERMISSIONS,
+                    REQUEST_MINIMAL
             );
         }
     }
 
-    /**
-     * Checks whether the app has permission to write to device storage.
-     * If the app does not have the requested permissions then the user will be prompted.
-     */
-    public static boolean checkStoragePermission(Activity activity) {
-        // Check whether we have write permission or not
+    private static boolean checkStoragePermissions(Activity activity) {
         int permissionWrite = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permissionWrite != PackageManager.PERMISSION_GRANTED) {
-            // We don't have the required permissions, so we prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-            return false;
-        } else {
-            return true;
-        }
+        return (permissionWrite == PackageManager.PERMISSION_GRANTED);
     }
 
     public boolean checkMapCreationPermission() {
@@ -399,8 +381,11 @@ public class MainActivity extends AppCompatActivity
         /* Register eventbus */
         EventBus.getDefault().register(this);
 
-        checkLocationPermissions(this);
-        if (checkStoragePermission(this)) {
+        requestMinimalPermissions(this);
+
+        if (checkStoragePermissions(this)) {
+            TrekMeContext.INSTANCE.init();
+
             /* If the list fragment already exists, the activity might have been recreated because
              * of a configuration change. Then we don't want to show this fragment, as another
              * one is probably already visible.
@@ -808,24 +793,14 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
-            case REQUEST_EXTERNAL_STORAGE:
-                /* If request is cancelled, the result arrays are empty */
+            case REQUEST_MINIMAL:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     /* Restart the activity to ensure that every component can access local storage
                      * This may not be required in future versions of Android, since lifecycle around
                      * this callback has been improved after api lvl 23 (excluded) */
-                    Intent intent = getIntent();
                     finish();
-                    startActivity(intent);
-                } else {
-                    // permission denied
-                    // TODO : alert the user of the consequences
-                }
-                break;
-            case REQUEST_LOCATION:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startActivity(getIntent());
                 } else {
                     // permission denied
                     // TODO : alert the user of the consequences

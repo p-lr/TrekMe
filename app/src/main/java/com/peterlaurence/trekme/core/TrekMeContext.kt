@@ -19,9 +19,12 @@ import java.io.IOException
  * @author peterLaurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
 object TrekMeContext {
-    val appFolderName = "trekadvisor"
+    val appFolderName = "trekme"
+    private const val appFolderNameLegacy = "trekadvisor"
     val defaultAppDir = File(Environment.getExternalStorageDirectory(),
             appFolderName)
+    private val legacyAppDir = File(Environment.getExternalStorageDirectory(),
+            appFolderNameLegacy)
     /* For instance maps are searched anywhere under the app folder */
     val defaultMapsDir = defaultAppDir
 
@@ -61,6 +64,7 @@ object TrekMeContext {
     @Throws(SecurityException::class)
     private fun createAppDirs() {
         /* Root */
+        renameLegacyDir()
         createDir(defaultAppDir, "application")
 
         /* Credentials */
@@ -71,6 +75,23 @@ object TrekMeContext {
 
         /* Recordings */
         createDir(recordingsDir, "recordings")
+    }
+
+    /**
+     * If we detect the existence of the legacy dir, rename it.
+     */
+    private fun renameLegacyDir() {
+        try {
+            if (legacyAppDir.exists()) {
+                legacyAppDir.renameTo(defaultAppDir)
+                println("renommage fai!")
+            } else {
+                println("renommage fait")
+            }
+
+        } catch (e: Exception) {
+            println("renommage fail")
+        }
     }
 
     private fun createDir(dir: File, label: String) {
