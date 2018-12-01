@@ -81,16 +81,8 @@ object TrekMeContext {
      * If we detect the existence of the legacy dir, rename it.
      */
     private fun renameLegacyDir() {
-        try {
-            if (legacyAppDir.exists()) {
-                legacyAppDir.renameTo(defaultAppDir)
-                println("renommage fai!")
-            } else {
-                println("renommage fait")
-            }
-
-        } catch (e: Exception) {
-            println("renommage fail")
+        if (legacyAppDir.exists()) {
+            legacyAppDir.renameTo(defaultAppDir)
         }
     }
 
