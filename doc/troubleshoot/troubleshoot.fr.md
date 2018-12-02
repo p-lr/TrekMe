@@ -1,8 +1,24 @@
 # Que faire si...
 
+* [J'ai un message qui me dit qu'au moins un de mes identifiants est incorrect](#TOC-ign-incorrect)
 * [J'ai oublié mes identifiants IGN](#TOC-id-ign)
 * [Je n'arrive pas à me localiser sur ma carte](#TOC-loc)
 * [Je voudrais savoir où j'en suis dans mon quota de téléchargement IGN](#TOC-quota-IGN)
+
+## <a name="TOC-ign-incorrect"></a> J'ai un message qui me dit qu'au moins un de mes identifiants est incorrect
+
+Vous avez vérifié 10 fois, vous êtes certain de ne pas avoir fait d'erreur, mais vous avez toujours ce message :
+```
+Au moins un de vos identifiants (nom, mot de passe, clé d'API) est incorrect. Vous ne pouvez pas créer de carte IGN ...
+```
+Vérifiez alors les deux points suivants (qui sont des consignes du tutoriel d'incription IGN):
+* Le nom d'utilisateur ne doit contenir que des lettres minuscules sans accent (pas de chiffre, espace, majucules, caractères spéciaux).
+* Le mot de passe peut contenir des lettres minuscules et majuscules, des chiffres, mais pas d'accents, d'espaces, ni caractères spéciaux.
+
+Vous pouvez vérifier cela en allant dans votre espace sur le site de l'IGN professionnel (voir ci-desous, section [J'ai oublié mes identifiants IGN](#TOC-id-ign)).
+Si effectivement votre utilisateur ou votre mot de passe ne respectent pas les consignes, vous devez alors les modifier. Attention, un délai de 12h peut être nécessaire avant la prise en compte des nouveaux identifiants.
+
+Passé ce délai, vous pouvez alors renseigner vos nouveaux identifiants. Il est alors fortement recommandé de le faire en faisant des "copier-coller". Pour cela, vous devez vous connecter à votre espace IGN depuis votre téléphone. Faites-le avec TOUS les champs, y compris la clé d'API.
 
 ## <a name="TOC-id-ign"></a> J'ai oublié mes identiants IGN
 
@@ -20,7 +36,7 @@ Il peut y avoir plusieurs causes à ce problème. Il faut procéder par étapes 
   Les milieux clos comme les appartement, les maisons etc.. rendent parfois difficile la réception d'un signal GPS.
 
 2. L'application a-t-elle l'autorisation d'accéder à votre position ? 
-  Dans votre système Android, dans les paramètres, puis applications et pour TrekAdvisor, vérifiez que dans les autorisations tout est bien activé (notamment la position).
+  Dans votre système Android, dans les paramètres, puis applications et pour TrekMe, vérifiez que dans les autorisations tout est bien activé (notamment la position).
 
 3. La carte est-elle calibrée ?
   Dans la liste des cartes, sous le nom de votre carte, y a-t-il écrit "Calibrée" ? 
