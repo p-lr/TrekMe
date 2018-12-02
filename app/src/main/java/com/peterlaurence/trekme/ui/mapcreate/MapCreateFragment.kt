@@ -15,6 +15,8 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.ui.mapcreate.MapSourceAdapter.MapSourceSelectionListener
+import com.peterlaurence.trekme.util.isEnglish
+import com.peterlaurence.trekme.util.isFrench
 
 /**
  * This fragment is used for displaying available WMTS map sources.
@@ -38,11 +40,20 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         } else {
             throw RuntimeException(context.toString() + " must implement MapCreateFragmentInteractionListener")
         }
-    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        mapSourceSet = MapSourceCredentials.supportedMapSource
+        /**
+         * When the app is in english, put [MapSource.USGS] in front.
+         * When in french, put [MapSource.IGN] in front.
+         */
+        mapSourceSet = MapSourceCredentials.supportedMapSource.sortedBy {
+            if (isEnglish(context) && it == MapSource.USGS) {
+                -1
+            } else if (isFrench(context) && it == MapSource.IGN) {
+                -1
+            } else {
+                0
+            }
+        }.toTypedArray()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
