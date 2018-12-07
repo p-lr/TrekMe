@@ -41,7 +41,7 @@ import com.peterlaurence.trekme.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekme.core.mapsource.MapSource;
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle;
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials;
-import com.peterlaurence.trekme.model.MapProvider;
+import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.service.event.LocationServiceStatus;
 import com.peterlaurence.trekme.service.event.MapDownloadEvent;
 import com.peterlaurence.trekme.service.event.Status;

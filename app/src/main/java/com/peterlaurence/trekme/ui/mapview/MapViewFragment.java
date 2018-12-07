@@ -36,7 +36,7 @@ import com.peterlaurence.trekme.core.projection.ProjectionTask;
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment;
 import com.peterlaurence.trekme.ui.mapview.events.TrackChangedEvent;
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent;
-import com.peterlaurence.trekme.model.MapProvider;
+import com.peterlaurence.trekme.model.map.MapProvider;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;

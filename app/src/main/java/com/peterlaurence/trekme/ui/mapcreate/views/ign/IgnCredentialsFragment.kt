@@ -14,6 +14,7 @@ import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.providers.generic.GenericBitmapProviderAuth
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgn
+import com.peterlaurence.trekme.model.providers.checkIgnProvider
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
@@ -99,9 +100,7 @@ class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
     private fun CoroutineScope.afterIgnCredentialsSaved() = launch {
         /* Test IGN credentials */
         val isOk = async(Dispatchers.IO) {
-            val urlTileBuilder = UrlTileBuilderIgn(ignApiKey, IgnLayers.ScanExpressStandard.realName)
-            val genericProvider = GenericBitmapProviderAuth(urlTileBuilder, ignUser, ignPwd)
-            genericProvider.getBitmap(1, 1, 1) != null
+            checkIgnProvider(ignApiKey, ignUser, ignPwd)
         }
 
         /* Then, either invite to proceed to map creation, or show a warning */

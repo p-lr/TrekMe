@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.model
+package com.peterlaurence.trekme.model.map
 
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.ui.mapview.MapViewFragment
@@ -17,12 +17,12 @@ object MapProvider {
     fun getCurrentMap(): Map? = map
 
     fun setCurrentMap(map: Map) {
-        this.map = map
+        MapProvider.map = map
     }
 
     fun getSettingsMap() = settingsMap
 
     fun setSettingsMap(map: Map) {
-        this.settingsMap = map
+        settingsMap = map
     }
 }

@@ -23,7 +23,7 @@ import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.ui.MarkerProvider;
-import com.peterlaurence.trekme.model.MapProvider;
+import com.peterlaurence.trekme.model.map.MapProvider;
 
 import static android.view.View.GONE;
 

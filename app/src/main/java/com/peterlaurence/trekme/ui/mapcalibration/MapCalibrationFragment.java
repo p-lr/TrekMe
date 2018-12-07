@@ -15,7 +15,7 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekme.ui.tools.MarkerTouchMoveListener;
-import com.peterlaurence.trekme.model.MapProvider;
+import com.peterlaurence.trekme.model.map.MapProvider;
 import com.qozix.tileview.TileView;
 
 import java.lang.ref.WeakReference;

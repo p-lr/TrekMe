@@ -24,7 +24,7 @@ import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent;
 import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
-import com.peterlaurence.trekme.model.MapProvider;
+import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.util.ZipTask;
 
 import org.greenrobot.eventbus.EventBus;

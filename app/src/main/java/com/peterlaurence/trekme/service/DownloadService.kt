@@ -31,7 +31,7 @@ import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgnS
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderOSM
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderUSGS
 import com.peterlaurence.trekme.ui.mapcreate.views.WmtsLevelsDialog
-import com.peterlaurence.trekme.model.LayerForSource
+import com.peterlaurence.trekme.model.providers.LayerForSource
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent

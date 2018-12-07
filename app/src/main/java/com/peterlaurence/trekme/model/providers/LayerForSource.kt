@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.model
+package com.peterlaurence.trekme.model.providers
 
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers

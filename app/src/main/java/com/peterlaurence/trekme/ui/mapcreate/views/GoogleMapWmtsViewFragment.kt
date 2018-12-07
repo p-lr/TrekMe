@@ -23,7 +23,7 @@ import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.ui.mapview.TileViewExtended
-import com.peterlaurence.trekme.model.LayerForSource
+import com.peterlaurence.trekme.model.providers.LayerForSource
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.qozix.tileview.TileView
 import com.qozix.tileview.graphics.BitmapProvider
