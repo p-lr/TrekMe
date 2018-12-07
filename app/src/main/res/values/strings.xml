@@ -194,5 +194,6 @@
     <!-- TrackViewFragment -->
     <string name="distance">Distance</string>
     <string name="current_recording">Current recording</string>
+    <string name="ign_warning_help"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#TOC-ign-incorrect">Need help?</a></string>
 
 </resources>

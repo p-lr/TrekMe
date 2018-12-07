@@ -5,6 +5,8 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.preference.EditTextPreference
 import android.support.v7.preference.PreferenceFragmentCompat
+import android.text.method.LinkMovementMethod
+import android.widget.TextView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.IGNCredentials
 import com.peterlaurence.trekme.core.mapsource.MapSource
@@ -123,8 +125,12 @@ class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
         val builder: AlertDialog.Builder? = activity?.let {
             AlertDialog.Builder(it)
         }
-
-        builder?.setMessage(message)
+        builder?.let {
+            val view = layoutInflater.inflate(R.layout.ign_warning, null)
+            view.findViewById<TextView>(R.id.ign_warning_msg).text = message
+            view.findViewById<TextView>(R.id.ign_warning_help_link).movementMethod = LinkMovementMethod.getInstance()
+            it.setView(view)
+        }
 
         val dialog: AlertDialog? = builder?.create()
         dialog?.show()
