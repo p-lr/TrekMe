@@ -11,10 +11,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.IGNCredentials
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
-import com.peterlaurence.trekme.core.providers.generic.GenericBitmapProviderAuth
-import com.peterlaurence.trekme.core.providers.layers.IgnLayers
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgn
-import com.peterlaurence.trekme.model.providers.checkIgnProvider
+import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus

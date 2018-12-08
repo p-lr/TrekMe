@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.providers;
+package com.peterlaurence.trekme.model.providers.bitmap;
 
 import android.content.Context;
 import android.graphics.Bitmap;

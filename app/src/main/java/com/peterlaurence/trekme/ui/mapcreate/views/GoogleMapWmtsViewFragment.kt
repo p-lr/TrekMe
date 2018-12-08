@@ -12,24 +12,28 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
-import com.peterlaurence.trekme.core.providers.BitmapProviderIgn
-import com.peterlaurence.trekme.core.providers.BitmapProviderIgnSpain
-import com.peterlaurence.trekme.core.providers.BitmapProviderOSM
-import com.peterlaurence.trekme.core.providers.BitmapProviderUSGS
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
+import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderIgn
+import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderIgnSpain
+import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderOSM
+import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderUSGS
+import com.peterlaurence.trekme.model.providers.layers.LayerForSource
+import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.ui.mapview.TileViewExtended
-import com.peterlaurence.trekme.model.providers.LayerForSource
-import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.qozix.tileview.TileView
 import com.qozix.tileview.graphics.BitmapProvider
 import com.qozix.tileview.widgets.ZoomPanLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Displays Google Maps - compatible tile matrix sets.
@@ -59,7 +63,8 @@ import org.greenrobot.eventbus.Subscribe
  *
  * @author peterLaurence on 11/05/18
  */
-class GoogleMapWmtsViewFragment : Fragment() {
+class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
+    private lateinit var job: Job
     private lateinit var mapSource: MapSource
     private lateinit var rootView: ConstraintLayout
     private lateinit var tileView: TileViewExtended
@@ -91,6 +96,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
     }
 
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,12 +163,14 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     override fun onStart() {
+        job = Job()
         super.onStart()
         EventBus.getDefault().register(this)
     }
 
     override fun onStop() {
         EventBus.getDefault().unregister(this)
+        job.cancel()
         super.onStop()
     }
 

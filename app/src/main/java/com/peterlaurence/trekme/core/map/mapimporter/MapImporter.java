@@ -10,7 +10,7 @@ import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.MapArchive;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.core.providers.BitmapProviderLibVips;
+import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips;
 
 import java.io.File;
 import java.io.FilenameFilter;

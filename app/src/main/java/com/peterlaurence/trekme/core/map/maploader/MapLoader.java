@@ -21,8 +21,8 @@ import com.peterlaurence.trekme.core.map.maploader.tasks.MapUpdateTask;
 import com.peterlaurence.trekme.core.projection.MercatorProjection;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator;
-import com.peterlaurence.trekme.core.providers.BitmapProviderDummy;
-import com.peterlaurence.trekme.core.providers.BitmapProviderLibVips;
+import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderDummy;
+import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips;
 import com.qozix.tileview.graphics.BitmapProvider;
 
 import org.greenrobot.eventbus.EventBus;
