@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="select_map_menu_title">Choix de carte</string>
+    <string name="select_map_menu_title">Mes cartes</string>
     <string name="projection_preferences_title">Projection</string>
     <string name="points_number_preferences_title">Nombre de points de calibration</string>
     <string name="map_title">Nom</string>

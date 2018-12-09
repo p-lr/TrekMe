@@ -7,7 +7,7 @@
     <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
 
     <string name="map_menu_title">Map</string>
-    <string name="select_map_menu_title">Select map</string>
+    <string name="select_map_menu_title">My maps</string>
     <string name="create_menu_title">Create</string>
     <string name="record_menu_title">Gpx Record</string>
     <string name="track_stats_menu_title">Recording stats</string>

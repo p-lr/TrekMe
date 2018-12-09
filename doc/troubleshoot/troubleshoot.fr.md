@@ -4,6 +4,8 @@
 * [J'ai oublié mes identifiants IGN](#TOC-id-ign)
 * [Je n'arrive pas à me localiser sur ma carte](#TOC-loc)
 * [Je voudrais savoir où j'en suis dans mon quota de téléchargement IGN](#TOC-quota-IGN)
+* [Au moment de créer une carte, j'ai un message qui me dit de vérifier ma connexion internet](#TOC-no-internet)
+* [J'ai un autre problème](#TOC-other)
 
 ## <a name="TOC-ign-incorrect"></a> J'ai un message qui me dit qu'au moins un de mes identifiants est incorrect
 
@@ -54,6 +56,17 @@ Une page s'affiche alors avec tout en haut une période de début et de fin. Je 
 Défilez la page vers le bas, laissez cochées toutes les ressources, et cochez la case "Inclure toutes les ressources ayant été utilisées dans la période choisie".
 
 Enfin cliquez sur le bouton "CALCULER LES STATISTIQUES" tout en bas. Après quelques secondes, vous pouvez défiler la page vers le bas pour voir le résultat. Pour rappel, si vous avez souscrit à l'offre gratuite, vous avez droit à 2 000 000 de transactions par an.
+
+## <a name="TOC-no-internet"></a> Au moment de créer une carte, j'ai un message qui me dit de vérifier ma connexion internet ou mes identifiants IGN
+
+La philosophie de TrekMe est de télécharger une carte chez soi quand on a accès à internet, puis de faire la randonnée mais cette fois TrekMe ne nécessite aucune connexion.
+Si vous confirmez que votre connexion internet fonctionne normalement, alors vous avez un souci avec vos identifiants IGN. 
+Vous devez alors aller dans les "Paramètres", après avoir choisi IGN France dans le menu de création de carte. Vous pouvez alors vérifier vos identifiants et clé d'Api.
+
+## <a name="TOC-other"></a> J'ai un autre problème
+
+Votre problème ne figure pas parmi ceux cités plus haut. Dans ce cas, contactez-moi par mail à peter.laurence@protonmail.com <br>
+Je ferai tout mon possible pour vous aider.
 
 
 
