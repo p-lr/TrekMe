@@ -25,7 +25,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -256,8 +255,14 @@ public class MainActivity extends AppCompatActivity
             mNavigationView.setNavigationItemSelectedListener(this);
 
             View headerView = mNavigationView.getHeaderView(0);
-            TextView githubLink = headerView.findViewById(R.id.githubLink);
-            githubLink.setMovementMethod(LinkMovementMethod.getInstance());
+            TextView versionTextView = headerView.findViewById(R.id.app_version);
+
+            try {
+                String version = "v." + getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+                versionTextView.setText(version);
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
         }
 
         if (drawer != null) {

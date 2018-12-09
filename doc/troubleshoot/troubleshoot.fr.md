@@ -55,13 +55,13 @@ Sous votre clé d'Api, cliquez sur "Statistiques de consommation", puis sur "Gé
 Une page s'affiche alors avec tout en haut une période de début et de fin. Je vous recommande de changer l'année de la date de début en mettant l'année précédente, pour être sûr de couvrir toute l'année passée. 
 Défilez la page vers le bas, laissez cochées toutes les ressources, et cochez la case "Inclure toutes les ressources ayant été utilisées dans la période choisie".
 
-Enfin cliquez sur le bouton "CALCULER LES STATISTIQUES" tout en bas. Après quelques secondes, vous pouvez défiler la page vers le bas pour voir le résultat. Pour rappel, si vous avez souscrit à l'offre gratuite, vous avez droit à 2 000 000 de transactions par an.
+Enfin cliquez sur le bouton "CALCULER LES STATISTIQUES" tout en bas. Après quelques secondes, vous pouvez défiler la page vers le bas pour voir le résultat. Pour rappel, si vous avez souscrit à l'offre gratuite, vous avez droit à 2 000 000 de transactions par an (ce qui est énorme).
 
 ## <a name="TOC-no-internet"></a> Au moment de créer une carte, j'ai un message qui me dit de vérifier ma connexion internet ou mes identifiants IGN
 
 La philosophie de TrekMe est de télécharger une carte chez soi quand on a accès à internet, puis de faire la randonnée mais cette fois TrekMe ne nécessite aucune connexion.
 Si vous confirmez que votre connexion internet fonctionne normalement, alors vous avez un souci avec vos identifiants IGN. 
-Vous devez alors aller dans les "Paramètres", après avoir choisi IGN France dans le menu de création de carte. Vous pouvez alors vérifier vos identifiants et clé d'Api.
+Vous devez alors aller dans les "Paramètres", après avoir choisi IGN France dans le menu de création de carte (en bas de l'écran à gauche). Vous pouvez alors vérifier vos identifiants et clé d'Api.
 
 ## <a name="TOC-other"></a> J'ai un autre problème
 
