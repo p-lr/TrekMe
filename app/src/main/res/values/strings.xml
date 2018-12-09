@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">TrekMe</string>
     <string name="app_author" translatable="false"><a href="https://github.com/peterLaurence/TrekMe/blob/master/Readme.md">View on GitHub</a></string>
+    <string name="general_help_link"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#que-faire-si">Need help?</a></string>
 
     <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
     <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
@@ -45,7 +46,6 @@
     <string name="download_map_dialog_title">Map download</string>
     <string name="download_map_dialog_msg">Downloading %s…</string>
     <string name="menu_sample_map">Download sample map</string>
-    <string name="default_map_url" translatable="false">https://www.dropbox.com/s/cef6i12vskg92ci/world-map.zip?dl=1</string>
 
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>
@@ -190,6 +190,8 @@
     <string name="map_size">Map size</string>
     <string name="download">Download</string>
     <string name="download_confirm">Download started. See the status in your notifications.</string>
+    <string name="mapcreate_warning_ign">Please check your internet connection or your credentials.</string>
+    <string name="mapcreate_warning_others">Please check your internet connection.</string>
 
     <!-- TrackViewFragment -->
     <string name="distance">Distance</string>

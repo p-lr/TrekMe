@@ -1,17 +1,22 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
-import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
+import android.text.method.LinkMovementMethod
 import android.view.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
+import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
+import com.peterlaurence.trekme.core.providers.bitmap.checkIgnSpainProvider
+import com.peterlaurence.trekme.core.providers.bitmap.checkOSMProvider
+import com.peterlaurence.trekme.core.providers.bitmap.checkUSGSProvider
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderIgn
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderIgnSpain
@@ -28,9 +33,8 @@ import com.peterlaurence.trekme.ui.mapview.TileViewExtended
 import com.qozix.tileview.TileView
 import com.qozix.tileview.graphics.BitmapProvider
 import com.qozix.tileview.widgets.ZoomPanLayout
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.android.synthetic.main.fragment_wmts_view.*
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import kotlin.coroutines.CoroutineContext
@@ -69,7 +73,6 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private lateinit var rootView: ConstraintLayout
     private lateinit var tileView: TileViewExtended
     private lateinit var areaLayer: AreaLayer
-    private lateinit var saveFab: FloatingActionButton
 
     private lateinit var area: Area
 
@@ -108,15 +111,18 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        rootView = inflater.inflate(R.layout.fragment_ign_view, container, false) as ConstraintLayout
-
-        /* Configure the floating action button */
-        saveFab = rootView.findViewById(R.id.fab_save)
-        saveFab.setOnClickListener { validateArea() }
-
-        createTileView()
+        rootView = inflater.inflate(R.layout.fragment_wmts_view, container, false) as ConstraintLayout
 
         return rootView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        fabSave.setOnClickListener { validateArea() }
+        fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
+
+        createTileView()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -148,7 +154,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
                     areaLayer.detach()
                 }
                 addAreaLayer()
-                saveFab.visibility = View.VISIBLE
+                fabSave.visibility = View.VISIBLE
             }
             R.id.map_layer_menu_id -> {
                 val event = LayerSelectEvent(arrayListOf())
@@ -162,8 +168,12 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onStart() {
+    override fun onAttach(context: Context?) {
         job = Job()
+        super.onAttach(context)
+    }
+
+    override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
     }
@@ -198,9 +208,54 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     }
 
     private fun createTileView() {
+        checkTileAccessibility()
         val layerRealName = LayerForSource.resolveLayerName(mapSource)
         val bitmapProvider = createBitmapProvider(layerRealName)
         addTileView(bitmapProvider)
+    }
+
+    /**
+     * Simple check whether we are able to download tiles or not.
+     * If not, display a warning.
+     */
+    private fun CoroutineScope.checkTileAccessibility(): Job = launch {
+        async(Dispatchers.IO) {
+            return@async when (mapSource) {
+                MapSource.IGN -> {
+                    try {
+                        val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
+                        checkIgnProvider(ignCredentials.api!!, ignCredentials.user!!, ignCredentials.pwd!!)
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                MapSource.IGN_SPAIN -> checkIgnSpainProvider()
+                MapSource.USGS -> checkUSGSProvider()
+                MapSource.OPEN_STREET_MAP -> checkOSMProvider()
+            }
+        }.await().also {
+            if (!it) {
+                showWarningMessage()
+            } else {
+                hideWarningMessage()
+            }
+        }
+    }
+
+    private fun showWarningMessage() {
+        fragmentWmtWarning.visibility = View.VISIBLE
+        fragmentWmtWarningLink.visibility = View.VISIBLE
+
+        if (mapSource == MapSource.IGN) {
+            fragmentWmtWarning.text = getText(R.string.mapcreate_warning_ign)
+        } else {
+            fragmentWmtWarning.text = getText(R.string.mapcreate_warning_others)
+        }
+    }
+
+    private fun hideWarningMessage() {
+        fragmentWmtWarning.visibility = View.GONE
+        fragmentWmtWarningLink.visibility = View.GONE
     }
 
     private fun addTileView(bitmapProvider: BitmapProvider?) {

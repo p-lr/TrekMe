@@ -56,8 +56,6 @@ public class MapListFragment extends Fragment implements
 
     private OnMapListFragmentInteractionListener mListener;
 
-    private String mDefaultMapUrl;
-
     /* Used for map saving */
     private Notification.Builder builder;
     private NotificationManager notifyMgr;
@@ -82,8 +80,6 @@ public class MapListFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-
-        mDefaultMapUrl = getString(R.string.default_map_url);
     }
 
     @Override
