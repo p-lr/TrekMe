@@ -28,6 +28,7 @@ import com.peterlaurence.trekme.ui.dialogs.SelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
+import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
 import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.ui.mapview.TileViewExtended
 import com.qozix.tileview.TileView
@@ -121,6 +122,14 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
         fabSave.setOnClickListener { validateArea() }
         fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
+
+        /**
+         * If there is something wrong with IGN credentials, a special button helps to go directly
+         * to the credentials editing fragment.
+         */
+        fragmentWmtsNagivateToIgnCredentials.setOnClickListener {
+            EventBus.getDefault().post(MapSourceSettingsEvent(MapSource.IGN))
+        }
 
         createTileView()
     }
@@ -244,6 +253,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     private fun showWarningMessage() {
         fragmentWmtWarning.visibility = View.VISIBLE
+        fragmentWmtsNagivateToIgnCredentials.visibility = View.VISIBLE
         fragmentWmtWarningLink.visibility = View.VISIBLE
 
         if (mapSource == MapSource.IGN) {
@@ -255,6 +265,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     private fun hideWarningMessage() {
         fragmentWmtWarning.visibility = View.GONE
+        fragmentWmtsNagivateToIgnCredentials.visibility = View.GONE
         fragmentWmtWarningLink.visibility = View.GONE
     }
 

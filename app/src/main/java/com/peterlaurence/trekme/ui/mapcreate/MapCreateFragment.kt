@@ -15,8 +15,11 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.ui.mapcreate.MapSourceAdapter.MapSourceSelectionListener
+import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
+import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
 import com.peterlaurence.trekme.util.isEnglish
 import com.peterlaurence.trekme.util.isFrench
+import org.greenrobot.eventbus.EventBus
 
 /**
  * This fragment is used for displaying available WMTS map sources.
@@ -31,15 +34,9 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     private lateinit var settingsButton: Button
 
     private lateinit var selectedMapSource: MapSource
-    private lateinit var fragmentListener: MapCreateFragmentInteractionListener
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is MapCreateFragmentInteractionListener) {
-            fragmentListener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement MapCreateFragmentInteractionListener")
-        }
 
         /**
          * When the app is in english, put [MapSource.USGS] in front.
@@ -64,10 +61,10 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         super.onViewCreated(view, savedInstanceState)
 
         nextButton = view.findViewById(R.id.next_button)
-        nextButton.setOnClickListener { fragmentListener.onMapSourceSelected(selectedMapSource) }
+        nextButton.setOnClickListener { EventBus.getDefault().post(MapSourceSelectedEvent(selectedMapSource)) }
 
         settingsButton = view.findViewById(R.id.mapcreate_settings_button)
-        settingsButton.setOnClickListener { fragmentListener.onMapSourceSettings(selectedMapSource) }
+        settingsButton.setOnClickListener { EventBus.getDefault().post(MapSourceSettingsEvent(selectedMapSource)) }
 
         val viewManager = LinearLayoutManager(context)
         viewAdapter = MapSourceAdapter(mapSourceSet, this, context?.getColor(R.color.colorAccent)
@@ -108,16 +105,5 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     override fun onMapSourceSelected(m: MapSource) {
         selectedMapSource = m
         setButtonsAvailability(m)
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     */
-    interface MapCreateFragmentInteractionListener {
-        fun onMapSourceSelected(mapSource: MapSource)
-        fun onMapSourceSettings(mapSource: MapSource)
     }
 }

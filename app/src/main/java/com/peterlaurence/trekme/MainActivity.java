@@ -51,6 +51,7 @@ import com.peterlaurence.trekme.ui.events.RequestImportMapEvent;
 import com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekme.ui.mapcreate.MapCreateFragment;
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent;
+import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent;
 import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment;
 import com.peterlaurence.trekme.ui.mapcreate.views.ign.IgnCredentialsFragment;
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment;
@@ -65,7 +66,6 @@ import com.peterlaurence.trekme.ui.trackview.TrackViewFragment;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
 import org.greenrobot.eventbus.Subscribe;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,8 +79,7 @@ public class MainActivity extends AppCompatActivity
         MapSettingsFragment.MapCalibrationRequestListener,
         MarkerManageFragment.MarkerManageFragmentInteractionListener,
         MarkerProvider,
-        MapViewFragment.RequestManageMarkerListener,
-        MapCreateFragment.MapCreateFragmentInteractionListener {
+        MapViewFragment.RequestManageMarkerListener {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
     private static final String MAP_LIST_FRAGMENT_TAG = "mapListFragment";
@@ -837,12 +836,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Subscribe
-    public void onMapSourceSelectedEvent(MapSourceSelectedEvent event) {
-        onMapSourceSelected(event.getMapSource());
-    }
-
-    @Override
-    public void onMapSourceSelected(@NotNull MapSource mapSource) {
+    public void onMapSourceSelected(MapSourceSelectedEvent event) {
+        MapSource mapSource = event.getMapSource();
         switch (mapSource) {
             case IGN:
                 /* Check whether credentials are already set or not */
@@ -860,17 +855,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Subscribe
-    public void onLocationServiceStatus(LocationServiceStatus event) {
-        supportInvalidateOptionsMenu();
-    }
-
-    private void setTrackStatsMenuVisibility(boolean visibility) {
-        Menu menu = mNavigationView.getMenu();
-        menu.findItem(R.id.nav_track_stats).setVisible(visibility);
-    }
-
-    @Override
-    public void onMapSourceSettings(@NotNull MapSource mapSource) {
+    public void onMapSourceSettings(MapSourceSettingsEvent event) {
+        MapSource mapSource = event.getMapSource();
         switch (mapSource) {
             case IGN:
                 showIgnCredentialsFragment();
@@ -881,6 +867,16 @@ public class MainActivity extends AppCompatActivity
             default:
                 /* Unknown map source */
         }
+    }
+
+    @Subscribe
+    public void onLocationServiceStatus(LocationServiceStatus event) {
+        supportInvalidateOptionsMenu();
+    }
+
+    private void setTrackStatsMenuVisibility(boolean visibility) {
+        Menu menu = mNavigationView.getMenu();
+        menu.findItem(R.id.nav_track_stats).setVisible(visibility);
     }
 
     @Subscribe
