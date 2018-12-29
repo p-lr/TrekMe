@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.map.maploader.tasks;
 
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import com.google.gson.Gson;

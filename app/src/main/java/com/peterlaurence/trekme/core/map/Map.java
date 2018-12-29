@@ -7,7 +7,7 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import com.peterlaurence.trekme.core.map.gson.MapGson;

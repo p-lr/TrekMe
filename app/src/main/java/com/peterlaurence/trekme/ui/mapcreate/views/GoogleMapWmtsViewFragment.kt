@@ -3,10 +3,10 @@ package com.peterlaurence.trekme.ui.mapcreate.views
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
-import android.support.design.widget.Snackbar
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.snackbar.Snackbar
+import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AppCompatActivity
 import android.text.method.LinkMovementMethod
 import android.view.*
 import com.peterlaurence.trekme.R
@@ -177,7 +177,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         job = Job()
         super.onAttach(context)
     }
@@ -361,9 +361,11 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private fun validateArea() {
         if (this::area.isInitialized) {
             val fm = activity?.supportFragmentManager
-            mapSource.let {
-                val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(area, MapSourceBundle(it))
-                wmtsLevelsDialog.show(fm, "fragment")
+            if (fm != null) {
+                mapSource.let {
+                    val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(area, MapSourceBundle(it))
+                    wmtsLevelsDialog.show(fm, "fragment")
+                }
             }
         }
     }

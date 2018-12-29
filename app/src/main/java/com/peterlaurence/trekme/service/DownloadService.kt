@@ -12,8 +12,8 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.support.v4.app.NotificationCompat
-import android.support.v4.app.NotificationManagerCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext

@@ -3,13 +3,15 @@ package com.peterlaurence.trekme.ui.mapimport;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.snackbar.Snackbar;
+
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -133,7 +135,7 @@ public class MapImportFragment extends Fragment {
     }
 
     /**
-     * When this fragment is created for the first time, we wait the {@link android.support.v4.widget.DrawerLayout}
+     * When this fragment is created for the first time, we wait the {@link DrawerLayout}
      * to close before generating the map list (to avoid a stutter). <br>
      */
     @Subscribe(threadMode = ThreadMode.MAIN)

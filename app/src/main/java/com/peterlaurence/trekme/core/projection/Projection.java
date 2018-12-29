@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.projection;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Interface which defines a projection.

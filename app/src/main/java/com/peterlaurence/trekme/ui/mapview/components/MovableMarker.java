@@ -7,6 +7,8 @@ import android.graphics.drawable.Drawable;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 
+import androidx.appcompat.widget.AppCompatImageView;
+
 /**
  * This {@link android.widget.ImageView} has two states :
  * <ul>
@@ -18,7 +20,7 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson;
  *
  * @author peterLaurence on 08/04/17.
  */
-public class MovableMarker extends android.support.v7.widget.AppCompatImageView {
+public class MovableMarker extends AppCompatImageView {
     private AnimatedVectorDrawable mRounded;
     private Drawable mStatic;
     private AnimatedVectorDrawable mStaticToDynamic;
@@ -41,7 +43,6 @@ public class MovableMarker extends android.support.v7.widget.AppCompatImageView 
      * {@link AnimatedVectorDrawable}.
      * The {@code mStatic} drawable is the end state of the {@code mDynamicToStatic}
      * {@link AnimatedVectorDrawable}. <br>
-     *
      */
     public MovableMarker(Context context, boolean staticForm, MarkerGson.Marker marker) {
         super(context);

@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.ui.mapview.components;
 import android.content.Context;
 import android.graphics.drawable.Animatable2;
 import android.graphics.drawable.AnimatedVectorDrawable;
-import android.support.v7.widget.AppCompatImageView;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import com.peterlaurence.trekme.R;
 

@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.ui.record.components
 
-import android.support.constraint.ConstraintLayout
-import android.support.v7.widget.RecyclerView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,7 +49,7 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
         return recordingDataList.size
     }
 
-    class RecordingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class RecordingViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
         var layout: ConstraintLayout = itemView.findViewById(R.id.record_item_layout)
         var recordingName: TextView = itemView.findViewById(R.id.recording_name_id)
         var statView: ConstraintLayout = itemView.findViewById(R.id.stats_view_holder)

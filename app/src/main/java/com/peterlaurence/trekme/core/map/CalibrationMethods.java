@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.map;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 

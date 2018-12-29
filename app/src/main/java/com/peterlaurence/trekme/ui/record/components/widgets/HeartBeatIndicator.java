@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.ui.record.components.widgets;
 import android.content.Context;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.VectorDrawable;
-import android.support.v7.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 
 import com.peterlaurence.trekme.R;

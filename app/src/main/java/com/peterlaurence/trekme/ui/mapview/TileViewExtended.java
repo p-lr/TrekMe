@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.ui.mapview;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.view.MotionEvent;
 
 import com.peterlaurence.trekme.core.map.gson.RouteGson;

@@ -4,8 +4,8 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Parcelable
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import androidx.appcompat.app.AlertDialog
 import com.peterlaurence.trekme.R
 import kotlinx.android.parcel.Parcelize
 import org.greenrobot.eventbus.EventBus

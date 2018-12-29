@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.mapview.components.tracksmanage.TracksManageFragment">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/emptyRoutePanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,7 +14,7 @@
         android:layout_marginEnd="18dp"
         android:visibility="visible">
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_empty_track"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -33,6 +33,6 @@
             app:layout_constraintStart_toStartOf="parent" />
 
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
