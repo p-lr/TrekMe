@@ -132,7 +132,10 @@ public class MainActivity extends AppCompatActivity
     private NavigationView mNavigationView;
 
     static {
-        /* Setup default eventbus to use an index */
+        /* Setup default eventbus to use an index instead of reflection, which is recommended for
+         * Android for best performance.
+         * See http://greenrobot.org/eventbus/documentation/subscriber-index
+         */
         try {
             EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
         } catch (EventBusException e) {
