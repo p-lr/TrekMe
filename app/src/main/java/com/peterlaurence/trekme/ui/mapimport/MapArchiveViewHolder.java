@@ -2,11 +2,8 @@ package com.peterlaurence.trekme.ui.mapimport;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewStub;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -23,32 +20,34 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
+
 /**
  * @author peterLaurence on 22/12/17.
  */
 public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
     int mArchiveId;
-    CardView cardView;
+    CardView layout;
     TextView mapArchiveName;
-    Button importButton;
 
     /* The indeterminate unzip progressBar and its stub */
-    ViewStub stubProgressBarUnzip;
-    ProgressBar progressBarIndUnzip;
+    private ViewStub stubProgressBarUnzip;
+    private ProgressBar progressBarIndUnzip;
 
     /* Those view below could also be loaded later using ViewStub */
-    ProgressBar progressBarHorizontal;
-    ImageView iconMapExtracted;
-    ImageView iconMapExtractionError;
-    TextView extractionLabel;
-    ProgressBar progressBarIndMapCreation;
-    ImageView iconMapCreated;
-    TextView mapCreationLabel;
+    private ProgressBar progressBarHorizontal;
+    private ImageView iconMapExtracted;
+    private ImageView iconMapExtractionError;
+    private TextView extractionLabel;
+    private ProgressBar progressBarIndMapCreation;
+    private ImageView iconMapCreated;
+    private TextView mapCreationLabel;
 
 
     public MapArchiveViewHolder(View itemView) {
         super(itemView);
-        cardView = itemView.findViewById(R.id.cv_map_archive);
+        layout = itemView.findViewById(R.id.cv_map_archive);
         mapArchiveName = itemView.findViewById(R.id.map_archive_name);
         progressBarHorizontal = itemView.findViewById(R.id.unzip_progressbar);
         progressBarHorizontal.setMax(100);
@@ -60,13 +59,12 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
         progressBarIndMapCreation.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
         iconMapCreated = itemView.findViewById(R.id.mapcreation_done);
         mapCreationLabel = itemView.findViewById(R.id.mapcreation_txtview);
-        importButton = itemView.findViewById(R.id.unzip_archive_btn);
     }
 
     /**
      * Init views based on view stubs.
      */
-    void init() {
+    private void init() {
         if (progressBarIndUnzip == null) {
             progressBarIndUnzip = (ProgressBar) stubProgressBarUnzip.inflate();
             progressBarIndUnzip.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
@@ -128,7 +126,6 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
         progressBarIndMapCreation.setVisibility(View.GONE);
         iconMapCreated.setVisibility(View.VISIBLE);
         mapCreationLabel.setVisibility(View.VISIBLE);
-        importButton.setVisibility(View.VISIBLE);
     }
 
     void subscribe() {

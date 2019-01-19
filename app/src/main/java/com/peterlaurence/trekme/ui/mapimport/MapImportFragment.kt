@@ -9,28 +9,40 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.MapArchiveListUpdateEvent
+import com.peterlaurence.trekme.core.map.MapArchive
+import com.peterlaurence.trekme.core.map.maparchiver.MapArchiver
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent
+import com.peterlaurence.trekme.ui.mapimport.events.UnzipErrorEvent
+import com.peterlaurence.trekme.ui.mapimport.events.UnzipFinishedEvent
+import com.peterlaurence.trekme.ui.mapimport.events.UnzipProgressionEvent
+import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
+import com.peterlaurence.trekme.util.UnzipTask
+import kotlinx.android.synthetic.main.fragment_map_import.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import kotlinx.android.synthetic.main.fragment_map_import.*
+import java.io.File
 
 /**
  * A [Fragment] subclass that displays the list of maps archives available for import.
  *
- * @author peterLaurence on 08/06/16.
+ * @author peterLaurence on 08/06/16 -- Converted to Kotlin on 18/01/19
  */
 class MapImportFragment : Fragment() {
     private var mapArchiveAdapter: MapArchiveAdapter? = null
     private var listener: OnMapArchiveFragmentInteractionListener? = null
     private var mView: View? = null
     private var createAfterScreenRotation = false
+    private var fabEnabled = false
+    private lateinit var mapArchiveList: List<MapArchive>
+    private var mapArchiveSelected: MapArchive? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -76,6 +88,19 @@ class MapImportFragment : Fragment() {
         mapArchiveAdapter = MapArchiveAdapter()
         recyclerViewMapImport.adapter = mapArchiveAdapter
 
+        recyclerViewMapImport.addOnItemTouchListener(RecyclerItemClickListener(this.context,
+                recyclerViewMapImport, object : RecyclerItemClickListener.OnItemClickListener {
+
+            override fun onItemClick(view: View, position: Int) {
+                fab.activate()
+                singleSelect(position)
+            }
+
+            override fun onItemLongClick(view: View?, position: Int) {
+                // no-op
+            }
+        }))
+
         /* Item decoration : divider */
         val dividerItemDecoration = DividerItemDecoration(view.context,
                 DividerItemDecoration.VERTICAL)
@@ -102,6 +127,42 @@ class MapImportFragment : Fragment() {
 
     private fun generateMapList() {
         MapLoader.getInstance().generateMapArchives()
+    }
+
+    private fun singleSelect(position: Int) {
+        /* Update adapter to reflect selection */
+        mapArchiveAdapter?.setSelectedPosition(position)
+        mapArchiveAdapter?.notifyDataSetChanged()
+
+        /* Keep a reference on the selected archive */
+        mapArchiveSelected = mapArchiveList[position]
+    }
+
+    private fun FloatingActionButton.activate() {
+        if (!fabEnabled) {
+            fab.isEnabled = true
+            fab.drawable.mutate().setTint(resources.getColor(R.color.colorWhite, null))
+            fab.background.setTint(resources.getColor(R.color.colorAccent, null))
+
+            fab.setOnClickListener {
+                mapArchiveSelected?.let { mapArchive ->
+                    MapArchiver.archiveMap(mapArchive, object : UnzipTask.UnzipProgressionListener {
+
+                        override fun onProgress(p: Int) {
+                            EventBus.getDefault().post(UnzipProgressionEvent(mapArchive.id, p))
+                        }
+
+                        override fun onUnzipFinished(outputDirectory: File) {
+                            EventBus.getDefault().post(UnzipFinishedEvent(mapArchive.id, outputDirectory))
+                        }
+
+                        override fun onUnzipError() {
+                            EventBus.getDefault().post(UnzipErrorEvent(mapArchive.id))
+                        }
+                    })
+                }
+            }
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -133,6 +194,7 @@ class MapImportFragment : Fragment() {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMapArchiveListUpdate(event: MapArchiveListUpdateEvent) {
+        mapArchiveList = MapLoader.getInstance().mapArchives
         hideProgressBar()
     }
 
