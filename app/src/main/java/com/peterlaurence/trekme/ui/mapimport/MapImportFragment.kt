@@ -151,7 +151,7 @@ class MapImportFragment : Fragment(), CoroutineScope {
 
             fab.setOnClickListener {
                 mapArchiveSelected?.let { mapArchive ->
-                    MapArchiver.archiveMap(mapArchive, object : UnzipTask.UnzipProgressionListener {
+                    MapArchiver.unarchive(mapArchive, object : UnzipTask.UnzipProgressionListener {
 
                         override fun onProgress(p: Int) {
                             EventBus.getDefault().post(UnzipProgressionEvent(mapArchive.id, p))

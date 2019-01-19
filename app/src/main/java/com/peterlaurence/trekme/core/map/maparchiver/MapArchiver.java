@@ -20,7 +20,7 @@ public class MapArchiver {
      * {@link File} passed as parameter. The subfolder is named from a formatting of the current
      * date.
      */
-    public static void archiveMap(final MapArchive mapArchive, UnzipTask.UnzipProgressionListener listener) {
+    public static void unarchive(final MapArchive mapArchive, UnzipTask.UnzipProgressionListener listener) {
         /* Generate an output directory with the date */
         Date date = new Date();
         DateFormat dateFormat = new SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH);

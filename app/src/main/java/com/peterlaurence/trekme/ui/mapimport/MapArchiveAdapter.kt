@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.ui.mapimport
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.ViewStub
@@ -35,7 +36,7 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
         holder.subscribe()
 
         if (selectedPosition == position) {
-            holder.layout.setBackgroundColor(-0x77de690d)
+            holder.layout.setBackgroundColor(Color.parseColor("#442196f3"))
         } else {
             if (position % 2 == 0) {
                 holder.layout.setBackgroundColor(-0x121213)

@@ -1,142 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/cv_map_archive"
+    android:id="@+id/map_archive_contraint_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    card_view:cardCornerRadius="0dp"
-    card_view:cardElevation="0dp">
+    android:animateLayoutChanges="true"
+    tools:layout_editor_absoluteX="0dp"
+    tools:layout_editor_absoluteY="0dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/map_archive_contraint_layout"
+    <TextView
+        android:id="@+id/map_archive_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:paddingBottom="8dp"
+        android:textColor="@color/colorPrimaryTextBlack"
+        android:textSize="18sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="A map archive" />
+
+    <ProgressBar
+        android:id="@+id/unzip_progressbar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:animateLayoutChanges="true"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp">
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+        app:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+        app:layout_constraintVertical_bias="0.0" />
 
-        <TextView
-            android:id="@+id/map_archive_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="@color/colorPrimaryTextBlack"
-            android:textSize="18sp"
-            card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintLeft_toLeftOf="parent"
-            card_view:layout_constraintTop_toTopOf="parent"
-            tools:text="A map archive" />
+    <ViewStub
+        android:id="@+id/stub_extraction_ind_progressbar"
+        android:layout_width="18sp"
+        android:layout_height="18sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:inflatedId="@+id/extraction_ind_progressbar"
+        android:layout="@layout/component_progressbar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+        app:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="21dp"
+        tools:layout_height="8dp"
+        tools:layout_width="8dp" />
 
-        <ProgressBar
-            android:id="@+id/unzip_progressbar"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="24dp"
-            android:visibility="gone"
-            card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
-            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
-            card_view:layout_constraintVertical_bias="0.0" />
+    <ImageView
+        android:id="@+id/extraction_done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/ic_done_grey_18sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+        app:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_height="8dp"
+        tools:layout_width="8dp" />
 
-        <ViewStub
-            android:id="@+id/stub_extraction_ind_progressbar"
-            android:layout_width="18sp"
-            android:layout_height="18sp"
-            android:layout_gravity="center"
-            android:layout_marginTop="24dp"
-            android:inflatedId="@+id/extraction_ind_progressbar"
-            android:layout="@layout/component_progressbar"
-            card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
-            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
-            card_view:layout_constraintVertical_bias="0.0"
-            tools:layout_editor_absoluteX="21dp"
-            tools:layout_height="8dp"
-            tools:layout_width="8dp" />
+    <ImageView
+        android:id="@+id/extraction_error"
+        android:layout_width="18sp"
+        android:layout_height="18sp"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/ic_error_outline_black_24dp"
+        android:tint="@color/colorError"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+        app:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="5dp"
+        tools:layout_editor_absoluteY="86dp" />
 
-        <ImageView
-            android:id="@+id/extraction_done"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="24dp"
-            android:src="@drawable/ic_done_grey_18sp"
-            android:visibility="gone"
-            card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
-            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
-            card_view:layout_constraintVertical_bias="0.0"
-            tools:layout_height="8dp"
-            tools:layout_width="8dp" />
+    <TextView
+        android:id="@+id/extraction_txtview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/extraction_lbl"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/map_archive_name"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="5dp" />
 
-        <ImageView
-            android:id="@+id/extraction_error"
-            android:layout_width="18sp"
-            android:layout_height="18sp"
-            android:layout_marginTop="24dp"
-            android:src="@drawable/ic_error_outline_black_24dp"
-            android:tint="@color/colorError"
-            android:visibility="gone"
-            card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
-            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
-            card_view:layout_constraintVertical_bias="0.0"
-            tools:layout_editor_absoluteX="5dp"
-            tools:layout_editor_absoluteY="86dp" />
+    <ProgressBar
+        android:id="@+id/mapcreation_ind_progressbar"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="18sp"
+        android:layout_height="18sp"
+        android:layout_gravity="center"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+        app:layout_constraintTop_toBottomOf="@+id/extraction_done" />
 
-        <TextView
-            android:id="@+id/extraction_txtview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
-            android:layout_marginTop="24dp"
-            android:text="@string/extraction_lbl"
-            android:visibility="gone"
-            card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintLeft_toLeftOf="parent"
-            card_view:layout_constraintTop_toBottomOf="@+id/map_archive_name"
-            card_view:layout_constraintVertical_bias="0.0"
-            tools:layout_editor_absoluteX="5dp" />
+    <ImageView
+        android:id="@+id/mapcreation_done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_done_grey_18sp"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
+        app:layout_constraintTop_toBottomOf="@+id/extraction_done"
+        tools:layout_editor_absoluteX="5dp"
+        tools:layout_editor_absoluteY="86dp" />
 
-        <ProgressBar
-            android:id="@+id/mapcreation_ind_progressbar"
-            style="@style/Widget.AppCompat.ProgressBar"
-            android:layout_width="18sp"
-            android:layout_height="18sp"
-            android:layout_gravity="center"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="0dp"
-            android:visibility="gone"
-            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
-            card_view:layout_constraintTop_toBottomOf="@+id/extraction_done" />
-
-        <ImageView
-            android:id="@+id/mapcreation_done"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_done_grey_18sp"
-            android:visibility="gone"
-            card_view:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
-            card_view:layout_constraintTop_toBottomOf="@+id/extraction_done"
-            tools:layout_editor_absoluteX="5dp"
-            tools:layout_editor_absoluteY="86dp" />
-
-        <TextView
-            android:id="@+id/mapcreation_txtview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/map_created_lbl"
-            android:visibility="gone"
-            card_view:layout_constraintLeft_toLeftOf="parent"
-            card_view:layout_constraintTop_toBottomOf="@+id/extraction_done"
-            tools:layout_height="16dp"
-            tools:layout_width="36dp" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+    <TextView
+        android:id="@+id/mapcreation_txtview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:text="@string/map_created_lbl"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/extraction_done"
+        tools:layout_height="16dp"
+        tools:layout_width="36dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

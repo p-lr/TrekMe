@@ -2,8 +2,6 @@ package com.peterlaurence.trekme.core.map.mapimporter;
 
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.util.Log;
 
 import com.peterlaurence.trekme.core.map.Map;
@@ -19,6 +17,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * The {@link MapImporter} exposes a single method : {@link #importFromFile(File, MapProvider, MapImportListener)}.
@@ -188,7 +189,7 @@ public class MapImporter {
          */
         @Override
         protected void onPostExecute(Map map) {
-            if (mException != null || map == null) {
+            if (mException != null) {
                 MapLoader.getInstance().onMapImportError(mException);
             } else {
                 MapLoader.getInstance().onMapImported(map, mMapParser.getStatus());
@@ -197,7 +198,7 @@ public class MapImporter {
             if (mMapParseListenerWeakReference != null) {
                 MapImportListener mapImportListener = mMapParseListenerWeakReference.get();
                 if (mapImportListener != null) {
-                    if (mException != null || map == null) {
+                    if (mException != null) {
                         mapImportListener.onMapImportError(mException);
                     } else {
                         mapImportListener.onMapImported(map, mMapParser.getStatus());

@@ -20,7 +20,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
@@ -28,7 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
     int mArchiveId;
-    CardView layout;
+    ConstraintLayout layout;
     TextView mapArchiveName;
 
     /* The indeterminate unzip progressBar and its stub */
@@ -47,7 +47,7 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
 
     public MapArchiveViewHolder(View itemView) {
         super(itemView);
-        layout = itemView.findViewById(R.id.cv_map_archive);
+        layout = itemView.findViewById(R.id.map_archive_contraint_layout);
         mapArchiveName = itemView.findViewById(R.id.map_archive_name);
         progressBarHorizontal = itemView.findViewById(R.id.unzip_progressbar);
         progressBarHorizontal.setMax(100);
@@ -102,6 +102,7 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
 
                         @Override
                         public void onMapImportError(MapImporter.MapParseException e) {
+                            System.out.println("map parse execption");
                             // TODO : show an error message that something went wrong and send an event.
                         }
                     });
