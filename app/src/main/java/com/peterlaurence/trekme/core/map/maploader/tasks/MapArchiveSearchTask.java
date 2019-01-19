@@ -8,6 +8,7 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,21 +22,19 @@ public class MapArchiveSearchTask extends Thread {
     private static final int MAX_RECURSION_DEPTH = 6;
     private static final List<String> mArchiveFormatList;
     private MapLoader.MapArchiveListUpdateListener mMapArchiveUpdateListener;
-    private List<MapArchive> mMapArchiveList;
     private List<File> mMapArchiveFilesFoundList;
-    private File[] mFoldersToLookInto;
+    private List<File> mFoldersToLookInto;
 
     static {
         mArchiveFormatList = new ArrayList<>();
         mArchiveFormatList.add("zip");
     }
 
-    public MapArchiveSearchTask(MapLoader.MapArchiveListUpdateListener listener,
-                                List<MapArchive> mapArchiveList, File... dirsToLookInto) {
+    public MapArchiveSearchTask(List<File> dirsToLookInto,
+                                MapLoader.MapArchiveListUpdateListener callback) {
         super();
-        mMapArchiveList = mapArchiveList;
         mMapArchiveFilesFoundList = new ArrayList<>();
-        mMapArchiveUpdateListener = listener;
+        mMapArchiveUpdateListener = callback;
         mFoldersToLookInto = dirsToLookInto;
     }
 
@@ -47,15 +46,16 @@ public class MapArchiveSearchTask extends Thread {
             findArchives(dir, 1);
         }
 
+        List<MapArchive> mapArchiveList = new ArrayList<>();
         for (File archiveFile : mMapArchiveFilesFoundList) {
-            mMapArchiveList.add(new MapArchive(archiveFile));
+            mapArchiveList.add(new MapArchive(archiveFile));
         }
 
         /* Run on UI thread */
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
             if (mMapArchiveUpdateListener != null) {
-                mMapArchiveUpdateListener.onMapArchiveListUpdate();
+                mMapArchiveUpdateListener.onMapArchiveListUpdate(Collections.unmodifiableList(mapArchiveList));
             }
         });
     }

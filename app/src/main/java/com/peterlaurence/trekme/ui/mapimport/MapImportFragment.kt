@@ -5,18 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.events.MapArchiveListUpdateEvent
+import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.maparchiver.MapArchiver
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
+import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent
 import com.peterlaurence.trekme.ui.mapimport.events.UnzipErrorEvent
@@ -25,24 +23,31 @@ import com.peterlaurence.trekme.ui.mapimport.events.UnzipProgressionEvent
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.util.UnzipTask
 import kotlinx.android.synthetic.main.fragment_map_import.*
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.File
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * A [Fragment] subclass that displays the list of maps archives available for import.
  *
  * @author peterLaurence on 08/06/16 -- Converted to Kotlin on 18/01/19
  */
-class MapImportFragment : Fragment() {
+class MapImportFragment : Fragment(), CoroutineScope {
     private var mapArchiveAdapter: MapArchiveAdapter? = null
     private var listener: OnMapArchiveFragmentInteractionListener? = null
     private var mView: View? = null
-    private var createAfterScreenRotation = false
     private var fabEnabled = false
     private lateinit var mapArchiveList: List<MapArchive>
     private var mapArchiveSelected: MapArchive? = null
+    private lateinit var job: Job
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -70,15 +75,6 @@ class MapImportFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         mView = view
-
-        /* When this fragment is created from a screen rotating, don't wait the drawer layout to
-         * close to re-generate the map list.
-         */
-        if (savedInstanceState != null) {
-            if (savedInstanceState.getBoolean(CREATE_FROM_SCREEN_ROTATE)) {
-                createAfterScreenRotation = true
-            }
-        }
 
         recyclerViewMapImport.setHasFixedSize(false)
 
@@ -113,20 +109,29 @@ class MapImportFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        job = Job()
         EventBus.getDefault().register(this)
-        if (mapArchiveAdapter != null) {
-            mapArchiveAdapter!!.subscribeEventBus()
-        }
-        /* Request archive generation after EventBus registration to be 100% sure to get notified
-         * if this fragment is still registered when the job finishes.
-         */
-        if (createAfterScreenRotation) {
-            generateMapList()
-        }
+
+        updateMapArchiveList()
     }
 
-    private fun generateMapList() {
-        MapLoader.getInstance().generateMapArchives()
+    private fun CoroutineScope.updateMapArchiveList() = launch {
+        val archives = async {
+            getMapArchiveList()
+        }
+
+        mapArchiveList = archives.await()
+        mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
+        hideProgressBar()
+    }
+
+    private suspend fun getMapArchiveList(): List<MapArchive> = suspendCoroutine { cont ->
+        val dirs = listOf(TrekMeContext.defaultAppDir)
+        val task = MapArchiveSearchTask(dirs) {
+            cont.resume(it)
+        }
+
+        task.start()
     }
 
     private fun singleSelect(position: Int) {
@@ -179,30 +184,10 @@ class MapImportFragment : Fragment() {
         snackbar.show()
     }
 
-    /**
-     * When this fragment is created for the first time, we wait the [DrawerLayout]
-     * to close before generating the map list (to avoid a stutter). <br></br>
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onDrawerClosed(event: DrawerClosedEvent) {
-        generateMapList()
-    }
-
-    /**
-     * A [MapArchiveListUpdateEvent] is emitted from the [MapLoader] when the list of
-     * map archives is updated.
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMapArchiveListUpdate(event: MapArchiveListUpdateEvent) {
-        mapArchiveList = MapLoader.getInstance().mapArchives
-        hideProgressBar()
-    }
-
     override fun onStop() {
+        job.cancel()
+
         EventBus.getDefault().unregister(this)
-        if (mapArchiveAdapter != null) {
-            mapArchiveAdapter!!.unSubscribeEventBus()
-        }
         super.onStop()
 
         if (recyclerViewMapImport == null) return

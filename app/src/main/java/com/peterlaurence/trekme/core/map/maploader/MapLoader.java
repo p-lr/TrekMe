@@ -1,19 +1,16 @@
 package com.peterlaurence.trekme.core.map.maploader;
 
-import androidx.annotation.Nullable;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.peterlaurence.trekme.core.TrekMeContext;
-import com.peterlaurence.trekme.core.events.MapArchiveListUpdateEvent;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.MapArchive;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.gson.RouteGson;
 import com.peterlaurence.trekme.core.map.gson.RuntimeTypeAdapterFactory;
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter;
-import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask;
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapDeleteTask;
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapMarkerImportTask;
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapRouteImportTask;
@@ -25,14 +22,14 @@ import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderDummy;
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips;
 import com.qozix.tileview.graphics.BitmapProvider;
 
-import org.greenrobot.eventbus.EventBus;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import androidx.annotation.Nullable;
 
 /**
  * Singleton object that provides utility methods to read json files that describe each map.
@@ -70,7 +67,6 @@ public class MapLoader implements MapImporter.MapImportListener {
     private MapListUpdateListener mMapListUpdateListener;
     private MapMarkerUpdateListener mMapMarkerUpdateListener;
     private MapRouteUpdateListener mMapRouteUpdateListener;
-    private List<MapArchive> mMapArchiveList;
 
     /**
      * Create once for all the {@link Gson} object, that is used to serialize/deserialize json content.
@@ -154,32 +150,6 @@ public class MapLoader implements MapImporter.MapImportListener {
         MapRouteImportTask mapRouteImportTask = new MapRouteImportTask(mMapRouteUpdateListener,
                 map, mGson);
         mapRouteImportTask.execute();
-    }
-
-    /**
-     * Update the internal list of {@link MapArchive} : {@code mMapArchiveList}. Once done, all of
-     * the registered {@link MapArchiveListUpdateListener} are called.
-     *
-     * @param dirs The directories in which to search for map archives. If not specified, a default
-     *             value is taken.
-     */
-    public void generateMapArchives(File... dirs) {
-        mMapArchiveList = new ArrayList<>();
-
-        if (dirs.length == 0) { // No directories specified? We take the default value.
-            dirs = new File[1];
-            dirs[0] = TrekMeContext.INSTANCE.getDefaultAppDir();
-        }
-        MapArchiveSearchTask searchTask = new MapArchiveSearchTask(
-                () -> EventBus.getDefault().post(
-                        new MapArchiveListUpdateEvent()),
-                mMapArchiveList, dirs);
-
-        searchTask.start();
-    }
-
-    public List<MapArchive> getMapArchives() {
-        return mMapArchiveList;
     }
 
     /**
@@ -426,7 +396,7 @@ public class MapLoader implements MapImporter.MapImportListener {
     }
 
     public interface MapArchiveListUpdateListener {
-        void onMapArchiveListUpdate();
+        void onMapArchiveListUpdate(List<MapArchive> mapArchiveList);
     }
 
     public interface MapDeletedListener {

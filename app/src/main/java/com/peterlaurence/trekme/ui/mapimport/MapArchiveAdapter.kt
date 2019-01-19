@@ -5,12 +5,7 @@ import android.view.ViewGroup
 import android.view.ViewStub
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.events.MapArchiveListUpdateEvent
 import com.peterlaurence.trekme.core.map.MapArchive
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 /**
  * Adapter to provide access to the data set (here a list of [MapArchive]). <br></br>
@@ -24,14 +19,6 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
 
     private var mMapArchiveList: List<MapArchive>? = null
     private var selectedPosition = -1
-
-    internal fun subscribeEventBus() {
-        EventBus.getDefault().register(this)
-    }
-
-    internal fun unSubscribeEventBus() {
-        EventBus.getDefault().unregister(this)
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MapArchiveViewHolder {
         val ctx = parent.context
@@ -62,12 +49,10 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
         return if (mMapArchiveList == null) 0 else mMapArchiveList!!.size
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMapArchiveListUpdate(event: MapArchiveListUpdateEvent) {
-        mMapArchiveList = MapLoader.getInstance().mapArchives
-        if (mMapArchiveList != null) {
-            notifyDataSetChanged()
-        }
+
+    fun setMapArchiveList(mapArchiveList: List<MapArchive>) {
+        mMapArchiveList = mapArchiveList
+        notifyDataSetChanged()
     }
 
     fun setSelectedPosition(pos: Int) {
