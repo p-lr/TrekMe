@@ -80,8 +80,11 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
 
     private void drawRoutes() {
         /* Display all routes */
-        DrawRoutesTask drawRoutesTask = new DrawRoutesTask(mMap, mMap.getRoutes(), mTileView);
-        drawRoutesTask.execute();
+        List<RouteGson.Route> routes = mMap.getRoutes();
+        if (routes != null) {
+            DrawRoutesTask drawRoutesTask = new DrawRoutesTask(mMap, mMap.getRoutes(), mTileView);
+            drawRoutesTask.execute();
+        }
     }
 
     private void setTileView(TileViewExtended tileView) {
@@ -104,7 +107,7 @@ class RouteLayer implements TracksManageFragment.TrackChangeListener, MapLoader.
          * done in a different thread than the ui-thread (where the user is able to add/remove and
          * also modify routes), we want to avoid {@link java.util.ConcurrentModificationException}
          * when iterating over the list of routes. So we create another list of
-         * {@link WeakReference< RouteGson.Route >}, while being aware that a {@link RouteGson.Route} can
+         * {@link WeakReference<RouteGson.Route>}, while being aware that a {@link RouteGson.Route} can
          * be deleted at any time.
          */
         DrawRoutesTask(Map map, List<RouteGson.Route> routeList, TileViewExtended tileView) {

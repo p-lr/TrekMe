@@ -6,11 +6,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,10 +28,10 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.core.projection.ProjectionTask;
+import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment;
 import com.peterlaurence.trekme.ui.mapview.events.TrackChangedEvent;
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent;
-import com.peterlaurence.trekme.model.map.MapProvider;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.widgets.ZoomPanLayout;
@@ -45,6 +40,13 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 
 /**
  * A {@link Fragment} subclass that implements required interfaces to be used with a
@@ -85,7 +87,7 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof RequestManageTracksListener
                 && context instanceof RequestManageMarkerListener) {
@@ -131,7 +133,7 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         /* Create layout from scratch if it does not exist, else don't re-create the TileView,
          * it handles configuration changes itself
@@ -146,7 +148,7 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         /* Get the speed, distance and orientation indicators from the main layout */
@@ -186,7 +188,7 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         /* Hide the app title */
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (actionBar != null) {
@@ -210,7 +212,7 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_marker_id:
                 mMarkerLayer.addNewMarker();
@@ -514,7 +516,7 @@ public class MapViewFragment extends Fragment implements
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putBoolean(WAS_DISPLAYING_ORIENTATION, mOrientationEventManager.isStarted());
