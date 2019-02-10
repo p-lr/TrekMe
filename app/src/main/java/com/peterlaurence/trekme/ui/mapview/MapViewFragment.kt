@@ -23,22 +23,18 @@ import com.google.android.gms.location.LocationServices
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.OrientationEventManager
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MapGson
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.ProjectionTask
 import com.peterlaurence.trekme.model.map.MapProvider
-import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.mapview.events.TrackChangedEvent
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.qozix.tileview.TileView
-import com.qozix.tileview.geom.CoordinateTranslater
 import com.qozix.tileview.widgets.ZoomPanLayout
 
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -56,31 +52,31 @@ import androidx.fragment.app.Fragment
  * @author peterLaurence
  */
 class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, FrameLayoutMapView.PositionTouchListener, FrameLayoutMapView.LockViewListener {
-    private var rootView: FrameLayoutMapView? = null
-    private var mTileView: TileViewExtended? = null
+    private lateinit var rootView: FrameLayoutMapView
+    private lateinit var mTileView: TileViewExtended
     private var mMap: Map? = null
-    private var mPositionMarker: View? = null
-    private var mLockView = false
-    private var mRequestManageTracksListener: RequestManageTracksListener? = null
-    private var mRequestManageMarkerListener: RequestManageMarkerListener? = null
-    private var mLocationRequest: LocationRequest? = null
-    private var mOrientationEventManager: OrientationEventManager? = null
-    private var mMarkerLayer: MarkerLayer? = null
-    private var mRouteLayer: RouteLayer? = null
-    private var mDistanceLayer: DistanceLayer? = null
-    private var mSpeedListener: SpeedListener? = null
-    private var mDistanceListener: DistanceLayer.DistanceListener? = null
-    private var mFusedLocationClient: FusedLocationProviderClient? = null
-    private var mLocationCallback: LocationCallback? = null
+    private lateinit var positionMarker: View
+    private var lockView = false
+    private var requestManageTracksListener: RequestManageTracksListener? = null
+    private var requestManageMarkerListener: RequestManageMarkerListener? = null
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var orientationEventManager: OrientationEventManager
+    private lateinit var markerLayer: MarkerLayer
+    private lateinit var routeLayer: RouteLayer
+    private lateinit var distanceLayer: DistanceLayer
+    private lateinit var speedListener: SpeedListener
+    private lateinit var distanceListener: DistanceLayer.DistanceListener
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
 
     val currentMarker: MarkerGson.Marker
-        get() = mMarkerLayer!!.currentMarker
+        get() = markerLayer.currentMarker
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is RequestManageTracksListener && context is RequestManageMarkerListener) {
-            mRequestManageTracksListener = context
-            mRequestManageMarkerListener = context
+            requestManageTracksListener = context
+            requestManageMarkerListener = context
         } else {
             throw RuntimeException("$context must implement RequestManageTracksListener, MapProvider and LocationProvider")
         }
@@ -88,13 +84,13 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
         /* The Google api client is re-created here as the onAttach method will always be called for
          * a retained fragment.
          */
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this.activity!!.applicationContext)
-        mLocationRequest = LocationRequest()
-        mLocationRequest!!.interval = 1000
-        mLocationRequest!!.fastestInterval = 1000
-        mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this.activity!!.applicationContext)
+        locationRequest = LocationRequest()
+        locationRequest.interval = 1000
+        locationRequest.fastestInterval = 1000
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
-        mLocationCallback = object : LocationCallback() {
+        locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 for (location in locationResult!!.locations) {
                     onLocationReceived(location)
@@ -109,11 +105,11 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
         setHasOptionsMenu(true)
 
         /* The location request specific to this fragment */
-        if (mLocationRequest == null) {
-            mLocationRequest = LocationRequest()
-            mLocationRequest!!.interval = 1000
-            mLocationRequest!!.fastestInterval = 1000
-            mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        if (!::locationRequest.isInitialized) {
+            locationRequest = LocationRequest()
+            locationRequest.interval = 1000
+            locationRequest.fastestInterval = 1000
+            locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }
 
@@ -122,10 +118,10 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
         /* Create layout from scratch if it does not exist, else don't re-create the TileView,
          * it handles configuration changes itself
          */
-        if (rootView == null) {
+        if (!::rootView.isInitialized) {
             rootView = FrameLayoutMapView(context)
-            rootView!!.setPositionTouchListener(this)
-            rootView!!.setLockViewListener(this)
+            rootView.setPositionTouchListener(this)
+            rootView.setLockViewListener(this)
         }
 
         return rootView
@@ -135,38 +131,38 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
         super.onViewCreated(view, savedInstanceState)
 
         /* Get the speed, distance and orientation indicators from the main layout */
-        mSpeedListener = rootView!!.speedIndicator
-        mDistanceListener = rootView!!.distanceIndicator
-        mPositionMarker = rootView!!.positionMarker
+        speedListener = rootView.speedIndicator
+        distanceListener = rootView.distanceIndicator
+        positionMarker = rootView.positionMarker
 
         /* Create the instance of the OrientationEventManager */
-        if (mOrientationEventManager == null) {
-            mOrientationEventManager = OrientationEventManager(activity)
+        if (!::orientationEventManager.isInitialized) {
+            orientationEventManager = OrientationEventManager(activity)
 
             /* Register the position marker as an OrientationListener */
-            mOrientationEventManager!!.setOrientationListener(mPositionMarker as OrientationEventManager.OrientationListener?)
+            orientationEventManager.setOrientationListener(positionMarker as OrientationEventManager.OrientationListener?)
             if (savedInstanceState != null) {
                 val shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION)
                 if (shouldDisplayOrientation) {
-                    mOrientationEventManager!!.start()
+                    orientationEventManager.start()
                 }
             }
         }
 
         /* Create the marker layer */
-        if (mMarkerLayer == null) {
-            mMarkerLayer = MarkerLayer(context)
+        if (!::markerLayer.isInitialized) {
+            markerLayer = MarkerLayer(context)
         }
-        mMarkerLayer!!.setRequestManageMarkerListener(mRequestManageMarkerListener)
+        markerLayer.setRequestManageMarkerListener(requestManageMarkerListener)
 
         /* Create the route layer */
-        if (mRouteLayer == null) {
-            mRouteLayer = RouteLayer()
+        if (!::routeLayer.isInitialized) {
+            routeLayer = RouteLayer()
         }
 
         /* Create the distance layer */
-        if (mDistanceLayer == null) {
-            mDistanceLayer = DistanceLayer(context, mDistanceListener)
+        if (!::distanceLayer.isInitialized) {
+            distanceLayer = DistanceLayer(context, distanceListener)
         }
     }
 
@@ -183,10 +179,10 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
 
         /* .. and restore some checkable state */
         val item = menu.findItem(R.id.distancemeter_id)
-        item.isChecked = mDistanceLayer!!.isVisible
+        item.isChecked = distanceLayer.isVisible
 
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
-        itemOrientation.isChecked = mOrientationEventManager!!.isStarted
+        itemOrientation.isChecked = orientationEventManager.isStarted
 
         super.onCreateOptionsMenu(menu, inflater)
     }
@@ -194,29 +190,29 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.add_marker_id -> {
-                mMarkerLayer!!.addNewMarker()
+                markerLayer.addNewMarker()
                 return true
             }
             R.id.manage_tracks_id -> {
-                mRequestManageTracksListener!!.onRequestManageTracks()
+                requestManageTracksListener?.onRequestManageTracks()
                 return true
             }
             R.id.speedometer_id -> {
-                mSpeedListener!!.toggleSpeedVisibility()
+                speedListener.toggleSpeedVisibility()
                 return true
             }
             R.id.distancemeter_id -> {
-                mDistanceListener!!.toggleDistanceVisibility()
+                distanceListener.toggleDistanceVisibility()
                 item.isChecked = !item.isChecked
                 if (item.isChecked) {
-                    mDistanceLayer!!.show()
+                    distanceLayer.show()
                 } else {
-                    mDistanceLayer!!.hide()
+                    distanceLayer.hide()
                 }
                 return true
             }
             R.id.orientation_enable_id -> {
-                item.isChecked = mOrientationEventManager!!.toggleOrientation()
+                item.isChecked = orientationEventManager.toggleOrientation()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -224,14 +220,14 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     }
 
     override fun onPositionTouch() {
-        if (mTileView != null) {
-            mTileView!!.scale = 1f
+        if (::mTileView.isInitialized) {
+            mTileView.scale = 1f
         }
         centerOnPosition()
     }
 
     override fun onLockView(lock: Boolean) {
-        mLockView = lock
+        lockView = lock
     }
 
     override fun onStart() {
@@ -253,12 +249,16 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
             return
         }
 
-        mFusedLocationClient!!.requestLocationUpdates(mLocationRequest,
-                mLocationCallback!!, null)
+        if (::fusedLocationClient.isInitialized) {
+            fusedLocationClient.requestLocationUpdates(locationRequest,
+                    locationCallback, null)
+        }
     }
 
     private fun stopLocationUpdates() {
-        mFusedLocationClient!!.removeLocationUpdates(mLocationCallback!!)
+        if (::fusedLocationClient.isInitialized) {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
     }
 
     override fun onPause() {
@@ -271,9 +271,9 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         if (hidden) {
-            mSpeedListener!!.hideSpeed()
-            mDistanceLayer!!.hide()
-            mOrientationEventManager!!.stop()
+            speedListener.hideSpeed()
+            distanceLayer.hide()
+            orientationEventManager.stop()
         } else {
             updateMapIfNecessary()
         }
@@ -281,14 +281,14 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
 
     @Subscribe
     fun onTrackVisibilityChangedEvent(event: TrackVisibilityChangedEvent) {
-        mRouteLayer!!.onTrackVisibilityChanged()
+        routeLayer.onTrackVisibilityChanged()
     }
 
     @Subscribe
     fun onTrackChangedEvent(event: TrackChangedEvent) {
-        mRouteLayer!!.onTrackChanged(event.map, event.routeList)
+        routeLayer.onTrackChanged(event.map, event.routeList)
         if (event.addedMarkers > 0) {
-            mMarkerLayer!!.onMapMarkerUpdate()
+            markerLayer.onMapMarkerUpdate()
         }
     }
 
@@ -303,10 +303,10 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
             if (mMap != null && mMap!!.equals(map)) {
                 val newBounds = map.mapBounds
 
-                if (mTileView != null) {
-                    val c = mTileView!!.coordinateTranslater
+                if (::mTileView.isInitialized) {
+                    val c = mTileView.coordinateTranslater
                     if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
-                        setTileViewBounds(mTileView!!, map)
+                        setTileViewBounds(mTileView, map)
                     }
                 }
             } else {
@@ -318,13 +318,13 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
 
     private fun updateLayers() {
         /* Update the marker layer */
-        mMarkerLayer!!.init(mMap, mTileView)
+        markerLayer.init(mMap, mTileView)
 
         /* Update the route layer */
-        mRouteLayer!!.init(mMap, mTileView)
+        routeLayer.init(mMap, mTileView)
 
         /* Update the distance layer */
-        mDistanceLayer!!.init(mMap, mTileView)
+        distanceLayer.init(mMap, mTileView)
     }
 
     override fun onStop() {
@@ -342,12 +342,9 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     override fun onDetach() {
         super.onDetach()
 
-        mRequestManageTracksListener = null
-        mRequestManageMarkerListener = null
-        mSpeedListener = null
-        mOrientationEventManager!!.stop()
-        mOrientationEventManager = null
-        mFusedLocationClient = null
+        requestManageTracksListener = null
+        requestManageMarkerListener = null
+        orientationEventManager.stop()
     }
 
     private fun onLocationReceived(location: Location?) {
@@ -355,7 +352,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
 
         if (location != null) {
             /* If there is no TileView, no need to go further */
-            if (mTileView == null) {
+            if (!::mTileView.isInitialized) {
                 return
             }
 
@@ -370,8 +367,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
             }
 
             /* If the user wants to see the speed */
-            if (mSpeedListener != null) {
-                mSpeedListener!!.onSpeed(location.speed, SpeedUnit.KM_H)
+            if (::speedListener.isInitialized) {
+                speedListener.onSpeed(location.speed, SpeedUnit.KM_H)
             }
         }
     }
@@ -381,7 +378,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     }
 
     fun currentMarkerEdited() {
-        mMarkerLayer!!.updateCurrentMarker()
+        markerLayer.updateCurrentMarker()
     }
 
     /**
@@ -392,26 +389,26 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
      * @param y the projected Y coordinate, or latitude if there is no [Projection]
      */
     private fun updatePosition(x: Double, y: Double) {
-        mTileView!!.moveMarker(mPositionMarker, x, y)
+        mTileView.moveMarker(positionMarker, x, y)
 
-        if (mLockView) {
+        if (lockView) {
             centerOnPosition()
         }
     }
 
     private fun setTileView(tileView: TileViewExtended) {
         mTileView = tileView
-        mTileView!!.id = R.id.tileview_id
-        mTileView!!.isSaveEnabled = true
-        rootView!!.addView(mTileView, 0)
-        mTileView!!.setSingleTapListener(rootView)
-        mTileView!!.setScrollListener(rootView)
+        mTileView.id = R.id.tileview_id
+        mTileView.isSaveEnabled = true
+        rootView.addView(mTileView, 0)
+        mTileView.setSingleTapListener(rootView)
+        mTileView.setScrollListener(rootView)
     }
 
     private fun removeCurrentTileView() {
         try {
-            mTileView!!.destroy()
-            rootView!!.removeView(mTileView)
+            mTileView.destroy()
+            rootView.removeView(mTileView)
         } catch (e: Exception) {
             // don't care
         }
@@ -462,13 +459,13 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
 
         /* The position + orientation reticule */
         try {
-            val parent = mPositionMarker!!.parent as ViewGroup
-            parent.removeView(mPositionMarker)
+            val parent = positionMarker.parent as ViewGroup
+            parent.removeView(positionMarker)
         } catch (e: Exception) {
             // don't care
         }
 
-        tileView.addMarker(mPositionMarker, 0.0, 0.0, -0.5f, -0.5f)
+        tileView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
 
         /* Remove the existing TileView, then add the new one */
         removeCurrentTileView()
@@ -476,15 +473,15 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     }
 
     private fun centerOnPosition() {
-        if (mTileView != null) {
-            mTileView!!.moveToMarker(mPositionMarker!!, true)
+        if (::mTileView.isInitialized) {
+            mTileView.moveToMarker(positionMarker, true)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, mOrientationEventManager!!.isStarted)
+        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationEventManager.isStarted)
     }
 
     private fun setTileViewBounds(tileView: TileView, map: Map) {
@@ -533,8 +530,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     }
 
     companion object {
-
-        val TAG = "MapViewFragment"
-        private val WAS_DISPLAYING_ORIENTATION = "wasDisplayingOrientation"
+        const val TAG = "MapViewFragment"
+        private const val WAS_DISPLAYING_ORIENTATION = "wasDisplayingOrientation"
     }
 }
