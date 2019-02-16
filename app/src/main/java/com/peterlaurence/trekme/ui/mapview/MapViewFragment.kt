@@ -38,20 +38,25 @@ import org.greenrobot.eventbus.Subscribe
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 
 /**
  * A [Fragment] subclass that implements required interfaces to be used with a
  * [GoogleApiClient].
  *
- *
  * Activities that contain this fragment must implement the
  * [RequestManageTracksListener] and [MapProvider] interfaces to handle
  * interaction events.
  *
- *
  * @author peterLaurence
  */
-class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, FrameLayoutMapView.PositionTouchListener, FrameLayoutMapView.LockViewListener {
+class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
+        FrameLayoutMapView.PositionTouchListener,
+        FrameLayoutMapView.LockViewListener,
+        CoroutineScope {
     private lateinit var rootView: FrameLayoutMapView
     private lateinit var mTileView: TileViewExtended
     private var mMap: Map? = null
@@ -68,6 +73,11 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     private lateinit var distanceListener: DistanceLayer.DistanceListener
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+
+    private lateinit var job: Job
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     val currentMarker: MarkerGson.Marker
         get() = markerLayer.currentMarker
@@ -232,6 +242,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
 
     override fun onStart() {
         super.onStart()
+        job = Job()
         EventBus.getDefault().register(this)
 
         updateMapIfNecessary()
@@ -328,6 +339,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     }
 
     override fun onStop() {
+        job.cancel()
         super.onStop()
         EventBus.getDefault().unregister(this)
     }
