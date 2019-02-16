@@ -167,7 +167,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
 
         /* Create the route layer */
         if (!::routeLayer.isInitialized) {
-            routeLayer = RouteLayer()
+            routeLayer = RouteLayer(this)
         }
 
         /* Create the distance layer */
@@ -332,7 +332,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         markerLayer.init(mMap, mTileView)
 
         /* Update the route layer */
-        routeLayer.init(mMap, mTileView)
+        routeLayer.init(mMap!!, mTileView)
 
         /* Update the distance layer */
         distanceLayer.init(mMap, mTileView)
