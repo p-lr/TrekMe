@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.ui.mapview
 
-import android.os.AsyncTask
 import android.util.Log
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
@@ -8,9 +7,9 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.mapview.components.PathView
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.qozix.tileview.TileView
-import com.qozix.tileview.geom.CoordinateTranslater
 import kotlinx.coroutines.CoroutineScope
-import java.lang.ref.WeakReference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * All [RouteGson.Route] are managed here. <br></br>
@@ -38,8 +37,7 @@ internal class RouteLayer(private val coroutineScope: CoroutineScope) :
     override fun onTrackChanged(map: Map, routeList: List<RouteGson.Route>) {
         Log.d(TAG, routeList.size.toString() + " new route received for map " + map.name)
 
-        val drawRoutesTask = DrawRoutesTask(map, routeList, mTileView)
-        drawRoutesTask.execute()
+        drawRoutes(map, routeList, mTileView)
     }
 
     /**
@@ -76,8 +74,7 @@ internal class RouteLayer(private val coroutineScope: CoroutineScope) :
         /* Display all routes */
         val routes = mMap.routes
         if (routes != null) {
-            val drawRoutesTask = DrawRoutesTask(mMap, mMap.routes!!, mTileView)
-            drawRoutesTask.execute()
+            drawRoutes(mMap, mMap.routes!!, mTileView)
         }
     }
 
@@ -87,41 +84,26 @@ internal class RouteLayer(private val coroutineScope: CoroutineScope) :
 
     /**
      * Each [RouteGson.Route] of a [Map] needs to provide data in a format that the
-     * [TileView] understands. <br></br>
-     * This is done in an AsyncTask, to ensure that this process does not hangs the UI thread.
+     * [TileView] understands.
+     * This is done off UI thread.
      */
-    private class DrawRoutesTask
-    /**
-     * During this task, data is generated from the markers of each route of a map. As this is
-     * done in a different thread than the ui-thread (where the user is able to add/remove and
-     * also modify routes), we want to avoid [java.util.ConcurrentModificationException]
-     * when iterating over the list of routes. So we create another list of
-     * [<], while being aware that a [RouteGson.Route] can
-     * be deleted at any time.
-     */
-    internal constructor(private val mMap: Map, routeList: List<RouteGson.Route>, tileView: TileViewExtended) : AsyncTask<Void, Void, Void>() {
-        private val mRouteList: MutableList<WeakReference<RouteGson.Route>> = mutableListOf()
-        private val mTileViewWeakReference: WeakReference<TileViewExtended>
-        private val mCoordinateTranslaterWeakReference: WeakReference<CoordinateTranslater>
+    private fun CoroutineScope.drawRoutes(map: Map, routeList: List<RouteGson.Route>, tileView: TileViewExtended) = launch {
+        launch(Dispatchers.Default) {
 
-        init {
+            /**
+             * During this task, data is generated from the markers of each route of a map. As this is
+             * done in a different thread than the ui-thread (where the user is able to add/remove and
+             * also modify routes), we want to avoid [java.util.ConcurrentModificationException]
+             * when iterating over the list of routes. So we create another list of
+             * [RouteGson.Route], while being aware that a [RouteGson.Route] can
+             * be deleted at any time.
+             */
             for (route in routeList) {
-                mRouteList.add(WeakReference(route))
-            }
-
-            mTileViewWeakReference = WeakReference(tileView)
-            mCoordinateTranslaterWeakReference = WeakReference(tileView.coordinateTranslater)
-        }
-
-        override fun doInBackground(vararg params: Void): Void? {
-            for (route in mRouteList) {
                 try {
                     /* Work on a copy of the list of markers */
-                    val markerList = route.get()?.route_markers?.toList() ?: listOf()
+                    val markerList = route.route_markers?.toList() ?: listOf()
                     /* If there is only one marker, the path has no sense */
                     if (markerList.size < 2) continue
-
-                    val coordinateTranslater = mCoordinateTranslaterWeakReference.get() ?: continue
 
                     val size = markerList.size * 4 - 4
                     val lines = FloatArray(size)
@@ -130,19 +112,16 @@ internal class RouteLayer(private val coroutineScope: CoroutineScope) :
                     var init = true
                     val mapUsesProjection = mMap.projection != null
                     for (marker in markerList) {
-                        /* No need to continue if the route has been deleted in the meanwhile */
-                        if (route.get() == null) break
-
                         val relativeX = if (mapUsesProjection) marker.proj_x else marker.lon
                         val relativeY = if (mapUsesProjection) marker.proj_y else marker.lat
                         if (init) {
-                            lines[i] = coordinateTranslater.translateX(relativeX).toFloat()
-                            lines[i + 1] = coordinateTranslater.translateY(relativeY).toFloat()
+                            lines[i] = tileView.coordinateTranslater.translateX(relativeX).toFloat()
+                            lines[i + 1] = tileView.coordinateTranslater.translateY(relativeY).toFloat()
                             init = false
                             i += 2
                         } else {
-                            lines[i] = coordinateTranslater.translateX(relativeX).toFloat()
-                            lines[i + 1] = coordinateTranslater.translateY(relativeY).toFloat()
+                            lines[i] = tileView.coordinateTranslater.translateX(relativeX).toFloat()
+                            lines[i + 1] = tileView.coordinateTranslater.translateY(relativeY).toFloat()
                             if (i + 2 >= size) break
                             lines[i + 2] = lines[i]
                             lines[i + 3] = lines[i + 1]
@@ -152,20 +131,15 @@ internal class RouteLayer(private val coroutineScope: CoroutineScope) :
 
                     /* Set the route data */
                     val drawablePath = PathView.DrawablePath(lines, null)
-                    route.get()?.apply {
+                    route.apply {
                         data = drawablePath
                     }
                 } catch (e: Exception) {
                     // ignore and continue the loop
                 }
-
             }
-            return null
-        }
+        }.join()
 
-        override fun onPostExecute(result: Void?) {
-            val tileView = mTileViewWeakReference.get()
-            tileView?.drawRoutes(mMap.routes)
-        }
+        tileView.drawRoutes(map.routes)
     }
 }
