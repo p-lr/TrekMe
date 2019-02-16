@@ -40,7 +40,7 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         recyclerView.layoutManager = llm
 
         /* Fetch the list of maps */
-        val mapList = MapLoader.getInstance().maps
+        val mapList = MapLoader.maps
 
         mapChoiceAdapter = MapChoiceAdapter(mapList, this, selectedIndex)
         recyclerView.adapter = mapChoiceAdapter

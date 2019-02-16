@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity
      * The {@link MapLoader} is agnostic of the way events are propagated.
      */
     private void initMapLoader() {
-        MapLoader.getInstance().setMapListUpdateListener(
+        MapLoader.INSTANCE.setMapListUpdateListener(
                 mapsFound -> EventBus.getDefault().post(new MapListUpdateEvent(mapsFound)));
     }
 
@@ -493,7 +493,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestManageMarker(MarkerGson.Marker marker) {
+    public void onRequestManageMarker(@NonNull MarkerGson.Marker marker) {
         showMarkerManageFragment();
     }
 
@@ -890,7 +890,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putString(KEY_BUNDLE_BACK, mBackFragmentTag);

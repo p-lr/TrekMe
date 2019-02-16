@@ -124,12 +124,12 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
     public void init(Map map, TileView tileView) {
         mMap = map;
         setTileView(tileView);
-        MapLoader.getInstance().setMapMarkerUpdateListener(this);
+        MapLoader.INSTANCE.setMapMarkerUpdateListener(this);
 
         if (mMap.areMarkersDefined()) {
             drawMarkers();
         } else {
-            MapLoader.getInstance().getMarkersForMap(mMap);
+            MapLoader.INSTANCE.getMarkersForMap(mMap);
         }
     }
 
@@ -279,7 +279,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                 }
 
                 /* Save the changes on the markers.json file */
-                MapLoader.getInstance().saveMarkers(mMap);
+                MapLoader.INSTANCE.saveMarkers(mMap);
             }
         }
     }
@@ -407,7 +407,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
                 mTileView.removeMarker(movableMarker);
 
                 MarkerGson.Marker marker = movableMarker.getMarker();
-                MapLoader.getInstance().deleteMarker(mMap, marker);
+                MapLoader.INSTANCE.deleteMarker(mMap, marker);
             }
         }
     }

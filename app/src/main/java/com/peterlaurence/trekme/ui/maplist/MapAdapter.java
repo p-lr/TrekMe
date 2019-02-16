@@ -55,7 +55,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
 
     void onMapListUpdate(boolean mapsFound) {
         if (mapsFound) {
-            maps = MapLoader.getInstance().getMaps();
+            maps = MapLoader.INSTANCE.getMaps();
             notifyDataSetChanged();
         }
     }

@@ -172,7 +172,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
     @Subscribe
     fun onMapSelectedForRecord(event: MapSelectedForRecord) {
-        val map = MapLoader.getInstance().getMap(event.mapId)
+        val map = MapLoader.getMap(event.mapId)
         val recording = selectedRecordings[0]
 
         TrackImporter.importTrackFile(recording, null, map!!)

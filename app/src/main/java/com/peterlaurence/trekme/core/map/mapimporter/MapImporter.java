@@ -39,51 +39,37 @@ public class MapImporter {
 
     private static final String TAG = "MapImporter";
 
-    private static final FilenameFilter THUMBNAIL_FILTER = new FilenameFilter() {
-
-        @Override
-        public boolean accept(File dir, String filename) {
-            for (final String ext : IMAGE_EXTENSIONS) {
-                if (filename.endsWith("." + ext)) {
-                    return true;
-                }
+    private static final FilenameFilter THUMBNAIL_FILTER = (dir, filename) -> {
+        for (final String ext : IMAGE_EXTENSIONS) {
+            if (filename.endsWith("." + ext)) {
+                return true;
             }
+        }
+        return false;
+    };
+
+    private static final FilenameFilter IMAGE_FILTER = (dir, filename) -> {
+        /* We only look at files */
+        if (new File(dir, filename).isDirectory()) {
             return false;
         }
-    };
 
-    private static final FilenameFilter IMAGE_FILTER = new FilenameFilter() {
-
-        @Override
-        public boolean accept(File dir, String filename) {
-            /* We only look at files */
-            if (new File(dir, filename).isDirectory()) {
-                return false;
+        boolean accept = true;
+        for (final String ext : IMAGE_EXTENSIONS) {
+            if (!filename.endsWith("." + ext)) {
+                accept = false;
             }
-
-            boolean accept = true;
-            for (final String ext : IMAGE_EXTENSIONS) {
-                if (!filename.endsWith("." + ext)) {
-                    accept = false;
-                }
-                try {
-                    Integer.parseInt(filename.substring(0, filename.lastIndexOf(".")));
-                } catch (Exception e) {
-                    accept = false;
-                }
-                if (accept) return true;
+            try {
+                Integer.parseInt(filename.substring(0, filename.lastIndexOf(".")));
+            } catch (Exception e) {
+                accept = false;
             }
-            return false;
+            if (accept) return true;
         }
+        return false;
     };
 
-    private static final FilenameFilter DIR_FILTER = new FilenameFilter() {
-
-        @Override
-        public boolean accept(File dir, String filename) {
-            return new File(dir, filename).isDirectory();
-        }
-    };
+    private static final FilenameFilter DIR_FILTER = (dir, filename) -> new File(dir, filename).isDirectory();
 
     static {
         java.util.Map<MapProvider, MapParser> map = new HashMap<>();
@@ -190,9 +176,9 @@ public class MapImporter {
         @Override
         protected void onPostExecute(Map map) {
             if (mException != null) {
-                MapLoader.getInstance().onMapImportError(mException);
+                MapLoader.INSTANCE.onMapImportError(mException);
             } else {
-                MapLoader.getInstance().onMapImported(map, mMapParser.getStatus());
+                MapLoader.INSTANCE.onMapImported(map, mMapParser.getStatus());
             }
 
             if (mMapParseListenerWeakReference != null) {
@@ -240,7 +226,7 @@ public class MapImporter {
             /* Check whether there is already a map.json file or not */
             File existingJsonFile = new File(parentFolder, MapLoader.MAP_FILE_NAME);
             if (existingJsonFile.exists()) {
-                MapLoader.getInstance().generateMaps(parentFolder);
+                MapLoader.INSTANCE.generateMaps(parentFolder);
                 mStatus = MapParserStatus.EXISTING_MAP;
                 return null;
             }

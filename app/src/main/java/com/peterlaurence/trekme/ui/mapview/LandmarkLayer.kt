@@ -14,7 +14,7 @@ class LandmarkLayer(val context: Context) {
 
     fun init(map: Map, tileView: TileView) {
         this.map = map
-        this.tileView = tileView
+        setTileView(tileView)
     }
 
     private fun setTileView(tileView: TileView) {

@@ -14,6 +14,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.maparchiver.MapArchiver
+import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent
@@ -127,9 +128,11 @@ class MapImportFragment : Fragment(), CoroutineScope {
 
     private suspend fun getMapArchiveList(): List<MapArchive> = suspendCoroutine { cont ->
         val dirs = listOf(TrekMeContext.defaultAppDir)
-        val task = MapArchiveSearchTask(dirs) {
-            cont.resume(it)
-        }
+        val task = MapArchiveSearchTask(dirs, object : MapLoader.MapArchiveListUpdateListener {
+            override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
+                cont.resume(mapArchiveList)
+            }
+        })
 
         task.start()
     }

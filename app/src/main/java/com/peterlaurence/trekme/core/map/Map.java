@@ -298,7 +298,7 @@ public class Map {
     }
 
     public MapLoader.CALIBRATION_METHOD getCalibrationMethod() {
-        return MapLoader.CALIBRATION_METHOD.fromCalibrationName(
+        return MapLoader.CALIBRATION_METHOD.Companion.fromCalibrationName(
                 mMapGson.calibration.calibration_method);
     }
 

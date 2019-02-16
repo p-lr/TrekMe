@@ -335,8 +335,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister, Frame
     override fun onDestroyView() {
         super.onDestroyView()
 
-        MapLoader.getInstance().clearMapMarkerUpdateListener()
-        MapLoader.getInstance().clearMapRouteUpdateListener()
+        MapLoader.clearMapMarkerUpdateListener()
+        MapLoader.clearMapRouteUpdateListener()
     }
 
     override fun onDetach() {

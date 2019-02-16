@@ -238,7 +238,7 @@ class DownloadService : Service() {
             map.mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name
             map.mapGson.calibration.calibration_points = event.calibrationPoints.toList()
             map.calibrate()
-            MapLoader.getInstance().saveMap(map)
+            MapLoader.saveMap(map)
         }
 
         /* Import, and when we're done, calibrate the map */

@@ -16,6 +16,7 @@ import java.net.URL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -83,16 +84,13 @@ public class MapImporterTest {
         if (mMapsDirectory != null) {
             final File libVipsMapDir = new File(mMapsDirectory, "libvips-with-json");
             if (libVipsMapDir.exists()) {
-                MapLoader.MapListUpdateListener mapListUpdateListener = new MapLoader.MapListUpdateListener() {
-                    @Override
-                    public void onMapListUpdate(boolean mapsFound) {
-                        assertEquals(true, mapsFound);
-                        Map map = MapLoader.getInstance().getMap("La Réunion - Est");
-                        assertNotNull(map);
-                        assertEquals(3, map.getMapGson().levels.size());
-                    }
+                MapLoader.MapListUpdateListener mapListUpdateListener = mapsFound -> {
+                    assertTrue(mapsFound);
+                    Map map = MapLoader.INSTANCE.getMap("La Réunion - Est");
+                    assertNotNull(map);
+                    assertEquals(3, map.getMapGson().levels.size());
                 };
-                MapLoader mapLoader = MapLoader.getInstance();
+                MapLoader mapLoader = MapLoader.INSTANCE;
                 mapLoader.setMapListUpdateListener(mapListUpdateListener);
 
                 MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, null);

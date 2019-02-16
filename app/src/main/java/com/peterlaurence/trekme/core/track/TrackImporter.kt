@@ -230,8 +230,8 @@ object TrackImporter {
             if (isSuccess) {
                 val newRouteCount = TrackTools.updateRouteList(mMap, newRouteList)
                 val addedMarkers = TrackTools.updateMarkerList(mMap, newWaypointList)
-                MapLoader.getInstance().saveRoutes(mMap)
-                MapLoader.getInstance().saveMarkers(mMap)
+                MapLoader.saveRoutes(mMap)
+                MapLoader.saveMarkers(mMap)
 
                 mListener?.onTrackFileParsed(mMap, newRouteList, newWaypointList, newRouteCount, addedMarkers)
 

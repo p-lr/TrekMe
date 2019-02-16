@@ -1,6 +1,8 @@
 package com.peterlaurence.trekme.ui.mapcalibration;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.fragment.app.Fragment;
@@ -53,7 +55,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         rootView = new MapCalibrationLayout(getContext());
@@ -79,14 +81,14 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mView = view;
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
 
         if (mCalibrationMarker != null) {
@@ -285,7 +287,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         map.calibrate();
 
         /* Save */
-        MapLoader.getInstance().saveMap(map);
+        MapLoader.INSTANCE.saveMap(map);
 
         showSaveConfirmation();
     }

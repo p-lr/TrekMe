@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.EditTextPreference;
@@ -112,7 +114,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      * @param mapName the name of the {@link Map}
      */
     public void setMap(String mapName) {
-        mMapWeakReference = new WeakReference<>(MapLoader.getInstance().getMap(mapName));
+        mMapWeakReference = new WeakReference<>(MapLoader.INSTANCE.getMap(mapName));
 
         /* Choice is made to have the preference file name equal to the map name */
         getPreferenceManager().setSharedPreferencesName(mapName);
@@ -123,11 +125,11 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     private void initComponents() {
         Preference changeImageButton = getPreferenceManager().findPreference(
                 getString(R.string.preference_change_image_key));
-        ListPreference mCalibrationListPreference = (ListPreference) getPreferenceManager().findPreference(
+        ListPreference mCalibrationListPreference = getPreferenceManager().findPreference(
                 getString(R.string.preference_projection_key));
-        ListPreference mCalibrationPointsNumberPreference = (ListPreference) getPreferenceManager().findPreference(
+        ListPreference mCalibrationPointsNumberPreference = getPreferenceManager().findPreference(
                 getString(R.string.preference_numpoints_key));
-        EditTextPreference mapNamePreference = (EditTextPreference) getPreferenceManager().findPreference(
+        EditTextPreference mapNamePreference = getPreferenceManager().findPreference(
                 getString(R.string.preference_map_title_key));
         Preference calibrationButton = getPreferenceManager().findPreference(
                 getString(R.string.preference_calibration_button_key));
@@ -201,7 +203,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
                     return true;
                 }
 
-                if (MapLoader.getInstance().mutateMapProjection(mMapWeakReference.get(), (String) projectionName)) {
+                if (MapLoader.INSTANCE.mutateMapProjection(mMapWeakReference.get(), (String) projectionName)) {
                     String saveOkMsg = getString(R.string.calibration_projection_saved_ok);
                     Toast toast = Toast.makeText(getContext(), saveOkMsg, Toast.LENGTH_SHORT);
                     toast.show();
@@ -263,7 +265,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof MapCalibrationRequestListener) {
             mMapCalibrationRequestListener = (MapCalibrationRequestListener) context;
@@ -288,7 +290,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      */
     private void saveChanges() {
         Map map = mMapWeakReference.get();
-        MapLoader.getInstance().saveMap(map);
+        MapLoader.INSTANCE.saveMap(map);
     }
 
     /**
@@ -302,21 +304,17 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.map_delete_question)
-                    .setPositiveButton(R.string.delete_dialog, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            /* Delete the map */
-                            if (mMapWeakReference != null) {
-                                Map map = mMapWeakReference.get();
-                                if (map != null) {
-                                    MapLoader.getInstance().deleteMap(map, mDeleteMapListener);
-                                }
+                    .setPositiveButton(R.string.delete_dialog, (dialog, id) -> {
+                        /* Delete the map */
+                        if (mMapWeakReference != null) {
+                            Map map = mMapWeakReference.get();
+                            if (map != null) {
+                                MapLoader.INSTANCE.deleteMap(map, mDeleteMapListener);
                             }
                         }
                     })
-                    .setNegativeButton(R.string.cancel_dialog_string, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // Do nothing. This empty listener is used just to create the Cancel button.
-                        }
+                    .setNegativeButton(R.string.cancel_dialog_string, (dialog, id) -> {
+                        // Do nothing. This empty listener is used just to create the Cancel button.
                     });
 
             return builder.create();

@@ -15,6 +15,7 @@ import java.net.URL;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for maps's json file parsing.
@@ -42,15 +43,12 @@ public class MapParserTest {
             dirs[0] = mJsonFilesDirectory;
             final Map[] map = new Map[1];
 
-            MapLoader.MapListUpdateListener mapListUpdateListener = new MapLoader.MapListUpdateListener() {
-                @Override
-                public void onMapListUpdate(boolean mapsFound) {
-                    List<Map> mapList = MapLoader.getInstance().getMaps();
+            MapLoader.MapListUpdateListener mapListUpdateListener = mapsFound -> {
+                List<Map> mapList = MapLoader.INSTANCE.getMaps();
 
-                    /* One map should be found */
-                    assertEquals(1, mapList.size());
-                    map[0] = mapList.get(0);
-                }
+                /* One map should be found */
+                assertEquals(1, mapList.size());
+                map[0] = mapList.get(0);
             };
 
             MapLoader.MapRouteUpdateListener mapRouteUpdateListener = new MapLoader.MapRouteUpdateListener() {
@@ -61,7 +59,7 @@ public class MapParserTest {
 
                     RouteGson.Route route = map[0].getRoutes().get(0);
                     assertEquals("A test route 1", route.name);
-                    assertEquals(true, route.visible);
+                    assertTrue(route.visible);
                     List<MarkerGson.Marker> markers = route.route_markers;
                     assertEquals(2, markers.size());
 
@@ -75,7 +73,7 @@ public class MapParserTest {
                 }
             };
 
-            MapLoader mapLoader = MapLoader.getInstance();
+            MapLoader mapLoader = MapLoader.INSTANCE;
             mapLoader.setMapRouteUpdateListener(mapRouteUpdateListener);
             mapLoader.setMapListUpdateListener(mapListUpdateListener);
             mapLoader.clearAndGenerateMaps(dirs);

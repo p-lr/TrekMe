@@ -6,25 +6,21 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent;
+import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
-import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.util.ZipTask;
 
 import org.greenrobot.eventbus.EventBus;
@@ -33,6 +29,11 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
@@ -65,7 +66,7 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof OnMapListFragmentInteractionListener) {
             mListener = (OnMapListFragmentInteractionListener) context;
@@ -83,7 +84,7 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (rootView == null) {
             rootView = (FrameLayout) inflater.inflate(R.layout.fragment_map_list, container, false);
@@ -114,22 +115,23 @@ public class MapListFragment extends Fragment implements
 
     private void generateMapList() {
         Context ctx = getContext();
-        recyclerView = new RecyclerView(ctx);
-        recyclerView.setHasFixedSize(false);
+        if (ctx != null) {
+            recyclerView = new RecyclerView(ctx);
+            recyclerView.setHasFixedSize(false);
 
-        LinearLayoutManager llm = new LinearLayoutManager(ctx);
-        recyclerView.setLayoutManager(llm);
+            LinearLayoutManager llm = new LinearLayoutManager(ctx);
+            recyclerView.setLayoutManager(llm);
 
-        adapter = new MapAdapter(null, this, this, this,
-                ctx.getColor(R.color.colorAccent),
-                ctx.getColor(R.color.colorPrimaryTextWhite),
-                ctx.getColor(R.color.colorPrimaryTextBlack));
+            adapter = new MapAdapter(null, this, this, this,
+                    ctx.getColor(R.color.colorAccent),
+                    ctx.getColor(R.color.colorPrimaryTextWhite),
+                    ctx.getColor(R.color.colorPrimaryTextBlack));
 
+            MapLoader.INSTANCE.clearAndGenerateMaps();
+            recyclerView.setAdapter(adapter);
 
-        MapLoader.getInstance().clearAndGenerateMaps();
-        recyclerView.setAdapter(adapter);
-
-        rootView.addView(recyclerView, 0);
+            rootView.addView(recyclerView, 0);
+        }
     }
 
     @Override
@@ -208,7 +210,7 @@ public class MapListFragment extends Fragment implements
      */
     @Subscribe
     public void onSaveMapEvent(ArchiveMapDialog.SaveMapEvent event) {
-        Map map = MapLoader.getInstance().getMap(event.mapId);
+        Map map = MapLoader.INSTANCE.getMap(event.mapId);
         if (map == null) return;
 
         /* Effectively launch the archive task */

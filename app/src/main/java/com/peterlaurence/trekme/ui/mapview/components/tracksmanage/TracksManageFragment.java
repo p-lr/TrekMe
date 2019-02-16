@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.fragment.app.DialogFragment;
@@ -67,7 +69,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         rootView = (FrameLayout) inflater.inflate(R.layout.fragment_tracks_manage, container, false);
@@ -86,7 +88,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         menu.clear();
         inflater.inflate(R.menu.menu_fragment_tracks_manage, menu);
         mTrackRenameMenuItem = menu.findItem(R.id.track_rename_id);
@@ -104,7 +106,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.import_tracks_id:
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -176,8 +178,8 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0,
                 ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
-                                  RecyclerView.ViewHolder target) {
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                                  @NonNull RecyclerView.ViewHolder target) {
                 return false;
             }
 
@@ -201,7 +203,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     private void saveChanges() {
-        MapLoader.getInstance().saveRoutes(mMap);
+        MapLoader.INSTANCE.saveRoutes(mMap);
     }
 
     @Override
@@ -235,7 +237,7 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
     }
 
     @Override
-    public void onError(String message) {
+    public void onError(@NonNull String message) {
         View view = getView();
         if (view != null) {
             Snackbar snackbar = Snackbar.make(getView(), R.string.gpx_import_error_msg, Snackbar.LENGTH_LONG);
@@ -301,15 +303,18 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
          * automatically saves the {@link EditText} state upon configuration change.
          */
         @Override
-        public void onAttach(Context context) {
+        public void onAttach(@NonNull Context context) {
             super.onAttach(context);
 
             try {
-                mTracksManageFragment = ((MainActivity) getActivity()).getTracksManageFragment();
+                MainActivity activity = (MainActivity) getActivity();
+                mTracksManageFragment = activity != null ? activity.getTracksManageFragment() : null;
 
-                final RouteGson.Route route = mTracksManageFragment.mTrackAdapter.getSelectedRoute();
-                if (route != null) {
-                    mText = route.name;
+                if (mTracksManageFragment != null) {
+                    final RouteGson.Route route = mTracksManageFragment.mTrackAdapter.getSelectedRoute();
+                    if (route != null) {
+                        mText = route.name;
+                    }
                 }
             } catch (NullPointerException e) {
                 /* The fragment is being recreated upon configuration change */
@@ -321,7 +326,8 @@ public class TracksManageFragment extends Fragment implements TrackImporter.Trac
             super.onActivityCreated(savedInstanceState);
 
             if (mTracksManageFragment == null) {
-                mTracksManageFragment = ((MainActivity) getActivity()).getTracksManageFragment();
+                MainActivity activity = (MainActivity) getActivity();
+                mTracksManageFragment = activity != null ? activity.getTracksManageFragment() : null;
             }
         }
 

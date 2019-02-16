@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -59,7 +61,7 @@ public class MarkerManageFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof MarkerProvider && context instanceof MarkerManageFragmentInteractionListener) {
             mMarkerProvider = (MarkerProvider) context;
@@ -77,19 +79,19 @@ public class MarkerManageFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.fragment_marker_manage, container, false);
 
         /* The view fields */
-        mNameEditText = (TextInputEditText) rootView.findViewById(R.id.marker_name_id);
-        mLatEditText = (TextInputEditText) rootView.findViewById(R.id.marker_lat_id);
-        mLonEditText = (TextInputEditText) rootView.findViewById(R.id.marker_lon_id);
-        mProjectionLabel = (TextView) rootView.findViewById(R.id.marker_proj_label_id);
-        mProjectionX = (TextInputEditText) rootView.findViewById(R.id.marker_proj_x_id);
-        mProjectionY = (TextInputEditText) rootView.findViewById(R.id.marker_proj_y_id);
-        mComment = (EditText) rootView.findViewById(R.id.marker_comment_id);
+        mNameEditText = rootView.findViewById(R.id.marker_name_id);
+        mLatEditText = rootView.findViewById(R.id.marker_lat_id);
+        mLonEditText = rootView.findViewById(R.id.marker_lon_id);
+        mProjectionLabel = rootView.findViewById(R.id.marker_proj_label_id);
+        mProjectionX = rootView.findViewById(R.id.marker_proj_x_id);
+        mProjectionY = rootView.findViewById(R.id.marker_proj_y_id);
+        mComment = rootView.findViewById(R.id.marker_comment_id);
 
         mMap = MapProvider.INSTANCE.getCurrentMap();
         mMarker = mMarkerProvider.getCurrentMarker();
@@ -99,7 +101,7 @@ public class MarkerManageFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         /* Hide the app title */
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (actionBar != null) {
@@ -115,7 +117,7 @@ public class MarkerManageFragment extends Fragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_marker_id:
                 //TODO : implement makers save to json file
@@ -162,7 +164,7 @@ public class MarkerManageFragment extends Fragment {
         mMarkerProvider.currentMarkerEdited();
 
         /* Save the changes on the markers.json file */
-        MapLoader.getInstance().saveMarkers(mMap);
+        MapLoader.INSTANCE.saveMarkers(mMap);
 
         hideSoftKeyboard();
 
