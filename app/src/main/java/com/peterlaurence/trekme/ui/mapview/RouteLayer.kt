@@ -4,6 +4,7 @@ import android.util.Log
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
 import com.peterlaurence.trekme.ui.mapview.components.PathView
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.qozix.tileview.TileView
@@ -15,13 +16,12 @@ import kotlinx.coroutines.launch
  * All [RouteGson.Route] are managed here. <br></br>
  * This object is intended to be used exclusively by the [MapViewFragment].
  *
- * After being created, the method [.init] has to be called.
+ * After being created, the method [init] has to be called.
  *
  * @author peterLaurence on 13/05/17 -- Converted to Kotlin on 16/02/2019
  */
-internal class RouteLayer(private val coroutineScope: CoroutineScope) :
+class RouteLayer(private val coroutineScope: CoroutineScope) :
         TracksManageFragment.TrackChangeListener,
-        MapLoader.MapRouteUpdateListener,
         CoroutineScope by coroutineScope {
     private lateinit var mTileView: TileViewExtended
     private lateinit var mMap: Map
@@ -40,13 +40,6 @@ internal class RouteLayer(private val coroutineScope: CoroutineScope) :
         drawRoutes(map, routeList, mTileView)
     }
 
-    /**
-     * When saved routes are retrieved from the route.json file, this method is called.
-     */
-    override fun onMapRouteUpdate() {
-        drawRoutes()
-    }
-
     override fun onTrackVisibilityChanged() {
         val pathView = mTileView.pathView
         pathView?.invalidate()
@@ -61,12 +54,17 @@ internal class RouteLayer(private val coroutineScope: CoroutineScope) :
     fun init(map: Map, tileView: TileView) {
         mMap = map
         setTileView(tileView as TileViewExtended)
-        MapLoader.setMapRouteUpdateListener(this)
 
         if (mMap.areRoutesDefined()) {
             drawRoutes()
         } else {
-            MapLoader.getRoutesForMap(mMap)
+            acquireThenDrawRoutes(mMap)
+        }
+    }
+
+    private fun acquireThenDrawRoutes(map: Map) {
+        getRoutesForMap(map).invokeOnCompletion {
+            drawRoutes()
         }
     }
 

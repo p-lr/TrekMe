@@ -12,14 +12,18 @@ import com.peterlaurence.trekme.core.map.gson.RuntimeTypeAdapterFactory
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapDeleteTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapMarkerImportTask
-import com.peterlaurence.trekme.core.map.maploader.tasks.MapRouteImportTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapUpdateTask
+import com.peterlaurence.trekme.core.map.maploader.tasks.mapRouteImportTask
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderDummy
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips
 import com.qozix.tileview.graphics.BitmapProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
@@ -55,7 +59,6 @@ object MapLoader : MapImporter.MapImportListener {
     private val mMapList: MutableList<Map> = mutableListOf()
     private var mMapListUpdateListener: MapListUpdateListener? = null
     private var mMapMarkerUpdateListener: MapMarkerUpdateListener? = null
-    private var mMapRouteUpdateListener: MapRouteUpdateListener? = null
 
     /**
      * Get a read-only list of [Map]s
@@ -83,13 +86,14 @@ object MapLoader : MapImporter.MapImportListener {
      * @param dirs The directories in which to search for maps. If not specified, a default value is
      * taken.
      */
-    fun clearAndGenerateMaps(vararg dirs: File) {
-        val dirList = mutableListOf<File>()
+    @JvmOverloads
+    fun clearAndGenerateMaps(dirs: List<File> = listOf()) {
         mMapList.clear()
         if (dirs.isEmpty()) { // No directories specified? We take the default value.
-            dirList.add(TrekMeContext.defaultMapsDir)
+            generateMaps(listOf(TrekMeContext.defaultMapsDir))
+        } else {
+            generateMaps(dirs)
         }
-        generateMaps(*dirList.toTypedArray())
     }
 
     /**
@@ -98,9 +102,17 @@ object MapLoader : MapImporter.MapImportListener {
      *
      * @param dirs The directories in which to search for new maps.
      */
-    fun generateMaps(vararg dirs: File) {
+    fun generateMaps(dirs: List<File>) {
         val updateTask = MapUpdateTask(mMapListUpdateListener, mGson, mMapList)
-        updateTask.execute(*dirs)
+        updateTask.execute(*dirs.toTypedArray())
+    }
+
+    /**
+     * TODO: this function was added for compatibility with legacy java code. Remove when possible.
+     * Only the signature with a list of [File] should be used.
+     */
+    fun generateMaps(dir: File) {
+        generateMaps(listOf(dir))
     }
 
     /**
@@ -113,12 +125,17 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Launch a [MapRouteImportTask] which reads the routes.json file.
+     * Launch a task which reads the routes.json file.
+     * The [mapRouteImportTask] is called off UI thread. Right after, on the calling thread (which
+     * should be the UI thread), the result (a nullable instance of [RouteGson]) is set on the [Map]
+     * given as parameter.
      */
-    fun getRoutesForMap(map: Map) {
-        val mapRouteImportTask = MapRouteImportTask(mMapRouteUpdateListener,
-                map, mGson)
-        mapRouteImportTask.execute()
+    fun CoroutineScope.getRoutesForMap(map: Map) = launch {
+        withContext(Dispatchers.Default) {
+            mapRouteImportTask(map, mGson)
+        }?.let { routeGson ->
+            map.routeGson = routeGson
+        }
     }
 
     /**
@@ -138,16 +155,8 @@ object MapLoader : MapImporter.MapImportListener {
         mMapMarkerUpdateListener = listener
     }
 
-    fun setMapRouteUpdateListener(listener: MapRouteUpdateListener) {
-        mMapRouteUpdateListener = listener
-    }
-
     fun clearMapMarkerUpdateListener() {
         mMapMarkerUpdateListener = null
-    }
-
-    fun clearMapRouteUpdateListener() {
-        mMapRouteUpdateListener = null
     }
 
     /**
@@ -339,13 +348,6 @@ object MapLoader : MapImporter.MapImportListener {
      */
     interface MapMarkerUpdateListener {
         fun onMapMarkerUpdate()
-    }
-
-    /**
-     * When a map's routes are retrieved from their json content, this listener is called.
-     */
-    interface MapRouteUpdateListener {
-        fun onMapRouteUpdate()
     }
 
     interface MapArchiveListUpdateListener {
