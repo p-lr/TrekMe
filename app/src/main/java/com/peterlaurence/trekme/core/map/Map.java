@@ -10,6 +10,7 @@ import android.os.ParcelFileDescriptor;
 import androidx.annotation.Nullable;
 import android.util.Log;
 
+import com.peterlaurence.trekme.core.map.gson.LandmarkGson;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.gson.RouteGson;
@@ -61,6 +62,8 @@ public class Map {
     private MarkerGson mMarkerGson;
     /* The Java Object corresponding to the json file of routes */
     private RouteGson mRouteGson;
+    /* The Java Object corresponding to the json file of landmarks */
+    private LandmarkGson mLandmarkGson;
     private CalibrationStatus mCalibrationStatus = CalibrationStatus.NONE;
 
     /**
@@ -380,6 +383,14 @@ public class Map {
 
     public void setRouteGson(RouteGson routeGson) {
         mRouteGson = routeGson;
+    }
+
+    public final LandmarkGson getLandmarkGson() {
+        return mLandmarkGson;
+    }
+
+    public void setLandmarkGson(LandmarkGson landmarkGson) {
+        mLandmarkGson = landmarkGson;
     }
 
     public boolean areMarkersDefined() {
