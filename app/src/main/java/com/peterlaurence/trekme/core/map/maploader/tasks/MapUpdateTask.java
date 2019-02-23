@@ -16,12 +16,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Searches for maps on the SD card (json files).
+ * Parses the json files to, e.g, process calibration information.
+ *
  * @author peterLaurence on 30/04/17.
  */
 public class MapUpdateTask extends AsyncTask<File, Void, Void> {
-    MapLoader.MapListUpdateListener mListener;
-    Gson mGson;
-    List<Map> mMapList;
+    private MapLoader.MapListUpdateListener mListener;
+    private Gson mGson;
+    private List<Map> mMapList;
 
     private List<File> mapFilesFoundList;
     private static final int MAX_RECURSION_DEPTH = 6;

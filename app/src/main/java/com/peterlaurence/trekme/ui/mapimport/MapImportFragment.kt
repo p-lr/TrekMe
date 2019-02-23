@@ -11,11 +11,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.maparchiver.MapArchiver
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent
 import com.peterlaurence.trekme.ui.mapimport.events.UnzipErrorEvent
@@ -30,8 +28,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * A [Fragment] subclass that displays the list of maps archives available for import.
@@ -118,23 +114,12 @@ class MapImportFragment : Fragment(), CoroutineScope {
 
     private fun CoroutineScope.updateMapArchiveList() = launch {
         val archives = async {
-            getMapArchiveList()
+            MapLoader.getMapArchiveList()
         }
 
         mapArchiveList = archives.await()
         mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
         hideProgressBar()
-    }
-
-    private suspend fun getMapArchiveList(): List<MapArchive> = suspendCoroutine { cont ->
-        val dirs = listOf(TrekMeContext.defaultAppDir)
-        val task = MapArchiveSearchTask(dirs, object : MapLoader.MapArchiveListUpdateListener {
-            override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
-                cont.resume(mapArchiveList)
-            }
-        })
-
-        task.start()
     }
 
     private fun singleSelect(position: Int) {

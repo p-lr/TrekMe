@@ -48,7 +48,7 @@ public class RouteGson {
 
         @Override
         public boolean equals(Object o) {
-            return !(o == null || !(o instanceof Route)) && ((Route) o).name.equals(this.name);
+            return o instanceof Route && ((Route) o).name.equals(this.name);
         }
 
         @Override

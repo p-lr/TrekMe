@@ -10,10 +10,7 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.gson.RuntimeTypeAdapterFactory
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
-import com.peterlaurence.trekme.core.map.maploader.tasks.MapDeleteTask
-import com.peterlaurence.trekme.core.map.maploader.tasks.MapMarkerImportTask
-import com.peterlaurence.trekme.core.map.maploader.tasks.MapUpdateTask
-import com.peterlaurence.trekme.core.map.maploader.tasks.mapRouteImportTask
+import com.peterlaurence.trekme.core.map.maploader.tasks.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
@@ -28,14 +25,18 @@ import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
- * Singleton object that provides utility methods to read json files that describe each map.
+ * Singleton object that acts as central point for most operations related to the maps.
+ * It uses the following tasks defined in [com.peterlaurence.trekme.core.map.maploader.tasks]:
  *
- * A [MapUpdateTask] will :
- *  * Search for maps on the SD card (json files).
- *  * Parse the json files to, e.g, process calibration information.
- *  * populate the internal list of [Map].
+ * * [MapUpdateTask] -> populate the internal list of [Map]
+ * * [MapDeleteTask] -> delete a [Map]
+ * * [MapMarkerImportTask] -> Import the markers of a [Map]
+ * * [mapRouteImportTask] -> Import the list of routes for a given [Map]
+ * * [MapArchiveSearchTask] -> Get the list of [MapArchive]
  *
  * @author peterLaurence -- converted to Kotlin on 16/02/2019
  */
@@ -43,6 +44,7 @@ object MapLoader : MapImporter.MapImportListener {
     const val MAP_FILE_NAME = "map.json"
     const val MAP_MARKER_FILE_NAME = "markers.json"
     const val MAP_ROUTE_FILE_NAME = "routes.json"
+    const val MAP_LANDMARK_FILE_NAME = "landmarks.json"
     /**
      * All [Projection]s are registered here.
      */
@@ -136,6 +138,22 @@ object MapLoader : MapImporter.MapImportListener {
         }?.let { routeGson ->
             map.routeGson = routeGson
         }
+    }
+
+    /**
+     * Launch a task which gets the list of [MapArchive].
+     * It also shows how a java [Thread] can be wrapped inside a coroutine so that it can be used
+     * by Kotlin code.
+     */
+    suspend fun getMapArchiveList(): List<MapArchive> = suspendCoroutine { cont ->
+        val dirs = listOf(TrekMeContext.defaultAppDir)
+        val task = MapArchiveSearchTask(dirs, object : MapArchiveListUpdateListener {
+            override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
+                cont.resume(mapArchiveList)
+            }
+        })
+
+        task.start()
     }
 
     /**
