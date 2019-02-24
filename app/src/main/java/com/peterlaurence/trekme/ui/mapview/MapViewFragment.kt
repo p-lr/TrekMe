@@ -198,8 +198,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         /* .. and restore some checkable state */
         val item = menu.findItem(R.id.distancemeter_id)
         item.isChecked = distanceLayer.isVisible
-        val item2 = menu.findItem(R.id.landmark_id)
-        item2.isChecked = landmarkLayer.isVisible()
 
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
         itemOrientation.isChecked = orientationEventManager.isStarted
@@ -236,7 +234,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
                 return true
             }
             R.id.landmark_id -> {
-                item.isChecked = landmarkLayer.toggleVisibility()
+                landmarkLayer.addNewLandmark()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)

@@ -6,13 +6,18 @@
         android:icon="@drawable/ic_add_location_white_24dp"
         android:title="@string/mapview_add_marker"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/landmark_id"
+        android:icon="@drawable/lighthouse_24dp"
+        android:title="@string/mapview_add_landmark"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/manage_tracks_id"
         android:orderInCategory="0"
         android:icon="@drawable/ic_gesture_white_24dp"
         android:title="@string/manage_tracks_menu"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/speedometer_id"
@@ -33,10 +38,5 @@
         app:showAsAction="never"
         android:title="@string/mapview_orientation_enable" />
 
-    <item
-        android:id="@+id/landmark_id"
-        android:checkable="true"
-        android:icon="@drawable/lighthouse"
-        android:title="@string/mapview_landmark_enable"
-        app:showAsAction="ifRoom" />
+
 </menu>

@@ -26,9 +26,8 @@ class LandmarkLayer(val context: Context) {
 
     }
 
-    fun toggleVisibility(): Boolean {
-        visible = !visible
-        return visible
+    fun addNewLandmark() {
+
     }
 
     /**

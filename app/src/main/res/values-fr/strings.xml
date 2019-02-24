@@ -144,5 +144,5 @@
     <string name="mapcreate_warning_others">Veuillez vérifier votre connexion internet.</string>
     <string name="general_help_link"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#que-faire-si">Besoin d\'aide ?</a></string>
     <string name="mapcreate_btn_nav_credentials">Corriger mes identifiants</string>
-    <string name="mapview_landmark_enable">Points de repère</string>
+    <string name="mapview_add_landmark">Ajouter un repère</string>
 </resources>
