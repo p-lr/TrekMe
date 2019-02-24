@@ -69,6 +69,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     private lateinit var markerLayer: MarkerLayer
     private lateinit var routeLayer: RouteLayer
     private lateinit var distanceLayer: DistanceLayer
+    private lateinit var landmarkLayer: LandmarkLayer
     private lateinit var speedListener: SpeedListener
     private lateinit var distanceListener: DistanceLayer.DistanceListener
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -174,6 +175,13 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         if (!::distanceLayer.isInitialized) {
             distanceLayer = DistanceLayer(context, distanceListener)
         }
+
+        /* Create the landmark layer */
+        if (!::landmarkLayer.isInitialized) {
+            context?.let {
+                landmarkLayer = LandmarkLayer(it)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -190,6 +198,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         /* .. and restore some checkable state */
         val item = menu.findItem(R.id.distancemeter_id)
         item.isChecked = distanceLayer.isVisible
+        val item2 = menu.findItem(R.id.landmark_id)
+        item2.isChecked = landmarkLayer.isVisible()
 
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
         itemOrientation.isChecked = orientationEventManager.isStarted
@@ -223,6 +233,10 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
             }
             R.id.orientation_enable_id -> {
                 item.isChecked = orientationEventManager.toggleOrientation()
+                return true
+            }
+            R.id.landmark_id -> {
+                item.isChecked = landmarkLayer.toggleVisibility()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -284,6 +298,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         if (hidden) {
             speedListener.hideSpeed()
             distanceLayer.hide()
+            landmarkLayer.hide()
             orientationEventManager.stop()
         } else {
             updateMapIfNecessary()
@@ -328,14 +343,19 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     }
 
     private fun updateLayers() {
-        /* Update the marker layer */
-        markerLayer.init(mMap, mTileView)
+        mMap?.let { map ->
+            /* Update the marker layer */
+            markerLayer.init(map, mTileView)
 
-        /* Update the route layer */
-        routeLayer.init(mMap!!, mTileView)
+            /* Update the route layer */
+            routeLayer.init(map, mTileView)
 
-        /* Update the distance layer */
-        distanceLayer.init(mMap, mTileView)
+            /* Update the distance layer */
+            distanceLayer.init(map, mTileView)
+
+            /* Update the landmark layer */
+            landmarkLayer.init(map, mTileView)
+        }
     }
 
     override fun onStop() {

@@ -11,11 +11,30 @@ import com.qozix.tileview.markers.MarkerLayout
 class LandmarkLayer(val context: Context) {
     private lateinit var map: Map
     private lateinit var tileView: TileView
+    private var visible = false
 
     fun init(map: Map, tileView: TileView) {
         this.map = map
         setTileView(tileView)
     }
+
+    fun show() {
+
+    }
+
+    fun hide()  {
+
+    }
+
+    fun toggleVisibility(): Boolean {
+        visible = !visible
+        return visible
+    }
+
+    /**
+     * Return a copy of the private [visible] flag.
+     */
+    fun isVisible() = visible
 
     private fun setTileView(tileView: TileView) {
         this.tileView = tileView

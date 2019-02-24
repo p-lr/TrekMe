@@ -32,4 +32,11 @@
         android:checkable="true"
         app:showAsAction="never"
         android:title="@string/mapview_orientation_enable" />
+
+    <item
+        android:id="@+id/landmark_id"
+        android:checkable="true"
+        android:icon="@drawable/lighthouse"
+        android:title="@string/mapview_landmark_enable"
+        app:showAsAction="ifRoom" />
 </menu>

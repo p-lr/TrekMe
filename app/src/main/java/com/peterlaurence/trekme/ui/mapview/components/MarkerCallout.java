@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.ui.mapview.components;
 
 import android.content.Context;
-import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -31,11 +30,11 @@ public class MarkerCallout extends RelativeLayout {
 
         inflate(context, R.layout.marker_callout, this);
 
-        mMoveButton = (ImageButton) findViewById(R.id.move_callout_btn);
-        mEditButton = (ImageButton) findViewById(R.id.edit_callout_btn);
-        mDeleteButton = (ImageButton) findViewById(R.id.delete_callout_btn);
-        mTitle = (TextView) findViewById(R.id.callout_title);
-        mSubTitle = (TextView) findViewById(R.id.callout_subtitle);
+        mMoveButton = findViewById(R.id.move_callout_btn);
+        mEditButton = findViewById(R.id.edit_callout_btn);
+        mDeleteButton = findViewById(R.id.delete_callout_btn);
+        mTitle = findViewById(R.id.callout_title);
+        mSubTitle = findViewById(R.id.callout_subtitle);
 
         mMoveButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
         mEditButton.getDrawable().setTint(getContext().getColor(R.color.colorAccent));
@@ -59,30 +58,15 @@ public class MarkerCallout extends RelativeLayout {
     }
 
     public void setMoveAction(final Runnable moveAction) {
-        mMoveButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moveAction.run();
-            }
-        });
+        mMoveButton.setOnClickListener(v -> moveAction.run());
     }
 
     public void setEditAction(final Runnable editAction) {
-        mEditButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editAction.run();
-            }
-        });
+        mEditButton.setOnClickListener(v -> editAction.run());
     }
 
     public void setDeleteAction(final Runnable deleteAction) {
-        mDeleteButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteAction.run();
-            }
-        });
+        mDeleteButton.setOnClickListener(v -> deleteAction.run());
     }
 
     public void setTitle(String title) {
