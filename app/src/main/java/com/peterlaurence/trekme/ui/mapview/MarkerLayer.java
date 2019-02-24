@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author peterLaurence on 09/04/17.
  */
-class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
+class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.MarkerTapListener {
     List<MarkerGson.Marker> mMarkers;
     private Context mContext;
     private MapViewFragment.RequestManageMarkerListener mRequestManageMarkerListener;
@@ -85,30 +85,30 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener {
 
     private void setTileView(final TileView tileView) {
         mTileView = tileView;
+    }
 
-        mTileView.setMarkerTapListener(new MarkerLayout.MarkerTapListener() {
-            @Override
-            public void onMarkerTap(View view, int x, int y) {
-                if (view instanceof MovableMarker) {
-                    MovableMarker movableMarker = (MovableMarker) view;
+    @Override
+    public void onMarkerTap(View view, int i, int i1) {
+        if (mTileView == null) return;
 
-                    /* Prepare the callout */
-                    MarkerCallout markerCallout = new MarkerCallout(mContext);
-                    markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
-                            mTileView, mContext, mMap));
-                    markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
-                            markerCallout, mTileView, mRequestManageMarkerListener));
-                    markerCallout.setDeleteAction(new DeleteMarkerRunnable(movableMarker, markerCallout,
-                            tileView, mMap));
-                    MarkerGson.Marker marker = movableMarker.getMarker();
-                    markerCallout.setTitle(marker.name);
-                    markerCallout.setSubTitle(marker.lat, marker.lon);
+        if (view instanceof MovableMarker) {
+            MovableMarker movableMarker = (MovableMarker) view;
 
-                    mTileView.addCallout(markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -1.2f);
-                    markerCallout.transitionIn();
-                }
-            }
-        });
+            /* Prepare the callout */
+            MarkerCallout markerCallout = new MarkerCallout(mContext);
+            markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
+                    mTileView, mContext, mMap));
+            markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
+                    markerCallout, mTileView, mRequestManageMarkerListener));
+            markerCallout.setDeleteAction(new DeleteMarkerRunnable(movableMarker, markerCallout,
+                    mTileView, mMap));
+            MarkerGson.Marker marker = movableMarker.getMarker();
+            markerCallout.setTitle(marker.name);
+            markerCallout.setSubTitle(marker.lat, marker.lon);
+
+            mTileView.addCallout(markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -1.2f);
+            markerCallout.transitionIn();
+        }
     }
 
     /**

@@ -432,6 +432,11 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         rootView.addView(mTileView, 0)
         mTileView.setSingleTapListener(rootView)
         mTileView.setScrollListener(rootView)
+
+        /* The tileView can have only one MarkerTapListener */
+        mTileView.setMarkerTapListener { view: View, x: Int, y: Int ->
+            markerLayer.onMarkerTap(view, x, y)
+        }
     }
 
     private fun removeCurrentTileView() {
