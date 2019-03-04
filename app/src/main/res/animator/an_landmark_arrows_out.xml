@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="500"
+    android:propertyName="trimPathEnd"
+    android:valueFrom="@fraction/arrows_rounded_trim_end"
+    android:valueTo="@fraction/arrows_location_trim_end" />

@@ -21,6 +21,8 @@
     <color name="colorMarkerGrabBg">#55448AFF</color>
     <color name="colorMarker">#F16157</color>
     <color name="colorMarkerStroke">#B6392F</color>
+    <color name="colorLandmark">#9C27B0</color>
+    <color name="colorLandmarkStroke">#4A148C</color>
     <color name="colorIndicatorOverlay">#885D4037</color>
     <color name="colorError">#F44336</color>
     <color name="colorAccentRed">#F44336</color>
