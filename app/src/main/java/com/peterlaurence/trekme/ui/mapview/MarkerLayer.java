@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.ui.mapview.components.MarkerCallout;
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab;
 import com.peterlaurence.trekme.ui.mapview.components.MovableMarker;
-import com.peterlaurence.trekme.ui.tools.MarkerTouchMoveListener;
+import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 import com.qozix.tileview.markers.MarkerLayout;
@@ -46,13 +46,13 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
     }
 
     /**
-     * A {@link MarkerGrab} is used along with a {@link MarkerTouchMoveListener} to reflect its
+     * A {@link MarkerGrab} is used along with a {@link TouchMoveListener} to reflect its
      * displacement to the marker passed as argument.
      */
     private static void attachMarkerGrab(final MovableMarker movableMarker, TileView tileView,
                                          Map map, Context context) {
         /* Add a view as background, to move easily the marker */
-        MarkerTouchMoveListener.MarkerMoveCallback markerMoveCallback = new MarkerTouchMoveListener.MarkerMoveCallback() {
+        TouchMoveListener.MoveCallback markerMoveCallback = new TouchMoveListener.MoveCallback() {
             @Override
             public void onMarkerMove(TileView tileView, View view, double x, double y) {
                 tileView.moveMarker(view, x, y);
@@ -63,9 +63,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
         };
 
         MarkerGrab markerGrab = new MarkerGrab(context);
-        MarkerTouchMoveListener.MarkerClickCallback markerClickCallback = new MovableMarkerClickCallback(
+        TouchMoveListener.ClickCallback markerClickCallback = new MovableMarkerClickCallback(
                 movableMarker, markerGrab, tileView, map);
-        markerGrab.setOnTouchListener(new MarkerTouchMoveListener(tileView, markerMoveCallback, markerClickCallback));
+        markerGrab.setOnTouchListener(new TouchMoveListener(tileView, markerMoveCallback, markerClickCallback));
         tileView.addMarker(markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f);
         markerGrab.morphIn();
     }
@@ -230,7 +230,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
      * relative coordinates are wgs84 or projected values.</li>
      * </ul>
      */
-    private static class MovableMarkerClickCallback implements MarkerTouchMoveListener.MarkerClickCallback {
+    private static class MovableMarkerClickCallback implements TouchMoveListener.ClickCallback {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerGrab> mMarkerGrabWeakReference;
         private TileView mTileView;

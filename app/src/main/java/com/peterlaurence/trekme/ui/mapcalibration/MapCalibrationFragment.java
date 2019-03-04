@@ -16,7 +16,7 @@ import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
-import com.peterlaurence.trekme.ui.tools.MarkerTouchMoveListener;
+import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 import com.peterlaurence.trekme.model.map.MapProvider;
 import com.qozix.tileview.TileView;
 
@@ -142,8 +142,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
         /* The calibration marker */
         mCalibrationMarker = new CalibrationMarker(this.getContext());
-        MarkerTouchMoveListener.MarkerMoveCallback callback = new CalibrationMarkerMoveCallback();
-        mCalibrationMarker.setOnTouchListener(new MarkerTouchMoveListener(tileView, callback));
+        TouchMoveListener.MoveCallback callback = new CalibrationMarkerMoveCallback();
+        mCalibrationMarker.setOnTouchListener(new TouchMoveListener(tileView, callback));
         tileView.addMarker(mCalibrationMarker, 0.5, 0.5, -0.5f, -0.5f);
 
         /* The BitmapProvider */
@@ -354,7 +354,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         double getYValue();
     }
 
-    private static class CalibrationMarkerMoveCallback implements MarkerTouchMoveListener.MarkerMoveCallback {
+    private static class CalibrationMarkerMoveCallback implements TouchMoveListener.MoveCallback {
         @Override
         public void onMarkerMove(TileView tileView, View view, double x, double y) {
             moveCalibrationMarker(tileView, view, x, y);

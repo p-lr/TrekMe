@@ -12,7 +12,7 @@ import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.ui.mapview.components.DistanceMarker;
 import com.peterlaurence.trekme.ui.mapview.components.DistanceView;
-import com.peterlaurence.trekme.ui.tools.MarkerTouchMoveListener;
+import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 
@@ -63,7 +63,7 @@ public class DistanceLayer {
 
         /* Setup the first marker */
         mDistanceMarkerFirst = new DistanceMarker(mContext);
-        MarkerTouchMoveListener.MarkerMoveCallback firstMarkerMoveCallback = new MarkerTouchMoveListener.MarkerMoveCallback() {
+        TouchMoveListener.MoveCallback firstMarkerMoveCallback = new TouchMoveListener.MoveCallback() {
             @Override
             public void onMarkerMove(TileView tileView, View view, double x, double y) {
                 mFirstMarkerRelativeX = x;
@@ -72,12 +72,12 @@ public class DistanceLayer {
                 onMarkerMoved();
             }
         };
-        MarkerTouchMoveListener firstMarkerTouchMoveListener = new MarkerTouchMoveListener(mTileView, firstMarkerMoveCallback);
-        mDistanceMarkerFirst.setOnTouchListener(firstMarkerTouchMoveListener);
+        TouchMoveListener firstTouchMoveListener = new TouchMoveListener(mTileView, firstMarkerMoveCallback);
+        mDistanceMarkerFirst.setOnTouchListener(firstTouchMoveListener);
 
         /* Setup the second marker*/
         mDistanceMarkerSecond = new DistanceMarker(mContext);
-        MarkerTouchMoveListener.MarkerMoveCallback secondMarkerMoveCallback = new MarkerTouchMoveListener.MarkerMoveCallback() {
+        TouchMoveListener.MoveCallback secondMarkerMoveCallback = new TouchMoveListener.MoveCallback() {
             @Override
             public void onMarkerMove(TileView tileView, View view, double x, double y) {
                 mSecondMarkerRelativeX = x;
@@ -86,8 +86,8 @@ public class DistanceLayer {
                 onMarkerMoved();
             }
         };
-        MarkerTouchMoveListener secondMarkerTouchMoveListener = new MarkerTouchMoveListener(mTileView, secondMarkerMoveCallback);
-        mDistanceMarkerSecond.setOnTouchListener(secondMarkerTouchMoveListener);
+        TouchMoveListener secondTouchMoveListener = new TouchMoveListener(mTileView, secondMarkerMoveCallback);
+        mDistanceMarkerSecond.setOnTouchListener(secondTouchMoveListener);
 
         /* Set their positions */
         initDistanceMarkers();

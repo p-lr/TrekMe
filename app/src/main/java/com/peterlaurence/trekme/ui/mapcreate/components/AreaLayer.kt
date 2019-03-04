@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import com.peterlaurence.trekme.ui.mapview.TileViewExtended
-import com.peterlaurence.trekme.ui.tools.MarkerTouchMoveListener
+import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 
 class AreaLayer(val context: Context, val areaListener: AreaListener) {
     lateinit var tileView: TileViewExtended
@@ -31,24 +31,24 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
 
         /* Setup the first marker */
         areaMarkerFirst = AreaMarker(context)
-        val firstMarkerMoveCallback = MarkerTouchMoveListener.MarkerMoveCallback { tileView_, _, x, y ->
+        val firstMarkerMoveCallback = TouchMoveListener.MoveCallback { tileView_, _, x, y ->
             firstMarkerRelativeX = x
             firstMarkerRelativeY = y
             tileView_.moveMarker(areaMarkerFirst, x, y)
             onMarkerMoved()
         }
-        val firstMarkerTouchMoveListener = MarkerTouchMoveListener(tileView, firstMarkerMoveCallback)
+        val firstMarkerTouchMoveListener = TouchMoveListener(tileView, firstMarkerMoveCallback)
         areaMarkerFirst.setOnTouchListener(firstMarkerTouchMoveListener)
 
         /* Setup the second marker */
         areaMarkerSecond = AreaMarker(context)
-        val secondMarkerMoveCallback = MarkerTouchMoveListener.MarkerMoveCallback { tileView_, _, x, y ->
+        val secondMarkerMoveCallback = TouchMoveListener.MoveCallback { tileView_, _, x, y ->
             secondMarkerRelativeX = x
             secondMarkerRelativeY = y
             tileView_.moveMarker(areaMarkerSecond, x, y)
             onMarkerMoved()
         }
-        val secondMarkerTouchMoveListener = MarkerTouchMoveListener(tileView, secondMarkerMoveCallback)
+        val secondMarkerTouchMoveListener = TouchMoveListener(tileView, secondMarkerMoveCallback)
         areaMarkerSecond.setOnTouchListener(secondMarkerTouchMoveListener)
 
         /* Set their positions */

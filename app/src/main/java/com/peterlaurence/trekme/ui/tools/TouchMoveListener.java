@@ -8,39 +8,40 @@ import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
 
 /**
- * A touch listener that enables touch-moves of a marker on a {@link TileView}. <br>
+ * A touch listener that enables touch-moves of a view (also called marker) on a {@link TileView}. <br>
  * Example of usage :
  * <pre>{@code
- * MarkerMoveCallback callback = new ClassImplementsMarkerMoveCallback();
- * MarkerTouchMoveListener markerTouchListener = new MarkerTouchMoveListener(tileView, callback);
+ * MoveCallback callback = new ClassImplementsMoveCallback();
+ * TouchMoveListener markerTouchListener = new TouchMoveListener(tileView, callback);
  * View marker = new CustomMarker(context);
  * marker.setOnTouchListener(markerTouchListener);
+ * tileView.addMarker(marker, ...);
  * }</pre>
  * <p>
- * It can also react to single-tap event. To be notified, provide a {@link MarkerClickCallback} to
+ * It can also react to single-tap event. To be notified, provide a {@link ClickCallback} to
  * the overloaded constructor.
  *
  * @author peterLaurence
  */
-public class MarkerTouchMoveListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
+public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
     private final TileView mTileView;
     private GestureDetector mGestureDetector;
     private float deltaX;
     private float deltaY;
-    private MarkerMoveCallback mMarkerMoveCallback;
-    private MarkerClickCallback mMarkerClickCallback;
+    private MoveCallback mMarkerMoveCallback;
+    private ClickCallback mMarkerClickCallback;
 
     private double mLeftBound;
     private double mRightBound;
     private double mTopBound;
     private double mBottomBound;
 
-    public MarkerTouchMoveListener(TileView tileView, MarkerMoveCallback markerMoveCallback) {
+    public TouchMoveListener(TileView tileView, MoveCallback markerMoveCallback) {
         this(tileView, markerMoveCallback, null);
     }
 
-    public MarkerTouchMoveListener(TileView tileView, MarkerMoveCallback markerMoveCallback,
-                                   MarkerClickCallback markerClickCallback) {
+    public TouchMoveListener(TileView tileView, MoveCallback markerMoveCallback,
+                             ClickCallback markerClickCallback) {
         mTileView = tileView;
         mGestureDetector = new GestureDetector(tileView.getContext(), this);
         mMarkerMoveCallback = markerMoveCallback;
@@ -127,11 +128,15 @@ public class MarkerTouchMoveListener extends GestureDetector.SimpleOnGestureList
         return y;
     }
 
-    public interface MarkerMoveCallback {
+    /**
+     * A callback that gives the "relative coordinates" of the view added to the TileView.
+     * Most of the time, the callee sets the given coordinates of the view on the TileView.
+     */
+    public interface MoveCallback {
         void onMarkerMove(TileView tileView, View view, double x, double y);
     }
 
-    public interface MarkerClickCallback {
+    public interface ClickCallback {
         void onMarkerClick();
     }
 }
