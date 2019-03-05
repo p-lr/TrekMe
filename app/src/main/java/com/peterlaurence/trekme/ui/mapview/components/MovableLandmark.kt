@@ -21,7 +21,7 @@ class MovableLandmark
 @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : AppCompatImageView(context, attrs, defStyleAttr) {
 
-    private val rounded = context.getDrawable(R.drawable.avd_marker_rounded) as AnimatedVectorDrawable
+    private val rounded = context.getDrawable(R.drawable.avd_landmark_rounded) as AnimatedVectorDrawable
     private val static = context.getDrawable(R.drawable.vd_landmark_location_rounded) as Drawable
     private val staticToDynamic = context.getDrawable(R.drawable.avd_landmark_location_rounded) as AnimatedVectorDrawable
     private val dynamicToStatic = context.getDrawable(R.drawable.avd_landmark_rounded_location) as AnimatedVectorDrawable
@@ -59,6 +59,7 @@ class MovableLandmark
     fun initRounded() {
         isStatic = false
         setImageDrawable(rounded)
+        rounded.start()
     }
 
     fun morphToStaticForm() {

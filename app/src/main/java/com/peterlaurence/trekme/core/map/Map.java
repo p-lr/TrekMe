@@ -10,6 +10,7 @@ import android.os.ParcelFileDescriptor;
 import androidx.annotation.Nullable;
 import android.util.Log;
 
+import com.peterlaurence.trekme.core.map.gson.Landmark;
 import com.peterlaurence.trekme.core.map.gson.LandmarkGson;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
@@ -78,6 +79,7 @@ public class Map {
     public Map(MapGson mapGson, File jsonFile, File thumbnail) {
         mMapGson = mapGson;
         mMarkerGson = new MarkerGson();
+        mLandmarkGson = new LandmarkGson(new ArrayList<>());
         mRouteGson = new RouteGson();
         mConfigFile = jsonFile;
         mImage = getBitmapFromFile(thumbnail);
@@ -269,6 +271,13 @@ public class Map {
         mMarkerGson.markers.add(marker);
     }
 
+    /**
+     * Add a new landmark
+     */
+    public void addLandmark(Landmark landmark) {
+        mLandmarkGson.getLandmarks().add(landmark);
+    }
+
     public Bitmap getImage() {
         return mImage;
     }
@@ -395,6 +404,10 @@ public class Map {
 
     public boolean areMarkersDefined() {
         return mMarkerGson != null && mMarkerGson.markers.size() > 0;
+    }
+
+    public boolean areLandmarksDefined() {
+        return mLandmarkGson != null && mLandmarkGson.getLandmarks().size() > 0;
     }
 
     public boolean areRoutesDefined() {

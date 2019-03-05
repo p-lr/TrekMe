@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.ui.mapview
 import android.util.Log
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
 import com.peterlaurence.trekme.ui.mapview.components.PathView
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
@@ -47,9 +46,6 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
     /**
      * This must be called when the [MapViewFragment] is ready to update its UI.
-     *
-     * The caller is responsible for removing this [MapLoader.MapRouteUpdateListener] from the
-     * [MapLoader], after this object is no longer used.
      */
     fun init(map: Map, tileView: TileView) {
         mMap = map

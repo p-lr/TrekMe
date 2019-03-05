@@ -179,7 +179,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         /* Create the landmark layer */
         if (!::landmarkLayer.isInitialized) {
             context?.let {
-                landmarkLayer = LandmarkLayer(it)
+                landmarkLayer = LandmarkLayer(it, this)
             }
         }
     }
@@ -296,7 +296,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         if (hidden) {
             speedListener.hideSpeed()
             distanceLayer.hide()
-            landmarkLayer.hide()
             orientationEventManager.stop()
         } else {
             updateMapIfNecessary()
