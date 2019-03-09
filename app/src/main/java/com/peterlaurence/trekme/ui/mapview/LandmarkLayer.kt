@@ -1,9 +1,12 @@
 package com.peterlaurence.trekme.ui.mapview
 
 import android.content.Context
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.Drawable
 import android.view.View
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.Landmark
+import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getLandmarksForMap
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.MovableLandmark
@@ -51,13 +54,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         val movableLandmark: MovableLandmark
 
         /* Create a new landmark and add it to the map */
-        val newLandmark = if (map.projection == null) {
-            Landmark("", relativeY, relativeX, 0.0, 0.0, "")
-        } else {
-            val wgs84Coords: DoubleArray? = map.projection!!.undoProjection(relativeX, relativeY)
-            Landmark("", wgs84Coords?.get(1) ?: 0.0, wgs84Coords?.get(0)
-                    ?: 0.0, relativeX, relativeY, "")
-        }
+        val newLandmark = Landmark("", 0.0, 0.0, 0.0, 0.0, "").newCoords(relativeX, relativeY)
 
         /* Create the corresponding view */
         movableLandmark = MovableLandmark(context, false, newLandmark)
@@ -75,7 +72,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
 
     private fun attachMarkerGrab(movableLandmark: MovableLandmark, tileView: TileView, map: Map, context: Context) {
         /* Add a view as background, to move easily the marker */
-        val markerMoveCallback = TouchMoveListener.MoveCallback { tileView, view, x, y ->
+        val landmarkMoveCallback = TouchMoveListener.MoveCallback { tileView, view, x, y ->
             tileView.moveMarker(view, x, y)
             tileView.moveMarker(movableLandmark, x, y)
             movableLandmark.relativeX = x
@@ -83,8 +80,29 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         }
 
         val markerGrab = MarkerGrab(context)
-        // TODO: define a click callback, like in MarkerLayer
-        markerGrab.setOnTouchListener(TouchMoveListener(tileView, markerMoveCallback))
+
+        val landmarkClickCallback = TouchMoveListener.ClickCallback {
+            movableLandmark.morphToStaticForm()
+
+            /* After the morph, remove the MarkerGrab */
+            markerGrab.morphOut(object : Animatable2.AnimationCallback() {
+                override fun onAnimationEnd(drawable: Drawable) {
+                    super.onAnimationEnd(drawable)
+                    tileView.removeMarker(markerGrab)
+                }
+            })
+
+            /* The view has been moved, update the associated model object */
+            val landmark = movableLandmark.getLandmark()
+            if (movableLandmark.relativeX != null && movableLandmark.relativeY != null) {
+                landmark.newCoords(movableLandmark.relativeX!!, movableLandmark.relativeY!!)
+            }
+
+            /* Save the changes on the markers.json file */
+            MapLoader.saveLandmarks(map)
+        }
+
+        markerGrab.setOnTouchListener(TouchMoveListener(tileView, landmarkMoveCallback, landmarkClickCallback))
         if (movableLandmark.relativeX != null && movableLandmark.relativeY != null) {
             tileView.addMarker(markerGrab, movableLandmark.relativeX!!, movableLandmark.relativeY!!, -0.5f, -0.5f)
             markerGrab.morphIn()
@@ -102,5 +120,18 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
 
     override fun onMarkerTap(view: View?, x: Int, y: Int) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    private fun Landmark.newCoords(relativeX: Double, relativeY: Double): Landmark = apply {
+        if (map.projection == null) {
+            lat = relativeY
+            lon = relativeX
+        } else {
+            val wgs84Coords: DoubleArray? = map.projection!!.undoProjection(relativeX, relativeY)
+            lat = wgs84Coords?.get(1) ?: 0.0
+            lon = wgs84Coords?.get(0) ?: 0.0
+            proj_x = relativeX
+            proj_y = relativeY
+        }
     }
 }

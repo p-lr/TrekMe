@@ -240,15 +240,10 @@ object MapLoader : MapImporter.MapImportListener {
      */
     fun saveMap(map: Map) {
         val jsonString = mGson.toJson(map.mapGson)
-
         val configFile = map.configFile
-        try {
-            val writer = PrintWriter(configFile)
-            writer.print(jsonString)
-            writer.close()
-        } catch (e: IOException) {
+
+        writeToFile(jsonString, configFile) {
             Log.e(TAG, "Error while saving the map")
-            Log.e(TAG, e.message, e)
         }
 
         notifyMapListUpdateListeners()
@@ -264,15 +259,22 @@ object MapLoader : MapImporter.MapImportListener {
         val jsonString = mGson.toJson(map.markerGson)
 
         val markerFile = File(map.directory, MapLoader.MAP_MARKER_FILE_NAME)
-        try {
-            val writer = PrintWriter(markerFile)
-            writer.print(jsonString)
-            writer.close()
-        } catch (e: IOException) {
+        writeToFile(jsonString, markerFile) {
             Log.e(TAG, "Error while saving the markers")
-            Log.e(TAG, e.message, e)
         }
+    }
 
+    /**
+     * Save the [LandmarkGson] of a [Map], so the changes persist upon application restart.
+     * @param map the [Map] to save.
+     */
+    fun saveLandmarks(map: Map) {
+        val jsonString = mGson.toJson(map.landmarkGson)
+        val landmarkFile = File(map.directory, MapLoader.MAP_LANDMARK_FILE_NAME)
+
+        writeToFile(jsonString, landmarkFile) {
+            Log.e(TAG, "Error while saving the landmarks")
+        }
     }
 
     /**
@@ -283,17 +285,11 @@ object MapLoader : MapImporter.MapImportListener {
      */
     fun saveRoutes(map: Map) {
         val jsonString = mGson.toJson(map.routeGson)
-
         val routeFile = File(map.directory, MapLoader.MAP_ROUTE_FILE_NAME)
-        try {
-            val writer = PrintWriter(routeFile)
-            writer.print(jsonString)
-            writer.close()
-        } catch (e: IOException) {
-            Log.e(TAG, "Error while saving the routes")
-            Log.e(TAG, e.message, e)
-        }
 
+        writeToFile(jsonString, routeFile) {
+            Log.e(TAG, "Error while saving the routes")
+        }
     }
 
     /**
@@ -402,6 +398,21 @@ object MapLoader : MapImporter.MapImportListener {
         return when (map.origin) {
             BitmapProviderLibVips.GENERATOR_NAME -> BitmapProviderLibVips(map)
             else -> BitmapProviderDummy()
+        }
+    }
+
+    /**
+     * Utility method to write a [String] into a [File].
+     */
+    private fun writeToFile(st: String, out: File, errCb: () -> Unit) {
+        val writer = PrintWriter(out)
+        try {
+            writer.print(st)
+        } catch (e: IOException) {
+            errCb()
+            Log.e(TAG, e.message, e)
+        } finally {
+            writer.close()
         }
     }
 }

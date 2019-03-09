@@ -87,6 +87,9 @@ class MovableLandmark
         }
     }
 
+    /**
+     * Get the reference on the [Landmark] this [MovableLandmark] refers to.
+     */
     fun getLandmark(): Landmark {
         return landmark
     }

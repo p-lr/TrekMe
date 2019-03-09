@@ -41,4 +41,9 @@ class MarkerGrab(context: Context) : AppCompatImageView(context) {
         mCurrentDrawable = mInAnimation
         mInAnimation.start()
     }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
+    }
 }
