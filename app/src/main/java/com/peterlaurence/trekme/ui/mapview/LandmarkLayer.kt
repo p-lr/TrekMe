@@ -8,7 +8,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getLandmarksForMap
-import com.peterlaurence.trekme.ui.mapview.components.MarkerCallout
+import com.peterlaurence.trekme.ui.mapview.components.LandmarkCallout
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.MovableLandmark
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
@@ -137,7 +137,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
     override fun onMarkerTap(view: View?, x: Int, y: Int) {
         if (view is MovableLandmark && view.relativeX != null && view.relativeY != null) {
             /* Prepare the callout */
-            val landmarkCallout = MarkerCallout(context)
+            val landmarkCallout = LandmarkCallout(context)
             landmarkCallout.setMoveAction {
                 view.morphToDynamicForm()
 
@@ -152,10 +152,6 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
                 tileView.removeCallout(landmarkCallout)
             }
 
-            landmarkCallout.setEditAction {
-                //TODO : implement this
-            }
-
             landmarkCallout.setDeleteAction {
                 /* Remove the callout */
                 tileView.removeCallout(landmarkCallout)
@@ -167,7 +163,6 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
                 MapLoader.deleteLandmark(map, landmark)
             }
             val landmark = view.getLandmark()
-            landmarkCallout.setTitle(landmark.name)
             landmarkCallout.setSubTitle(landmark.lat, landmark.lon)
 
             tileView.addCallout(landmarkCallout, view.relativeX!!, view.relativeY!!, -0.5f, -1.2f)
