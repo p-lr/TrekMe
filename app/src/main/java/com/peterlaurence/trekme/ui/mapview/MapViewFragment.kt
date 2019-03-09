@@ -432,9 +432,12 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         mTileView.setSingleTapListener(rootView)
         mTileView.setScrollListener(rootView)
 
-        /* The tileView can have only one MarkerTapListener */
+        /* The tileView can have only one MarkerTapListener.
+         * It dispatches the tap event to child layers.
+         */
         mTileView.setMarkerTapListener { view: View, x: Int, y: Int ->
             markerLayer.onMarkerTap(view, x, y)
+            landmarkLayer.onMarkerTap(view, x, y)
         }
     }
 

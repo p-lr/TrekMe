@@ -6,10 +6,7 @@ import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
-import com.peterlaurence.trekme.core.map.gson.LandmarkGson
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
-import com.peterlaurence.trekme.core.map.gson.RouteGson
-import com.peterlaurence.trekme.core.map.gson.RuntimeTypeAdapterFactory
+import com.peterlaurence.trekme.core.map.gson.*
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.tasks.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
@@ -319,6 +316,15 @@ object MapLoader : MapImporter.MapImportListener {
         markerList?.remove(marker)
 
         saveMarkers(map)
+    }
+
+    /**
+     * Delete a [Landmark] from a [Map].
+     */
+    fun deleteLandmark(map: Map, landmark: Landmark) {
+        map.landmarkGson.landmarks.remove(landmark)
+
+        saveLandmarks(map)
     }
 
     /**

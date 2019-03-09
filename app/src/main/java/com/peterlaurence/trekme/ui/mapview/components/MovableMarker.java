@@ -118,4 +118,10 @@ public class MovableMarker extends AppCompatImageView {
     public MarkerGson.Marker getMarker() {
         return mMarker;
     }
+
+    @Override
+    public boolean performClick() {
+        super.performClick();
+        return true;
+    }
 }

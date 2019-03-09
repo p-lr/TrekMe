@@ -8,6 +8,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getLandmarksForMap
+import com.peterlaurence.trekme.ui.mapview.components.MarkerCallout
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.MovableLandmark
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
@@ -40,7 +41,22 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
 
     private fun drawLandmarks() {
         val landmarks = map.landmarkGson.landmarks
-        // TODO: implement
+
+        for (landmark in landmarks) {
+            val movableLandmark = MovableLandmark(context, true, landmark)
+            if (map.projection == null) {
+                movableLandmark.relativeX = landmark.lon
+                movableLandmark.relativeY = landmark.lat
+            } else {
+                /* Take proj values, and fallback to lat-lon if they are null */
+                movableLandmark.relativeX = if (landmark.proj_x != null) landmark.proj_x else landmark.lon
+                movableLandmark.relativeY = if (landmark.proj_y != null) landmark.proj_y else landmark.lat
+            }
+            movableLandmark.initStatic()
+
+            tileView.addMarker(movableLandmark, movableLandmark.relativeX!!,
+                    movableLandmark.relativeY!!, -0.5f, -0.5f)
+        }
     }
 
     fun addNewLandmark() {
@@ -119,7 +135,45 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
     }
 
     override fun onMarkerTap(view: View?, x: Int, y: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (view is MovableLandmark && view.relativeX != null && view.relativeY != null) {
+            /* Prepare the callout */
+            val landmarkCallout = MarkerCallout(context)
+            landmarkCallout.setMoveAction {
+                view.morphToDynamicForm()
+
+                /* Easily move the landmark */
+                attachMarkerGrab(view, tileView, map, context)
+
+                /* Use a trick to bring the landmark to the foreground */
+                tileView.removeMarker(view)
+                tileView.addMarker(view, view.relativeX!!, view.relativeY!!, -0.5f, -0.5f)
+
+                /* Remove the callout */
+                tileView.removeCallout(landmarkCallout)
+            }
+
+            landmarkCallout.setEditAction {
+                //TODO : implement this
+            }
+
+            landmarkCallout.setDeleteAction {
+                /* Remove the callout */
+                tileView.removeCallout(landmarkCallout)
+
+                /* Delete the marker */
+                tileView.removeMarker(view)
+
+                val landmark = view.getLandmark()
+                MapLoader.deleteLandmark(map, landmark)
+            }
+            val landmark = view.getLandmark()
+            landmarkCallout.setTitle(landmark.name)
+            landmarkCallout.setSubTitle(landmark.lat, landmark.lon)
+
+            tileView.addCallout(landmarkCallout, view.relativeX!!, view.relativeY!!, -0.5f, -1.2f)
+
+            landmarkCallout.transitionIn()
+        }
     }
 
     private fun Landmark.newCoords(relativeX: Double, relativeY: Double): Landmark = apply {
