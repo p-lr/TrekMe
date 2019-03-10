@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.map.gson.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getLandmarksForMap
 import com.peterlaurence.trekme.ui.mapview.components.LandmarkCallout
+import com.peterlaurence.trekme.ui.mapview.components.LineView
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.MovableLandmark
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
@@ -17,12 +18,14 @@ import com.qozix.tileview.markers.MarkerLayout
 import kotlinx.coroutines.CoroutineScope
 
 class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineScope) :
-        MarkerLayout.MarkerTapListener, CoroutineScope by coroutineScope {
+        MarkerLayout.MarkerTapListener, TileViewExtended.ScaleChangeListener, CoroutineScope by coroutineScope {
     private lateinit var map: Map
-    private lateinit var tileView: TileView
+    private lateinit var tileView: TileViewExtended
     private var visible = false
+    private var lastKnownPosition: Pair<Double, Double> = Pair(0.0, 0.0)
+    private val movableLandmarkList: MutableList<MovableLandmark> = mutableListOf()
 
-    fun init(map: Map, tileView: TileView) {
+    fun init(map: Map, tileView: TileViewExtended) {
         this.map = map
         setTileView(tileView)
 
@@ -43,7 +46,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         val landmarks = map.landmarkGson.landmarks
 
         for (landmark in landmarks) {
-            val movableLandmark = MovableLandmark(context, true, landmark)
+            val movableLandmark = MovableLandmark(context, true, landmark, newLineView())
             if (map.projection == null) {
                 movableLandmark.relativeX = landmark.lon
                 movableLandmark.relativeY = landmark.lat
@@ -53,6 +56,9 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
                 movableLandmark.relativeY = if (landmark.proj_y != null) landmark.proj_y else landmark.lat
             }
             movableLandmark.initStatic()
+
+            /* Keep a reference on it */
+            movableLandmarkList.add(movableLandmark)
 
             tileView.addMarker(movableLandmark, movableLandmark.relativeX!!,
                     movableLandmark.relativeY!!, -0.5f, -0.5f)
@@ -73,10 +79,13 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         val newLandmark = Landmark("", 0.0, 0.0, 0.0, 0.0, "").newCoords(relativeX, relativeY)
 
         /* Create the corresponding view */
-        movableLandmark = MovableLandmark(context, false, newLandmark)
+        movableLandmark = MovableLandmark(context, false, newLandmark, newLineView())
         movableLandmark.relativeX = relativeX
         movableLandmark.relativeY = relativeY
         movableLandmark.initRounded()
+
+        /* Keep a reference on it */
+        movableLandmarkList.add(movableLandmark)
 
         map.addLandmark(newLandmark)
 
@@ -93,6 +102,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             tileView.moveMarker(movableLandmark, x, y)
             movableLandmark.relativeX = x
             movableLandmark.relativeY = y
+            movableLandmark.updateLine()
         }
 
         val markerGrab = MarkerGrab(context)
@@ -130,7 +140,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
      */
     fun isVisible() = visible
 
-    private fun setTileView(tileView: TileView) {
+    private fun setTileView(tileView: TileViewExtended) {
         this.tileView = tileView
     }
 
@@ -156,8 +166,10 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
                 /* Remove the callout */
                 tileView.removeCallout(landmarkCallout)
 
-                /* Delete the marker */
+                /* Delete the landmark */
                 tileView.removeMarker(view)
+                movableLandmarkList.remove(view)
+                view.deleteLine()
 
                 val landmark = view.getLandmark()
                 MapLoader.deleteLandmark(map, landmark)
@@ -181,6 +193,59 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             lon = wgs84Coords?.get(0) ?: 0.0
             proj_x = relativeX
             proj_y = relativeY
+        }
+    }
+
+    override fun onScaleChanged(scale: Float) {
+        movableLandmarkList.forEach {
+            it.getLineView().onScaleChanged(scale)
+        }
+    }
+
+    /**
+     * Remove the associated [LineView]
+     */
+    private fun MovableLandmark.deleteLine() {
+        val lineView = getLineView()
+        tileView.removeScaleChangeListener(lineView)
+        tileView.removeView(lineView)
+    }
+
+    private fun newLineView(): LineView {
+        val lineView = LineView(context, tileView.scale, -0x3363d850)
+        tileView.addScaleChangeListener(lineView)
+        tileView.addView(lineView)
+        return lineView
+    }
+
+    private fun MovableLandmark.updateLine() {
+        val lineView = getLineView()
+        if (relativeX != null && relativeY != null) {
+            val coordinateTranslater = tileView.coordinateTranslater
+
+            lineView.updateLine(
+                    coordinateTranslater.translateX(lastKnownPosition.first).toFloat(),
+                    coordinateTranslater.translateY(lastKnownPosition.second).toFloat(),
+                    coordinateTranslater.translateX(relativeX!!).toFloat(),
+                    coordinateTranslater.translateY(relativeY!!).toFloat())
+        }
+    }
+
+    /**
+     * Called by the parent view ([MapViewFragment]).
+     * All [LineView]s need to be updated.
+     *
+     * @param x the projected X coordinate, or longitude if there is no [Projection]
+     * @param y the projected Y coordinate, or latitude if there is no [Projection]
+     */
+    fun onPositionUpdate(x: Double, y: Double) {
+        lastKnownPosition = Pair(x, y)
+        updateAllLines()
+    }
+
+    private fun updateAllLines() {
+        movableLandmarkList.forEach {
+            it.updateLine()
         }
     }
 }

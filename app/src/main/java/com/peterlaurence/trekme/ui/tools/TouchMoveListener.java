@@ -62,8 +62,8 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                deltaX = event.getX() - view.getWidth() / 2;
-                deltaY = event.getY() - view.getHeight() / 2;
+                deltaX = event.getX() - (view.getWidth() >> 1);
+                deltaY = event.getY() - (view.getHeight() >> 1);
                 break;
 
             case MotionEvent.ACTION_MOVE:

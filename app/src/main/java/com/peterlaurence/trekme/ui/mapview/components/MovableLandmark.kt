@@ -26,6 +26,7 @@ class MovableLandmark
     private val staticToDynamic = context.getDrawable(R.drawable.avd_landmark_location_rounded) as AnimatedVectorDrawable
     private val dynamicToStatic = context.getDrawable(R.drawable.avd_landmark_rounded_location) as AnimatedVectorDrawable
     private lateinit var landmark: Landmark
+    private lateinit var lineView: LineView
     private var isStatic = false
 
     /* The relative coordinates are kept here. Although this shouldn't be a concern of this object,
@@ -41,8 +42,9 @@ class MovableLandmark
      * The [static] drawable is the end state of the [dynamicToStatic]
      * `AnimatedVectorDrawable`. <br>
      */
-    constructor(context: Context, staticForm: Boolean, landmark: Landmark) : this(context, null, 0) {
+    constructor(context: Context, staticForm: Boolean, landmark: Landmark, lineView: LineView) : this(context, null, 0) {
         this.landmark = landmark
+        this.lineView = lineView
 
         if (staticForm) {
             initStatic()
@@ -92,5 +94,12 @@ class MovableLandmark
      */
     fun getLandmark(): Landmark {
         return landmark
+    }
+
+    /**
+     * Get the reference on the [LineView] this [MovableLandmark] refers to.
+     */
+    fun getLineView(): LineView {
+        return lineView
     }
 }

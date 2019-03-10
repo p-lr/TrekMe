@@ -410,14 +410,17 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     }
 
     /**
-     * Updates the position on the [Map].
-     * Also, if we locked the view, we center the TileView on the current position.
+     * Actions taken when the position changes:
+     * * Update the position on the [Map]
+     * * Update the landmarks
+     * * If we locked the view, we center the TileView on the current position
      *
      * @param x the projected X coordinate, or longitude if there is no [Projection]
      * @param y the projected Y coordinate, or latitude if there is no [Projection]
      */
     private fun updatePosition(x: Double, y: Double) {
         mTileView.moveMarker(positionMarker, x, y)
+        landmarkLayer.onPositionUpdate(x, y)
 
         if (lockView) {
             centerOnPosition()

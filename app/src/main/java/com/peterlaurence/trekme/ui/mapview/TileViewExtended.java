@@ -100,7 +100,7 @@ public class TileViewExtended extends TileView {
         mScaleChangeListeners.add(listener);
     }
 
-    public void removeScaleChangeLisetner(ScaleChangeListener listener) {
+    public void removeScaleChangeListener(ScaleChangeListener listener) {
         mScaleChangeListeners.remove(listener);
     }
 

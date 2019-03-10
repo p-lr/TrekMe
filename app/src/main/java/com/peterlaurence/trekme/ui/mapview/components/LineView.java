@@ -10,21 +10,25 @@ import android.view.View;
 import com.peterlaurence.trekme.ui.mapview.TileViewExtended;
 
 /**
- * A custom view that draws a line between two {@link DistanceMarker} and represents the distance
+ * A custom view that draws a line between two points and represents the distance
  * between them.
  *
  * @author peterLaurence on 21/06/17.
  */
-public class DistanceView extends View implements TileViewExtended.ScaleChangeListener {
+public class LineView extends View implements TileViewExtended.ScaleChangeListener {
     private static final int DEFAULT_STROKE_COLOR = 0xCC311B92;
     private static final int DEFAULT_STROKE_WIDTH_DP = 4;
     private float mStrokeWidth;
     private Paint mPaint = new Paint();
     private float[] mLine = new float[4];
 
-    private float mScale = 1;
+    private float mScale;
 
-    public DistanceView(Context context, float scale) {
+    public LineView(Context context, float scale) {
+        this(context, scale, null);
+    }
+
+    public LineView(Context context, float scale, Integer color) {
         super(context);
         setWillNotDraw(false);
         mScale = scale;
@@ -32,8 +36,13 @@ public class DistanceView extends View implements TileViewExtended.ScaleChangeLi
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         mStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_STROKE_WIDTH_DP, metrics);
 
+        if (color == null) {
+            mPaint.setColor(DEFAULT_STROKE_COLOR);
+        } else {
+            mPaint.setColor(color);
+        }
+
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(DEFAULT_STROKE_COLOR);
         mPaint.setStrokeWidth(mStrokeWidth);
         mPaint.setAntiAlias(true);
         mPaint.setStrokeJoin(Paint.Join.ROUND);

@@ -71,7 +71,7 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
             tileView.removeMarker(areaMarkerFirst)
             tileView.removeMarker(areaMarkerSecond)
             tileView.removeView(areaView)
-            tileView.removeScaleChangeLisetner(areaView)
+            tileView.removeScaleChangeListener(areaView)
         }
 
         visible = false

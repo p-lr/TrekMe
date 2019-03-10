@@ -11,7 +11,7 @@ import android.view.View;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.ui.mapview.components.DistanceMarker;
-import com.peterlaurence.trekme.ui.mapview.components.DistanceView;
+import com.peterlaurence.trekme.ui.mapview.components.LineView;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.geom.CoordinateTranslater;
@@ -19,7 +19,7 @@ import com.qozix.tileview.geom.CoordinateTranslater;
 import static com.peterlaurence.trekme.core.geotools.GeoToolsKt.distanceApprox;
 
 /**
- * Shows two {@link DistanceMarker} and a {@link DistanceView}.
+ * Shows two {@link DistanceMarker} and a {@link LineView}.
  *
  * @author peterLaurence on 17/06/17.
  */
@@ -29,7 +29,7 @@ public class DistanceLayer {
     private Context mContext;
     private DistanceMarker mDistanceMarkerFirst;
     private DistanceMarker mDistanceMarkerSecond;
-    private DistanceView mDistanceView;
+    private LineView mLineView;
     private boolean mVisible;
     private DistanceListener mDistanceListener;
     private TileViewExtended mTileView;
@@ -52,14 +52,14 @@ public class DistanceLayer {
     }
 
     /**
-     * Shows the two {@link DistanceMarker} and the {@link DistanceView}.<br>
+     * Shows the two {@link DistanceMarker} and the {@link LineView}.<br>
      * {@link #init(Map, TileViewExtended)} must have been called before.
      */
     public void show() {
         /* Create the DistanceView (the line between the two markers) */
-        mDistanceView = new DistanceView(mContext, mTileView.getScale());
-        mTileView.addScaleChangeListener(mDistanceView);
-        mTileView.addView(mDistanceView);
+        mLineView = new LineView(mContext, mTileView.getScale());
+        mTileView.addScaleChangeListener(mLineView);
+        mTileView.addView(mLineView);
 
         /* Setup the first marker */
         mDistanceMarkerFirst = new DistanceMarker(mContext);
@@ -105,19 +105,19 @@ public class DistanceLayer {
     }
 
     /**
-     * Hide the two {@link DistanceMarker} and the {@link DistanceView}.
+     * Hide the two {@link DistanceMarker} and the {@link LineView}.
      */
     public void hide() {
         if (mTileView != null) {
             mTileView.removeMarker(mDistanceMarkerFirst);
             mTileView.removeMarker(mDistanceMarkerSecond);
-            mTileView.removeView(mDistanceView);
-            mTileView.removeScaleChangeLisetner(mDistanceView);
+            mTileView.removeView(mLineView);
+            mTileView.removeScaleChangeListener(mLineView);
         }
 
         mDistanceMarkerFirst = null;
         mDistanceMarkerSecond = null;
-        mDistanceView = null;
+        mLineView = null;
         mVisible = false;
 
         /* Stop the thread that process distance calculation */
@@ -154,7 +154,7 @@ public class DistanceLayer {
     private void onMarkerMoved() {
         /* Update the ui */
         CoordinateTranslater translater = mTileView.getCoordinateTranslater();
-        mDistanceView.updateLine(
+        mLineView.updateLine(
                 (float) translater.translateX(mFirstMarkerRelativeX),
                 (float) translater.translateY(mFirstMarkerRelativeY),
                 (float) translater.translateX(mSecondMarkerRelativeX),
