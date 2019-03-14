@@ -12,6 +12,7 @@
   * [Measure a distance](#TOC-Measure-distance)
   * [Show the speed](#TOC-Show-speed)
   * [Add markers](#TOC-Add-markers)
+  * [Add a landmark](#TOC-Add-landmarks)
   * [Import a GPX track](#TOC-GPX-track-import)
   * [GPX recording](#TOC-GPX-recording)
 
@@ -202,6 +203,22 @@ Here is the marker edition view:
 </p>
 
 Nothing is changed until you save your changes.
+
+### <a name="TOC-Add-landmarks"></a>Add landmarks
+
+A landmark is a specific marker. A purple line is draw between it and your current position. So it helps when you need to always know the direction of a specific place, which may be outside of the area that your screen covers.
+
+To add a landmark, it is the same logic as for markers. But this time we use the lighthouse icon.
+
+<p align="center">
+<img src="doc/tuto/landmark-1.jpg" width="300">
+</p>
+
+Often, we want to display our orientation in the same time. We can also add several landmarks:
+
+<p align="center">
+<img src="doc/tuto/landmark-2.jpg" width="300">
+</p>
 
 ### <a name="TOC-GPX-track-import"></a>Import a GPX track
 

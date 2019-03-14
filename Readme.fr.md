@@ -12,6 +12,7 @@
   * [Mesurer une distance](#TOC-Measure-distance)
   * [Afficher la vitesse](#TOC-Show-speed)
   * [Ajouter un marqueur](#TOC-Add-markers)
+  * [Ajouter un repère](#TOC-Add-landmarks)
   * [Importer une trace GPX](#TOC-GPX-track-import)
   * [S'enregistrer au format GPX](#TOC-GPX-recording)
 5. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
@@ -187,6 +188,22 @@ Voici un exemple de fiche d'un marqueur :
 
 La plupart du temps, on se contente de modifier seulement le nom ou le commentaire.
 Rien n'est modifié tant que vous ne sauvegardez pas vos modifications (bouton "disquette" en haut).
+
+### <a name="TOC-Add-landmarks"></a>Ajout de points de repère
+
+Un point de repère est un marqueur spécial. Une ligne de couleur violette se dessine entre votre position actuelle et le repère. De cette manière vous pouvez vous fixer un objectif éloigné et toujours voir à l'écran la direction vers ce repère.
+
+Pour ajouter un point de repère, c'est le même principe que pour les marqueurs mais on utilise l'icone de phare (comme un amer en navigation maritime).
+
+<p align="center">
+<img src="doc/tuto/landmark-1.jpg" width="300">
+</p>
+
+En général, on affiche en même temps l'orientation. On peut aussi en ajouter plusieurs :
+
+<p align="center">
+<img src="doc/tuto/landmark-2.jpg" width="300">
+</p>
 
 ### <a name="TOC-GPX-track-import"></a>Import d'un fichier GPX
 
