@@ -214,7 +214,8 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
     private fun newLineView(): LineView {
         val lineView = LineView(context, tileView.scale, -0x3363d850)
         tileView.addScaleChangeListener(lineView)
-        tileView.addView(lineView)
+        /* The index 2 is due to how TileView v2 is designed and how we want landmarks to render */
+        tileView.addView(lineView, 2)
         return lineView
     }
 
