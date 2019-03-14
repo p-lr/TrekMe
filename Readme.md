@@ -206,7 +206,7 @@ Nothing is changed until you save your changes.
 
 ### <a name="TOC-Add-landmarks"></a>Add landmarks
 
-A landmark is a specific marker. A purple line is draw between it and your current position. So it helps when you need to always know the direction of a specific place, which may be outside of the area that your screen covers.
+A landmark is a specific marker. A purple line is drawn between it and your current position. So it helps when you need to always know the direction of a specific place, which may be outside of the area that your screen covers.
 
 To add a landmark, it is the same logic as for markers. But this time we use the lighthouse icon.
 
