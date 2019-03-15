@@ -51,25 +51,25 @@ class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
         ignPwd = ignCredentials?.pwd ?: ""
         ignApiKey = ignCredentials?.api ?: ""
 
-        val ignUserPreference = findPreference(getString(R.string.ign_user)) as EditTextPreference
-        ignUserPreference.text = ignUser
-        ignUserPreference.setOnPreferenceChangeListener { _, ignUser ->
+        val ignUserPreference = findPreference<EditTextPreference>(getString(R.string.ign_user))
+        ignUserPreference?.text = ignUser
+        ignUserPreference?.setOnPreferenceChangeListener { _, ignUser ->
             this.ignUser = ignUser as String
             saveCredentials()
             true
         }
 
-        val ignPwdPreference = findPreference(getString(R.string.ign_pwd)) as EditTextPreference
-        ignPwdPreference.text = ignPwd
-        ignPwdPreference.setOnPreferenceChangeListener { _, ignPwd ->
+        val ignPwdPreference = findPreference<EditTextPreference>(getString(R.string.ign_pwd))
+        ignPwdPreference?.text = ignPwd
+        ignPwdPreference?.setOnPreferenceChangeListener { _, ignPwd ->
             this.ignPwd = ignPwd as String
             saveCredentials()
             true
         }
 
-        val ignApiKeyPreference = findPreference(getString(R.string.ign_api_key)) as EditTextPreference
-        ignApiKeyPreference.text = ignApiKey
-        ignApiKeyPreference.setOnPreferenceChangeListener { _, ignApiKey ->
+        val ignApiKeyPreference = findPreference<EditTextPreference>(getString(R.string.ign_api_key))
+        ignApiKeyPreference?.text = ignApiKey
+        ignApiKeyPreference?.setOnPreferenceChangeListener { _, ignApiKey ->
             this.ignApiKey = ignApiKey as String
             saveCredentials()
             true
