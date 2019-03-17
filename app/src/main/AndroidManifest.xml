@@ -35,6 +35,14 @@
             android:name="com.peterlaurence.trekme.service.DownloadService"
             android:enabled="true"
             android:exported="false" />
+
+        <provider
+            android:authorities="com.peterlaurence.trekme"
+            android:name="com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider"
+            android:enabled="true"
+            android:exported="false"
+            android:grantUriPermissions="true">
+        </provider>
     </application>
 
 </manifest>

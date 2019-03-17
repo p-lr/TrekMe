@@ -3,21 +3,23 @@ package com.peterlaurence.trekme.ui.record
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ShareCompat
+import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackTools
+import com.peterlaurence.trekme.service.LocationService
+import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
+import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.record.components.events.*
-import com.peterlaurence.trekme.service.LocationService
-import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.util.FileUtils
+import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import kotlinx.android.synthetic.main.fragment_record.*
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
@@ -103,6 +105,21 @@ class RecordFragment : Fragment(), CoroutineScope {
             val dialog = MapChoiceDialog()
             dialog.show(fragmentActivity.supportFragmentManager, "MapChoiceDialog")
         }
+    }
+
+    @Subscribe
+    fun onRequestShareRecording(event: RequestShareRecording) {
+        val intentBuilder = ShareCompat.IntentBuilder.from(activity)
+                .setType("text/plain")
+        event.recordings.forEach {
+            try {
+                val uri = TrekmeFilesProvider.generateUri(it)
+                intentBuilder.addStream(uri)
+            } catch (e: IllegalArgumentException) {
+                e.printStackTrace()
+            }
+        }
+        intentBuilder.startChooser()
     }
 
     @Subscribe
