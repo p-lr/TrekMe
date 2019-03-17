@@ -2,14 +2,12 @@ package com.peterlaurence.trekme.ui.record
 
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
-import com.peterlaurence.trekme.BuildConfig
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackTools
@@ -21,13 +19,12 @@ import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.record.components.events.*
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.util.fileprovider.CacheProvider
+import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import kotlinx.android.synthetic.main.fragment_record.*
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -112,27 +109,17 @@ class RecordFragment : Fragment(), CoroutineScope {
 
     @Subscribe
     fun onRequestShareRecording(event: RequestShareRecording) {
-        val x = ShareCompat.IntentBuilder.from(activity)
+        val intentBuilder = ShareCompat.IntentBuilder.from(activity)
                 .setType("text/plain")
-                .setText("vsdf")
         event.recordings.forEach {
             try {
-                val dest = File(context!!.cacheDir, it.name)
-                it.copyTo(dest, true)
-                println("dest : " + dest)
-                println("context " + context)
-                println("config " + BuildConfig.APPLICATION_ID)
-                println("file : " + it)
-                println("file name : " + it.name)
-                val uri = Uri.parse("content://" + CacheProvider.AUTHORITY + "/" + it.name)
-                println("uri : " + uri)
-                x.addStream(uri)
+                val uri = TrekmeFilesProvider.generateUri(it)
+                intentBuilder.addStream(uri)
             } catch (e: IllegalArgumentException) {
-                println("ILLEGAL")
+                e.printStackTrace()
             }
-
         }
-        x.startChooser()
+        intentBuilder.startChooser()
     }
 
     @Subscribe
