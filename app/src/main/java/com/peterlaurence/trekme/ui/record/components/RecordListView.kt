@@ -2,19 +2,20 @@ package com.peterlaurence.trekme.ui.record.components
 
 import android.content.Context
 import android.graphics.Color
-import com.google.android.material.snackbar.Snackbar
-import androidx.cardview.widget.CardView
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageButton
+import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.ui.record.components.events.MapSelectedForRecord
 import com.peterlaurence.trekme.ui.record.components.events.RequestChooseMap
 import com.peterlaurence.trekme.ui.record.components.events.RequestEditRecording
+import com.peterlaurence.trekme.ui.record.components.events.RequestShareRecording
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import org.greenrobot.eventbus.EventBus
@@ -72,6 +73,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         val recyclerView = findViewById<RecyclerView>(R.id.recordings_recycler_id)
         val editNameButton = findViewById<ImageButton>(R.id.edit_recording_button)
         val importButton = findViewById<ImageButton>(R.id.import_track_button)
+        val shareButton = findViewById<ImageButton>(R.id.share_track_button)
         val deleteRecordingButton = findViewById<ImageButton>(R.id.delete_recording_button)
 
         editNameButton.isEnabled = false
@@ -84,6 +86,13 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
         importButton.isEnabled = false
         importButton.setOnClickListener { EventBus.getDefault().post(RequestChooseMap()) }
+
+        shareButton.isEnabled = false
+        shareButton.setOnClickListener {
+            if (selectedRecordings.size >= 1) {
+                EventBus.getDefault().post(RequestShareRecording(selectedRecordings))
+            }
+        }
 
         deleteRecordingButton.setOnClickListener {
             var success = true
@@ -128,6 +137,9 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     importButton.isEnabled = true
                     importButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
 
+                    shareButton.isEnabled = true
+                    shareButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
+
                     recordingAdapter.setSelectedRecordings(selectedRecordings)
                     recordingAdapter.notifyDataSetChanged()
                 }
@@ -141,6 +153,8 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     editNameButton.drawable.setTint(Color.GRAY)
                     importButton.isEnabled = false
                     importButton.drawable.setTint(Color.GRAY)
+                    shareButton.isEnabled = false
+                    shareButton.drawable.setTint(Color.GRAY)
                     deleteRecordingButton.visibility = View.VISIBLE
                     multiSelect(position)
                     recordingAdapter.setSelectedRecordings(selectedRecordings)

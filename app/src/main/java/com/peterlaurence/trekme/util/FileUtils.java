@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.util;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,8 +12,13 @@ import android.provider.OpenableColumns;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Utility class.
@@ -150,5 +156,17 @@ public class FileUtils {
             }
         }
         return result;
+    }
+
+    public static void createCachedFile(Context context, String fileName,
+                                        String content) throws IOException {
+        File cacheFile = new File(context.getCacheDir(), fileName);
+        if (cacheFile.createNewFile()) {
+            FileOutputStream fos = new FileOutputStream(cacheFile);
+            OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+            PrintWriter pw = new PrintWriter(osw);
+            pw.flush();
+            pw.close();
+        }
     }
 }

@@ -181,7 +181,7 @@ Press the marker button to add a new marker at the center of the screen:
 <img src="doc/tuto/new-marker.jpg" width="300">
 </p>
 
-With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
+With its red arrows turning around it, its shows that it can be moved by dragging the blue circle.
 When you're satisfied with its position, tap on the red circle at the center. It then morphs to its static form.
 
 Tapping a marker displays a popup:
