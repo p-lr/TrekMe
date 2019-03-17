@@ -123,6 +123,20 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
         recyclerView.addOnItemTouchListener(RecyclerItemClickListener(this.context,
                 recyclerView, object : RecyclerItemClickListener.OnItemClickListener {
+            private fun updateShareAndDeleteButtons() {
+                if (selectedRecordings.isEmpty()) {
+                    shareButton.isEnabled = false
+                    shareButton.drawable.setTint(Color.GRAY)
+
+                    deleteRecordingButton.visibility = View.GONE
+                } else {
+                    shareButton.isEnabled = true
+                    shareButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
+
+                    deleteRecordingButton.visibility = View.VISIBLE
+                }
+            }
+
             override fun onItemClick(view: View, position: Int) {
                 if (isMultiSelectMode) {
                     multiSelect(position)
@@ -137,34 +151,30 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     importButton.isEnabled = true
                     importButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
 
-                    shareButton.isEnabled = true
-                    shareButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
-
                     recordingAdapter.setSelectedRecordings(selectedRecordings)
                     recordingAdapter.notifyDataSetChanged()
                 }
+
+                updateShareAndDeleteButtons()
             }
 
             override fun onItemLongClick(view: View, position: Int) {
                 selectedRecordings = ArrayList()
                 if (!isMultiSelectMode) {
-                    isMultiSelectMode = true
                     editNameButton.isEnabled = false
                     editNameButton.drawable.setTint(Color.GRAY)
                     importButton.isEnabled = false
                     importButton.drawable.setTint(Color.GRAY)
-                    shareButton.isEnabled = false
-                    shareButton.drawable.setTint(Color.GRAY)
-                    deleteRecordingButton.visibility = View.VISIBLE
                     multiSelect(position)
                     recordingAdapter.setSelectedRecordings(selectedRecordings)
                     recordingAdapter.notifyDataSetChanged()
                 } else {
-                    isMultiSelectMode = false
-                    deleteRecordingButton.visibility = View.GONE
                     recordingAdapter.setSelectedRecordings(selectedRecordings)
                     recordingAdapter.notifyDataSetChanged()
                 }
+                isMultiSelectMode = !isMultiSelectMode
+
+                updateShareAndDeleteButtons()
             }
         }))
     }
