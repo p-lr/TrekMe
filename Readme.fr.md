@@ -240,11 +240,25 @@ Quand un enregistrement est en cours, un service spécifique est démarré, qui 
 
 Un indicateur dans le panneau "Service de localisation" affiche le statut du service.
 
-Un dernier panneau affiche la liste des enregistrement effectués.
-En sélectionnant un enregistrement, deux bouton en bas à gauchent vous permettent respectivement de :
+Un dernier panneau affiche la liste des enregistrements effectués.
+En sélectionnant un enregistrement, trois boutons en bas à gauche vous permettent respectivement de :
 
 * renommer le fichier gpx
 * l'importer dans une carte existante (un menu vous donne alors le choix de la carte)
+* partager un ou plusieurs fichiers gpx
 
-Pour supprimer un enregistrement, appuyez deux secondes sur un enregistrement. Un bouton rouge en bas à droite apparaît. Attention, si vous pressez ce bouton rouge, tous les enregistrement sélectionnés (cad sur fond bleu) seront **définitivement**  supprimés. 
+**Mode de sélection multiple**
+
+Appuyez deux secondes sur un enregistrement. 
 Pour revenir au mode de sélection normal, appuyez à nouveau deux secondes sur un enregistrement.
+
+**Partage d'un ou plusieurs enregistrements**
+
+Que vous soyez en mode de sélection simple ou multiple, le bouton de partage est disponible :
+<p align="center">
+<img src="doc/tuto/share-recording.jpg" width="300">
+</p>
+
+**Supprimer un enregistrement**
+
+Passez en mode de sélection multiple. Un bouton rouge en bas à droite apparaît. Attention, si vous pressez ce bouton rouge, tous les enregistrement sélectionnés (cad sur fond bleu) seront **définitivement**  supprimés. 

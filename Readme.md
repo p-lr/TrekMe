@@ -181,7 +181,7 @@ Press the marker button to add a new marker at the center of the screen:
 <img src="doc/tuto/new-marker.jpg" width="300">
 </p>
 
-With its red arrows turning around it, its shows that it can be moved by dragging the blue circle.
+With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
 When you're satisfied with its position, tap on the red circle at the center. It then morphs to its static form.
 
 Tapping a marker displays a popup:
@@ -255,10 +255,25 @@ The recording can be started or stopped from the control panel. When recording, 
 runs in the background. It continues even if TrekMe is stopped or paused.
 An indicator reports back the status of the location service. A panel shows the list of recordings.
 
-From there, when selecting a track, there are two buttons at the bottom which enable you to :
+From there, when selecting a track, there are three buttons at the bottom which enable you to :
 
 * rename it
 * import it into an existing map (press the import button at the bottom of the list, then choose the map)
+* share it
 
-To delete a recording, long-press on it. The panel transitions into a selection mode, where there is a
-remove button at the bottom. To go back to selection mode, long-press again somewhere in the list.
+
+**Multiple-selection mode**
+
+To switch to multiple-selection mode, long-press a recording.
+To revert back to single selection mode, long press again somewhere in the list.
+
+**Share recordings**
+
+Whatever the selection mode, the share button below is available:
+<p align="center">
+<img src="doc/tuto/share-recording.jpg" width="300">
+</p>
+
+**Delete a recording**
+
+To delete a recording, activate the multiple-selection mode. A remove button appears at the bottom right.
