@@ -45,7 +45,6 @@ import com.peterlaurence.trekme.service.event.LocationServiceStatus;
 import com.peterlaurence.trekme.service.event.MapDownloadEvent;
 import com.peterlaurence.trekme.service.event.Status;
 import com.peterlaurence.trekme.ui.MarkerProvider;
-import com.peterlaurence.trekme.ui.dialogs.MapDownloadDialog;
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent;
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent;
 import com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment;
@@ -93,7 +92,6 @@ public class MainActivity extends AppCompatActivity
     private static final String TRACK_VIEW_FRAGMENT_TAG = "trackViewFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
-    private static final String MAP_DOWNLOAD_DIALOG_TAG = "mapDownloadDialog";
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
             new ArrayList<String>() {{
                 add(MAP_FRAGMENT_TAG);
@@ -107,7 +105,6 @@ public class MainActivity extends AppCompatActivity
                 add(TRACKS_MANAGE_FRAGMENT_TAG);
                 add(MARKER_MANAGE_FRAGMENT_TAG);
                 add(RECORD_FRAGMENT_TAG);
-                add(MAP_DOWNLOAD_DIALOG_TAG);
                 add(TRACK_VIEW_FRAGMENT_TAG);
             }});
     /* Permission-group codes */
@@ -367,18 +364,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         return true;
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-
-        if ("show-progress".equals(intent.getAction())) {
-            if (getSupportFragmentManager().findFragmentByTag(MAP_DOWNLOAD_DIALOG_TAG) == null) {
-                MapDownloadDialog mapDownloadDialog = new MapDownloadDialog();
-                mapDownloadDialog.show(getSupportFragmentManager(), MAP_DOWNLOAD_DIALOG_TAG);
-            }
-        }
     }
 
     @Override

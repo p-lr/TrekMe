@@ -54,15 +54,12 @@ import java.util.*
  */
 class DownloadService : Service() {
     private val NOTIFICATION_ID = "peterlaurence.DownloadService"
-    private val SERVICE_START_ID = 128565
-    private val SERVICE_FINISHED_ID = 128577
+    private val DownloadServiceNofificationID = 128565
     private val threadCount = 4
     private val STOP_ACTION = "stop"
-    private val SHOW_PROGRESS_ACTION = "show-progress"
 
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
-    private lateinit var showProgressPendingIntent: PendingIntent
     private lateinit var icon: Bitmap
 
     private lateinit var notificationBuilder: NotificationCompat.Builder
@@ -89,10 +86,6 @@ class DownloadService : Service() {
         val stopIntent = Intent(this, DownloadService::class.java)
         stopIntent.action = STOP_ACTION
         onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
-
-        val showProgressionIntent = Intent(this, MainActivity::class.java)
-        showProgressionIntent.action = SHOW_PROGRESS_ACTION
-        showProgressPendingIntent = PendingIntent.getActivity(this, 0, showProgressionIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         notificationManager = NotificationManagerCompat.from(this)
 
@@ -132,10 +125,10 @@ class DownloadService : Service() {
                 .setLargeIcon(icon)
                 .setContentIntent(onTapPendingIntent)
                 .setColor(getColor(R.color.colorAccent))
-                .addAction(R.drawable.download_progress, getString(R.string.service_download_see_progress), showProgressPendingIntent)
                 .addAction(R.drawable.ic_stop_black_24dp, getString(R.string.service_download_stop), onStopPendingIntent)
                 .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setOnlyAlertOnce(true)
 
         /* This is only needed on Devices on Android O and above */
         if (android.os.Build.VERSION.SDK_INT >= 26) {
@@ -147,7 +140,7 @@ class DownloadService : Service() {
             notificationBuilder.setChannelId(NOTIFICATION_ID)
         }
 
-        startForeground(SERVICE_START_ID, notificationBuilder.build())
+        startForeground(DownloadServiceNofificationID, notificationBuilder.build())
 
         started = true
         sendStartedStatus()
@@ -227,6 +220,13 @@ class DownloadService : Service() {
     }
 
     private fun onDownloadProgress(progress: Double) {
+        /* Update the notification */
+        notificationBuilder.setProgress(100, progress.toInt(), false)
+        notificationBuilder.setWhen(0)
+        notificationBuilder.setOngoing(false)
+        notificationManager.notify(DownloadServiceNofificationID, notificationBuilder.build())
+
+        /* Send a message carrying the progress info */
         progressEvent.progress = progress
         EventBus.getDefault().post(progressEvent)
     }
@@ -250,7 +250,6 @@ class DownloadService : Service() {
                     override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
                         handler.post {
                             calibrate(map)
-                            sendDownloadFinished()
 
                             /* Notify that the download is finished correctly*/
                             notifyDownloadFinished(okMsg)
@@ -270,28 +269,14 @@ class DownloadService : Service() {
     }
 
     private fun notifyDownloadFinished(message: CharSequence) {
-        notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
-                .setContentTitle(getText(R.string.app_name))
-                .setStyle(NotificationCompat.BigTextStyle().bigText(message))
-                .setContentText(message)
-                .setSmallIcon(R.drawable.ic_file_download_24dp)
-                .setLargeIcon(icon)
-                .setContentIntent(onTapPendingIntent)
-                .setColor(getColor(R.color.colorAccent))
-                .setOngoing(false)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        /* Update the notification */
+        notificationBuilder.setContentText(message)
+        notificationBuilder.setProgress(0, 0, false)
+        notificationBuilder.mActions.clear()
+        notificationManager.notify(DownloadServiceNofificationID, notificationBuilder.build())
 
-        /* This is only needed on Devices on Android O and above */
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val chan = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_download_name), NotificationManager.IMPORTANCE_DEFAULT)
-            chan.enableLights(true)
-            chan.lightColor = Color.MAGENTA
-            notificationManager.createNotificationChannel(chan)
-            notificationBuilder.setChannelId(NOTIFICATION_ID)
-        }
-
-        notificationManager.notify(SERVICE_FINISHED_ID, notificationBuilder.build())
+        /* Tell the rest of the app that the download is finished */
+        EventBus.getDefault().post(MapDownloadEvent(Status.FINISHED))
     }
 
     private fun sendStartedStatus() {
@@ -300,10 +285,6 @@ class DownloadService : Service() {
 
     private fun requestDownloadSpec() {
         EventBus.getDefault().post(WmtsLevelsDialog.DownloadSpecRequest())
-    }
-
-    private fun sendDownloadFinished() {
-        EventBus.getDefault().post(MapDownloadEvent(Status.FINISHED))
     }
 }
 
