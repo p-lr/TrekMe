@@ -53,10 +53,10 @@ import java.util.*
  * corner of the device.
  */
 class DownloadService : Service() {
-    private val NOTIFICATION_ID = "peterlaurence.DownloadService"
-    private val DownloadServiceNofificationID = 128565
+    private val notificationChannelId = "peterlaurence.DownloadService"
+    private val downloadServiceNofificationId = 128565
     private val threadCount = 4
-    private val STOP_ACTION = "stop"
+    private val stopAction = "stop"
 
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
@@ -84,7 +84,7 @@ class DownloadService : Service() {
         onTapPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val stopIntent = Intent(this, DownloadService::class.java)
-        stopIntent.action = STOP_ACTION
+        stopIntent.action = stopAction
         onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
 
         notificationManager = NotificationManagerCompat.from(this)
@@ -110,7 +110,7 @@ class DownloadService : Service() {
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         /* If the user used the notification action-stop button, stop the service */
-        if (intent.action == STOP_ACTION) {
+        if (intent.action == stopAction) {
             started = false
             stopForeground(true)
             stopSelf()
@@ -118,7 +118,7 @@ class DownloadService : Service() {
         }
 
         /* From here, we know that the service is being created by the activity */
-        notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
+        notificationBuilder = NotificationCompat.Builder(applicationContext, notificationChannelId)
                 .setContentTitle(getText(R.string.app_name))
                 .setContentText(getText(R.string.service_download_action))
                 .setSmallIcon(R.drawable.ic_file_download_24dp)
@@ -133,14 +133,14 @@ class DownloadService : Service() {
         /* This is only needed on Devices on Android O and above */
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val chan = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_download_name), NotificationManager.IMPORTANCE_DEFAULT)
+            val chan = NotificationChannel(notificationChannelId, getText(R.string.service_download_name), NotificationManager.IMPORTANCE_DEFAULT)
             chan.enableLights(true)
             chan.lightColor = Color.MAGENTA
             notificationManager.createNotificationChannel(chan)
-            notificationBuilder.setChannelId(NOTIFICATION_ID)
+            notificationBuilder.setChannelId(notificationChannelId)
         }
 
-        startForeground(DownloadServiceNofificationID, notificationBuilder.build())
+        startForeground(downloadServiceNofificationId, notificationBuilder.build())
 
         started = true
         sendStartedStatus()
@@ -155,7 +155,7 @@ class DownloadService : Service() {
     @Subscribe
     fun onRequestDownloadMapEvent(event: RequestDownloadMapEvent) {
         val source = event.source
-        var tileSequence = event.tileSequence
+        val tileSequence = event.tileSequence
 
         val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles) { p ->
             if (started) {
@@ -224,7 +224,7 @@ class DownloadService : Service() {
         notificationBuilder.setProgress(100, progress.toInt(), false)
         notificationBuilder.setWhen(0)
         notificationBuilder.setOngoing(false)
-        notificationManager.notify(DownloadServiceNofificationID, notificationBuilder.build())
+        notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
 
         /* Send a message carrying the progress info */
         progressEvent.progress = progress
@@ -273,7 +273,7 @@ class DownloadService : Service() {
         notificationBuilder.setContentText(message)
         notificationBuilder.setProgress(0, 0, false)
         notificationBuilder.mActions.clear()
-        notificationManager.notify(DownloadServiceNofificationID, notificationBuilder.build())
+        notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
 
         /* Tell the rest of the app that the download is finished */
         EventBus.getDefault().post(MapDownloadEvent(Status.FINISHED))
@@ -328,7 +328,7 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
 private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterator,
                                  private val bitmapProvider: GenericBitmapProvider,
                                  private val tileWriter: TileWriter) : Thread() {
-    val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565)
+    val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565)
 
     init {
         val options = BitmapFactory.Options()
