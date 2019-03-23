@@ -168,15 +168,6 @@ object MapLoader : MapImporter.MapImportListener {
         task.start()
     }
 
-    /**
-     * Get a [Map] given its name.
-     *
-     * @param name the name of the [Map] to retrieve.
-     */
-    fun getMap(name: String): Map? {
-        return mMapList.first { it.name.equals(name, ignoreCase = true) }
-    }
-
     fun setMapListUpdateListener(listener: MapListUpdateListener) {
         mMapListUpdateListener = listener
     }

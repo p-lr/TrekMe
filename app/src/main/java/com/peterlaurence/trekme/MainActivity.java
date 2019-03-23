@@ -323,7 +323,7 @@ public class MainActivity extends AppCompatActivity
                 case MAP_SETTINGS_FRAGMENT_TAG:
                     Map map = MapProvider.INSTANCE.getSettingsMap();
                     if (map != null) {
-                        showMapSettingsFragment(map.getName());
+                        showMapSettingsFragment(map.getId());
                         break;
                     } else {
                         mBackFragmentTag = null;
@@ -451,8 +451,8 @@ public class MainActivity extends AppCompatActivity
         return mapListFragment;
     }
 
-    private Fragment createMapSettingsFragment(FragmentTransaction transaction, String mapName) {
-        Fragment mapSettingsFragment = MapSettingsFragment.newInstance(mapName);
+    private Fragment createMapSettingsFragment(FragmentTransaction transaction, int mapId) {
+        Fragment mapSettingsFragment = MapSettingsFragment.newInstance(mapId);
         transaction.add(R.id.content_frame, mapSettingsFragment, MAP_SETTINGS_FRAGMENT_TAG);
         return mapSettingsFragment;
     }
@@ -567,7 +567,7 @@ public class MainActivity extends AppCompatActivity
         transaction.commit();
     }
 
-    private void showMapSettingsFragment(String mapName) {
+    private void showMapSettingsFragment(int mapId) {
         /* Remove single-usage fragments */
         removeSingleUsageFragments();
 
@@ -581,10 +581,10 @@ public class MainActivity extends AppCompatActivity
 
         /* Show the map settings fragment if it exists */
         if (mapSettingsFragment == null) {
-            mapSettingsFragment = createMapSettingsFragment(transaction, mapName);
+            mapSettingsFragment = createMapSettingsFragment(transaction, mapId);
         } else {
             /* If it already exists, set the Map */
-            ((MapSettingsFragment) mapSettingsFragment).setMap(mapName);
+            ((MapSettingsFragment) mapSettingsFragment).setMap(mapId);
         }
         transaction.show(mapSettingsFragment);
 
@@ -752,7 +752,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapSettingsFragmentInteraction(Map map) {
         /* The setting button of a map has been clicked */
-        showMapSettingsFragment(map.getName());
+        showMapSettingsFragment(map.getId());
     }
 
     @Override

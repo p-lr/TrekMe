@@ -3,19 +3,10 @@ package com.peterlaurence.trekme.ui.maplist;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.DialogFragment;
-import androidx.appcompat.app.AlertDialog;
-import androidx.preference.EditTextPreference;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import android.widget.Toast;
 
 import com.peterlaurence.trekme.R;
@@ -24,6 +15,14 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog;
 
 import java.lang.ref.WeakReference;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 /**
  * Fragment that shows the settings for a given map. It provides the abilities to :
@@ -47,7 +46,7 @@ import java.lang.ref.WeakReference;
  */
 public class MapSettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final String ARG_MAP_NAME = "arg_map_name";
+    private static final String ARG_MAP_ID = "arg_map_id";
     private static final int IMAGE_REQUEST_CODE = 1338;
     private WeakReference<Map> mMapWeakReference;
 
@@ -58,13 +57,13 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      * Arguments supplied here will be retained across fragment destroy and
      * creation.
      *
-     * @param mapName the name of the {@link Map}
+     * @param mapId the id of the {@link Map}
      * @return A new instance of {@code MapSettingsFragment}
      */
-    public static MapSettingsFragment newInstance(String mapName) {
+    public static MapSettingsFragment newInstance(int mapId) {
         MapSettingsFragment fragment = new MapSettingsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_MAP_NAME, mapName);
+        args.putInt(ARG_MAP_ID, mapId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -90,12 +89,12 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         super.onCreate(savedInstanceState);
 
         Bundle args = getArguments();
-        String mapName = "";
         if (args != null) {
-            mapName = args.getString(ARG_MAP_NAME);
+            int mapId = args.getInt(ARG_MAP_ID);
+            setMap(mapId);
         }
 
-        setMap(mapName);
+
     }
 
     @Override
@@ -111,15 +110,18 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      * layout has been set with e.g {@code addPreferencesFromResource}.
      * </p>
      *
-     * @param mapName the name of the {@link Map}
+     * @param mapId the id of the {@link Map}
      */
-    public void setMap(String mapName) {
-        mMapWeakReference = new WeakReference<>(MapLoader.INSTANCE.getMap(mapName));
+    public void setMap(int mapId) {
+        Map map = MapLoader.INSTANCE.getMap(mapId);
+        mMapWeakReference = new WeakReference<>(map);
 
-        /* Choice is made to have the preference file name equal to the map name */
-        getPreferenceManager().setSharedPreferencesName(mapName);
+        if (map != null) {
+            /* Choice is made to have the preference file name equal to the map name */
+            getPreferenceManager().setSharedPreferencesName(map.getName());
 
-        initComponents();
+            initComponents();
+        }
     }
 
     private void initComponents() {

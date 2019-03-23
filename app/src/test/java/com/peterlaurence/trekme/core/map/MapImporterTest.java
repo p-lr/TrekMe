@@ -12,6 +12,7 @@ import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -86,8 +87,12 @@ public class MapImporterTest {
             if (libVipsMapDir.exists()) {
                 MapLoader.MapListUpdateListener mapListUpdateListener = mapsFound -> {
                     assertTrue(mapsFound);
-                    Map map = MapLoader.INSTANCE.getMap("La Réunion - Est");
+                    List<Map> mapList = MapLoader.INSTANCE.getMaps();
+                    assertEquals(1, mapList.size());
+                    int firstMapId = mapList.get(0).getId();
+                    Map map = MapLoader.INSTANCE.getMap(firstMapId);
                     assertNotNull(map);
+                    assertEquals("La Réunion - Est", map.getName());
                     assertEquals(3, map.getMapGson().levels.size());
                 };
                 MapLoader mapLoader = MapLoader.INSTANCE;
