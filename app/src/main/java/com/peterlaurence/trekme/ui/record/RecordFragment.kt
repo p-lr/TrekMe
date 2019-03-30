@@ -20,6 +20,7 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.record.components.events.*
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
+import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxFileToMap
 import kotlinx.android.synthetic.main.fragment_record.*
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
@@ -135,6 +136,11 @@ class RecordFragment : Fragment(), CoroutineScope {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
         updateRecordings()
+    }
+
+    @Subscribe
+    fun onImportRecordingEvent(event: RequestImportRecording) {
+        applyGpxFileToMap(event.file, event.map)
     }
 
     private fun CoroutineScope.updateRecordings() = launch {

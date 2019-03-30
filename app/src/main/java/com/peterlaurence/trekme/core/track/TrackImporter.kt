@@ -2,14 +2,12 @@ package com.peterlaurence.trekme.core.track
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.os.AsyncTask
 import android.util.Log
 import com.peterlaurence.trekme.core.TrekMeContext.recordingsDir
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.ui.mapview.events.TrackChangedEvent
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.GPXParser
 import com.peterlaurence.trekme.util.gpx.GPXWriter
@@ -17,10 +15,9 @@ import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
-import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import java.io.*
-import java.util.*
 
 /**
  * Utility toolbox to :
@@ -130,189 +127,137 @@ object TrackImporter {
         return supportedTrackFilesExtensions.any { it == extension }
     }
 
-    /**
-     * Parse a [File] that contains routes, and is in one of the supported formats. <br></br>
-     * The parsing is done in an asynctask.
-     *
-     * @param uri      the track as an [Uri]
-     * @param listener a [TrackFileParsedListener]
-     * @param map      the [Map] to which the routes will be added.
-     */
-    fun importTrackUri(uri: Uri, listener: TrackFileParsedListener, map: Map,
-                       contentResolver: ContentResolver) {
-
-        try {
-            val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-            if (parcelFileDescriptor == null) {
-                listener.onError("Could not read content of file")
-                return
-            }
+    fun CoroutineScope.applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): Deferred<Unit> {
+        val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
+        return parcelFileDescriptor?.use {
             val fileDescriptor = parcelFileDescriptor.fileDescriptor
             val fileInputStream = FileInputStream(fileDescriptor)
             val fileName = FileUtils.getFileRealPathFromURI(contentResolver, uri) ?: "A track"
-
-            val gpxTrackFileToRoutesTask = GpxTrackFileToRoutesTask(listener, map, fileName, Runnable {
-                try {
-                    parcelFileDescriptor.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-            })
-            gpxTrackFileToRoutesTask.execute(fileInputStream)
-        } catch (e: IOException) {
-            listener.onError("Error when opening the file")
-        }
-
+            applyGpxInputStreamToMapAsync(fileInputStream, map, fileName)
+        } ?: throw FileNotFoundException("File with uri $uri doesn't exists")
     }
 
-    fun importTrackFile(file: File, listener: TrackFileParsedListener?, map: Map) {
+    fun CoroutineScope.applyGpxFileToMap(file: File, map: Map) = launch {
         try {
             val fileInputStream = FileInputStream(file)
-
-            val gpxTrackFileToRoutesTask = GpxTrackFileToRoutesTask(listener, map, file.name, null)
-            gpxTrackFileToRoutesTask.execute(fileInputStream)
-        } catch (e: FileNotFoundException) {
-            listener?.onError("The file doesn't exists")
+            applyGpxInputStreamToMapAsync(fileInputStream, map, file.name).await()
+        } catch (e: Exception) {
+            /* Don't care */
         }
-
     }
 
-    interface TrackFileParsedListener {
-        fun onTrackFileParsed(map: Map, routeList: List<@JvmSuppressWildcards RouteGson.Route>, wayPoints: List<MarkerGson.Marker>, newRouteCount: Int, addedMarkers: Int)
+    data class GpxParseResult(val map: Map, val routes: List<RouteGson.Route>, val wayPoints: List<MarkerGson.Marker>,
+                              val newRouteCount: Int, val newMarkersCount: Int)
 
-        fun onError(message: String)
+    private fun CoroutineScope.readGpxInputStreamAsync(input: InputStream, map: Map, defaultName: String) = async(Dispatchers.Default) {
+        GPXParser.parseSafely(input)?.let { gpx ->
+            val routes = gpx.tracks.mapIndexed { index, track ->
+                gpxTrackToRoute(map, track, index, defaultName)
+            }
+            val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
+                gpxWaypointsToMarker(map, wpt, index, defaultName)
+            }
+            Pair(routes, waypoints)
+        }
     }
 
-    private class GpxTrackFileToRoutesTask internal constructor(private val mListener: TrackFileParsedListener?,
-                                                                private val mMap: Map,
-                                                                private val defaultName: String,
-                                                                private val mPostExecuteTask: Runnable?) : AsyncTask<InputStream, Void, Void?>() {
-        private val newRouteList: LinkedList<RouteGson.Route> = LinkedList()
-        private val newWaypointList: LinkedList<MarkerGson.Marker> = LinkedList()
-        private var isSuccess = true
-        private var failReason = ""
+    private fun CoroutineScope.applyGpxInputStreamToMapAsync(input: InputStream, map: Map, defaultName: String) = async {
+        val deferred = readGpxInputStreamAsync(input, map, defaultName)
 
-        /**
-         * Each gpx file may contain several tracks. And each [Track] may contain several
-         * [TrackSegment]. <br></br>
-         * A [Track] is the equivalent of a [RouteGson.Route], so all [TrackSegment]
-         * are added to a single [RouteGson.Route].
+        /* Whatever the caller will do with the parse result, we want to apply it to the map and add
+         * additional info
          */
-        override fun doInBackground(vararg inputStreamList: InputStream): Void? {
-            for (stream in inputStreamList) {
+        val pair = deferred.await()
+        if (pair != null) {
+            return@async applyGpxParseResultToMap(map, pair.first, pair.second).let {
+                EventBus.getDefault().post(it)
+            }
+        } else {
+            throw GpxParseException()
+        }
+    }
 
-                try {
-                    val gpx = GPXParser.parse(stream)
+    class GpxParseException : Exception()
 
-                    gpx.tracks.mapIndexed { index, track ->
-                        val route = gpxTracktoRoute(track, index)
-                        newRouteList.add(route)
+    private fun applyGpxParseResultToMap(map: Map, routes: List<RouteGson.Route>, wayPoints: List<MarkerGson.Marker>): GpxParseResult {
+        val newRouteCount = TrackTools.updateRouteList(map, routes)
+        val newMarkersCount = TrackTools.updateMarkerList(map, wayPoints)
+        MapLoader.saveRoutes(map)
+        MapLoader.saveMarkers(map)
+
+        return GpxParseResult(map, routes, wayPoints, newRouteCount, newMarkersCount)
+    }
+
+    /**
+     * Converts a [Track] into a [RouteGson.Route].
+     * A single [Track] may contain several [TrackSegment].
+     */
+    private fun gpxTrackToRoute(map: Map, track: Track, index: Int, defaultName: String): RouteGson.Route {
+        /* Create a new route */
+        val route = RouteGson.Route()
+
+        /* The route name is the track name if it has one. Otherwise we take the default name */
+        route.name = if (track.name.isNotEmpty()) {
+            track.name
+        } else {
+            "$defaultName#$index"
+        }
+
+        /* The route should be visible by default */
+        route.visible = true
+
+        /* All track segments are concatenated */
+        val trackSegmentList = track.trackSegments
+        for (trackSegment in trackSegmentList) {
+            val trackPointList = trackSegment.trackPoints
+            for (trackPoint in trackPointList) {
+                val marker = MarkerGson.Marker()
+
+                /* If the map uses a projection, store projected values */
+                val projectedValues: DoubleArray?
+                val projection = map.projection
+                if (projection != null) {
+                    projectedValues = projection.doProjection(trackPoint.latitude, trackPoint.longitude)
+                    if (projectedValues != null) {
+                        marker.proj_x = projectedValues[0]
+                        marker.proj_y = projectedValues[1]
                     }
-
-                    gpx.wayPoints.mapIndexed { index, wpt ->
-                        val marker = gpxWaypointsToMarker(wpt, index)
-                        newWaypointList.add(marker)
-                    }
-
-                    stream.close()
-                } catch (e: Exception) {
-                    val sw = StringWriter()
-                    val pw = PrintWriter(sw)
-                    e.printStackTrace(pw)
-                    isSuccess = false
-                    failReason = sw.toString()
                 }
-            }
-            return null
-        }
 
-        override fun onPostExecute(result: Void?) {
-            if (isSuccess) {
-                val newRouteCount = TrackTools.updateRouteList(mMap, newRouteList)
-                val addedMarkers = TrackTools.updateMarkerList(mMap, newWaypointList)
-                MapLoader.saveRoutes(mMap)
-                MapLoader.saveMarkers(mMap)
+                /* In any case, we store the wgs84 coordinates */
+                marker.lat = trackPoint.latitude
+                marker.lon = trackPoint.longitude
 
-                mListener?.onTrackFileParsed(mMap, newRouteList, newWaypointList, newRouteCount, addedMarkers)
-
-                EventBus.getDefault().post(TrackChangedEvent(mMap, newRouteList, addedMarkers))
-                mPostExecuteTask?.run()
-            } else {
-                mListener?.onError(failReason)
+                route.route_markers.add(marker)
             }
         }
+        return route
+    }
 
-        /**
-         * Converts a [Track] into a [RouteGson.Route]. <br></br>
-         * A single [Track] may contain several [TrackSegment].
-         */
-        private fun gpxTracktoRoute(track: Track, index: Int): RouteGson.Route {
-            /* Create a new route */
-            val route = RouteGson.Route()
+    private fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): MarkerGson.Marker {
+        val marker = MarkerGson.Marker()
 
-            /* The route name is the track name if it has one. Otherwise we take the default name */
-            route.name = if (track.name.isNotEmpty()) {
-                track.name
-            } else {
-                "$defaultName#$index"
-            }
-
-            /* The route should be visible by default */
-            route.visible = true
-
-            /* All track segments are concatenated */
-            val trackSegmentList = track.trackSegments
-            for (trackSegment in trackSegmentList) {
-                val trackPointList = trackSegment.trackPoints
-                for (trackPoint in trackPointList) {
-                    val marker = MarkerGson.Marker()
-
-                    /* If the map uses a projection, store projected values */
-                    val projectedValues: DoubleArray?
-                    val projection = mMap.projection
-                    if (projection != null) {
-                        projectedValues = projection.doProjection(trackPoint.latitude, trackPoint.longitude)
-                        if (projectedValues != null) {
-                            marker.proj_x = projectedValues[0]
-                            marker.proj_y = projectedValues[1]
-                        }
-                    }
-
-                    /* In any case, we store the wgs84 coordinates */
-                    marker.lat = trackPoint.latitude
-                    marker.lon = trackPoint.longitude
-
-                    route.route_markers.add(marker)
-                }
-            }
-            return route
+        marker.name = if (wpt.name?.isNotEmpty() == true) {
+            wpt.name
+        } else {
+            "$defaultName-wpt${index + 1}"
         }
 
-        private fun gpxWaypointsToMarker(wpt: TrackPoint, index: Int): MarkerGson.Marker {
-            val marker = MarkerGson.Marker()
-
-            marker.name = if (wpt.name?.isNotEmpty() == true) {
-                wpt.name
-            } else {
-                "$defaultName-wpt${index + 1}"
+        /* If the map uses a projection, store projected values */
+        val projectedValues: DoubleArray?
+        val projection = map.projection
+        if (projection != null) {
+            projectedValues = projection.doProjection(wpt.latitude, wpt.longitude)
+            if (projectedValues != null) {
+                marker.proj_x = projectedValues[0]
+                marker.proj_y = projectedValues[1]
             }
-
-            /* If the map uses a projection, store projected values */
-            val projectedValues: DoubleArray?
-            val projection = mMap.projection
-            if (projection != null) {
-                projectedValues = projection.doProjection(wpt.latitude, wpt.longitude)
-                if (projectedValues != null) {
-                    marker.proj_x = projectedValues[0]
-                    marker.proj_y = projectedValues[1]
-                }
-            }
-
-            /* In any case, we store the wgs84 coordinates */
-            marker.lat = wpt.latitude
-            marker.lon = wpt.longitude
-
-            return marker
         }
+
+        /* In any case, we store the wgs84 coordinates */
+        marker.lat = wpt.latitude
+        marker.lon = wpt.longitude
+
+        return marker
     }
 }

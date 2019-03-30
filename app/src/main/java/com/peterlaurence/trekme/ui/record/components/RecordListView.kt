@@ -12,10 +12,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.ui.record.components.events.MapSelectedForRecord
-import com.peterlaurence.trekme.ui.record.components.events.RequestChooseMap
-import com.peterlaurence.trekme.ui.record.components.events.RequestEditRecording
-import com.peterlaurence.trekme.ui.record.components.events.RequestShareRecording
+import com.peterlaurence.trekme.ui.record.components.events.*
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import org.greenrobot.eventbus.EventBus
@@ -196,10 +193,10 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
     @Subscribe
     fun onMapSelectedForRecord(event: MapSelectedForRecord) {
-        val map = MapLoader.getMap(event.mapId)
+        val map = MapLoader.getMap(event.mapId) ?: return
         val recording = selectedRecordings[0]
 
-        TrackImporter.importTrackFile(recording, null, map!!)
+        EventBus.getDefault().post(RequestImportRecording(recording, map))
 
         /* Tell the user that the track will be shortly available in the map */
         val snackbar = Snackbar.make(rootView, R.string.track_is_being_added, Snackbar.LENGTH_LONG)
