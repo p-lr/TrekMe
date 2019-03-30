@@ -28,7 +28,6 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.ProjectionTask
 import com.peterlaurence.trekme.model.map.MapProvider
-import com.peterlaurence.trekme.ui.mapview.events.TrackChangedEvent
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.qozix.tileview.TileView
 import com.qozix.tileview.widgets.ZoomPanLayout
@@ -38,6 +37,7 @@ import org.greenrobot.eventbus.Subscribe
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import com.peterlaurence.trekme.core.track.TrackImporter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -308,9 +308,9 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     }
 
     @Subscribe
-    fun onTrackChangedEvent(event: TrackChangedEvent) {
-        routeLayer.onTrackChanged(event.map, event.routeList)
-        if (event.addedMarkers > 0) {
+    fun onTrackChangedEvent(event: TrackImporter.GpxParseResult) {
+        routeLayer.onTrackChanged(event.map, event.routes)
+        if (event.newMarkersCount > 0) {
             markerLayer.onMapMarkerUpdate()
         }
     }

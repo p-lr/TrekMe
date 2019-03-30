@@ -4,38 +4,35 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.material.snackbar.Snackbar
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.ItemTouchHelper
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
-
+import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
+import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxUriToMapAsync
 import com.peterlaurence.trekme.model.map.MapProvider
-
+import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
+import java.io.FileNotFoundException
+import kotlin.coroutines.CoroutineContext
 
 /**
  * A [Fragment] subclass that shows the routes currently available for a given map, and
@@ -43,12 +40,18 @@ import org.greenrobot.eventbus.EventBus
  *
  * @author peterLaurence on 01/03/17 -- Converted to Kotlin on 24/04/19
  */
-class TracksManageFragment : Fragment(), TrackImporter.TrackFileParsedListener, TrackAdapter.TrackSelectionListener {
+class TracksManageFragment : Fragment(),
+        TrackAdapter.TrackSelectionListener,
+        CoroutineScope {
     private lateinit var rootView: FrameLayout
     private lateinit var emptyRoutePanel: ConstraintLayout
     private var map: Map? = null
     private var trackRenameMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
+    private lateinit var job: Job
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +89,7 @@ class TracksManageFragment : Fragment(), TrackImporter.TrackFileParsedListener, 
 
     override fun onStart() {
         super.onStart()
+        job = Job()
 
         updateEmptyRoutePanelVisibility()
     }
@@ -129,9 +133,75 @@ class TracksManageFragment : Fragment(), TrackImporter.TrackFileParsedListener, 
 
             /* Import the file */
             map?.let {
-                TrackImporter.importTrackUri(uri, this, it, ctx.contentResolver)
+                launch {
+                    try {
+                        applyGpxUri(uri, it, ctx)
+                    } catch (e: FileNotFoundException) {
+                        onError(e.message ?: "")
+                    } catch (e: TrackImporter.GpxParseException) {
+                        onError("Error with GPX file with uri $uri")
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * The business logic of parsing a GPX file (given as an [Uri]).
+     * It is wrapped in a child [CoroutineScope] because we use an `async` call, which by default
+     * defers Exception handling to the calling code. If an unhandled Exception is thrown, it leads
+     * to a failure of the parent scope **even if those Exceptions are caught**. We don't want the
+     * whole scope of this fragment to fail, hence the child [CoroutineScope].
+     *
+     * @throws FileNotFoundException
+     * @throws TrackImporter.GpxParseException
+     */
+    private suspend fun applyGpxUri(uri: Uri, map: Map, ctx: Context) = coroutineScope {
+        applyGpxUriToMapAsync(uri, ctx.contentResolver, map).await().let {
+            onGpxParseResult(it)
+
+            /* Notify the rest of the app */
+            EventBus.getDefault().post(it)
+        }
+    }
+
+    private fun onGpxParseResult(event: TrackImporter.GpxParseResult) {
+        /* We want to append new routes, so the index to add new routes is equal to current length
+         * of the data set. */
+        val trackAdapter = trackAdapter ?: return
+        val positionStart = trackAdapter.itemCount
+        trackAdapter.notifyItemRangeInserted(positionStart, event.newRouteCount)
+
+        /* Display to the user a recap of how many tracks and waypoints were imported */
+        val activity = activity
+        if (activity != null) {
+            val builder = AlertDialog.Builder(activity)
+            builder.setTitle(getString(R.string.import_result_title))
+            val view = View.inflate(context, R.layout.import_gpx_result, null)
+
+            val trackCountTextView = view.findViewById<TextView>(R.id.tracksCount)
+            trackCountTextView.text = event.newRouteCount.toString()
+            val waypointCountTextView = view.findViewById<TextView>(R.id.waypointsCount)
+            waypointCountTextView.text = event.newMarkersCount.toString()
+
+            builder.setView(view)
+            builder.show()
+        }
+
+        /* Since new routes may have added, update the empty panel visibility */
+        updateEmptyRoutePanelVisibility()
+
+        /* Save */
+        saveChanges()
+    }
+
+    /**
+     * The [job] is cancelled in [onDestroy] instead of in [onStop] because in this fragment the
+     * [applyGpxUri] coroutine is started **after** [onStop] and before [onStart].
+     */
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
     }
 
     private fun generateTracks(map: Map) {
@@ -187,37 +257,7 @@ class TracksManageFragment : Fragment(), TrackImporter.TrackFileParsedListener, 
         MapLoader.saveRoutes(map!!)
     }
 
-    override fun onTrackFileParsed(map: Map, routeList: List<RouteGson.Route>, wayPoints: List<MarkerGson.Marker>, newRouteCount: Int, addedMarkers: Int) {
-        /* We want to append new routes, so the index to add new routes is equal to current length
-         * of the data set. */
-        val trackAdapter = trackAdapter ?: return
-        val positionStart = trackAdapter.itemCount
-        trackAdapter.notifyItemRangeInserted(positionStart, newRouteCount)
-
-        /* Display to the user a recap of how many tracks and waypoints were imported */
-        val activity = activity
-        if (activity != null) {
-            val builder = AlertDialog.Builder(activity)
-            builder.setTitle(getString(R.string.import_result_title))
-            val view = View.inflate(context, R.layout.import_gpx_result, null)
-
-            val trackCountTextView = view.findViewById<TextView>(R.id.tracksCount)
-            trackCountTextView.text = newRouteCount.toString()
-            val waypointCountTextView = view.findViewById<TextView>(R.id.waypointsCount)
-            waypointCountTextView.text = addedMarkers.toString()
-
-            builder.setView(view)
-            builder.show()
-        }
-
-        /* Since new routes may have added, update the empty panel visibility */
-        updateEmptyRoutePanelVisibility()
-
-        /* Save */
-        saveChanges()
-    }
-
-    override fun onError(message: String) {
+    private fun onError(message: String) {
         val view = view ?: return
         val snackbar = Snackbar.make(view, R.string.gpx_import_error_msg, Snackbar.LENGTH_LONG)
         snackbar.show()

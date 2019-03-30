@@ -23,6 +23,18 @@ object GPXParser {
 
     private val DATE_PARSER = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
 
+    /**
+     * A version of [parse] method which returns a [Gpx] instance or null if any exception occurs.
+     */
+    fun parseSafely(input: InputStream): Gpx? {
+        try {
+            input.use {
+                return parse(it)
+            }
+        } catch (e: Exception) {
+            return null
+        }
+    }
 
     @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
     fun parse(`in`: InputStream): Gpx {
