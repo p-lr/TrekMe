@@ -142,13 +142,12 @@ object TrackImporter {
         } ?: throw FileNotFoundException("File with uri $uri doesn't exists")
     }
 
-    fun CoroutineScope.applyGpxFileToMap(file: File, map: Map) = launch {
-        try {
-            val fileInputStream = FileInputStream(file)
-            applyGpxInputStreamToMapAsync(fileInputStream, map, file.name).await()
-        } catch (e: Exception) {
-            /* Don't care */
-        }
+    /**
+     * Applies the GPX content given as a [File] to the provided [Map].
+     */
+    fun CoroutineScope.applyGpxFileToMapAsync(file: File, map: Map): Deferred<GpxParseResult> {
+        val fileInputStream = FileInputStream(file)
+        return applyGpxInputStreamToMapAsync(fileInputStream, map, file.name)
     }
 
     data class GpxParseResult(val map: Map, val routes: List<RouteGson.Route>, val wayPoints: List<MarkerGson.Marker>,

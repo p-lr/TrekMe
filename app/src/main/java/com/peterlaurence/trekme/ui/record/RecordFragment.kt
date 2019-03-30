@@ -20,13 +20,15 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.record.components.events.*
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
-import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxFileToMap
 import kotlinx.android.synthetic.main.fragment_record.*
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.io.File
 import kotlin.coroutines.CoroutineContext
+import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxFileToMapAsync
 
 /**
  * Holds controls and displays information about the [LocationService].
@@ -139,8 +141,25 @@ class RecordFragment : Fragment(), CoroutineScope {
     }
 
     @Subscribe
-    fun onImportRecordingEvent(event: RequestImportRecording) {
+    fun onImportRecordingEvent(event: RequestImportRecording) = launch {
+        /* If unhandled Exceptions need to be caught, it should be done here */
         applyGpxFileToMap(event.file, event.map)
+    }
+
+    /**
+     * The business logic of parsing a GPX file.
+     * It is wrapped in a child [CoroutineScope] because we use an `async` call, which by default
+     * defers Exception handling to the calling code. If an unhandled Exception is thrown, it leads
+     * to a failure of the parent scope **even if those Exceptions are caught**. We don't want the
+     * whole scope of this fragment to fail, hence the child [CoroutineScope].
+     *
+     * @throws TrackImporter.GpxParseException
+     */
+    private suspend fun applyGpxFileToMap(file: File, map: Map) = coroutineScope {
+        applyGpxFileToMapAsync(file, map).await().let {
+            /* Once done, all we want is to post an event */
+            EventBus.getDefault().post(it)
+        }
     }
 
     private fun CoroutineScope.updateRecordings() = launch {
