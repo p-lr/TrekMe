@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -28,10 +29,7 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxUriToMapAsync
 import com.peterlaurence.trekme.model.map.MapProvider
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.FileNotFoundException
@@ -139,7 +137,7 @@ class TracksManageFragment : Fragment(),
             map?.let {
                 launch {
                     try {
-                        applyGpxUriToMapAsync(uri, ctx.contentResolver, it).await()
+                        applyGpxUri(uri, it, ctx)
                     } catch (e: FileNotFoundException) {
                         onError(e.message ?: "")
                     } catch (e: TrackImporter.GpxParseException) {
@@ -148,6 +146,10 @@ class TracksManageFragment : Fragment(),
                 }
             }
         }
+    }
+
+    private suspend fun applyGpxUri(uri: Uri, map: Map, ctx: Context) = coroutineScope {
+        applyGpxUriToMapAsync(uri, ctx.contentResolver, map).await()
     }
 
     @Subscribe
@@ -183,8 +185,16 @@ class TracksManageFragment : Fragment(),
 
     override fun onStop() {
         super.onStop()
-        job.cancel()
         EventBus.getDefault().unregister(this)
+    }
+
+    /**
+     * The [job] is cancelled in [onDestroy] instead of in [onStop] because in this fragment the
+     * [applyGpxUri] coroutine is started **after** [onStop] and before [onStart].
+     */
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
     }
 
     private fun generateTracks(map: Map) {

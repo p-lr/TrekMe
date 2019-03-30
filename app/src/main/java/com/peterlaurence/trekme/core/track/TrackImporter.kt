@@ -129,11 +129,13 @@ object TrackImporter {
 
     fun CoroutineScope.applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): Deferred<Unit> {
         val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-        return parcelFileDescriptor?.use {
+        return parcelFileDescriptor?.let {
             val fileDescriptor = parcelFileDescriptor.fileDescriptor
             val fileInputStream = FileInputStream(fileDescriptor)
             val fileName = FileUtils.getFileRealPathFromURI(contentResolver, uri) ?: "A track"
-            applyGpxInputStreamToMapAsync(fileInputStream, map, fileName)
+            applyGpxInputStreamToMapAsync(fileInputStream, map, fileName) {
+                it.close()
+            }
         } ?: throw FileNotFoundException("File with uri $uri doesn't exists")
     }
 
@@ -161,13 +163,17 @@ object TrackImporter {
         }
     }
 
-    private fun CoroutineScope.applyGpxInputStreamToMapAsync(input: InputStream, map: Map, defaultName: String) = async {
+    private fun CoroutineScope.applyGpxInputStreamToMapAsync(input: InputStream, map: Map,
+                                                             defaultName: String,
+                                                             afterParseCallback: (() -> Unit)? = null) = async {
         val deferred = readGpxInputStreamAsync(input, map, defaultName)
 
         /* Whatever the caller will do with the parse result, we want to apply it to the map and add
          * additional info
          */
         val pair = deferred.await()
+        afterParseCallback?.let { it() }
+
         if (pair != null) {
             return@async applyGpxParseResultToMap(map, pair.first, pair.second).let {
                 EventBus.getDefault().post(it)
