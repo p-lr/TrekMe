@@ -127,7 +127,10 @@ object TrackImporter {
         return supportedTrackFilesExtensions.any { it == extension }
     }
 
-    fun CoroutineScope.applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): Deferred<Unit> {
+    /**
+     * Applies the GPX content given as an [Uri] to the provided [Map].
+     */
+    fun CoroutineScope.applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): Deferred<GpxParseResult> {
         val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
         return parcelFileDescriptor?.let {
             val fileDescriptor = parcelFileDescriptor.fileDescriptor
@@ -151,6 +154,9 @@ object TrackImporter {
     data class GpxParseResult(val map: Map, val routes: List<RouteGson.Route>, val wayPoints: List<MarkerGson.Marker>,
                               val newRouteCount: Int, val newMarkersCount: Int)
 
+    /**
+     * Parses the GPX content provided as [InputStream], off UI thread.
+     */
     private fun CoroutineScope.readGpxInputStreamAsync(input: InputStream, map: Map, defaultName: String) = async(Dispatchers.Default) {
         GPXParser.parseSafely(input)?.let { gpx ->
             val routes = gpx.tracks.mapIndexed { index, track ->
@@ -163,6 +169,10 @@ object TrackImporter {
         }
     }
 
+    /**
+     * Launches a GPX parse. Then, on the calling [CoroutineScope] (which [CoroutineDispatcher] should
+     * be [Dispatchers.Main]), applies the result on the provided [Map].
+     */
     private fun CoroutineScope.applyGpxInputStreamToMapAsync(input: InputStream, map: Map,
                                                              defaultName: String,
                                                              afterParseCallback: (() -> Unit)? = null) = async {
@@ -175,9 +185,7 @@ object TrackImporter {
         afterParseCallback?.let { it() }
 
         if (pair != null) {
-            return@async applyGpxParseResultToMap(map, pair.first, pair.second).let {
-                EventBus.getDefault().post(it)
-            }
+            return@async applyGpxParseResultToMap(map, pair.first, pair.second)
         } else {
             throw GpxParseException()
         }

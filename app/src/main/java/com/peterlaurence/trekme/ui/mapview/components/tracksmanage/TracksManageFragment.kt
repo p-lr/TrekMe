@@ -31,7 +31,6 @@ import com.peterlaurence.trekme.model.map.MapProvider
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 import java.io.FileNotFoundException
 import kotlin.coroutines.CoroutineContext
 
@@ -89,7 +88,6 @@ class TracksManageFragment : Fragment(),
     }
 
     override fun onStart() {
-        EventBus.getDefault().register(this)
         super.onStart()
         job = Job()
 
@@ -148,12 +146,26 @@ class TracksManageFragment : Fragment(),
         }
     }
 
+    /**
+     * The business logic of parsing a GPX file (given as an [Uri]).
+     * It is wrapped in a child [CoroutineScope] because we use an `async` call, which by default
+     * defers Exception handling to the calling code. If an unhandled Exception is thrown, it leads
+     * to a failure of the parent scope **even if those Exceptions are caught**. We don't want the
+     * whole scope of this fragment to fail, hence the child [CoroutineScope].
+     *
+     * @throws FileNotFoundException
+     * @throws TrackImporter.GpxParseException
+     */
     private suspend fun applyGpxUri(uri: Uri, map: Map, ctx: Context) = coroutineScope {
-        applyGpxUriToMapAsync(uri, ctx.contentResolver, map).await()
+        applyGpxUriToMapAsync(uri, ctx.contentResolver, map).await().let {
+            onGpxParseResult(it)
+
+            /* Notify the rest of the app */
+            EventBus.getDefault().post(it)
+        }
     }
 
-    @Subscribe
-    fun onTrackChangedEvent(event: TrackImporter.GpxParseResult) {
+    private fun onGpxParseResult(event: TrackImporter.GpxParseResult) {
         /* We want to append new routes, so the index to add new routes is equal to current length
          * of the data set. */
         val trackAdapter = trackAdapter ?: return
@@ -181,11 +193,6 @@ class TracksManageFragment : Fragment(),
 
         /* Save */
         saveChanges()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        EventBus.getDefault().unregister(this)
     }
 
     /**
