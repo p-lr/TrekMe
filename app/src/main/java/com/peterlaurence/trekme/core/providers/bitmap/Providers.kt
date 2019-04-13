@@ -47,14 +47,15 @@ open class GenericBitmapProvider protected constructor(open val urlTileBuilder: 
         return try {
             connection.connect()
             val inputStream = BufferedInputStream(connection.inputStream)
-            val myBitmap = BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
-            inputStream.close()
-            myBitmap
+            inputStream.use {
+                BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
+            }
         } catch (e: Exception) {
-            connection.disconnect()
             e.printStackTrace()
             null
         }
+        /* Don't try to disconnect the connection on failure or in finally block, as other
+         * threads might be using connections to the same hostname. */
     }
 
     open fun setBitmapOptions(options: BitmapFactory.Options) {

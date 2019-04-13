@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
 import android.text.method.LinkMovementMethod
 import android.view.*
+import androidx.constraintlayout.widget.ConstraintSet
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
@@ -317,7 +318,9 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         this.tileView = tileView
         this.tileView.id = R.id.tileview_ign_id
         this.tileView.isSaveEnabled = true
-        rootView.addView(tileView, 0)
+        val params = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        rootView.addView(tileView, 0, params)
     }
 
     private fun createBitmapProvider(layer: String): BitmapProvider? {

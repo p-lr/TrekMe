@@ -55,7 +55,7 @@ import java.util.*
 class DownloadService : Service() {
     private val notificationChannelId = "peterlaurence.DownloadService"
     private val downloadServiceNofificationId = 128565
-    private val threadCount = 4
+    private val threadCount = 8
     private val stopAction = "stop"
 
     private lateinit var onTapPendingIntent: PendingIntent
@@ -340,8 +340,12 @@ private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterato
     override fun run() {
         while (DownloadService.started) {
             val tile = tileIterator.next() ?: break
-            bitmapProvider.getBitmap(tile.level, tile.row, tile.col)
-            tileWriter.write(tile, bitmap)
+            bitmapProvider.getBitmap(tile.level, tile.row, tile.col).also {
+                /* Only write if there was no error */
+                if (it != null && DownloadService.started) {
+                    tileWriter.write(tile, bitmap)
+                }
+            }
         }
     }
 }
