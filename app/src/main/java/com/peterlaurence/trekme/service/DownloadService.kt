@@ -39,6 +39,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
 import java.io.FileOutputStream
+import java.lang.RuntimeException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -224,7 +225,12 @@ class DownloadService : Service() {
         notificationBuilder.setProgress(100, progress.toInt(), false)
         notificationBuilder.setWhen(0)
         notificationBuilder.setOngoing(false)
-        notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
+        try {
+            notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
+        } catch (e: RuntimeException) {
+            // can't figure out why it's (rarely) thrown. Ignore it for now
+        }
+
 
         /* Send a message carrying the progress info */
         progressEvent.progress = progress
