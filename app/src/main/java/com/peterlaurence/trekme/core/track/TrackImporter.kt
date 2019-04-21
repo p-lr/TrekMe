@@ -16,7 +16,6 @@ import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
 import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
 import java.io.*
 
 /**
@@ -38,7 +37,7 @@ object TrackImporter {
     val recordings: Array<File>?
         get() = recordingsDir.listFiles(SUPPORTED_FILE_FILTER)
 
-    private val recordingsToGpx: kotlin.collections.MutableMap<File, Gpx> = mutableMapOf()
+    private val recordingsToGpx: MutableMap<File, Gpx> = mutableMapOf()
 
     /**
      * In the context of this call, new recordings have been added, or this is the first time
@@ -48,7 +47,7 @@ object TrackImporter {
      * The first call parses all recordings. Subsequent calls only parse new files.
      * This is a blocking call, so it should be called inside a coroutine.
      */
-    fun getRecordingsToGpxMap(): kotlin.collections.Map<File, Gpx> {
+    private fun updateRecordingsToGpxMap(): kotlin.collections.Map<File, Gpx> {
         if (recordingsToGpx.isEmpty()) {
             recordings?.forEach {
                 try {
@@ -76,15 +75,22 @@ object TrackImporter {
 
     /**
      * The user may have imported a regular gpx file (so it doesn't have any statistics).
-     * In this call, we consider that each gpx file has already been parsed, and that the
-     * [recordingsToGpx] Map is up to date. So typically, [getRecordingsToGpxMap] should be called
-     * first.
-     * First, we calculate the statistics for the first track.
+     * In this call, we must have that each gpx file already been parsed, and the
+     * [recordingsToGpx] Map should br up to date.
+     * Hence, [updateRecordingsToGpxMap] is called first.
+     *
+     * Then, we compute the statistics for the first track.
      * If the [GPXParser] read statistics for this track, we check is there is any difference
      * (because the statistics calculation is subjected to be adjusted frequently), we update the
      * gpx file.
+     *
+     * @return a non modifiable Map<File, Gpx>. The statistics are bundled inside the [Gpx] objects.
      */
     fun computeStatistics(): kotlin.collections.Map<File, Gpx> {
+        /* Update internals */
+        updateRecordingsToGpxMap()
+
+        /* Then compute the statistics */
         recordingsToGpx.forEach {
             val statCalculator = TrackStatCalculator()
             it.value.tracks.firstOrNull()?.let { track ->

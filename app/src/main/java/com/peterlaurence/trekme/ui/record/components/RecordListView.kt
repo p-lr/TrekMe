@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.ui.record.components.events.*
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.util.gpx.model.Gpx
@@ -52,7 +51,7 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
     /**
      * Once we receive the [Gpx] data for each recording [File], fill the model object.
      */
-    fun setGpxForRecording(recordingsToGpx: kotlin.collections.Map<File, Gpx>) {
+    fun setGpxForRecording(recordingsToGpx: Map<File, Gpx>) {
         /* Re-write the model object */
         recordingDataList.clear()
         for ((file, gpx) in recordingsToGpx) {

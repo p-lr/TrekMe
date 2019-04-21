@@ -167,14 +167,9 @@ class RecordFragment : Fragment(), CoroutineScope {
             recordListView.setRecordings(it)
         }
 
-        /* Recording to Gpx conversion */
-        var recordingsToGpx = launch(Dispatchers.Default) {
-            TrackImporter.getRecordingsToGpxMap()
-        }
-        recordingsToGpx.join()
-
-        /* Then, ask for the computation of the statistics for all tracks */
-        recordingsToGpx = async(Dispatchers.Default) {
+        /* Recording to Gpx conversion
+         * Then, ask for the computation of the statistics for all tracks */
+        val recordingsToGpx = async(Dispatchers.Default) {
             TrackImporter.computeStatistics()
         }
 
