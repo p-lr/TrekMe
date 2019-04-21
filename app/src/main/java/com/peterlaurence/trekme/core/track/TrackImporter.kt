@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.core.track
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.util.Log
 import com.peterlaurence.trekme.core.TrekMeContext.recordingsDir
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
@@ -10,13 +9,15 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.GPXParser
-import com.peterlaurence.trekme.util.gpx.GPXWriter
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
 import kotlinx.coroutines.*
-import java.io.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.InputStream
 
 /**
  * Utility toolbox to :
@@ -36,82 +37,6 @@ object TrackImporter {
      */
     val recordings: Array<File>?
         get() = recordingsDir.listFiles(SUPPORTED_FILE_FILTER)
-
-    private val recordingsToGpx: MutableMap<File, Gpx> = mutableMapOf()
-
-    /**
-     * In the context of this call, new recordings have been added, or this is the first time
-     * this function is called in the lifecycle of the  app.
-     * The list of recordings, [recordings], is considered up to date. The map between each
-     * recording and its corresponding parsed object, [recordingsToGpx], needs to be updated.
-     * The first call parses all recordings. Subsequent calls only parse new files.
-     * This is a blocking call, so it should be called inside a coroutine.
-     */
-    private fun updateRecordingsToGpxMap(): kotlin.collections.Map<File, Gpx> {
-        if (recordingsToGpx.isEmpty()) {
-            recordings?.forEach {
-                try {
-                    val gpx = GPXParser.parse(FileInputStream(it))
-                    recordingsToGpx[it] = gpx
-                } catch (e: Exception) {
-                    Log.e(TAG, "The file ${it.name} was parsed with an error")
-                }
-            }
-        } else {
-            recordings?.filter { !recordingsToGpx.keys.contains(it) }?.forEach {
-                try {
-                    val gpx = GPXParser.parse(FileInputStream(it))
-                    recordingsToGpx[it] = gpx
-                } catch (e: Exception) {
-                    Log.e(TAG, "The file ${it.name} was parsed with an error")
-                }
-            }
-            recordingsToGpx.keys.filter { !(recordings?.contains(it) ?: false) }.forEach {
-                recordingsToGpx.remove(it)
-            }
-        }
-        return recordingsToGpx.toMap()
-    }
-
-    /**
-     * The user may have imported a regular gpx file (so it doesn't have any statistics).
-     * In this call, we must have that each gpx file already been parsed, and the
-     * [recordingsToGpx] Map should br up to date.
-     * Hence, [updateRecordingsToGpxMap] is called first.
-     *
-     * Then, we compute the statistics for the first track.
-     * If the [GPXParser] read statistics for this track, we check is there is any difference
-     * (because the statistics calculation is subjected to be adjusted frequently), we update the
-     * gpx file.
-     *
-     * @return a non modifiable Map<File, Gpx>. The statistics are bundled inside the [Gpx] objects.
-     */
-    fun computeStatistics(): kotlin.collections.Map<File, Gpx> {
-        /* Update internals */
-        updateRecordingsToGpxMap()
-
-        /* Then compute the statistics */
-        recordingsToGpx.forEach {
-            val statCalculator = TrackStatCalculator()
-            it.value.tracks.firstOrNull()?.let { track ->
-                track.trackSegments.forEach { trackSegment ->
-                    trackSegment.hpFilter()
-                    statCalculator.addTrackPointList(trackSegment.trackPoints)
-                }
-
-                val updatedStatistics = statCalculator.getStatistics()
-                if (track.statistics != null && track.statistics != updatedStatistics) {
-                    /* Track statistics have changed, update the file */
-                    track.statistics = updatedStatistics
-                    val fos = FileOutputStream(it.key)
-                    GPXWriter.write(it.value, fos)
-                }
-                track.statistics = updatedStatistics
-            }
-        }
-
-        return recordingsToGpx.toMap()
-    }
 
     private val supportedTrackFilesExtensions = arrayOf("gpx", "xml")
 

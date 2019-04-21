@@ -1,14 +1,15 @@
 package com.peterlaurence.trekme.ui.record.components
 
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.util.UnitFormatter
+import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import java.io.File
 import java.util.*
 
@@ -18,7 +19,7 @@ import java.util.*
  *
  * @author peterLaurence on 27/01/18 -- Converted to Kotlin on 01/10/18
  */
-class RecordingAdapter internal constructor(private var recordingDataList: ArrayList<RecordListView.RecordingData>, private var selectedRecordings: ArrayList<File>?) : RecyclerView.Adapter<RecordingAdapter.RecordingViewHolder>() {
+class RecordingAdapter internal constructor(private var recordingDataList: ArrayList<RecordingData>, private var selectedRecordings: ArrayList<File>?) : RecyclerView.Adapter<RecordingAdapter.RecordingViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordingViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.record_item, parent, false)
@@ -49,13 +50,13 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
         return recordingDataList.size
     }
 
-    class RecordingViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
+    class RecordingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var layout: ConstraintLayout = itemView.findViewById(R.id.record_item_layout)
         var recordingName: TextView = itemView.findViewById(R.id.recording_name_id)
         var statView: ConstraintLayout = itemView.findViewById(R.id.stats_view_holder)
     }
 
-    internal fun setRecordingsData(recordingDataList: ArrayList<RecordListView.RecordingData>) {
+    internal fun setRecordingsData(recordingDataList: ArrayList<RecordingData>) {
         this.recordingDataList = recordingDataList
         notifyDataSetChanged()
     }

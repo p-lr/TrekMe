@@ -13,14 +13,15 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.record.components.events.*
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
-import com.peterlaurence.trekme.util.gpx.model.Gpx
+import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
 import java.util.*
 
 /**
- * List of recordings.
+ * List of recordings. It displays each recordings showing only the file name at first, then adds
+ * the statistics.
  *
  * @author peterLaurence on 23/12/17 -- Converted to Kotlin on 30/09/18
  */
@@ -28,35 +29,16 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
     private var isMultiSelectMode = false
     private var selectedRecordings = ArrayList<File>()
     private lateinit var recordingAdapter: RecordingAdapter
-    internal val recordingDataList = arrayListOf<RecordingData>()
+    private val recordingDataList = arrayListOf<RecordingData>()
 
     init {
         init(context)
     }
 
-    /**
-     * A [RecordingData] is just wrapper on the [File] and its corresponding [Gpx] data.
-     */
-    data class RecordingData(val recording: File, val gpx: Gpx? = null)
-
-    fun setRecordings(recordings: Array<File>) {
+    fun setRecordingData(data: List<RecordingData>) {
         recordingDataList.clear()
         /* For instance, only fill the file attribute, the gpx data will be retrieved later */
-        recordingDataList.addAll(recordings.map { RecordingData(it) })
-
-        /* Update the recycle view */
-        recordingAdapter.setRecordingsData(recordingDataList)
-    }
-
-    /**
-     * Once we receive the [Gpx] data for each recording [File], fill the model object.
-     */
-    fun setGpxForRecording(recordingsToGpx: Map<File, Gpx>) {
-        /* Re-write the model object */
-        recordingDataList.clear()
-        for ((file, gpx) in recordingsToGpx) {
-            recordingDataList.add(RecordingData(file, gpx))
-        }
+        recordingDataList.addAll(data)
 
         /* Update the recycle view */
         recordingAdapter.setRecordingsData(recordingDataList)
@@ -91,24 +73,13 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         }
 
         deleteRecordingButton.setOnClickListener {
-            var success = true
+            EventBus.getDefault().post(RequestDeleteRecordings(selectedRecordings))
+
+            /* Remove immediately the corresponding views (for better responsiveness) */
             for (file in selectedRecordings) {
-                if (file.exists()) {
-                    if (file.delete()) {
-                        recordingDataList.removeAll { it.recording == file }
-                    } else {
-                        success = false
-                    }
-                }
+                recordingDataList.removeAll { it.recording == file }
             }
             recordingAdapter.notifyDataSetChanged()
-
-            /* Alert the user that some files could not be deleted */
-            if (!success) {
-                val snackbar = Snackbar.make(rootView, R.string.files_could_not_be_deleted,
-                        Snackbar.LENGTH_SHORT)
-                snackbar.show()
-            }
         }
 
         val llm = LinearLayoutManager(ctx)
@@ -199,6 +170,14 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
         /* Tell the user that the track will be shortly available in the map */
         val snackbar = Snackbar.make(rootView, R.string.track_is_being_added, Snackbar.LENGTH_LONG)
+        snackbar.show()
+    }
+
+    @Subscribe
+    fun onRecordingDeletionFail(event: RecordingDeletionFailed) {
+        /* Alert the user that some files could not be deleted */
+        val snackbar = Snackbar.make(rootView, R.string.files_could_not_be_deleted,
+                Snackbar.LENGTH_SHORT)
         snackbar.show()
     }
 }

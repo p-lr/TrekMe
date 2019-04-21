@@ -8,27 +8,29 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
+import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.core.track.TrackTools
+import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxFileToMapAsync
 import com.peterlaurence.trekme.service.LocationService
-import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.record.components.events.*
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
+import com.peterlaurence.trekme.viewmodel.record.RecordingData
+import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import kotlinx.android.synthetic.main.fragment_record.*
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import kotlin.coroutines.CoroutineContext
-import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxFileToMapAsync
 
 /**
  * Holds controls and displays information about the [LocationService].
@@ -40,6 +42,7 @@ import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxFileToMapAsync
  */
 class RecordFragment : Fragment(), CoroutineScope {
     private lateinit var job: Job
+    private lateinit var recordingData: LiveData<List<RecordingData>>
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -49,6 +52,18 @@ class RecordFragment : Fragment(), CoroutineScope {
         return inflater.inflate(R.layout.fragment_record, container, false)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val model = ViewModelProviders.of(this.activity!!).get(RecordingStatisticsViewModel::class.java)
+        recordingData = model.getRecordingData()
+        recordingData.observe(this, Observer<List<RecordingData>> {
+            it?.let { data ->
+                updateRecordingData(data)
+            }
+        })
+    }
+
     override fun onStart() {
         super.onStart()
         job = Job()
@@ -56,7 +71,9 @@ class RecordFragment : Fragment(), CoroutineScope {
         EventBus.getDefault().register(actionsView)
         EventBus.getDefault().register(recordListView)
 
-        updateRecordings()
+        recordingData.value?.let {
+            updateRecordingData(it)
+        }
     }
 
     override fun onStop() {
@@ -126,21 +143,6 @@ class RecordFragment : Fragment(), CoroutineScope {
     }
 
     @Subscribe
-    fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) {
-        for (recording in recordListView.recordingDataList.map { it.recording }) {
-            if (FileUtils.getFileNameWithoutExtention(recording) == event.initialValue) {
-                TrackTools.renameTrack(recording, event.newValue)
-            }
-        }
-        updateRecordings()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
-        updateRecordings()
-    }
-
-    @Subscribe
     fun onImportRecordingEvent(event: RequestImportRecording) = launch {
         /* If unhandled Exceptions need to be caught, it should be done here */
         applyGpxFileToMap(event.file, event.map)
@@ -162,17 +164,7 @@ class RecordFragment : Fragment(), CoroutineScope {
         }
     }
 
-    private fun CoroutineScope.updateRecordings() = launch {
-        TrackImporter.recordings?.let {
-            recordListView.setRecordings(it)
-        }
-
-        /* Recording to Gpx conversion
-         * Then, ask for the computation of the statistics for all tracks */
-        val recordingsToGpx = async(Dispatchers.Default) {
-            TrackImporter.computeStatistics()
-        }
-
-        recordListView.setGpxForRecording(recordingsToGpx.await())
+    private fun updateRecordingData(data: List<RecordingData>) {
+        recordListView.setRecordingData(data)
     }
 }
