@@ -27,6 +27,7 @@ import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.util.concurrent.ConcurrentHashMap
 
 
 /**
@@ -54,7 +55,7 @@ class RecordingStatisticsViewModel : ViewModel() {
     private val recordings: List<File>
         get() = TrackImporter.recordings?.toMutableList() ?: listOf()
 
-    private val recordingsToGpx: MutableMap<File, Gpx> = mutableMapOf()
+    private val recordingsToGpx: MutableMap<File, Gpx> = ConcurrentHashMap()
 
     fun getRecordingData(): LiveData<List<RecordingData>> {
         return recordingData

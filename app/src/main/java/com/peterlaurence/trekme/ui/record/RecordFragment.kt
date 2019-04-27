@@ -17,12 +17,12 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxFileToMapAsync
 import com.peterlaurence.trekme.service.LocationService
-import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.record.components.events.*
 import com.peterlaurence.trekme.util.FileUtils
+import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import kotlinx.android.synthetic.main.fragment_record.*
@@ -62,13 +62,22 @@ class RecordFragment : Fragment(), CoroutineScope {
                 updateRecordingData(data)
             }
         })
+
+        /**
+         * Observe the changes in the Location service status, and update child views accordingly.
+         */
+        ViewModelProviders.of(this.activity!!).get(LocationServiceViewModel::class.java).getStatus().observe(
+                this, Observer<Boolean> {
+            it?.let { isActive ->
+                dispatchLocationServiceStatus(isActive)
+            }
+        })
     }
 
     override fun onStart() {
         super.onStart()
         job = Job()
         EventBus.getDefault().register(this)
-        EventBus.getDefault().register(actionsView)
         EventBus.getDefault().register(recordListView)
 
         recordingData.value?.let {
@@ -77,7 +86,6 @@ class RecordFragment : Fragment(), CoroutineScope {
     }
 
     override fun onStop() {
-        EventBus.getDefault().unregister(actionsView)
         EventBus.getDefault().unregister(recordListView)
         EventBus.getDefault().unregister(this)
         job.cancel()
@@ -93,15 +101,6 @@ class RecordFragment : Fragment(), CoroutineScope {
     @Subscribe
     fun onRequestStopEvent(event: RequestStopEvent) {
         EventBus.getDefault().post(RecordGpxStopEvent())
-    }
-
-    @Subscribe
-    fun onLocationServiceStatusEvent(event: LocationServiceStatus) {
-        if (event.started) {
-            statusView.onServiceStarted()
-        } else {
-            statusView.onServiceStopped()
-        }
     }
 
     /**
@@ -166,5 +165,15 @@ class RecordFragment : Fragment(), CoroutineScope {
 
     private fun updateRecordingData(data: List<RecordingData>) {
         recordListView.setRecordingData(data)
+    }
+
+    private fun dispatchLocationServiceStatus(isActive: Boolean) {
+        if (isActive) {
+            statusView.onServiceStarted()
+            actionsView.onServiceStarted()
+        } else {
+            statusView.onServiceStopped()
+            actionsView.onServiceStopped()
+        }
     }
 }

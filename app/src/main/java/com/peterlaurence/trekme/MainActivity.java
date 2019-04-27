@@ -9,28 +9,30 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.preference.PreferenceFragmentCompat;
+
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.trekme.core.TrekMeContext;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
@@ -41,7 +43,6 @@ import com.peterlaurence.trekme.core.mapsource.MapSource;
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle;
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials;
 import com.peterlaurence.trekme.model.map.MapProvider;
-import com.peterlaurence.trekme.service.event.LocationServiceStatus;
 import com.peterlaurence.trekme.service.event.MapDownloadEvent;
 import com.peterlaurence.trekme.service.event.Status;
 import com.peterlaurence.trekme.ui.MarkerProvider;
@@ -61,6 +62,7 @@ import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageF
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment;
 import com.peterlaurence.trekme.ui.record.RecordFragment;
 import com.peterlaurence.trekme.ui.trackview.TrackViewFragment;
+import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
@@ -267,23 +269,8 @@ public class MainActivity extends AppCompatActivity
         if (drawer != null) {
             mSnackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT);
         }
-    }
 
-    /**
-     * Check whether the {@link com.peterlaurence.trekme.service.LocationService} started status.
-     * If it's started, show the menu that navigates to current track statistics. Otherwise, hide it.
-     * This method is executed both at initialization of the activity, and upon reception of a
-     * {@link LocationServiceStatus} event, which triggers {@link #invalidateOptionsMenu()}, thus
-     * this method.
-     */
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        LocationServiceStatus event = EventBus.getDefault().getStickyEvent(LocationServiceStatus.class);
-        if (event != null) {
-            setTrackStatsMenuVisibility(event.started);
-        }
-
-        return super.onPrepareOptionsMenu(menu);
+        initViewModels();
     }
 
     /**
@@ -364,6 +351,21 @@ public class MainActivity extends AppCompatActivity
         }
 
         return true;
+    }
+
+    /**
+     * Here should be all observable subscriptions on various ViewModel's LivaData.
+     */
+    private void initViewModels() {
+        ViewModelProviders.of(this).get(LocationServiceViewModel.class).getStatus().observe(this,
+                isActive -> {
+                    // Set the visibility of the "Track Statistics" fragment menu, which we want to
+                    // see only if the LocationService is started.
+                    setTrackStatsMenuVisibility(isActive);
+                    // Then, invalidate
+                    supportInvalidateOptionsMenu();
+                }
+        );
     }
 
     @Override
@@ -855,11 +857,6 @@ public class MainActivity extends AppCompatActivity
             default:
                 /* Unknown map source */
         }
-    }
-
-    @Subscribe
-    public void onLocationServiceStatus(LocationServiceStatus event) {
-        supportInvalidateOptionsMenu();
     }
 
     private void setTrackStatsMenuVisibility(boolean visibility) {

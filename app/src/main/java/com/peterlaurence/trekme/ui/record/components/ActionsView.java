@@ -1,17 +1,16 @@
 package com.peterlaurence.trekme.ui.record.components;
 
 import android.content.Context;
-import androidx.cardview.widget.CardView;
 import android.util.AttributeSet;
+
+import androidx.cardview.widget.CardView;
 
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.ui.record.components.events.RequestStartEvent;
 import com.peterlaurence.trekme.ui.record.components.events.RequestStopEvent;
 import com.peterlaurence.trekme.ui.record.components.widgets.DelayedButton;
-import com.peterlaurence.trekme.service.event.LocationServiceStatus;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
 
 /**
  * A set of controls (start & stop) over the {@link com.peterlaurence.trekme.service.LocationService}.
@@ -50,22 +49,14 @@ public class ActionsView extends CardView {
                 requestStop();
             }
         });
-
-        initState();
     }
 
-    /**
-     * If the sticky {@link LocationServiceStatus} event reports that the
-     * {@link com.peterlaurence.trekme.service.LocationService} is started, we init the view
-     * accordingly.
-     */
-    private void initState() {
-        LocationServiceStatus event = EventBus.getDefault().getStickyEvent(LocationServiceStatus.class);
-        if (event != null && event.started) {
-            mButton.setMode(DelayedButton.State.STOP);
-        } else {
-            mButton.setMode(DelayedButton.State.PLAY);
-        }
+    public void onServiceStarted() {
+        mButton.setMode(DelayedButton.State.STOP);
+    }
+
+    public void onServiceStopped() {
+        mButton.setMode(DelayedButton.State.PLAY);
     }
 
     /**
@@ -82,10 +73,5 @@ public class ActionsView extends CardView {
      */
     private void requestStart() {
         EventBus.getDefault().post(new RequestStartEvent());
-    }
-
-    @Subscribe
-    public void onLocationServiceStatus(LocationServiceStatus event) {
-        // TODO : take into account some errors coming back from the service
     }
 }
