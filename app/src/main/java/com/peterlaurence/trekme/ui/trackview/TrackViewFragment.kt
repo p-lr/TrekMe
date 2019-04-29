@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.util.UnitFormatter
 import kotlinx.android.synthetic.main.fragment_track_view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /**
  * This fragment provides a view of a track's statistics.
@@ -59,7 +60,7 @@ class TrackViewFragment : Fragment() {
         EventBus.getDefault().unregister(this)
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onTrackStatistics(event: TrackStatistics) {
         setStatistics(event)
     }
