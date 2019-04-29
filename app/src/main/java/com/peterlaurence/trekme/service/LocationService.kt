@@ -100,14 +100,12 @@ class LocationService : Service() {
                     return
                 }
 
-                serviceHandler.post {
-                    val altitude = if (location.altitude != 0.0) location.altitude else null
-                    val trackPoint = TrackPoint(location.latitude,
-                            location.longitude, altitude, location.time, "")
-                    trackPoints.add(trackPoint)
-                    trackStatCalculator.addTrackPoint(trackPoint)
-                    sendTrackStatistics(trackStatCalculator.getStatistics())
-                }
+                val altitude = if (location.altitude != 0.0) location.altitude else null
+                val trackPoint = TrackPoint(location.latitude,
+                        location.longitude, altitude, location.time, "")
+                trackPoints.add(trackPoint)
+                trackStatCalculator.addTrackPoint(trackPoint)
+                sendTrackStatistics(trackStatCalculator.getStatistics())
             }
 
             override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
