@@ -37,7 +37,11 @@ import org.greenrobot.eventbus.Subscribe
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -122,6 +126,16 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
             locationRequest.fastestInterval = 1000
             locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
+
+        /**
+         * Listen to changes on the live route
+         */
+        ViewModelProviders.of(activity!!).get(InMapRecordingViewModel::class.java).getLiveRoute().observe(
+                this, Observer<RouteGson.Route> {
+            it?.let {
+                println("Updated live route")
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,

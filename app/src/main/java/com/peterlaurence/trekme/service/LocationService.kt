@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
@@ -30,6 +31,8 @@ import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -37,6 +40,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * A [Started service](https://developer.android.com/guide/components/services.html#CreatingAService)
@@ -61,6 +66,13 @@ class LocationService : Service() {
 
     private var trackPoints = mutableListOf<TrackPoint>()
     private lateinit var trackStatCalculator: TrackStatCalculator
+
+    /**
+     * A [Channel] to be used for external communication, instead of sharing raw collections across
+     * threads (shared mutable state).
+     * All operations related to this channel in this class are thread-confined to LocationServiceThread.
+     */
+    private var channel: Channel<TrackPoint>? = null
 
     private var mStarted = false
 
@@ -107,6 +119,7 @@ class LocationService : Service() {
                 trackPoints.add(trackPoint)
                 trackStatCalculator.addTrackPoint(trackPoint)
                 sendTrackStatistics(trackStatCalculator.getStatistics())
+                sendTrackPoint(trackPoint)
             }
 
             override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
@@ -257,6 +270,39 @@ class LocationService : Service() {
      */
     private fun sendTrackStatistics(stats: TrackStatistics) {
         EventBus.getDefault().postSticky(stats)
+    }
+
+    /**
+     * Add a new [TrackPoint] into the channel.
+     * Called from LocationServiceThread.
+     */
+    private fun sendTrackPoint(trackPoint: TrackPoint) {
+        channel?.offer(trackPoint)
+    }
+
+    @Subscribe
+    fun onChannelRequest(event: ChannelTrackPointRequest) = runBlocking {
+        GlobalScope.launch {
+            val channel = withContext(Dispatchers.Default) {
+                newChannel()
+            }
+
+            EventBus.getDefault().post(channel)
+        }
+    }
+
+    /**
+     * Creates a new [Channel], filling it with all previously acquired [TrackPoint].
+     * This is done in the LocationServiceThread, to ensure thread-safety.
+     */
+    private suspend fun newChannel(): Channel<TrackPoint> = suspendCoroutine { cont ->
+        serviceHandler.post {
+            channel = Channel(capacity = Channel.UNLIMITED)
+            trackPoints.forEach {
+                channel?.offer(it)
+            }
+            cont.resume(channel!!)
+        }
     }
 
     companion object {
