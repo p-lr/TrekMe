@@ -12,7 +12,6 @@ import org.greenrobot.eventbus.ThreadMode
 /**
  * Expose to the activity and fragment/views the state of the [LocationService].
  * It listens the [LocationServiceStatus] event that the service sends through the event-bus.
- * This [ViewModel] is meant to be the only endpoint of the [LocationServiceStatus] event.
  *
  * @author peterLaurence on 27/04/2019
  */
@@ -31,10 +30,7 @@ class LocationServiceViewModel: ViewModel() {
     init {
         EventBus.getDefault().register(this)
 
-        val event = EventBus.getDefault().getStickyEvent(LocationServiceStatus::class.java)
-        event?.let {
-            status.postValue(event.started)
-        }
+        status.postValue(LocationService.isStarted)
     }
 
     override fun onCleared() {

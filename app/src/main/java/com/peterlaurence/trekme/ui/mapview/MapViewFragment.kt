@@ -79,6 +79,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
 
+    private lateinit var inMapRecordingViewModel: InMapRecordingViewModel
+
     private lateinit var job: Job
 
     override val coroutineContext: CoroutineContext
@@ -130,7 +132,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         /**
          * Listen to changes on the live route
          */
-        ViewModelProviders.of(activity!!).get(InMapRecordingViewModel::class.java).getLiveRoute().observe(
+        inMapRecordingViewModel = ViewModelProviders.of(this).get(InMapRecordingViewModel::class.java)
+        inMapRecordingViewModel.getLiveRoute().observe(
                 this, Observer<RouteGson.Route> {
             it?.let {
                 println("Updated live route")
@@ -347,7 +350,9 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
                     }
                 }
             } else {
+                /* The map changed */
                 setMap(map)
+                inMapRecordingViewModel.reload()
                 updateLayers()
             }
         }

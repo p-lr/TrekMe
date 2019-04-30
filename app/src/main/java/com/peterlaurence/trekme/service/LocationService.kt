@@ -287,7 +287,9 @@ class LocationService : Service() {
                 newChannel()
             }
 
-            EventBus.getDefault().post(channel)
+            if (channel != null && isStarted) {
+                EventBus.getDefault().post(channel)
+            }
         }
     }
 
@@ -295,13 +297,18 @@ class LocationService : Service() {
      * Creates a new [Channel], filling it with all previously acquired [TrackPoint].
      * This is done in the LocationServiceThread, to ensure thread-safety.
      */
-    private suspend fun newChannel(): Channel<TrackPoint> = suspendCoroutine { cont ->
+    private suspend fun newChannel(): Channel<TrackPoint>? = suspendCoroutine { cont ->
         serviceHandler.post {
             channel = Channel(capacity = Channel.UNLIMITED)
             trackPoints.forEach {
                 channel?.offer(it)
             }
-            cont.resume(channel!!)
+            /* Just in case the service was stopped by the time we get there */
+            if (!isStarted) {
+                cont.resume(null)
+            } else {
+                cont.resume(channel)
+            }
         }
     }
 
@@ -309,5 +316,11 @@ class LocationService : Service() {
         private const val GPX_VERSION = "1.1"
         private const val NOTIFICATION_ID = "peterlaurence.LocationService"
         private const val SERVICE_ID = 126585
+
+        val isStarted: Boolean
+            get() {
+                val event = EventBus.getDefault().getStickyEvent(LocationServiceStatus::class.java)
+                return event?.started ?: false
+            }
     }
 }
