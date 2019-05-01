@@ -15,9 +15,7 @@ import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderDummy
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips
 import com.qozix.tileview.graphics.BitmapProvider
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -137,13 +135,12 @@ object MapLoader : MapImporter.MapImportListener {
      * should be the UI thread), the result (a nullable instance of [RouteGson]) is set on the [Map]
      * given as parameter.
      */
-    fun CoroutineScope.getRoutesForMap(map: Map) = launch {
-        withContext(Dispatchers.Default) {
-            mapRouteImportTask(map, mGson)
-        }?.let { routeGson ->
-            map.routeGson = routeGson
-        }
-    }
+    suspend fun getRoutesForMap(map: Map) =
+            withContext(Dispatchers.Default) {
+                mapRouteImportTask(map, mGson)
+            }?.let { routeGson ->
+                map.routeGson = routeGson
+            }
 
     /**
      * Launch a task which reads the landmarks.json file.
@@ -151,13 +148,12 @@ object MapLoader : MapImporter.MapImportListener {
      * should be the UI thread), the result (a nullable instance of [LandmarkGson]) is set on the [Map]
      * given as parameter.
      */
-    fun CoroutineScope.getLandmarksForMap(map: Map) = launch {
-        withContext(Dispatchers.Default) {
-            mapLandmarkImportTask(map, mGson)
-        }?.let { landmarkGson ->
-            map.landmarkGson = landmarkGson
-        }
-    }
+    suspend fun getLandmarksForMap(map: Map) =
+            withContext(Dispatchers.Default) {
+                mapLandmarkImportTask(map, mGson)
+            }?.let { landmarkGson ->
+                map.landmarkGson = landmarkGson
+            }
 
     /**
      * Launch a task which gets the list of [MapArchive].

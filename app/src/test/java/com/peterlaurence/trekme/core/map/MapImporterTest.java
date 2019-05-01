@@ -92,9 +92,6 @@ public class MapImporterTest {
                 MapLoader.MapListUpdateListener mapListUpdateListener = mapsFound -> {
                     assertTrue(mapsFound);
                     List<Map> mapList = MapLoader.INSTANCE.getMaps();
-                    for (Map map: mapList) {
-                        System.out.println("ici " + map.getName());
-                    }
                     assertEquals(1, mapList.size());
                     int firstMapId = mapList.get(0).getId();
                     Map map = MapLoader.INSTANCE.getMap(firstMapId);

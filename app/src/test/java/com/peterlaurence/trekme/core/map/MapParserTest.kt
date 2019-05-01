@@ -24,24 +24,24 @@ class MapParserTest {
             val dirs = listOf(mJsonFilesDirectory)
             val map = arrayOfNulls<Map>(1)
 
-            fun routeChecks(map: Map) {
-                getRoutesForMap(map).invokeOnCompletion {
-                    assertEquals(2, map.routes!!.size.toLong())
+            fun routeChecks(map: Map) = runBlocking {
+                getRoutesForMap(map)
 
-                    val route = map.routes!![0]
-                    assertEquals("A test route 1", route.name)
-                    assertTrue(route.visible)
-                    val markers = route.route_markers
-                    assertEquals(2, markers.size.toLong())
+                assertEquals(2, map.routes!!.size.toLong())
 
-                    val marker1 = markers[0]
-                    assertEquals("marker1", marker1.name)
-                    assertEquals(6198798.5047565, marker1.proj_x, 0.0)
+                val route = map.routes!![0]
+                assertEquals("A test route 1", route.name)
+                assertTrue(route.visible)
+                val markers = route.route_markers
+                assertEquals(2, markers.size.toLong())
 
-                    val marker2 = markers[1]
-                    assertEquals("marker2", marker2.name)
-                    assertEquals(-2418744.7142449305, marker2.proj_y, 0.0)
-                }
+                val marker1 = markers[0]
+                assertEquals("marker1", marker1.name)
+                assertEquals(6198798.5047565, marker1.proj_x, 0.0)
+
+                val marker2 = markers[1]
+                assertEquals("marker2", marker2.name)
+                assertEquals(-2418744.7142449305, marker2.proj_y, 0.0)
             }
 
             val mapListUpdateListener = object : MapLoader.MapListUpdateListener {

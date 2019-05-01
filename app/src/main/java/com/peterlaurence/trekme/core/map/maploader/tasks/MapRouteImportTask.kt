@@ -10,8 +10,6 @@ import java.io.File
 
 
 /**
- * This task is run when this is the first time a map is loaded, hence the list of
- * [RouteGson.Route] is required.
  * A file named 'routes.json' (also referred as track file) is expected at the same level of the
  * 'map.json' configuration file. If there is no track file, this means that the map has no routes.
  *
