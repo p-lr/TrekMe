@@ -61,7 +61,7 @@ object TrackImporter {
     /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
-    fun CoroutineScope.applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): Deferred<GpxParseResult> {
+    suspend fun applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): GpxParseResult {
         val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
         return parcelFileDescriptor?.let {
             val fileDescriptor = parcelFileDescriptor.fileDescriptor
@@ -76,7 +76,7 @@ object TrackImporter {
     /**
      * Applies the GPX content given as a [File] to the provided [Map].
      */
-    fun CoroutineScope.applyGpxFileToMapAsync(file: File, map: Map): Deferred<GpxParseResult> {
+    suspend fun applyGpxFileToMapAsync(file: File, map: Map): GpxParseResult {
         val fileInputStream = FileInputStream(file)
         return applyGpxInputStreamToMapAsync(fileInputStream, map, file.name)
     }
@@ -87,7 +87,7 @@ object TrackImporter {
     /**
      * Parses the GPX content provided as [InputStream], off UI thread.
      */
-    private fun CoroutineScope.readGpxInputStreamAsync(input: InputStream, map: Map, defaultName: String) = async(Dispatchers.Default) {
+    private suspend fun readGpxInputStreamAsync(input: InputStream, map: Map, defaultName: String) = withContext(Dispatchers.Default) {
         GPXParser.parseSafely(input)?.let { gpx ->
             val routes = gpx.tracks.mapIndexed { index, track ->
                 gpxTrackToRoute(map, track, index, defaultName)
@@ -103,19 +103,18 @@ object TrackImporter {
      * Launches a GPX parse. Then, on the calling [CoroutineScope] (which [CoroutineDispatcher] should
      * be [Dispatchers.Main]), applies the result on the provided [Map].
      */
-    private fun CoroutineScope.applyGpxInputStreamToMapAsync(input: InputStream, map: Map,
+    private suspend fun applyGpxInputStreamToMapAsync(input: InputStream, map: Map,
                                                              defaultName: String,
-                                                             afterParseCallback: (() -> Unit)? = null) = async {
-        val deferred = readGpxInputStreamAsync(input, map, defaultName)
+                                                             afterParseCallback: (() -> Unit)? = null): GpxParseResult {
+        val pair = readGpxInputStreamAsync(input, map, defaultName)
 
         /* Whatever the caller will do with the parse result, we want to apply it to the map and add
          * additional info
          */
-        val pair = deferred.await()
         afterParseCallback?.let { it() }
 
         if (pair != null) {
-            return@async applyGpxParseResultToMap(map, pair.first, pair.second)
+            return applyGpxParseResultToMap(map, pair.first, pair.second)
         } else {
             throw GpxParseException()
         }

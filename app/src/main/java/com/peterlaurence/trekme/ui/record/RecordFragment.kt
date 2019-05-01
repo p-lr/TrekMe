@@ -157,7 +157,7 @@ class RecordFragment : Fragment(), CoroutineScope {
      * @throws TrackImporter.GpxParseException
      */
     private suspend fun applyGpxFileToMap(file: File, map: Map) = coroutineScope {
-        applyGpxFileToMapAsync(file, map).await().let {
+        applyGpxFileToMapAsync(file, map).let {
             /* Once done, all we want is to post an event */
             EventBus.getDefault().post(it)
         }

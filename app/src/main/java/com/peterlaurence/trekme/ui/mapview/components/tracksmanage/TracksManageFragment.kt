@@ -157,7 +157,7 @@ class TracksManageFragment : Fragment(),
      * @throws TrackImporter.GpxParseException
      */
     private suspend fun applyGpxUri(uri: Uri, map: Map, ctx: Context) = coroutineScope {
-        applyGpxUriToMapAsync(uri, ctx.contentResolver, map).await().let {
+        applyGpxUriToMapAsync(uri, ctx.contentResolver, map).let {
             onGpxParseResult(it)
 
             /* Notify the rest of the app */
