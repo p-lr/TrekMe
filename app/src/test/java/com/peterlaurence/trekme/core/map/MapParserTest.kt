@@ -1,22 +1,14 @@
 package com.peterlaurence.trekme.core.map
 
-import com.peterlaurence.trekme.BuildConfig
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
-import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
 import kotlinx.coroutines.runBlocking
-
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
-
 import java.io.File
-import java.net.URL
-
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 
 /**
  * Unit tests for maps's json file parsing.
@@ -24,7 +16,6 @@ import org.junit.Assert.assertTrue
  * @author peterLaurence on 26/02/17 -- Converted to Kotlin on 17/02/2019
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(constants = BuildConfig::class)
 class MapParserTest {
 
     @Test

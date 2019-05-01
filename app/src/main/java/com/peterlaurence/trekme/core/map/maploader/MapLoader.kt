@@ -80,7 +80,7 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Clear and sets the internal list of [Map] : `mMapList`. <br></br>
+     * Clear and sets the internal list of [Map] : [mMapList].
      * Once done, the registered [MapListUpdateListener] is called.
      *
      * @param dirs The directories in which to search for maps. If not specified, a default value is
@@ -97,7 +97,14 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Appends found [Map]s to the internal list of [Map] : `mMapList`.
+     * Clears the internal list of [Map] : [mMapList].
+     */
+    fun clearMaps() {
+        mMapList.clear()
+    }
+
+    /**
+     * Appends found [Map]s to the internal list of [Map] : [mMapList].
      * Once done, all of the registered [MapListUpdateListener] are called.
      *
      * @param dirs The directories in which to search for new maps.
@@ -170,6 +177,10 @@ object MapLoader : MapImporter.MapImportListener {
 
     fun setMapListUpdateListener(listener: MapListUpdateListener) {
         mMapListUpdateListener = listener
+    }
+
+    fun clearMapListUpdateListener() {
+        mMapListUpdateListener = null
     }
 
     fun setMapMarkerUpdateListener(listener: MapMarkerUpdateListener) {
@@ -339,9 +350,7 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     private fun notifyMapListUpdateListeners() {
-        if (mMapListUpdateListener != null) {
-            mMapListUpdateListener!!.onMapListUpdate(mMapList.size > 0)
-        }
+        mMapListUpdateListener?.onMapListUpdate(mMapList.size > 0)
     }
 
     enum class CALIBRATION_METHOD {

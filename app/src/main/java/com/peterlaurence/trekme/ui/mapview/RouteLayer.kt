@@ -58,10 +58,12 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         }
     }
 
-    private fun acquireThenDrawRoutes(map: Map) {
-        getRoutesForMap(map).invokeOnCompletion {
-            drawRoutes()
-        }
+    private fun CoroutineScope.acquireThenDrawRoutes(map: Map) = launch {
+        /* Fetch and set routes to the map */
+        getRoutesForMap(map).join()
+
+        /* Then draw them */
+        drawRoutes()
     }
 
     private fun drawRoutes() {
