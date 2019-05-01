@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
+import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.model.map.MapProvider
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
 import com.peterlaurence.trekme.service.event.LocationServiceStatus
@@ -87,9 +88,12 @@ class InMapRecordingViewModel : ViewModel() {
                 }
             }
 
-    private fun processSinglePoint(point: TrackPoint, map: Map) {
+    private suspend fun processSinglePoint(point: TrackPoint, map: Map) {
         println("Processing point ${point.latitude} for map ${map.name}")
-        // TODO: implement
+        with(TrackImporter) {
+            point.toMarker(map)
+        }
+        //TODO: implement
     }
 
     fun getLiveRoute(): LiveData<RouteGson.Route> {

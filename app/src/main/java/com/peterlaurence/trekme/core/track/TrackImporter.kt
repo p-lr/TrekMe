@@ -59,6 +59,30 @@ object TrackImporter {
     }
 
     /**
+     * A [TrackPoint] is a raw point that we make right after a location api callback.
+     * To be drawn relatively to a [Map], it must be converted to a [MarkerGson.Marker].
+     */
+    suspend fun TrackPoint.toMarker(map: Map): MarkerGson.Marker = coroutineScope {
+        val marker = MarkerGson.Marker()
+
+        /* If the map uses a projection, store projected values */
+        val projectedValues: DoubleArray?
+        val projection = map.projection
+        if (projection != null) {
+            projectedValues = projection.doProjection(latitude, longitude)
+            if (projectedValues != null) {
+                marker.proj_x = projectedValues[0]
+                marker.proj_y = projectedValues[1]
+            }
+        }
+
+        /* In any case, we store the wgs84 coordinates */
+        marker.lat = latitude
+        marker.lon = longitude
+        marker
+    }
+
+    /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
     suspend fun applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): GpxParseResult {
@@ -104,8 +128,8 @@ object TrackImporter {
      * be [Dispatchers.Main]), applies the result on the provided [Map].
      */
     private suspend fun applyGpxInputStreamToMapAsync(input: InputStream, map: Map,
-                                                             defaultName: String,
-                                                             afterParseCallback: (() -> Unit)? = null): GpxParseResult {
+                                                      defaultName: String,
+                                                      afterParseCallback: (() -> Unit)? = null): GpxParseResult {
         val pair = readGpxInputStreamAsync(input, map, defaultName)
 
         /* Whatever the caller will do with the parse result, we want to apply it to the map and add
@@ -135,7 +159,7 @@ object TrackImporter {
      * Converts a [Track] into a [RouteGson.Route].
      * A single [Track] may contain several [TrackSegment].
      */
-    private fun gpxTrackToRoute(map: Map, track: Track, index: Int, defaultName: String): RouteGson.Route {
+    private suspend fun gpxTrackToRoute(map: Map, track: Track, index: Int, defaultName: String): RouteGson.Route {
         /* Create a new route */
         val route = RouteGson.Route()
 
@@ -154,52 +178,21 @@ object TrackImporter {
         for (trackSegment in trackSegmentList) {
             val trackPointList = trackSegment.trackPoints
             for (trackPoint in trackPointList) {
-                val marker = MarkerGson.Marker()
-
-                /* If the map uses a projection, store projected values */
-                val projectedValues: DoubleArray?
-                val projection = map.projection
-                if (projection != null) {
-                    projectedValues = projection.doProjection(trackPoint.latitude, trackPoint.longitude)
-                    if (projectedValues != null) {
-                        marker.proj_x = projectedValues[0]
-                        marker.proj_y = projectedValues[1]
-                    }
-                }
-
-                /* In any case, we store the wgs84 coordinates */
-                marker.lat = trackPoint.latitude
-                marker.lon = trackPoint.longitude
-
+                val marker = trackPoint.toMarker(map)
                 route.route_markers.add(marker)
             }
         }
         return route
     }
 
-    private fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): MarkerGson.Marker {
-        val marker = MarkerGson.Marker()
+    private suspend fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): MarkerGson.Marker {
+        val marker = wpt.toMarker(map)
 
         marker.name = if (wpt.name?.isNotEmpty() == true) {
             wpt.name
         } else {
             "$defaultName-wpt${index + 1}"
         }
-
-        /* If the map uses a projection, store projected values */
-        val projectedValues: DoubleArray?
-        val projection = map.projection
-        if (projection != null) {
-            projectedValues = projection.doProjection(wpt.latitude, wpt.longitude)
-            if (projectedValues != null) {
-                marker.proj_x = projectedValues[0]
-                marker.proj_y = projectedValues[1]
-            }
-        }
-
-        /* In any case, we store the wgs84 coordinates */
-        marker.lat = wpt.latitude
-        marker.lon = wpt.longitude
 
         return marker
     }
