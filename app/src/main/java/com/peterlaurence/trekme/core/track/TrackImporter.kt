@@ -61,8 +61,9 @@ object TrackImporter {
     /**
      * A [TrackPoint] is a raw point that we make right after a location api callback.
      * To be drawn relatively to a [Map], it must be converted to a [MarkerGson.Marker].
+     * This should be called off UI thread.
      */
-    suspend fun TrackPoint.toMarker(map: Map): MarkerGson.Marker = coroutineScope {
+    fun TrackPoint.toMarker(map: Map): MarkerGson.Marker {
         val marker = MarkerGson.Marker()
 
         /* If the map uses a projection, store projected values */
@@ -79,7 +80,7 @@ object TrackImporter {
         /* In any case, we store the wgs84 coordinates */
         marker.lat = latitude
         marker.lon = longitude
-        marker
+        return marker
     }
 
     /**
@@ -158,8 +159,9 @@ object TrackImporter {
     /**
      * Converts a [Track] into a [RouteGson.Route].
      * A single [Track] may contain several [TrackSegment].
+     * This should be call off UI thread.
      */
-    private suspend fun gpxTrackToRoute(map: Map, track: Track, index: Int, defaultName: String): RouteGson.Route {
+    private fun gpxTrackToRoute(map: Map, track: Track, index: Int, defaultName: String): RouteGson.Route {
         /* Create a new route */
         val route = RouteGson.Route()
 
@@ -185,7 +187,7 @@ object TrackImporter {
         return route
     }
 
-    private suspend fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): MarkerGson.Marker {
+    private fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): MarkerGson.Marker {
         val marker = wpt.toMarker(map)
 
         marker.name = if (wpt.name?.isNotEmpty() == true) {

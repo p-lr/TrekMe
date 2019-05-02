@@ -134,9 +134,11 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
          */
         inMapRecordingViewModel = ViewModelProviders.of(this).get(InMapRecordingViewModel::class.java)
         inMapRecordingViewModel.getLiveRoute().observe(
-                this, Observer<RouteGson.Route> {
-            it?.let {
-                println("Updated live route")
+                this, Observer<InMapRecordingViewModel.LiveRoute> {
+            it?.let {liveRoute ->
+                if (::routeLayer.isInitialized) {
+                    routeLayer.updateLiveRoute(liveRoute.route, liveRoute.map)
+                }
             }
         })
     }

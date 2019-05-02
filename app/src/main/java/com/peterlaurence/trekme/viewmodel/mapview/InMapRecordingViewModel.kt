@@ -11,11 +11,9 @@ import com.peterlaurence.trekme.model.map.MapProvider
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
 import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -47,7 +45,7 @@ import org.greenrobot.eventbus.ThreadMode
  * The [MapProvider] is used to fetch the current map.
  */
 class InMapRecordingViewModel : ViewModel() {
-    private val route = MutableLiveData<RouteGson.Route>()
+    private val route = MutableLiveData<LiveRoute>()
 
     init {
         EventBus.getDefault().register(this)
@@ -83,20 +81,26 @@ class InMapRecordingViewModel : ViewModel() {
      */
     private fun CoroutineScope.processNewTrackPoints(trackPoints: ReceiveChannel<TrackPoint>, map: Map) =
             launch(Dispatchers.Default) {
+                val routeBuilder =  RouteBuilder(map)
                 for (point in trackPoints) {
-                    processSinglePoint(point, map)
+                    processSinglePoint(point, routeBuilder)
                 }
             }
 
-    private suspend fun processSinglePoint(point: TrackPoint, map: Map) {
-        println("Processing point ${point.latitude} for map ${map.name}")
-        with(TrackImporter) {
-            point.toMarker(map)
-        }
-        //TODO: implement
+    /**
+     * The [RouteBuilder] is being added new [TrackPoint] as they arrive.
+     * Right after a point has been added, the [route] is updated. While this is done off UI thread,
+     * the [MutableLiveData] will trigger observers in the UI thread. In other words,
+     * [MutableLiveData] is thread safe.
+     */
+    private fun processSinglePoint(point: TrackPoint, routeBuilder: RouteBuilder) {
+        println("Processing point ${point.latitude} for map ${routeBuilder.map.name}")
+
+        routeBuilder.add(point)
+        route.postValue(routeBuilder.liveRoute)
     }
 
-    fun getLiveRoute(): LiveData<RouteGson.Route> {
+    fun getLiveRoute(): LiveData<LiveRoute> {
         return route
     }
 
@@ -105,4 +109,17 @@ class InMapRecordingViewModel : ViewModel() {
 
         EventBus.getDefault().unregister(this)
     }
+
+    class RouteBuilder(val map: Map) {
+        val liveRoute = LiveRoute(RouteGson.Route(), map)
+
+        fun add(point: TrackPoint) {
+            with(TrackImporter) {
+                val marker = point.toMarker(map)
+                liveRoute.route.route_markers.add(marker)
+            }
+        }
+    }
+
+    data class LiveRoute(val route: RouteGson.Route, val map: Map)
 }
