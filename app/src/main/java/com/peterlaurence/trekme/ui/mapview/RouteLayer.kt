@@ -39,7 +39,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     override fun onTrackChanged(map: Map, routeList: List<RouteGson.Route>) {
         Log.d(TAG, routeList.size.toString() + " new route received for map " + map.name)
 
-        drawRoutes(mMap.routes!!, mTileView)
+        drawRoutes()
     }
 
     override fun onTrackVisibilityChanged() {
@@ -77,9 +77,10 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
     private fun drawRoutes() {
         /* Display all routes */
-        val routes = mMap.routes
-        if (routes != null) {
-            drawRoutes(mMap.routes!!, mTileView)
+        mMap.routes?.let { routes ->
+            if (routes.isNotEmpty()) {
+                drawRoutes(routes, mTileView)
+            }
         }
     }
 
