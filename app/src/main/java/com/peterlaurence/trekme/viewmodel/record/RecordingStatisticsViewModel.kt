@@ -108,7 +108,7 @@ class RecordingStatisticsViewModel : ViewModel() {
     /**
      * The user may have imported a regular gpx file (so it doesn't have any statistics).
      * In this call, we must have that each gpx file already been parsed, and the
-     * [recordingsToGpx] Map should br up to date.
+     * [recordingsToGpx] Map should be up to date.
      * Hence, [updateRecordingsToGpxMap] is called first.
      *
      * Then, we compute the statistics for the first track.
@@ -136,7 +136,11 @@ class RecordingStatisticsViewModel : ViewModel() {
                     /* Track statistics have changed, update the file */
                     track.statistics = updatedStatistics
                     val fos = FileOutputStream(it.key)
-                    GPXWriter.write(it.value, fos)
+                    try {
+                        GPXWriter.write(it.value, fos)
+                    } catch (e: Exception) {
+                        // couldn't update the statistics
+                    }
                 }
                 track.statistics = updatedStatistics
             }

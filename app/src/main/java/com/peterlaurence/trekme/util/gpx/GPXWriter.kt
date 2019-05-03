@@ -17,7 +17,7 @@ import javax.xml.transform.stream.StreamResult
 
 /**
  * A writer compliant with the [GPX 1.1 schema](https://www.topografix.com/gpx/1/1/). <br></br>
- * But its features are limited to the needs of TrekAdvisor app, which for instance only consist in
+ * But its features are limited to the needs of TrekMe app, which for instance only consist in
  * writing tracks (with track segments and way-points).
  *
  * @author peterLaurence on 30/12/17.

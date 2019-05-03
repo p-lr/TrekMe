@@ -59,9 +59,34 @@ object TrackImporter {
     }
 
     /**
+     * A [TrackPoint] is a raw point that we make right after a location api callback.
+     * To be drawn relatively to a [Map], it must be converted to a [MarkerGson.Marker].
+     * This should be called off UI thread.
+     */
+    fun TrackPoint.toMarker(map: Map): MarkerGson.Marker {
+        val marker = MarkerGson.Marker()
+
+        /* If the map uses a projection, store projected values */
+        val projectedValues: DoubleArray?
+        val projection = map.projection
+        if (projection != null) {
+            projectedValues = projection.doProjection(latitude, longitude)
+            if (projectedValues != null) {
+                marker.proj_x = projectedValues[0]
+                marker.proj_y = projectedValues[1]
+            }
+        }
+
+        /* In any case, we store the wgs84 coordinates */
+        marker.lat = latitude
+        marker.lon = longitude
+        return marker
+    }
+
+    /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
-    fun CoroutineScope.applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): Deferred<GpxParseResult> {
+    suspend fun applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): GpxParseResult {
         val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
         return parcelFileDescriptor?.let {
             val fileDescriptor = parcelFileDescriptor.fileDescriptor
@@ -76,7 +101,7 @@ object TrackImporter {
     /**
      * Applies the GPX content given as a [File] to the provided [Map].
      */
-    fun CoroutineScope.applyGpxFileToMapAsync(file: File, map: Map): Deferred<GpxParseResult> {
+    suspend fun applyGpxFileToMapAsync(file: File, map: Map): GpxParseResult {
         val fileInputStream = FileInputStream(file)
         return applyGpxInputStreamToMapAsync(fileInputStream, map, file.name)
     }
@@ -87,7 +112,7 @@ object TrackImporter {
     /**
      * Parses the GPX content provided as [InputStream], off UI thread.
      */
-    private fun CoroutineScope.readGpxInputStreamAsync(input: InputStream, map: Map, defaultName: String) = async(Dispatchers.Default) {
+    private suspend fun readGpxInputStreamAsync(input: InputStream, map: Map, defaultName: String) = withContext(Dispatchers.Default) {
         GPXParser.parseSafely(input)?.let { gpx ->
             val routes = gpx.tracks.mapIndexed { index, track ->
                 gpxTrackToRoute(map, track, index, defaultName)
@@ -103,19 +128,18 @@ object TrackImporter {
      * Launches a GPX parse. Then, on the calling [CoroutineScope] (which [CoroutineDispatcher] should
      * be [Dispatchers.Main]), applies the result on the provided [Map].
      */
-    private fun CoroutineScope.applyGpxInputStreamToMapAsync(input: InputStream, map: Map,
-                                                             defaultName: String,
-                                                             afterParseCallback: (() -> Unit)? = null) = async {
-        val deferred = readGpxInputStreamAsync(input, map, defaultName)
+    private suspend fun applyGpxInputStreamToMapAsync(input: InputStream, map: Map,
+                                                      defaultName: String,
+                                                      afterParseCallback: (() -> Unit)? = null): GpxParseResult {
+        val pair = readGpxInputStreamAsync(input, map, defaultName)
 
         /* Whatever the caller will do with the parse result, we want to apply it to the map and add
          * additional info
          */
-        val pair = deferred.await()
         afterParseCallback?.let { it() }
 
         if (pair != null) {
-            return@async applyGpxParseResultToMap(map, pair.first, pair.second)
+            return applyGpxParseResultToMap(map, pair.first, pair.second)
         } else {
             throw GpxParseException()
         }
@@ -135,6 +159,7 @@ object TrackImporter {
     /**
      * Converts a [Track] into a [RouteGson.Route].
      * A single [Track] may contain several [TrackSegment].
+     * This should be call off UI thread.
      */
     private fun gpxTrackToRoute(map: Map, track: Track, index: Int, defaultName: String): RouteGson.Route {
         /* Create a new route */
@@ -155,23 +180,7 @@ object TrackImporter {
         for (trackSegment in trackSegmentList) {
             val trackPointList = trackSegment.trackPoints
             for (trackPoint in trackPointList) {
-                val marker = MarkerGson.Marker()
-
-                /* If the map uses a projection, store projected values */
-                val projectedValues: DoubleArray?
-                val projection = map.projection
-                if (projection != null) {
-                    projectedValues = projection.doProjection(trackPoint.latitude, trackPoint.longitude)
-                    if (projectedValues != null) {
-                        marker.proj_x = projectedValues[0]
-                        marker.proj_y = projectedValues[1]
-                    }
-                }
-
-                /* In any case, we store the wgs84 coordinates */
-                marker.lat = trackPoint.latitude
-                marker.lon = trackPoint.longitude
-
+                val marker = trackPoint.toMarker(map)
                 route.route_markers.add(marker)
             }
         }
@@ -179,28 +188,13 @@ object TrackImporter {
     }
 
     private fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): MarkerGson.Marker {
-        val marker = MarkerGson.Marker()
+        val marker = wpt.toMarker(map)
 
         marker.name = if (wpt.name?.isNotEmpty() == true) {
             wpt.name
         } else {
             "$defaultName-wpt${index + 1}"
         }
-
-        /* If the map uses a projection, store projected values */
-        val projectedValues: DoubleArray?
-        val projection = map.projection
-        if (projection != null) {
-            projectedValues = projection.doProjection(wpt.latitude, wpt.longitude)
-            if (projectedValues != null) {
-                marker.proj_x = projectedValues[0]
-                marker.proj_y = projectedValues[1]
-            }
-        }
-
-        /* In any case, we store the wgs84 coordinates */
-        marker.lat = wpt.latitude
-        marker.lon = wpt.longitude
 
         return marker
     }

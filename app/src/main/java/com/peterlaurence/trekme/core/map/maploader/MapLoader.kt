@@ -15,9 +15,7 @@ import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderDummy
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips
 import com.qozix.tileview.graphics.BitmapProvider
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -80,7 +78,7 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Clear and sets the internal list of [Map] : `mMapList`. <br></br>
+     * Clear and sets the internal list of [Map] : [mMapList].
      * Once done, the registered [MapListUpdateListener] is called.
      *
      * @param dirs The directories in which to search for maps. If not specified, a default value is
@@ -97,7 +95,14 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Appends found [Map]s to the internal list of [Map] : `mMapList`.
+     * Clears the internal list of [Map] : [mMapList].
+     */
+    fun clearMaps() {
+        mMapList.clear()
+    }
+
+    /**
+     * Appends found [Map]s to the internal list of [Map] : [mMapList].
      * Once done, all of the registered [MapListUpdateListener] are called.
      *
      * @param dirs The directories in which to search for new maps.
@@ -130,13 +135,12 @@ object MapLoader : MapImporter.MapImportListener {
      * should be the UI thread), the result (a nullable instance of [RouteGson]) is set on the [Map]
      * given as parameter.
      */
-    fun CoroutineScope.getRoutesForMap(map: Map) = launch {
-        withContext(Dispatchers.Default) {
-            mapRouteImportTask(map, mGson)
-        }?.let { routeGson ->
-            map.routeGson = routeGson
-        }
-    }
+    suspend fun getRoutesForMap(map: Map) =
+            withContext(Dispatchers.Default) {
+                mapRouteImportTask(map, mGson)
+            }?.let { routeGson ->
+                map.routeGson = routeGson
+            }
 
     /**
      * Launch a task which reads the landmarks.json file.
@@ -144,13 +148,12 @@ object MapLoader : MapImporter.MapImportListener {
      * should be the UI thread), the result (a nullable instance of [LandmarkGson]) is set on the [Map]
      * given as parameter.
      */
-    fun CoroutineScope.getLandmarksForMap(map: Map) = launch {
-        withContext(Dispatchers.Default) {
-            mapLandmarkImportTask(map, mGson)
-        }?.let { landmarkGson ->
-            map.landmarkGson = landmarkGson
-        }
-    }
+    suspend fun getLandmarksForMap(map: Map) =
+            withContext(Dispatchers.Default) {
+                mapLandmarkImportTask(map, mGson)
+            }?.let { landmarkGson ->
+                map.landmarkGson = landmarkGson
+            }
 
     /**
      * Launch a task which gets the list of [MapArchive].
@@ -170,6 +173,10 @@ object MapLoader : MapImporter.MapImportListener {
 
     fun setMapListUpdateListener(listener: MapListUpdateListener) {
         mMapListUpdateListener = listener
+    }
+
+    fun clearMapListUpdateListener() {
+        mMapListUpdateListener = null
     }
 
     fun setMapMarkerUpdateListener(listener: MapMarkerUpdateListener) {
@@ -339,9 +346,7 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     private fun notifyMapListUpdateListeners() {
-        if (mMapListUpdateListener != null) {
-            mMapListUpdateListener!!.onMapListUpdate(mMapList.size > 0)
-        }
+        mMapListUpdateListener?.onMapListUpdate(mMapList.size > 0)
     }
 
     enum class CALIBRATION_METHOD {

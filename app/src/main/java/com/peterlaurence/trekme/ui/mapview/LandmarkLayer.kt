@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import com.qozix.tileview.TileView
 import com.qozix.tileview.markers.MarkerLayout
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineScope) :
         MarkerLayout.MarkerTapListener, TileViewExtended.ScaleChangeListener, CoroutineScope by coroutineScope {
@@ -36,10 +37,9 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         }
     }
 
-    private fun acquireThenDrawLandmarks() {
-        getLandmarksForMap(map).invokeOnCompletion {
-            drawLandmarks()
-        }
+    private fun CoroutineScope.acquireThenDrawLandmarks() = launch {
+        getLandmarksForMap(map)
+        drawLandmarks()
     }
 
     private fun drawLandmarks() {
