@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class PathView extends View {
 
-    private static final int DEFAULT_STROKE_COLOR = 0xFF311B92;
+    private static final int DEFAULT_STROKE_COLOR = 0xFF3F51B5;
     private static final int DEFAULT_STROKE_WIDTH_DP = 4;
     private float mStrokeWidthDefault;
 

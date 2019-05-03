@@ -4,6 +4,7 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 import android.view.MotionEvent;
 
+import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.gson.RouteGson;
 import com.peterlaurence.trekme.ui.mapview.components.PathView;
 import com.qozix.tileview.TileView;
@@ -130,6 +131,7 @@ public class TileViewExtended extends TileView {
 
     private void createLiveRouteView() {
         mLiveRouteView = new PathView(getContext());
+        mLiveRouteView.getDefaultPaint().setColor(getContext().getColor(R.color.colorLiveRoute));
         addView(mLiveRouteView, getChildCount() - 1);
         addScaleChangeListener(scale -> mLiveRouteView.setScale(scale));
         mLiveRouteView.setScale(getScale());
