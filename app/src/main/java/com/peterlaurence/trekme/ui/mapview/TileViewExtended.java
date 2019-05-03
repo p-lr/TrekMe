@@ -25,6 +25,7 @@ public class TileViewExtended extends TileView {
     private WeakReference<ScrollListener> mScrollListenerWeakReference;
     private List<ScaleChangeListener> mScaleChangeListeners;
     private PathView mPathView;
+    private PathView mLiveRouteView;
 
     public TileViewExtended(Context context) {
         super(context);
@@ -87,6 +88,18 @@ public class TileViewExtended extends TileView {
         mPathView.updateRoutes(routeList);
     }
 
+    /**
+     * Updates the {@link PathView} that represents the live route.
+     * @param routeList A list of size 1 of {@link RouteGson.Route}.
+     */
+    public void drawLiveRoute(List<RouteGson.Route> routeList) {
+        if (mLiveRouteView == null) {
+            createLiveRouteView();
+        }
+
+        mLiveRouteView.updateRoutes(routeList);
+    }
+
     @Override
     public void onScaleChanged(float scale, float previous) {
         super.onScaleChanged(scale, previous);
@@ -113,6 +126,13 @@ public class TileViewExtended extends TileView {
         addView(mPathView, getChildCount() - 1);
         addScaleChangeListener(scale -> mPathView.setScale(scale));
         mPathView.setScale(getScale());
+    }
+
+    private void createLiveRouteView() {
+        mLiveRouteView = new PathView(getContext());
+        addView(mLiveRouteView, getChildCount() - 1);
+        addScaleChangeListener(scale -> mLiveRouteView.setScale(scale));
+        mLiveRouteView.setScale(getScale());
     }
 
     /**

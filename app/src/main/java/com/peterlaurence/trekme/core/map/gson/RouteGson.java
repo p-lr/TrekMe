@@ -15,7 +15,7 @@ public class RouteGson {
 
     public static class Route {
         public String name;
-        public boolean visible;
+        public boolean visible = true;
         public List<MarkerGson.Marker> route_markers;
         private transient Object mData;
         private final transient Object mDataLock = new Object();

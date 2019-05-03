@@ -94,8 +94,6 @@ class InMapRecordingViewModel : ViewModel() {
      * [MutableLiveData] is thread safe.
      */
     private fun processSinglePoint(point: TrackPoint, routeBuilder: RouteBuilder) {
-        println("Processing point ${point.latitude} for map ${routeBuilder.map.name}")
-
         routeBuilder.add(point)
         route.postValue(routeBuilder.liveRoute)
     }
