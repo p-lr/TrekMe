@@ -29,7 +29,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     private lateinit var mTileView: TileViewExtended
     private lateinit var map: Map
 
-    private var liveMapDrawablePath: PathView.DrawablePath? = null
+    private var liveRoutePath: MutableList<Float>? = null
     private val TAG = "RouteLayer"
 
     /**
@@ -56,7 +56,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     fun init(map: Map, tileView: TileView) {
         this.map = map
         setTileView(tileView as TileViewExtended)
-        liveMapDrawablePath = null
+        liveRoutePath = null  // cleanup the "live" route path
 
         if (this.map.areRoutesDefined()) {
             drawRoutes()
@@ -65,19 +65,25 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         }
     }
 
+    /**
+     * If this is the first time the "live" route will be drawn, it's drawn completely using the
+     * same pattern as other routes.
+     * Right after that, we keep a reference on the path: [liveRoutePath].
+     * Subsequent calls will use this path to append new points. Ne need to offload this update into
+     * another thread.
+     */
     fun updateLiveRoute(route: RouteGson.Route, map: Map) {
-        if (this.map == map && liveMapDrawablePath != null) {
-
-            // draw partially
-            liveMapDrawablePath?.let { drawablePath ->
-                val newPath = drawablePath.path.toTypedArray().toFloatArray().addMarker(
+        if (this.map == map && liveRoutePath != null) {
+            /* Draw partially */
+            liveRoutePath?.let { path ->
+                val newPath = path.addMarker(
                         route.route_markers.last(), mTileView)
                 val existingDrawable = route.data as PathView.DrawablePath
-                existingDrawable.path = newPath
+                existingDrawable.path = newPath.toFloatArray()
                 mTileView.drawLiveRoute(listOf(route))
             }
         } else {
-            // redraw completely
+            /* Redraw completely */
             drawLiveRouteCompletely(route)
         }
     }
@@ -105,7 +111,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         drawRoutes(listOf(liveRoute), mTileView) {
             mTileView.drawLiveRoute(this)
             firstOrNull()?.let {
-                liveMapDrawablePath = it.data as PathView.DrawablePath
+                liveRoutePath = (it.data as PathView.DrawablePath).path.toMutableList()
             }
         }
     }
@@ -118,9 +124,15 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
      * Use [Channel]s to communicate between coroutines and ensure no concurrent access on resources.
      * A [Channel] is represented here with ****
      *
-     *   routes          _____________          paths          _______________
-     * [********] ----> | producePath | ----> [*******] ----> | pathProcessor |
-     *                   -------------                         ---------------
+     *                      Worker pool
+     *                   _________________
+     *   routes         |  _____________  |         paths          _______________
+     * [********] ----> | | producePath | | ----> [*******] ----> | pathProcessor |
+     *                  |  -------------  |                        ---------------
+     *                  |  _____________  |
+     *                  | | producePath | |
+     *                  |  -------------  |
+     *                  ------------------
      */
     private fun CoroutineScope.drawRoutes(routeList: List<RouteGson.Route>,
                                           tileView: TileViewExtended,
@@ -129,7 +141,9 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         val routes = Channel<RouteGson.Route>()
         val paths = Channel<Pair<RouteGson.Route, FloatArray>>()
 
-        producePath(routes, paths, tileView)
+        repeat(2) {
+            producePath(routes, paths, tileView)
+        }
         pathProcessor(paths, action)
 
         routeList.forEach {
@@ -214,23 +228,22 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         return if (mapUsesProjection) proj_y else lat
     }
 
-    private fun FloatArray.addMarker(marker: MarkerGson.Marker, tileView: TileViewExtended): FloatArray {
+    private fun MutableList<Float>.addMarker(marker: MarkerGson.Marker, tileView: TileViewExtended) = apply {
         val relativeX = marker.getRelativeX(map)
         val relativeY = marker.getRelativeY(map)
 
-        val lines = FloatArray(size + 4)
-        copyInto(lines)
+        val lines = Array(4) { 0f }
 
-        lines[size + 2] = tileView.coordinateTranslater.translateX(relativeX).toFloat()
-        lines[size + 3] = tileView.coordinateTranslater.translateY(relativeY).toFloat()
+        lines[2] = tileView.coordinateTranslater.translateX(relativeX).toFloat()
+        lines[3] = tileView.coordinateTranslater.translateY(relativeY).toFloat()
         if (size >= 2) {
-            lines[size] = this[size - 2]
-            lines[size + 1] = this[size - 1]
+            lines[0] = this[size - 2]
+            lines[1] = this[size - 1]
         } else {
-            lines[size] = lines[size + 2]
-            lines[size + 1] = lines[size + 3]
+            lines[0] = lines[2]
+            lines[1] = lines[3]
         }
 
-        return lines
+        addAll(lines)
     }
 }
