@@ -124,7 +124,7 @@ public class TileViewExtended extends TileView {
 
     private void createPathView() {
         mPathView = new PathView(getContext());
-        addView(mPathView, getChildCount() - 1);
+        addView(mPathView, 1);
         addScaleChangeListener(scale -> mPathView.setScale(scale));
         mPathView.setScale(getScale());
     }
@@ -132,7 +132,7 @@ public class TileViewExtended extends TileView {
     private void createLiveRouteView() {
         mLiveRouteView = new PathView(getContext());
         mLiveRouteView.getDefaultPaint().setColor(getContext().getColor(R.color.colorLiveRoute));
-        addView(mLiveRouteView, getChildCount() - 1);
+        addView(mLiveRouteView, 1);
         addScaleChangeListener(scale -> mLiveRouteView.setScale(scale));
         mLiveRouteView.setScale(getScale());
     }
