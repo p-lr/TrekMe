@@ -13,6 +13,7 @@
   * [Show the speed](#TOC-Show-speed)
   * [Add markers](#TOC-Add-markers)
   * [Add a landmark](#TOC-Add-landmarks)
+  * [Visualize a recording in real time](#TOC-Display-live-route)
   * [Import a GPX track](#TOC-GPX-track-import)
   * [GPX recording](#TOC-GPX-recording)
 
@@ -218,6 +219,17 @@ Often, we want to display our orientation in the same time. We can also add seve
 
 <p align="center">
 <img src="doc/tuto/landmark-2.jpg" width="300">
+</p>
+
+### <a name="TOC-Display-live-route"></a>Visualize a recording in real time
+
+When you start a recording from the "GPX Record" option menu, the recording can be seen in real time on any map that covers your current area.
+It appears as a yellow route.
+
+Even if you close TrekMe, you will find your live route the next time you open it, until you stop the recording.
+
+<p align="center">
+<img src="doc/tuto/live-route.jpg" width="300">
 </p>
 
 ### <a name="TOC-GPX-track-import"></a>Import a GPX track

@@ -13,6 +13,7 @@
   * [Afficher la vitesse](#TOC-Show-speed)
   * [Ajouter un marqueur](#TOC-Add-markers)
   * [Ajouter un repère](#TOC-Add-landmarks)
+  * [Visualiser un enregistrement en temps réel](#TOC-Display-live-route)
   * [Importer une trace GPX](#TOC-GPX-track-import)
   * [S'enregistrer au format GPX](#TOC-GPX-recording)
 5. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
@@ -203,6 +204,17 @@ En général, on affiche en même temps l'orientation. On peut aussi en ajouter 
 
 <p align="center">
 <img src="doc/tuto/landmark-2.jpg" width="300">
+</p>
+
+### <a name="TOC-Display-live-route"></a>Visualiser un enregistrement en temps réel
+
+Par défaut, lorsque vous lancez un enregistrement GPX (depuis le menu "Enregistrement du parcours"), l'enregistrement en cours s'affiche sur votre carte, sous forme de trace jaune.
+Cela ne fonctionne que pour les cartes qui couvrent la zone dans laquelle vous êtes au moment de l'enregistrement.
+
+Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre carte, tant que l'enregistrement est en cours.
+
+<p align="center">
+<img src="doc/tuto/live-route.jpg" width="300">
 </p>
 
 ### <a name="TOC-GPX-track-import"></a>Import d'un fichier GPX
