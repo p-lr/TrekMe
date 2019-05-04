@@ -83,7 +83,6 @@
         android:id="@+id/view"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_alignTop="@id/button_bar_callout"
         android:background="@drawable/divider"
         app:layout_constraintBottom_toTopOf="@+id/delete_callout_btn"
         tools:layout_editor_absoluteX="8dp" />
