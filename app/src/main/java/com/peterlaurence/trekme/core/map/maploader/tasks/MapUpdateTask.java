@@ -91,15 +91,19 @@ public class MapUpdateTask extends AsyncTask<File, Void, Void> {
             return;
         }
 
-        File[] list = root.listFiles();
-        if (list == null) {
-            return;
-        }
-
-        for (File f : list) {
-            if (f.isDirectory()) {
-                findMaps(f, depth + 1);
+        try {
+            File[] list = root.listFiles();
+            if (list == null) {
+                return;
             }
+
+            for (File f : list) {
+                if (f.isDirectory()) {
+                    findMaps(f, depth + 1);
+                }
+            }
+        } catch (Exception e) {
+            // probably a permission issue, SD-card not mounted, etc.
         }
     }
 

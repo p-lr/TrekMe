@@ -145,4 +145,5 @@
     <string name="mapcreate_btn_nav_credentials">Corriger mes identifiants</string>
     <string name="mapview_add_landmark">Ajouter un repère</string>
     <string name="callout_landmark_title">Repère</string>
+    <string name="settings_menu_title">Paramètres</string>
 </resources>

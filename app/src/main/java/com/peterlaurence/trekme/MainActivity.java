@@ -61,6 +61,7 @@ import com.peterlaurence.trekme.ui.mapview.MapViewFragment;
 import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment;
 import com.peterlaurence.trekme.ui.record.RecordFragment;
+import com.peterlaurence.trekme.ui.settings.SettingsFragment;
 import com.peterlaurence.trekme.ui.trackview.TrackViewFragment;
 import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel;
 
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity
     private static final String WMTS_VIEW_FRAGMENT_TAG = "wmtsViewFragment";
     private static final String RECORD_FRAGMENT_TAG = "gpxFragment";
     private static final String TRACK_VIEW_FRAGMENT_TAG = "trackViewFragment";
+    private static final String SETTINGS_FRAGMENT = "settingsFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity
                 add(MARKER_MANAGE_FRAGMENT_TAG);
                 add(RECORD_FRAGMENT_TAG);
                 add(TRACK_VIEW_FRAGMENT_TAG);
+                add(SETTINGS_FRAGMENT);
             }});
     /* Permission-group codes */
     private static final int REQUEST_MINIMAL = 1;
@@ -378,7 +381,7 @@ public class MainActivity extends AppCompatActivity
         requestMinimalPermissions(this);
 
         if (checkStoragePermissions(this)) {
-            TrekMeContext.INSTANCE.init();
+            TrekMeContext.INSTANCE.init(this);
 
             /* If the list fragment already exists, the activity might have been recreated because
              * of a configuration change. Then we don't want to show this fragment, as another
@@ -425,6 +428,11 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_track_stats:
                 showTrackViewFragment();
                 break;
+
+            case R.id.nav_settings:
+                showSettingsFragment();
+                break;
+
             case R.id.nav_help:
                 String url = getString(R.string.help_url);
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -673,6 +681,10 @@ public class MainActivity extends AppCompatActivity
 
     private void showTrackViewFragment() {
         showFragment(TRACK_VIEW_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, TrackViewFragment.class);
+    }
+
+    private void showSettingsFragment() {
+        showFragment(SETTINGS_FRAGMENT, MAP_LIST_FRAGMENT_TAG, SettingsFragment.class);
     }
 
     /**

@@ -88,7 +88,7 @@ object MapLoader : MapImporter.MapImportListener {
     fun clearAndGenerateMaps(dirs: List<File> = listOf()) {
         mMapList.clear()
         if (dirs.isEmpty()) { // No directories specified? We take the default value.
-            generateMaps(listOf(TrekMeContext.defaultMapsDir))
+            generateMaps(TrekMeContext.mapsDirList)
         } else {
             generateMaps(dirs)
         }

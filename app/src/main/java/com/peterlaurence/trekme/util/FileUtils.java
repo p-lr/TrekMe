@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 
 import java.io.BufferedReader;
@@ -136,7 +137,7 @@ public class FileUtils {
     /**
      * Extract the file name from URI returned from Intent.ACTION_GET_CONTENT
      */
-    public static String getFileRealPathFromURI(ContentResolver contentResolver, Uri uri) {
+    public static String getFileRealFileNameFromURI(ContentResolver contentResolver, Uri uri) {
         String result = null;
         String scheme = uri.getScheme();
         if (scheme != null && scheme.equals("content")) {
