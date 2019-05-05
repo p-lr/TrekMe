@@ -36,8 +36,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.trekme.core.TrekMeContext;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
-import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent;
 import com.peterlaurence.trekme.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekme.core.mapsource.MapSource;
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle;
@@ -232,8 +230,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        initMapLoader();
-
         fragmentManager = this.getSupportFragmentManager();
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -274,14 +270,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         initViewModels();
-    }
-
-    /**
-     * The {@link MapLoader} is agnostic of the way events are propagated.
-     */
-    private void initMapLoader() {
-        MapLoader.INSTANCE.setMapListUpdateListener(
-                mapsFound -> EventBus.getDefault().post(new MapListUpdateEvent(mapsFound)));
     }
 
     /**
