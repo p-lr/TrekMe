@@ -13,6 +13,7 @@ import java.io.IOException
  *
  *  * The default root folder of the application on the external storage
  *  * Where maps are searched
+ *  * Where maps can be downloaded
  *  * The default folder in which new maps downloaded from the internet are imported
  *  * The folder where credentials are stored
  *  * The folder where recordings are saved
@@ -21,7 +22,7 @@ import java.io.IOException
  * @author peterLaurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
 object TrekMeContext {
-    val appFolderName = "trekme"
+    const val appFolderName = "trekme"
     private const val appFolderNameLegacy = "trekadvisor"
     val defaultAppDir = File(Environment.getExternalStorageDirectory(),
             appFolderName)
@@ -33,7 +34,15 @@ object TrekMeContext {
     val recordingsDir = File(defaultAppDir, "recordings")
     val credentialsDir = File(defaultAppDir, "credentials")
 
+    /* Where maps are searched */
     lateinit var mapsDirList: List<File>
+
+    /* Where maps can be downloaded */
+    val downloadDirList: List<File>
+        get() = mapsDirList.map {
+            File(it, "downloaded")
+        }
+
     private lateinit var settingsFile: File
 
     private const val TAG = "TrekMeContext"
@@ -93,9 +102,9 @@ object TrekMeContext {
      * if the app is uninstalled. This is intended, not to persist those settings.
      */
     private fun createSettingsFile(context: Context) {
-        val file = File(context.filesDir, "settings.json")
-        if (!file.exists()) {
-            file.createNewFile()
+        settingsFile = File(context.filesDir, "settings.json")
+        if (!settingsFile.exists()) {
+            settingsFile.createNewFile()
         }
     }
 

@@ -146,4 +146,6 @@
     <string name="mapview_add_landmark">Ajouter un repère</string>
     <string name="callout_landmark_title">Repère</string>
     <string name="settings_menu_title">Paramètres</string>
+    <string name="download_category">Téléchargement</string>
+    <string name="preference_download_location_title">Répertoire de téléchargement</string>
 </resources>

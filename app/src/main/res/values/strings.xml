@@ -201,4 +201,9 @@
     <string name="current_recording">Current recording</string>
     <string name="ign_warning_help"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#TOC-ign-incorrect">Need help?</a></string>
 
+    <!-- SettingsFragment -->
+    <string name="download_category">Download</string>
+    <string name="preference_download_location_key" translatable="false">pref_download_location</string>
+    <string name="preference_download_location_title">Download folder</string>
+
 </resources>

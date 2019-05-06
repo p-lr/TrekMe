@@ -1,26 +1,64 @@
 package com.peterlaurence.trekme.ui.settings
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekme.R
-import kotlinx.android.synthetic.main.fragment_settings.*
+import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 
 
-class SettingsFragment : Fragment() {
+class SettingsFragment : PreferenceFragmentCompat() {
+    private lateinit var viewModel: SettingsViewModel
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_settings, container, false)
+    private val downloadPref: ListPreference?
+        get() = preferenceManager.findPreference(
+                getString(R.string.preference_download_location_key))
+
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        addPreferencesFromResource(R.xml.app_settings)
+
+        viewModel = ViewModelProviders.of(this).get(SettingsViewModel::class.java)
+        initComponents()
+
+        /* Observe the changes in the model */
+        viewModel.getDownloadDirList().observe(this, Observer<List<String>> {
+            it?.let { dirs ->
+                updateDownloadDirList(dirs.toTypedArray())
+            }
+        })
+
+        viewModel.getDownloadDir().observe(this, Observer<String> {
+            it?.let { path ->
+                updateDownloadSelection(path)
+            }
+        })
+
+
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    private fun updateDownloadDirList(dirs: Array<String>) {
+        downloadPref?.entries = dirs
+        downloadPref?.entryValues = dirs
+    }
 
+    private fun updateDownloadSelection(path: String) {
+        downloadPref?.setSummaryAndValue(path)
+    }
 
-        exploreBtn.setOnClickListener {
+    private fun initComponents() {
+        downloadPref?.setOnPreferenceChangeListener { _, newValue ->
+            val newPath = newValue as String
+            viewModel.setDownloadDirPath(newPath)
+            updateDownloadSelection(newPath)
+            true
         }
+    }
+
+    private fun ListPreference.setSummaryAndValue(txt: String) = apply {
+        summary = txt
+        value = txt
     }
 
 
