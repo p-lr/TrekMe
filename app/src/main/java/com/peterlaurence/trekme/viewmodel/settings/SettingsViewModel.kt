@@ -3,9 +3,11 @@ package com.peterlaurence.trekme.viewmodel.settings
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
+import kotlinx.coroutines.launch
 import java.io.File
 
 class SettingsViewModel : ViewModel() {
@@ -36,11 +38,15 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun setDownloadDirPath(newPath: String) {
-        Settings.setDownloadDir(File(newPath))
+        viewModelScope.launch {
+            Settings.setDownloadDir(File(newPath))
+        }
     }
 
     fun setStartOnPolicy(policy: StartOnPolicy) {
-        Settings.setStartOnPolicy(policy)
+        viewModelScope.launch {
+            Settings.setStartOnPolicy(policy)
+        }
     }
 
     private fun updateDownloadDirList() {
@@ -48,10 +54,14 @@ class SettingsViewModel : ViewModel() {
     }
 
     private fun updateDownloadDir() {
-        downloadDir.postValue(Settings.getDownloadDir().absolutePath)
+        viewModelScope.launch {
+            downloadDir.postValue(Settings.getDownloadDir().absolutePath)
+        }
     }
 
     private fun updateStartOnPolicy() {
-        startOnPolicy.postValue(Settings.getStartOnPolicy())
+        viewModelScope.launch {
+            startOnPolicy.postValue(Settings.getStartOnPolicy())
+        }
     }
 }
