@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/general_category">
+        <ListPreference
+            android:key="@string/preference_starton_key"
+            android:title="@string/preference_starton_title"
+            android:entries="@array/starton_options"
+            android:entryValues="@array/starton_options"/>
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/download_category">
 
         <ListPreference

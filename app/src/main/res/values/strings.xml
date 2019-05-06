@@ -202,6 +202,11 @@
     <string name="ign_warning_help"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#TOC-ign-incorrect">Need help?</a></string>
 
     <!-- SettingsFragment -->
+    <string name="general_category">General</string>
+    <string name="preference_starton_key" translatable="false">pref_starton</string>
+    <string name="preference_starton_title">Start TrekMe on</string>
+    <string name="preference_starton_maplist">the map list</string>
+    <string name="preference_starton_lastmap">the last map</string>
     <string name="download_category">Download</string>
     <string name="preference_download_location_key" translatable="false">pref_download_location</string>
     <string name="preference_download_location_title">Download folder</string>

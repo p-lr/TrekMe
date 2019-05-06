@@ -8,10 +8,21 @@ import kotlinx.serialization.json.Json
 import java.io.File
 
 
+/**
+ * Holds global settings of TrekMe.
+ * Its public methods **should always** be called by the same thread (it can be the MAIN thread, but
+ * it could be any other thread).
+ * This is because the persistence is done using a config file, which is a shared mutable state, and
+ * no specific synchronization is set.
+ */
 object Settings {
     private val settingsFile = TrekMeContext.getSettingsFile()
     private val settingsData: SettingsData
-        get() = readSettings()
+        get() = try {
+            readSettings()
+        } catch (e: Exception) {
+            SettingsData()
+        }
 
     /**
      * Get the download directory as [File].
@@ -21,17 +32,12 @@ object Settings {
      * It's also a security in the case the download directories change across versions.
      */
     fun getDownloadDir(): File {
-        return try {
-            val settings = readSettings()
-            settings.downloadDir.let {
-                if (checkDownloadPath(it)) {
-                    File(it)
-                } else {
-                    defaultDownloadDir
-                }
+        return settingsData.downloadDir.let {
+            if (checkDownloadPath(it)) {
+                File(it)
+            } else {
+                defaultDownloadDir
             }
-        } catch (e: Exception) {
-            defaultDownloadDir
         }
     }
 
@@ -76,7 +82,6 @@ object Settings {
         } catch (e: Exception) {
             false
         }
-
     }
 
     private fun checkDownloadPath(path: String): Boolean {
@@ -84,9 +89,44 @@ object Settings {
             it.absolutePath
         }.contains(path)
     }
+
+    fun getStartOnPolicy(): StartOnPolicy {
+        return settingsData.startOnPolicy
+    }
+
+    fun setStartOnPolicy(policy: StartOnPolicy) {
+        settingsData.copy(startOnPolicy = policy).save()
+    }
+
+    /**
+     * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
+     * empty.
+     */
+    fun getLastMapId(): String? {
+        val id = settingsData.lastMapId
+        return if (settingsData.lastMapId.isNotEmpty()) {
+            id
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Set and saves the last map id, for further use.
+     */
+    fun setLastMapId(id: String) {
+        settingsData.copy(lastMapId = id).save()
+    }
 }
 
 @Serializable
-private data class SettingsData(val downloadDir: String = defaultDownloadDir.absolutePath)
+private data class SettingsData(val downloadDir: String = defaultDownloadDir.absolutePath,
+                                val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
+                                val lastMapId: String = "")
+
+enum class StartOnPolicy {
+    MAP_LIST, LAST_MAP
+}
+
 
 private val defaultDownloadDir = TrekMeContext.defaultMapsDownloadDir
