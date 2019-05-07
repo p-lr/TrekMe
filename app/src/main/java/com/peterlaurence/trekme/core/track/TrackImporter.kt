@@ -91,7 +91,7 @@ object TrackImporter {
         return parcelFileDescriptor?.let {
             val fileDescriptor = parcelFileDescriptor.fileDescriptor
             val fileInputStream = FileInputStream(fileDescriptor)
-            val fileName = FileUtils.getFileRealPathFromURI(contentResolver, uri) ?: "A track"
+            val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri) ?: "A track"
             applyGpxInputStreamToMapAsync(fileInputStream, map, fileName) {
                 it.close()
             }

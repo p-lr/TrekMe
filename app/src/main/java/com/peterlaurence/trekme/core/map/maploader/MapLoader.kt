@@ -8,6 +8,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.gson.*
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
+import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.map.maploader.tasks.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
@@ -16,7 +17,10 @@ import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderDummy
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips
 import com.qozix.tileview.graphics.BitmapProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
@@ -28,7 +32,7 @@ import kotlin.coroutines.suspendCoroutine
  * Singleton object that acts as central point for most operations related to the maps.
  * It uses the following tasks defined in [com.peterlaurence.trekme.core.map.maploader.tasks]:
  *
- * * [MapUpdateTask] -> populate the internal list of [Map]
+ * * [mapCreationTask] -> create instances of [Map]
  * * [MapDeleteTask] -> delete a [Map]
  * * [MapMarkerImportTask] -> Import the markers of a [Map]
  * * [mapRouteImportTask] -> Import the list of routes for a given [Map]
@@ -55,7 +59,6 @@ object MapLoader : MapImporter.MapImportListener {
 
     private val mGson: Gson
     private val mMapList: MutableList<Map> = mutableListOf()
-    private var mMapListUpdateListener: MapListUpdateListener? = null
     private var mMapMarkerUpdateListener: MapMarkerUpdateListener? = null
 
     /**
@@ -88,7 +91,7 @@ object MapLoader : MapImporter.MapImportListener {
     fun clearAndGenerateMaps(dirs: List<File> = listOf()) {
         mMapList.clear()
         if (dirs.isEmpty()) { // No directories specified? We take the default value.
-            generateMaps(listOf(TrekMeContext.defaultMapsDir))
+            generateMaps(TrekMeContext.mapsDirList)
         } else {
             generateMaps(dirs)
         }
@@ -102,14 +105,25 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Appends found [Map]s to the internal list of [Map] : [mMapList].
-     * Once done, all of the registered [MapListUpdateListener] are called.
+     * Launches the map search then sets the found [Map]s as the internal list of [Map] : [mMapList].
+     * It is intended to be the only public method of updating the [Map] list.
+     */
+    fun generateMaps(dirs: List<File>) {
+        GlobalScope.launch(Dispatchers.Main) {
+            val maps = findMaps(dirs)
+            mMapList.clear()
+            mMapList.addAll(maps)
+            notifyMapListUpdateListeners()
+        }
+    }
+
+    /**
+     * Launches the search in background thread.
      *
      * @param dirs The directories in which to search for new maps.
      */
-    fun generateMaps(dirs: List<File>) {
-        val updateTask = MapUpdateTask(mMapListUpdateListener, mGson, mMapList)
-        updateTask.execute(*dirs.toTypedArray())
+    private suspend fun findMaps(dirs: List<File>) = withContext(Dispatchers.Default) {
+        mapCreationTask(mGson, *dirs.toTypedArray())
     }
 
     /**
@@ -169,14 +183,6 @@ object MapLoader : MapImporter.MapImportListener {
         })
 
         task.start()
-    }
-
-    fun setMapListUpdateListener(listener: MapListUpdateListener) {
-        mMapListUpdateListener = listener
-    }
-
-    fun clearMapListUpdateListener() {
-        mMapListUpdateListener = null
     }
 
     fun setMapMarkerUpdateListener(listener: MapMarkerUpdateListener) {
@@ -346,7 +352,7 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     private fun notifyMapListUpdateListeners() {
-        mMapListUpdateListener?.onMapListUpdate(mMapList.size > 0)
+        EventBus.getDefault().post(MapListUpdateEvent(maps.isNotEmpty()))
     }
 
     enum class CALIBRATION_METHOD {

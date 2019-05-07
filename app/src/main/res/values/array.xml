@@ -11,4 +11,11 @@
         <item>3</item>
         <item>4</item>
     </string-array>
+
+    <string-array name="empty" translatable="false"></string-array>
+
+    <string-array name="starton_options">
+        <item>@string/preference_starton_maplist</item>
+        <item>@string/preference_starton_lastmap</item>
+    </string-array>
 </resources>

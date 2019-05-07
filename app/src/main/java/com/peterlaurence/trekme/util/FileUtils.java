@@ -12,6 +12,7 @@ import android.provider.OpenableColumns;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,17 @@ public class FileUtils {
         fis.close();
 
         return sb.toString();
+    }
+
+    /**
+     * Write a {@code String} to a {@code File}.
+     */
+    public static void writeToFile(String st, File out) {
+        try (PrintWriter pw = new PrintWriter(out)) {
+            pw.write(st);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -136,7 +148,7 @@ public class FileUtils {
     /**
      * Extract the file name from URI returned from Intent.ACTION_GET_CONTENT
      */
-    public static String getFileRealPathFromURI(ContentResolver contentResolver, Uri uri) {
+    public static String getFileRealFileNameFromURI(ContentResolver contentResolver, Uri uri) {
         String result = null;
         String scheme = uri.getScheme();
         if (scheme != null && scheme.equals("content")) {

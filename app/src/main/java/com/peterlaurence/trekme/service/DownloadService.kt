@@ -29,12 +29,14 @@ import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgn
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgnSpain
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderOSM
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderUSGS
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.providers.layers.LayerForSource
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import com.peterlaurence.trekme.service.event.Status
 import com.peterlaurence.trekme.ui.mapcreate.views.WmtsLevelsDialog
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
@@ -206,14 +208,14 @@ class DownloadService : Service() {
         launchDownloadTask(threadCount, source, threadSafeTileIterator, tileWriter)
     }
 
-    private fun createDestDir(): File? {
+    private fun createDestDir(): File? = runBlocking {
         /* Create a new folder */
         val date = Date()
-        val dateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(date)
-        val destFolder = File(TrekMeContext.defaultMapsDownloadDir, folderName)
+        val destFolder = File(Settings.getDownloadDir(), folderName)
 
-        return if (destFolder.mkdir()) {
+        if (destFolder.mkdirs()) {
             destFolder
         } else {
             null
