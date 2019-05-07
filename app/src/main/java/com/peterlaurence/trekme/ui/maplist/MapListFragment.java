@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.ui.maplist;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -17,7 +16,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent;
 import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
@@ -31,6 +29,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -90,6 +89,11 @@ public class MapListFragment extends Fragment implements
         FragmentActivity activity = getActivity();
         if (activity != null) {
             viewModel = ViewModelProviders.of(activity).get(MapListViewModel.class);
+            viewModel.getMaps().observe(this, maps -> {
+                if (maps != null) {
+                    onMapListUpdate(maps);
+                }
+            });
         }
     }
 
@@ -137,7 +141,6 @@ public class MapListFragment extends Fragment implements
                     ctx.getColor(R.color.colorPrimaryTextWhite),
                     ctx.getColor(R.color.colorPrimaryTextBlack));
 
-            MapLoader.INSTANCE.clearAndGenerateMaps();
             recyclerView.setAdapter(adapter);
 
             rootView.addView(recyclerView, 0);
@@ -153,15 +156,14 @@ public class MapListFragment extends Fragment implements
     }
 
     /**
-     * This fragment and its {@link MapAdapter} are interested by the map list update event.
+     * This fragment and its {@link MapAdapter} need to take action on map list update.
      */
-    @Subscribe
-    public void onMapListUpdate(MapListUpdateEvent event) {
+    private void onMapListUpdate(List<Map> mapList) {
         rootView.findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-        adapter.onMapListUpdate(event.mapsFound);
+        adapter.onMapListUpdate(mapList);
 
         /* If no maps found, suggest to navigate to map creation */
-        if (!event.mapsFound) {
+        if (mapList.size() == 0) {
             rootView.findViewById(R.id.emptyMapPanel).setVisibility(View.VISIBLE);
             Button btn = rootView.findViewById(R.id.button_go_to_map_create);
             btn.setOnClickListener((e) -> mListener.onGoToMapCreation());

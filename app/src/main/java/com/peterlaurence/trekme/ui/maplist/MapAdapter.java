@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
-import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -53,9 +52,9 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         mColorBlackText = blackTextColor;
     }
 
-    void onMapListUpdate(boolean mapsFound) {
-        if (mapsFound) {
-            maps = MapLoader.INSTANCE.getMaps();
+    void onMapListUpdate(List<Map> mapList) {
+        if (mapList.size() > 0) {
+            maps = mapList;
             notifyDataSetChanged();
         }
     }

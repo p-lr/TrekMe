@@ -169,10 +169,14 @@ public class MapImporter {
         protected void onPostExecute(Map map) {
             if (mException != null) {
                 MapLoader.INSTANCE.onMapImportError(mException);
-                mMapParseListener.onMapImportError(mException);
+                if (mMapParseListener != null) { // it can be null in unit-tests
+                    mMapParseListener.onMapImportError(mException);
+                }
             } else {
                 MapLoader.INSTANCE.onMapImported(map, mMapParser.getStatus());
-                mMapParseListener.onMapImported(map, mMapParser.getStatus());
+                if (mMapParseListener != null) { // it can be null in unit-tests
+                    mMapParseListener.onMapImported(map, mMapParser.getStatus());
+                }
             }
         }
     }

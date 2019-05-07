@@ -62,6 +62,9 @@ import com.peterlaurence.trekme.ui.record.RecordFragment;
 import com.peterlaurence.trekme.ui.settings.SettingsFragment;
 import com.peterlaurence.trekme.ui.trackview.TrackViewFragment;
 import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel;
+import com.peterlaurence.trekme.viewmodel.MainActivityViewModel;
+import com.peterlaurence.trekme.viewmodel.ShowMapListEvent;
+import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
@@ -130,6 +133,7 @@ public class MainActivity extends AppCompatActivity
     private FragmentManager fragmentManager;
     private Snackbar mSnackBarExit;
     private NavigationView mNavigationView;
+    private MainActivityViewModel viewModel;
 
     static {
         /* Setup default eventbus to use an index instead of reflection, which is recommended for
@@ -229,6 +233,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
 
         fragmentManager = this.getSupportFragmentManager();
         setContentView(R.layout.activity_main);
@@ -377,11 +383,22 @@ public class MainActivity extends AppCompatActivity
              */
             Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
             if (mapListFragment == null) {
-                showMapListFragment();
-                warnIfBadStorageState();
-                mBackFragmentTag = null;
+                viewModel.onActivityStart();
             }
         }
+    }
+
+    @Subscribe
+    public void onShowMapListEvent(ShowMapListEvent event) {
+        showMapListFragment();
+        warnIfBadStorageState();
+        mBackFragmentTag = null;
+    }
+
+    @Subscribe
+    public void onShowMapViewEvent(ShowMapViewEvent event) {
+        showMapViewFragment();
+        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG;
     }
 
     @Override

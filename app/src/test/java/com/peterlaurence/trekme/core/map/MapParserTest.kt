@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.core.map
 
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -17,48 +16,33 @@ import java.io.File
  */
 @RunWith(RobolectricTestRunner::class)
 class MapParserTest {
-
     @Test
     fun mapTracksParse() = runBlocking {
         if (mJsonFilesDirectory != null) {
             val dirs = listOf(mJsonFilesDirectory)
-            val map = arrayOfNulls<Map>(1)
-
-            fun routeChecks(map: Map) = runBlocking {
-                getRoutesForMap(map)
-
-                assertEquals(2, map.routes!!.size.toLong())
-
-                val route = map.routes!![0]
-                assertEquals("A test route 1", route.name)
-                assertTrue(route.visible)
-                val markers = route.route_markers
-                assertEquals(2, markers.size.toLong())
-
-                val marker1 = markers[0]
-                assertEquals("marker1", marker1.name)
-                assertEquals(6198798.5047565, marker1.proj_x, 0.0)
-
-                val marker2 = markers[1]
-                assertEquals("marker2", marker2.name)
-                assertEquals(-2418744.7142449305, marker2.proj_y, 0.0)
-            }
-
-            val mapListUpdateListener = object : MapLoader.MapListUpdateListener {
-                override fun onMapListUpdate(mapsFound: Boolean) {
-                    val mapList = MapLoader.maps
-
-                    /* One map should be found */
-                    assertEquals(1, mapList.size.toLong())
-                    map[0] = mapList[0]
-
-                    routeChecks(map[0]!!)
-                }
-            }
-
             val mapLoader = MapLoader
-            mapLoader.setMapListUpdateListener(mapListUpdateListener)
-            mapLoader.clearAndGenerateMaps(dirs.filterNotNull())
+            val mapList = mapLoader.getMaps(dirs.filterNotNull())
+
+            /* One map should be found */
+            assertEquals(1, mapList.size.toLong())
+            val map = mapList[0]
+
+            MapLoader.getRoutesForMap(map)
+            assertEquals(2, map.routes!!.size.toLong())
+
+            val route = map.routes!![0]
+            assertEquals("A test route 1", route.name)
+            assertTrue(route.visible)
+            val markers = route.route_markers
+            assertEquals(2, markers.size.toLong())
+
+            val marker1 = markers[0]
+            assertEquals("marker1", marker1.name)
+            assertEquals(6198798.5047565, marker1.proj_x, 0.0)
+
+            val marker2 = markers[1]
+            assertEquals("marker2", marker2.name)
+            assertEquals(-2418744.7142449305, marker2.proj_y, 0.0)
         }
     }
 

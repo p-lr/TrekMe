@@ -16,10 +16,7 @@ import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderDummy
 import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips
 import com.qozix.tileview.graphics.BitmapProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
@@ -81,23 +78,6 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Clear and sets the internal list of [Map] : [mMapList].
-     * Once done, the registered [MapListUpdateListener] is called.
-     *
-     * @param dirs The directories in which to search for maps. If not specified, a default value is
-     * taken.
-     */
-    @JvmOverloads
-    fun clearAndGenerateMaps(dirs: List<File> = listOf()) {
-        mMapList.clear()
-        if (dirs.isEmpty()) { // No directories specified? We take the default value.
-            generateMaps(TrekMeContext.mapsDirList)
-        } else {
-            generateMaps(dirs)
-        }
-    }
-
-    /**
      * Clears the internal list of [Map] : [mMapList].
      */
     fun clearMaps() {
@@ -106,15 +86,34 @@ object MapLoader : MapImporter.MapImportListener {
 
     /**
      * Launches the map search then sets the found [Map]s as the internal list of [Map] : [mMapList].
-     * It is intended to be the only public method of updating the [Map] list.
      */
-    fun generateMaps(dirs: List<File>) {
+    private fun generateMaps(dirs: List<File>) {
         GlobalScope.launch(Dispatchers.Main) {
             val maps = findMaps(dirs)
             mMapList.clear()
             mMapList.addAll(maps)
             notifyMapListUpdateListeners()
         }
+    }
+
+    /**
+     * Clear and sets the internal list of [Map] : [mMapList].
+     * It is intended to be the only public method of updating the [Map] list.
+     *
+     * @param dirs The directories in which to search for maps. If not specified, a default value is
+     * taken.
+     */
+    suspend fun getMaps(dirs: List<File> = listOf()): List<Map> {
+        val realDirs = if (dirs.isEmpty()) {
+            TrekMeContext.mapsDirList
+        } else {
+            dirs
+        }
+
+        mMapList.clear()
+        val maps = findMaps(realDirs)
+        mMapList.addAll(maps)
+        return maps
     }
 
     /**
@@ -227,7 +226,7 @@ object MapLoader : MapImporter.MapImportListener {
      * @return the [Map] or `null` if the given id is unknown.
      */
     fun getMap(mapId: Int): Map? {
-        return mMapList.first { it.id == mapId }
+        return mMapList.firstOrNull { it.id == mapId }
     }
 
     /**
