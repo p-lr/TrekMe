@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.ui.settings
 import android.os.Bundle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekme.R
@@ -23,7 +22,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.app_settings)
 
-        viewModel = ViewModelProviders.of(activity!!).get(SettingsViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(SettingsViewModel::class.java)
         initComponents()
 
         /* Observe the changes in the model */
