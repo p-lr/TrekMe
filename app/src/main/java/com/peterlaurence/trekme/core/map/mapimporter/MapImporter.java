@@ -4,6 +4,9 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.MapArchive;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
@@ -12,14 +15,10 @@ import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 /**
  * The {@link MapImporter} exposes a single method : {@link #importFromFile(File, MapProvider, MapImportListener)}.
@@ -143,27 +142,20 @@ public class MapImporter {
 
     private static class MapParseTask extends AsyncTask<Void, Void, Map> {
         private MapParser mMapParser;
-        private WeakReference<File> mDirWeakReference;
-        private WeakReference<MapImportListener> mMapParseListenerWeakReference;
+        private File mDir;
+        private MapImportListener mMapParseListener;
         private MapParseException mException;
 
         MapParseTask(MapParser parser, File dir, MapImportListener listener) {
             mMapParser = parser;
-            mDirWeakReference = new WeakReference<>(dir);
-            mMapParseListenerWeakReference = new WeakReference<>(listener);
+            mDir = dir;
+            mMapParseListener = listener;
         }
 
         @Override
         protected Map doInBackground(Void... params) {
-            File dir = null;
-            if (mDirWeakReference != null) {
-                dir = mDirWeakReference.get();
-            }
-
-            if (dir == null) return null;
-
             try {
-                return mMapParser.parse(dir);
+                return mMapParser.parse(mDir);
             } catch (MapParseException e) {
                 mException = e;
             }
@@ -177,19 +169,10 @@ public class MapImporter {
         protected void onPostExecute(Map map) {
             if (mException != null) {
                 MapLoader.INSTANCE.onMapImportError(mException);
+                mMapParseListener.onMapImportError(mException);
             } else {
                 MapLoader.INSTANCE.onMapImported(map, mMapParser.getStatus());
-            }
-
-            if (mMapParseListenerWeakReference != null) {
-                MapImportListener mapImportListener = mMapParseListenerWeakReference.get();
-                if (mapImportListener != null) {
-                    if (mException != null) {
-                        mapImportListener.onMapImportError(mException);
-                    } else {
-                        mapImportListener.onMapImported(map, mMapParser.getStatus());
-                    }
-                }
+                mMapParseListener.onMapImported(map, mMapParser.getStatus());
             }
         }
     }

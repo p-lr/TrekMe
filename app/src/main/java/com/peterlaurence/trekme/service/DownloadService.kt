@@ -16,8 +16,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.gson.MapGson
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.MapSource
@@ -41,7 +41,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
 import java.io.FileOutputStream
-import java.lang.RuntimeException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -152,7 +151,7 @@ class DownloadService : Service() {
         progressEvent.progress = 0.0
         requestDownloadSpec()
 
-        return Service.START_NOT_STICKY
+        return START_NOT_STICKY
     }
 
     @Subscribe
@@ -166,7 +165,7 @@ class DownloadService : Service() {
 
                 /* Post-process if download reaches 100% */
                 if (p == 100.0) {
-                    postProcess(event)
+                    postProcess(event.calibrationPoints)
                 }
             }
         }
@@ -239,12 +238,12 @@ class DownloadService : Service() {
         EventBus.getDefault().post(progressEvent)
     }
 
-    private fun postProcess(event: RequestDownloadMapEvent) {
+    private fun postProcess(calibrationPoints: Pair<MapGson.Calibration.CalibrationPoint, MapGson.Calibration.CalibrationPoint>) {
         /* Calibrate */
         fun calibrate(map: Map) {
             map.projection = MercatorProjection()
             map.mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name
-            map.mapGson.calibration.calibration_points = event.calibrationPoints.toList()
+            map.mapGson.calibration.calibration_points = calibrationPoints.toList()
             map.calibrate()
             MapLoader.saveMap(map)
         }
@@ -261,6 +260,9 @@ class DownloadService : Service() {
 
                             /* Notify that the download is finished correctly*/
                             notifyDownloadFinished(okMsg)
+
+                            /* Finally, stop the service */
+                            stopSelf()
                         }
                     }
 
@@ -269,11 +271,11 @@ class DownloadService : Service() {
 
                         /* Notify that the download finished with an error */
                         notifyDownloadFinished(koMsg)
+
+                        /* Finally, stop the service */
+                        stopSelf()
                     }
                 })
-
-        /* Finally, stop the service */
-        stopSelf()
     }
 
     private fun notifyDownloadFinished(message: CharSequence) {
