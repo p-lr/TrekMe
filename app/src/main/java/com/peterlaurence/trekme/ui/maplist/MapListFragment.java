@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.ui.maplist;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -22,6 +23,7 @@ import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog;
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
 import com.peterlaurence.trekme.util.ZipTask;
+import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -32,6 +34,8 @@ import java.lang.ref.WeakReference;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -55,6 +59,7 @@ public class MapListFragment extends Fragment implements
     private RecyclerView recyclerView;
     private MapAdapter adapter;
 
+    private MapListViewModel viewModel;
     private OnMapListFragmentInteractionListener mListener;
 
     /* Used for map saving */
@@ -81,6 +86,11 @@ public class MapListFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
+
+        FragmentActivity activity = getActivity();
+        if (activity != null) {
+            viewModel = ViewModelProviders.of(activity).get(MapListViewModel.class);
+        }
     }
 
     @Override
@@ -136,7 +146,7 @@ public class MapListFragment extends Fragment implements
 
     @Override
     public void onMapSelected(Map map) {
-        MapProvider.INSTANCE.setCurrentMap(map);
+        viewModel.setMap(map);
         if (mListener != null) {
             mListener.onMapSelectedFragmentInteraction(map);
         }

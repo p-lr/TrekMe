@@ -71,9 +71,9 @@ object Settings {
      * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
      * empty.
      */
-    suspend fun getLastMapId(): String? {
+    suspend fun getLastMapId(): Int? {
         val id = settingsHandler.getLastSetting().lastMapId
-        return if (id.isNotEmpty()) {
+        return if (id != -1) {
             id
         } else {
             null
@@ -83,7 +83,7 @@ object Settings {
     /**
      * Set and saves the last map id, for further use.
      */
-    suspend fun setLastMapId(id: String) {
+    suspend fun setLastMapId(id: Int) {
         val new = settingsHandler.getLastSetting().copy(lastMapId = id)
         settingsHandler.writeSetting(new)
     }
@@ -92,7 +92,7 @@ object Settings {
 @Serializable
 private data class SettingsData(val downloadDir: String = defaultDownloadDir.absolutePath,
                                 val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
-                                val lastMapId: String = "")
+                                val lastMapId: Int = -1)
 
 enum class StartOnPolicy {
     MAP_LIST, LAST_MAP
