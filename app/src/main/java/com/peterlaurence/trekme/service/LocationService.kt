@@ -145,7 +145,7 @@ class LocationService : Service() {
 
             /* Name the track using the current date */
             val date = Date()
-            val dateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
+            val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH'h'mm-ss's'", Locale.ENGLISH)
             val trackName = "track-" + dateFormat.format(date)
 
             val track = Track(trkSegList, trackName)
