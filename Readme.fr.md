@@ -16,7 +16,10 @@
   * [Visualiser un enregistrement en temps réel](#TOC-Display-live-route)
   * [Importer une trace GPX](#TOC-GPX-track-import)
   * [S'enregistrer au format GPX](#TOC-GPX-recording)
-5. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
+5. [Paramètres](#TOC-Settings)
+  * [Démarrer sur la dernière carte](#TOC-Start-on-last-map)
+  * [Dossier de téléchargement](#TOC-Download-dir)
+6. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
 
 
 ## <a name="TOC-Overview"></a>Introduction
@@ -274,3 +277,36 @@ Que vous soyez en mode de sélection simple ou multiple, le bouton de partage es
 **Supprimer un enregistrement**
 
 Passez en mode de sélection multiple. Un bouton rouge en bas à droite apparaît. Attention, si vous pressez ce bouton rouge, tous les enregistrement sélectionnés (cad sur fond bleu) seront **définitivement**  supprimés. 
+
+
+## <a name="TOC-Settings"></a>Paramètres
+
+Les paramètres de TrekMe sont accessibles depuis le menu principal > Paramètres.
+
+### <a name="TOC-Start-on-last-map"></a>Démarrer sur la dernière carte
+
+Par défaut, TrekMe démarre sur la liste des cartes. Mais vous pouvez aussi démarrer sur la dernière carte visitée. Dans la section "Général" > "Lancer TrekMe sur" :
+
+<p align="center">
+<img src="doc/tuto/start_on_fr.jpg" width="300">
+</p>
+
+
+### <a name="TOC-Download-dir"></a>Dossier de téléchargement
+
+Par défaut, TrekMe enregistre tout sur la mémoire interne. Mais si vous avez une carte SD, **et** que celle-ci est montée en tant que **stockage amovible**, alors vous pouvez l'utiliser pour stocker certaines de vos cartes.
+
+**Attention**
+
+Toutes les cartes stockées sur carte SD seront supprimées si TrekMe est désinstallée (c'est une contrainte du système Android). La seule manière de conserver de manière sûre vos cartes est d'utiliser la mémoire interne.
+Cependant, vous pouvez contourner cette limitation : faites une sauvegarde, puis déplacez l'archive zip créée quelque part sur votre carte SD (dans un autre dossier que le dossier Android).
+
+Dans la section Téléchargment > "Répertoire de téléchargement", vous avez le choix entre deux répertoires si vous avez une carte SD. Sinon, vous n'avez d'autre choix que d'utiliser la mémoire interne.
+
+<p align="center">
+<img src="doc/tuto/download_dir.jpg" width="300">
+</p>
+
+Le premier répertoire correspond toujours à la mémoire interne. Le second, s'il y en a un, à la carte SD. Ce dossier est `Android/data/com.peterlaurence.trekme/downloaded`.
+
+Une fois le répertoire modifié, votre prochain téléchargement de carte utilisera ce dossier. Mais les cartes existantes ne sont pas déplacées.

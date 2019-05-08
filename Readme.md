@@ -16,6 +16,9 @@
   * [Visualize a recording in real time](#TOC-Display-live-route)
   * [Import a GPX track](#TOC-GPX-track-import)
   * [GPX recording](#TOC-GPX-recording)
+5. [Settings](#TOC-Settings)
+  * [Start on the last map](#TOC-Start-on-last-map)
+  * [Download folder](#TOC-Download-dir)
 
 
 ## <a name="TOC-Overview"></a>Overview
@@ -289,3 +292,35 @@ Whatever the selection mode, the share button below is available:
 **Delete a recording**
 
 To delete a recording, activate the multiple-selection mode. A remove button appears at the bottom right.
+
+## <a name="TOC-Settings"></a>Settings
+
+Settings are accessible from the main menu > Settings.
+
+### <a name="TOC-Start-on-last-map"></a>Start on the last map
+
+By default, TrekMe starts on the list of maps. But it's possible to start on the last viewed map. In the "General" section > "Start TrekMe on"
+
+<p align="center">
+<img src="doc/tuto/start_on.jpg" width="300">
+</p>
+
+
+### <a name="TOC-Download-dir"></a>Download folder
+
+By default, TrekMe stores everything on the internal memory. But if you have an SD card, **and** if it's mounted as portable device, you can use it to store some of your maps.
+
+**Beware**
+
+All your maps on the SD card will be deleted if TrekMe is uninstalled (Android enforces that). The only way to safely keep your maps is to store them on the internal memory.
+However, as a workaround, you can save a map and move the resulting zip archive to another directory (outside of the Android folder on the SD card).
+
+In the "Download" section > "Download folder", you can chose between to directories if you have an SD card. Otherwise, you don't have the choice but to use the internal memory:
+
+<p align="center">
+<img src="doc/tuto/download_dir.jpg" width="300">
+</p>
+
+The first directory always corresponds to the internal memory. The second, if available, corresponds to a directory on the SD card. This directory is `Android/data/com.peterlaurence.trekme/downloaded`.
+
+Once the download folder is changed, your next map download will use it. But existing maps aren't moved.
