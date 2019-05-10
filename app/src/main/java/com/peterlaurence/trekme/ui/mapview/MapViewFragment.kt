@@ -39,7 +39,6 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -48,18 +47,15 @@ import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 
 /**
- * A [Fragment] subclass that implements required interfaces to be used with a
- * [GoogleApiClient].
+ * A [Fragment] subclass that implements required interfaces to be used with a [GoogleApiClient].
  *
- * Activities that contain this fragment must implement the
- * [RequestManageTracksListener] and [MapProvider] interfaces to handle
- * interaction events.
+ * Activities that contain this fragment must implement the [RequestManageTracksListener] and
+ * [MapProvider] interfaces to handle interaction events.
  *
  * @author peterLaurence
  */
 class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         FrameLayoutMapView.PositionTouchListener,
-        FrameLayoutMapView.LockViewListener,
         CoroutineScope {
     private lateinit var rootView: FrameLayoutMapView
     private lateinit var mTileView: TileViewExtended
@@ -149,9 +145,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
          * it handles configuration changes itself
          */
         if (!::rootView.isInitialized) {
-            rootView = FrameLayoutMapView(context)
+            rootView = FrameLayoutMapView(context!!)
             rootView.setPositionTouchListener(this)
-            rootView.setLockViewListener(this)
         }
 
         return rootView
@@ -221,6 +216,9 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
         itemOrientation.isChecked = orientationEventManager.isStarted
 
+        val itemLockOnPosition = menu.findItem(R.id.lock_on_position_id)
+        itemLockOnPosition.isChecked = lockView
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -256,6 +254,11 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
                 landmarkLayer.addNewLandmark()
                 return true
             }
+            R.id.lock_on_position_id -> {
+                item.isChecked = ! item.isChecked
+                lockView = item.isChecked
+                return true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
     }
@@ -265,10 +268,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
             mTileView.scale = 1f
         }
         centerOnPosition()
-    }
-
-    override fun onLockView(lock: Boolean) {
-        lockView = lock
     }
 
     override fun onStart() {
@@ -453,8 +452,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         mTileView.id = R.id.tileview_id
         mTileView.isSaveEnabled = true
         rootView.addView(mTileView, 0)
-        mTileView.setSingleTapListener(rootView)
-        mTileView.setScrollListener(rootView)
 
         /* The tileView can have only one MarkerTapListener.
          * It dispatches the tap event to child layers.
@@ -472,7 +469,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         } catch (e: Exception) {
             // don't care
         }
-
     }
 
     /**

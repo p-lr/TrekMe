@@ -152,4 +152,5 @@
     <string name="preference_starton_maplist">la liste des cartes</string>
     <string name="preference_starton_lastmap">la dernière carte ouverte</string>
     <string name="preference_download_location_title">Répertoire de téléchargement</string>
+    <string name="mapview_lock_on_position">Verrouiller sur la position</string>
 </resources>

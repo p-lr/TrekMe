@@ -1,15 +1,14 @@
 package com.peterlaurence.trekme.ui.mapview;
 
 import android.content.Context;
+
 import androidx.annotation.Nullable;
-import android.view.MotionEvent;
 
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.gson.RouteGson;
 import com.peterlaurence.trekme.ui.mapview.components.PathView;
 import com.qozix.tileview.TileView;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +19,6 @@ import java.util.List;
  */
 public class TileViewExtended extends TileView {
 
-    private WeakReference<SingleTapStaticListener> mSingleTapListenerWeakReference;
-    private boolean mScrollingAtStart;
-
-    private WeakReference<ScrollListener> mScrollListenerWeakReference;
     private List<ScaleChangeListener> mScaleChangeListeners;
     private PathView mPathView;
     private PathView mLiveRouteView;
@@ -32,45 +27,6 @@ public class TileViewExtended extends TileView {
         super(context);
 
         mScaleChangeListeners = new ArrayList<>();
-    }
-
-    @Override
-    public boolean onDown(MotionEvent motionEvent) {
-        mScrollingAtStart = !getScroller().isFinished();
-
-        return super.onDown(motionEvent);
-    }
-
-    @Override
-    public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
-        if (mSingleTapListenerWeakReference != null) {
-            SingleTapStaticListener singleTapListener = mSingleTapListenerWeakReference.get();
-            if (singleTapListener != null && !mScrollingAtStart) {
-                singleTapListener.onSingleTapStatic();
-            }
-        }
-
-        return super.onSingleTapConfirmed(motionEvent);
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-        if (mScrollListenerWeakReference != null) {
-            ScrollListener scrollListener = mScrollListenerWeakReference.get();
-            if (scrollListener != null) {
-                scrollListener.onScroll();
-            }
-        }
-
-        return super.onScroll(motionEvent, motionEvent1, v, v1);
-    }
-
-    public void setSingleTapListener(SingleTapStaticListener listener) {
-        mSingleTapListenerWeakReference = new WeakReference<>(listener);
-    }
-
-    public void setScrollListener(ScrollListener listener) {
-        mScrollListenerWeakReference = new WeakReference<>(listener);
     }
 
     @Nullable
@@ -91,6 +47,7 @@ public class TileViewExtended extends TileView {
 
     /**
      * Updates the {@link PathView} that represents the live route.
+     *
      * @param routeList A list of size 1 of {@link RouteGson.Route}.
      */
     public void drawLiveRoute(List<RouteGson.Route> routeList) {
@@ -135,17 +92,5 @@ public class TileViewExtended extends TileView {
         addView(mLiveRouteView, 1);
         addScaleChangeListener(scale -> mLiveRouteView.setScale(scale));
         mLiveRouteView.setScale(getScale());
-    }
-
-    /**
-     * On a tap up, if the {@link TileView} was not scrolling when the touch down occurred, we
-     * consider that event eligible for a SingleTapStatic event.
-     */
-    public interface SingleTapStaticListener {
-        void onSingleTapStatic();
-    }
-
-    public interface ScrollListener {
-        void onScroll();
     }
 }

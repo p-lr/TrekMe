@@ -33,6 +33,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/lock_on_position_id"
+        android:checkable="true"
+        app:showAsAction="never"
+        android:title="@string/mapview_lock_on_position" />
+
+    <item
         android:id="@+id/orientation_enable_id"
         android:checkable="true"
         app:showAsAction="never"
