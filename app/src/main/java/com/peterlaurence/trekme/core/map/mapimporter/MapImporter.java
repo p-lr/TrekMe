@@ -20,16 +20,16 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * The {@link MapImporter} exposes a single method : {@link #importFromFile(File, MapProvider, MapImportListener)}.
- * To use the appropriate parser, the {@link MapProvider} enum type must be given. But for instance,
- * only {@link MapProvider#LIBVIPS} is supported. <br>
+ * The {@link MapImporter} exposes a single method : {@link #importFromFile(File, Map.MapOrigin, MapImportListener)}.
+ * To use the appropriate parser, the {@link Map.MapOrigin} enum type must be given. But for instance,
+ * only {@link Map.MapOrigin#VIPS} is supported. <br>
  * This is typically used after a {@link MapArchive} has been extracted, or by the
  * {@link com.peterlaurence.trekme.service.DownloadService}.
  *
  * @author peterLaurence on 23/06/16.
  */
 public class MapImporter {
-    private static final java.util.Map<MapProvider, MapParser> mProviderToParserMap;
+    private static final java.util.Map<Map.MapOrigin, MapParser> mProviderToParserMap;
     private static final int THUMBNAIL_ACCEPT_SIZE = 256;
     private static final String[] IMAGE_EXTENSIONS = new String[]{
             "jpg", "gif", "png", "bmp", "webp"
@@ -70,8 +70,8 @@ public class MapImporter {
     private static final FilenameFilter DIR_FILTER = (dir, filename) -> new File(dir, filename).isDirectory();
 
     static {
-        java.util.Map<MapProvider, MapParser> map = new HashMap<>();
-        map.put(MapProvider.LIBVIPS, new LibvipsMapParser());
+        java.util.Map<Map.MapOrigin, MapParser> map = new HashMap<>();
+        map.put(Map.MapOrigin.VIPS, new LibvipsMapParser());
         mProviderToParserMap = Collections.unmodifiableMap(map);
     }
 
@@ -79,19 +79,12 @@ public class MapImporter {
     private MapImporter() {
     }
 
-    public static void importFromFile(File dir, MapProvider provider, MapImportListener listener) {
-        MapParser parser = mProviderToParserMap.get(provider);
+    public static void importFromFile(File dir, Map.MapOrigin origin, MapImportListener listener) {
+        MapParser parser = mProviderToParserMap.get(origin);
         if (parser != null) {
             MapParseTask mapParseTask = new MapParseTask(parser, dir, listener);
             mapParseTask.execute();
         }
-    }
-
-    /**
-     * Possible {@link Map} providers.
-     */
-    public enum MapProvider {
-        LIBVIPS
     }
 
     /**
@@ -132,6 +125,7 @@ public class MapImporter {
         }
 
         enum Issue {
+            NOT_A_DIRECTORY,
             NO_PARENT_FOLDER_FOUND,
             NO_LEVEL_FOUND,
             UNKNOWN_IMAGE_EXT,
@@ -194,9 +188,10 @@ public class MapImporter {
         }
 
         @Override
+        @NonNull
         public Map parse(File mapDir) throws MapParseException {
             if (!mapDir.isDirectory()) {
-                return null;
+                throw new MapParseException(MapParseException.Issue.NOT_A_DIRECTORY);
             }
 
             /* Find the first image */
@@ -212,9 +207,11 @@ public class MapImporter {
             /* Check whether there is already a map.json file or not */
             File existingJsonFile = new File(parentFolder, MapLoader.MAP_FILE_NAME);
             if (existingJsonFile.exists()) {
-                MapLoader.INSTANCE.generateMaps(parentFolder);
+                List<Map> mapList = MapLoader.INSTANCE.generateMaps(parentFolder);
                 mStatus = MapParserStatus.EXISTING_MAP;
-                return null;
+                if (mapList.size() > 0) {
+                    return mapList.get(0);
+                }
             }
 
             /* Create levels */
@@ -307,7 +304,7 @@ public class MapImporter {
         private File findFirstImage(File dir, int depth, int maxDepth) {
             if (depth > maxDepth) return null;
 
-            File listFile[] = dir.listFiles();
+            File[] listFile = dir.listFiles();
             if (listFile != null) {
                 for (File aListFile : listFile) {
                     if (aListFile.isDirectory()) {
@@ -316,7 +313,7 @@ public class MapImporter {
                             return found;
                         }
                     } else {
-                        File listImage[] = dir.listFiles(IMAGE_FILTER);
+                        File[] listImage = dir.listFiles(IMAGE_FILTER);
                         if (listImage.length > 0) {
                             return listImage[0];
                         }

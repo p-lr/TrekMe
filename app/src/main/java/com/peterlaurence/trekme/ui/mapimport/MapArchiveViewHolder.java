@@ -9,7 +9,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter;
 import com.peterlaurence.trekme.ui.events.MapImportedEvent;
 import com.peterlaurence.trekme.ui.mapimport.events.UnzipErrorEvent;
@@ -90,22 +89,6 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
             extractionLabel.setVisibility(View.VISIBLE);
             mapCreationLabel.setVisibility(View.VISIBLE);
             iconMapExtracted.setVisibility(View.VISIBLE);
-
-            /* Import the extracted map */
-            // TODO : for instance we only import LIBVIPS maps
-            MapImporter.importFromFile(event.outputFolder, MapImporter.MapProvider.LIBVIPS,
-                    new MapImporter.MapImportListener() {
-                        @Override
-                        public void onMapImported(Map map, MapImporter.MapParserStatus status) {
-                            EventBus.getDefault().post(new MapImportedEvent(map, status));
-                        }
-
-                        @Override
-                        public void onMapImportError(MapImporter.MapParseException e) {
-                            System.out.println("map parse execption");
-                            // TODO : show an error message that something went wrong and send an event.
-                        }
-                    });
             progressBarIndMapCreation.setVisibility(View.VISIBLE);
         }
     }
@@ -121,12 +104,14 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMapImported(MapImportedEvent event) {
-        if (event.status == MapImporter.MapParserStatus.EXISTING_MAP) {
-            mapCreationLabel.setText(R.string.imported_untouched);
+        if (event.archiveId == mArchiveId) {
+            if (event.status == MapImporter.MapParserStatus.EXISTING_MAP) {
+                mapCreationLabel.setText(R.string.imported_untouched);
+            }
+            progressBarIndMapCreation.setVisibility(View.GONE);
+            iconMapCreated.setVisibility(View.VISIBLE);
+            mapCreationLabel.setVisibility(View.VISIBLE);
         }
-        progressBarIndMapCreation.setVisibility(View.GONE);
-        iconMapCreated.setVisibility(View.VISIBLE);
-        mapCreationLabel.setVisibility(View.VISIBLE);
     }
 
     void subscribe() {

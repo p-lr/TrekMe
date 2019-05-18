@@ -16,8 +16,7 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderDefault
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -87,19 +86,29 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
+     * TODO: this function was added for compatibility with legacy java code. Remove when possible.
+     * Only the signature with a list of [File] should be used.
+     */
+    fun generateMaps(dir: File): List<Map> {
+        return generateMaps(listOf(dir))
+    }
+
+    /**
+     * TODO: this function was added for compatibility with legacy java code. Remove when possible.
      * Launches the map search then sets the found [Map]s as the internal list of [Map] : [mMapList].
      */
-    private fun generateMaps(dirs: List<File>) {
-        GlobalScope.launch(Dispatchers.Main) {
+    private fun generateMaps(dirs: List<File>): List<Map> = runBlocking {
+        withContext(Dispatchers.Main) {
             val maps = findMaps(dirs)
-            mMapList.clear()
             mMapList.addAll(maps)
             notifyMapListUpdateListeners()
+            maps
         }
     }
 
     /**
-     * Clear and sets the internal list of [Map] : [mMapList].
+     * Parses all [Map]s inside the provided listof directories, then updates the internal list of
+     * [Map] : [mMapList].
      * It is intended to be the only public method of updating the [Map] list.
      *
      * @param dirs The directories in which to search for maps. If not specified, a default value is
@@ -112,7 +121,6 @@ object MapLoader : MapImporter.MapImportListener {
             dirs
         }
 
-        mMapList.clear()
         val maps = findMaps(realDirs)
         mMapList.addAll(maps)
         return maps
@@ -125,14 +133,6 @@ object MapLoader : MapImporter.MapImportListener {
      */
     private suspend fun findMaps(dirs: List<File>) = withContext(Dispatchers.Default) {
         mapCreationTask(mGson, *dirs.toTypedArray())
-    }
-
-    /**
-     * TODO: this function was added for compatibility with legacy java code. Remove when possible.
-     * Only the signature with a list of [File] should be used.
-     */
-    fun generateMaps(dir: File) {
-        generateMaps(listOf(dir))
     }
 
     /**

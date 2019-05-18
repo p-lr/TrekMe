@@ -21,6 +21,7 @@ class MapParserTest {
         if (mJsonFilesDirectory != null) {
             val dirs = listOf(mJsonFilesDirectory)
             val mapLoader = MapLoader
+            mapLoader.clearMaps()
             val mapList = mapLoader.getMaps(dirs.filterNotNull())
 
             /* One map should be found */

@@ -28,6 +28,7 @@ class MainActivityViewModel : ViewModel() {
      */
     fun onActivityStart() {
         viewModelScope.launch {
+            MapLoader.clearMaps()
             MapLoader.getMaps()
 
             when (Settings.getStartOnPolicy()) {

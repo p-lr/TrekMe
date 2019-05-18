@@ -249,7 +249,7 @@ class DownloadService : Service() {
         }
 
         /* Import, and when we're done, calibrate the map */
-        MapImporter.importFromFile(destDir, MapImporter.MapProvider.LIBVIPS,
+        MapImporter.importFromFile(destDir, Map.MapOrigin.VIPS,
                 object : MapImporter.MapImportListener {
                     val okMsg = getText(R.string.service_download_finished)
                     val koMsg = getText(R.string.map_download_dialog_error)

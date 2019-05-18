@@ -78,7 +78,7 @@ public class MapImporterTest {
                 if (existingJsonFile.exists()) {
                     existingJsonFile.delete();
                 }
-                MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, dummyMapImportListener);
+                MapImporter.importFromFile(libVipsMapDir, Map.MapOrigin.VIPS, dummyMapImportListener);
             }
         }
     }
@@ -100,7 +100,7 @@ public class MapImporterTest {
                     assertEquals(3, map.getMapGson().levels.size());
                 };
 
-                MapImporter.importFromFile(libVipsMapDir, MapImporter.MapProvider.LIBVIPS, null);
+                MapImporter.importFromFile(libVipsMapDir, Map.MapOrigin.VIPS, null);
             }
         }
     }
