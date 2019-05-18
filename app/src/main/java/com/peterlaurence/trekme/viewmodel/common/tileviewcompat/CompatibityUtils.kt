@@ -7,7 +7,7 @@ import com.qozix.tileview.graphics.BitmapProvider
 
 /**
  * This utility function converts the [Map]'s [TileStreamProvider] into whatever's type needed by
- * the view that fragments use which to display tiles.
+ * the view that fragments use to display tiles.
  * For instance, fragments use TileView, so the returned type is [BitmapProvider].
  */
 fun makeBitmapProvider(map: Map): BitmapProvider {

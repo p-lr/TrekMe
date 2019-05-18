@@ -6,45 +6,36 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.MapArchive
-import com.peterlaurence.trekme.core.map.maparchiver.MapArchiver
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipErrorEvent
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipFinishedEvent
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipProgressionEvent
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
-import com.peterlaurence.trekme.util.UnzipTask
+import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel
 import kotlinx.android.synthetic.main.fragment_map_import.*
-import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.io.File
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A [Fragment] subclass that displays the list of maps archives available for import.
  *
  * @author peterLaurence on 08/06/16 -- Converted to Kotlin on 18/01/19
  */
-class MapImportFragment : Fragment(), CoroutineScope {
+class MapImportFragment : Fragment() {
     private var mapArchiveAdapter: MapArchiveAdapter? = null
     private var listener: OnMapArchiveFragmentInteractionListener? = null
     private var mView: View? = null
     private var fabEnabled = false
     private lateinit var mapArchiveList: List<MapArchive>
     private var mapArchiveSelected: MapArchive? = null
-    private lateinit var job: Job
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
+    private lateinit var viewModel: MapImportViewModel
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -52,12 +43,21 @@ class MapImportFragment : Fragment(), CoroutineScope {
         if (context is OnMapArchiveFragmentInteractionListener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnMapArchiveFragmentInteractionListener")
+            throw RuntimeException("$context must implement OnMapArchiveFragmentInteractionListener")
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        viewModel = ViewModelProviders.of(activity!!).get(MapImportViewModel::class.java)
+        viewModel.getMapArchiveList().observe(this, Observer<List<MapArchive>> {
+            it?.let { mapArchiveList ->
+                this.mapArchiveList = mapArchiveList
+                mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
+                hideProgressBar()
+            }
+        })
 
         setHasOptionsMenu(false)
     }
@@ -106,20 +106,9 @@ class MapImportFragment : Fragment(), CoroutineScope {
 
     override fun onStart() {
         super.onStart()
-        job = Job()
         EventBus.getDefault().register(this)
 
-        updateMapArchiveList()
-    }
-
-    private fun CoroutineScope.updateMapArchiveList() = launch {
-        val archives = async {
-            MapLoader.getMapArchiveList()
-        }
-
-        mapArchiveList = archives.await()
-        mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
-        hideProgressBar()
+        viewModel.updateMapArchiveList()
     }
 
     private fun singleSelect(position: Int) {
@@ -139,20 +128,7 @@ class MapImportFragment : Fragment(), CoroutineScope {
 
             fab.setOnClickListener {
                 mapArchiveSelected?.let { mapArchive ->
-                    MapArchiver.unarchive(mapArchive, object : UnzipTask.UnzipProgressionListener {
-
-                        override fun onProgress(p: Int) {
-                            EventBus.getDefault().post(UnzipProgressionEvent(mapArchive.id, p))
-                        }
-
-                        override fun onUnzipFinished(outputDirectory: File) {
-                            EventBus.getDefault().post(UnzipFinishedEvent(mapArchive.id, outputDirectory))
-                        }
-
-                        override fun onUnzipError() {
-                            EventBus.getDefault().post(UnzipErrorEvent(mapArchive.id))
-                        }
-                    })
+                    viewModel.unarchiveAsync(mapArchive)
                 }
             }
         }
@@ -173,8 +149,6 @@ class MapImportFragment : Fragment(), CoroutineScope {
     }
 
     override fun onStop() {
-        job.cancel()
-
         EventBus.getDefault().unregister(this)
         super.onStop()
 
