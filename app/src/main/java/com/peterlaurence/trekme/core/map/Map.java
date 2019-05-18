@@ -7,6 +7,8 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.util.Log;
 
@@ -19,7 +21,6 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.core.projection.ProjectionTask;
 import com.peterlaurence.trekme.util.ZipTask;
-import com.qozix.tileview.graphics.BitmapProvider;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -50,12 +51,10 @@ import static com.peterlaurence.trekme.util.ToolsKt.stackTraceToString;
  */
 public class Map {
     private static final String TAG = "Map";
-    private static final String UNDEFINED = "undefined";
     private static final int THUMBNAIL_SIZE = 256;
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
     private Bitmap mImage;
-    private BitmapProvider mBitmapProvider;
     private TileStreamProvider mTileStreamProvider;  // this should be considered nullable (e.g, it can be never set)
     private MapBounds mMapBounds;
     /* The Java Object corresponding to the json configuration file */
@@ -135,17 +134,9 @@ public class Map {
         mMapGson.calibration.projection = projection;
     }
 
-    public BitmapProvider getBitmapProvider() {
-        return mBitmapProvider;
-    }
-
     @Nullable
     public TileStreamProvider getTileStreamProvider() {
         return mTileStreamProvider;
-    }
-
-    public void setBitmapProvider(BitmapProvider bitmapProvider) {
-        mBitmapProvider = bitmapProvider;
     }
 
     public void setTileStreamProvider(TileStreamProvider tileStreamProvider) {
@@ -328,12 +319,17 @@ public class Map {
         mMapGson.calibration.calibration_method = method.name();
     }
 
-    public String getOrigin() {
+    @NonNull
+    public MapOrigin getOrigin() {
         try {
             return mMapGson.provider.generated_by;
         } catch (NullPointerException e) {
-            return UNDEFINED;
+            return MapOrigin.UNDEFINED;
         }
+    }
+
+    public enum MapOrigin {
+        VIPS, UNDEFINED
     }
 
     /**

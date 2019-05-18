@@ -1,15 +1,13 @@
-package com.peterlaurence.trekme.model.providers.bitmap;
+package com.peterlaurence.trekme.viewmodel.common.tileviewcompat;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.TileStreamProvider;
 import com.qozix.tileview.graphics.BitmapProvider;
 import com.qozix.tileview.tiles.Tile;
 
-import java.io.File;
 import java.io.InputStream;
 
 /**

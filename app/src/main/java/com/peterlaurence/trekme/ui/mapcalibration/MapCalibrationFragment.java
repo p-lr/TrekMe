@@ -1,27 +1,29 @@
 package com.peterlaurence.trekme.ui.mapcalibration;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
+import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
-import com.peterlaurence.trekme.model.map.MapProvider;
 import com.qozix.tileview.TileView;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+
+import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.CompatibityUtilsKt.makeBitmapProvider;
 
 /**
  * A {@link Fragment} subclass that allows the user to define calibration points of a map.
@@ -147,7 +149,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         tileView.addMarker(mCalibrationMarker, 0.5, 0.5, -0.5f, -0.5f);
 
         /* The BitmapProvider */
-        tileView.setBitmapProvider(map.getBitmapProvider());
+        tileView.setBitmapProvider(makeBitmapProvider(map));
 
         /* Add the TileView to the root view */
         setTileView(tileView);

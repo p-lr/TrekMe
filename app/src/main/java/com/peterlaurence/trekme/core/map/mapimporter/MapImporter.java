@@ -11,7 +11,6 @@ import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.MapArchive;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -245,7 +244,7 @@ public class MapImporter {
 
             /* Create provider */
             MapGson.Provider provider = new MapGson.Provider();
-            provider.generated_by = BitmapProviderLibVips.GENERATOR_NAME;
+            provider.generated_by = Map.MapOrigin.VIPS;
             provider.image_extension = getImageExtension(imageFile);
             mapGson.provider = provider;
 

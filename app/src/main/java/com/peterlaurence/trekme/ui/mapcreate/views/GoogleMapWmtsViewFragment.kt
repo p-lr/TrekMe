@@ -18,10 +18,10 @@ import com.peterlaurence.trekme.core.providers.bitmap.checkIgnSpainProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkOSMProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkUSGSProvider
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
-import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderIgn
-import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderIgnSpain
-import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderOSM
-import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderUSGS
+import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.BitmapProviderIgn
+import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.BitmapProviderIgnSpain
+import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.BitmapProviderOSM
+import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.BitmapProviderUSGS
 import com.peterlaurence.trekme.model.providers.layers.LayerForSource
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog

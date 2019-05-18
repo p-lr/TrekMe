@@ -401,7 +401,10 @@ object MapLoader : MapImporter.MapImportListener {
      */
     fun applyTileStreamProviderTo(map: Map) {
         when (map.origin) {
-            "VIPS" -> map.tileStreamProvider = TileStreamProviderDefault(map.directory, map.imageExtension)
+            Map.MapOrigin.VIPS -> map.tileStreamProvider = TileStreamProviderDefault(map.directory, map.imageExtension)
+            Map.MapOrigin.UNDEFINED -> {
+                Log.e(TAG, "Unknown map origin ${map.origin}")
+            }
         }
     }
 

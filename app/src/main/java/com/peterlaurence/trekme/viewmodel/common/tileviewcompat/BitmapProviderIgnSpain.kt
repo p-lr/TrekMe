@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.model.providers.bitmap
+package com.peterlaurence.trekme.viewmodel.common.tileviewcompat
 
 import android.content.Context
 import android.graphics.Bitmap
