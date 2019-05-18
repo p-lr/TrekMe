@@ -39,8 +39,12 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips
+import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderDefault
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
+import com.qozix.tileview.graphics.BitmapProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -511,7 +515,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         setTileViewBounds(tileView, map)
 
         /* The BitmapProvider */
-        tileView.setBitmapProvider(map.bitmapProvider)
+        tileView.setBitmapProvider(makeBitmapProvider(map))
 
         /* The position + orientation reticule */
         try {
@@ -526,6 +530,18 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         /* Remove the existing TileView, then add the new one */
         removeCurrentTileView()
         setTileView(tileView)
+    }
+
+    /**
+     * The view (or maybe the view-model) is responsible for converting the [Map]'s
+     * [TileStreamProvider] into whatever's type needed by the view which can display tiles.
+     * For instance, we use TileView, so the returned type is [BitmapProvider].
+     */
+    private fun makeBitmapProvider(map: Map): BitmapProvider {
+        return when (map.tileStreamProvider) {
+            is TileStreamProviderDefault -> BitmapProviderLibVips(map.tileStreamProvider)
+            else -> throw NotImplementedError()
+        }
     }
 
     private fun centerOnPosition() {

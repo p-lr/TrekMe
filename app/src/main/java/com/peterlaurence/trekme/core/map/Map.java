@@ -56,6 +56,7 @@ public class Map {
     private final File mConfigFile;
     private Bitmap mImage;
     private BitmapProvider mBitmapProvider;
+    private TileStreamProvider mTileStreamProvider;  // this should be considered nullable (e.g, it can be never set)
     private MapBounds mMapBounds;
     /* The Java Object corresponding to the json configuration file */
     private MapGson mMapGson;
@@ -138,8 +139,17 @@ public class Map {
         return mBitmapProvider;
     }
 
+    @Nullable
+    public TileStreamProvider getTileStreamProvider() {
+        return mTileStreamProvider;
+    }
+
     public void setBitmapProvider(BitmapProvider bitmapProvider) {
         mBitmapProvider = bitmapProvider;
+    }
+
+    public void setTileStreamProvider(TileStreamProvider tileStreamProvider) {
+        mTileStreamProvider = tileStreamProvider;
     }
 
     public void clearCalibrationPoints() {

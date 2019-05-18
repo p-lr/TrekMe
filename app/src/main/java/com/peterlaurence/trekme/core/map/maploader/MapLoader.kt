@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
+import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.gson.*
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
@@ -13,10 +14,11 @@ import com.peterlaurence.trekme.core.map.maploader.tasks.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
-import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderDummy
-import com.peterlaurence.trekme.model.providers.bitmap.BitmapProviderLibVips
-import com.qozix.tileview.graphics.BitmapProvider
-import kotlinx.coroutines.*
+import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderDefault
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
@@ -200,8 +202,8 @@ object MapLoader : MapImporter.MapImportListener {
     override fun onMapImported(map: Map?, status: MapImporter.MapParserStatus) {
         if (map == null) return
 
-        /* Set BitMapProvider */
-        map.bitmapProvider = makeBitmapProvider(map)
+        /* Set TileStreamProvider */
+        applyTileStreamProviderTo(map)
 
         /* Add the map */
         mMapList.add(map)
@@ -395,16 +397,11 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Factory of [BitmapProvider] depending on the origin of the map.
-     *
-     * @param map The [Map] object
-     * @return The [BitmapProvider] or a [BitmapProviderDummy] if the origin is unknown.
+     * Assign a [TileStreamProvider] to a [Map], if the origin of the [Map] is known.
      */
-    @JvmStatic
-    fun makeBitmapProvider(map: Map): BitmapProvider {
-        return when (map.origin) {
-            BitmapProviderLibVips.GENERATOR_NAME -> BitmapProviderLibVips(map)
-            else -> BitmapProviderDummy()
+    fun applyTileStreamProviderTo(map: Map) {
+        when (map.origin) {
+            "VIPS" -> map.tileStreamProvider = TileStreamProviderDefault(map.directory, map.imageExtension)
         }
     }
 
