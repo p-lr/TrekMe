@@ -13,6 +13,7 @@
   * [Show the speed](#TOC-Show-speed)
   * [Add markers](#TOC-Add-markers)
   * [Add a landmark](#TOC-Add-landmarks)
+  * [Lock the view on current position](#TOC-Lock-view)
   * [Visualize a recording in real time](#TOC-Display-live-route)
   * [Import a GPX track](#TOC-GPX-track-import)
   * [GPX recording](#TOC-GPX-recording)
@@ -223,6 +224,16 @@ Often, we want to display our orientation in the same time. We can also add seve
 <p align="center">
 <img src="doc/tuto/landmark-2.jpg" width="300">
 </p>
+
+### <a name="TOC-Lock-view"></a>Lock the view on current position
+
+Sometimes, you want the view to automatically follow your position. To do that, use the menu as shown bellow:
+
+<p align="center">
+<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
+</p>
+
+Then select "Lock on position". Now, everytime the application gets a location update (approximately every second), the view centers on this new location.
 
 ### <a name="TOC-Display-live-route"></a>Visualize a recording in real time
 

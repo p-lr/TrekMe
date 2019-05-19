@@ -13,6 +13,7 @@
   * [Afficher la vitesse](#TOC-Show-speed)
   * [Ajouter un marqueur](#TOC-Add-markers)
   * [Ajouter un repère](#TOC-Add-landmarks)
+  * [Verrouiller la vue sur la position courante](#TOC-Lock-view)
   * [Visualiser un enregistrement en temps réel](#TOC-Display-live-route)
   * [Importer une trace GPX](#TOC-GPX-track-import)
   * [S'enregistrer au format GPX](#TOC-GPX-recording)
@@ -208,6 +209,16 @@ En général, on affiche en même temps l'orientation. On peut aussi en ajouter 
 <p align="center">
 <img src="doc/tuto/landmark-2.jpg" width="300">
 </p>
+
+### <a name="TOC-Lock-view"></a>Verrouiller la vue sur la position courante
+
+Parfois, on veut que la vue reste centrée sur notre position (on ne veut pas que le point bleu sorte de l'écran). Pour cela, il faut activer le verrouillage sur la position. Utilisez alors le menu comme ci-dessous :
+
+<p align="center">
+<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
+</p>
+
+Puis sélectionnez "Verrouiller sur la position". Dans ce mode, à chaque fois que l'application reçoit votre position (environ toutes les secondes), la vue se déplace et le point bleu reste au centre.
 
 ### <a name="TOC-Display-live-route"></a>Visualiser un enregistrement en temps réel
 
