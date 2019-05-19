@@ -10,9 +10,14 @@ import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.map.MapProvider
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
+import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog
+import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
+import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
+import com.peterlaurence.trekme.util.ZipTask
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import java.io.File
 
 /**
  * The view-model intended to be used by the [MapListFragment], which is the only view where the
@@ -50,6 +55,34 @@ class MapListViewModel: ViewModel() {
     private fun updateMapListInFragment() {
         val mapList = MapLoader.maps
         maps.postValue(mapList)
+    }
+
+    /**
+     * Process a request to archive a [Map]. This is typically called from a [ArchiveMapDialog].
+     *
+     * @param event The [ArchiveMapDialog.SaveMapEvent] which contains the id of the [Map].
+     */
+    @Subscribe
+    fun onSaveMapEvent(event: ArchiveMapDialog.SaveMapEvent) {
+        val map = MapLoader.getMap(event.mapId) ?: return
+
+        /* Effectively launch the archive task */
+        map.zip(object : ZipTask.ZipProgressionListener {
+            private val mapName = map.name
+            private val mapId = map.id
+
+            override fun fileListAcquired() {}
+
+            override fun onProgress(p: Int) {
+                EventBus.getDefault().post(ZipProgressEvent(p, mapName, mapId))
+            }
+
+            override fun onZipFinished(outputDirectory: File) {
+                EventBus.getDefault().post(ZipFinishedEvent(mapId))
+            }
+
+            override fun onZipError() {}
+        })
     }
 
     override fun onCleared() {

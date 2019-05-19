@@ -12,25 +12,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
-import com.google.android.material.snackbar.Snackbar;
-import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.map.Map;
-import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.model.map.MapProvider;
-import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog;
-import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
-import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
-import com.peterlaurence.trekme.util.ZipTask;
-import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import java.io.File;
-import java.lang.ref.WeakReference;
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -38,10 +19,26 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.snackbar.Snackbar;
+import com.peterlaurence.trekme.R;
+import com.peterlaurence.trekme.core.map.Map;
+import com.peterlaurence.trekme.core.map.maploader.MapLoader;
+import com.peterlaurence.trekme.model.map.MapProvider;
+import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
+import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
+import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.lang.ref.WeakReference;
+import java.util.List;
+
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 /**
- * A {@link Fragment} subclass that displays the list of available maps, using a {@link RecyclerView}.
+ * A {@link Fragment} that displays the list of available maps, using a {@link RecyclerView}.
  * <p>
  * Activities that contain this fragment must implement the
  * {@link MapListFragment.OnMapListFragmentInteractionListener} interface to handle interaction
@@ -211,45 +208,10 @@ public class MapListFragment extends Fragment implements
     }
 
     /**
-     * Process a request to archive a {@link Map}. This is typically called from a
-     * {@link ArchiveMapDialog}. <p>
      * A {@link Notification} is sent to the user showing the progression in percent. The
      * {@link NotificationManager} only process one notification at a time, which is handy since
      * it prevents the application from using too much cpu.
-     *
-     * @param event The {@link com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog.SaveMapEvent}
-     *              which contains the id of the {@link Map}.
      */
-    @Subscribe
-    public void onSaveMapEvent(ArchiveMapDialog.SaveMapEvent event) {
-        Map map = MapLoader.INSTANCE.getMap(event.mapId);
-        if (map == null) return;
-
-        /* Effectively launch the archive task */
-        map.zip(new ZipTask.ZipProgressionListener() {
-            private String mapName = map.getName();
-            private int mapId = map.getId();
-
-            @Override
-            public void fileListAcquired() {
-            }
-
-            @Override
-            public void onProgress(int p) {
-                EventBus.getDefault().post(new ZipProgressEvent(p, mapName, mapId));
-            }
-
-            @Override
-            public void onZipFinished(@NonNull File outputDirectory) {
-                EventBus.getDefault().post(new ZipFinishedEvent(mapId));
-            }
-
-            @Override
-            public void onZipError() {
-            }
-        });
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onZipProgressEvent(ZipProgressEvent event) {
         final String notificationChannelId = "trekadvisor_map_save";
