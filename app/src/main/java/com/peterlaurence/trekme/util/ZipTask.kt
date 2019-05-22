@@ -118,7 +118,7 @@ class ZipTask
 
 private fun getFileList(directory: File, filePathList: MutableList<String>) {
     val files = directory.listFiles()
-    if (files != null && files.size > 0) {
+    if (files != null && files.isNotEmpty()) {
         for (file in files) {
             if (file.isFile) {
                 filePathList.add(file.absolutePath)

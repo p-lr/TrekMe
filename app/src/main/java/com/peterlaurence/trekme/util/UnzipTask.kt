@@ -32,6 +32,10 @@ fun unzipTask(zipFile: File, outputFolder: File, unzipProgressionListener: Unzip
             entryCount++
             val fileName = entry.name
             val newFile = File(outputFolder, fileName)
+            if (!newFile.canonicalPath.startsWith(outputFolder.canonicalPath)) {
+                /* Protect from zip traversal vulnerability */
+                throw SecurityException()
+            }
 
             try {
                 if (!newFile.exists()) {
@@ -67,6 +71,9 @@ fun unzipTask(zipFile: File, outputFolder: File, unzipProgressionListener: Unzip
         zis.close()
     } catch (ex: IOException) {
         Log.e(TAG, stackTraceToString(ex))
+        result = false
+    } catch (e: SecurityException) {
+        Log.e(TAG, "Zip traversal vulnerability tried to be exploited")
         result = false
     }
 
