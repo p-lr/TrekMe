@@ -70,19 +70,11 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
         }
 
         val scaledTileSize = tileSize.toDouble() * relativeScale
-        val scaledWidth = fullWidth * scale
-        val scaledHeight = fullHeight * scale
 
-        /* The viewport can't be bigger than the scaled full-size area */
-        val top = Math.min(Math.max(viewport.top, 0), scaledHeight.toInt())
-        val left = Math.min(Math.max(viewport.left, 0), scaledWidth.toInt())
-        val right = Math.min(viewport.right, scaledWidth.toInt())
-        val bottom = Math.min(viewport.bottom, scaledHeight.toInt())
-
-        val colLeft = Math.floor(left / scaledTileSize).toInt().lowerThan(maxCol)
-        val rowTop = Math.floor(top / scaledTileSize).toInt().lowerThan(maxRow)
-        val colRight = (Math.ceil(right / scaledTileSize).toInt() - 1).lowerThan(maxCol)
-        val rowBottom = (Math.ceil(bottom / scaledTileSize).toInt() - 1).lowerThan(maxRow)
+        val colLeft = Math.floor(viewport.left / scaledTileSize).toInt().lowerThan(maxCol)
+        val rowTop = Math.floor(viewport.top / scaledTileSize).toInt().lowerThan(maxRow)
+        val colRight = (Math.ceil(viewport.right / scaledTileSize).toInt() - 1).lowerThan(maxCol)
+        val rowBottom = (Math.ceil(viewport.bottom / scaledTileSize).toInt() - 1).lowerThan(maxRow)
 
         return VisibleTiles(currentLevel, colLeft, rowTop, colRight, rowBottom)
     }
