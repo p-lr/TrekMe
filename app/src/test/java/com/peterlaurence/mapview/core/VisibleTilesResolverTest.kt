@@ -31,7 +31,7 @@ class VisibleTilesResolverTest {
     }
 
     @Test
-    fun viewportTest() {
+    fun viewportTestSimple() {
         val resolver = VisibleTilesResolver(3, 1000, 800)
         var viewport = Viewport(0, 0,700, 512)
 
@@ -50,5 +50,54 @@ class VisibleTilesResolverTest {
         assertEquals(0, visibleTiles.rowTop)
         assertEquals(0, visibleTiles.colRight)
         assertEquals(1, visibleTiles.rowBottom)
+    }
+
+    @Test
+    fun viewportTestAdvanced() {
+        // 6-level map.
+        // 256 * 2⁶ = 16384
+        val resolver = VisibleTilesResolver(6, 16400, 8000)
+        var viewport = Viewport(0, 0, 1080, 1380)
+        var visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(5, visibleTiles.level)
+        assertEquals(0, visibleTiles.colLeft)
+        assertEquals(0, visibleTiles.rowTop)
+        assertEquals(4, visibleTiles.colRight)
+        assertEquals(5, visibleTiles.rowBottom)
+
+        viewport = Viewport(4753, 6222, 4753 + 1080, 6222 + 1380)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(5, visibleTiles.level)
+        assertEquals(18, visibleTiles.colLeft)
+        assertEquals(24, visibleTiles.rowTop)
+        assertEquals(22, visibleTiles.colRight)
+        assertEquals(29, visibleTiles.rowBottom)
+
+        viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
+        resolver.setScale(0.5f)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(4, visibleTiles.level)
+        assertEquals(14, visibleTiles.colLeft)
+        assertEquals(6, visibleTiles.rowTop)
+        assertEquals(18, visibleTiles.colRight)
+        assertEquals(11, visibleTiles.rowBottom)
+
+        viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
+        resolver.setScale(0.71f)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(5, visibleTiles.level)
+        assertEquals(10, visibleTiles.colLeft)
+        assertEquals(4, visibleTiles.rowTop)
+        assertEquals(13, visibleTiles.colRight)
+        assertEquals(8, visibleTiles.rowBottom)
+
+        viewport = Viewport(1643, 427, 1643 + 1080, 427 + 1380)
+        resolver.setScale(0.43f)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(4, visibleTiles.level)
+        assertEquals(5, visibleTiles.colLeft)
+        assertEquals(1, visibleTiles.rowTop)
+        assertEquals(9, visibleTiles.colRight)
+        assertEquals(6, visibleTiles.rowBottom)
     }
 }
