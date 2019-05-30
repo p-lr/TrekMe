@@ -100,4 +100,52 @@ class VisibleTilesResolverTest {
         assertEquals(9, visibleTiles.colRight)
         assertEquals(6, visibleTiles.rowBottom)
     }
+
+    @Test
+    fun viewportMagnifyingTest() {
+        // 6-level map.
+        // 256 * 2⁶ = 16384
+        var resolver = VisibleTilesResolver(6, 16400, 8000, magnifyingFactor = 1)
+        resolver.setScale(0.37f)
+        var viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
+        var visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(3, visibleTiles.level)
+        assertEquals(21, visibleTiles.colLeft)
+        assertEquals(8, visibleTiles.rowTop)
+        assertEquals(27, visibleTiles.colRight)
+        assertEquals(16, visibleTiles.rowBottom)
+
+        // magnify even further
+        resolver = VisibleTilesResolver(6, 16400, 8000, magnifyingFactor = 2)
+        viewport = Viewport(250, 123, 250 + 1080, 123 + 1380)
+        resolver.setScale(0.37f)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(2, visibleTiles.level)
+        assertEquals(2, visibleTiles.colLeft)
+        assertEquals(1, visibleTiles.rowTop)
+        assertEquals(15, visibleTiles.colRight)
+        assertEquals(17, visibleTiles.rowBottom)
+
+        // (un)magnify
+        resolver = VisibleTilesResolver(6, 16400, 8000, magnifyingFactor = -1)
+        viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
+        resolver.setScale(0.37f)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(5, visibleTiles.level)
+        assertEquals(5, visibleTiles.colLeft)
+        assertEquals(2, visibleTiles.rowTop)
+        assertEquals(6, visibleTiles.colRight)
+        assertEquals(4, visibleTiles.rowBottom)
+
+        // Try to (un)magnify beyond available level: this shouldn't change anything
+        resolver = VisibleTilesResolver(6, 16400, 8000, magnifyingFactor = -2)
+        viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
+        resolver.setScale(0.37f)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(5, visibleTiles.level)
+        assertEquals(5, visibleTiles.colLeft)
+        assertEquals(2, visibleTiles.rowTop)
+        assertEquals(6, visibleTiles.colRight)
+        assertEquals(4, visibleTiles.rowBottom)
+    }
 }

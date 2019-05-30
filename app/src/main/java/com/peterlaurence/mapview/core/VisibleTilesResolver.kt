@@ -6,9 +6,14 @@ package com.peterlaurence.mapview.core
  * @param levelCount Number of levels
  * @param fullWidth Width of the map at scale 1.0f
  * @param fullHeight Height of the map at scale 1.0f
+ * @param magnifyingFactor Alters the level at which tiles are picked for a given scale. By default,
+ * the level immediately higher (in index) is picked, to avoid sub-sampling. This corresponds to a
+ * [magnifyingFactor] of 0. The value 1 will result in picking the current level at a given scale,
+ * which will be at a relative scale between 1.0 and 2.0
  */
 class VisibleTilesResolver (private val levelCount: Int, private val fullWidth: Int,
-                            private val fullHeight: Int, private val tileSize: Int = 256) {
+                            private val fullHeight: Int, private val tileSize: Int = 256,
+                            private val magnifyingFactor: Int = 0) {
 
     private var scale: Float = 1.0f
     private var currentLevel = levelCount - 1
@@ -24,7 +29,7 @@ class VisibleTilesResolver (private val levelCount: Int, private val fullWidth: 
         this.scale = scale
 
         /* Update current level */
-        currentLevel = getLevel(scale)
+        currentLevel = getLevel(scale, magnifyingFactor)
     }
 
     fun getCurrentLevel(): Int {
@@ -34,9 +39,10 @@ class VisibleTilesResolver (private val levelCount: Int, private val fullWidth: 
     /**
      * Returns the level an entire value belonging to [0 ; [levelCount] - 1]
      */
-    private fun getLevel(scale: Float): Int {
-        /* This value can ve negative */
-        val partialLevel = levelCount - 1 + Math.log(scale.toDouble()) / Math.log(2.0)
+    private fun getLevel(scale: Float, magnifyingFactor: Int = 0): Int {
+        /* This value can be negative */
+        val partialLevel = levelCount - 1 - magnifyingFactor +
+                Math.log(scale.toDouble()) / Math.log(2.0)
 
         /* The level can't be greater than levelCount - 1.0 */
         val capedLevel = Math.min(partialLevel, levelCount - 1.0)
