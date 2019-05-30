@@ -11,9 +11,9 @@ package com.peterlaurence.mapview.core
  * [magnifyingFactor] of 0. The value 1 will result in picking the current level at a given scale,
  * which will be at a relative scale between 1.0 and 2.0
  */
-class VisibleTilesResolver (private val levelCount: Int, private val fullWidth: Int,
-                            private val fullHeight: Int, private val tileSize: Int = 256,
-                            private val magnifyingFactor: Int = 0) {
+class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: Int,
+                           private val fullHeight: Int, private val tileSize: Int = 256,
+                           private val magnifyingFactor: Int = 0) {
 
     private var scale: Float = 1.0f
     private var currentLevel = levelCount - 1
@@ -58,25 +58,33 @@ class VisibleTilesResolver (private val levelCount: Int, private val fullWidth: 
      * scale.
      */
     fun getVisibleTiles(viewport: Viewport): VisibleTiles {
-        val scaledTileSize = tileSize.toDouble() * getRelativeScale()
+        val scaleAtLevel = scaleForLevel[currentLevel] ?: throw AssertionError()
+        val relativeScale = scaleAtLevel / scale
+
+        /* At the current level, row and col index have maximum values */
+        val maxCol = (fullWidth * scaleAtLevel / tileSize).toInt()
+        val maxRow = (fullHeight * scaleAtLevel / tileSize).toInt()
+
+        fun Int.lowerThan(limit: Int): Int {
+            return if (this <= limit) this else limit
+        }
+
+        val scaledTileSize = tileSize.toDouble() * relativeScale
         val scaledWidth = fullWidth * scale
         val scaledHeight = fullHeight * scale
 
-        val top = Math.max(viewport.top, 0)
-        val left = Math.max(viewport.left, 0)
+        /* The viewport can't be bigger than the scaled full-size area */
+        val top = Math.min(Math.max(viewport.top, 0), scaledHeight.toInt())
+        val left = Math.min(Math.max(viewport.left, 0), scaledWidth.toInt())
         val right = Math.min(viewport.right, scaledWidth.toInt())
         val bottom = Math.min(viewport.bottom, scaledHeight.toInt())
 
-        val colLeft = Math.floor(left / scaledTileSize).toInt()
-        val rowTop = Math.floor(top / scaledTileSize).toInt()
-        val colRight = Math.ceil(right / scaledTileSize).toInt() - 1
-        val rowBottom = Math.ceil(bottom / scaledTileSize).toInt() - 1
+        val colLeft = Math.floor(left / scaledTileSize).toInt().lowerThan(maxCol)
+        val rowTop = Math.floor(top / scaledTileSize).toInt().lowerThan(maxRow)
+        val colRight = (Math.ceil(right / scaledTileSize).toInt() - 1).lowerThan(maxCol)
+        val rowBottom = (Math.ceil(bottom / scaledTileSize).toInt() - 1).lowerThan(maxRow)
 
         return VisibleTiles(currentLevel, colLeft, rowTop, colRight, rowBottom)
-    }
-
-    private fun getRelativeScale(): Float {
-        return (scaleForLevel[currentLevel] ?: throw AssertionError()) / scale
     }
 }
 

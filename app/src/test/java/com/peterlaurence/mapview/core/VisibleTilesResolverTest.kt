@@ -110,12 +110,12 @@ class VisibleTilesResolverTest {
         var viewport = Viewport(3720, 1543, 3720 + 1080, 1543 + 1380)
         var visibleTiles = resolver.getVisibleTiles(viewport)
         assertEquals(3, visibleTiles.level)
-        assertEquals(21, visibleTiles.colLeft)
-        assertEquals(8, visibleTiles.rowTop)
-        assertEquals(27, visibleTiles.colRight)
-        assertEquals(16, visibleTiles.rowBottom)
+        assertEquals(16, visibleTiles.colLeft)
+        assertEquals(7, visibleTiles.rowTop)
+        assertEquals(16, visibleTiles.colRight)
+        assertEquals(7, visibleTiles.rowBottom)
 
-        // magnify even further
+        // magnify even further, with an abnormally big viewport
         resolver = VisibleTilesResolver(6, 16400, 8000, magnifyingFactor = 2)
         viewport = Viewport(250, 123, 250 + 1080, 123 + 1380)
         resolver.setScale(0.37f)
@@ -123,8 +123,8 @@ class VisibleTilesResolverTest {
         assertEquals(2, visibleTiles.level)
         assertEquals(2, visibleTiles.colLeft)
         assertEquals(1, visibleTiles.rowTop)
-        assertEquals(15, visibleTiles.colRight)
-        assertEquals(17, visibleTiles.rowBottom)
+        assertEquals(8, visibleTiles.colRight)
+        assertEquals(3, visibleTiles.rowBottom)
 
         // (un)magnify
         resolver = VisibleTilesResolver(6, 16400, 8000, magnifyingFactor = -1)
