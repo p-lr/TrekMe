@@ -29,4 +29,26 @@ class VisibleTilesResolverTest {
         resolver.setScale(1f)
         assertEquals(7, resolver.getCurrentLevel())
     }
+
+    @Test
+    fun viewportTest() {
+        val resolver = VisibleTilesResolver(3, 1000, 800)
+        var viewport = Viewport(0, 0,700, 512)
+
+        var visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(2, visibleTiles.level)
+        assertEquals(0, visibleTiles.colLeft)
+        assertEquals(0, visibleTiles.rowTop)
+        assertEquals(2, visibleTiles.colRight)
+        assertEquals(1, visibleTiles.rowBottom)
+
+        resolver.setScale(0.5f)
+        viewport = Viewport(0, 0, 200, 300)
+        visibleTiles = resolver.getVisibleTiles(viewport)
+        assertEquals(1, visibleTiles.level)
+        assertEquals(0, visibleTiles.colLeft)
+        assertEquals(0, visibleTiles.rowTop)
+        assertEquals(0, visibleTiles.colRight)
+        assertEquals(1, visibleTiles.rowBottom)
+    }
 }
