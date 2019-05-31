@@ -7,8 +7,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Limit the rate a which a [block] is called given the last [T] value sent to the returned
- * [SendChannel].
+ * Limit the rate at which a [block] is called given the last [T] value sent to the returned
+ * [SendChannel]. If a value is sent to the channel before [wait] ms elapsed, its value will be
+ * scheduled to be used as argument of the next [block] call, unless another value is sent meanwhile.
+ *
+ * @param wait The time in ms between each [block] call.
  *
  * @author peterLaurence
  */
