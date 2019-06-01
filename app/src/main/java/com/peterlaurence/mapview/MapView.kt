@@ -1,15 +1,24 @@
 package com.peterlaurence.mapview
 
 import android.content.Context
+import android.os.Parcelable
 import android.util.AttributeSet
 import com.peterlaurence.mapview.core.TileStreamProvider
+import com.peterlaurence.mapview.core.Viewport
+import com.peterlaurence.mapview.core.VisibleTilesResolver
 import com.peterlaurence.mapview.core.throttle
 import com.peterlaurence.mapview.layout.ZoomPanLayout
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
-        ZoomPanLayout(context, attrs, defStyleAttr) {
+        ZoomPanLayout(context, attrs, defStyleAttr), CoroutineScope {
+
+    private lateinit var visibleTilesResolver: VisibleTilesResolver
+    private var job = Job()
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     /**
      * There are two conventions when using [MapView].
@@ -22,9 +31,72 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
      *
      * So it is assumed that the scale of level 1 is twice the scale at level 0, and so on until
      * last level [levelCount] - 1 (which has scale 1).
+     *
+     * @param fullWidth the width of the map in pixels at scale 1
+     * @param fullHeight the height of the map in pixels at scale 1
+     * @param tileStreamProvider the tiles provider
      */
-    fun configureLevels(levelCount: Int, tileStreamProvider: TileStreamProvider) {
+    fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileStreamProvider: TileStreamProvider) {
+        visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight)
+    }
 
+    /**
+     * Stop everything.
+     * [MapView] then does necessary housekeeping. After this call, the [MapView] should be removed
+     * from all view trees.
+     */
+    fun destroy() {
+        job.cancel()
+    }
+
+    private fun renderVisibleTilesThrottled() {
+        throttledTask.offer(Unit)
+    }
+
+    private val throttledTask = throttle<Unit> {
+        renderVisibleTiles()
+    }
+
+    private fun renderVisibleTiles() {
+        val viewport = getCurrentViewport()
+        val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport)
+        TODO("render visible tiles")
+    }
+
+
+    private fun getCurrentViewport(): Viewport {
+        val left = scrollX
+        val top = scrollY
+        val right = left + width
+        val bottom = top + height
+
+        return Viewport(left, top, right, bottom)
+    }
+
+    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        super.onLayout(changed, l, t, r, b)
+        renderVisibleTilesThrottled()
+    }
+
+    override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
+        super.onScrollChanged(l, t, oldl, oldt)
+        renderVisibleTilesThrottled()
+    }
+
+    override fun onScaleChanged(currentScale: Float, previousScale: Float) {
+        super.onScaleChanged(currentScale, previousScale)
+        TODO()
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        job.cancel()
+
+        return super.onSaveInstanceState()
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+        job = Job()
     }
 }
 
