@@ -11,6 +11,10 @@ import com.peterlaurence.mapview.layout.ZoomPanLayout
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
+/**
+ *
+ * @author peterLaurence on 31/05/2019
+ */
 class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
         ZoomPanLayout(context, attrs, defStyleAttr), CoroutineScope {
 
