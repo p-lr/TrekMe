@@ -1,6 +1,5 @@
 package com.peterlaurence.mapview.core
 
-import com.peterlaurence.mapview.view.Tile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -30,8 +29,8 @@ fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
 }
 
 fun CoroutineScope.tileCollector(visibleTiles: ReceiveChannel<VisibleTiles>,
-                              tilesToDownload: SendChannel<Tile>,
-                              tilesDownloaded: ReceiveChannel<Tile>) = launch {
+                                 tilesToDownload: SendChannel<Tile>,
+                                 tilesDownloaded: ReceiveChannel<Tile>) = launch {
 
     var lastVisibleTiles = VisibleTiles(-1, 0, 0, 0, 0)
     val tilesCollected = mutableListOf<Tile>()
@@ -84,3 +83,7 @@ private fun MutableList<Tile>.keepOnlyThoseInside(visibleTiles: VisibleTiles): L
 }
 
 data class TileLocation(val zoom: Int, val row: Int, val col: Int)
+
+interface TileProvider {
+    fun getTile(zoom: Int, row: Int, col: Int): Tile
+}
