@@ -8,7 +8,7 @@ class BitmapPool {
 
     fun getBitmap(): Bitmap? {
         return if (pool.isNotEmpty()) {
-            pool[0]
+            pool.removeLast()
         } else {
             null
         }
