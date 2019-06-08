@@ -1,5 +1,7 @@
 package com.peterlaurence.mapview.core
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -15,20 +17,33 @@ const val N_WORKERS = 4
  */
 fun CoroutineScope.processVisibleTiles(visibleTileLocations: ReceiveChannel<List<TileLocation>>,
                                        tilesOutput: SendChannel<Tile>,
-                                       tileProvider: TileProvider) {
+                                       tileProvider: TileProvider,
+                                       tileStreamProvider: TileStreamProvider) {
     val tilesToDownload = Channel<Tile>(capacity = Channel.UNLIMITED)
     val tilesDownloadedFromWorker = Channel<Tile>(capacity = Channel.UNLIMITED)
 
-    repeat(N_WORKERS) { worker(tilesToDownload, tilesDownloadedFromWorker) }
+    repeat(N_WORKERS) { worker(tilesToDownload, tilesDownloadedFromWorker, tileStreamProvider) }
     tileCollector(visibleTileLocations, tilesToDownload, tilesDownloadedFromWorker, tilesOutput,
             tileProvider)
 }
 
 fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
-                          tilesDownloaded: SendChannel<Tile>) = launch {
+                          tilesDownloaded: SendChannel<Tile>, tileStreamProvider: TileStreamProvider) = launch {
+    val bitmapLoadingOptions = BitmapFactory.Options()
+    bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
+
     for (tile in tilesToDownload) {
-        // TODO : download tile, use the tileStreamProvider
-        tilesDownloaded.send(tile)
+        val i = tileStreamProvider.getTileStream(tile.row, tile.col, tile.zoom)
+        bitmapLoadingOptions.inBitmap = tile.bitmap
+
+        try {
+            BitmapFactory.decodeStream(i, null, bitmapLoadingOptions)
+            tilesDownloaded.send(tile)
+        } catch (e: OutOfMemoryError) {
+            // no luck
+        } catch (e: Exception) {
+            // maybe retry
+        }
     }
 }
 
