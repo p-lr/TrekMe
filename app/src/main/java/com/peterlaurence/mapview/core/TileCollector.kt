@@ -15,10 +15,10 @@ const val N_WORKERS = 4
  * @param [visibleTileLocations] channel of [TileLocation], which capacity should be [Channel.CONFLATED].
  * @param [tilesOutput] channel of [Tile], which capacity should be [Channel.UNLIMITED]
  */
-fun CoroutineScope.processVisibleTiles(visibleTileLocations: ReceiveChannel<List<TileLocation>>,
-                                       tilesOutput: SendChannel<Tile>,
-                                       tileProvider: TileProvider,
-                                       tileStreamProvider: TileStreamProvider) {
+fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileLocation>>,
+                                tilesOutput: SendChannel<Tile>,
+                                tileProvider: TileProvider,
+                                tileStreamProvider: TileStreamProvider) {
     val tilesToDownload = Channel<Tile>(capacity = Channel.UNLIMITED)
     val tilesDownloadedFromWorker = Channel<Tile>(capacity = Channel.UNLIMITED)
 
@@ -27,7 +27,7 @@ fun CoroutineScope.processVisibleTiles(visibleTileLocations: ReceiveChannel<List
             tileProvider)
 }
 
-fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
+private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
                           tilesDownloaded: SendChannel<Tile>, tileStreamProvider: TileStreamProvider) = launch {
     val bitmapLoadingOptions = BitmapFactory.Options()
     bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
@@ -47,7 +47,7 @@ fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
     }
 }
 
-fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<TileLocation>>,
+private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<TileLocation>>,
                                  tilesToDownload: SendChannel<Tile>,
                                  tilesDownloadedFromWorker: ReceiveChannel<Tile>,
                                  tilesOutput: SendChannel<Tile>,

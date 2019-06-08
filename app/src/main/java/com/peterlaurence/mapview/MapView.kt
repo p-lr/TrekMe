@@ -8,6 +8,8 @@ import com.peterlaurence.mapview.core.Viewport
 import com.peterlaurence.mapview.core.VisibleTilesResolver
 import com.peterlaurence.mapview.core.throttle
 import com.peterlaurence.mapview.layout.ZoomPanLayout
+import com.peterlaurence.mapview.view.TileCanvasView
+import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -20,6 +22,15 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     private lateinit var visibleTilesResolver: VisibleTilesResolver
     private var job = Job()
+
+    private lateinit var tileStreamProvider: TileStreamProvider
+    private var tileSize: Int = 256
+    private val tileCanvasView: TileCanvasView
+    private val tileCanvasViewModel = TileCanvasViewModel(this, tileSize, tileStreamProvider)
+
+    init {
+        tileCanvasView = TileCanvasView(context, tileCanvasViewModel)
+    }
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -38,10 +49,13 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
      *
      * @param fullWidth the width of the map in pixels at scale 1
      * @param fullHeight the height of the map in pixels at scale 1
+     * @param tileSize the size of tiles (must be squares)
      * @param tileStreamProvider the tiles provider
      */
-    fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileStreamProvider: TileStreamProvider) {
+    fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileSize: Int, tileStreamProvider: TileStreamProvider) {
         visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight)
+        this.tileStreamProvider = tileStreamProvider
+        this.tileSize = tileSize
     }
 
     /**
@@ -64,7 +78,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     private fun renderVisibleTiles() {
         val viewport = getCurrentViewport()
         val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport)
-        TODO("render visible tiles")
+        tileCanvasViewModel.setVisibleTiles(visibleTiles)
     }
 
 
