@@ -17,4 +17,7 @@ class BitmapPool {
     fun putBitmap(bitmap: Bitmap) {
         pool.add(bitmap)
     }
+
+    val size
+        get() = pool.size
 }
