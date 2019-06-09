@@ -67,7 +67,7 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
      */
     fun getVisibleTiles(viewport: Viewport): VisibleTiles {
         val scaleAtLevel = scaleForLevel[currentLevel] ?: throw AssertionError()
-        val relativeScale = scaleAtLevel / scale
+        val relativeScale = scale / scaleAtLevel
 
         /* At the current level, row and col index have maximum values */
         val maxCol = (fullWidth * scaleAtLevel / tileSize).toInt()

@@ -2,6 +2,7 @@ package com.peterlaurence.mapview.view
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Rect
 import android.view.View
 import com.peterlaurence.mapview.core.Tile
 import com.peterlaurence.mapview.core.VisibleTilesResolver
@@ -44,10 +45,16 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
         if (tilesToRender.isEmpty()) return
 
         for (tile in tilesToRender) {
-            val scaleForLevel = visibleTilesResolver.getScaleForLevel(tilesToRender.first().zoom) ?: continue
-            val x = tile.col * tileSize / scaleForLevel
-            val y = tile.row * tileSize / scaleForLevel
-            canvas.drawBitmap(tile.bitmap, x, y, null)
+            val scaleForLevel = visibleTilesResolver.getScaleForLevel(tilesToRender.first().zoom)
+                    ?: continue
+            val tileScaled = (tileSize / scaleForLevel).toInt()
+            val l = tile.col * tileScaled
+            val t = tile.row * tileScaled
+            val r = l + tileScaled
+            val b = t + tileScaled
+            val dest = Rect(l, t, r, b)
+
+            canvas.drawBitmap(tile.bitmap, null, dest, null)
         }
     }
 }
