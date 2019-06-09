@@ -38,7 +38,7 @@ fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileLo
                                 tilesOutput: SendChannel<Tile>,
                                 tileProvider: TileProvider,
                                 tileStreamProvider: TileStreamProvider) {
-    val tilesToDownload = Channel<Tile>(capacity = Channel.UNLIMITED)
+    val tilesToDownload = Channel<Tile>(capacity = Channel.RENDEZVOUS)
     val tilesDownloadedFromWorker = Channel<Tile>(capacity = Channel.UNLIMITED)
 
     repeat(nWorkers) { worker(tilesToDownload, tilesDownloadedFromWorker, tileStreamProvider) }
