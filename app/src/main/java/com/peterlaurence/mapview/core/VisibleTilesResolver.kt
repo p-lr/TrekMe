@@ -37,6 +37,14 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
     }
 
     /**
+     * Get the scale for a given [level] (also called zoom).
+     * @return the scale or null if no such level was configured.
+     */
+    fun getScaleForLevel(level: Int): Float? {
+        return scaleForLevel[level]
+    }
+
+    /**
      * Returns the level an entire value belonging to [0 ; [levelCount] - 1]
      */
     private fun getLevel(scale: Float, magnifyingFactor: Int = 0): Int {

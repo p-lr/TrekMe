@@ -61,11 +61,11 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     }
 
     private fun VisibleTiles.contains(tile: Tile): Boolean {
-        return tile.col in colLeft..colRight && tile.row in rowTop..rowBottom
+        return level == tile.zoom && tile.col in colLeft..colRight && tile.row in rowTop..rowBottom
     }
 
     /**
-     * Each tile we get a new [VisibleTiles], remove all [Tile] from [tilesToRender] which aren't
+     * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesToRender] which aren't
      * visible and put their bitmap into the pool.
      */
     private fun processNewVisibleTiles(visibleTiles: VisibleTiles) {

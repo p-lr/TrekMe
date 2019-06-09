@@ -14,6 +14,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 /**
+ * The [MapView] is a subclass of [ZoomPanLayout] specialized for displaying deepzoom maps.
  *
  * @author peterLaurence on 31/05/2019
  */
@@ -25,12 +26,8 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     private lateinit var tileStreamProvider: TileStreamProvider
     private var tileSize: Int = 256
-    private val tileCanvasView: TileCanvasView
-    private val tileCanvasViewModel = TileCanvasViewModel(this, tileSize, tileStreamProvider)
-
-    init {
-        tileCanvasView = TileCanvasView(context, tileCanvasViewModel)
-    }
+    private lateinit var tileCanvasView: TileCanvasView
+    private lateinit var tileCanvasViewModel: TileCanvasViewModel
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -55,7 +52,18 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileSize: Int, tileStreamProvider: TileStreamProvider) {
         visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight)
         this.tileStreamProvider = tileStreamProvider
+        tileCanvasViewModel = TileCanvasViewModel(this, tileSize, tileStreamProvider)
         this.tileSize = tileSize
+
+        initChildViews()
+    }
+
+    private fun initChildViews() {
+        /* Remove the TileCanvasView if it was already added */
+        if (this::tileCanvasView.isInitialized) {
+            removeView(tileCanvasView)
+        }
+        tileCanvasView = TileCanvasView(context, tileCanvasViewModel, visibleTilesResolver)
     }
 
     /**
