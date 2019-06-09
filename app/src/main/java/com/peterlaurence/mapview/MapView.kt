@@ -50,6 +50,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
      * @param tileStreamProvider the tiles provider
      */
     fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileSize: Int, tileStreamProvider: TileStreamProvider) {
+        super.setSize(fullWidth, fullHeight)
         visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight)
         this.tileStreamProvider = tileStreamProvider
         tileCanvasViewModel = TileCanvasViewModel(this, tileSize, tileStreamProvider)
@@ -63,7 +64,8 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         if (this::tileCanvasView.isInitialized) {
             removeView(tileCanvasView)
         }
-        tileCanvasView = TileCanvasView(context, tileCanvasViewModel, visibleTilesResolver)
+        tileCanvasView = TileCanvasView(context, tileCanvasViewModel, tileSize, visibleTilesResolver)
+        addView(tileCanvasView)
     }
 
     /**
@@ -111,7 +113,8 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     override fun onScaleChanged(currentScale: Float, previousScale: Float) {
         super.onScaleChanged(currentScale, previousScale)
-        TODO()
+
+        tileCanvasView.setScale(currentScale)
     }
 
     override fun onSaveInstanceState(): Parcelable? {

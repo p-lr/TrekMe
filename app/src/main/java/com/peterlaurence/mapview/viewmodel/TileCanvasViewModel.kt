@@ -53,7 +53,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     }
 
     private fun VisibleTiles.toTileLocations(): List<TileLocation> {
-        return (rowBottom..rowTop).map { row ->
+        return (rowTop..rowBottom).map { row ->
             (colLeft..colRight).map { col ->
                 TileLocation(level, row, col)
             }

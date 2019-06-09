@@ -13,6 +13,7 @@ import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
  * @author peterLaurence on 02/06/2019
  */
 class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
+                     private val tileSize: Int,
                      private val visibleTilesResolver: VisibleTilesResolver) : View(ctx) {
     private var scale = 1f
 
@@ -44,8 +45,8 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
 
         for (tile in tilesToRender) {
             val scaleForLevel = visibleTilesResolver.getScaleForLevel(tilesToRender.first().zoom) ?: continue
-            val x = tile.col / scaleForLevel
-            val y = tile.row / scaleForLevel
+            val x = tile.col * tileSize / scaleForLevel
+            val y = tile.row * tileSize / scaleForLevel
             canvas.drawBitmap(tile.bitmap, x, y, null)
         }
     }
