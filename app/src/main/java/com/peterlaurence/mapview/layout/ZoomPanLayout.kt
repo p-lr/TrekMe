@@ -443,15 +443,14 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     fun setScaleFromPosition(offsetX: Int, offsetY: Int, scale: Float) {
-        var scale = scale
-        scale = getConstrainedDestinationScale(scale)
-        if (scale == this.scale) {
+        val scaleCst = getConstrainedDestinationScale(scale)
+        if (scaleCst == this.scale) {
             return
         }
-        var x = getOffsetScrollXFromScale(offsetX, scale, this.scale)
-        var y = getOffsetScrollYFromScale(offsetY, scale, this.scale)
+        var x = getOffsetScrollXFromScale(offsetX, scaleCst, this.scale)
+        var y = getOffsetScrollYFromScale(offsetY, scaleCst, this.scale)
 
-        scale = scale
+        this.scale = scaleCst
 
         x = getConstrainedScrollX(x)
         y = getConstrainedScrollY(y)
