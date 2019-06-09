@@ -5,13 +5,30 @@ import android.graphics.BitmapFactory
 import android.os.Process
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
-const val N_WORKERS = 4
+/**
+ * We build our own coroutine dispatcher, as we want to set the min priority to each thread of the
+ * pool. Also, the size of the pool should be less than the number of cores (which is different from
+ * [Dispatchers.Default] which uses exactly the number of cores).
+ */
+val threadId = AtomicInteger()
+val nCores = Runtime.getRuntime().availableProcessors()
+val nWorkers = nCores - 1
+val dispatcher = Executors.newFixedThreadPool(nWorkers) {
+    Thread(it, "TileCollector-worker-${threadId.incrementAndGet()}").apply {
+        isDaemon = true
+        priority = Thread.MIN_PRIORITY
+        Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
+    }
+}.asCoroutineDispatcher()
 
 /**
  * @param [visibleTileLocations] channel of [TileLocation], which capacity should be [Channel.CONFLATED].
@@ -24,15 +41,14 @@ fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileLo
     val tilesToDownload = Channel<Tile>(capacity = Channel.UNLIMITED)
     val tilesDownloadedFromWorker = Channel<Tile>(capacity = Channel.UNLIMITED)
 
-    repeat(N_WORKERS) { worker(tilesToDownload, tilesDownloadedFromWorker, tileStreamProvider) }
+    repeat(nWorkers) { worker(tilesToDownload, tilesDownloadedFromWorker, tileStreamProvider) }
     tileCollector(visibleTileLocations, tilesToDownload, tilesDownloadedFromWorker, tilesOutput,
             tileProvider)
 }
 
 private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
-                          tilesDownloaded: SendChannel<Tile>, tileStreamProvider: TileStreamProvider) = launch(Dispatchers.Default) {
-    Thread.currentThread().priority = Thread.MIN_PRIORITY
-    Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
+                                  tilesDownloaded: SendChannel<Tile>,
+                                  tileStreamProvider: TileStreamProvider) = launch(dispatcher) {
 
     val bitmapLoadingOptions = BitmapFactory.Options()
     bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
@@ -53,10 +69,10 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
 }
 
 private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<TileLocation>>,
-                                 tilesToDownload: SendChannel<Tile>,
-                                 tilesDownloadedFromWorker: ReceiveChannel<Tile>,
-                                 tilesOutput: SendChannel<Tile>,
-                                 tileProvider: TileProvider) = launch {
+                                         tilesToDownload: SendChannel<Tile>,
+                                         tilesDownloadedFromWorker: ReceiveChannel<Tile>,
+                                         tilesOutput: SendChannel<Tile>,
+                                         tileProvider: TileProvider) = launch {
 
     val locationsBeingProcessed = mutableListOf<TileLocation>()
 
