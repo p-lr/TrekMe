@@ -2,7 +2,9 @@ package com.peterlaurence.mapview.core
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Process
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
@@ -28,7 +30,10 @@ fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileLo
 }
 
 private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
-                          tilesDownloaded: SendChannel<Tile>, tileStreamProvider: TileStreamProvider) = launch {
+                          tilesDownloaded: SendChannel<Tile>, tileStreamProvider: TileStreamProvider) = launch(Dispatchers.Default) {
+    Thread.currentThread().priority = Thread.MIN_PRIORITY
+    Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
+
     val bitmapLoadingOptions = BitmapFactory.Options()
     bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
 

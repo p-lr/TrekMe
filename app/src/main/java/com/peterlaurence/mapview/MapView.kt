@@ -114,6 +114,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     override fun onScaleChanged(currentScale: Float, previousScale: Float) {
         super.onScaleChanged(currentScale, previousScale)
 
+        visibleTilesResolver.setScale(currentScale)
         tileCanvasView.setScale(currentScale)
     }
 
