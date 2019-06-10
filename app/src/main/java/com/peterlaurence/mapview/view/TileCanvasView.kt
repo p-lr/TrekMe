@@ -31,6 +31,7 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
 
     fun setScale(scale: Float) {
         this.scale = scale
+        invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
