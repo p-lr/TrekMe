@@ -43,11 +43,17 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         render()
     }
 
+    /**
+     * For each [Tile] received, add it to the list of tiles to render if it's visible. Otherwise,
+     * add the corresponding Bitmap to the [bitmapPool].
+     */
     private fun CoroutineScope.consumeTiles(tileChannel: ReceiveChannel<Tile>) = launch {
         for (tile in tileChannel) {
             if (lastVisible.contains(tile)) {
                 tilesToRender.add(tile)
                 render()
+            } else {
+                bitmapPool.putBitmap(tile.bitmap)
             }
         }
     }

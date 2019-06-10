@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
  *
  * @author peterLaurence
  */
-fun <T> CoroutineScope.throttle(wait: Long = 30,
+fun <T> CoroutineScope.throttle(wait: Long = 100,
                                 block: (T) -> Unit): SendChannel<T> {
 
     val channel = Channel<T>(capacity = Channel.CONFLATED)
