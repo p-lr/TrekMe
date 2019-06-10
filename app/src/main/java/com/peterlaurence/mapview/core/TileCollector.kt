@@ -38,28 +38,35 @@ fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileLo
                                 tilesOutput: SendChannel<Tile>,
                                 tileProvider: TileProvider,
                                 tileStreamProvider: TileStreamProvider) {
-    val tilesToDownload = Channel<Tile>(capacity = Channel.RENDEZVOUS)
-    val tilesDownloadedFromWorker = Channel<Tile>(capacity = Channel.UNLIMITED)
+    val tilesToDownload = Channel<TileSpec>(capacity = Channel.RENDEZVOUS)
+    val tilesDownloadedFromWorker = Channel<TileSpec>(capacity = Channel.UNLIMITED)
 
     repeat(nWorkers) { worker(tilesToDownload, tilesDownloadedFromWorker, tileStreamProvider) }
     tileCollector(visibleTileLocations, tilesToDownload, tilesDownloadedFromWorker, tilesOutput,
             tileProvider)
 }
 
-private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
-                                  tilesDownloaded: SendChannel<Tile>,
+private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileSpec>,
+                                  tilesDownloaded: SendChannel<TileSpec>,
                                   tileStreamProvider: TileStreamProvider) = launch(dispatcher) {
 
     val bitmapLoadingOptions = BitmapFactory.Options()
     bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
 
-    for (tile in tilesToDownload) {
+    for (tileSpec in tilesToDownload) {
+        /* If it was cancelled, do nothing and send back the TileSpec as is */
+        if (tileSpec.status.cancelled) {
+            tilesDownloaded.send(tileSpec)
+            continue
+        }
+
+        val tile = tileSpec.tile
         val i = tileStreamProvider.getTileStream(tile.row, tile.col, tile.zoom)
         bitmapLoadingOptions.inBitmap = tile.bitmap
 
         try {
             BitmapFactory.decodeStream(i, null, bitmapLoadingOptions)
-            tilesDownloaded.send(tile)
+            tilesDownloaded.send(tileSpec)
         } catch (e: OutOfMemoryError) {
             // no luck
         } catch (e: Exception) {
@@ -69,34 +76,43 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<Tile>,
 }
 
 private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<TileLocation>>,
-                                         tilesToDownload: SendChannel<Tile>,
-                                         tilesDownloadedFromWorker: ReceiveChannel<Tile>,
+                                         tilesToDownload: SendChannel<TileSpec>,
+                                         tilesDownloadedFromWorker: ReceiveChannel<TileSpec>,
                                          tilesOutput: SendChannel<Tile>,
                                          tileProvider: TileProvider) = launch {
 
-    val locationsBeingProcessed = mutableListOf<TileLocation>()
+    val tilesBeingProcessed = mutableListOf<TileStatus>()
 
     while (true) {
         select<Unit> {
             tileLocations.onReceive {
                 for (loc in it) {
-                    if (!locationsBeingProcessed.contains(loc)) {
+                    if (!tilesBeingProcessed.any { status -> status.location == loc }) {
                         /* Add it to the list of locations being processed */
-                        locationsBeingProcessed.add(loc)
+                        val status = TileStatus(loc)
+                        tilesBeingProcessed.add(status)
 
                         /* Now download the tile */
                         val tile = tileProvider.getTile(loc.zoom, loc.row, loc.col)
-                        tilesToDownload.send(tile)
+                        tilesToDownload.send(TileSpec(status, tile))
+                    }
+                }
+                for (status in tilesBeingProcessed) {
+                    if (!it.contains(status.location)) {
+                        status.cancelled = true
                     }
                 }
             }
 
             tilesDownloadedFromWorker.onReceive {
-                tilesOutput.send(it)
+                if (it.status.cancelled) {
+                    tileProvider.recycleTile(it.tile)
+                } else {
+                    tilesOutput.send(it.tile)
+                }
 
-                /* Now remove the location from the list */
-                val loc = TileLocation(it.zoom, it.row, it.col)
-                locationsBeingProcessed.remove(loc)
+                /* Now remove the corresponding TileStatus from the list */
+                tilesBeingProcessed.remove(it.status)
             }
         }
     }
@@ -106,4 +122,8 @@ data class TileLocation(val zoom: Int, val row: Int, val col: Int)
 
 interface TileProvider {
     fun getTile(zoom: Int, row: Int, col: Int): Tile
+    fun recycleTile(tile: Tile)
 }
+
+data class TileStatus(val location: TileLocation, @Volatile var cancelled: Boolean = false)
+data class TileSpec(val status: TileStatus, val tile: Tile)

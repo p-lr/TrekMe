@@ -14,4 +14,8 @@ class TileProviderImpl(private val bitmapPool: BitmapPool, private val tileSize:
         val bitmap = bitmapPool.getBitmap() ?: Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565)
         return Tile(zoom, row, col, bitmap)
     }
+
+    override fun recycleTile(tile: Tile) {
+        bitmapPool.putBitmap(tile.bitmap)
+    }
 }
