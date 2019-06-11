@@ -1,11 +1,17 @@
 package com.peterlaurence.mapview.viewmodel
 
+import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.peterlaurence.mapview.core.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
 /**
@@ -13,23 +19,38 @@ import kotlinx.coroutines.launch
  * It defers [Tile] loading to [tileCollector].
  */
 class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
-                          tileStreamProvider: TileStreamProvider): CoroutineScope by scope {
+                          tileStreamProvider: TileStreamProvider) : CoroutineScope by scope {
     private val tilesToRenderLiveData = MutableLiveData<List<Tile>>()
 
     private val bitmapPool = BitmapPool()
-    private val tileProvider = TileProviderImpl(bitmapPool, tileSize)
     private val visibleTileLocationsChannel = Channel<List<TileLocation>>(capacity = Channel.CONFLATED)
     private val tilesOutput = Channel<Tile>(capacity = Channel.UNLIMITED)
+
+    /**
+     * A [Flow] of [Bitmap] that is guarantied to be collected on Main thread. But other flows can
+     * collect it from other coroutines that are dispatched on other threads. It's a simple way to
+     * share data between coroutines in thread safe way, using cold flows.
+     */
+    @FlowPreview
+    private val bitmapFlow: Flow<Bitmap> = flow {
+        val bitmapForPool = bitmapPool.getBitmap()
+        val bitmap = if (bitmapForPool == null || bitmapForPool.isRecycled) {
+            Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565)
+        } else {
+            bitmapForPool
+        }
+        emit(bitmap)
+    }.flowOn(Dispatchers.Main)
 
     private lateinit var lastVisible: VisibleTiles
     private var tilesToRender = mutableListOf<Tile>()
 
     init {
-        collectTiles(visibleTileLocationsChannel, tilesOutput, tileProvider, tileStreamProvider)
+        collectTiles(visibleTileLocationsChannel, tilesOutput, tileStreamProvider, bitmapFlow)
         consumeTiles(tilesOutput)
     }
 
-    fun getTilesToRender() : LiveData<List<Tile>> {
+    fun getTilesToRender(): LiveData<List<Tile>> {
         return tilesToRenderLiveData
     }
 
