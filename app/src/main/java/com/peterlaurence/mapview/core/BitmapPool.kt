@@ -3,21 +3,31 @@ package com.peterlaurence.mapview.core
 import android.graphics.Bitmap
 import java.util.*
 
+/**
+ * A pool of [Bitmap] which has a limited size.
+ */
 class BitmapPool {
     private val pool = LinkedList<Bitmap>()
+    private var size: Int = 0
+    private val threshold = 300
+    private var cnt = 0
 
     fun getBitmap(): Bitmap? {
+        // println("size pool $size allocationsCnt $cnt")
         return if (pool.isNotEmpty()) {
-            pool.removeLast()
+            size--
+            pool.removeFirst()
         } else {
+            ++cnt
             null
         }
     }
 
     fun putBitmap(bitmap: Bitmap) {
-        pool.add(bitmap)
+        // println("size pool $size allocationsCnt $cnt")
+        if (size < threshold) {
+            size++
+            pool.add(bitmap)
+        }
     }
-
-    val size
-        get() = pool.size
 }

@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -27,20 +28,17 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     private val tilesOutput = Channel<Tile>(capacity = Channel.UNLIMITED)
 
     /**
-     * A [Flow] of [Bitmap] that is guarantied to be collected on Main thread. But other flows can
-     * collect it from other coroutines that are dispatched on other threads. It's a simple way to
-     * share data between coroutines in thread safe way, using cold flows.
+     * A [Flow] of [Bitmap] that first collects from the [bitmapPool] on the Main thread. If the
+     * pool was empty, a new [Bitmap] is allocated from the calling thread. It's a simple way to
+     * share data between coroutines in a thread safe way, using cold flows.
      */
     @FlowPreview
     private val bitmapFlow: Flow<Bitmap> = flow {
-        val bitmapForPool = bitmapPool.getBitmap()
-        val bitmap = if (bitmapForPool == null || bitmapForPool.isRecycled) {
-            Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565)
-        } else {
-            bitmapForPool
-        }
+        val bitmap = bitmapPool.getBitmap()
         emit(bitmap)
-    }.flowOn(Dispatchers.Main)
+    }.flowOn(Dispatchers.Main).map {
+        it ?: Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565)
+    }
 
     private lateinit var lastVisible: VisibleTiles
     private var tilesToRender = mutableListOf<Tile>()
