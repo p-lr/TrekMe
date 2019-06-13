@@ -78,7 +78,11 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     private fun CoroutineScope.consumeTiles(tileChannel: ReceiveChannel<Tile>) = launch {
         for (tile in tileChannel) {
             if (lastVisible.contains(tile)) {
-                tilesToRender.add(tile)
+                if (!tilesToRender.hasAlready(tile)) {
+                    tilesToRender.add(tile)
+                } else {
+                    bitmapPool.putBitmap(tile.bitmap)
+                }
                 render()
             } else {
                 bitmapPool.putBitmap(tile.bitmap)
@@ -118,4 +122,8 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     private fun render() {
         tilesToRenderLiveData.postValue(tilesToRender)
     }
+}
+
+private fun List<Tile>.hasAlready(tile: Tile) = any {
+    it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col
 }

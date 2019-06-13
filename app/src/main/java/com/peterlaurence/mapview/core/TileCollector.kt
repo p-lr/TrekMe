@@ -3,15 +3,12 @@ package com.peterlaurence.mapview.core
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Process
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
@@ -113,8 +110,12 @@ private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<Tile
                     tilesOutput.send(tile)
                 }
 
-                /* Now remove the corresponding TileStatus from the list */
-                tilesBeingProcessed.remove(it.status)
+                /* Now remove the corresponding TileStatus from the list, but only after a delay, to
+                 * disallow this tile to be requested again while it's about to be rendered */
+                launch {
+                    delay(30)
+                    tilesBeingProcessed.remove(it.status)
+                }
             }
         }
     }
