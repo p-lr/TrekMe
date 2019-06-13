@@ -120,7 +120,5 @@ private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<Tile
     }
 }
 
-data class TileLocation(val zoom: Int, val row: Int, val col: Int)
-
 data class TileStatus(val location: TileLocation, @Volatile var cancelled: Boolean = false)
 data class TileBundle(val status: TileStatus, val tile: Tile?)

@@ -9,11 +9,11 @@ import java.util.*
 class BitmapPool {
     private val pool = LinkedList<Bitmap>()
     private var size: Int = 0
-    private val threshold = 300
+    private val threshold = 100
     private var cnt = 0
 
     fun getBitmap(): Bitmap? {
-        // println("size pool $size allocationsCnt $cnt")
+//         println("size pool $size allocationsCnt $cnt")
         return if (pool.isNotEmpty()) {
             size--
             pool.removeFirst()
@@ -24,7 +24,7 @@ class BitmapPool {
     }
 
     fun putBitmap(bitmap: Bitmap) {
-        // println("size pool $size allocationsCnt $cnt")
+//         println("size pool $size allocationsCnt $cnt")
         if (size < threshold) {
             size++
             pool.add(bitmap)

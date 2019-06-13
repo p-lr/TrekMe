@@ -53,13 +53,22 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     }
 
     fun setVisibleTiles(visibleTiles: VisibleTiles) {
-        val locations = visibleTiles.toTileLocations()
-        visibleTileLocationsChannel.offer(locations)
+        collectNewTiles(visibleTiles)
 
         lastVisible = visibleTiles
         processNewVisibleTiles(visibleTiles)
 
         render()
+    }
+
+    private fun collectNewTiles(visibleTiles: VisibleTiles) {
+        val locations = visibleTiles.toTileLocations()
+        val locationWithoutTile = locations.filterNot { loc ->
+            tilesToRender.any {
+                it.sameLocationAs(loc)
+            }
+        }
+        visibleTileLocationsChannel.offer(locationWithoutTile)
     }
 
     /**
