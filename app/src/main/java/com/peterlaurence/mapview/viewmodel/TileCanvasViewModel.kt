@@ -116,7 +116,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
 
     /**
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesToRender] which aren't
-     * visible and put their bitmap into the pool.
+     * visible or that aren't needed anymore and put their bitmap into the pool.
      */
     private fun evictTiles(visibleTiles: VisibleTiles) {
         val currentLevel = visibleTiles.level

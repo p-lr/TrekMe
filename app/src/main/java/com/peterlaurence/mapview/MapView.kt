@@ -116,6 +116,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
         visibleTilesResolver.setScale(currentScale)
         tileCanvasView.setScale(currentScale)
+        renderVisibleTilesThrottled()
     }
 
     override fun onSaveInstanceState(): Parcelable? {
