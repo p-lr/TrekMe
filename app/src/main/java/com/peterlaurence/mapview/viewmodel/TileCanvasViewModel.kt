@@ -56,7 +56,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         collectNewTiles(visibleTiles)
 
         lastVisible = visibleTiles
-        processNewVisibleTiles(visibleTiles)
+        evictTiles(visibleTiles)
 
         render()
     }
@@ -102,18 +102,55 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         return level == tile.zoom && tile.col in colLeft..colRight && tile.row in rowTop..rowBottom
     }
 
+    private fun VisibleTiles.count(): Int {
+        return (rowBottom - rowTop + 1) * (colRight - colLeft + 1)
+    }
+
+    private fun List<Tile>.countTilesAtLevel(zoom: Int): Int {
+        var i = 0
+        forEach {
+            if (it.zoom == zoom) i++
+        }
+        return i
+    }
+
     /**
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesToRender] which aren't
      * visible and put their bitmap into the pool.
      */
-    private fun processNewVisibleTiles(visibleTiles: VisibleTiles) {
-        tilesToRender = tilesToRender.filter { tile ->
-            visibleTiles.contains(tile).also { inside ->
-                if (!inside) {
-                    bitmapPool.putBitmap(tile.bitmap)
-                }
+    private fun evictTiles(visibleTiles: VisibleTiles) {
+        val currentLevel = visibleTiles.level
+
+        /* First, remove tiles that aren't visible at current level */
+        val iterator = tilesToRender.iterator()
+        while (iterator.hasNext()) {
+            val tile = iterator.next()
+            if (tile.zoom == currentLevel && !visibleTiles.contains(tile)) {
+                iterator.remove()
+                bitmapPool.putBitmap(tile.bitmap)
             }
-        }.toMutableList()
+        }
+
+        /* Now, deal with tiles of other levels */
+        val tilesOutsideCurrLevel = tilesToRender.filter {
+            it.zoom != currentLevel
+        }
+        if (tilesOutsideCurrLevel.isNotEmpty()) {
+            val expectedCount = tilesToRender.countTilesAtLevel(currentLevel)
+            if (expectedCount == visibleTiles.count()) {
+                tilesOutsideCurrLevel.forEach {
+                    bitmapPool.putBitmap(it.bitmap)
+                }
+                tilesToRender = tilesToRender.filter {
+                    it.zoom == currentLevel
+                }.toMutableList()
+            }
+        }
+
+        /* Lastly, tiles of current level should be at the end of the list to be rendered above */
+        tilesToRender.sortBy {
+            it.zoom == currentLevel
+        }
     }
 
     /**

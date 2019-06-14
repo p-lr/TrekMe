@@ -19,6 +19,8 @@ import java.util.*
  *
  * Children of ZoomPanLayout are laid out to the sizes provided by setSize,
  * and will always be positioned at 0,0.
+ *
+ * @author Mike Dunn
  */
 open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : ViewGroup(context, attrs, defStyleAttr), GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener, ScaleGestureDetector.OnScaleGestureListener, TouchUpGestureDetector.OnTouchUpListener {
 

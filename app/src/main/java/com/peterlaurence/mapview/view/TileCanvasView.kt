@@ -46,7 +46,7 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
         if (tilesToRender.isEmpty()) return
 
         for (tile in tilesToRender) {
-            val scaleForLevel = visibleTilesResolver.getScaleForLevel(tilesToRender.first().zoom)
+            val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
                     ?: continue
             val tileScaled = (tileSize / scaleForLevel).toInt()
             val l = tile.col * tileScaled
