@@ -43,8 +43,16 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
 
     private lateinit var lastViewport: Viewport
     private lateinit var lastVisible: VisibleTiles
-    var idle = false
-    private val idleDebounced = debounce<Unit> { idle = true }
+    private var idle = false
+
+    /**
+     * So long as this debounced channel is offered a message, the lambda isn't called.
+     */
+    private val idleDebounced = debounce<Unit> {
+        idle = true
+        evictTiles(lastVisible)
+    }
+
     private var tilesToRender = mutableListOf<Tile>()
 
     init {
@@ -148,7 +156,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             partialEviction(visibleTiles)
         } else {
             println("aggressiveEviction")
-            aggressiveEviction(currentLevel)
+            aggressiveEviction(currentLevel, currentSubSample)
         }
 
         /* Lastly, tiles of current level should be at the end of the list to be rendered above */
@@ -157,14 +165,14 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         }
 
 //        println(tilesToRender.map {
-//            it.zoom
+//            it.subSample
 //        })
     }
 
     private fun partialEviction(visibleTiles: VisibleTiles) {
         val currentLevel = visibleTiles.level
 
-        /* Now, deal with tiles of other levels that aren't sub-sampled */
+        /* First, deal with tiles of other levels that aren't sub-sampled */
         val otherTilesNotSubSampled = tilesToRender.filter {
             it.zoom != currentLevel && it.subSample == 0
         }
@@ -184,6 +192,19 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             }
         }
 
+        /* Then, evict sub-sampled tiles that aren't visible anymore */
+        val subSampledTiles = tilesToRender.filter {
+            it.subSample > 0
+        }
+        if (subSampledTiles.isNotEmpty()) {
+            val visibleAtLowestLevel = visibleTilesResolver.getVisibleTiles(lastViewport, 0)
+            subSampledTiles.filter {
+                !visibleAtLowestLevel.overlaps(it)
+            }.let {
+                evictList.addAll(it)
+            }
+        }
+
         val iterator = tilesToRender.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
@@ -195,16 +216,32 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         }
     }
 
-    private fun aggressiveEviction(currentLevel: Int) {
+    /**
+     * Only triggered after the [idleDebounced] fires.
+     */
+    private fun aggressiveEviction(currentLevel: Int, currentSubSample: Int) {
         val otherTilesNotSubSampled = tilesToRender.filter {
             it.zoom != currentLevel
+        }
+
+        val subSampledTiles = tilesToRender.filter {
+            it.zoom == 0 && it.subSample != currentSubSample
         }
 
         val iterator = tilesToRender.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
-            otherTilesNotSubSampled.any {
+            val found = otherTilesNotSubSampled.any {
                 it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col
+            }
+            if (found) {
+                iterator.remove()
+                continue
+            }
+
+            subSampledTiles.any {
+                it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col &&
+                        tile.subSample == it.subSample
             }.let {
                 if (it) iterator.remove()
             }

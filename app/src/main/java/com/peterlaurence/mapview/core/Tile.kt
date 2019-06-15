@@ -7,5 +7,5 @@ data class Tile(val zoom: Int, val row: Int, val col: Int, val bitmap: Bitmap, v
 data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)
 
 fun Tile.sameSpecAs(spec: TileSpec): Boolean {
-    return zoom == spec.zoom && row == spec.row && col == spec.col
+    return zoom == spec.zoom && row == spec.row && col == spec.col && subSample == spec.subSample
 }
