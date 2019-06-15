@@ -34,7 +34,6 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
         } else {
             0
         }
-//        println("subsample: $subSample")
 //        println("scale $scale / ${scaleForLevel[0]}")
 
         /* Update current level */

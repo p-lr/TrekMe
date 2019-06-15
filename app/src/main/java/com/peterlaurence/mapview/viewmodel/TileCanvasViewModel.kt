@@ -129,10 +129,6 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                 && tile.row in rowTop..rowBottom
     }
 
-    private fun VisibleTiles.count(): Int {
-        return (rowBottom - rowTop + 1) * (colRight - colLeft + 1)
-    }
-
     /**
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesToRender] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
@@ -152,10 +148,10 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         }
 
         if (!idle) {
-            println("partialEviction")
+//            println("partialEviction")
             partialEviction(visibleTiles)
         } else {
-            println("aggressiveEviction")
+//            println("aggressiveEviction")
             aggressiveEviction(currentLevel, currentSubSample)
         }
 
@@ -185,9 +181,6 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                     !visibleAtLevel.overlaps(it)
                 }.let {
                     evictList.addAll(it)
-//                    println("add to eviction")
-//                    println(visibleAtLevel)
-//                    println(it)
                 }
             }
         }
