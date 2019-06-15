@@ -18,7 +18,7 @@ import java.io.InputStream
 /**
  * Test the [collectTiles] engine. The following assertions are tested:
  * * The [TileProvider] should pick a [Bitmap] from the pool if possible
- * * If [TileLocation]s are send to the input channel, corresponding [Tile]s are received from the
+ * * If [TileSpec]s are send to the input channel, corresponding [Tile]s are received from the
  * output channel (from the [collectTiles] point of view).
  * * The [Bitmap] of the [Tile]s produced should be consistent with the output of the [TileProvider]
  */
@@ -49,7 +49,7 @@ class TileCollectorTest {
 
 
         /* Setup the channels */
-        val visibleTileLocationsChannel = Channel<List<TileLocation>>(capacity = Channel.CONFLATED)
+        val visibleTileLocationsChannel = Channel<List<TileSpec>>(capacity = Channel.CONFLATED)
         val tilesOutput = Channel<Tile>(capacity = Channel.UNLIMITED)
 
         val pool = BitmapPool()
@@ -90,16 +90,16 @@ class TileCollectorTest {
 
         launch {
             val locations1 = listOf(
-                    TileLocation(0, 0, 0),
-                    TileLocation(0, 1, 1),
-                    TileLocation(0, 2, 1)
+                    TileSpec(0, 0, 0),
+                    TileSpec(0, 1, 1),
+                    TileSpec(0, 2, 1)
             )
             visibleTileLocationsChannel.send(locations1)
             delay(100)
             val locations2 = listOf(
-                    TileLocation(1, 0, 0),
-                    TileLocation(1, 1, 1),
-                    TileLocation(1, 2, 1)
+                    TileSpec(1, 0, 0),
+                    TileSpec(1, 1, 1),
+                    TileSpec(1, 2, 1)
             )
             /* Bitmaps inside the pool should be used */
             visibleTileLocationsChannel.send(locations2)

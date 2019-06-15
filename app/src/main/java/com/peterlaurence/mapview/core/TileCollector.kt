@@ -30,10 +30,10 @@ val dispatcher = Executors.newFixedThreadPool(nWorkers) {
 }.asCoroutineDispatcher()
 
 /**
- * @param [visibleTileLocations] channel of [TileLocation], which capacity should be [Channel.CONFLATED].
+ * @param [visibleTileLocations] channel of [TileSpec], which capacity should be [Channel.CONFLATED].
  * @param [tilesOutput] channel of [Tile], which capacity should be [Channel.UNLIMITED]
  */
-fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileLocation>>,
+fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileSpec>>,
                                 tilesOutput: SendChannel<Tile>,
                                 tileStreamProvider: TileStreamProvider,
                                 bitmapFlow: Flow<Bitmap>) {
@@ -59,11 +59,12 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
             continue
         }
 
-        val loc = tileStatus.location
+        val spec = tileStatus.spec
         val bitmap = bitmapFlow.single()
-        val tile = Tile(loc.zoom, loc.row, loc.col, bitmap)
+        val tile = Tile(spec.zoom, spec.row, spec.col, bitmap, spec.subSample)
         val i = tileStreamProvider.getTileStream(tile.row, tile.col, tile.zoom)
         bitmapLoadingOptions.inBitmap = tile.bitmap
+        bitmapLoadingOptions.inSampleSize = tile.subSample
 
         try {
             BitmapFactory.decodeStream(i, null, bitmapLoadingOptions)
@@ -78,7 +79,7 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
     }
 }
 
-private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<TileLocation>>,
+private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<TileSpec>>,
                                          tilesToDownload: SendChannel<TileStatus>,
                                          tilesDownloadedFromWorker: ReceiveChannel<TileBundle>,
                                          tilesOutput: SendChannel<Tile>) = launch {
@@ -89,7 +90,7 @@ private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<Tile
         select<Unit> {
             tileLocations.onReceive {
                 for (loc in it) {
-                    if (!tilesBeingProcessed.any { status -> status.location == loc }) {
+                    if (!tilesBeingProcessed.any { status -> status.spec == loc }) {
                         /* Add it to the list of locations being processed */
                         val status = TileStatus(loc)
                         tilesBeingProcessed.add(status)
@@ -99,7 +100,7 @@ private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<Tile
                     }
                 }
                 for (status in tilesBeingProcessed) {
-                    if (!it.contains(status.location)) {
+                    if (!it.contains(status.spec)) {
                         status.cancelled = true
                     }
                 }
@@ -121,5 +122,5 @@ private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<Tile
     }
 }
 
-data class TileStatus(val location: TileLocation, @Volatile var cancelled: Boolean = false)
+data class TileStatus(val spec: TileSpec, @Volatile var cancelled: Boolean = false)
 data class TileBundle(val status: TileStatus, val tile: Tile?)

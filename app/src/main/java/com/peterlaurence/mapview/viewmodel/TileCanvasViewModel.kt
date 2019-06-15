@@ -24,7 +24,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     private val tilesToRenderLiveData = MutableLiveData<List<Tile>>()
 
     private val bitmapPool = BitmapPool()
-    private val visibleTileLocationsChannel = Channel<List<TileLocation>>(capacity = Channel.CONFLATED)
+    private val visibleTileLocationsChannel = Channel<List<TileSpec>>(capacity = Channel.CONFLATED)
     private val tilesOutput = Channel<Tile>(capacity = Channel.UNLIMITED)
 
     /**
@@ -62,10 +62,10 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     }
 
     private fun collectNewTiles(visibleTiles: VisibleTiles) {
-        val locations = visibleTiles.toTileLocations()
+        val locations = visibleTiles.toTileSpecs()
         val locationWithoutTile = locations.filterNot { loc ->
             tilesToRender.any {
-                it.sameLocationAs(loc)
+                it.sameSpecAs(loc)
             }
         }
         visibleTileLocationsChannel.offer(locationWithoutTile)
@@ -90,26 +90,27 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         }
     }
 
-    private fun VisibleTiles.toTileLocations(): List<TileLocation> {
+    private fun VisibleTiles.toTileSpecs(): List<TileSpec> {
         return (rowTop..rowBottom).map { row ->
             (colLeft..colRight).map { col ->
-                TileLocation(level, row, col)
+                TileSpec(level, row, col, subSample)
             }
         }.flatten()
     }
 
     private fun VisibleTiles.contains(tile: Tile): Boolean {
-        return level == tile.zoom && tile.col in colLeft..colRight && tile.row in rowTop..rowBottom
+        return level == tile.zoom && subSample == tile.subSample && tile.col in colLeft..colRight
+                && tile.row in rowTop..rowBottom
     }
 
     private fun VisibleTiles.count(): Int {
         return (rowBottom - rowTop + 1) * (colRight - colLeft + 1)
     }
 
-    private fun List<Tile>.countTilesAtLevel(zoom: Int): Int {
+    private fun List<Tile>.countTilesAtLevelAndSubSample(zoom: Int, subSample: Int): Int {
         var i = 0
         forEach {
-            if (it.zoom == zoom) i++
+            if (it.zoom == zoom && it.subSample == subSample) i++
         }
         return i
     }
@@ -120,12 +121,13 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
      */
     private fun evictTiles(visibleTiles: VisibleTiles) {
         val currentLevel = visibleTiles.level
+        val currentSubSample = visibleTiles.subSample
 
         /* First, remove tiles that aren't visible at current level */
         val iterator = tilesToRender.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
-            if (tile.zoom == currentLevel && !visibleTiles.contains(tile)) {
+            if (tile.zoom == currentLevel && tile.subSample == visibleTiles.subSample && !visibleTiles.contains(tile)) {
                 iterator.remove()
                 bitmapPool.putBitmap(tile.bitmap)
             }
@@ -133,16 +135,16 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
 
         /* Now, deal with tiles of other levels */
         val tilesOutsideCurrLevel = tilesToRender.filter {
-            it.zoom != currentLevel
+            it.zoom != currentLevel || it.subSample != currentSubSample
         }
         if (tilesOutsideCurrLevel.isNotEmpty()) {
-            val expectedCount = tilesToRender.countTilesAtLevel(currentLevel)
-            if (expectedCount == visibleTiles.count()) {
+            val currCount = tilesToRender.countTilesAtLevelAndSubSample(currentLevel, currentSubSample)
+            if (currCount == visibleTiles.count()) {
                 tilesOutsideCurrLevel.forEach {
                     bitmapPool.putBitmap(it.bitmap)
                 }
                 tilesToRender = tilesToRender.filter {
-                    it.zoom == currentLevel
+                    it.zoom == currentLevel && it.subSample == currentSubSample
                 }.toMutableList()
             }
         }
@@ -162,5 +164,5 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
 }
 
 private fun List<Tile>.hasAlready(tile: Tile) = any {
-    it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col
+    it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col && it.subSample == tile.subSample
 }

@@ -2,10 +2,10 @@ package com.peterlaurence.mapview.core
 
 import android.graphics.Bitmap
 
-data class Tile(val zoom: Int, val row: Int, val col: Int, val bitmap: Bitmap)
+data class Tile(val zoom: Int, val row: Int, val col: Int, val bitmap: Bitmap, val subSample: Int)
 
-data class TileLocation(val zoom: Int, val row: Int, val col: Int)
+data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)
 
-fun Tile.sameLocationAs(loc: TileLocation): Boolean {
-    return zoom == loc.zoom && row == loc.row && col == loc.col
+fun Tile.sameSpecAs(spec: TileSpec): Boolean {
+    return zoom == spec.zoom && row == spec.row && col == spec.col
 }

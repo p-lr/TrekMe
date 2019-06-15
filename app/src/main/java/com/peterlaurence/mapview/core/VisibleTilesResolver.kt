@@ -17,6 +17,7 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
 
     private var scale: Float = 1.0f
     private var currentLevel = levelCount - 1
+    private var subSample: Int = 0
 
     /**
      * Last level is at scale 1.0f, others are at scale 1.0 / power_of_2
@@ -27,6 +28,12 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
 
     fun setScale(scale: Float) {
         this.scale = scale
+
+        this.subSample = if (scale < scaleForLevel[0] ?: Float.MIN_VALUE) {
+            (Math.log((scaleForLevel[0] ?: error("")).toDouble() / scale)/ Math.log(2.0)).toInt()
+        } else {
+            0
+        }
 
         /* Update current level */
         currentLevel = getLevel(scale, magnifyingFactor)
@@ -84,7 +91,7 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
         val colRight = (Math.ceil(viewport.right / scaledTileSize).toInt() - 1).lowerThan(maxCol)
         val rowBottom = (Math.ceil(viewport.bottom / scaledTileSize).toInt() - 1).lowerThan(maxRow)
 
-        return VisibleTiles(currentLevel, colLeft, rowTop, colRight, rowBottom)
+        return VisibleTiles(currentLevel, colLeft, rowTop, colRight, rowBottom, subSample)
     }
 }
 
@@ -92,4 +99,4 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
  * @param level 0-based level index
  */
 data class VisibleTiles(var level: Int, val colLeft: Int, val rowTop: Int, val colRight: Int,
-                        val rowBottom: Int)
+                        val rowBottom: Int, val subSample: Int = 0)
