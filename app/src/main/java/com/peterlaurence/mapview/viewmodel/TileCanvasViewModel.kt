@@ -81,11 +81,11 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                 if (!tilesToRender.hasAlready(tile)) {
                     tilesToRender.add(tile)
                 } else {
-                    bitmapPool.putBitmap(tile.bitmap)
+                    tile.bitmap.putInPool()
                 }
                 render()
             } else {
-                bitmapPool.putBitmap(tile.bitmap)
+                tile.bitmap.putInPool()
             }
         }
     }
@@ -129,7 +129,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             val tile = iterator.next()
             if (tile.zoom == currentLevel && tile.subSample == visibleTiles.subSample && !visibleTiles.contains(tile)) {
                 iterator.remove()
-                bitmapPool.putBitmap(tile.bitmap)
+                tile.bitmap.putInPool()
             }
         }
 
@@ -141,7 +141,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             val currCount = tilesToRender.countTilesAtLevelAndSubSample(currentLevel, currentSubSample)
             if (currCount == visibleTiles.count()) {
                 tilesOutsideCurrLevel.forEach {
-                    bitmapPool.putBitmap(it.bitmap)
+                    it.bitmap.putInPool()
                 }
                 tilesToRender = tilesToRender.filter {
                     it.zoom == currentLevel && it.subSample == currentSubSample
@@ -160,6 +160,12 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
      */
     private fun render() {
         tilesToRenderLiveData.postValue(tilesToRender)
+    }
+
+    private fun Bitmap.putInPool() {
+        if (isMutable) {
+            bitmapPool.putBitmap(this)
+        }
     }
 }
 

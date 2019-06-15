@@ -30,10 +30,12 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
         this.scale = scale
 
         this.subSample = if (scale < scaleForLevel[0] ?: Float.MIN_VALUE) {
-            (Math.log((scaleForLevel[0] ?: error("")).toDouble() / scale)/ Math.log(2.0)).toInt()
+            (Math.log((scaleForLevel[0] ?: error("")).toDouble() / scale + 2.0)/ Math.log(2.0)).toInt()
         } else {
             0
         }
+//        println("subsample: $subSample")
+//        println("scale $scale / ${scaleForLevel[0]}")
 
         /* Update current level */
         currentLevel = getLevel(scale, magnifyingFactor)
