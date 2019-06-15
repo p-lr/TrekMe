@@ -41,7 +41,10 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         it ?: Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565)
     }
 
+    private lateinit var lastViewport: Viewport
     private lateinit var lastVisible: VisibleTiles
+    var idle = false
+    private val idleDebounced = debounce<Unit> { idle = true }
     private var tilesToRender = mutableListOf<Tile>()
 
     init {
@@ -54,8 +57,12 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     }
 
     fun setViewport(viewport: Viewport) {
+        lastViewport = viewport
         val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport)
         setVisibleTiles(visibleTiles)
+
+        idle = false
+        idleDebounced.offer(Unit)
     }
 
     private fun setVisibleTiles(visibleTiles: VisibleTiles) {
@@ -109,16 +116,13 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                 && tile.row in rowTop..rowBottom
     }
 
-    private fun VisibleTiles.count(): Int {
-        return (rowBottom - rowTop + 1) * (colRight - colLeft + 1)
+    private fun VisibleTiles.overlaps(tile: Tile): Boolean {
+        return level == tile.zoom && tile.col in colLeft..colRight
+                && tile.row in rowTop..rowBottom
     }
 
-    private fun List<Tile>.countTilesAtLevelAndSubSample(zoom: Int, subSample: Int): Int {
-        var i = 0
-        forEach {
-            if (it.zoom == zoom && it.subSample == subSample) i++
-        }
-        return i
+    private fun VisibleTiles.count(): Int {
+        return (rowBottom - rowTop + 1) * (colRight - colLeft + 1)
     }
 
     /**
@@ -139,25 +143,71 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             }
         }
 
-        /* Now, deal with tiles of other levels */
-        val tilesOutsideCurrLevel = tilesToRender.filter {
-            it.zoom != currentLevel || it.subSample != currentSubSample
-        }
-        if (tilesOutsideCurrLevel.isNotEmpty()) {
-            val currCount = tilesToRender.countTilesAtLevelAndSubSample(currentLevel, currentSubSample)
-            if (currCount == visibleTiles.count()) {
-                tilesOutsideCurrLevel.forEach {
-                    it.bitmap.putInPool()
-                }
-                tilesToRender = tilesToRender.filter {
-                    it.zoom == currentLevel && it.subSample == currentSubSample
-                }.toMutableList()
-            }
+        if (!idle) {
+            println("partialEviction")
+            partialEviction(visibleTiles)
+        } else {
+            println("aggressiveEviction")
+            aggressiveEviction(currentLevel)
         }
 
         /* Lastly, tiles of current level should be at the end of the list to be rendered above */
         tilesToRender.sortBy {
             it.zoom == currentLevel
+        }
+
+//        println(tilesToRender.map {
+//            it.zoom
+//        })
+    }
+
+    private fun partialEviction(visibleTiles: VisibleTiles) {
+        val currentLevel = visibleTiles.level
+
+        /* Now, deal with tiles of other levels that aren't sub-sampled */
+        val otherTilesNotSubSampled = tilesToRender.filter {
+            it.zoom != currentLevel && it.subSample == 0
+        }
+        val evictList = mutableListOf<Tile>()
+        if (otherTilesNotSubSampled.isNotEmpty()) {
+            val byLevel = otherTilesNotSubSampled.groupBy { it.zoom }
+            byLevel.forEach { (level, tiles) ->
+                val visibleAtLevel = visibleTilesResolver.getVisibleTiles(lastViewport, level)
+                tiles.filter {
+                    !visibleAtLevel.overlaps(it)
+                }.let {
+                    evictList.addAll(it)
+//                    println("add to eviction")
+//                    println(visibleAtLevel)
+//                    println(it)
+                }
+            }
+        }
+
+        val iterator = tilesToRender.iterator()
+        while (iterator.hasNext()) {
+            val tile = iterator.next()
+            evictList.any {
+                it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col
+            }.let {
+                if (it) iterator.remove()
+            }
+        }
+    }
+
+    private fun aggressiveEviction(currentLevel: Int) {
+        val otherTilesNotSubSampled = tilesToRender.filter {
+            it.zoom != currentLevel
+        }
+
+        val iterator = tilesToRender.iterator()
+        while (iterator.hasNext()) {
+            val tile = iterator.next()
+            otherTilesNotSubSampled.any {
+                it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col
+            }.let {
+                if (it) iterator.remove()
+            }
         }
     }
 

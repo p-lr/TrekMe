@@ -3,10 +3,7 @@ package com.peterlaurence.mapview
 import android.content.Context
 import android.os.Parcelable
 import android.util.AttributeSet
-import com.peterlaurence.mapview.core.TileStreamProvider
-import com.peterlaurence.mapview.core.Viewport
-import com.peterlaurence.mapview.core.VisibleTilesResolver
-import com.peterlaurence.mapview.core.throttle
+import com.peterlaurence.mapview.core.*
 import com.peterlaurence.mapview.layout.ZoomPanLayout
 import com.peterlaurence.mapview.view.TileCanvasView
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel

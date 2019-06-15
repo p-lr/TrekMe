@@ -74,8 +74,8 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
      * @param viewport The [Viewport] which represents the visible area. Its values depend on the
      * scale.
      */
-    fun getVisibleTiles(viewport: Viewport): VisibleTiles {
-        val scaleAtLevel = scaleForLevel[currentLevel] ?: throw AssertionError()
+    fun getVisibleTiles(viewport: Viewport, level: Int = currentLevel): VisibleTiles {
+        val scaleAtLevel = scaleForLevel[level] ?: throw AssertionError()
         val relativeScale = scale / scaleAtLevel
 
         /* At the current level, row and col index have maximum values */
@@ -93,7 +93,7 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
         val colRight = (Math.ceil(viewport.right / scaledTileSize).toInt() - 1).lowerThan(maxCol)
         val rowBottom = (Math.ceil(viewport.bottom / scaledTileSize).toInt() - 1).lowerThan(maxRow)
 
-        return VisibleTiles(currentLevel, colLeft, rowTop, colRight, rowBottom, subSample)
+        return VisibleTiles(level, colLeft, rowTop, colRight, rowBottom, subSample)
     }
 }
 
