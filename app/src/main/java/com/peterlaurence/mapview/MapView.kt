@@ -51,9 +51,10 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
      */
     fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileSize: Int, tileStreamProvider: TileStreamProvider) {
         super.setSize(fullWidth, fullHeight)
+        setMinimumScaleMode(MinimumScaleMode.FIT)
         visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight)
         this.tileStreamProvider = tileStreamProvider
-        tileCanvasViewModel = TileCanvasViewModel(this, tileSize, tileStreamProvider)
+        tileCanvasViewModel = TileCanvasViewModel(this, tileSize, visibleTilesResolver, tileStreamProvider)
         this.tileSize = tileSize
 
         initChildViews()
@@ -87,8 +88,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     private fun renderVisibleTiles() {
         val viewport = getCurrentViewport()
-        val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport)
-        tileCanvasViewModel.setVisibleTiles(visibleTiles)
+        tileCanvasViewModel.setViewport(viewport)
     }
 
 

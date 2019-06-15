@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
  * It defers [Tile] loading to [tileCollector].
  */
 class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
+                          private val visibleTilesResolver: VisibleTilesResolver,
                           tileStreamProvider: TileStreamProvider) : CoroutineScope by scope {
     private val tilesToRenderLiveData = MutableLiveData<List<Tile>>()
 
@@ -52,7 +53,12 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         return tilesToRenderLiveData
     }
 
-    fun setVisibleTiles(visibleTiles: VisibleTiles) {
+    fun setViewport(viewport: Viewport) {
+        val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport)
+        setVisibleTiles(visibleTiles)
+    }
+
+    private fun setVisibleTiles(visibleTiles: VisibleTiles) {
         collectNewTiles(visibleTiles)
 
         lastVisible = visibleTiles
