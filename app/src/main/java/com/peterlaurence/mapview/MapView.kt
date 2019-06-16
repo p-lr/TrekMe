@@ -1,8 +1,10 @@
 package com.peterlaurence.mapview
 
 import android.content.Context
+import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.view.View
 import com.peterlaurence.mapview.core.TileStreamProvider
 import com.peterlaurence.mapview.core.Viewport
 import com.peterlaurence.mapview.core.VisibleTilesResolver
@@ -10,6 +12,7 @@ import com.peterlaurence.mapview.core.throttle
 import com.peterlaurence.mapview.layout.ZoomPanLayout
 import com.peterlaurence.mapview.view.TileCanvasView
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
+import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.SendChannel
 import kotlin.coroutines.CoroutineContext
@@ -157,7 +160,10 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     override fun onSaveInstanceState(): Parcelable? {
         job.cancel()
-        return super.onSaveInstanceState()
+
+        val parentState = super.onSaveInstanceState() ?: Bundle()
+        return SavedState(parentState, scale, centerX = scrollX + halfWidth,
+                centerY = scrollY + halfHeight)
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
@@ -167,7 +173,13 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         if (this::baseConfiguration.isInitialized) {
             configure(baseConfiguration)
         }
-        requestLayout()
+
+        val savedState = state as SavedState
+
+        setScale(savedState.scale, savedState.scale)
+        post {
+            scrollToAndCenter(savedState.centerX, savedState.centerY)
+        }
     }
 }
 
@@ -177,6 +189,10 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
  */
 private data class Configuration(val levelCount: Int, val fullWidth: Int, val fullHeight: Int,
                                  val tileSize: Int, val tileStreamProvider: TileStreamProvider)
+
+@Parcelize
+data class SavedState(val parcelable: Parcelable, val scale: Float, val centerX: Int, val centerY: Int) : View.BaseSavedState(parcelable)
+
 
 // TODO: remove this
 fun main(args: Array<String>) = runBlocking {
