@@ -1,6 +1,7 @@
 package com.peterlaurence.mapview.viewmodel
 
 import android.graphics.Bitmap
+import android.graphics.Paint
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.peterlaurence.mapview.core.*
@@ -25,6 +26,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     private val tilesToRenderLiveData = MutableLiveData<List<Tile>>()
 
     private val bitmapPool = BitmapPool()
+    private val paintPool = PaintPool()
     private val visibleTileLocationsChannel = Channel<List<TileSpec>>(capacity = Channel.CONFLATED)
     private val tilesOutput = Channel<Tile>(capacity = Channel.UNLIMITED)
 
@@ -94,20 +96,32 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
 
     /**
      * For each [Tile] received, add it to the list of tiles to render if it's visible. Otherwise,
-     * add the corresponding Bitmap to the [bitmapPool].
+     * add the corresponding Bitmap to the [bitmapPool], and assign a [Paint] object to this tile.
+     * The TileCanvasView manages the alpha, but the view-model takes care of recycling those objects.
      */
     private fun CoroutineScope.consumeTiles(tileChannel: ReceiveChannel<Tile>) = launch {
         for (tile in tileChannel) {
             if (lastVisible.contains(tile)) {
                 if (!tilesToRender.hasAlready(tile)) {
+                    tile.setPaint()
                     tilesToRender.add(tile)
                 } else {
-                    tile.bitmap.putInPool()
+                    tile.recycle()
                 }
                 render()
             } else {
-                tile.bitmap.putInPool()
+                tile.recycle()
             }
+        }
+    }
+
+    /**
+     * Pick a [Paint] from the [paintPool], or create a new one. The the alpha needs to be set to 0,
+     * to produce a fade-in effect.
+     */
+    private fun Tile.setPaint() {
+        paint = (paintPool.getPaint() ?: Paint()).also {
+            it.alpha = 0
         }
     }
 
@@ -143,15 +157,13 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             val tile = iterator.next()
             if (tile.zoom == currentLevel && tile.subSample == visibleTiles.subSample && !visibleTiles.contains(tile)) {
                 iterator.remove()
-                tile.bitmap.putInPool()
+                tile.recycle()
             }
         }
 
         if (!idle) {
-//            println("partialEviction")
             partialEviction(visibleTiles)
         } else {
-//            println("aggressiveEviction")
             aggressiveEviction(currentLevel, currentSubSample)
         }
 
@@ -204,7 +216,10 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             evictList.any {
                 it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col
             }.let {
-                if (it) iterator.remove()
+                if (it) {
+                    iterator.remove()
+                    tile.recycle()
+                }
             }
         }
     }
@@ -229,6 +244,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             }
             if (found) {
                 iterator.remove()
+                tile.recycle()
                 continue
             }
 
@@ -236,7 +252,10 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                 it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col &&
                         tile.subSample == it.subSample
             }.let {
-                if (it) iterator.remove()
+                if (it) {
+                    iterator.remove()
+                    tile.recycle()
+                }
             }
         }
     }
@@ -248,9 +267,17 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         tilesToRenderLiveData.postValue(tilesToRender)
     }
 
-    private fun Bitmap.putInPool() {
-        if (isMutable) {
-            bitmapPool.putBitmap(this)
+    /**
+     * After a [Tile] is no longer visible, recycle its Bitmap and Paint if possible, for later use.
+     */
+    private fun Tile.recycle() {
+        if (bitmap.isMutable) {
+            bitmapPool.putBitmap(bitmap)
+        }
+        paint?.let {
+            paint = null
+            it.alpha = 0
+            paintPool.putPaint(it)
         }
     }
 }

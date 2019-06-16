@@ -1,17 +1,17 @@
 package com.peterlaurence.mapview.core
 
-import android.graphics.Bitmap
+import android.graphics.Paint
 import java.util.*
 
 /**
- * A pool of [Bitmap] which has a limited size.
+ * A pool of [Paint] which has a limited size.
  */
-class BitmapPool {
-    private val pool = LinkedList<Bitmap>()
+class PaintPool {
+    private val pool = LinkedList<Paint>()
     private var size: Int = 0
     private val threshold = 100
 
-    fun getBitmap(): Bitmap? {
+    fun getPaint(): Paint? {
         return if (pool.isNotEmpty()) {
             size--
             pool.removeFirst()
@@ -20,10 +20,10 @@ class BitmapPool {
         }
     }
 
-    fun putBitmap(bitmap: Bitmap) {
+    fun putPaint(p: Paint) {
         if (size < threshold) {
             size++
-            pool.add(bitmap)
+            pool.add(p)
         }
     }
 }

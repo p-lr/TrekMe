@@ -1,8 +1,10 @@
 package com.peterlaurence.mapview.core
 
 import android.graphics.Bitmap
+import android.graphics.Paint
 
-data class Tile(val zoom: Int, val row: Int, val col: Int, val bitmap: Bitmap, val subSample: Int)
+data class Tile(val zoom: Int, val row: Int, val col: Int, val bitmap: Bitmap, val subSample: Int,
+                var paint: Paint? = null)
 
 data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)
 
