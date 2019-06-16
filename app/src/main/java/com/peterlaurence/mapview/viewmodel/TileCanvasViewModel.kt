@@ -213,7 +213,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         while (iterator.hasNext()) {
             val tile = iterator.next()
             evictList.any {
-                it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col
+                it.samePositionAs(tile)
             }.let {
                 if (it) {
                     iterator.remove()
@@ -239,7 +239,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         while (iterator.hasNext()) {
             val tile = iterator.next()
             val found = otherTilesNotSubSampled.any {
-                it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col
+                it.samePositionAs(tile)
             }
             if (found) {
                 iterator.remove()
@@ -248,8 +248,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             }
 
             subSampledTiles.any {
-                it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col &&
-                        tile.subSample == it.subSample
+                it.samePositionAndSubSampleAs(tile)
             }.let {
                 if (it) {
                     iterator.remove()
@@ -282,5 +281,5 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
 }
 
 private fun List<Tile>.hasAlready(tile: Tile) = any {
-    it.zoom == tile.zoom && it.row == tile.row && it.col == tile.col && it.subSample == tile.subSample
+    it.samePositionAndSubSampleAs(tile)
 }

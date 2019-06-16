@@ -11,3 +11,11 @@ data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: In
 fun Tile.sameSpecAs(spec: TileSpec): Boolean {
     return zoom == spec.zoom && row == spec.row && col == spec.col && subSample == spec.subSample
 }
+
+fun Tile.samePositionAs(tile: Tile): Boolean {
+    return zoom == tile.zoom && row == tile.row && col == tile.col
+}
+
+fun Tile.samePositionAndSubSampleAs(tile: Tile): Boolean {
+    return samePositionAs(tile) && subSample == tile.subSample
+}
