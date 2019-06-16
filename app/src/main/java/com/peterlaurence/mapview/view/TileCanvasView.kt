@@ -34,6 +34,10 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
         invalidate()
     }
 
+    fun shouldRequestLayout() {
+        requestLayout()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         canvas.save()

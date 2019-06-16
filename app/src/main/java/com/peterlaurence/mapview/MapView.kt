@@ -3,7 +3,10 @@ package com.peterlaurence.mapview
 import android.content.Context
 import android.os.Parcelable
 import android.util.AttributeSet
-import com.peterlaurence.mapview.core.*
+import com.peterlaurence.mapview.core.TileStreamProvider
+import com.peterlaurence.mapview.core.Viewport
+import com.peterlaurence.mapview.core.VisibleTilesResolver
+import com.peterlaurence.mapview.core.throttle
 import com.peterlaurence.mapview.layout.ZoomPanLayout
 import com.peterlaurence.mapview.view.TileCanvasView
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
@@ -25,6 +28,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     private var tileSize: Int = 256
     private lateinit var tileCanvasView: TileCanvasView
     private lateinit var tileCanvasViewModel: TileCanvasViewModel
+    private var shouldRelayoutChildren = false
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -80,12 +84,14 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     }
 
     private val throttledTask = throttle<Unit> {
-        renderVisibleTiles()
+        updateViewport()
     }
 
-    private fun renderVisibleTiles() {
+    private fun updateViewport() {
         val viewport = getCurrentViewport()
         tileCanvasViewModel.setViewport(viewport)
+
+        checkChildrenRelayout(viewport.right - viewport.left, viewport.bottom - viewport.top)
     }
 
 
@@ -113,7 +119,23 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
         visibleTilesResolver.setScale(currentScale)
         tileCanvasView.setScale(currentScale)
+
+        if (shouldRelayoutChildren) {
+            tileCanvasView.shouldRequestLayout()
+        }
         renderVisibleTilesThrottled()
+    }
+
+    /**
+     * We only need a child view calling a [requestLayout] when either:
+     * * the height of the viewport becomes greater than the scaled [baseHeight] of the MapView
+     * * the width of the viewport becomes greater than the scaled [baseWidth] of the MapView
+     * The [requestLayout] has to be called from child view. If it's done from the MapView
+     * itself, it impacts performance as it triggers too much computations.
+     */
+    private fun checkChildrenRelayout(viewportWidth: Int, viewportHeight: Int) {
+        shouldRelayoutChildren =
+                ((viewportHeight > baseHeight * scale) || (viewportWidth > baseWidth * scale))
     }
 
     override fun onSaveInstanceState(): Parcelable? {
