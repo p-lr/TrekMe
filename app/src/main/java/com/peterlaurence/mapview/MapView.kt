@@ -5,11 +5,9 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
-import com.peterlaurence.mapview.core.TileStreamProvider
-import com.peterlaurence.mapview.core.Viewport
-import com.peterlaurence.mapview.core.VisibleTilesResolver
-import com.peterlaurence.mapview.core.throttle
+import com.peterlaurence.mapview.core.*
 import com.peterlaurence.mapview.layout.ZoomPanLayout
+import com.peterlaurence.mapview.markers.MarkerLayout
 import com.peterlaurence.mapview.view.TileCanvasView
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
 import kotlinx.android.parcel.Parcelize
@@ -31,9 +29,13 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     private var tileSize: Int = 256
     private lateinit var tileCanvasView: TileCanvasView
     private lateinit var tileCanvasViewModel: TileCanvasViewModel
-    private var shouldRelayoutChildren = false
-    private lateinit var throttledTask: SendChannel<Unit>
+    private lateinit var markerLayout: MarkerLayout
+    private lateinit var coordinateTranslater: CoordinateTranslater
+
     private lateinit var baseConfiguration: Configuration
+
+    private lateinit var throttledTask: SendChannel<Unit>
+    private var shouldRelayoutChildren = false
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -74,6 +76,24 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     }
 
     /**
+     * Set the relative coordinates of the edges. It usually are projected values obtained from:
+     * lat/lon --> projection --> X/Y (or N/E)
+     * It can also be just latitude and longitude values, but it's the responsibility of the parent
+     * hierarchy to provide lat/lon values in other public methods where relative coordinates are
+     * expected (like in [addMarker]).
+     *
+     * @param left   The left edge of the rectangle used when calculating position
+     * @param top    The top edge of the rectangle used when calculating position
+     * @param right  The right edge of the rectangle used when calculating position
+     * @param bottom The bottom edge of the rectangle used when calculating position
+     */
+    fun defineBounds(left: Double, top: Double, right: Double, bottom: Double) {
+        val width = baseConfiguration.fullWidth
+        val height = baseConfiguration.fullHeight
+        coordinateTranslater = CoordinateTranslater(width, height, left, top, right, bottom)
+    }
+
+    /**
      * Stop everything.
      * [MapView] then does necessary housekeeping. After this call, the [MapView] should be removed
      * from all view trees.
@@ -95,6 +115,9 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         }
         tileCanvasView = TileCanvasView(context, tileCanvasViewModel, tileSize, visibleTilesResolver)
         addView(tileCanvasView)
+
+        markerLayout = MarkerLayout(context)
+        addView(markerLayout)
     }
 
     private fun renderVisibleTilesThrottled() {
@@ -139,6 +162,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
         visibleTilesResolver.setScale(currentScale)
         tileCanvasView.setScale(currentScale)
+        markerLayout.setScale(currentScale)
 
         if (shouldRelayoutChildren) {
             tileCanvasView.shouldRequestLayout()

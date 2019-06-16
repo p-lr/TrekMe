@@ -1,5 +1,6 @@
 package com.peterlaurence.mapview.layout
 
+import com.peterlaurence.mapview.util.scale
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
@@ -932,5 +933,3 @@ class TouchUpGestureDetector(private val mOnTouchUpListener: OnTouchUpListener?)
         fun onTouchUp(event: MotionEvent): Boolean
     }
 }
-
-private fun scale(base: Int, multiplier: Float): Int = (base * multiplier + 0.5f).toInt()
