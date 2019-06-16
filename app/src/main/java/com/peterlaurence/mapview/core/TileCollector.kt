@@ -30,10 +30,12 @@ val dispatcher = Executors.newFixedThreadPool(nWorkers) {
 }.asCoroutineDispatcher()
 
 /**
- * @param [visibleTileLocations] channel of [TileSpec], which capacity should be [Channel.CONFLATED].
+ * Sets up the tile collector machinery. The architecture is inspired from
+ * [Kotlin Conf 2018](https://www.youtube.com/watch?v=a3agLJQ6vt8).
+ * @param [tileSpecs] channel of [TileSpec], which capacity should be [Channel.CONFLATED].
  * @param [tilesOutput] channel of [Tile], which capacity should be [Channel.UNLIMITED]
  */
-fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileSpec>>,
+fun CoroutineScope.collectTiles(tileSpecs: ReceiveChannel<List<TileSpec>>,
                                 tilesOutput: SendChannel<Tile>,
                                 tileStreamProvider: TileStreamProvider,
                                 bitmapFlow: Flow<Bitmap>) {
@@ -41,7 +43,7 @@ fun CoroutineScope.collectTiles(visibleTileLocations: ReceiveChannel<List<TileSp
     val tilesDownloadedFromWorker = Channel<TileBundle>(capacity = Channel.UNLIMITED)
 
     repeat(nWorkers) { worker(tilesToDownload, tilesDownloadedFromWorker, tileStreamProvider, bitmapFlow) }
-    tileCollector(visibleTileLocations, tilesToDownload, tilesDownloadedFromWorker, tilesOutput)
+    tileCollector(tileSpecs, tilesToDownload, tilesDownloadedFromWorker, tilesOutput)
 }
 
 private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
@@ -87,7 +89,7 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
     }
 }
 
-private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<TileSpec>>,
+private fun CoroutineScope.tileCollector(tileSpecs: ReceiveChannel<List<TileSpec>>,
                                          tilesToDownload: SendChannel<TileStatus>,
                                          tilesDownloadedFromWorker: ReceiveChannel<TileBundle>,
                                          tilesOutput: SendChannel<Tile>) = launch {
@@ -96,7 +98,7 @@ private fun CoroutineScope.tileCollector(tileLocations: ReceiveChannel<List<Tile
 
     while (true) {
         select<Unit> {
-            tileLocations.onReceive {
+            tileSpecs.onReceive {
                 for (loc in it) {
                     if (!tilesBeingProcessed.any { status -> status.spec == loc }) {
                         /* Add it to the list of locations being processed */
