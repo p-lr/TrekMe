@@ -11,6 +11,7 @@ import com.peterlaurence.mapview.layout.ZoomPanLayout
 import com.peterlaurence.mapview.view.TileCanvasView
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.SendChannel
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -24,16 +25,20 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     private lateinit var visibleTilesResolver: VisibleTilesResolver
     private var job = Job()
 
-    private lateinit var tileStreamProvider: TileStreamProvider
     private var tileSize: Int = 256
     private lateinit var tileCanvasView: TileCanvasView
     private lateinit var tileCanvasViewModel: TileCanvasViewModel
     private var shouldRelayoutChildren = false
+    private lateinit var throttledTask: SendChannel<Unit>
+    private lateinit var baseConfiguration: Configuration
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
     /**
+     * Configure the [MapView], with mandatory parameters. Other settings can be set using dedicated
+     * public methods of the [MapView].
+     *
      * There are two conventions when using [MapView].
      * 1. The provided [levelCount] will define the zoomLevels index that the provided
      * [tileStreamProvider] will be given for its [TileStreamProvider#zoomLevels]. The zoomLevels
@@ -45,29 +50,24 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
      * So it is assumed that the scale of level 1 is twice the scale at level 0, and so on until
      * last level [levelCount] - 1 (which has scale 1).
      *
+     * @param levelCount the number of levels
      * @param fullWidth the width of the map in pixels at scale 1
      * @param fullHeight the height of the map in pixels at scale 1
      * @param tileSize the size of tiles (must be squares)
      * @param tileStreamProvider the tiles provider
      */
     fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileSize: Int, tileStreamProvider: TileStreamProvider) {
+        /* Save the configuration */
+        baseConfiguration = Configuration(levelCount, fullWidth, fullHeight, tileSize, tileStreamProvider)
+
         super.setSize(fullWidth, fullHeight)
         setMinimumScaleMode(MinimumScaleMode.FIT)
         visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight)
-        this.tileStreamProvider = tileStreamProvider
         tileCanvasViewModel = TileCanvasViewModel(this, tileSize, visibleTilesResolver, tileStreamProvider)
         this.tileSize = tileSize
 
         initChildViews()
-    }
-
-    private fun initChildViews() {
-        /* Remove the TileCanvasView if it was already added */
-        if (this::tileCanvasView.isInitialized) {
-            removeView(tileCanvasView)
-        }
-        tileCanvasView = TileCanvasView(context, tileCanvasViewModel, tileSize, visibleTilesResolver)
-        addView(tileCanvasView)
+        initInternals()
     }
 
     /**
@@ -79,12 +79,29 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         job.cancel()
     }
 
+    private fun configure(configuration: Configuration) {
+        with(configuration) {
+            configure(levelCount, fullWidth, fullHeight, tileSize, tileStreamProvider)
+        }
+    }
+
+    private fun initChildViews() {
+        /* Remove the TileCanvasView if it was already added */
+        if (this::tileCanvasView.isInitialized) {
+            removeView(tileCanvasView)
+        }
+        tileCanvasView = TileCanvasView(context, tileCanvasViewModel, tileSize, visibleTilesResolver)
+        addView(tileCanvasView)
+    }
+
     private fun renderVisibleTilesThrottled() {
         throttledTask.offer(Unit)
     }
 
-    private val throttledTask = throttle<Unit> {
-        updateViewport()
+    private fun initInternals() {
+        throttledTask = throttle {
+            updateViewport()
+        }
     }
 
     private fun updateViewport() {
@@ -140,16 +157,28 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     override fun onSaveInstanceState(): Parcelable? {
         job.cancel()
-
         return super.onSaveInstanceState()
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
-        super.onRestoreInstanceState(state)
         job = Job()
+        super.onRestoreInstanceState(state)
+
+        if (this::baseConfiguration.isInitialized) {
+            configure(baseConfiguration)
+        }
+        requestLayout()
     }
 }
 
+/**
+ * The set of parameters of the [MapView]. Some of them are mandatory:
+ * [levelCount], [fullWidth], [fullHeight], [tileSize], [tileStreamProvider].
+ */
+private data class Configuration(val levelCount: Int, val fullWidth: Int, val fullHeight: Int,
+                                 val tileSize: Int, val tileStreamProvider: TileStreamProvider)
+
+// TODO: remove this
 fun main(args: Array<String>) = runBlocking {
     var last: Long = 0
     val scaleChannel = throttle<Int> {
