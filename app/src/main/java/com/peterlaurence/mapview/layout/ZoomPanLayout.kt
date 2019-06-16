@@ -8,8 +8,6 @@ import android.view.*
 import android.view.animation.Interpolator
 import android.widget.Scroller
 import androidx.core.view.ViewCompat
-import com.qozix.tileview.geom.FloatMathHelper
-import com.qozix.tileview.view.TouchUpGestureDetector
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -164,10 +162,10 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     private val halfWidth: Int
-        get() = FloatMathHelper.scale(width, 0.5f)
+        get() = scale(width, 0.5f)
 
     private val halfHeight: Int
-        get() = FloatMathHelper.scale(height, 0.5f)
+        get() = scale(height, 0.5f)
 
     private val scrollLimitX: Int
         get() = scaledWidth - width + mScaledImagePadding
@@ -428,8 +426,8 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     private fun updateScaledDimensions() {
-        scaledWidth = FloatMathHelper.scale(baseWidth, scale)
-        scaledHeight = FloatMathHelper.scale(baseHeight, scale)
+        scaledWidth = scale(baseWidth, scale)
+        scaledHeight = scale(baseHeight, scale)
     }
 
     private fun getOffsetScrollXFromScale(offsetX: Int, destinationScale: Float, currentScale: Float): Int {
@@ -526,7 +524,7 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     private fun recalculateImagePadding() {
-        mScaledImagePadding = FloatMathHelper.scale(mImagePadding, scale)
+        mScaledImagePadding = scale(mImagePadding, scale)
     }
 
     override fun computeScroll() {
@@ -909,3 +907,24 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
         private const val DEFAULT_ZOOM_PAN_ANIMATION_DURATION = 400
     }
 }
+
+/**
+ * @author Mike Dunn, 10/6/15.
+ */
+class TouchUpGestureDetector(private val mOnTouchUpListener: OnTouchUpListener?) {
+
+    fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_UP) {
+            if (mOnTouchUpListener != null) {
+                return mOnTouchUpListener.onTouchUp(event)
+            }
+        }
+        return true
+    }
+
+    interface OnTouchUpListener {
+        fun onTouchUp(event: MotionEvent): Boolean
+    }
+}
+
+private fun scale(base: Int, multiplier: Float): Int = (base * multiplier + 0.5f).toInt()

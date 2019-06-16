@@ -9,7 +9,6 @@ import android.view.animation.AnimationUtils
 import com.peterlaurence.mapview.core.Tile
 import com.peterlaurence.mapview.core.VisibleTilesResolver
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
-import kotlin.math.min
 
 /**
  * This is the view where all tiles are drawn into.
