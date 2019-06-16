@@ -106,11 +106,7 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
      */
     private fun computeAlphaProgress(): Float {
         val time = AnimationUtils.currentAnimationTimeMillis()
-        val elapsed = if (lastTime != -1L) {
-            time - lastTime
-        } else {
-            0
-        }
+        val elapsed = if (lastTime != -1L) time - lastTime else 0
         lastTime = time
         return (elapsed.toFloat() / alphaTickDurationInMs)
     }

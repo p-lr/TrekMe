@@ -58,6 +58,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     private var tilesToRender = mutableListOf<Tile>()
 
     init {
+        /* Launch the TileCollector along with a coroutine to consume the produced tiles */
         collectTiles(visibleTileLocationsChannel, tilesOutput, tileStreamProvider, bitmapFlow)
         consumeTiles(tilesOutput)
     }
@@ -67,12 +68,14 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     }
 
     fun setViewport(viewport: Viewport) {
+        /* It's important to set the idle flag to false before launching computations, so that
+         * tile eviction don't happen too quickly (can cause blinks) */
+        idle = false
+        idleDebounced.offer(Unit)
+
         lastViewport = viewport
         val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport)
         setVisibleTiles(visibleTiles)
-
-        idle = false
-        idleDebounced.offer(Unit)
     }
 
     private fun setVisibleTiles(visibleTiles: VisibleTiles) {
@@ -171,10 +174,6 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         tilesToRender.sortBy {
             it.zoom == currentLevel
         }
-
-//        println(tilesToRender.map {
-//            it.subSample
-//        })
     }
 
     private fun partialEviction(visibleTiles: VisibleTiles) {
