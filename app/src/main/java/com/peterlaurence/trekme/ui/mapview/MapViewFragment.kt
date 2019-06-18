@@ -29,8 +29,6 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.ProjectionTask
 import com.peterlaurence.trekme.model.map.MapProvider
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
-import com.qozix.tileview.TileView
-import com.qozix.tileview.widgets.ZoomPanLayout
 
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -40,8 +38,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.peterlaurence.mapview.MapView
+import com.peterlaurence.mapview.markers.MarkerTapListener
+import com.peterlaurence.mapview.markers.setMarkerTapListener
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeBitmapProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -366,10 +365,10 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
 
     private fun updateLayers() {
         // TODO: implement
-//        mMap?.let { map ->
-//            /* Update the marker layer */
-//            markerLayer.init(map, mTileView)
-//
+        mMap?.let { map ->
+            /* Update the marker layer */
+            markerLayer.init(map, mapView)
+
 //            /* Update the route layer */
 //            routeLayer.init(map, mTileView)
 //
@@ -378,7 +377,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
 //
 //            /* Update the landmark layer */
 //            landmarkLayer.init(map, mTileView)
-//        }
+        }
     }
 
     override fun onStop() {
@@ -460,14 +459,16 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         mapView.isSaveEnabled = true
         rootView.addView(mapView, 0)
 
-        /* The tileView can have only one MarkerTapListener.
+        /* The MapView can have only one MarkerTapListener.
          * It dispatches the tap event to child layers.
          */
-        // TODO: implement
-//        mTileView.setMarkerTapListener { view: View, x: Int, y: Int ->
-//            markerLayer.onMarkerTap(view, x, y)
-//            landmarkLayer.onMarkerTap(view, x, y)
-//        }
+        mapView.setMarkerTapListener(object: MarkerTapListener {
+            override fun onMarkerTap(view: View, x: Int, y: Int) {
+                markerLayer.onMarkerTap(view, x, y)
+                // TODO: implement
+                // landmarkLayer.onMarkerTap(view, x, y)
+            }
+        })
     }
 
     private fun removeCurrentMapView() {
@@ -521,8 +522,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
 //        /* Render while panning */
 //        tileView.setShouldRenderWhilePanning(true)
 //
-//        /* Map calibration */
-//        setTileViewBounds(tileView, map)
+        /* Map calibration */
+        setTileViewBounds(mapView, map)
 //
 //        /* The BitmapProvider */
 //        tileView.setBitmapProvider(makeBitmapProvider(map))
@@ -555,15 +556,15 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationEventManager.isStarted)
     }
 
-    private fun setTileViewBounds(tileView: TileView, map: Map) {
+    private fun setTileViewBounds(mapView: MapView, map: Map) {
         val mapBounds = map.mapBounds
         if (mapBounds != null) {
-            tileView.defineBounds(mapBounds.X0,
+            mapView.defineBounds(mapBounds.X0,
                     mapBounds.Y0,
                     mapBounds.X1,
                     mapBounds.Y1)
         } else {
-            tileView.defineBounds(0.0, 0.0, 1.0, 1.0)
+            mapView.defineBounds(0.0, 0.0, 1.0, 1.0)
         }
     }
 

@@ -33,4 +33,12 @@ class CoordinateTranslater(val baseWidth: Int, val baseHeight: Int, val left: Do
     fun translateAbsoluteToRelativeY(y: Int): Double {
         return top + (y * diffY / baseHeight)
     }
+
+    fun translateAndScaleAbsoluteToRelativeX(x: Int, scale: Float): Double {
+        return translateAbsoluteToRelativeX((x / scale).toInt())
+    }
+
+    fun translateAndScaleAbsoluteToRelativeY(y: Int, scale: Float): Double {
+        return translateAbsoluteToRelativeY((y / scale).toInt())
+    }
 }

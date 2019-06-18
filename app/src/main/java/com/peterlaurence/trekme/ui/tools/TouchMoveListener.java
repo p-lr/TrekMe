@@ -4,11 +4,11 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.qozix.tileview.TileView;
-import com.qozix.tileview.geom.CoordinateTranslater;
+import com.peterlaurence.mapview.MapView;
+import com.peterlaurence.mapview.core.CoordinateTranslater;
 
 /**
- * A touch listener that enables touch-moves of a view (also called marker) on a {@link TileView}. <br>
+ * A touch listener that enables touch-moves of a view (also called marker) on a {@link MapView}. <br>
  * Example of usage :
  * <pre>{@code
  * MoveCallback callback = new ClassImplementsMoveCallback();
@@ -24,7 +24,7 @@ import com.qozix.tileview.geom.CoordinateTranslater;
  * @author peterLaurence
  */
 public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
-    private final TileView mTileView;
+    private final MapView mMapView;
     private GestureDetector mGestureDetector;
     private float deltaX;
     private float deltaY;
@@ -36,18 +36,18 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     private double mTopBound;
     private double mBottomBound;
 
-    public TouchMoveListener(TileView tileView, MoveCallback markerMoveCallback) {
-        this(tileView, markerMoveCallback, null);
+    public TouchMoveListener(MapView mapView, MoveCallback markerMoveCallback) {
+        this(mapView, markerMoveCallback, null);
     }
 
-    public TouchMoveListener(TileView tileView, MoveCallback markerMoveCallback,
+    public TouchMoveListener(MapView mapView, MoveCallback markerMoveCallback,
                              ClickCallback markerClickCallback) {
-        mTileView = tileView;
-        mGestureDetector = new GestureDetector(tileView.getContext(), this);
+        mMapView = mapView;
+        mGestureDetector = new GestureDetector(mapView.getContext(), this);
         mMarkerMoveCallback = markerMoveCallback;
         mMarkerClickCallback = markerClickCallback;
 
-        CoordinateTranslater coordinateTranslater = tileView.getCoordinateTranslater();
+        CoordinateTranslater coordinateTranslater = mapView.getCoordinateTranslater();
         mLeftBound = coordinateTranslater.getLeft();
         mRightBound = coordinateTranslater.getRight();
         mTopBound = coordinateTranslater.getTop();
@@ -69,7 +69,7 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
             case MotionEvent.ACTION_MOVE:
                 double X = getRelativeX(view.getX() + event.getX() - deltaX);
                 double Y = getRelativeY(view.getY() + event.getY() - deltaY);
-                mMarkerMoveCallback.onMarkerMove(mTileView, view, getConstrainedX(X), getConstrainedY(Y));
+                mMarkerMoveCallback.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
                 break;
 
             default:
@@ -87,11 +87,11 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     }
 
     private double getRelativeX(float x) {
-        return mTileView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
+        return mMapView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeX((int) x, mMapView.getScale());
     }
 
     private double getRelativeY(float y) {
-        return mTileView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
+        return mMapView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeY((int) y, mMapView.getScale());
     }
 
     private double getConstrainedX(double x) {
@@ -129,11 +129,11 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     }
 
     /**
-     * A callback that gives the "relative coordinates" of the view added to the TileView.
-     * Most of the time, the callee sets the given coordinates of the view on the TileView.
+     * A callback that gives the "relative coordinates" of the view added to the MapView.
+     * Most of the time, the callee sets the given coordinates of the view on the MapView.
      */
     public interface MoveCallback {
-        void onMarkerMove(TileView tileView, View view, double x, double y);
+        void onMarkerMove(MapView mapView, View view, double x, double y);
     }
 
     public interface ClickCallback {

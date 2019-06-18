@@ -4,9 +4,11 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import com.peterlaurence.mapview.core.*
 import com.peterlaurence.mapview.layout.ZoomPanLayout
+import com.peterlaurence.mapview.markers.CalloutLayout
 import com.peterlaurence.mapview.markers.MarkerLayout
 import com.peterlaurence.mapview.view.TileCanvasView
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
@@ -29,8 +31,12 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     private var tileSize: Int = 256
     private lateinit var tileCanvasView: TileCanvasView
     private lateinit var tileCanvasViewModel: TileCanvasViewModel
-    private lateinit var markerLayout: MarkerLayout
-    private lateinit var coordinateTranslater: CoordinateTranslater
+    lateinit var markerLayout: MarkerLayout
+        private set
+    lateinit var calloutLayout: CalloutLayout
+        private set
+    lateinit var coordinateTranslater: CoordinateTranslater
+        private set
 
     private lateinit var baseConfiguration: Configuration
 
@@ -114,10 +120,17 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             removeView(tileCanvasView)
         }
         tileCanvasView = TileCanvasView(context, tileCanvasViewModel, tileSize, visibleTilesResolver)
-        addView(tileCanvasView)
+        addView(tileCanvasView, 0)
 
-        markerLayout = MarkerLayout(context)
-        addView(markerLayout)
+        if (!this::markerLayout.isInitialized) {
+            markerLayout = MarkerLayout(context)
+            addView(markerLayout)
+        }
+
+        if (!this::calloutLayout.isInitialized) {
+            calloutLayout = CalloutLayout(context)
+            addView(calloutLayout)
+        }
     }
 
     private fun renderVisibleTilesThrottled() {
@@ -163,11 +176,25 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         visibleTilesResolver.setScale(currentScale)
         tileCanvasView.setScale(currentScale)
         markerLayout.setScale(currentScale)
+        calloutLayout.setScale(currentScale)
 
         if (shouldRelayoutChildren) {
             tileCanvasView.shouldRequestLayout()
         }
         renderVisibleTilesThrottled()
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        calloutLayout.removeAllViews()
+        return super.onTouchEvent(event)
+    }
+
+    override fun onSingleTapConfirmed(event: MotionEvent): Boolean {
+        val x = scrollX + event.x.toInt() - offsetX
+        val y = scrollY + event.y.toInt() - offsetY
+        markerLayout.processHit(x, y)
+        calloutLayout.processHit(x, y)
+        return super.onSingleTapConfirmed(event)
     }
 
     /**
