@@ -370,9 +370,9 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
 //            /* Update the route layer */
 //            routeLayer.init(map, mTileView)
 //
-//            /* Update the distance layer */
-//            distanceLayer.init(map, mTileView)
-//
+            /* Update the distance layer */
+            distanceLayer.init(map, mapView)
+
             /* Update the landmark layer */
             landmarkLayer.init(map, mapView)
         }
