@@ -20,7 +20,7 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
                      private val visibleTilesResolver: VisibleTilesResolver) : View(ctx) {
     private var scale = 1f
     private var lastTime: Long = -1
-    private val alphaTickDurationInMs = 200
+    private val alphaTickDurationInMs = 100
 
     var tilesToRender = listOf<Tile>()
 

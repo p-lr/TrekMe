@@ -19,10 +19,10 @@ import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import static com.peterlaurence.mapview.markers.CalloutLayoutKt.addCallout;
-import static com.peterlaurence.mapview.markers.CalloutLayoutKt.removeCallout;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addCallout;
 import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addMarker;
 import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveMarker;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.removeCallout;
 import static com.peterlaurence.mapview.markers.MarkerLayoutKt.removeMarker;
 
 /**

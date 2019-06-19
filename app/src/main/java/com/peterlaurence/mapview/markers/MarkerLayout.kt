@@ -10,6 +10,7 @@ open class MarkerLayout(context: Context) : ViewGroup(context) {
 
     private var mScale = 1f
     private var markerTapListener: MarkerTapListener? = null
+    private val calloutViewList = mutableListOf<View>()
 
     init {
         clipChildren = false
@@ -85,10 +86,31 @@ open class MarkerLayout(context: Context) : ViewGroup(context) {
         addView(view, layoutParams)
     }
 
+    fun addCallout(view: View, left: Int, top: Int, relativeAnchorLeft: Float = -0.5f,
+                  relativeAnchorTop: Float = -1f, absoluteAnchorLeft: Float = 0f,
+                  absoluteAnchorTop: Float = 0f) {
+        addMarker(view, left, top, relativeAnchorLeft, relativeAnchorTop, absoluteAnchorLeft,
+                absoluteAnchorTop)
+        calloutViewList.add(view)
+    }
+
     fun removeMarker(view: View) {
         if (view.parent === this) {
             removeView(view)
         }
+    }
+
+    fun removeCallout(view: View) {
+        removeMarker(view)
+        calloutViewList.remove(view)
+    }
+
+    fun removeAllCallout() {
+        calloutViewList.forEach {
+            removeViewInLayout(it)
+        }
+        requestLayout()
+        invalidate()
     }
 
     fun moveMarker(view: View, x: Int, y: Int) {
@@ -193,4 +215,36 @@ fun MapView.moveMarker(view: View, x: Double, y: Double) {
  */
 fun MapView.removeMarker(view: View) {
     markerLayout.removeMarker(view)
+}
+
+/**
+ * Add a callout to the the MapView.  The callout can be any View.
+ * No LayoutParams are required; the View will be laid out using WRAP_CONTENT for both width and height, and positioned based on the parameters.
+ *
+ * @param view    View instance to be added to the MapView.
+ * @param x       Relative x position the View instance should be positioned at.
+ * @param y       Relative y position the View instance should be positioned at.
+ * @param relativeAnchorLeft The x-axis position of a marker will be offset by a number equal to the width of the marker multiplied by this value.
+ * @param relativeAnchorTop  The y-axis position of a marker will be offset by a number equal to the height of the marker multiplied by this value.
+ * @param absoluteAnchorLeft The x-axis position of a marker will be offset by this value.
+ * @param absoluteAnchorTop  The y-axis position of a marker will be offset by this value.
+ */
+fun MapView.addCallout(view: View, x: Double, y: Double, relativeAnchorLeft: Float = -0.5f,
+                       relativeAnchorTop: Float = -1f, absoluteAnchorLeft: Float = 0f,
+                       absoluteAnchorTop: Float = 0f) {
+    markerLayout.addCallout(view,
+            coordinateTranslater.translateX(x),
+            coordinateTranslater.translateY(y),
+            relativeAnchorLeft, relativeAnchorTop,
+            absoluteAnchorLeft, absoluteAnchorTop
+    )
+}
+
+/**
+ * Removes a callout View from the MapView's view tree.
+ *
+ * @param view The callout View to be removed.
+ */
+fun MapView.removeCallout(view: View) {
+    markerLayout.removeCallout(view)
 }

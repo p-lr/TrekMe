@@ -8,7 +8,6 @@ import android.view.MotionEvent
 import android.view.View
 import com.peterlaurence.mapview.core.*
 import com.peterlaurence.mapview.layout.ZoomPanLayout
-import com.peterlaurence.mapview.markers.CalloutLayout
 import com.peterlaurence.mapview.markers.MarkerLayout
 import com.peterlaurence.mapview.view.TileCanvasView
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
@@ -32,8 +31,6 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     private lateinit var tileCanvasView: TileCanvasView
     private lateinit var tileCanvasViewModel: TileCanvasViewModel
     lateinit var markerLayout: MarkerLayout
-        private set
-    lateinit var calloutLayout: CalloutLayout
         private set
     lateinit var coordinateTranslater: CoordinateTranslater
         private set
@@ -126,11 +123,6 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             markerLayout = MarkerLayout(context)
             addView(markerLayout)
         }
-
-        if (!this::calloutLayout.isInitialized) {
-            calloutLayout = CalloutLayout(context)
-            addView(calloutLayout)
-        }
     }
 
     private fun renderVisibleTilesThrottled() {
@@ -176,7 +168,6 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         visibleTilesResolver.setScale(currentScale)
         tileCanvasView.setScale(currentScale)
         markerLayout.setScale(currentScale)
-        calloutLayout.setScale(currentScale)
 
         if (shouldRelayoutChildren) {
             tileCanvasView.shouldRequestLayout()
@@ -185,7 +176,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        calloutLayout.removeAllViews()
+        markerLayout.removeAllCallout()
         return super.onTouchEvent(event)
     }
 
@@ -193,7 +184,6 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         val x = scrollX + event.x.toInt() - offsetX
         val y = scrollY + event.y.toInt() - offsetY
         markerLayout.processHit(x, y)
-        calloutLayout.processHit(x, y)
         return super.onSingleTapConfirmed(event)
     }
 
