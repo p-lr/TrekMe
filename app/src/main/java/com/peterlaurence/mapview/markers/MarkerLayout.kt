@@ -209,6 +209,28 @@ fun MapView.moveMarker(view: View, x: Double, y: Double) {
 }
 
 /**
+ * Scroll the TileView so that the View passed is centered in the viewport.
+ *
+ * @param view          The View marker that the TileView should center on.
+ * @param shouldAnimate True if the movement should use a transition effect.
+ */
+fun MapView.moveToMarker(view: View, shouldAnimate: Boolean) {
+    if (markerLayout.indexOfChild(view) == -1) {
+        throw IllegalStateException("The view passed is not an existing marker")
+    }
+    val params = view.layoutParams
+    if (params is MarkerLayoutParams) {
+        val scaledX = (params.x * scale).toInt()
+        val scaledY = (params.y * scale).toInt()
+        if (shouldAnimate) {
+            slideToAndCenter(scaledX, scaledY)
+        } else {
+            scrollToAndCenter(scaledX, scaledY)
+        }
+    }
+}
+
+/**
  * Removes a marker View from the TileView's view tree.
  *
  * @param view The marker View to be removed.

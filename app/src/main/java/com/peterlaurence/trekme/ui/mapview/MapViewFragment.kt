@@ -38,8 +38,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.markers.MarkerTapListener
-import com.peterlaurence.mapview.markers.setMarkerTapListener
+import com.peterlaurence.mapview.markers.*
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
@@ -347,13 +346,12 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
             if (mMap != null && mMap!!.equals(map)) {
                 val newBounds = map.mapBounds
 
-                // TODO: implement
-//                if (::mTileView.isInitialized) {
-//                    val c = mTileView.coordinateTranslater
-//                    if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
-//                        setTileViewBounds(mTileView, map)
-//                    }
-//                }
+                if (::mapView.isInitialized) {
+                    val c = mapView.coordinateTranslater
+                    if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
+                        setTileViewBounds(mapView, map)
+                    }
+                }
             } else {
                 /* The map changed */
                 setMap(map)
@@ -375,8 +373,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
 //            /* Update the distance layer */
 //            distanceLayer.init(map, mTileView)
 //
-//            /* Update the landmark layer */
-//            landmarkLayer.init(map, mTileView)
+            /* Update the landmark layer */
+            landmarkLayer.init(map, mapView)
         }
     }
 
@@ -445,12 +443,12 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
      */
     private fun updatePosition(x: Double, y: Double) {
         // TODO: implement
-//        mTileView.moveMarker(positionMarker, x, y)
-//        landmarkLayer.onPositionUpdate(x, y)
+        mapView.moveMarker(positionMarker, x, y)
+        landmarkLayer.onPositionUpdate(x, y)
 //
-//        if (lockView) {
-//            centerOnPosition()
-//        }
+        if (lockView) {
+            centerOnPosition()
+        }
     }
 
     private fun setMapView(mapView: MapView) {
@@ -465,8 +463,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         mapView.setMarkerTapListener(object: MarkerTapListener {
             override fun onMarkerTap(view: View, x: Int, y: Int) {
                 markerLayer.onMarkerTap(view, x, y)
-                // TODO: implement
-                // landmarkLayer.onMarkerTap(view, x, y)
+                landmarkLayer.onMarkerTap(view, x, y)
             }
         })
     }
@@ -528,26 +525,25 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
 //        /* The BitmapProvider */
 //        tileView.setBitmapProvider(makeBitmapProvider(map))
 //
-//        /* The position + orientation reticule */
-//        try {
-//            val parent = positionMarker.parent as ViewGroup
-//            parent.removeView(positionMarker)
-//        } catch (e: Exception) {
-//            // don't care
-//        }
-//
-//        tileView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
-//
+        /* The position + orientation reticule */
+        try {
+            val parent = positionMarker.parent as ViewGroup
+            parent.removeView(positionMarker)
+        } catch (e: Exception) {
+            // don't care
+        }
+
+        mapView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
+
         /* Remove the existing MapView, then add the new one */
         removeCurrentMapView()
         setMapView(mapView)
     }
 
     private fun centerOnPosition() {
-        // TODO: implement
-//        if (::mTileView.isInitialized) {
-//            mTileView.moveToMarker(positionMarker, true)
-//        }
+        if (::mapView.isInitialized) {
+            mapView.moveToMarker(positionMarker, true)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

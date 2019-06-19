@@ -39,6 +39,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     private lateinit var throttledTask: SendChannel<Unit>
     private var shouldRelayoutChildren = false
+    private val scaleChangeListeners = mutableListOf<ScaleChangeListener>()
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -96,12 +97,21 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         coordinateTranslater = CoordinateTranslater(width, height, left, top, right, bottom)
     }
 
+    fun addScaleChangeListener(listener: ScaleChangeListener) {
+        scaleChangeListeners.add(listener)
+    }
+
+    fun removeScaleChangeListener(listener: ScaleChangeListener) {
+        scaleChangeListeners.remove(listener)
+    }
+
     /**
      * Stop everything.
      * [MapView] then does necessary housekeeping. After this call, the [MapView] should be removed
      * from all view trees.
      */
     fun destroy() {
+        scaleChangeListeners.clear()
         job.cancel()
     }
 
@@ -169,6 +179,10 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         tileCanvasView.setScale(currentScale)
         markerLayout.setScale(currentScale)
 
+        scaleChangeListeners.forEach {
+            it.onScaleChanged(currentScale)
+        }
+
         if (shouldRelayoutChildren) {
             tileCanvasView.shouldRequestLayout()
         }
@@ -234,6 +248,9 @@ private data class Configuration(val levelCount: Int, val fullWidth: Int, val fu
 @Parcelize
 data class SavedState(val parcelable: Parcelable, val scale: Float, val centerX: Int, val centerY: Int) : View.BaseSavedState(parcelable)
 
+interface ScaleChangeListener {
+    fun onScaleChanged(scale: Float)
+}
 
 // TODO: remove this
 fun main(args: Array<String>) = runBlocking {
