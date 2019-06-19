@@ -113,10 +113,16 @@ public class DistanceLayer {
      */
     public void hide() {
         if (mMapView != null) {
-            removeMarker(mMapView, mDistanceMarkerFirst);
-            removeMarker(mMapView, mDistanceMarkerSecond);
-            mMapView.removeView(mLineView);
-            mMapView.removeScaleChangeListener(mLineView);
+            if (mDistanceMarkerFirst != null) {
+                removeMarker(mMapView, mDistanceMarkerFirst);
+            }
+            if (mDistanceMarkerSecond != null) {
+                removeMarker(mMapView, mDistanceMarkerSecond);
+            }
+            if (mLineView != null) {
+                mMapView.removeView(mLineView);
+                mMapView.removeScaleChangeListener(mLineView);
+            }
         }
 
         mDistanceMarkerFirst = null;

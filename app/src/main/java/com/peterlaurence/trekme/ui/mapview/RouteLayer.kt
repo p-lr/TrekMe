@@ -1,13 +1,15 @@
 package com.peterlaurence.trekme.ui.mapview
 
 import android.util.Log
+import com.peterlaurence.mapview.MapView
+import com.peterlaurence.mapview.ScaleChangeListener
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
 import com.peterlaurence.trekme.ui.mapview.components.PathView
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
-import com.qozix.tileview.TileView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -26,8 +28,10 @@ import kotlinx.coroutines.launch
 class RouteLayer(private val coroutineScope: CoroutineScope) :
         TracksManageFragment.TrackChangeListener,
         CoroutineScope by coroutineScope {
-    private lateinit var mTileView: TileViewExtended
+    private lateinit var mapView: MapView
     private lateinit var map: Map
+    private lateinit var pathView: PathView
+    private lateinit var liveRouteView: PathView
 
     private val TAG = "RouteLayer"
 
@@ -45,22 +49,50 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 
     override fun onTrackVisibilityChanged() {
-        val pathView = mTileView.pathView
-        pathView?.invalidate()
+        if (::pathView.isInitialized) {
+            pathView.invalidate()
+        }
     }
 
     /**
      * This must be called when the [MapViewFragment] is ready to update its UI.
      */
-    fun init(map: Map, tileView: TileView) {
+    fun init(map: Map, mapView: MapView) {
         this.map = map
-        setTileView(tileView as TileViewExtended)
+        setMapView(mapView)
+        createPathView()
+        createLiveRouteView()
+
 
         if (this.map.areRoutesDefined()) {
             drawRoutes()
         } else {
             acquireThenDrawRoutes(this.map)
         }
+    }
+
+    private fun createPathView() {
+        pathView = PathView(mapView.context)
+        mapView.addView(pathView, 1)
+        mapView.addScaleChangeListener(object : ScaleChangeListener {
+            override fun onScaleChanged(scale: Float) {
+                pathView.scale = scale
+            }
+        })
+        pathView.scale = mapView.scale
+    }
+
+    private fun createLiveRouteView() {
+        val context = mapView.context
+        liveRouteView = PathView(context)
+        liveRouteView.defaultPaint.color = context.getColor(R.color.colorLiveRoute)
+        mapView.addView(liveRouteView, 1)
+        mapView.addScaleChangeListener(object : ScaleChangeListener {
+            override fun onScaleChanged(scale: Float) {
+                liveRouteView.scale = scale
+            }
+        })
+        liveRouteView.scale = mapView.scale
     }
 
     /**
@@ -83,21 +115,29 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         /* Display all routes */
         map.routes?.let { routes ->
             if (routes.isNotEmpty()) {
-                drawRoutes(routes, mTileView) {
-                    mTileView.drawRoutes(this)
+                drawRoutes(routes, mapView) {
+                    drawRoutes(this)
                 }
             }
         }
     }
 
+    private fun drawRoutes(routeList: List<RouteGson.Route>) {
+        pathView.updateRoutes(routeList)
+    }
+
     private fun drawLiveRouteCompletely(liveRoute: RouteGson.Route) {
-        drawRoutes(listOf(liveRoute), mTileView) {
-            mTileView.drawLiveRoute(this)
+        drawRoutes(listOf(liveRoute), mapView) {
+            drawLiveRoute(this)
         }
     }
 
-    private fun setTileView(tileView: TileViewExtended) {
-        mTileView = tileView
+    private fun drawLiveRoute(routeList: List<RouteGson.Route>) {
+        liveRouteView.updateRoutes(routeList)
+    }
+
+    private fun setMapView(mapView: MapView) {
+        this.mapView = mapView
     }
 
     /**
@@ -115,14 +155,14 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
      *                  ------------------
      */
     private fun CoroutineScope.drawRoutes(routeList: List<RouteGson.Route>,
-                                          tileView: TileViewExtended,
+                                          mapView: MapView,
                                           action: List<RouteGson.Route>.() -> Unit) = launch {
 
         val routes = Channel<RouteGson.Route>()
         val paths = Channel<Pair<RouteGson.Route, FloatArray>>()
 
         repeat(2) {
-            producePath(routes, paths, tileView)
+            producePath(routes, paths, mapView)
         }
         pathProcessor(paths, action)
 
@@ -147,15 +187,15 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
     /**
      * Each [RouteGson.Route] of a [Map] needs to provide data in a format that the
-     * [TileView] understands.
+     * [MapView] understands.
      * This is done off UI thread.
      */
     private fun CoroutineScope.producePath(routes: ReceiveChannel<RouteGson.Route>,
                                            paths: SendChannel<Pair<RouteGson.Route, FloatArray>>,
-                                           tileView: TileViewExtended) = launch(Dispatchers.Default) {
+                                           mapView: MapView) = launch(Dispatchers.Default) {
         for (route in routes) {
             try {
-                val lines = route.toPath(tileView) ?: continue
+                val lines = route.toPath(mapView) ?: continue
                 paths.send(Pair(route, lines))
             } catch (e: Exception) {
                 // ignore and continue the loop
@@ -167,7 +207,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
      * Convert a [RouteGson.Route] to a [FloatArray] which is the drawable data structure expected
      * by the view that will represent it.
      */
-    private fun RouteGson.Route.toPath(tileView: TileViewExtended): FloatArray? {
+    private fun RouteGson.Route.toPath(mapView: MapView): FloatArray? {
         val markerList = route_markers ?: listOf()
         /* If there is only one marker, the path has no sense */
         if (markerList.size < 2) return null
@@ -181,13 +221,13 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
             val relativeX = marker.getRelativeX(map)
             val relativeY = marker.getRelativeY(map)
             if (init) {
-                lines[i] = tileView.coordinateTranslater.translateX(relativeX).toFloat()
-                lines[i + 1] = tileView.coordinateTranslater.translateY(relativeY).toFloat()
+                lines[i] = mapView.coordinateTranslater.translateX(relativeX).toFloat()
+                lines[i + 1] = mapView.coordinateTranslater.translateY(relativeY).toFloat()
                 init = false
                 i += 2
             } else {
-                lines[i] = tileView.coordinateTranslater.translateX(relativeX).toFloat()
-                lines[i + 1] = tileView.coordinateTranslater.translateY(relativeY).toFloat()
+                lines[i] = mapView.coordinateTranslater.translateX(relativeX).toFloat()
+                lines[i + 1] = mapView.coordinateTranslater.translateY(relativeY).toFloat()
                 if (i + 2 >= size) break
                 lines[i + 2] = lines[i]
                 lines[i + 3] = lines[i + 1]

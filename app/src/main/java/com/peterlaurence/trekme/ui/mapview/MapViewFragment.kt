@@ -59,7 +59,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         FrameLayoutMapView.PositionTouchListener,
         CoroutineScope {
     private lateinit var rootView: FrameLayoutMapView
-//    private lateinit var mTileView: TileViewExtended
     private lateinit var mapView: MapView
     private var mMap: Map? = null
     private lateinit var positionMarker: View
@@ -336,8 +335,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     }
 
     /**
-     * Only update the map if its a new one. <br></br>
-     * Once the map is updated, a [TileViewExtended] instance is created, so layers can be
+     * Only update the map if its a new one.
+     * Once the map is updated, a [MapView] instance is created, so layers can be
      * updated.
      */
     private fun updateMapIfNecessary() {
@@ -362,14 +361,13 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     }
 
     private fun updateLayers() {
-        // TODO: implement
         mMap?.let { map ->
             /* Update the marker layer */
             markerLayer.init(map, mapView)
 
-//            /* Update the route layer */
-//            routeLayer.init(map, mTileView)
-//
+            /* Update the route layer */
+            routeLayer.init(map, mapView)
+
             /* Update the distance layer */
             distanceLayer.init(map, mapView)
 
@@ -478,7 +476,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     }
 
     /**
-     * Sets the map to generate a new [TileViewExtended].
+     * Sets the map to generate a new [MapView].
      *
      * @param map The new [Map] object
      */
