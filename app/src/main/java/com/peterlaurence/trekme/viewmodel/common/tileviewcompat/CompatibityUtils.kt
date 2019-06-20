@@ -35,3 +35,11 @@ fun makeTileStreamProvider(map: Map): MapViewTileStreamProvider {
         else -> throw NotImplementedError()
     }
 }
+
+fun TileStreamProvider.toMapViewTileStreamProvider(): MapViewTileStreamProvider {
+    return object : MapViewTileStreamProvider {
+        override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+            return this@toMapViewTileStreamProvider.getTileStream(row, col, zoomLvl)
+        }
+    }
+}
