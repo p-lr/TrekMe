@@ -40,14 +40,14 @@ fun CoroutineScope.collectTiles(tileSpecs: ReceiveChannel<List<TileSpec>>,
                                 tileStreamProvider: TileStreamProvider,
                                 bitmapFlow: Flow<Bitmap>) {
     val tilesToDownload = Channel<TileStatus>(capacity = Channel.RENDEZVOUS)
-    val tilesDownloadedFromWorker = Channel<TileBundle>(capacity = Channel.UNLIMITED)
+    val tilesDownloadedFromWorker = Channel<TileStatus>(capacity = Channel.UNLIMITED)
 
     repeat(nWorkers) { worker(tilesToDownload, tilesDownloadedFromWorker, tilesOutput, tileStreamProvider, bitmapFlow) }
     tileCollector(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
 }
 
 private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
-                                  tilesDownloaded: SendChannel<TileBundle>,
+                                  tilesDownloaded: SendChannel<TileStatus>,
                                   tilesOutput: SendChannel<Tile>,
                                   tileStreamProvider: TileStreamProvider,
                                   bitmapFlow: Flow<Bitmap>) = launch(dispatcher) {
@@ -58,7 +58,7 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
     for (tileStatus in tilesToDownload) {
         /* If it was cancelled, do nothing and send back the TileSpec as is */
         if (tileStatus.cancelled) {
-            tilesDownloaded.send(TileBundle(tileStatus, null))
+            tilesDownloaded.send(tileStatus)
             continue
         }
 
@@ -80,12 +80,12 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
             val bitmap = BitmapFactory.decodeStream(i, null, bitmapLoadingOptions) ?: continue
             val tile = Tile(spec.zoom, spec.row, spec.col, bitmap, spec.subSample)
             tilesOutput.send(tile)
-            tilesDownloaded.send(TileBundle(tileStatus, tile))
         } catch (e: OutOfMemoryError) {
             // no luck
         } catch (e: Exception) {
             // maybe retry
         } finally {
+            tilesDownloaded.send(tileStatus)
             i?.close()
         }
     }
@@ -93,7 +93,7 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
 
 private fun CoroutineScope.tileCollector(tileSpecs: ReceiveChannel<List<TileSpec>>,
                                          tilesToDownload: SendChannel<TileStatus>,
-                                         tilesDownloadedFromWorker: ReceiveChannel<TileBundle>) = launch {
+                                         tilesDownloadedFromWorker: ReceiveChannel<TileStatus>) = launch {
 
     val tilesBeingProcessed = mutableListOf<TileStatus>()
 
@@ -118,11 +118,10 @@ private fun CoroutineScope.tileCollector(tileSpecs: ReceiveChannel<List<TileSpec
             }
 
             tilesDownloadedFromWorker.onReceive {
-                tilesBeingProcessed.remove(it.status)
+                tilesBeingProcessed.remove(it)
             }
         }
     }
 }
 
 data class TileStatus(val spec: TileSpec, @Volatile var cancelled: Boolean = false)
-data class TileBundle(val status: TileStatus, val tile: Tile?)
