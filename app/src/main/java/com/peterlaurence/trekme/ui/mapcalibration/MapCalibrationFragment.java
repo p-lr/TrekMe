@@ -119,7 +119,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         if (lvlCnt > 0) {
             tileSize = map.getLevelList().get(0).tile_size.x;
         } else return;
-        mapView.configure(lvlCnt, map.getWidthPx(), map.getHeightPx(), tileSize, makeTileStreamProvider(map));
+        mapView.configure(lvlCnt, map.getWidthPx(), map.getHeightPx(), tileSize,
+                makeTileStreamProvider(map), 2f, null);
 
         /* Map calibration */
         mapView.defineBounds(0, 0, 1, 1);

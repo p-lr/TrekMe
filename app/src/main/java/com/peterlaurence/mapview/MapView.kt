@@ -65,7 +65,8 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
      * @param tileSize the size of tiles (must be squares)
      * @param tileStreamProvider the tiles provider
      */
-    fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileSize: Int, tileStreamProvider: TileStreamProvider) {
+    fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileSize: Int,
+                  tileStreamProvider: TileStreamProvider, maxScale: Float = 2f, startScale: Float? = null) {
         /* Save the configuration */
         baseConfiguration = Configuration(levelCount, fullWidth, fullHeight, tileSize, tileStreamProvider)
 
@@ -76,7 +77,11 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         this.tileSize = tileSize
 
         initChildViews()
-        initInternals()
+
+        setStartScale(startScale)
+        setMaxScale(maxScale)
+
+        startInternals()
     }
 
     /**
@@ -135,11 +140,17 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         }
     }
 
-    private fun renderVisibleTilesThrottled() {
-        throttledTask.offer(Unit)
+    private fun setStartScale(startScale: Float?) {
+        scale = startScale ?: (visibleTilesResolver.getScaleForLevel(0) ?: 1f)
     }
 
-    private fun initInternals() {
+    private fun renderVisibleTilesThrottled() {
+        if (this::throttledTask.isInitialized) {
+            throttledTask.offer(Unit)
+        }
+    }
+
+    private fun startInternals() {
         throttledTask = throttle {
             updateViewport()
         }
@@ -231,7 +242,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
         val savedState = state as SavedState
 
-        setScale(savedState.scale, savedState.scale)
+        setScaleForced(savedState.scale, savedState.scale)
         post {
             scrollToAndCenter(savedState.centerX, savedState.centerY)
         }

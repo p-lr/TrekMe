@@ -63,14 +63,14 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
             if (this.scale != scaleTmp) {
                 val previous = this.scale
                 field = scaleTmp
-                setScale(scaleTmp, previous)
+                setScaleForced(scaleTmp, previous)
             }
         }
 
     /**
      * The scale might me forced, but only from internals or subclasses.
      */
-    protected fun setScale(current: Float, previous: Float) {
+    protected fun setScaleForced(current: Float, previous: Float) {
         updateScaledDimensions()
         constrainScrollToLimits()
         recalculateImagePadding()
@@ -270,6 +270,10 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
         mMinScale = min
         mMaxScale = max
         scale = scale
+    }
+
+    fun setMaxScale(max: Float) {
+        mMaxScale = max
     }
 
     /**
