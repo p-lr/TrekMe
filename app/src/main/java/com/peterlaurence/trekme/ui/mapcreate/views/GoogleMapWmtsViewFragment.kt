@@ -61,6 +61,7 @@ import kotlin.coroutines.CoroutineContext
  * This level correspond to a 256 * 262144 = 67108864 px wide and height area.
  * The `TopLeftCorner` corner contains the WebMercator coordinates. The bottom right corner has
  * implicitly the opposite coordinates.
+ * **Beware** that this "level 18" is actually the 19th level (matrix set starts at 0).
  *
  * The same settings can be seen at [USGS WMTS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/WMTS/1.0.0/WMTSCapabilities.xml)
  * for the "GoogleMapsCompatible" TileMatrixSet (and not the "default028mm" one).
@@ -272,7 +273,8 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private fun addMapView(tileStreamProvider: TileStreamProvider) {
         val mapView = MapView(this.context!!)
 
-        mapView.configure(highestLevel, mapSize, mapSize, tileSize, tileStreamProvider.toMapViewTileStreamProvider())
+        mapView.configure(19, mapSize, mapSize, tileSize,
+                tileStreamProvider.toMapViewTileStreamProvider())
 
         /* Map calibration */
         mapView.defineBounds(x0, y0, x1, y1)
