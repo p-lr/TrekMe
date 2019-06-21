@@ -24,7 +24,9 @@ import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
-import com.peterlaurence.trekme.core.providers.bitmap.GenericBitmapProvider
+import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
+import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttp
+import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgn
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgnSpain
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderOSM
@@ -307,26 +309,30 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
 
                 val layerRealName = LayerForSource.resolveLayerName(source)
                 val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", layerRealName)
-                val bitmapProvider = GenericBitmapProvider.getBitmapProviderIgn(urlTileBuilder, ignCredentials.user
-                        ?: "", ignCredentials.pwd ?: "")
+                val tileStreamProvider = TileStreamProviderHttpAuth(urlTileBuilder, ignCredentials.user ?: "",
+                        ignCredentials.pwd ?: "")
+                val bitmapProvider = BitmapProvider(tileStreamProvider)
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }
             MapSource.USGS -> {
                 val urlTileBuilder = UrlTileBuilderUSGS()
-                val bitmapProvider = GenericBitmapProvider.getBitmapProviderUSGS(urlTileBuilder)
+                val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
+                val bitmapProvider = BitmapProvider(tileStreamProvider)
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }
             MapSource.OPEN_STREET_MAP -> {
                 val urlTileBuilder = UrlTileBuilderOSM()
-                val bitmapProvider = GenericBitmapProvider.getBitmapProviderOSM(urlTileBuilder)
+                val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
+                val bitmapProvider = BitmapProvider(tileStreamProvider)
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }
             MapSource.IGN_SPAIN -> {
                 val urlTileBuilder = UrlTileBuilderIgnSpain()
-                val bitmapProvider = GenericBitmapProvider.getBitmapProviderIgnSpain(urlTileBuilder)
+                val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
+                val bitmapProvider = BitmapProvider(tileStreamProvider)
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
                 downloadThread.start()
             }
@@ -336,7 +342,7 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
 
 
 private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterator,
-                                 private val bitmapProvider: GenericBitmapProvider,
+                                 private val bitmapProvider: BitmapProvider,
                                  private val tileWriter: TileWriter) : Thread() {
     val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565)
 

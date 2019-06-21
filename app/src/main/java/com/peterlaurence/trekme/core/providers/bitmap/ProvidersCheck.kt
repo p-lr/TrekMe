@@ -12,21 +12,28 @@ import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderUSGS
  */
 fun checkIgnProvider(ignApiKey: String, ignUser: String, ignPwd: String): Boolean {
     val urlTileBuilder = UrlTileBuilderIgn(ignApiKey, IgnLayers.ScanExpressStandard.realName)
-    val genericProvider = GenericBitmapProvider.getBitmapProviderIgn(urlTileBuilder, ignUser, ignPwd)
-    return genericProvider.getBitmap(1, 1, 1) != null
+    val tileStreamProvider = TileStreamProviderHttpAuth(urlTileBuilder, ignUser, ignPwd)
+    val bitmapProvider = BitmapProvider(tileStreamProvider)
+    return bitmapProvider.getBitmap(1, 1, 1) != null
 }
 
 fun checkUSGSProvider(): Boolean {
-    val genericProvider = GenericBitmapProvider.getBitmapProviderUSGS(UrlTileBuilderUSGS())
-    return genericProvider.getBitmap(1, 1, 1) != null
+    val urlTileBuilder = UrlTileBuilderUSGS()
+    val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
+    val bitmapProvider = BitmapProvider(tileStreamProvider)
+    return bitmapProvider.getBitmap(1, 1, 1) != null
 }
 
 fun checkOSMProvider(): Boolean {
-    val genericProvider = GenericBitmapProvider.getBitmapProviderOSM(UrlTileBuilderOSM())
-    return genericProvider.getBitmap(1, 1, 1) != null
+    val urlTileBuilder = UrlTileBuilderOSM()
+    val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
+    val bitmapProvider = BitmapProvider(tileStreamProvider)
+    return bitmapProvider.getBitmap(1, 1, 1) != null
 }
 
 fun checkIgnSpainProvider():Boolean {
-    val genericProvider = GenericBitmapProvider.getBitmapProviderIgnSpain(UrlTileBuilderIgnSpain())
-    return genericProvider.getBitmap(6, 24, 31) != null
+    val urlTileBuilder = UrlTileBuilderIgnSpain()
+    val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
+    val bitmapProvider = BitmapProvider(tileStreamProvider)
+    return bitmapProvider.getBitmap(6, 24, 31) != null
 }

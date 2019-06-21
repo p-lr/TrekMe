@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.peterlaurence.mapview.MapView;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
@@ -18,12 +19,15 @@ import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
-import com.qozix.tileview.TileView;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.CompatibityUtilsKt.makeBitmapProvider;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addMarker;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveMarker;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveToMarker;
+import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.CompatibityUtilsKt.makeTileStreamProvider;
+
 
 /**
  * A {@link Fragment} subclass that allows the user to define calibration points of a map.
@@ -40,20 +44,20 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     private static final String CALIBRATION_MARKER_Y = "calibration_marker_y";
     private WeakReference<Map> mMapWeakReference;
     private MapCalibrationLayout rootView;
-    private TileView mTileView;
+    private MapView mapView;
     private CalibrationMarker mCalibrationMarker;
     private int mCurrentCalibrationPoint;
     private View mView;
 
     /**
-     * Before telling the {@link TileView} to move a marker, we save its relative coordinates so we
+     * Before telling the {@link MapView} to move a marker, we save its relative coordinates so we
      * can use them later on calibration save.
      */
-    private static void moveCalibrationMarker(TileView tileView, View view, double x, double y) {
+    private static void moveCalibrationMarker(MapView mapView, View view, double x, double y) {
         CalibrationMarker calibrationMarker = (CalibrationMarker) view;
         calibrationMarker.setRelativeX(x);
         calibrationMarker.setRelativeY(y);
-        tileView.moveMarker(view, x, y);
+        moveMarker(mapView, view, x, y);
     }
 
     @Override
@@ -76,7 +80,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         } else {
             double relativeX = savedInstanceState.getDouble(CALIBRATION_MARKER_X);
             double relativeY = savedInstanceState.getDouble(CALIBRATION_MARKER_Y);
-            moveCalibrationMarker(mTileView, mCalibrationMarker, relativeX, relativeY);
+            moveCalibrationMarker(mapView, mCalibrationMarker, relativeX, relativeY);
         }
 
         return rootView;
@@ -100,7 +104,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     }
 
     /**
-     * Sets the map to generate a new {@link TileView}.
+     * Sets the map to generate a new {@link MapView}.
      *
      * @param map The new {@link Map} object
      */
@@ -108,51 +112,26 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         /* Keep a weakRef for future references */
         mMapWeakReference = new WeakReference<>(map);
 
-        TileView tileView = new TileView(this.getContext());
+        MapView mapView = new MapView(this.getContext());
 
-        /* Set the size of the view in px at scale 1 */
-        tileView.setSize(map.getWidthPx(), map.getHeightPx());
-
-        /* Lowest scale */
-        List<MapGson.Level> levelList = map.getLevelList();
-        float scale = 1 / (float) Math.pow(2, levelList.size() - 1);
-
-        /* Scale limits */
-        tileView.setScaleLimits(scale, 2);
-
-        /* Starting scale */
-        tileView.setScale(scale);
-
-        /* DetailLevel definition */
-        for (MapGson.Level level : levelList) {
-            tileView.addDetailLevel(scale, level.level, level.tile_size.x, level.tile_size.y);
-            /* Calculate each level scale for best precision */
-            scale = 1 / (float) Math.pow(2, levelList.size() - level.level - 2);
-        }
-
-        /* Panning outside of the map is not possible --affects minimum scale */
-        tileView.setShouldScaleToFit(true);
-
-        /* Disable animations. As of 03/2016, it leads to performance drops */
-        tileView.setTransitionsEnabled(false);
-
-        /* Render while panning */
-        tileView.setShouldRenderWhilePanning(true);
+        int lvlCnt = map.getLevelList().size();
+        int tileSize;
+        if (lvlCnt > 0) {
+            tileSize = map.getLevelList().get(0).tile_size.x;
+        } else return;
+        mapView.configure(lvlCnt, map.getWidthPx(), map.getHeightPx(), tileSize, makeTileStreamProvider(map));
 
         /* Map calibration */
-        tileView.defineBounds(0, 0, 1, 1);
+        mapView.defineBounds(0, 0, 1, 1);
 
         /* The calibration marker */
         mCalibrationMarker = new CalibrationMarker(this.getContext());
         TouchMoveListener.MoveCallback callback = new CalibrationMarkerMoveCallback();
-        mCalibrationMarker.setOnTouchListener(new TouchMoveListener(tileView, callback));
-        tileView.addMarker(mCalibrationMarker, 0.5, 0.5, -0.5f, -0.5f);
+        mCalibrationMarker.setOnTouchListener(new TouchMoveListener(mapView, callback));
+        addMarker(mapView, mCalibrationMarker, 0.5, 0.5, -0.5f, -0.5f, 0f, 0f);
 
-        /* The BitmapProvider */
-        tileView.setBitmapProvider(makeBitmapProvider(map));
-
-        /* Add the TileView to the root view */
-        setTileView(tileView);
+        /* Add the MapView to the root view */
+        setMapView(mapView);
 
         /* Update the ui */
         rootView.setup();
@@ -222,12 +201,12 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
         if (calibrationPointList != null && calibrationPointList.size() > calibrationPointNumber) {
             MapGson.Calibration.CalibrationPoint calibrationPoint = calibrationPointList.get(calibrationPointNumber);
-            moveCalibrationMarker(mTileView, mCalibrationMarker, calibrationPoint.x, calibrationPoint.y);
+            moveCalibrationMarker(mapView, mCalibrationMarker, calibrationPoint.x, calibrationPoint.y);
         } else {
             /* No calibration point defined */
-            moveCalibrationMarker(mTileView, mCalibrationMarker, relativeX, relativeY);
+            moveCalibrationMarker(mapView, mCalibrationMarker, relativeX, relativeY);
         }
-        mTileView.moveToMarker(mCalibrationMarker, true);
+        moveToMarker(mapView, mCalibrationMarker, true);
     }
 
     @Override
@@ -314,11 +293,11 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         }
     }
 
-    private void setTileView(TileView tileView) {
-        mTileView = tileView;
-        mTileView.setId(R.id.tileview_calibration_id);
-        mTileView.setSaveEnabled(true);
-        rootView.addView(mTileView);
+    private void setMapView(MapView mapView) {
+        this.mapView = mapView;
+        this.mapView.setId(R.id.tileview_calibration_id);
+        this.mapView.setSaveEnabled(true);
+        rootView.addView(this.mapView);
     }
 
     private void showSaveConfirmation() {
@@ -358,8 +337,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
     private static class CalibrationMarkerMoveCallback implements TouchMoveListener.MoveCallback {
         @Override
-        public void onMarkerMove(TileView tileView, View view, double x, double y) {
-            moveCalibrationMarker(tileView, view, x, y);
+        public void onMarkerMove(MapView mapView, View view, double x, double y) {
+            moveCalibrationMarker(mapView, view, x, y);
         }
     }
 }
