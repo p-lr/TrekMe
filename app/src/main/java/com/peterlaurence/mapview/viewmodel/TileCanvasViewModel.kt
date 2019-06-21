@@ -24,11 +24,14 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                           private val visibleTilesResolver: VisibleTilesResolver,
                           tileStreamProvider: TileStreamProvider) : CoroutineScope by scope {
     private val tilesToRenderLiveData = MutableLiveData<List<Tile>>()
+    private val renderTask = throttle<Unit>(wait = 50) {
+        tilesToRenderLiveData.postValue(tilesToRender)
+    }
 
     private val bitmapPool = BitmapPool()
     private val paintPool = PaintPool()
     private val visibleTileLocationsChannel = Channel<List<TileSpec>>(capacity = Channel.CONFLATED)
-    private val tilesOutput = Channel<Tile>(capacity = Channel.UNLIMITED)
+    private val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
 
     /**
      * A [Flow] of [Bitmap] that first collects from the [bitmapPool] on the Main thread. If the
@@ -84,7 +87,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         lastVisible = visibleTiles
         evictTiles(visibleTiles)
 
-        render()
+        renderThrottled()
     }
 
     private fun collectNewTiles(visibleTiles: VisibleTiles) {
@@ -111,7 +114,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                 } else {
                     tile.recycle()
                 }
-                render()
+                renderThrottled()
             } else {
                 tile.recycle()
             }
@@ -261,8 +264,8 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     /**
      * Post a new value to the observable. The view should update its UI.
      */
-    private fun render() {
-        tilesToRenderLiveData.postValue(tilesToRender)
+    private fun renderThrottled() {
+        renderTask.offer(Unit)
     }
 
     /**

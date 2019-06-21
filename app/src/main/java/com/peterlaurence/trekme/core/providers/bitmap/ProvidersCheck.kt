@@ -35,5 +35,5 @@ fun checkIgnSpainProvider():Boolean {
     val urlTileBuilder = UrlTileBuilderIgnSpain()
     val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
     val bitmapProvider = BitmapProvider(tileStreamProvider)
-    return bitmapProvider.getBitmap(6, 24, 31) != null
+    return bitmapProvider.getBitmap(24, 31, 6) != null
 }

@@ -9,6 +9,7 @@ import android.view.animation.AnimationUtils
 import com.peterlaurence.mapview.core.Tile
 import com.peterlaurence.mapview.core.VisibleTilesResolver
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
+import kotlin.math.min
 
 /**
  * This is the view where all tiles are drawn into.
@@ -22,7 +23,7 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
     private var lastTime: Long = -1
     private val alphaTickDurationInMs = 100
 
-    var tilesToRender = listOf<Tile>()
+    private var tilesToRender = listOf<Tile>()
 
     init {
         setWillNotDraw(false)
@@ -96,7 +97,7 @@ class TileCanvasView(ctx: Context, viewModel: TileCanvasViewModel,
      */
     private fun Paint.updateAlpha(alphaProgress: Float): Int {
         val newAlpha = alpha + (255 * alphaProgress).toInt()
-        alpha = Math.min(255, newAlpha)
+        alpha = min(255, newAlpha)
         return alpha
     }
 
