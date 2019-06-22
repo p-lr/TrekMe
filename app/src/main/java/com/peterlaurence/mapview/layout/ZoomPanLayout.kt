@@ -11,6 +11,8 @@ import android.widget.Scroller
 import androidx.core.view.ViewCompat
 import java.lang.ref.WeakReference
 import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * ZoomPanLayout extends ViewGroup to provide support for scrolling and zooming.
@@ -150,7 +152,7 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     private val mScaleGestureDetector: ScaleGestureDetector
     private val mGestureDetector: GestureDetector
     private val mTouchUpGestureDetector: TouchUpGestureDetector
-    private var mMinimumScaleMode = MinimumScaleMode.FILL
+    private var mMinimumScaleMode = MinimumScaleMode.FIT
 
     /**
      * Returns the Scroller instance used to manage dragging and flinging.
@@ -421,8 +423,8 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
 
     private fun getConstrainedDestinationScale(scale: Float): Float {
         var scaleTmp = scale
-        scaleTmp = Math.max(scaleTmp, mEffectiveMinScale)
-        scaleTmp = Math.min(scaleTmp, mMaxScale)
+        scaleTmp = max(scaleTmp, mEffectiveMinScale)
+        scaleTmp = min(scaleTmp, mMaxScale)
         return scaleTmp
     }
 
@@ -499,8 +501,8 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
 
     private fun calculatedMinScale(minimumScaleX: Float, minimumScaleY: Float): Float {
         return when (mMinimumScaleMode) {
-            MinimumScaleMode.FILL -> Math.max(minimumScaleX, minimumScaleY)
-            MinimumScaleMode.FIT -> Math.min(minimumScaleX, minimumScaleY)
+            MinimumScaleMode.FILL -> max(minimumScaleX, minimumScaleY)
+            MinimumScaleMode.FIT -> min(minimumScaleX, minimumScaleY)
             MinimumScaleMode.NONE -> mMinScale
         }
     }

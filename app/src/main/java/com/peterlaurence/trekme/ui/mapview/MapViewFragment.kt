@@ -348,7 +348,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
                 if (::mapView.isInitialized) {
                     val c = mapView.coordinateTranslater
                     if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
-                        setTileViewBounds(mapView, map)
+                        setMapViewBounds(mapView, map)
                     }
                 }
             } else {
@@ -486,43 +486,12 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         val tileSize = map.levelList.firstOrNull()?.tile_size ?: return
 
         /* The MapView only supports one square tile size */
-        mapView.configure(map.levelList.size, map.widthPx, map.heightPx, tileSize.x, makeTileStreamProvider(map))
+        mapView.configure(map.levelList.size, map.widthPx, map.heightPx, tileSize.x,
+                makeTileStreamProvider(map), maxScale = 2f)
 
-//        val tileView = TileViewExtended(this.context)
-//
-//        /* Set the size of the view in px at scale 1 */
-//        tileView.setSize(map.widthPx, map.heightPx)
-//
-//        /* Lowest scale */
-//        val levelList = map.levelList
-//        val minScale = 1 / Math.pow(2.0, (levelList.size - 1).toDouble()).toFloat()
-//
-//        /* Scale limits */
-//        tileView.setScaleLimits(minScale, 2f)
-//
-//        /* Starting scale */
-//        tileView.scale = minScale
-//
-//        /* DetailLevel definition */
-//        for (level in levelList) {
-//            /* Calculate each level scale for best precision */
-//            val scale = 1 / Math.pow(2.0, (levelList.size - level.level - 1).toDouble()).toFloat()
-//
-//            tileView.addDetailLevel(scale, level.level, level.tile_size.x, level.tile_size.y)
-//        }
-//
-//        /* Allow the scale to be no less to see the entire map */
-//        tileView.setMinimumScaleMode(ZoomPanLayout.MinimumScaleMode.FIT)
-//
-//        /* Render while panning */
-//        tileView.setShouldRenderWhilePanning(true)
-//
         /* Map calibration */
-        setTileViewBounds(mapView, map)
-//
-//        /* The BitmapProvider */
-//        tileView.setBitmapProvider(makeBitmapProvider(map))
-//
+        setMapViewBounds(mapView, map)
+
         /* The position + orientation reticule */
         try {
             val parent = positionMarker.parent as ViewGroup
@@ -550,7 +519,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationEventManager.isStarted)
     }
 
-    private fun setTileViewBounds(mapView: MapView, map: Map) {
+    private fun setMapViewBounds(mapView: MapView, map: Map) {
         val mapBounds = map.mapBounds
         if (mapBounds != null) {
             mapView.defineBounds(mapBounds.X0,
