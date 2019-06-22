@@ -67,7 +67,8 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         configuration = config
 
         super.setSize(config.fullWidth, config.fullHeight)
-        visibleTilesResolver = VisibleTilesResolver(config.levelCount, config.fullWidth, config.fullHeight)
+        visibleTilesResolver = VisibleTilesResolver(config.levelCount, config.fullWidth, config.fullHeight,
+                magnifyingFactor = config.magnifyingFactor)
         tileCanvasViewModel = TileCanvasViewModel(this, config.tileSize, visibleTilesResolver,
                 config.tileStreamProvider, config.workerCount)
         this.tileSize = config.tileSize
@@ -253,6 +254,8 @@ data class MapViewConfiguration(val levelCount: Int, val fullWidth: Int, val ful
     var startScale: Float? = null
     private set
 
+    var magnifyingFactor: Int = 0
+    private set
 
     /**
      * Define the size of the thread pool that will handle tile decoding. In some situations, a pool
@@ -279,6 +282,17 @@ data class MapViewConfiguration(val levelCount: Int, val fullWidth: Int, val ful
      */
     fun setStartScale(scale: Float): MapViewConfiguration {
         startScale = scale
+        return this
+    }
+
+    /**
+     * Alter the level at which tiles are picked for a given scale. By default,
+     * the level immediately higher (in index) is picked, to avoid sub-sampling. This corresponds to a
+     * [magnifyingFactor] of 0. The value 1 will result in picking the current level at a given scale,
+     * which will be at a relative scale between 1.0 and 2.0
+     */
+    fun setMagnifyingFactor(factor: Int): MapViewConfiguration {
+        magnifyingFactor = factor
         return this
     }
 }

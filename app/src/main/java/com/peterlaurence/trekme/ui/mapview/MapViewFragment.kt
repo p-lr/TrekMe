@@ -487,7 +487,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         val tileSize = map.levelList.firstOrNull()?.tile_size ?: return
 
         val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize.x,
-                makeTileStreamProvider(map)).setMaxScale(2f)
+                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(1)
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)

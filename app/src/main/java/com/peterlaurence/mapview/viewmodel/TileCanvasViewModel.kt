@@ -18,12 +18,12 @@ import kotlinx.coroutines.launch
 
 /**
  * The view-model which contains all the logic related to [Tile] management.
- * It defers [Tile] loading to [tileCollector].
+ * It defers [Tile] loading to the [TileCollector].
  */
 class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                           private val visibleTilesResolver: VisibleTilesResolver,
                           tileStreamProvider: TileStreamProvider,
-                          private val workerCount: Int) : CoroutineScope by scope {
+                          workerCount: Int) : CoroutineScope by scope {
     private val tilesToRenderLiveData = MutableLiveData<List<Tile>>()
     private val renderTask = throttle<Unit>(wait = 34) {
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
