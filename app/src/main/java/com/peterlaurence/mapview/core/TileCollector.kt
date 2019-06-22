@@ -78,7 +78,9 @@ private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
 
         try {
             val bitmap = BitmapFactory.decodeStream(i, null, bitmapLoadingOptions) ?: continue
-            val tile = Tile(spec.zoom, spec.row, spec.col, bitmap, spec.subSample)
+            val tile = Tile(spec.zoom, spec.row, spec.col, spec.subSample).apply {
+                this.bitmap = bitmap
+            }
             tilesOutput.send(tile)
         } catch (e: OutOfMemoryError) {
             // no luck

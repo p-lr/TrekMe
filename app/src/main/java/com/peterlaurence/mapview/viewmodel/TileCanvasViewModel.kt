@@ -24,7 +24,12 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                           private val visibleTilesResolver: VisibleTilesResolver,
                           tileStreamProvider: TileStreamProvider) : CoroutineScope by scope {
     private val tilesToRenderLiveData = MutableLiveData<List<Tile>>()
-    private val renderTask = throttle<Unit>(wait = 50) {
+    private val renderTask = throttle<Unit>(wait = 34) {
+        /* Right before sending tiles to the view, reorder them so that tiles from current level are
+         * above others */
+        tilesToRender.sortBy {
+            it.zoom == lastVisible.level
+        }
         tilesToRenderLiveData.postValue(tilesToRender)
     }
 
@@ -108,7 +113,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
     private fun CoroutineScope.consumeTiles(tileChannel: ReceiveChannel<Tile>) = launch {
         for (tile in tileChannel) {
             if (lastVisible.contains(tile)) {
-                if (!tilesToRender.hasAlready(tile)) {
+                if (!tilesToRender.contains(tile)) {
                     tile.setPaint()
                     tilesToRender.add(tile)
                 } else {
@@ -171,11 +176,6 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             partialEviction(visibleTiles)
         } else {
             aggressiveEviction(currentLevel, currentSubSample)
-        }
-
-        /* Lastly, tiles of current level should be at the end of the list to be rendered above */
-        tilesToRender.sortBy {
-            it.zoom == currentLevel
         }
     }
 
@@ -250,13 +250,9 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                 continue
             }
 
-            subSampledTiles.any {
-                it.samePositionAndSubSampleAs(tile)
-            }.let {
-                if (it) {
-                    iterator.remove()
-                    tile.recycle()
-                }
+            if (subSampledTiles.contains(tile)) {
+                iterator.remove()
+                tile.recycle()
             }
         }
     }
@@ -281,8 +277,4 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
             paintPool.putPaint(it)
         }
     }
-}
-
-private fun List<Tile>.hasAlready(tile: Tile) = any {
-    it.samePositionAndSubSampleAs(tile)
 }
