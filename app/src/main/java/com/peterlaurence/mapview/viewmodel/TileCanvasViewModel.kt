@@ -22,7 +22,8 @@ import kotlinx.coroutines.launch
  */
 class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                           private val visibleTilesResolver: VisibleTilesResolver,
-                          tileStreamProvider: TileStreamProvider) : CoroutineScope by scope {
+                          tileStreamProvider: TileStreamProvider,
+                          private val workerCount: Int) : CoroutineScope by scope {
     private val tilesToRenderLiveData = MutableLiveData<List<Tile>>()
     private val renderTask = throttle<Unit>(wait = 34) {
         /* Right before sending tiles to the view, reorder them so that tiles from current level are
@@ -67,8 +68,10 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
 
     init {
         /* Launch the TileCollector along with a coroutine to consume the produced tiles */
-        collectTiles(visibleTileLocationsChannel, tilesOutput, tileStreamProvider, bitmapFlow)
-        consumeTiles(tilesOutput)
+        with(TileCollector(workerCount)) {
+            collectTiles(visibleTileLocationsChannel, tilesOutput, tileStreamProvider, bitmapFlow)
+            consumeTiles(tilesOutput)
+        }
     }
 
     fun getTilesToRender(): LiveData<List<Tile>> {

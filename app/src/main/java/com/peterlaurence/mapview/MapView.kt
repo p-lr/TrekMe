@@ -36,7 +36,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     lateinit var coordinateTranslater: CoordinateTranslater
         private set
 
-    private lateinit var baseConfiguration: Configuration
+    private lateinit var configuration: MapViewConfiguration
 
     private lateinit var throttledTask: SendChannel<Unit>
     private var shouldRelayoutChildren = false
@@ -46,44 +46,36 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         get() = Dispatchers.Main + job
 
     /**
-     * Configure the [MapView], with mandatory parameters. Other settings can be set using dedicated
+     * Configure the [MapView], with a [MapViewConfiguration]. Other settings can be set using dedicated
      * public methods of the [MapView].
      *
      * There are two conventions when using [MapView].
-     * 1. The provided [levelCount] will define the zoomLevels index that the provided
-     * [tileStreamProvider] will be given for its [TileStreamProvider#zoomLevels]. The zoomLevels
-     * will be [0 ; [levelCount]-1].
+     * 1. The provided [MapViewConfiguration.levelCount] will define the zoomLevels index that the provided
+     * [MapViewConfiguration.tileStreamProvider] will be given for its [TileStreamProvider#zoomLevels].
+     * The zoomLevels will be [0 ; [MapViewConfiguration.levelCount]-1].
      *
      * 2. A map is made of levels with level p+1 being twice bigger than level p.
      * The last level will be at scale 1. So all levels have scales between 0 and 1.
      *
      * So it is assumed that the scale of level 1 is twice the scale at level 0, and so on until
-     * last level [levelCount] - 1 (which has scale 1).
+     * last level [MapViewConfiguration.levelCount] - 1 (which has scale 1).
      *
-     * By default, the minimum scale mode is [ZoomPanLayout.MinimumScaleMode.FIT] and on startup, the
-     * MapView will try to set the scale which corresponds to the level 0, but constrained with the
-     * minimum scale mode. So by default, the startup scale can be also the minimum scale.
-     *
-     * @param levelCount the number of levels
-     * @param fullWidth the width of the map in pixels at scale 1
-     * @param fullHeight the height of the map in pixels at scale 1
-     * @param tileSize the size of tiles (must be squares)
-     * @param tileStreamProvider the tiles provider
+     * @param config the [MapViewConfiguration] which defines a set af mandatory parameters
      */
-    fun configure(levelCount: Int, fullWidth: Int, fullHeight: Int, tileSize: Int,
-                  tileStreamProvider: TileStreamProvider, maxScale: Float = 1f, startScale: Float? = null) {
+    fun configure(config: MapViewConfiguration) {
         /* Save the configuration */
-        baseConfiguration = Configuration(levelCount, fullWidth, fullHeight, tileSize, tileStreamProvider)
+        configuration = config
 
-        super.setSize(fullWidth, fullHeight)
-        visibleTilesResolver = VisibleTilesResolver(levelCount, fullWidth, fullHeight)
-        tileCanvasViewModel = TileCanvasViewModel(this, tileSize, visibleTilesResolver, tileStreamProvider)
-        this.tileSize = tileSize
+        super.setSize(config.fullWidth, config.fullHeight)
+        visibleTilesResolver = VisibleTilesResolver(config.levelCount, config.fullWidth, config.fullHeight)
+        tileCanvasViewModel = TileCanvasViewModel(this, config.tileSize, visibleTilesResolver,
+                config.tileStreamProvider, config.workerCount)
+        this.tileSize = config.tileSize
 
         initChildViews()
 
-        setStartScale(startScale)
-        setMaxScale(maxScale)
+        setStartScale(config.startScale)
+        setMaxScale(config.maxScale)
 
         startInternals()
     }
@@ -101,8 +93,8 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
      * @param bottom The bottom edge of the rectangle used when calculating position
      */
     fun defineBounds(left: Double, top: Double, right: Double, bottom: Double) {
-        val width = baseConfiguration.fullWidth
-        val height = baseConfiguration.fullHeight
+        val width = configuration.fullWidth
+        val height = configuration.fullHeight
         coordinateTranslater = CoordinateTranslater(width, height, left, top, right, bottom)
     }
 
@@ -243,9 +235,53 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 /**
  * The set of parameters of the [MapView]. Some of them are mandatory:
  * [levelCount], [fullWidth], [fullHeight], [tileSize], [tileStreamProvider].
+ *
+ * @param levelCount the number of levels
+ * @param fullWidth the width of the map in pixels at scale 1
+ * @param fullHeight the height of the map in pixels at scale 1
+ * @param tileSize the size of tiles (must be squares)
+ * @param tileStreamProvider the tiles provider
  */
-private data class Configuration(val levelCount: Int, val fullWidth: Int, val fullHeight: Int,
-                                 val tileSize: Int, val tileStreamProvider: TileStreamProvider)
+data class MapViewConfiguration(val levelCount: Int, val fullWidth: Int, val fullHeight: Int,
+                                val tileSize: Int, val tileStreamProvider: TileStreamProvider) {
+    var workerCount = Runtime.getRuntime().availableProcessors() - 1
+    private set
+
+    var maxScale = 1f
+    private set
+
+    var startScale: Float? = null
+    private set
+
+
+    /**
+     * Define the size of the thread pool that will handle tile decoding. In some situations, a pool
+     * of several times the numbers of cores is suitable. Whereas sometimes we want to limit to just
+     * 1, as some tile providers forbid multi threading to limit the load of the remote servers.
+     * By default, we set this to the number of cores minus one.
+     */
+    fun setWorkerCount(n: Int): MapViewConfiguration {
+        if (n > 0) workerCount = n
+        return this
+    }
+
+    fun setMaxScale(scale: Float): MapViewConfiguration {
+        maxScale = scale
+        return this
+    }
+
+    /**
+     * Set the start scale of the [MapView]. Note that it will be constrained by the
+     * [ZoomPanLayout.MinimumScaleMode]. By default, the minimum scale mode is
+     * [ZoomPanLayout.MinimumScaleMode.FIT] and on startup, the [MapView] will try to set the scale
+     * which corresponds to the level 0, but constrained with the minimum scale mode. So by default,
+     * the startup scale can be also the minimum scale.
+     */
+    fun setStartScale(scale: Float): MapViewConfiguration {
+        startScale = scale
+        return this
+    }
+}
 
 @Parcelize
 data class SavedState(val parcelable: Parcelable, val scale: Float, val centerX: Int, val centerY: Int) : View.BaseSavedState(parcelable)

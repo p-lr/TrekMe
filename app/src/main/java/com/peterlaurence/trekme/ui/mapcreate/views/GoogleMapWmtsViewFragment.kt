@@ -10,6 +10,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
+import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.MapSource
@@ -273,8 +274,10 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private fun addMapView(tileStreamProvider: TileStreamProvider) {
         val mapView = MapView(this.context!!)
 
-        mapView.configure(19, mapSize, mapSize, tileSize,
+        val config = MapViewConfiguration(19, mapSize, mapSize, tileSize,
                 tileStreamProvider.toMapViewTileStreamProvider())
+
+        mapView.configure(config)
 
         /* Map calibration */
         mapView.defineBounds(x0, y0, x1, y1)

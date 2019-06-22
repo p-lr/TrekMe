@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.mapview.MapView;
+import com.peterlaurence.mapview.MapViewConfiguration;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
@@ -119,8 +120,11 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         if (lvlCnt > 0) {
             tileSize = map.getLevelList().get(0).tile_size.x;
         } else return;
-        mapView.configure(lvlCnt, map.getWidthPx(), map.getHeightPx(), tileSize,
-                makeTileStreamProvider(map), 2f, null);
+
+        MapViewConfiguration config = new MapViewConfiguration(lvlCnt, map.getWidthPx(), map.getHeightPx(), tileSize,
+                makeTileStreamProvider(map)).setMaxScale(2f);
+
+        mapView.configure(config);
 
         /* Map calibration */
         mapView.defineBounds(0, 0, 1, 1);

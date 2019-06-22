@@ -38,6 +38,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.peterlaurence.mapview.MapView
+import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.markers.*
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
@@ -485,9 +486,11 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         val mapView = MapView(this.context!!)
         val tileSize = map.levelList.firstOrNull()?.tile_size ?: return
 
+        val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize.x,
+                makeTileStreamProvider(map)).setMaxScale(2f)
+
         /* The MapView only supports one square tile size */
-        mapView.configure(map.levelList.size, map.widthPx, map.heightPx, tileSize.x,
-                makeTileStreamProvider(map), maxScale = 2f)
+        mapView.configure(config)
 
         /* Map calibration */
         setMapViewBounds(mapView, map)
