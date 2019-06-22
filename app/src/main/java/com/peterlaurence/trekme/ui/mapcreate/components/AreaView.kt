@@ -6,15 +6,15 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.TypedValue
 import android.view.View
+import com.peterlaurence.mapview.ScaleChangeListener
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.ui.mapview.TileViewExtended
 
 /**
  * A custom view that draws a square between two [AreaMarker] and represents an area.
  *
  * @author peterLaurence on 12/05/18
  */
-class AreaView(context: Context, private var scale: Float = 1f) : View(context), TileViewExtended.ScaleChangeListener {
+class AreaView(context: Context, private var scale: Float = 1f) : View(context), ScaleChangeListener {
     private val strokeWidth: Float
     private val paintBackground: Paint = Paint()
     private val paintStroke: Paint = Paint()

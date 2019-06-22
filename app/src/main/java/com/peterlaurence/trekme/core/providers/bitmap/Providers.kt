@@ -3,75 +3,41 @@ package com.peterlaurence.trekme.core.providers.bitmap
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
+import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 import java.io.BufferedInputStream
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-
 /**
- * Given the level, row and col numbers, a [GenericBitmapProvider] returns a [Bitmap] using the
- * provided [UrlTileBuilder] to build an [URL] and make an HTTP request.
- * Here is also defined the kind of provider used for each particular case (IGN, USGS, etc).
+ * Given the level, row and col numbers, a [TileStreamProviderHttp] returns an [InputStream] on a
+ * tile using the provided [UrlTileBuilder] to build an [URL] and make an HTTP request.
+ * The caller is responsible for closing the stream.
  */
-open class GenericBitmapProvider protected constructor(open val urlTileBuilder: UrlTileBuilder, options: BitmapFactory.Options? = null) {
-    companion object {
-        fun getBitmapProviderIgn(urlTileBuilder: UrlTileBuilder, ignUser: String, ignPwd: String): GenericBitmapProvider {
-            return GenericBitmapProviderAuth(urlTileBuilder, ignUser, ignPwd)
-        }
-
-        fun getBitmapProviderIgnSpain(urlTileBuilder: UrlTileBuilder): GenericBitmapProvider {
-            return GenericBitmapProvider(urlTileBuilder)
-        }
-
-        fun getBitmapProviderOSM(urlTileBuilder: UrlTileBuilder): GenericBitmapProvider {
-            return GenericBitmapProvider(urlTileBuilder)
-        }
-
-        fun getBitmapProviderUSGS(urlTileBuilder: UrlTileBuilder): GenericBitmapProvider {
-            return GenericBitmapProvider(urlTileBuilder)
-        }
-    }
-
-    var bitmapLoadingOptions = options ?: BitmapFactory.Options()
-
-    init {
-        bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
-    }
-
-    open fun getBitmap(level: Int, row: Int, col: Int): Bitmap? {
-        val url = URL(urlTileBuilder.build(level, row, col))
+class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder): TileStreamProvider {
+    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+        val url = URL(urlTileBuilder.build(zoomLvl, row, col))
         val connection = url.openConnection() as HttpURLConnection
         connection.doInput = true
 
         return try {
             connection.connect()
-            val inputStream = BufferedInputStream(connection.inputStream)
-            inputStream.use {
-                BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
-            }
+            BufferedInputStream(connection.inputStream)
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
-        /* Don't try to disconnect the connection on failure or in finally block, as other
-         * threads might be using connections to the same hostname. */
-    }
-
-    open fun setBitmapOptions(options: BitmapFactory.Options) {
-        bitmapLoadingOptions = options
     }
 }
 
 /**
- * Same as [GenericBitmapProvider], but using basic authentication.
+ * Same as [TileStreamProviderHttp], but using basic authentication.
  */
-class GenericBitmapProviderAuth(override val urlTileBuilder: UrlTileBuilder, private val user: String, private val pwd: String,
-                                options: BitmapFactory.Options? = null) : GenericBitmapProvider(urlTileBuilder, options) {
-
-    override fun getBitmap(level: Int, row: Int, col: Int): Bitmap? {
-
-        val url = URL(urlTileBuilder.build(level, row, col))
+class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, private val user: String,
+                                 private val pwd: String): TileStreamProvider {
+    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+        val url = URL(urlTileBuilder.build(zoomLvl, row, col))
         val connection = url.openConnection() as HttpURLConnection
         connection.doInput = true
 
@@ -80,10 +46,7 @@ class GenericBitmapProviderAuth(override val urlTileBuilder: UrlTileBuilder, pri
 
         return try {
             connection.connect()
-            val inputStream = BufferedInputStream(connection.inputStream)
-            val myBitmap = BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
-            inputStream.close()
-            myBitmap
+            BufferedInputStream(connection.inputStream)
         } catch (e: Exception) {
             connection.disconnect()
             e.printStackTrace()
@@ -97,4 +60,32 @@ class GenericBitmapProviderAuth(override val urlTileBuilder: UrlTileBuilder, pri
         setRequestProperty("Authorization", "Basic $authStringEnc")
     }
 }
+
+/**
+ * From a [TileStreamProvider], and eventually bitmap options, get [Bitmap] from tile coordinates.
+ */
+class BitmapProvider(private val tileStreamProvider: TileStreamProvider, options: BitmapFactory.Options? = null) {
+    private var bitmapLoadingOptions = options ?: BitmapFactory.Options()
+
+    init {
+        bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
+    }
+
+    fun getBitmap(row: Int, col: Int, zoomLvl: Int): Bitmap? {
+        return try {
+            val inputStream = tileStreamProvider.getTileStream(row, col, zoomLvl)
+            inputStream.use {
+                BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun setBitmapOptions(options: BitmapFactory.Options) {
+        bitmapLoadingOptions = options
+    }
+}
+
 

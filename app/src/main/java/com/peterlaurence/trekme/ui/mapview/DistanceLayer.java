@@ -5,17 +5,21 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import androidx.annotation.Nullable;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
+import com.peterlaurence.mapview.MapView;
+import com.peterlaurence.mapview.core.CoordinateTranslater;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.ui.mapview.components.DistanceMarker;
 import com.peterlaurence.trekme.ui.mapview.components.LineView;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
-import com.qozix.tileview.TileView;
-import com.qozix.tileview.geom.CoordinateTranslater;
 
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addMarker;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveMarker;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.removeMarker;
 import static com.peterlaurence.trekme.core.geotools.GeoToolsKt.distanceApprox;
 
 /**
@@ -32,7 +36,7 @@ public class DistanceLayer {
     private LineView mLineView;
     private boolean mVisible;
     private DistanceListener mDistanceListener;
-    private TileViewExtended mTileView;
+    private MapView mMapView;
     private Map mMap;
 
     private double mFirstMarkerRelativeX;
@@ -46,58 +50,58 @@ public class DistanceLayer {
         mDistanceListener = listener;
     }
 
-    public void init(Map map, TileViewExtended tileView) {
+    public void init(Map map, MapView mapView) {
         mMap = map;
-        mTileView = tileView;
+        mMapView = mapView;
     }
 
     /**
      * Shows the two {@link DistanceMarker} and the {@link LineView}.<br>
-     * {@link #init(Map, TileViewExtended)} must have been called before.
+     * {@link #init(Map, MapView)} must have been called before.
      */
     public void show() {
         /* Create the DistanceView (the line between the two markers) */
-        mLineView = new LineView(mContext, mTileView.getScale());
-        mTileView.addScaleChangeListener(mLineView);
-        mTileView.addView(mLineView);
+        mLineView = new LineView(mContext, mMapView.getScale());
+        mMapView.addScaleChangeListener(mLineView);
+        mMapView.addView(mLineView);
 
         /* Setup the first marker */
         mDistanceMarkerFirst = new DistanceMarker(mContext);
         TouchMoveListener.MoveCallback firstMarkerMoveCallback = new TouchMoveListener.MoveCallback() {
             @Override
-            public void onMarkerMove(TileView tileView, View view, double x, double y) {
+            public void onMarkerMove(MapView mapView, View view, double x, double y) {
                 mFirstMarkerRelativeX = x;
                 mFirstMarkerRelativeY = y;
-                tileView.moveMarker(mDistanceMarkerFirst, x, y);
+                moveMarker(mapView, mDistanceMarkerFirst, x, y);
                 onMarkerMoved();
             }
         };
-        TouchMoveListener firstTouchMoveListener = new TouchMoveListener(mTileView, firstMarkerMoveCallback);
+        TouchMoveListener firstTouchMoveListener = new TouchMoveListener(mMapView, firstMarkerMoveCallback);
         mDistanceMarkerFirst.setOnTouchListener(firstTouchMoveListener);
 
         /* Setup the second marker*/
         mDistanceMarkerSecond = new DistanceMarker(mContext);
         TouchMoveListener.MoveCallback secondMarkerMoveCallback = new TouchMoveListener.MoveCallback() {
             @Override
-            public void onMarkerMove(TileView tileView, View view, double x, double y) {
+            public void onMarkerMove(MapView mapView, View view, double x, double y) {
                 mSecondMarkerRelativeX = x;
                 mSecondMarkerRelativeY = y;
-                tileView.moveMarker(mDistanceMarkerSecond, x, y);
+                moveMarker(mapView, mDistanceMarkerSecond, x, y);
                 onMarkerMoved();
             }
         };
-        TouchMoveListener secondTouchMoveListener = new TouchMoveListener(mTileView, secondMarkerMoveCallback);
+        TouchMoveListener secondTouchMoveListener = new TouchMoveListener(mMapView, secondMarkerMoveCallback);
         mDistanceMarkerSecond.setOnTouchListener(secondTouchMoveListener);
 
         /* Set their positions */
         initDistanceMarkers();
         onMarkerMoved();
 
-        /* ..and add them to the TileView */
-        mTileView.addMarker(mDistanceMarkerFirst, mFirstMarkerRelativeX, mFirstMarkerRelativeY,
-                -0.5f, -0.5f);
-        mTileView.addMarker(mDistanceMarkerSecond, mSecondMarkerRelativeX, mSecondMarkerRelativeY,
-                -0.5f, -0.5f);
+        /* ..and add them to the MapView */
+        addMarker(mMapView, mDistanceMarkerFirst, mFirstMarkerRelativeX, mFirstMarkerRelativeY,
+                -0.5f, -0.5f, 0f, 0f);
+        addMarker(mMapView, mDistanceMarkerSecond, mSecondMarkerRelativeX, mSecondMarkerRelativeY,
+                -0.5f, -0.5f, 0f, 0f);
         mVisible = true;
 
         /* Start the thread that will process distance calculations */
@@ -108,11 +112,17 @@ public class DistanceLayer {
      * Hide the two {@link DistanceMarker} and the {@link LineView}.
      */
     public void hide() {
-        if (mTileView != null) {
-            mTileView.removeMarker(mDistanceMarkerFirst);
-            mTileView.removeMarker(mDistanceMarkerSecond);
-            mTileView.removeView(mLineView);
-            mTileView.removeScaleChangeListener(mLineView);
+        if (mMapView != null) {
+            if (mDistanceMarkerFirst != null) {
+                removeMarker(mMapView, mDistanceMarkerFirst);
+            }
+            if (mDistanceMarkerSecond != null) {
+                removeMarker(mMapView, mDistanceMarkerSecond);
+            }
+            if (mLineView != null) {
+                mMapView.removeView(mLineView);
+                mMapView.removeScaleChangeListener(mLineView);
+            }
         }
 
         mDistanceMarkerFirst = null;
@@ -132,20 +142,20 @@ public class DistanceLayer {
 
     private void initDistanceMarkers() {
         /* Calculate the relative coordinates of the first marker */
-        int x = mTileView.getScrollX() + (int) (mTileView.getWidth() * 0.66f) - mTileView.getOffsetX();
-        int y = mTileView.getScrollY() + (int) (mTileView.getHeight() * 0.33f) - mTileView.getOffsetY();
-        CoordinateTranslater coordinateTranslater = mTileView.getCoordinateTranslater();
-        double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
-        double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
+        int x = mMapView.getScrollX() + (int) (mMapView.getWidth() * 0.66f) - mMapView.getOffsetX();
+        int y = mMapView.getScrollY() + (int) (mMapView.getHeight() * 0.33f) - mMapView.getOffsetY();
+        CoordinateTranslater coordinateTranslater = mMapView.getCoordinateTranslater();
+        double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mMapView.getScale());
+        double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mMapView.getScale());
 
         mFirstMarkerRelativeX = Math.min(relativeX, coordinateTranslater.getRight());
         mFirstMarkerRelativeY = Math.min(relativeY, coordinateTranslater.getTop());
 
         /* Calculate the relative coordinates of the second marker */
-        x = mTileView.getScrollX() + (int) (mTileView.getWidth() * 0.33f) - mTileView.getOffsetX();
-        y = mTileView.getScrollY() + (int) (mTileView.getHeight() * 0.66f) - mTileView.getOffsetY();
-        relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
-        relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
+        x = mMapView.getScrollX() + (int) (mMapView.getWidth() * 0.33f) - mMapView.getOffsetX();
+        y = mMapView.getScrollY() + (int) (mMapView.getHeight() * 0.66f) - mMapView.getOffsetY();
+        relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mMapView.getScale());
+        relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mMapView.getScale());
 
         mSecondMarkerRelativeX = Math.max(relativeX, coordinateTranslater.getLeft());
         mSecondMarkerRelativeY = Math.max(relativeY, coordinateTranslater.getBottom());
@@ -153,7 +163,7 @@ public class DistanceLayer {
 
     private void onMarkerMoved() {
         /* Update the ui */
-        CoordinateTranslater translater = mTileView.getCoordinateTranslater();
+        CoordinateTranslater translater = mMapView.getCoordinateTranslater();
         mLineView.updateLine(
                 (float) translater.translateX(mFirstMarkerRelativeX),
                 (float) translater.translateY(mFirstMarkerRelativeY),

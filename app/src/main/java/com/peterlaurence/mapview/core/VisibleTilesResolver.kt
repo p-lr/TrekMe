@@ -1,5 +1,7 @@
 package com.peterlaurence.mapview.core
 
+import kotlin.math.*
+
 /**
  * Resolves the visible tiles
  *
@@ -17,16 +19,23 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
 
     private var scale: Float = 1.0f
     private var currentLevel = levelCount - 1
+    private var subSample: Int = 0
 
     /**
      * Last level is at scale 1.0f, others are at scale 1.0 / power_of_2
      */
     private val scaleForLevel = (0 until levelCount).associateWith {
-        (1.0 / Math.pow(2.0, (levelCount - it - 1).toDouble())).toFloat()
+        (1.0 / 2.0.pow((levelCount - it - 1).toDouble())).toFloat()
     }
 
     fun setScale(scale: Float) {
         this.scale = scale
+
+        this.subSample = if (scale < scaleForLevel[0] ?: Float.MIN_VALUE) {
+            (ln((scaleForLevel[0] ?: error("")).toDouble() / scale + 2.0) / ln(2.0)).toInt()
+        } else {
+            0
+        }
 
         /* Update current level */
         currentLevel = getLevel(scale, magnifyingFactor)
@@ -50,13 +59,13 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
     private fun getLevel(scale: Float, magnifyingFactor: Int = 0): Int {
         /* This value can be negative */
         val partialLevel = levelCount - 1 - magnifyingFactor +
-                Math.log(scale.toDouble()) / Math.log(2.0)
+                ln(scale.toDouble()) / ln(2.0)
 
         /* The level can't be greater than levelCount - 1.0 */
-        val capedLevel = Math.min(partialLevel, levelCount - 1.0)
+        val capedLevel = min(partialLevel, levelCount - 1.0)
 
         /* The level can't be lower than 0 */
-        return Math.ceil(Math.max(capedLevel, 0.0)).toInt()
+        return ceil(max(capedLevel, 0.0)).toInt()
     }
 
     /**
@@ -65,9 +74,9 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
      * @param viewport The [Viewport] which represents the visible area. Its values depend on the
      * scale.
      */
-    fun getVisibleTiles(viewport: Viewport): VisibleTiles {
-        val scaleAtLevel = scaleForLevel[currentLevel] ?: throw AssertionError()
-        val relativeScale = scaleAtLevel / scale
+    fun getVisibleTiles(viewport: Viewport, level: Int = currentLevel): VisibleTiles {
+        val scaleAtLevel = scaleForLevel[level] ?: throw AssertionError()
+        val relativeScale = scale / scaleAtLevel
 
         /* At the current level, row and col index have maximum values */
         val maxCol = (fullWidth * scaleAtLevel / tileSize).toInt()
@@ -79,12 +88,12 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
 
         val scaledTileSize = tileSize.toDouble() * relativeScale
 
-        val colLeft = Math.floor(viewport.left / scaledTileSize).toInt().lowerThan(maxCol)
-        val rowTop = Math.floor(viewport.top / scaledTileSize).toInt().lowerThan(maxRow)
-        val colRight = (Math.ceil(viewport.right / scaledTileSize).toInt() - 1).lowerThan(maxCol)
-        val rowBottom = (Math.ceil(viewport.bottom / scaledTileSize).toInt() - 1).lowerThan(maxRow)
+        val colLeft = floor(viewport.left / scaledTileSize).toInt().lowerThan(maxCol)
+        val rowTop = floor(viewport.top / scaledTileSize).toInt().lowerThan(maxRow)
+        val colRight = (ceil(viewport.right / scaledTileSize).toInt() - 1).lowerThan(maxCol)
+        val rowBottom = (ceil(viewport.bottom / scaledTileSize).toInt() - 1).lowerThan(maxRow)
 
-        return VisibleTiles(currentLevel, colLeft, rowTop, colRight, rowBottom)
+        return VisibleTiles(level, colLeft, rowTop, colRight, rowBottom, subSample)
     }
 }
 
@@ -92,4 +101,4 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
  * @param level 0-based level index
  */
 data class VisibleTiles(var level: Int, val colLeft: Int, val rowTop: Int, val colRight: Int,
-                        val rowBottom: Int)
+                        val rowBottom: Int, val subSample: Int = 0)

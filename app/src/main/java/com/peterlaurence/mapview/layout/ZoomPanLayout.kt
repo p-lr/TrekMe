@@ -1,5 +1,6 @@
 package com.peterlaurence.mapview.layout
 
+import com.peterlaurence.mapview.util.scale
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
@@ -8,10 +9,10 @@ import android.view.*
 import android.view.animation.Interpolator
 import android.widget.Scroller
 import androidx.core.view.ViewCompat
-import com.qozix.tileview.geom.FloatMathHelper
-import com.qozix.tileview.view.TouchUpGestureDetector
 import java.lang.ref.WeakReference
 import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * ZoomPanLayout extends ViewGroup to provide support for scrolling and zooming.
@@ -19,6 +20,8 @@ import java.util.*
  *
  * Children of ZoomPanLayout are laid out to the sizes provided by setSize,
  * and will always be positioned at 0,0.
+ *
+ * @author Mike Dunn
  */
 open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : ViewGroup(context, attrs, defStyleAttr), GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener, ScaleGestureDetector.OnScaleGestureListener, TouchUpGestureDetector.OnTouchUpListener {
 
@@ -58,18 +61,24 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
      */
     var scale = 1f
         set(scale) {
-            var scaleTmp = scale
-            scaleTmp = getConstrainedDestinationScale(scaleTmp)
+            val scaleTmp = getConstrainedDestinationScale(scale)
             if (this.scale != scaleTmp) {
                 val previous = this.scale
                 field = scaleTmp
-                updateScaledDimensions()
-                constrainScrollToLimits()
-                recalculateImagePadding()
-                onScaleChanged(scaleTmp, previous)
-                invalidate()
+                setScaleForced(scaleTmp, previous)
             }
         }
+
+    /**
+     * The scale might me forced, but only from internals or subclasses.
+     */
+    protected fun setScaleForced(current: Float, previous: Float) {
+        updateScaledDimensions()
+        constrainScrollToLimits()
+        recalculateImagePadding()
+        onScaleChanged(current, previous)
+        invalidate()
+    }
 
     private var mMinScale = 0f
     private var mMaxScale = 1f
@@ -143,7 +152,7 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     private val mScaleGestureDetector: ScaleGestureDetector
     private val mGestureDetector: GestureDetector
     private val mTouchUpGestureDetector: TouchUpGestureDetector
-    private var mMinimumScaleMode = MinimumScaleMode.FILL
+    private var mMinimumScaleMode = MinimumScaleMode.FIT
 
     /**
      * Returns the Scroller instance used to manage dragging and flinging.
@@ -161,11 +170,11 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
         animator
     }
 
-    private val halfWidth: Int
-        get() = FloatMathHelper.scale(width, 0.5f)
+    val halfWidth: Int
+        get() = scale(width, 0.5f)
 
-    private val halfHeight: Int
-        get() = FloatMathHelper.scale(height, 0.5f)
+    val halfHeight: Int
+        get() = scale(height, 0.5f)
 
     private val scrollLimitX: Int
         get() = scaledWidth - width + mScaledImagePadding
@@ -263,6 +272,10 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
         mMinScale = min
         mMaxScale = max
         scale = scale
+    }
+
+    fun setMaxScale(max: Float) {
+        mMaxScale = max
     }
 
     /**
@@ -410,8 +423,8 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
 
     private fun getConstrainedDestinationScale(scale: Float): Float {
         var scaleTmp = scale
-        scaleTmp = Math.max(scaleTmp, mEffectiveMinScale)
-        scaleTmp = Math.min(scaleTmp, mMaxScale)
+        scaleTmp = max(scaleTmp, mEffectiveMinScale)
+        scaleTmp = min(scaleTmp, mMaxScale)
         return scaleTmp
     }
 
@@ -426,8 +439,8 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     private fun updateScaledDimensions() {
-        scaledWidth = FloatMathHelper.scale(baseWidth, scale)
-        scaledHeight = FloatMathHelper.scale(baseHeight, scale)
+        scaledWidth = scale(baseWidth, scale)
+        scaledHeight = scale(baseHeight, scale)
     }
 
     private fun getOffsetScrollXFromScale(offsetX: Int, destinationScale: Float, currentScale: Float): Int {
@@ -443,15 +456,14 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     fun setScaleFromPosition(offsetX: Int, offsetY: Int, scale: Float) {
-        var scale = scale
-        scale = getConstrainedDestinationScale(scale)
-        if (scale == this.scale) {
+        val scaleCst = getConstrainedDestinationScale(scale)
+        if (scaleCst == this.scale) {
             return
         }
-        var x = getOffsetScrollXFromScale(offsetX, scale, this.scale)
-        var y = getOffsetScrollYFromScale(offsetY, scale, this.scale)
+        var x = getOffsetScrollXFromScale(offsetX, scaleCst, this.scale)
+        var y = getOffsetScrollYFromScale(offsetY, scaleCst, this.scale)
 
-        scale = scale
+        this.scale = scaleCst
 
         x = getConstrainedScrollX(x)
         y = getConstrainedScrollY(y)
@@ -489,8 +501,8 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
 
     private fun calculatedMinScale(minimumScaleX: Float, minimumScaleY: Float): Float {
         return when (mMinimumScaleMode) {
-            MinimumScaleMode.FILL -> Math.max(minimumScaleX, minimumScaleY)
-            MinimumScaleMode.FIT -> Math.min(minimumScaleX, minimumScaleY)
+            MinimumScaleMode.FILL -> max(minimumScaleX, minimumScaleY)
+            MinimumScaleMode.FIT -> min(minimumScaleX, minimumScaleY)
             MinimumScaleMode.NONE -> mMinScale
         }
     }
@@ -525,7 +537,7 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
     }
 
     private fun recalculateImagePadding() {
-        mScaledImagePadding = FloatMathHelper.scale(mImagePadding, scale)
+        mScaledImagePadding = scale(mImagePadding, scale)
     }
 
     override fun computeScroll() {
@@ -906,5 +918,24 @@ open class ZoomPanLayout @JvmOverloads constructor(context: Context, attrs: Attr
 
     companion object {
         private const val DEFAULT_ZOOM_PAN_ANIMATION_DURATION = 400
+    }
+}
+
+/**
+ * @author Mike Dunn, 10/6/15.
+ */
+class TouchUpGestureDetector(private val mOnTouchUpListener: OnTouchUpListener?) {
+
+    fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_UP) {
+            if (mOnTouchUpListener != null) {
+                return mOnTouchUpListener.onTouchUp(event)
+            }
+        }
+        return true
+    }
+
+    interface OnTouchUpListener {
+        fun onTouchUp(event: MotionEvent): Boolean
     }
 }

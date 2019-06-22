@@ -52,7 +52,6 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.1.0-alpha05'
     implementation 'androidx.preference:preference:1.1.0-alpha05'
     implementation 'com.google.android.gms:play-services-location:16.0.0'
-    implementation project(':tileview')
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

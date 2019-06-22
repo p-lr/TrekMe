@@ -5,6 +5,9 @@ import android.graphics.drawable.Animatable2;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
+import com.peterlaurence.mapview.MapView;
+import com.peterlaurence.mapview.core.CoordinateTranslater;
+import com.peterlaurence.mapview.markers.MarkerTapListener;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
@@ -12,12 +15,15 @@ import com.peterlaurence.trekme.ui.mapview.components.MarkerCallout;
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab;
 import com.peterlaurence.trekme.ui.mapview.components.MovableMarker;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
-import com.qozix.tileview.TileView;
-import com.qozix.tileview.geom.CoordinateTranslater;
-import com.qozix.tileview.markers.MarkerLayout;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addCallout;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addMarker;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveMarker;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.removeCallout;
+import static com.peterlaurence.mapview.markers.MarkerLayoutKt.removeMarker;
 
 /**
  * All {@link MovableMarker} and {@link MarkerCallout} are managed here. <br>
@@ -25,17 +31,17 @@ import java.util.List;
  *
  * @author peterLaurence on 09/04/17.
  */
-class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.MarkerTapListener {
+class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListener {
     List<MarkerGson.Marker> mMarkers;
     private Context mContext;
     private MapViewFragment.RequestManageMarkerListener mRequestManageMarkerListener;
-    private TileView mTileView;
+    private MapView mMapView;
     private Map mMap;
     private MovableMarker mCurrentMovableMarker;
 
 
     /**
-     * After being created, the method {@link #init(Map, TileView)} has to be called.
+     * After being created, the method {@link #init(Map, MapView)} has to be called.
      */
     MarkerLayer(Context context) {
         mContext = context;
@@ -49,14 +55,14 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
      * A {@link MarkerGrab} is used along with a {@link TouchMoveListener} to reflect its
      * displacement to the marker passed as argument.
      */
-    private static void attachMarkerGrab(final MovableMarker movableMarker, TileView tileView,
+    private static void attachMarkerGrab(final MovableMarker movableMarker, MapView mapView,
                                          Map map, Context context) {
         /* Add a view as background, to move easily the marker */
         TouchMoveListener.MoveCallback markerMoveCallback = new TouchMoveListener.MoveCallback() {
             @Override
-            public void onMarkerMove(TileView tileView, View view, double x, double y) {
-                tileView.moveMarker(view, x, y);
-                tileView.moveMarker(movableMarker, x, y);
+            public void onMarkerMove(MapView mapView, View view, double x, double y) {
+                moveMarker(mapView, view, x, y);
+                moveMarker(mapView, movableMarker, x, y);
                 movableMarker.setRelativeX(x);
                 movableMarker.setRelativeY(y);
             }
@@ -64,9 +70,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
 
         MarkerGrab markerGrab = new MarkerGrab(context);
         TouchMoveListener.ClickCallback markerClickCallback = new MovableMarkerClickCallback(
-                movableMarker, markerGrab, tileView, map);
-        markerGrab.setOnTouchListener(new TouchMoveListener(tileView, markerMoveCallback, markerClickCallback));
-        tileView.addMarker(markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f);
+                movableMarker, markerGrab, mapView, map);
+        markerGrab.setOnTouchListener(new TouchMoveListener(mapView, markerMoveCallback, markerClickCallback));
+        addMarker(mapView, markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f, 0f, 0f);
         markerGrab.morphIn();
     }
 
@@ -83,13 +89,13 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
         drawMarkers();
     }
 
-    private void setTileView(final TileView tileView) {
-        mTileView = tileView;
+    private void setMapView(final MapView mapView) {
+        mMapView = mapView;
     }
 
     @Override
     public void onMarkerTap(View view, int i, int i1) {
-        if (mTileView == null) return;
+        if (mMapView == null) return;
 
         if (view instanceof MovableMarker) {
             MovableMarker movableMarker = (MovableMarker) view;
@@ -97,22 +103,22 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
             /* Prepare the callout */
             MarkerCallout markerCallout = new MarkerCallout(mContext);
             markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
-                    mTileView, mContext, mMap));
+                    mMapView, mContext, mMap));
             markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
-                    markerCallout, mTileView, mRequestManageMarkerListener));
+                    markerCallout, mMapView, mRequestManageMarkerListener));
             markerCallout.setDeleteAction(new DeleteMarkerRunnable(movableMarker, markerCallout,
-                    mTileView, mMap));
+                    mMapView, mMap));
             MarkerGson.Marker marker = movableMarker.getMarker();
             markerCallout.setTitle(marker.name);
             markerCallout.setSubTitle(marker.lat, marker.lon);
 
-            mTileView.addCallout(markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -1.2f);
+            addCallout(mMapView, markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -1.2f, 0f, 0f);
             markerCallout.transitionIn();
         }
     }
 
     /**
-     * Triggers the fetch of the map's markers and their drawing on the {@link TileView}. If this is
+     * Triggers the fetch of the map's markers and their drawing on the {@link MapView}. If this is
      * the first time this method is called for this map, the markers aren't defined and the
      * {@link MapLoader} will get them in an asynctask. Otherwise, we can draw them immediately.
      * <p>
@@ -121,9 +127,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
      * The caller is responsible for removing this {@link MapLoader.MapMarkerUpdateListener} from
      * the {@link MapLoader}, after this object is no longer used.
      */
-    public void init(Map map, TileView tileView) {
+    public void init(Map map, MapView mapView) {
         mMap = map;
-        setTileView(tileView);
+        setMapView(mapView);
         MapLoader.INSTANCE.setMapMarkerUpdateListener(this);
 
         if (mMap.areMarkersDefined()) {
@@ -149,21 +155,21 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
             }
             movableMarker.initStatic();
 
-            mTileView.addMarker(movableMarker, movableMarker.getRelativeX(),
-                    movableMarker.getRelativeY(), -0.5f, -0.5f);
+            addMarker(mMapView, movableMarker, movableMarker.getRelativeX(),
+                    movableMarker.getRelativeY(), -0.5f, -0.5f, 0f, 0f);
         }
     }
 
     /**
-     * Add a {@link MovableMarker} to the center of the {@link TileView}.
+     * Add a {@link MovableMarker} to the center of the {@link MapView}.
      */
     void addNewMarker() {
         /* Calculate the relative coordinates of the center of the screen */
-        int x = mTileView.getScrollX() + mTileView.getWidth() / 2 - mTileView.getOffsetX();
-        int y = mTileView.getScrollY() + mTileView.getHeight() / 2 - mTileView.getOffsetY();
-        CoordinateTranslater coordinateTranslater = mTileView.getCoordinateTranslater();
-        final double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mTileView.getScale());
-        final double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mTileView.getScale());
+        int x = mMapView.getScrollX() + mMapView.getWidth() / 2 - mMapView.getOffsetX();
+        int y = mMapView.getScrollY() + mMapView.getHeight() / 2 - mMapView.getOffsetY();
+        CoordinateTranslater coordinateTranslater = mMapView.getCoordinateTranslater();
+        final double relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mMapView.getScale());
+        final double relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mMapView.getScale());
 
         final MovableMarker movableMarker;
 
@@ -195,9 +201,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
         }
 
         /* Easily move the marker */
-        attachMarkerGrab(movableMarker, mTileView, mMap, mContext);
+        attachMarkerGrab(movableMarker, mMapView, mMap, mContext);
 
-        mTileView.addMarker(movableMarker, relativeX, relativeY, -0.5f, -0.5f);
+        addMarker(mMapView, movableMarker, relativeX, relativeY, -0.5f, -0.5f, 0f, 0f);
     }
 
     /**
@@ -213,7 +219,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
             mCurrentMovableMarker.setRelativeY(mCurrentMovableMarker.getMarker().proj_y);
         }
 
-        mTileView.moveMarker(mCurrentMovableMarker, mCurrentMovableMarker.getRelativeX(),
+        moveMarker(mMapView, mCurrentMovableMarker, mCurrentMovableMarker.getRelativeX(),
                 mCurrentMovableMarker.getRelativeY());
     }
 
@@ -233,14 +239,14 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
     private static class MovableMarkerClickCallback implements TouchMoveListener.ClickCallback {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerGrab> mMarkerGrabWeakReference;
-        private TileView mTileView;
+        private MapView mMapView;
         private Map mMap;
 
         MovableMarkerClickCallback(MovableMarker movableMarker, MarkerGrab markerGrab,
-                                   TileView tileView, Map map) {
+                                   MapView mapView, Map map) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerGrabWeakReference = new WeakReference<>(markerGrab);
-            mTileView = tileView;
+            mMapView = mapView;
             mMap = map;
         }
 
@@ -257,7 +263,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
                     public void onAnimationEnd(Drawable drawable) {
                         super.onAnimationEnd(drawable);
                         if (markerGrab != null) {
-                            mTileView.removeMarker(markerGrab);
+                            removeMarker(mMapView, markerGrab);
                         }
                     }
                 });
@@ -285,21 +291,21 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
     }
 
     /**
-     * This {@link Runnable} is called when an external component requests a {@link MovableMarker} to
+     * This runnable is called when an external component requests a {@link MovableMarker} to
      * morph into the dynamic shape. <br>Here, this component is a {@link MarkerCallout}.
      */
     private static class MorphMarkerRunnable implements Runnable {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
-        private TileView mTileView;
+        private MapView mMapView;
         private Context mContext;
         private Map mMap;
 
-        MorphMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, TileView tileView,
+        MorphMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, MapView mapView,
                             Context context, Map map) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
-            mTileView = tileView;
+            mMapView = mapView;
             mContext = context;
             mMap = map;
         }
@@ -312,39 +318,39 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
                 movableMarker.morphToDynamicForm();
 
                 /* Easily move the marker */
-                attachMarkerGrab(movableMarker, mTileView, mMap, mContext);
+                attachMarkerGrab(movableMarker, mMapView, mMap, mContext);
 
                 /* Use a trick to bring the marker to the foreground */
-                mTileView.removeMarker(movableMarker);
-                mTileView.addMarker(movableMarker, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f);
+                removeMarker(mMapView, movableMarker);
+                addMarker(mMapView, movableMarker, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f, 0f, 0f);
             }
 
             /* Remove the callout */
             MarkerCallout markerCallout = mMarkerCalloutWeakReference.get();
             if (markerCallout != null) {
-                mTileView.removeCallout(markerCallout);
+                removeCallout(mMapView, markerCallout);
             }
         }
     }
 
     /**
-     * This {@link Runnable} is called when an external component requests a {@link MovableMarker} to
+     * This runnable is called when an external component requests a {@link MovableMarker} to
      * be edited. <br>Here, this component is a {@link MarkerCallout}.
      */
     private static class EditMarkerRunnable implements Runnable {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerLayer> mMarkerLayerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
-        private TileView mTileView;
+        private MapView mMapView;
         private WeakReference<MapViewFragment.RequestManageMarkerListener> mListenerWeakRef;
 
         EditMarkerRunnable(MovableMarker movableMarker, MarkerLayer markerLayer,
-                           MarkerCallout markerCallout, TileView tileView,
+                           MarkerCallout markerCallout, MapView mapView,
                            MapViewFragment.RequestManageMarkerListener listener) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerLayerWeakReference = new WeakReference<>(markerLayer);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
-            mTileView = tileView;
+            mMapView = mapView;
             mListenerWeakRef = new WeakReference<>(listener);
         }
 
@@ -369,26 +375,26 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
             /* Remove the callout */
             MarkerCallout markerCallout = mMarkerCalloutWeakReference.get();
             if (markerCallout != null) {
-                mTileView.removeCallout(markerCallout);
+                removeCallout(mMapView, markerCallout);
             }
         }
     }
 
     /**
-     * This {@link Runnable} is called when an external component requests a {@link MovableMarker} to
+     * This runnable is called when an external component requests a {@link MovableMarker} to
      * be deleted. <br>Here, this component is a {@link MarkerCallout}.
      */
     private static class DeleteMarkerRunnable implements Runnable {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
-        private TileView mTileView;
+        private MapView mMapView;
         private Map mMap;
 
         DeleteMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout,
-                             TileView tileView, Map map) {
+                             MapView mapView, Map map) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
-            mTileView = tileView;
+            mMapView = mapView;
             mMap = map;
         }
 
@@ -397,14 +403,14 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerLayout.Mar
             /* Remove the callout */
             MarkerCallout markerCallout = mMarkerCalloutWeakReference.get();
             if (markerCallout != null) {
-                mTileView.removeCallout(markerCallout);
+                removeCallout(mMapView, markerCallout);
             }
 
             /* Delete the marker */
             MovableMarker movableMarker = mMovableMarkerWeakReference.get();
 
             if (movableMarker != null) {
-                mTileView.removeMarker(movableMarker);
+                removeMarker(mMapView, movableMarker);
 
                 MarkerGson.Marker marker = movableMarker.getMarker();
                 MapLoader.INSTANCE.deleteMarker(mMap, marker);

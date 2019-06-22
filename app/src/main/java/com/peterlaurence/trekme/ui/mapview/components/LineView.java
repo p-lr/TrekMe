@@ -7,7 +7,8 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 
-import com.peterlaurence.trekme.ui.mapview.TileViewExtended;
+import com.peterlaurence.mapview.ScaleChangeListener;
+
 
 /**
  * A custom view that draws a line between two points and represents the distance
@@ -15,7 +16,7 @@ import com.peterlaurence.trekme.ui.mapview.TileViewExtended;
  *
  * @author peterLaurence on 21/06/17.
  */
-public class LineView extends View implements TileViewExtended.ScaleChangeListener {
+public class LineView extends View implements ScaleChangeListener {
     private static final int DEFAULT_STROKE_COLOR = 0xCC311B92;
     private static final int DEFAULT_STROKE_WIDTH_DP = 4;
     private float mStrokeWidth;

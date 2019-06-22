@@ -15,10 +15,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This is a modified version of {@link com.qozix.tileview.paths.CompositePathView}, using
- * {@code Canvas.drawLines} to draw a path. This method is much more efficient as it's
- * hardware accelerated, although the result is not as neat as the original implementation (which
- * uses {@link Path}.
+ * This is a custom view that uses, using {@code Canvas.drawLines} to draw a path.
+ * This method is much more efficient as it's hardware accelerated, although the result is not as
+ * neat as the output of {@link Path}.
  *
  * @author peterLaurence on 19/02/17
  */
@@ -47,9 +46,10 @@ public class PathView extends View {
         mDefaultPaint.setStyle(Paint.Style.STROKE);
         mDefaultPaint.setColor(DEFAULT_STROKE_COLOR);
         mDefaultPaint.setStrokeWidth(mStrokeWidthDefault);
-        mDefaultPaint.setAntiAlias(true);
-        mDefaultPaint.setStrokeJoin(Paint.Join.ROUND);
-        mDefaultPaint.setStrokeCap(Paint.Cap.ROUND);
+        // As of 22/06/19, the settings below cause performance drop when long Routes are rendered
+//        mDefaultPaint.setAntiAlias(true);
+//        mDefaultPaint.setStrokeJoin(Paint.Join.ROUND);
+//        mDefaultPaint.setStrokeCap(Paint.Cap.ROUND);
     }
 
     public void updateRoutes(List<RouteGson.Route> routeList) {

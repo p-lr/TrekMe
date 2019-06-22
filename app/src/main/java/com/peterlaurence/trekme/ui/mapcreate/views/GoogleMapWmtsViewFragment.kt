@@ -3,13 +3,16 @@ package com.peterlaurence.trekme.ui.mapcreate.views
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.material.snackbar.Snackbar
-import androidx.fragment.app.Fragment
-import androidx.appcompat.app.AppCompatActivity
 import android.text.method.LinkMovementMethod
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.Fragment
+import com.google.android.material.snackbar.Snackbar
+import com.peterlaurence.mapview.MapView
+import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
@@ -18,11 +21,11 @@ import com.peterlaurence.trekme.core.providers.bitmap.checkIgnSpainProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkOSMProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkUSGSProvider
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.BitmapProviderIgn
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.BitmapProviderIgnSpain
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.BitmapProviderOSM
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.BitmapProviderUSGS
 import com.peterlaurence.trekme.model.providers.layers.LayerForSource
+import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderIgn
+import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderIgnSpain
+import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderOSM
+import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderUSGS
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
@@ -30,10 +33,7 @@ import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
 import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
-import com.peterlaurence.trekme.ui.mapview.TileViewExtended
-import com.qozix.tileview.TileView
-import com.qozix.tileview.graphics.BitmapProvider
-import com.qozix.tileview.widgets.ZoomPanLayout
+import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import kotlinx.android.synthetic.main.fragment_wmts_view.*
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
@@ -62,6 +62,7 @@ import kotlin.coroutines.CoroutineContext
  * This level correspond to a 256 * 262144 = 67108864 px wide and height area.
  * The `TopLeftCorner` corner contains the WebMercator coordinates. The bottom right corner has
  * implicitly the opposite coordinates.
+ * **Beware** that this "level 18" is actually the 19th level (matrix set starts at 0).
  *
  * The same settings can be seen at [USGS WMTS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/WMTS/1.0.0/WMTSCapabilities.xml)
  * for the "GoogleMapsCompatible" TileMatrixSet (and not the "default028mm" one).
@@ -72,7 +73,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private lateinit var job: Job
     private lateinit var mapSource: MapSource
     private lateinit var rootView: ConstraintLayout
-    private lateinit var tileView: TileViewExtended
+    private lateinit var mapView: MapView
     private lateinit var areaLayer: AreaLayer
 
     private lateinit var area: Area
@@ -106,7 +107,8 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource ?: MapSource.OPEN_STREET_MAP
+        mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
+                ?: MapSource.OPEN_STREET_MAP
 
         setHasOptionsMenu(true)
     }
@@ -131,7 +133,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
             EventBus.getDefault().post(MapSourceSettingsEvent(MapSource.IGN))
         }
 
-        createTileView()
+        createMapView()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -211,16 +213,16 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         /* Update the layer preference */
         LayerForSource.setLayerPublicNameForSource(mapSource, e.getSelection())
 
-        /* The re-create the tileview */
-        removeTileView()
-        createTileView()
+        /* The re-create the mapview */
+        removeMapView()
+        createMapView()
     }
 
-    private fun createTileView() {
+    private fun createMapView() {
         checkTileAccessibility()
         val layerRealName = LayerForSource.resolveLayerName(mapSource)
-        val bitmapProvider = createBitmapProvider(layerRealName)
-        addTileView(bitmapProvider)
+        val streamProvider = createTileStreamProvider(layerRealName)
+        addMapView(streamProvider)
     }
 
     /**
@@ -269,79 +271,50 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         fragmentWmtWarningLink.visibility = View.GONE
     }
 
-    private fun addTileView(bitmapProvider: BitmapProvider?) {
-        val tileView = TileViewExtended(this.context)
+    private fun addMapView(tileStreamProvider: TileStreamProvider) {
+        val mapView = MapView(this.context!!)
 
-        /* IGN wmts maps are square */
-        tileView.setSize(mapSize, mapSize)
+        val config = MapViewConfiguration(19, mapSize, mapSize, tileSize,
+                tileStreamProvider.toMapViewTileStreamProvider())
 
-        /* We will display levels 1..18 */
-        val levelCount = highestLevel
-        val minScale = 1 / Math.pow(2.0, (levelCount - 1).toDouble()).toFloat()
-
-        /* Scale limits */
-        tileView.setScaleLimits(minScale, 1f)
-
-        /* Starting scale */
-        tileView.scale = minScale
-
-        /* DetailLevel definition */
-        for (level in 0 until levelCount) {
-            /* Calculate each level scale for best precision */
-            val scale = 1 / Math.pow(2.0, (levelCount - level - 1).toDouble()).toFloat()
-
-            tileView.addDetailLevel(scale, level + 1, tileSize, tileSize)
-        }
-
-        /* Allow the scale to be no less to see the entire map */
-        tileView.setMinimumScaleMode(ZoomPanLayout.MinimumScaleMode.FIT)
-
-        /* Render while panning */
-        tileView.setShouldRenderWhilePanning(true)
+        mapView.configure(config)
 
         /* Map calibration */
-        setTileViewBounds(tileView)
-
-        /* The BitmapProvider */
-        tileView.setBitmapProvider(bitmapProvider)
+        mapView.defineBounds(x0, y0, x1, y1)
 
         /* Add the view */
-        setTileView(tileView)
+        setMapView(mapView)
     }
 
-    private fun setTileViewBounds(tileView: TileView) {
-        tileView.defineBounds(x0, y0, x1, y1)
-    }
-
-    private fun setTileView(tileView: TileViewExtended) {
-        this.tileView = tileView
-        this.tileView.id = R.id.tileview_ign_id
-        this.tileView.isSaveEnabled = true
+    private fun setMapView(mapView: MapView) {
+        this.mapView = mapView
+        this.mapView.id = R.id.tileview_ign_id
+        this.mapView.isSaveEnabled = true
         val params = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        rootView.addView(tileView, 0, params)
+        rootView.addView(mapView, 0, params)
     }
 
     /**
      * TODO: this should be the responsibility of a view-model
      */
-    private fun createBitmapProvider(layer: String): BitmapProvider? {
+    private fun createTileStreamProvider(layer: String): TileStreamProvider {
         return when (mapSource) {
             MapSource.IGN -> {
                 val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
                 if (layer.isNotEmpty()) {
-                    BitmapProviderIgn(ignCredentials, layer)
+                    TileStreamProviderIgn(ignCredentials, layer)
                 } else {
-                    BitmapProviderIgn(ignCredentials)
+                    TileStreamProviderIgn(ignCredentials)
                 }
             }
-            MapSource.USGS -> BitmapProviderUSGS()
-            MapSource.OPEN_STREET_MAP -> BitmapProviderOSM()
-            MapSource.IGN_SPAIN -> BitmapProviderIgnSpain()
+            MapSource.USGS -> TileStreamProviderUSGS()
+            MapSource.OPEN_STREET_MAP -> TileStreamProviderOSM()
+            MapSource.IGN_SPAIN -> TileStreamProviderIgnSpain()
         }
     }
 
-    private fun removeTileView() {
+    private fun removeMapView() {
         rootView.removeViewAt(0)
     }
 
@@ -356,7 +329,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
                 }
 
             })
-            areaLayer.attachTo(tileView)
+            areaLayer.attachTo(mapView)
         }
     }
 
