@@ -60,7 +60,8 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
      * So it is assumed that the scale of level 1 is twice the scale at level 0, and so on until
      * last level [MapViewConfiguration.levelCount] - 1 (which has scale 1).
      *
-     * @param config the [MapViewConfiguration] which defines a set af mandatory parameters
+     * @param config the [MapViewConfiguration] which defines most of the parameters. A few others
+     * require dedicated method call right after the configuration.
      */
     fun configure(config: MapViewConfiguration) {
         /* Save the configuration */

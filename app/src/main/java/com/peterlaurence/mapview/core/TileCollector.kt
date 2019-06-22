@@ -18,7 +18,28 @@ import java.util.concurrent.atomic.AtomicInteger
 
 
 /**
- * The engine of the MapView. TODO: document this
+ * The engine of the MapView. The view-model uses two channels to communicate with the [TileCollector]:
+ * * one to send [TileSpec]s (a [SendChannel])
+ * * one to receive [Tile]s (a [ReceiveChannel])
+ *
+ * The [TileCollector] encapsulates all the complexity that transforms a [TileSpec] into a [Tile].
+ * ```
+ *                                              _____________________________________________________________________
+ *                                             |                           TileCollector             ____________    |
+ *                                  tiles      |                                                    |  ________  |   |
+ *              ---------------- [*********] <----------------------------------------------------- | | worker | |   |
+ *             |                               |                                                    |  --------  |   |
+ *             ↓                               |                                                    |  ________  |   |
+ *  _____________________                      |                                  tileStatus        | | worker | |   |
+ * | TileCanvasViewModel |                     |    _____________________  <---- [**********] <---- |  --------  |   |
+ *  ---------------------  ----> [*********] ----> | tileCollectorKernel |                          |  ________  |   |
+ *                                tileSpecs    |    ---------------------  ----> [**********] ----> | | worker | |   |
+ *                                             |                                  tileStatus        |  --------  |   |
+ *                                             |                                                    |____________|   |
+ *                                             |                                                      worker pool    |
+ *                                             |                                                                     |
+ *                                              ---------------------------------------------------------------------
+ * ```
  *
  * @author peterLaurence on 22/06/19
  */
@@ -39,7 +60,7 @@ class TileCollector(private val workerCount: Int) {
         val tilesDownloadedFromWorker = Channel<TileStatus>(capacity = Channel.UNLIMITED)
 
         repeat(workerCount) { worker(tilesToDownload, tilesDownloadedFromWorker, tilesOutput, tileStreamProvider, bitmapFlow) }
-        tileCollector(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
+        tileCollectorKernel(tileSpecs, tilesToDownload, tilesDownloadedFromWorker)
     }
 
     private fun CoroutineScope.worker(tilesToDownload: ReceiveChannel<TileStatus>,
@@ -89,9 +110,9 @@ class TileCollector(private val workerCount: Int) {
         }
     }
 
-    private fun CoroutineScope.tileCollector(tileSpecs: ReceiveChannel<List<TileSpec>>,
-                                             tilesToDownload: SendChannel<TileStatus>,
-                                             tilesDownloadedFromWorker: ReceiveChannel<TileStatus>) = launch {
+    private fun CoroutineScope.tileCollectorKernel(tileSpecs: ReceiveChannel<List<TileSpec>>,
+                                                   tilesToDownload: SendChannel<TileStatus>,
+                                                   tilesDownloadedFromWorker: ReceiveChannel<TileStatus>) = launch {
 
         val tilesBeingProcessed = mutableListOf<TileStatus>()
 
