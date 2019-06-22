@@ -230,6 +230,13 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
      * Only triggered after the [idleDebounced] fires.
      */
     private fun aggressiveEviction(currentLevel: Int, currentSubSample: Int) {
+        /* If there isn't any tiles on current level (or subsample level), cancel eviction which
+         * otherwise would lead to a blank screen. This only triggers with remote http tiles. */
+        if (!tilesToRender.any {
+                    it.zoom == currentLevel && it.subSample == currentSubSample }) {
+            return
+        }
+
         val otherTilesNotSubSampled = tilesToRender.filter {
             it.zoom != currentLevel
         }
