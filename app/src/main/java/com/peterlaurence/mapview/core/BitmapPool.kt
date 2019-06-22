@@ -8,7 +8,10 @@ import java.util.*
  */
 class BitmapPool {
     private val pool = LinkedList<Bitmap>()
-    private var size: Int = 0
+
+    var size: Int = 0
+    private set
+
     private val threshold = 100
 
     fun getBitmap(): Bitmap? {

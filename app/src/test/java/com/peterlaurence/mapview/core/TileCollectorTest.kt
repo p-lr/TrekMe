@@ -1,12 +1,15 @@
 package com.peterlaurence.mapview.core
 
 import android.graphics.Bitmap
-import kotlinx.coroutines.CoroutineScope
+import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -14,13 +17,14 @@ import org.robolectric.RobolectricTestRunner
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import com.peterlaurence.mapview.core.TileStreamProvider as MapViewTileStreamProvider
 
 /**
- * Test the [collectTiles] engine. The following assertions are tested:
- * * The [TileProvider] should pick a [Bitmap] from the pool if possible
+ * Test the [TileCollector.collectTiles] engine. The following assertions are tested:
+ * * The Bitmap flow should pick a [Bitmap] from the pool if possible
  * * If [TileSpec]s are send to the input channel, corresponding [Tile]s are received from the
- * output channel (from the [collectTiles] point of view).
- * * The [Bitmap] of the [Tile]s produced should be consistent with the output of the [TileProvider]
+ * output channel (from the [TileCollector.collectTiles] point of view).
+ * * The [Bitmap] of the [Tile]s produced should be consistent with the output of the flow
  */
 @RunWith(RobolectricTestRunner::class)
 class TileCollectorTest {
@@ -50,10 +54,10 @@ class TileCollectorTest {
 
         /* Setup the channels */
         val visibleTileLocationsChannel = Channel<List<TileSpec>>(capacity = Channel.CONFLATED)
-        val tilesOutput = Channel<Tile>(capacity = Channel.UNLIMITED)
+        val tilesOutput = Channel<Tile>(capacity = Channel.RENDEZVOUS)
 
         val pool = BitmapPool()
-        val tileProvider = TileProviderImpl(pool, tileSize)
+
 
         val tileStreamProvider = object : TileStreamProvider {
             override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
@@ -61,31 +65,41 @@ class TileCollectorTest {
             }
         }
 
-        val bitmapReference = tileProvider.getTile(0, 0, 0).bitmap
+        val mapViewTileStreamProvider = object : MapViewTileStreamProvider {
+            override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+                return tileStreamProvider.getTileStream(row, col, zoomLvl)
+            }
+        }
+
+        val tileProvider = BitmapProvider(tileStreamProvider)
+
+        @FlowPreview
+        val bitmapFlow: Flow<Bitmap> = flow {
+            val bitmap = pool.getBitmap()
+            emit(bitmap)
+        }.flowOn(Dispatchers.Unconfined).map {
+            it ?: Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565)
+        }
+
+        val bitmapReference = tileProvider.getBitmap(0, 0, 0)
 
         fun CoroutineScope.consumeTiles(tileChannel: ReceiveChannel<Tile>) = launch {
-            var cnt = 0
             for (tile in tileChannel) {
                 println("received tile ${tile.zoom}-${tile.row}-${tile.col}")
                 assertTrue(tile.bitmap.sameAs(bitmapReference))
 
-                /* Add bitmap to the pool */
+                /* Add bitmap to the pool only if they are from level 0 */
                 if (tile.zoom == 0) {
                     pool.putBitmap(tile.bitmap)
-                    cnt++
-                    assertEquals(cnt, pool.size)
-                }
-
-                /* All bitmap from the last run should be out of the pool */
-                if (tile.zoom == 1) {
-                    assertEquals(0, pool.size)
                 }
             }
         }
 
         val job = launch {
-            collectTiles(visibleTileLocationsChannel, tilesOutput, tileProvider, tileStreamProvider)
-            consumeTiles(tilesOutput)
+            with(TileCollector(1)) {
+                collectTiles(visibleTileLocationsChannel, tilesOutput, mapViewTileStreamProvider, bitmapFlow)
+                consumeTiles(tilesOutput)
+            }
         }
 
         launch {
@@ -107,6 +121,10 @@ class TileCollectorTest {
             // wait a little, then cancel the job
             delay(1000)
             job.cancel()
+
+            // in the end, the pool should be empty since we put 3 bitmap in it, then requested 3
+            // more tiles right after.
+            assertEquals(0, pool.size)
         }
         Unit
     }
