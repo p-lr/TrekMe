@@ -143,7 +143,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     }
 
     private fun startInternals() {
-        throttledTask = throttle {
+        throttledTask = throttle(wait = 18) {
             updateViewport()
         }
     }
@@ -167,7 +167,10 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
-        renderVisibleTilesThrottled()
+
+        if (changed) {
+            renderVisibleTilesThrottled()
+        }
     }
 
     override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {

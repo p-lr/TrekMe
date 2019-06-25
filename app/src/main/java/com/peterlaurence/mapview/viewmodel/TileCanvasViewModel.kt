@@ -54,6 +54,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
 
     private lateinit var lastViewport: Viewport
     private lateinit var lastVisible: VisibleTiles
+    private var lastVisibleCount: Int = 0
     private var idle = false
 
     /**
@@ -82,7 +83,6 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         /* It's important to set the idle flag to false before launching computations, so that
          * tile eviction don't happen too quickly (can cause blinks) */
         idle = false
-        idleDebounced.offer(Unit)
 
         lastViewport = viewport
         val visibleTiles = visibleTilesResolver.getVisibleTiles(viewport)
@@ -93,6 +93,8 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         collectNewTiles(visibleTiles)
 
         lastVisible = visibleTiles
+        lastVisibleCount = visibleTiles.getNumberOfTiles()
+
         evictTiles(visibleTiles)
 
         renderThrottled()
@@ -119,6 +121,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                 if (!tilesToRender.contains(tile)) {
                     tile.setPaint()
                     tilesToRender.add(tile)
+                    idleDebounced.offer(Unit)
                 } else {
                     tile.recycle()
                 }
@@ -157,6 +160,10 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                 && tile.row in rowTop..rowBottom
     }
 
+    private fun VisibleTiles.getNumberOfTiles(): Int {
+        return (rowBottom - rowTop + 1) * (colRight - colLeft + 1)
+    }
+
     /**
      * Each time we get a new [VisibleTiles], remove all [Tile] from [tilesToRender] which aren't
      * visible or that aren't needed anymore and put their bitmap into the pool.
@@ -165,7 +172,7 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         val currentLevel = visibleTiles.level
         val currentSubSample = visibleTiles.subSample
 
-        /* First, remove tiles that aren't visible at current level */
+        /* Always remove tiles that aren't visible at current level */
         val iterator = tilesToRender.iterator()
         while (iterator.hasNext()) {
             val tile = iterator.next()
@@ -182,6 +189,9 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
         }
     }
 
+    /**
+     * Evict tiles for levels different than the current one, that aren't visible.
+     */
     private fun partialEviction(visibleTiles: VisibleTiles) {
         val currentLevel = visibleTiles.level
 
@@ -233,10 +243,14 @@ class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
      * Only triggered after the [idleDebounced] fires.
      */
     private fun aggressiveEviction(currentLevel: Int, currentSubSample: Int) {
-        /* If there isn't any tiles on current level (or subsample level), cancel eviction which
-         * otherwise would lead to a blank screen. This only triggers with remote http tiles. */
-        if (!tilesToRender.any {
-                    it.zoom == currentLevel && it.subSample == currentSubSample }) {
+        /**
+         * If not all tiles at current level (or also current sub-sample) are fetched, don't go
+         * further.
+         */
+        val nTilesAtCurrentLevel = tilesToRender.count {
+            it.zoom == currentLevel && it.subSample == currentSubSample
+        }
+        if (nTilesAtCurrentLevel < lastVisibleCount) {
             return
         }
 
