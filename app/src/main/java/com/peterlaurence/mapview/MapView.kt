@@ -12,7 +12,9 @@ import com.peterlaurence.mapview.markers.MarkerLayout
 import com.peterlaurence.mapview.view.TileCanvasView
 import com.peterlaurence.mapview.viewmodel.TileCanvasViewModel
 import kotlinx.android.parcel.Parcelize
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.SendChannel
 import kotlin.coroutines.CoroutineContext
 
@@ -249,17 +251,17 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
  */
 data class MapViewConfiguration(val levelCount: Int, val fullWidth: Int, val fullHeight: Int,
                                 val tileSize: Int, val tileStreamProvider: TileStreamProvider) {
-    var workerCount = Runtime.getRuntime().availableProcessors() - 1
-    private set
+    var workerCount = 16 // good compromise between remote http and local usage
+        private set
 
     var maxScale = 1f
-    private set
+        private set
 
     var startScale: Float? = null
-    private set
+        private set
 
     var magnifyingFactor: Int = 0
-    private set
+        private set
 
     /**
      * Define the size of the thread pool that will handle tile decoding. In some situations, a pool

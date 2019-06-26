@@ -105,7 +105,7 @@ class TileCollector(private val workerCount: Int) {
 
     private fun CoroutineScope.tileCollectorKernel(tileSpecs: ReceiveChannel<List<TileSpec>>,
                                                    tilesToDownload: SendChannel<TileStatus>,
-                                                   tilesDownloadedFromWorker: ReceiveChannel<TileStatus>) = launch {
+                                                   tilesDownloadedFromWorker: ReceiveChannel<TileStatus>) = launch(Dispatchers.Default) {
 
         val tilesBeingProcessed = mutableListOf<TileStatus>()
 
