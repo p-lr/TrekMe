@@ -2,19 +2,13 @@ package com.peterlaurence.mapview.core
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Process
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExecutorCoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 
 
 /**
@@ -44,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author peterLaurence on 22/06/19
  */
 class TileCollector(private val workerCount: Int) {
-    private val dispatcher = createDispatcher(workerCount)
 
     /**
      * Sets up the tile collector machinery. The architecture is inspired from
@@ -67,7 +60,7 @@ class TileCollector(private val workerCount: Int) {
                                       tilesDownloaded: SendChannel<TileStatus>,
                                       tilesOutput: SendChannel<Tile>,
                                       tileStreamProvider: TileStreamProvider,
-                                      bitmapFlow: Flow<Bitmap>) = launch(dispatcher) {
+                                      bitmapFlow: Flow<Bitmap>) = launch(Dispatchers.IO) {
 
         val bitmapLoadingOptions = BitmapFactory.Options()
         bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
@@ -144,19 +137,4 @@ class TileCollector(private val workerCount: Int) {
     }
 
     data class TileStatus(val spec: TileSpec, @Volatile var cancelled: Boolean = false)
-
-    /**
-     * We build our own coroutine dispatcher, as we want to set the min priority to each thread of the
-     * pool.
-     */
-    private fun createDispatcher(workerCount: Int): ExecutorCoroutineDispatcher {
-        val threadId = AtomicInteger()
-        return Executors.newFixedThreadPool(workerCount) {
-            Thread(it, "TileCollector-worker-${threadId.incrementAndGet()}").apply {
-                isDaemon = true
-                priority = Thread.MIN_PRIORITY
-                Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST)
-            }
-        }.asCoroutineDispatcher()
-    }
 }
