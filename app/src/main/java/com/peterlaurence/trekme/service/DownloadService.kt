@@ -206,7 +206,9 @@ class DownloadService : Service() {
             }
         }
 
-        launchDownloadTask(threadCount, source, threadSafeTileIterator, tileWriter)
+        /* Specific to OSM, don't use more than 2 threads */
+        val effectiveThreadCount = if (source == MapSource.OPEN_STREET_MAP) 2 else threadCount
+        launchDownloadTask(effectiveThreadCount, source, threadSafeTileIterator, tileWriter)
     }
 
     private fun createDestDir(): File? = runBlocking {

@@ -7,6 +7,6 @@ package com.peterlaurence.trekme.core.providers.urltilebuilder
  */
 class UrlTileBuilderOSM : UrlTileBuilder {
     override fun build(level: Int, row: Int, col: Int): String {
-        return "http://b.tile.openstreetmap.fr/osmfr/$level/$col/$row.png"
+        return "https://tiles.wmflabs.org/hikebike/$level/$col/$row.png"
     }
 }
