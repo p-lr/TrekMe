@@ -358,7 +358,7 @@ private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterato
     override fun run() {
         while (DownloadService.started) {
             val tile = tileIterator.next() ?: break
-            bitmapProvider.getBitmap(tile.level, tile.row, tile.col).also {
+            bitmapProvider.getBitmap(row= tile.row, col = tile.col, zoomLvl = tile.level).also {
                 /* Only write if there was no error */
                 if (it != null && DownloadService.started) {
                     tileWriter.write(tile, bitmap)
