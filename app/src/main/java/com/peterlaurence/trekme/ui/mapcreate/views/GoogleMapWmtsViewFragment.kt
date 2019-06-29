@@ -255,10 +255,10 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     private fun showWarningMessage() {
         fragmentWmtWarning.visibility = View.VISIBLE
-        fragmentWmtsNagivateToIgnCredentials.visibility = View.VISIBLE
         fragmentWmtWarningLink.visibility = View.VISIBLE
 
         if (mapSource == MapSource.IGN) {
+            fragmentWmtsNagivateToIgnCredentials.visibility = View.VISIBLE
             fragmentWmtWarning.text = getText(R.string.mapcreate_warning_ign)
         } else {
             fragmentWmtWarning.text = getText(R.string.mapcreate_warning_others)
