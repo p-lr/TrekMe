@@ -6,20 +6,17 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-
+import android.view.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationListener
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
+import com.peterlaurence.mapview.MapView
+import com.peterlaurence.mapview.MapViewConfiguration
+import com.peterlaurence.mapview.markers.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.OrientationEventManager
 import com.peterlaurence.trekme.core.map.Map
@@ -27,25 +24,17 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.ProjectionTask
-import com.peterlaurence.trekme.model.map.MapProvider
-import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
-
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.MapViewConfiguration
-import com.peterlaurence.mapview.markers.*
 import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.model.map.MapProvider
+import com.peterlaurence.trekme.ui.mapview.MapViewFragment.RequestManageTracksListener
+import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -133,7 +122,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         inMapRecordingViewModel = ViewModelProviders.of(this).get(InMapRecordingViewModel::class.java)
         inMapRecordingViewModel.getLiveRoute().observe(
                 this, Observer<InMapRecordingViewModel.LiveRoute> {
-            it?.let {liveRoute ->
+            it?.let { liveRoute ->
                 if (::routeLayer.isInitialized) {
                     routeLayer.updateLiveRoute(liveRoute.route, liveRoute.map)
                 }
@@ -257,7 +246,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
                 return true
             }
             R.id.lock_on_position_id -> {
-                item.isChecked = ! item.isChecked
+                item.isChecked = !item.isChecked
                 lockView = item.isChecked
                 return true
             }
@@ -441,10 +430,9 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
      * @param y the projected Y coordinate, or latitude if there is no [Projection]
      */
     private fun updatePosition(x: Double, y: Double) {
-        // TODO: implement
         mapView.moveMarker(positionMarker, x, y)
         landmarkLayer.onPositionUpdate(x, y)
-//
+
         if (lockView) {
             centerOnPosition()
         }
@@ -459,7 +447,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         /* The MapView can have only one MarkerTapListener.
          * It dispatches the tap event to child layers.
          */
-        mapView.setMarkerTapListener(object: MarkerTapListener {
+        mapView.setMarkerTapListener(object : MarkerTapListener {
             override fun onMarkerTap(view: View, x: Int, y: Int) {
                 markerLayer.onMarkerTap(view, x, y)
                 landmarkLayer.onMarkerTap(view, x, y)
@@ -484,10 +472,10 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     private fun setMap(map: Map) {
         mMap = map
         val mapView = MapView(this.context!!)
-        val tileSize = map.levelList.firstOrNull()?.tile_size ?: return
+        val tileSize = map.levelList.firstOrNull()?.tile_size?.x ?: return
 
-        val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize.x,
-                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(1)
+        val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize,
+                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(1).setPadding(tileSize * 2)
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)

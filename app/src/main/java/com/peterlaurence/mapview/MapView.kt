@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.SendChannel
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.max
 
 /**
  * The [MapView] is a subclass of [ZoomPanLayout], specialized for displaying
@@ -159,10 +160,11 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
 
     private fun getCurrentViewport(): Viewport {
-        val left = scrollX
-        val top = scrollY
-        val right = left + width
-        val bottom = top + height
+        val padding = configuration.padding
+        val left = max(scrollX - padding, 0)
+        val top = max(scrollY - padding, 0)
+        val right = left + width + padding * 2
+        val bottom = top + height + padding * 2
 
         return Viewport(left, top, right, bottom)
     }
@@ -263,6 +265,9 @@ data class MapViewConfiguration(val levelCount: Int, val fullWidth: Int, val ful
     var magnifyingFactor: Int = 0
         private set
 
+    var padding: Int = 0
+        private set
+
     /**
      * Define the size of the thread pool that will handle tile decoding. In some situations, a pool
      * of several times the numbers of cores is suitable. Whereas sometimes we want to limit to just
@@ -299,6 +304,15 @@ data class MapViewConfiguration(val levelCount: Int, val fullWidth: Int, val ful
      */
     fun setMagnifyingFactor(factor: Int): MapViewConfiguration {
         magnifyingFactor = factor
+        return this
+    }
+
+    /**
+     * The visible viewport will be considered larger in all directions by the provided [pixels]
+     * count. A recommended value of twice the tile size results in a seamless single image experience.
+     */
+    fun setPadding(pixels: Int): MapViewConfiguration {
+        padding = pixels
         return this
     }
 }
