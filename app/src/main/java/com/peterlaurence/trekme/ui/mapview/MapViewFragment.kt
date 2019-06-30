@@ -51,6 +51,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
     private lateinit var locationProvider: LocationProvider
+    private var hasCenteredOnFirstLocation = false
     private lateinit var orientationEventManager: OrientationEventManager
     private lateinit var markerLayer: MarkerLayer
     private lateinit var routeLayer: RouteLayer
@@ -305,6 +306,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
                 }
             } else {
                 /* The map changed */
+                hasCenteredOnFirstLocation = false
                 setMap(map)
                 inMapRecordingViewModel.reload()
                 updateLayers()
@@ -393,7 +395,8 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         mapView.moveMarker(positionMarker, x, y)
         landmarkLayer.onPositionUpdate(x, y)
 
-        if (lockView) {
+        if (lockView || !hasCenteredOnFirstLocation) {
+            hasCenteredOnFirstLocation = true
             centerOnPosition()
         }
     }
