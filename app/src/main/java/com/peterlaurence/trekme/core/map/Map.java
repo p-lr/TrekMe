@@ -207,10 +207,11 @@ public class Map {
 
     /**
      * Get the projected values for a geographical position. <br>
-     * This utility method is a blocking call. It can also be done asynchronously by getting the
-     * {@link Projection} with {@link Map#getProjection()}, create a
+     * This utility method is a blocking call. It can also be done asynchronously from java by
+     * getting the {@link Projection} with {@link Map#getProjection()}, create a
      * {@link com.peterlaurence.trekme.core.projection.ProjectionTask} and implement a
      * {@link ProjectionTask.ProjectionUpdateLister}.
+     * From Kotlin, simply use a coroutine dispatched on anything bu main thread.
      *
      * @param latitude  the geodetic latitude
      * @param longitude the geodetic longitude

@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.ui.mapview
 
 import android.content.Context
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +16,6 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
-import com.peterlaurence.trekme.core.projection.ProjectionTask
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.model.map.MapProvider
 import com.peterlaurence.trekme.ui.LocationProviderHolder
@@ -27,9 +25,7 @@ import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import kotlin.coroutines.CoroutineContext
@@ -40,9 +36,7 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author peterLaurence
  */
-class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
-        FrameLayoutMapView.PositionTouchListener,
-        CoroutineScope {
+class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, CoroutineScope {
     private lateinit var rootView: FrameLayoutMapView
     private lateinit var mapView: MapView
     private var mMap: Map? = null
@@ -78,7 +72,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
             requestManageMarkerListener = context
             locationProvider = context.locationProvider
         } else {
-            throw RuntimeException("$context must implement RequestManageTracksListener, MapProvider and LocationProvider")
+            throw RuntimeException("$context must implement RequestManageTracksListener, MapProvider and LocationProviderHolder")
         }
     }
 
@@ -353,7 +347,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     private fun onLocationReceived(location: Location) {
         if (isHidden) return
 
-        /* If there is no TileView, no need to go further */
+        /* If there is no MapView, no need to go further */
         if (!::mapView.isInitialized) {
             return
         }
@@ -361,9 +355,14 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         /* In the case there is no Projection defined, the latitude and longitude are used */
         val projection = mMap!!.projection
         if (projection != null) {
-            val projectionTask = ProjectionTask(this, location.latitude,
-                    location.longitude, projection)
-            projectionTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+            launch {
+                val projectedValues = withContext(Dispatchers.Default) {
+                    projection.doProjection(location.latitude, location.longitude)
+                }
+                if (projectedValues != null) {
+                    updatePosition(projectedValues[0], projectedValues[1])
+                }
+            }
         } else {
             updatePosition(location.longitude, location.latitude)
         }
@@ -372,10 +371,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         if (::speedListener.isInitialized) {
             speedListener.onSpeed(location.speed, SpeedUnit.KM_H)
         }
-    }
-
-    override fun onProjectionUpdate(projectedValues: DoubleArray) {
-        updatePosition(projectedValues[0], projectedValues[1])
     }
 
     fun currentMarkerEdited() {

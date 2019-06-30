@@ -11,11 +11,14 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
+import com.peterlaurence.mapview.markers.addMarker
+import com.peterlaurence.mapview.markers.moveMarker
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
+import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnSpainProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkOSMProvider
@@ -27,12 +30,16 @@ import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderIgnSpai
 import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderOSM
 import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderUSGS
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
+import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
+import com.peterlaurence.trekme.ui.mapcreate.views.components.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
+import com.peterlaurence.trekme.viewmodel.common.Location
+import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import kotlinx.android.synthetic.main.fragment_wmts_view.*
 import kotlinx.coroutines.*
@@ -70,11 +77,14 @@ import kotlin.coroutines.CoroutineContext
  * @author peterLaurence on 11/05/18
  */
 class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
-    private lateinit var job: Job
+    private var job = Job()
     private lateinit var mapSource: MapSource
     private lateinit var rootView: ConstraintLayout
     private lateinit var mapView: MapView
     private lateinit var areaLayer: AreaLayer
+    private lateinit var locationProvider: LocationProvider
+    private lateinit var positionMarker: PositionMarker
+    private val projection = MercatorProjection()
 
     private lateinit var area: Area
 
@@ -104,6 +114,16 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        if (context is LocationProviderHolder) {
+            locationProvider = context.locationProvider
+        } else {
+            throw RuntimeException("$context must implement LocationProviderHolder")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -115,6 +135,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         rootView = inflater.inflate(R.layout.fragment_wmts_view, container, false) as ConstraintLayout
+        positionMarker = PositionMarker(context!!)
 
         return rootView
     }
@@ -179,20 +200,38 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onAttach(context: Context) {
-        job = Job()
-        super.onAttach(context)
-    }
-
     override fun onStart() {
         super.onStart()
+        job = Job()
         EventBus.getDefault().register(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        startLocationUpdates()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        stopLocationUpdates()
     }
 
     override fun onStop() {
         EventBus.getDefault().unregister(this)
         job.cancel()
         super.onStop()
+    }
+
+    private fun startLocationUpdates() {
+        locationProvider.start {
+            onLocationReceived(it)
+        }
+    }
+
+    private fun stopLocationUpdates() {
+        locationProvider.stop()
     }
 
     /**
@@ -287,6 +326,9 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         /* Map calibration */
         mapView.defineBounds(x0, y0, x1, y1)
 
+        /* Position marker */
+        mapView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
+
         /* Add the view */
         setMapView(mapView)
     }
@@ -351,5 +393,32 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
                 }
             }
         }
+    }
+
+    private fun onLocationReceived(location: Location) {
+        /* If there is no MapView, no need to go further */
+        if (!::mapView.isInitialized) {
+            return
+        }
+
+        /* A Projection is always defined in this case */
+        launch {
+            val projectedValues = withContext(Dispatchers.Default) {
+                projection.doProjection(location.latitude, location.longitude)
+            }
+            if (projectedValues != null) {
+                updatePosition(projectedValues[0], projectedValues[1])
+            }
+        }
+    }
+
+    /**
+     * Update the position on the map.
+     *
+     * @param x the projected X coordinate
+     * @param y the projected Y coordinate
+     */
+    private fun updatePosition(x: Double, y: Double) {
+        mapView.moveMarker(positionMarker, x, y)
     }
 }

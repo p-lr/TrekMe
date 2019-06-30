@@ -93,20 +93,20 @@ public class PositionOrientationMarker extends View implements OrientationEventM
         Path path = null;
         if (mOrientationEnabled) {
             path = new Path();
-            float delta = (mMeasureDimension - mOrientationRadius1Dimension) / 2;
+            float delta = (mMeasureDimension - mOrientationRadius1Dimension) / 2f;
             path.arcTo(delta, delta,
                     mOrientationRadius1Dimension + delta, mOrientationRadius1Dimension + delta, -90, mOrientationAngle, false);
-            path.lineTo(mMeasureDimension / 2, 0);
+            path.lineTo(mMeasureDimension / 2f, 0);
             path.arcTo(delta, delta,
                     mOrientationRadius1Dimension + delta, mOrientationRadius1Dimension + delta, -90, -mOrientationAngle, false);
-            path.lineTo(mMeasureDimension / 2, 0);
+            path.lineTo(mMeasureDimension / 2f, 0);
         }
 
         /* Prepare the bitmap */
         mBitmap = Bitmap.createBitmap(mMeasureDimension, mMeasureDimension, Bitmap.Config.ARGB_4444);
         Canvas c = new Canvas(mBitmap);
-        c.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2, mBackgroundCircleDimension / 2, positionBackgroundPaint);
-        c.drawCircle(mMeasureDimension / 2, mMeasureDimension / 2, mPositionDimension / 2, positionPaint);
+        c.drawCircle(mMeasureDimension / 2f, mMeasureDimension / 2f, mBackgroundCircleDimension / 2f, positionBackgroundPaint);
+        c.drawCircle(mMeasureDimension / 2f, mMeasureDimension / 2f, mPositionDimension / 2f, positionPaint);
         if (mOrientationEnabled && path != null) {
             c.drawPath(path, positionPaint);
         }
@@ -117,7 +117,7 @@ public class PositionOrientationMarker extends View implements OrientationEventM
         super.onDraw(canvas);
 
         if (mOrientationEnabled) {
-            canvas.rotate(mAzimuth, mMeasureDimension / 2, mMeasureDimension / 2);
+            canvas.rotate(mAzimuth, mMeasureDimension / 2f, mMeasureDimension / 2f);
         }
 
         canvas.drawBitmap(mBitmap, 0, 0, null);
