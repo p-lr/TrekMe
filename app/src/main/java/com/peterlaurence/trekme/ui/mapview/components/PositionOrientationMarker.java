@@ -42,7 +42,7 @@ public class PositionOrientationMarker extends View implements OrientationEventM
                 R.style.PositionMarkerStyle, R.styleable.PositionOrientationMarker);
 
         mMeasureDimension = a.getDimensionPixelSize(
-                R.styleable.PositionOrientationMarker_mesureDimension,
+                R.styleable.PositionOrientationMarker_measureDimension,
                 65);
 
         mPositionDimension = a.getDimensionPixelSize(

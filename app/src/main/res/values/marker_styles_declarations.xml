@@ -1,11 +1,10 @@
 <resources>
-    <attr name="measureDimension" format="dimension" />
     <attr name="lineWidth" format="dimension" />
     <attr name="sightColor" format="color" />
     <attr name="sightBackgroundColor" format="color" />
 
     <declare-styleable name="PositionOrientationMarker">
-        <attr name="mesureDimension" format="dimension" />
+        <attr name="measureDimension" format="dimension" />
         <attr name="positionDimension" format="dimension" />
         <attr name="orientationRadius1Dimension" format="dimension" />
         <attr name="backgroundCircleDimension" format="dimension" />
