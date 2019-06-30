@@ -43,6 +43,7 @@ import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials;
 import com.peterlaurence.trekme.model.map.MapProvider;
 import com.peterlaurence.trekme.service.event.MapDownloadEvent;
 import com.peterlaurence.trekme.service.event.Status;
+import com.peterlaurence.trekme.ui.LocationProviderHolder;
 import com.peterlaurence.trekme.ui.MarkerProvider;
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent;
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent;
@@ -65,6 +66,8 @@ import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel;
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel;
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent;
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent;
+import com.peterlaurence.trekme.viewmodel.common.LocationProvider;
+import com.peterlaurence.trekme.viewmodel.common.LocationProviderFactory;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
@@ -82,7 +85,8 @@ public class MainActivity extends AppCompatActivity
         MapSettingsFragment.MapCalibrationRequestListener,
         MarkerManageFragment.MarkerManageFragmentInteractionListener,
         MarkerProvider,
-        MapViewFragment.RequestManageMarkerListener {
+        MapViewFragment.RequestManageMarkerListener,
+        LocationProviderHolder {
 
     private static final String MAP_FRAGMENT_TAG = "mapFragment";
     private static final String MAP_LIST_FRAGMENT_TAG = "mapListFragment";
@@ -134,6 +138,7 @@ public class MainActivity extends AppCompatActivity
     private Snackbar mSnackBarExit;
     private NavigationView mNavigationView;
     private MainActivityViewModel viewModel;
+    private LocationProviderFactory locationProviderFactory;
 
     static {
         /* Setup default eventbus to use an index instead of reflection, which is recommended for
@@ -230,6 +235,20 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Some fragments are retained, so they attach to the activity before the `onCreate`.
+     * We intercept this lifecycle event here because the `locationProviderFactory` must be ready
+     * before any fragment is attached, just in case they require a the {@link LocationProvider}.
+     */
+    @Override
+    public void onAttachFragment(@NonNull Fragment fragment) {
+        super.onAttachFragment(fragment);
+
+        if (locationProviderFactory == null) {
+            locationProviderFactory = new LocationProviderFactory(getApplicationContext());
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -281,7 +300,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * The first time we create a retained fragment, we don't want it to be added to the back stack,
      * because if the user uses the back button, the fragment manager will "forget" it and there is
-     * no way to retrieve with {@link FragmentManager#findFragmentByTag(String)}. <br>
+     * no way to retrieve with `FragmentManager.findFragmentByTag(string)`. <br>
      * Even worse, that last method is used to decide whether a retained fragment should be created
      * or not. So a "forgotten" retained fragment can be created several times. <br>
      * Consequently, the first time a retained fragment is created and shown, it is not added to the
@@ -900,5 +919,11 @@ public class MainActivity extends AppCompatActivity
         super.onRestoreInstanceState(savedInstanceState);
 
         mBackFragmentTag = savedInstanceState.getString(KEY_BUNDLE_BACK);
+    }
+
+    @NonNull
+    @Override
+    public LocationProvider getLocationProvider() {
+        return locationProviderFactory.getLocationProvider();
     }
 }

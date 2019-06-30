@@ -1,19 +1,13 @@
 package com.peterlaurence.trekme.ui.mapview
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.*
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.markers.*
@@ -26,8 +20,11 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.ProjectionTask
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.model.map.MapProvider
+import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.mapview.MapViewFragment.RequestManageTracksListener
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
+import com.peterlaurence.trekme.viewmodel.common.Location
+import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -38,8 +35,6 @@ import org.greenrobot.eventbus.Subscribe
 import kotlin.coroutines.CoroutineContext
 
 /**
- * A [Fragment] subclass that implements required interfaces to be used with a [GoogleApiClient].
- *
  * Activities that contain this fragment must implement the [RequestManageTracksListener] and
  * [MapProvider] interfaces to handle interaction events.
  *
@@ -55,7 +50,7 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     private var lockView = false
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
-    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationProvider: LocationProvider
     private lateinit var orientationEventManager: OrientationEventManager
     private lateinit var markerLayer: MarkerLayer
     private lateinit var routeLayer: RouteLayer
@@ -63,8 +58,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     private lateinit var landmarkLayer: LandmarkLayer
     private lateinit var speedListener: SpeedListener
     private lateinit var distanceListener: DistanceLayer.DistanceListener
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
 
     private lateinit var inMapRecordingViewModel: InMapRecordingViewModel
 
@@ -78,28 +71,13 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is RequestManageTracksListener && context is RequestManageMarkerListener) {
+        if (context is RequestManageTracksListener && context is RequestManageMarkerListener &&
+                context is LocationProviderHolder) {
             requestManageTracksListener = context
             requestManageMarkerListener = context
+            locationProvider = context.locationProvider
         } else {
             throw RuntimeException("$context must implement RequestManageTracksListener, MapProvider and LocationProvider")
-        }
-
-        /* The Google api client is re-created here as the onAttach method will always be called for
-         * a retained fragment.
-         */
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this.activity!!.applicationContext)
-        locationRequest = LocationRequest()
-        locationRequest.interval = 1000
-        locationRequest.fastestInterval = 1000
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                for (location in locationResult!!.locations) {
-                    onLocationReceived(location)
-                }
-            }
         }
     }
 
@@ -107,14 +85,6 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         super.onCreate(savedInstanceState)
         retainInstance = true
         setHasOptionsMenu(true)
-
-        /* The location request specific to this fragment */
-        if (!::locationRequest.isInitialized) {
-            locationRequest = LocationRequest()
-            locationRequest.interval = 1000
-            locationRequest.fastestInterval = 1000
-            locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
 
         /**
          * Listen to changes on the live route
@@ -276,21 +246,13 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     }
 
     private fun startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(context!!,
-                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return
-        }
-
-        if (::fusedLocationClient.isInitialized) {
-            fusedLocationClient.requestLocationUpdates(locationRequest,
-                    locationCallback, null)
+        locationProvider.start {
+            onLocationReceived(it)
         }
     }
 
     private fun stopLocationUpdates() {
-        if (::fusedLocationClient.isInitialized) {
-            fusedLocationClient.removeLocationUpdates(locationCallback)
-        }
+        locationProvider.stop()
     }
 
     override fun onPause() {
@@ -386,29 +348,27 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
         orientationEventManager.stop()
     }
 
-    private fun onLocationReceived(location: Location?) {
+    private fun onLocationReceived(location: Location) {
         if (isHidden) return
 
-        if (location != null) {
-            /* If there is no TileView, no need to go further */
-            if (!::mapView.isInitialized) {
-                return
-            }
+        /* If there is no TileView, no need to go further */
+        if (!::mapView.isInitialized) {
+            return
+        }
 
-            /* In the case there is no Projection defined, the latitude and longitude are used */
-            val projection = mMap!!.projection
-            if (projection != null) {
-                val projectionTask = ProjectionTask(this, location.latitude,
-                        location.longitude, projection)
-                projectionTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-            } else {
-                updatePosition(location.longitude, location.latitude)
-            }
+        /* In the case there is no Projection defined, the latitude and longitude are used */
+        val projection = mMap!!.projection
+        if (projection != null) {
+            val projectionTask = ProjectionTask(this, location.latitude,
+                    location.longitude, projection)
+            projectionTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+        } else {
+            updatePosition(location.longitude, location.latitude)
+        }
 
-            /* If the user wants to see the speed */
-            if (::speedListener.isInitialized) {
-                speedListener.onSpeed(location.speed, SpeedUnit.KM_H)
-            }
+        /* If the user wants to see the speed */
+        if (::speedListener.isInitialized) {
+            speedListener.onSpeed(location.speed, SpeedUnit.KM_H)
         }
     }
 
@@ -544,10 +504,14 @@ class MapViewFragment : Fragment(), ProjectionTask.ProjectionUpdateLister,
     }
 
     /**
-     * As the `MapViewFragment` is a [LocationListener], it can dispatch speed
+     * As the `MapViewFragment` receives speed data, it can dispatch speed
      * information to other sub-components.
      */
     interface SpeedListener {
+        /**
+         * @param speed speed in meters per second
+         * @param unit the desired unit to use for display
+         */
         fun onSpeed(speed: Float, unit: SpeedUnit)
 
         fun toggleSpeedVisibility()
