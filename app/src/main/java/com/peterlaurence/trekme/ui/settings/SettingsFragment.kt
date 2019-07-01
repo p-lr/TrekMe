@@ -13,11 +13,9 @@ import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var viewModel: SettingsViewModel
 
-    private val startOnPref: ListPreference?
-        get() = preferenceManager.findPreference(getString(R.string.preference_starton_key))
+    private var startOnPref: ListPreference? = null
 
-    private val downloadPref: ListPreference?
-        get() = preferenceManager.findPreference(getString(R.string.preference_download_location_key))
+    private var downloadPref: ListPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.app_settings)
@@ -64,6 +62,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun initComponents() {
+        startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
+        downloadPref = preferenceManager.findPreference(getString(R.string.preference_download_location_key))
+
         downloadPref?.setOnPreferenceChangeListener { _, newValue ->
             val newPath = newValue as String
             viewModel.setDownloadDirPath(newPath)
@@ -73,7 +74,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         startOnPref?.setOnPreferenceChangeListener { _, newValue ->
             startOnPref?.setSummaryAndValue(newValue as String)
-            val policy = when(newValue) {
+            val policy = when (newValue) {
                 getString(R.string.preference_starton_maplist) -> StartOnPolicy.MAP_LIST
                 getString(R.string.preference_starton_lastmap) -> StartOnPolicy.LAST_MAP
                 else -> StartOnPolicy.MAP_LIST

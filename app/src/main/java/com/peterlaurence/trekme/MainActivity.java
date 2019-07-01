@@ -235,20 +235,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Some fragments are retained, so they attach to the activity before the `onCreate`.
-     * We intercept this lifecycle event here because the `locationProviderFactory` must be ready
-     * before any fragment is attached, just in case they require a the {@link LocationProvider}.
-     */
-    @Override
-    public void onAttachFragment(@NonNull Fragment fragment) {
-        super.onAttachFragment(fragment);
-
-        if (locationProviderFactory == null) {
-            locationProviderFactory = new LocationProviderFactory(getApplicationContext());
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -924,6 +910,9 @@ public class MainActivity extends AppCompatActivity
     @NonNull
     @Override
     public LocationProvider getLocationProvider() {
+        if (locationProviderFactory == null) {
+            locationProviderFactory = new LocationProviderFactory(getApplicationContext());
+        }
         return locationProviderFactory.getLocationProvider();
     }
 }
