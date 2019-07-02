@@ -53,10 +53,8 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     }
 
     void onMapListUpdate(List<Map> mapList) {
-        if (mapList.size() > 0) {
-            maps = mapList;
-            notifyDataSetChanged();
-        }
+        maps = mapList;
+        notifyDataSetChanged();
     }
 
     /**
@@ -142,7 +140,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     }
 
     /**
-     * When the save button of an item is clicked, the {@link MapDeleteListener} is called with the
+     * When the deletion of a {@link Map} is confirmed, the {@link MapDeleteListener} is called with the
      * corresponding {@link Map}.
      */
     public interface MapDeleteListener {

@@ -308,6 +308,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
             builder.setMessage(R.string.map_delete_question)
                     .setPositiveButton(R.string.delete_dialog, (dialog, id) -> {
                         /* Delete the map */
+                        // TODO: refactor (this is really not the responsibility of a view to do this)
                         if (mMapWeakReference != null) {
                             Map map = mMapWeakReference.get();
                             if (map != null) {
