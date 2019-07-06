@@ -210,12 +210,12 @@ class WmtsLevelsDialog : DialogFragment() {
     @Subscribe
     fun onDownloadSpecRequest(event: DownloadSpecRequest) {
         val (p1, p2) = getPointsOfArea()
-        val tileSequenceAndCalibration = getTileSequenceAndCalibration(currentMinLevel, currentMaxLevel, p1, p2)
+        val mapSpec = getMapSpec(currentMinLevel, currentMaxLevel, p1, p2)
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
 
         mapSource?.let {
-            EventBus.getDefault().post(RequestDownloadMapEvent(it, tileSequenceAndCalibration.tileSequence,
-                    tileSequenceAndCalibration.calibrationPoints, tileCount))
+            EventBus.getDefault().post(RequestDownloadMapEvent(it, mapSpec.tileSequence,
+                    mapSpec.calibrationPoints, tileCount))
         }
     }
 
