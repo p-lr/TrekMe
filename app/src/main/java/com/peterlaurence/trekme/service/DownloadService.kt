@@ -267,7 +267,12 @@ class DownloadService : Service() {
         notificationBuilder.setContentText(message)
         notificationBuilder.setProgress(0, 0, false)
         notificationBuilder.mActions.clear()
-        notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
+        try {
+            notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
+        } catch (e: Exception) {
+            // can't figure out why it's (rarely) thrown. Ignore it for now
+        }
+
 
         /* Tell the rest of the app that the download is finished */
         EventBus.getDefault().post(MapDownloadEvent(Status.FINISHED))
