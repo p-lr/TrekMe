@@ -37,10 +37,8 @@ import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import com.peterlaurence.trekme.service.event.Status
-import com.peterlaurence.trekme.ui.mapcreate.views.WmtsLevelsDialog
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -81,8 +79,6 @@ class DownloadService : Service() {
     }
 
     override fun onCreate() {
-        EventBus.getDefault().register(this)
-
         /* Init */
         val notificationIntent = Intent(this, MainActivity::class.java)
         onTapPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -97,11 +93,6 @@ class DownloadService : Service() {
                 R.mipmap.ic_launcher)
 
         super.onCreate()
-    }
-
-    override fun onDestroy() {
-        EventBus.getDefault().unregister(this)
-        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -151,13 +142,17 @@ class DownloadService : Service() {
 
         /* Get ready for download and request download spec */
         progressEvent.progress = 0.0
-        requestDownloadSpec()
+
+        handler.post {
+            processRequestDownloadMapEvent()
+        }
 
         return START_NOT_STICKY
     }
 
-    @Subscribe
-    fun onRequestDownloadMapEvent(event: RequestDownloadMapEvent) {
+    private fun processRequestDownloadMapEvent() {
+        val event = EventBus.getDefault().getStickyEvent(RequestDownloadMapEvent::class.java)
+                ?: return
         val source = event.source
         val tileSequence = event.tileSequence
 
@@ -296,10 +291,6 @@ class DownloadService : Service() {
     private fun sendStartedStatus() {
         EventBus.getDefault().post(DownloadServiceStatusEvent(started))
     }
-
-    private fun requestDownloadSpec() {
-        EventBus.getDefault().post(WmtsLevelsDialog.DownloadSpecRequest())
-    }
 }
 
 private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator: ThreadSafeTileIterator,
@@ -311,7 +302,8 @@ private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator
 
                 val layerRealName = LayerForSource.resolveLayerName(source)
                 val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", layerRealName)
-                val tileStreamProvider = TileStreamProviderHttpAuth(urlTileBuilder, ignCredentials.user ?: "",
+                val tileStreamProvider = TileStreamProviderHttpAuth(urlTileBuilder, ignCredentials.user
+                        ?: "",
                         ignCredentials.pwd ?: "")
                 val bitmapProvider = BitmapProvider(tileStreamProvider)
                 val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
@@ -358,7 +350,7 @@ private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterato
     override fun run() {
         while (DownloadService.started) {
             val tile = tileIterator.next() ?: break
-            bitmapProvider.getBitmap(row= tile.row, col = tile.col, zoomLvl = tile.level).also {
+            bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level).also {
                 /* Only write if there was no error */
                 if (it != null && DownloadService.started) {
                     tileWriter.write(tile, bitmap)

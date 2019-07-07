@@ -3,23 +3,22 @@ package com.peterlaurence.trekme.ui.mapcreate.views
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.DialogFragment
-import androidx.core.os.ConfigurationCompat
-import androidx.appcompat.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.core.os.ConfigurationCompat
+import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.mapsource.wmts.*
-import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
+import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 import java.text.NumberFormat
 
 
@@ -181,41 +180,33 @@ class WmtsLevelsDialog : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
         updateTransactionCount()
     }
 
-    override fun onStop() {
-        EventBus.getDefault().unregister(this)
-        super.onStop()
-    }
-
     /**
-     * We will start the download with the [DownloadService]
+     * We will start the download with the [DownloadService]. A sticky event is posted right before
+     * the service is started.
      *
      * WmtsLevelsDialog                            DownloadService
-     *      Intent                    ----->          (service start)
-     *      onDownloadSpecRequest     <-----          DownloadSpecRequest
-     *      RequestDownloadMapEvent   ----->          onRequestDownloadMapEvent
+     *                                sticky
+     *      RequestDownloadMapEvent   ----->          (event available)
+     *      Intent                    ----->          (service start, then process event)
      *
      * Such communication is necessary because the service isn't started synchronously.
      */
-    fun onDownloadFormConfirmed() {
-        activity?.apply {
-            val intent = Intent(baseContext, DownloadService::class.java)
-            startService(intent)
-        }
-    }
-
-    @Subscribe
-    fun onDownloadSpecRequest(event: DownloadSpecRequest) {
+    private fun onDownloadFormConfirmed() {
         val (p1, p2) = getPointsOfArea()
         val mapSpec = getMapSpec(currentMinLevel, currentMaxLevel, p1, p2)
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
 
         mapSource?.let {
-            EventBus.getDefault().post(RequestDownloadMapEvent(it, mapSpec.tileSequence,
+            EventBus.getDefault().postSticky(RequestDownloadMapEvent(it, mapSpec.tileSequence,
                     mapSpec.calibrationPoints, tileCount))
+        }
+
+        activity?.apply {
+            val intent = Intent(baseContext, DownloadService::class.java)
+            startService(intent)
         }
     }
 
@@ -225,6 +216,4 @@ class WmtsLevelsDialog : DialogFragment() {
         val p2 = Point(area.relativeX2, area.relativeY2)
         return Pair(p1, p2)
     }
-
-    class DownloadSpecRequest
 }
