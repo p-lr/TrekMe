@@ -195,13 +195,9 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     /**
-     * Add a [Map] to the internal list and generated the json file. <br></br>
-     * This is typically called after an import, after a [Map] has been generated from a file
-     * structure.
+     * Add a [Map] to the internal list and generate the json file.
      */
-    override fun onMapImported(map: Map?, status: MapImporter.MapParserStatus) {
-        if (map == null) return
-
+    fun addMap(map: Map) {
         /* Set TileStreamProvider */
         applyTileStreamProviderTo(map)
 
@@ -213,6 +209,16 @@ object MapLoader : MapImporter.MapImportListener {
 
         /* Notify for view update */
         notifyMapListUpdateListeners()
+    }
+
+    /**
+     * Add a [Map] to the internal list and generate the json file.
+     * This is typically called after an import, after a [Map] has been generated from a file
+     * structure.
+     */
+    override fun onMapImported(map: Map?, status: MapImporter.MapParserStatus) {
+        if (map == null) return
+        addMap(map)
     }
 
     override fun onMapImportError(e: MapImporter.MapParseException?) {

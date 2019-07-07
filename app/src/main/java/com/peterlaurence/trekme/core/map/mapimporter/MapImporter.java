@@ -23,8 +23,7 @@ import java.util.List;
  * The {@link MapImporter} exposes a single method : {@link #importFromFile(File, Map.MapOrigin, MapImportListener)}.
  * To use the appropriate parser, the {@link Map.MapOrigin} enum type must be given. But for instance,
  * only {@link Map.MapOrigin#VIPS} is supported. <br>
- * This is typically used after a {@link MapArchive} has been extracted, or by the
- * {@link com.peterlaurence.trekme.service.DownloadService}.
+ * This is typically used after a {@link MapArchive} has been extracted.
  *
  * @author peterLaurence on 23/06/16.
  */

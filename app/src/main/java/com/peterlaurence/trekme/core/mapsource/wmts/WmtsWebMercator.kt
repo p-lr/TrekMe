@@ -8,7 +8,8 @@ data class Tile(val level: Int, val row: Int, val col: Int, val indexLevel: Int,
 
 data class Point(val X: Double, val Y: Double)
 data class MapSpec(val levelMin: Int, val levelMax: Int, val mapWidthPx: Int, val mapHeightPx: Int,
-                   val tileSequence: Sequence<Tile>, val calibrationPoints: Pair<CalibrationPoint, CalibrationPoint>)
+                   val tileSequence: Sequence<Tile>, val calibrationPoints: Pair<CalibrationPoint, CalibrationPoint>,
+                   val tileSize: Int)
 
 /**
  * At level 0, an WMTS map (which use WebMercator projection) is contained in a single tile of
@@ -56,7 +57,7 @@ fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point): MapS
     val calibrationPoints = getCalibrationPoints(levelMin, XLeft, YTop, XRight, YBottom)
     val mapSize = getMapSize(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 
-    return MapSpec(levelMin, levelMax, mapSize.widthPx, mapSize.heightPx, tileSequence, calibrationPoints)
+    return MapSpec(levelMin, levelMax, mapSize.widthPx, mapSize.heightPx, tileSequence, calibrationPoints, TILE_SIZE_PX)
 }
 
 fun getNumberOfTiles(levelMin: Int, levelMax: Int, point1: Point, point2: Point): Long {

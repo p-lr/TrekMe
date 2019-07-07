@@ -200,8 +200,7 @@ class WmtsLevelsDialog : DialogFragment() {
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
 
         mapSource?.let {
-            EventBus.getDefault().postSticky(RequestDownloadMapEvent(it, mapSpec.tileSequence,
-                    mapSpec.calibrationPoints, tileCount))
+            EventBus.getDefault().postSticky(RequestDownloadMapEvent(it, mapSpec, tileCount))
         }
 
         activity?.apply {

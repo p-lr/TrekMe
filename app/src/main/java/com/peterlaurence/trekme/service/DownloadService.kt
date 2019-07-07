@@ -17,11 +17,11 @@ import androidx.core.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MapGson
-import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
+import com.peterlaurence.trekme.core.map.mapbuilder.buildFromMapSpec
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
+import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
@@ -154,7 +154,7 @@ class DownloadService : Service() {
         val event = EventBus.getDefault().getStickyEvent(RequestDownloadMapEvent::class.java)
                 ?: return
         val source = event.source
-        val tileSequence = event.tileSequence
+        val tileSequence = event.mapSpec.tileSequence
 
         val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles) { p ->
             if (started) {
@@ -162,7 +162,7 @@ class DownloadService : Service() {
 
                 /* Post-process if download reaches 100% */
                 if (p == 100.0) {
-                    postProcess(event.calibrationPoints)
+                    postProcess(event.mapSpec)
                 }
             }
         }
@@ -237,44 +237,29 @@ class DownloadService : Service() {
         EventBus.getDefault().post(progressEvent)
     }
 
-    private fun postProcess(calibrationPoints: Pair<MapGson.Calibration.CalibrationPoint, MapGson.Calibration.CalibrationPoint>) {
+    private fun postProcess(mapSpec: MapSpec) {
+        val calibrationPoints = mapSpec.calibrationPoints
+
         /* Calibrate */
         fun calibrate(map: Map) {
             map.projection = MercatorProjection()
             map.mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name
             map.mapGson.calibration.calibration_points = calibrationPoints.toList()
             map.calibrate()
-            MapLoader.saveMap(map)
+            MapLoader.addMap(map)
         }
 
-        /* Import, and when we're done, calibrate the map */
-        MapImporter.importFromFile(destDir, Map.MapOrigin.VIPS,
-                object : MapImporter.MapImportListener {
-                    val okMsg = getText(R.string.service_download_finished)
-                    val koMsg = getText(R.string.map_download_dialog_error)
+        val map = buildFromMapSpec(mapSpec, destDir, ".jpg")
 
-                    override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
-                        handler.post {
-                            calibrate(map)
+        handler.post {
+            calibrate(map)
 
-                            /* Notify that the download is finished correctly*/
-                            notifyDownloadFinished(okMsg)
+            /* Notify that the download is finished correctly*/
+            notifyDownloadFinished(getText(R.string.service_download_finished))
 
-                            /* Finally, stop the service */
-                            stopSelf()
-                        }
-                    }
-
-                    override fun onMapImportError(e: MapImporter.MapParseException?) {
-                        EventBus.getDefault().post(MapDownloadEvent(Status.IMPORT_ERROR))
-
-                        /* Notify that the download finished with an error */
-                        notifyDownloadFinished(koMsg)
-
-                        /* Finally, stop the service */
-                        stopSelf()
-                    }
-                })
+            /* Finally, stop the service */
+            stopSelf()
+        }
     }
 
     private fun notifyDownloadFinished(message: CharSequence) {
