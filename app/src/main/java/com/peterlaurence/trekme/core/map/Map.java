@@ -7,10 +7,10 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.util.Log;
 
 import com.peterlaurence.trekme.core.map.gson.Landmark;
 import com.peterlaurence.trekme.core.map.gson.LandmarkGson;
@@ -154,6 +154,21 @@ public class Map {
     @Nullable
     MapBounds getMapBounds() {
         return mMapBounds;
+    }
+
+    /**
+     * Check whether the map contains a given location. It's the responsibility of the caller to
+     * know whether projected coordinated or lat/lon should be used.
+     *
+     * @param x a projected coordinate, or longitude
+     * @param y a projected coordinate, or latitude
+     */
+    public boolean containsLocation(double x, double y) {
+        if (mMapBounds != null) {
+            return x >= mMapBounds.X0 && x <= mMapBounds.X1 && y <= mMapBounds.Y0 && y >= mMapBounds.Y1;
+        } else {
+            return false;
+        }
     }
 
     public void calibrate() {

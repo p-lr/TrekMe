@@ -381,7 +381,8 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
      * Actions taken when the position changes:
      * * Update the position on the [Map]
      * * Update the landmarks
-     * * If we locked the view, we center the TileView on the current position
+     * * If we locked the view, we center the TileView on the current position only if the position
+     * is inside the map.
      *
      * @param x the projected X coordinate, or longitude if there is no [Projection]
      * @param y the projected Y coordinate, or latitude if there is no [Projection]
@@ -392,7 +393,9 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
 
         if (lockView || !hasCenteredOnFirstLocation) {
             hasCenteredOnFirstLocation = true
-            centerOnPosition()
+            if (mMap?.containsLocation(x, y) == true) {
+                centerOnPosition()
+            }
         }
     }
 
