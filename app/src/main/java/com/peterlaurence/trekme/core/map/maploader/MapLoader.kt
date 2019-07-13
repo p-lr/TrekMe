@@ -100,21 +100,26 @@ object MapLoader : MapImporter.MapImportListener {
     private fun generateMaps(dirs: List<File>): List<Map> = runBlocking {
         withContext(Dispatchers.Main) {
             val maps = findMaps(dirs)
-            mMapList.addAll(maps)
             notifyMapListUpdateListeners()
             maps
         }
     }
 
+    private fun Map.addIfNew() {
+        if (this !in mMapList) {
+            mMapList.add(this)
+        }
+    }
+
     /**
-     * Parses all [Map]s inside the provided listof directories, then updates the internal list of
+     * Parses all [Map]s inside the provided list of directories, then updates the internal list of
      * [Map] : [mMapList].
      * It is intended to be the only public method of updating the [Map] list.
      *
      * @param dirs The directories in which to search for maps. If not specified, a default value is
      * taken.
      */
-    suspend fun getMaps(dirs: List<File> = listOf()): List<Map> {
+    suspend fun updateMaps(dirs: List<File> = listOf()): List<Map> {
         val realDirs = if (dirs.isEmpty()) {
             TrekMeContext.mapsDirList
         } else {
@@ -122,7 +127,12 @@ object MapLoader : MapImporter.MapImportListener {
         }
 
         val maps = findMaps(realDirs)
-        mMapList.addAll(maps)
+
+        /* Add the map only if it's indeed a new one */
+        maps.forEach {
+            it.addIfNew()
+        }
+
         return maps
     }
 
@@ -202,7 +212,7 @@ object MapLoader : MapImporter.MapImportListener {
         applyTileStreamProviderTo(map)
 
         /* Add the map */
-        mMapList.add(map)
+        map.addIfNew()
 
         /* Generate the json file */
         saveMap(map)
@@ -418,14 +428,13 @@ object MapLoader : MapImporter.MapImportListener {
      * Utility method to write a [String] into a [File].
      */
     private fun writeToFile(st: String, out: File, errCb: () -> Unit) {
-        val writer = PrintWriter(out)
         try {
-            writer.print(st)
+            PrintWriter(out).use {
+                it.print(st)
+            }
         } catch (e: IOException) {
             errCb()
             Log.e(TAG, e.message, e)
-        } finally {
-            writer.close()
         }
     }
 }

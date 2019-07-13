@@ -22,7 +22,7 @@ class MapParserTest {
             val dirs = listOf(mJsonFilesDirectory)
             val mapLoader = MapLoader
             mapLoader.clearMaps()
-            val mapList = mapLoader.getMaps(dirs.filterNotNull())
+            val mapList = mapLoader.updateMaps(dirs.filterNotNull())
 
             /* One map should be found */
             assertEquals(1, mapList.size.toLong())

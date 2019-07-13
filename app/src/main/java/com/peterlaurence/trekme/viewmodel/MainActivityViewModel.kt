@@ -29,7 +29,7 @@ class MainActivityViewModel : ViewModel() {
     fun onActivityStart() {
         viewModelScope.launch {
             MapLoader.clearMaps()
-            MapLoader.getMaps()
+            MapLoader.updateMaps()
 
             when (Settings.getStartOnPolicy()) {
                 StartOnPolicy.MAP_LIST -> EventBus.getDefault().post(ShowMapListEvent())
