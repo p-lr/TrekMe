@@ -32,7 +32,7 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
         this.scale = scale
 
         this.subSample = if (scale < scaleForLevel[0] ?: Float.MIN_VALUE) {
-            (ln((scaleForLevel[0] ?: error("")).toDouble() / scale + 2.0) / ln(2.0)).toInt()
+            ceil(ln((scaleForLevel[0] ?: error("")).toDouble() / scale) / ln(2.0)).toInt()
         } else {
             0
         }
@@ -54,7 +54,7 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
     }
 
     /**
-     * Returns the level an entire value belonging to [0 ; [levelCount] - 1]
+     * Returns the level, an entire value belonging to [0 ; [levelCount] - 1]
      */
     private fun getLevel(scale: Float, magnifyingFactor: Int = 0): Int {
         /* This value can be negative */
