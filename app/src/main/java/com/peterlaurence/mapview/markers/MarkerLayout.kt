@@ -6,6 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.peterlaurence.mapview.MapView
 
+/**
+ * All markers are laid out using this view.
+ * All apis related to makers are implemented as extension functions on the [MapView], like for
+ * example [MapView.addMarker].
+ *
+ * @author peterLaurence on 18/06/2019
+ */
 open class MarkerLayout(context: Context) : ViewGroup(context) {
 
     private var mScale = 1f
@@ -18,7 +25,6 @@ open class MarkerLayout(context: Context) : ViewGroup(context) {
 
     fun setScale(scale: Float) {
         mScale = scale
-//        refreshPositions()
         requestLayout()
     }
 
@@ -62,16 +68,6 @@ open class MarkerLayout(context: Context) : ViewGroup(context) {
             layoutParams.mBottom = layoutParams.mTop + actualHeight
         }
         return layoutParams
-    }
-
-    private fun refreshPositions() {
-        for (i in 0 until childCount) {
-            val child = getChildAt(i)
-            if (child.visibility != View.GONE) {
-                val layoutParams = populateLayoutParams(child)
-                child.layout(layoutParams.mLeft, layoutParams.mTop, layoutParams.mRight, layoutParams.mBottom)
-            }
-        }
     }
 
     fun addMarker(view: View, left: Int, top: Int, relativeAnchorLeft: Float = -0.5f,

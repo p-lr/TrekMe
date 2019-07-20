@@ -40,7 +40,7 @@ class VisibleTilesResolverTest {
         resolver.setScale(0.0078f)  // 0.0078 is the scale of level 0
         assertEquals(1, resolver.subSample)
 
-        /* Outside of bounds: subsample should be greater at least 1 */
+        /* Outside of bounds: subsample should be at least 1 */
         resolver.setScale((1.0 / 2.0.pow(7.5)).toFloat())
         assertEquals(1, resolver.subSample)
         resolver.setScale((1.0 / 2.0.pow(9)).toFloat())
