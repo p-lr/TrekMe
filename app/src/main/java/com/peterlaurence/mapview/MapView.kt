@@ -23,6 +23,27 @@ import kotlin.math.max
  * The [MapView] is a subclass of [ZoomPanLayout], specialized for displaying
  * [deepzoom](https://geoservices.ign.fr/documentation/geoservices/wmts.html) maps.
  *
+ * Typical usage consists in 3 steps:
+ * 1. Creation of the [MapView]
+ * 2. Creation of a [TileStreamProvider]
+ * 3. Configuration of the [MapView]
+ *
+ * Example:
+ * ```
+ * val mapView = MapView(context)
+ * val tileStreamProvider = object : TileStreamProvider {
+ *   override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+ *     return FileInputStream(File("path_of_tile")) // or it can be a remote http fetch
+ *   }
+ * }
+ *
+ * val config = MapViewConfiguration(levelCount = 7, fullWidth = 25000, fullHeight = 12500,
+ *   tileSize = 256, tileStreamProvider = tileStreamProvider).setMaxScale(2f)
+ *
+ * /* Configuration */
+ * mapView.configure(config)
+ * ```
+ *
  * @author peterLaurence on 31/05/2019
  */
 class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
@@ -272,7 +293,6 @@ data class MapViewConfiguration(val levelCount: Int, val fullWidth: Int, val ful
      * Define the size of the thread pool that will handle tile decoding. In some situations, a pool
      * of several times the numbers of cores is suitable. Whereas sometimes we want to limit to just
      * 1, as some tile providers forbid multi threading to limit the load of the remote servers.
-     * By default, we set this to the number of cores minus one.
      */
     fun setWorkerCount(n: Int): MapViewConfiguration {
         if (n > 0) workerCount = n
