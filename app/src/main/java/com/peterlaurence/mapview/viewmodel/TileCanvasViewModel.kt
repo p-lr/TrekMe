@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 /**
  * The view-model which contains all the logic related to [Tile] management.
  * It defers [Tile] loading to the [TileCollector].
+ *
+ * @author peterLaurence on 04/06/2019
  */
 class TileCanvasViewModel(private val scope: CoroutineScope, tileSize: Int,
                           private val visibleTilesResolver: VisibleTilesResolver,

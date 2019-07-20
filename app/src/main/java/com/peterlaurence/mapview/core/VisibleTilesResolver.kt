@@ -12,14 +12,18 @@ import kotlin.math.*
  * the level immediately higher (in index) is picked, to avoid sub-sampling. This corresponds to a
  * [magnifyingFactor] of 0. The value 1 will result in picking the current level at a given scale,
  * which will be at a relative scale between 1.0 and 2.0
+ *
+ * @author peterLaurence on 25/05/2019
  */
 class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: Int,
                            private val fullHeight: Int, private val tileSize: Int = 256,
                            private val magnifyingFactor: Int = 0) {
 
     private var scale: Float = 1.0f
-    private var currentLevel = levelCount - 1
-    private var subSample: Int = 0
+    var currentLevel = levelCount - 1
+        private set
+    var subSample: Int = 0
+        private set
 
     /**
      * Last level is at scale 1.0f, others are at scale 1.0 / power_of_2
@@ -39,10 +43,6 @@ class VisibleTilesResolver(private val levelCount: Int, private val fullWidth: I
 
         /* Update current level */
         currentLevel = getLevel(scale, magnifyingFactor)
-    }
-
-    fun getCurrentLevel(): Int {
-        return currentLevel
     }
 
     /**

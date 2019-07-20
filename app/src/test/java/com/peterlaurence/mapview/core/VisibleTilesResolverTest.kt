@@ -2,6 +2,7 @@ package com.peterlaurence.mapview.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlin.math.pow
 
 class VisibleTilesResolverTest {
 
@@ -9,25 +10,43 @@ class VisibleTilesResolverTest {
     fun levelTest() {
         val resolver = VisibleTilesResolver(8, 1000, 800)
 
-        assertEquals(7, resolver.getCurrentLevel())
+        assertEquals(7, resolver.currentLevel)
         resolver.setScale(0.7f)
-        assertEquals(7, resolver.getCurrentLevel())
+        assertEquals(7, resolver.currentLevel)
         resolver.setScale(0.5f)
-        assertEquals(6, resolver.getCurrentLevel())
+        assertEquals(6, resolver.currentLevel)
         resolver.setScale(0.26f)
-        assertEquals(6, resolver.getCurrentLevel())
+        assertEquals(6, resolver.currentLevel)
         resolver.setScale(0.15f)
-        assertEquals(5, resolver.getCurrentLevel())
+        assertEquals(5, resolver.currentLevel)
         resolver.setScale(0.0078f)
-        assertEquals(0, resolver.getCurrentLevel())
+        assertEquals(0, resolver.currentLevel)
         resolver.setScale(0.008f)
-        assertEquals(1, resolver.getCurrentLevel())
+        assertEquals(1, resolver.currentLevel)
 
         /* Outside of bounds test */
         resolver.setScale(0.0030f)
-        assertEquals(0, resolver.getCurrentLevel())
+        assertEquals(0, resolver.currentLevel)
         resolver.setScale(1f)
-        assertEquals(7, resolver.getCurrentLevel())
+        assertEquals(7, resolver.currentLevel)
+    }
+
+    @Test
+    fun subSampleTest() {
+        val resolver = VisibleTilesResolver(8, 1000, 800)
+
+        resolver.setScale(0.008f)
+        assertEquals(0, resolver.subSample)
+        resolver.setScale(0.0078f)  // 0.0078 is the scale of level 0
+        assertEquals(1, resolver.subSample)
+
+        /* Outside of bounds: subsample should be greater at least 1 */
+        resolver.setScale((1.0 / 2.0.pow(7.5)).toFloat())
+        assertEquals(1, resolver.subSample)
+        resolver.setScale((1.0 / 2.0.pow(9)).toFloat())
+        assertEquals(2, resolver.subSample)
+        resolver.setScale((1.0 / 2.0.pow(10)).toFloat())
+        assertEquals(3, resolver.subSample)
     }
 
     @Test
