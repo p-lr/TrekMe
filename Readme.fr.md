@@ -28,14 +28,16 @@
 TrekMe est une application Android permettant de se localiser sur une carte topographique, sans nécessiter de connexion internet (sauf chez soi au moment de créer la carte). La différence principale avec les autres applications de la même catégorie est la source des cartes. Il est possible de télécharger des cartes IGN, USGS, et OpenStreetMap (d'autres sources seront ajoutées). Mais il est aussi possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser avec TrekMe.
 L'accent a été mis sur la faible consommation des ressources, pour maximiser l'autonomie lors d'une randonnée.
 
-Cartes IGN : contrairement à certaines applications qui font payer un abonnement, TrekMe fonctionne différemment en vous guidant pour vous inscrire sur le site de l'IGN. Vous pouvez alors obtenir gratuitement vos propres identifiants, pour accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal.
+Cartes IGN : contrairement à certaines applications qui font payer à la carte, TrekMe ne vous coûtera que 6€ par an. Vous serez guidé pour vous inscrire sur le site de l'IGN. Vous obtiendrez vos propres identifiants, pour accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal.
 Il faut pour cela suivre scrupuleusement le [tutoriel](https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN).
+Cependant, l'IGN impose que toute personne stockant ses cartes pour un usage hors connexion doit s'acquitter d'une ["license d'exploitation grand public numérique"](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf).
+Cette license coûte 6€ par an et TrekMe vous invitera à la régler quand vous voudrez créer votre première carte IGN. Si au bout d'un an vous ne renouvelez pas votre license, vous ne pourrez plus utiliser votre clé d'API pour télécharger de nouvelles cartes.
 
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
 	- USA : USGS
-	- France IGN (requiert une souscription **gratuite** à l'IGN)
+	- France IGN (requiert une souscription **annuelle de 6€** à l'IGN)
  	- Espagne IGN 
  	- OpenStreetMap
 * Marqueurs (possibilité d'ajout de commentaire)
@@ -61,7 +63,7 @@ Ici, on utilise une source de carte spécifique. Google map est un exemple de so
 Les cartes IGN sont parfaites pour cela. Elles couvrent la France entière ainsi que les DOM-TOM (Guadeloupe, Martinique, Réunion, Tahiti, etc.). Pour les Etats-Unis, il y a l'USGS.
 Il est important de noter que tous les pays n'ont pas un service national équivalent de l'IGN. Donc parfois, il faut se contenter des cartes OpenStreetMap.
 
-Certains fournisseurs de carte nécessitent une souscription, gratuite pour une utilisation personnelle.
+Certains fournisseurs de carte nécessitent une souscription, pour l'instant seulement l'IGN.
 
 Depuis le menu principal, choisissez "Créer une carte". Un menu vous donne alors le choix entre les sources suivantes : 
 
@@ -69,7 +71,7 @@ Depuis le menu principal, choisissez "Créer une carte". Un menu vous donne alor
 <img src="doc/tuto/wmts-providers.jpg" width="300">
 </p>
 
-A l'exception de l'IGN France, pour laquelle une souscription **gratuite** est nécessaire, vous pouvez directement sélectionner une source et continuer.
+A l'exception de l'IGN France, pour laquelle une souscription annuelle est nécessaire, vous pouvez directement sélectionner une source et continuer.
 
 <p align="center">
 <img src="doc/tuto/select-area.jpg" width="300">

@@ -38,7 +38,7 @@ The only limitation is the memory available on your device (smartphone, tablet).
 
 * Support in-app map creation from:
 	- United States's USGS
-	- France IGN (requires a ** free ** registration)
+	- France IGN (requires a ** annual subscription of 6€ **)
  	- Spain IGN 
  	- OpenStreetMap
 * Marker support (with optional comments)
