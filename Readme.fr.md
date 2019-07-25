@@ -30,8 +30,8 @@ L'accent a été mis sur la faible consommation des ressources, pour maximiser l
 
 Cartes IGN : contrairement à certaines applications qui font payer à la carte, TrekMe ne vous coûtera que 6€ par an. Vous serez guidé pour vous inscrire sur le site de l'IGN. Vous obtiendrez vos propres identifiants, pour accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal.
 Il faut pour cela suivre scrupuleusement le [tutoriel](https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN).
-Cependant, l'IGN impose que toute personne stockant ses cartes pour un usage hors connexion doit s'acquitter d'une ["license d'exploitation grand public numérique"](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf).
-Cette license coûte 6€ par an et TrekMe vous invitera à la régler quand vous voudrez créer votre première carte IGN. Si au bout d'un an vous ne renouvelez pas votre license, vous ne pourrez plus utiliser votre clé d'API pour télécharger de nouvelles cartes.
+Cependant, l'IGN impose que toute personne stockant ses cartes pour un usage hors connexion doit s'acquitter d'une ["licence d'exploitation grand public numérique"](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf).
+Cette licence coûte 6€ par an et TrekMe vous invitera à la régler quand vous voudrez créer votre première carte IGN. Si au bout d'un an vous ne renouvelez pas votre licence, vous ne pourrez plus utiliser votre clé d'API pour télécharger de nouvelles cartes.
 
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
