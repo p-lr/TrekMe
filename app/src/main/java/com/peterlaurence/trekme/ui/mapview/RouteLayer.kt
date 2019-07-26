@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.ui.mapview
 
+import android.graphics.Paint
 import android.util.Log
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.ScaleChangeListener
@@ -123,7 +124,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 
     private fun drawRoutes(routeList: List<RouteGson.Route>) {
-        pathView.updateRoutes(routeList)
+        pathView.updateRoutes(routeList.map { it.data as PathView.DrawablePath })
     }
 
     private fun drawLiveRouteCompletely(liveRoute: RouteGson.Route) {
@@ -133,7 +134,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 
     private fun drawLiveRoute(routeList: List<RouteGson.Route>) {
-        liveRouteView.updateRoutes(routeList)
+        liveRouteView.updateRoutes(routeList.map { it.data as PathView.DrawablePath })
     }
 
     private fun setMapView(mapView: MapView) {
@@ -171,20 +172,6 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         }
     }
 
-    private fun CoroutineScope.pathProcessor(paths: ReceiveChannel<Pair<RouteGson.Route, FloatArray>>,
-                                             action: List<RouteGson.Route>.() -> Unit) = launch {
-        val routesToDraw = mutableListOf<RouteGson.Route>()
-        for ((route, lines) in paths) {
-            /* Set the route data */
-            val drawablePath = PathView.DrawablePath(lines, null)
-            route.apply {
-                data = drawablePath
-            }
-            routesToDraw.add(route)
-            routesToDraw.action()
-        }
-    }
-
     /**
      * Each [RouteGson.Route] of a [Map] needs to provide data in a format that the
      * [MapView] understands.
@@ -200,6 +187,26 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
             } catch (e: Exception) {
                 // ignore and continue the loop
             }
+        }
+    }
+
+    private fun CoroutineScope.pathProcessor(paths: ReceiveChannel<Pair<RouteGson.Route, FloatArray>>,
+                                             action: List<RouteGson.Route>.() -> Unit) = launch {
+        val routesToDraw = mutableListOf<RouteGson.Route>()
+        for ((route, lines) in paths) {
+            /* Set the route data */
+            val drawablePath = object : PathView.DrawablePath {
+                override val visible: Boolean
+                    get() = route.visible
+                override var path: FloatArray = lines
+                override var paint: Paint? = null
+                override val width: Float? = null
+            }
+            route.apply {
+                data = drawablePath
+            }
+            routesToDraw.add(route)
+            routesToDraw.action()
         }
     }
 
