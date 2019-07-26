@@ -28,10 +28,11 @@
 TrekMe est une application Android permettant de se localiser sur une carte topographique, sans nécessiter de connexion internet (sauf chez soi au moment de créer la carte). La différence principale avec les autres applications de la même catégorie est la source des cartes. Il est possible de télécharger des cartes IGN, USGS, et OpenStreetMap (d'autres sources seront ajoutées). Mais il est aussi possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser avec TrekMe.
 L'accent a été mis sur la faible consommation des ressources, pour maximiser l'autonomie lors d'une randonnée.
 
-Cartes IGN : contrairement à certaines applications qui font payer à la carte, TrekMe ne vous coûtera que 6€ par an. Vous serez guidé pour vous inscrire sur le site de l'IGN. Vous obtiendrez vos propres identifiants, pour accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal.
-Il faut pour cela suivre scrupuleusement le [tutoriel](https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN).
-Cependant, l'IGN impose que toute personne stockant ses cartes pour un usage hors connexion doit s'acquitter d'une ["licence d'exploitation grand public numérique"](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf).
-Cette licence coûte 6€ par an et TrekMe vous invitera à la régler quand vous voudrez créer votre première carte IGN. Si au bout d'un an vous ne renouvelez pas votre licence, vous ne pourrez plus utiliser votre clé d'API pour télécharger de nouvelles cartes.
+Cartes IGN : 
+
+Contrairement à certaines applications qui font payer à la carte, TrekMe ne vous coûtera que 6€ par an.
+En effet, l'esprit de TrekMe est la consultation hors ligne des cartes IGN. Pour cela, le développeur de l’application doit s'acquitter d'une ["licence d'exploitation grand public numérique"](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf), qui coûte 6€ par an par utilisateur à TrekMe. TrekMe vous invitera à la régler quand vous voudrez créer votre première carte IGN. Si au bout d'un an vous ne renouvelez pas votre licence, vous ne pourrez plus consulter en mode hors ligne les cartes IGN.
+Il vous faudra disposer d'identifiants et clé d'API IGN à mettre directement dans TrekMe. Vous serez guidé pour vous inscrire sur le site de l'IGN et obtenir vos propres identifiants et clé d'API. Ceci vous permettra d’accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal. Il faut pour cela suivre scrupuleusement ce [tutoriel](https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN).
 
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
