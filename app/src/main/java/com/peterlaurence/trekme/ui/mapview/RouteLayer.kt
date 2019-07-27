@@ -3,13 +3,13 @@ package com.peterlaurence.trekme.ui.mapview
 import android.graphics.Paint
 import android.util.Log
 import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.ScaleChangeListener
+import com.peterlaurence.mapview.paths.PathView
+import com.peterlaurence.mapview.paths.addPathView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
-import com.peterlaurence.trekme.ui.mapview.components.PathView
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -74,25 +74,15 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
     private fun createPathView() {
         pathView = PathView(mapView.context)
-        mapView.addView(pathView, 1)
-        mapView.addScaleChangeListener(object : ScaleChangeListener {
-            override fun onScaleChanged(scale: Float) {
-                pathView.scale = scale
-            }
-        })
+        mapView.addPathView(pathView)
         pathView.scale = mapView.scale
     }
 
     private fun createLiveRouteView() {
         val context = mapView.context
         liveRouteView = PathView(context)
-        liveRouteView.defaultPaint.color = context.getColor(R.color.colorLiveRoute)
-        mapView.addView(liveRouteView, 1)
-        mapView.addScaleChangeListener(object : ScaleChangeListener {
-            override fun onScaleChanged(scale: Float) {
-                liveRouteView.scale = scale
-            }
-        })
+        liveRouteView.color = context.getColor(R.color.colorLiveRoute)
+        mapView.addPathView(liveRouteView)
         liveRouteView.scale = mapView.scale
     }
 
@@ -124,7 +114,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 
     private fun drawRoutes(routeList: List<RouteGson.Route>) {
-        pathView.updateRoutes(routeList.map { it.data as PathView.DrawablePath })
+        pathView.updatePaths(routeList.map { it.data as PathView.DrawablePath })
     }
 
     private fun drawLiveRouteCompletely(liveRoute: RouteGson.Route) {
@@ -134,7 +124,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 
     private fun drawLiveRoute(routeList: List<RouteGson.Route>) {
-        liveRouteView.updateRoutes(routeList.map { it.data as PathView.DrawablePath })
+        liveRouteView.updatePaths(routeList.map { it.data as PathView.DrawablePath })
     }
 
     private fun setMapView(mapView: MapView) {
