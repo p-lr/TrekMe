@@ -124,6 +124,7 @@ private const val DEFAULT_STROKE_WIDTH_DP = 4
 fun MapView.addPathView(pathView: PathView) {
     addView(pathView, 1)
     addScaleChangeListener(pathView)
+    pathView.scale = scale
 }
 
 /**

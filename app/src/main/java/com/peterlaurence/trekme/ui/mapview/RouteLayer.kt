@@ -75,7 +75,6 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     private fun createPathView() {
         pathView = PathView(mapView.context)
         mapView.addPathView(pathView)
-        pathView.scale = mapView.scale
     }
 
     private fun createLiveRouteView() {
@@ -83,7 +82,6 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         liveRouteView = PathView(context)
         liveRouteView.color = context.getColor(R.color.colorLiveRoute)
         mapView.addPathView(liveRouteView)
-        liveRouteView.scale = mapView.scale
     }
 
     /**
