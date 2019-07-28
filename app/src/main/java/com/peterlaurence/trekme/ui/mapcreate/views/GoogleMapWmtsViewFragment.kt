@@ -5,9 +5,12 @@ import android.content.Context
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
+import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
@@ -41,7 +44,6 @@ import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
-import kotlinx.android.synthetic.main.fragment_wmts_view.*
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -84,6 +86,10 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private lateinit var areaLayer: AreaLayer
     private lateinit var locationProvider: LocationProvider
     private lateinit var positionMarker: PositionMarker
+    private lateinit var wmtsWarning: TextView
+    private lateinit var wmtsWarningLink: TextView
+    private lateinit var navigateToIgnCredentialsBtn: Button
+    private lateinit var fabSave: FloatingActionButton
     private val projection = MercatorProjection()
 
     private lateinit var area: Area
@@ -143,14 +149,20 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        wmtsWarning = view.findViewById(R.id.fragmentWmtWarning)
+
+        fabSave = view.findViewById(R.id.fabSave)
         fabSave.setOnClickListener { validateArea() }
-        fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
+
+        wmtsWarningLink = view.findViewById(R.id.fragmentWmtWarningLink)
+        wmtsWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
         /**
          * If there is something wrong with IGN credentials, a special button helps to go directly
          * to the credentials editing fragment.
          */
-        fragmentWmtsNagivateToIgnCredentials.setOnClickListener {
+        navigateToIgnCredentialsBtn = view.findViewById(R.id.fragmentWmtsNagivateToIgnCredentials)
+        navigateToIgnCredentialsBtn.setOnClickListener {
             EventBus.getDefault().post(MapSourceSettingsEvent(MapSource.IGN))
         }
 
@@ -284,30 +296,35 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
                 MapSource.OPEN_STREET_MAP -> checkOSMProvider()
             }
         }.await().also {
-            if (!it) {
-                showWarningMessage()
-            } else {
-                hideWarningMessage()
+            try {
+                if (!it) {
+                    showWarningMessage()
+                } else {
+                    hideWarningMessage()
+                }
+            } catch (e: IllegalStateException) {
+                /* Since the result of this job can happen anytime during the lifecycle of this
+                 * fragment, we should be resilient regarding this kind of error */
             }
         }
     }
 
     private fun showWarningMessage() {
-        fragmentWmtWarning.visibility = View.VISIBLE
-        fragmentWmtWarningLink.visibility = View.VISIBLE
+        wmtsWarning.visibility = View.VISIBLE
+        wmtsWarningLink.visibility = View.VISIBLE
 
         if (mapSource == MapSource.IGN) {
-            fragmentWmtsNagivateToIgnCredentials.visibility = View.VISIBLE
-            fragmentWmtWarning.text = getText(R.string.mapcreate_warning_ign)
+            navigateToIgnCredentialsBtn.visibility = View.VISIBLE
+            wmtsWarning.text = getText(R.string.mapcreate_warning_ign)
         } else {
-            fragmentWmtWarning.text = getText(R.string.mapcreate_warning_others)
+            wmtsWarning.text = getText(R.string.mapcreate_warning_others)
         }
     }
 
     private fun hideWarningMessage() {
-        fragmentWmtWarning.visibility = View.GONE
-        fragmentWmtsNagivateToIgnCredentials.visibility = View.GONE
-        fragmentWmtWarningLink.visibility = View.GONE
+        wmtsWarning.visibility = View.GONE
+        navigateToIgnCredentialsBtn.visibility = View.GONE
+        wmtsWarningLink.visibility = View.GONE
     }
 
     private fun addMapView(tileStreamProvider: TileStreamProvider) {
