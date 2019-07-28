@@ -122,7 +122,7 @@ class TracksManageFragment : Fragment(),
             val ctx = context ?: return
             val uri = resultData?.data ?: return
 
-            if (!TrackImporter.isFileSupported(uri)) {
+            if (!TrackImporter.isFileSupported(uri, ctx.contentResolver)) {
                 val builder = AlertDialog.Builder(ctx)
                 builder.setView(View.inflate(context, R.layout.track_warning, null))
                 builder.setCancelable(false)

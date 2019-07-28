@@ -13,7 +13,10 @@ import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -49,9 +52,9 @@ object TrackImporter {
         supportedTrackFilesExtensions.any { filename.endsWith(".$it") }
     }
 
-    fun isFileSupported(uri: Uri): Boolean {
-        val path = uri.path
-        val extension = path?.substring(path.lastIndexOf(".") + 1) ?: ""
+    fun isFileSupported(uri: Uri, contentResolver: ContentResolver): Boolean {
+        val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
+        val extension = fileName.substringAfterLast('.', "")
 
         if ("" == extension) return false
 
