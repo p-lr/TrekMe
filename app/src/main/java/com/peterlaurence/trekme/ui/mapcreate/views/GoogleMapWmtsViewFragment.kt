@@ -141,7 +141,6 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         rootView = inflater.inflate(R.layout.fragment_wmts_view, container, false) as ConstraintLayout
-        positionMarker = PositionMarker(context!!)
 
         return rootView
     }
@@ -328,7 +327,8 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     }
 
     private fun addMapView(tileStreamProvider: TileStreamProvider) {
-        val mapView = MapView(this.context!!)
+        val context = this.context ?: return
+        val mapView = MapView(context)
 
         val config = MapViewConfiguration(19, mapSize, mapSize, tileSize,
                 tileStreamProvider.toMapViewTileStreamProvider())
@@ -344,6 +344,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         mapView.defineBounds(x0, y0, x1, y1)
 
         /* Position marker */
+        positionMarker = PositionMarker(context)
         mapView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
 
         /* Add the view */
@@ -436,6 +437,8 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
      * @param y the projected Y coordinate
      */
     private fun updatePosition(x: Double, y: Double) {
-        mapView.moveMarker(positionMarker, x, y)
+        if (::positionMarker.isInitialized) {
+            mapView.moveMarker(positionMarker, x, y)
+        }
     }
 }
