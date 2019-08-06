@@ -11,8 +11,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 42
-        versionName "1.7.6"
+        versionCode 43
+        versionName "1.7.7"
     }
     buildTypes {
         release {
@@ -44,6 +44,7 @@ dependencies {
     implementation 'com.peterlaurence:mapview:1.0.0'
     implementation 'org.greenrobot:eventbus:3.1.1'
     kapt 'org.greenrobot:eventbus-annotation-processor:3.1.1'
+    implementation 'com.android.billingclient:billing:2.0.1'
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
