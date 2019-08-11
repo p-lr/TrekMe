@@ -1,9 +1,12 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -27,6 +30,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     private lateinit var priceInformation: TextView
     private lateinit var priceValue: TextView
     private lateinit var buyBtn: Button
+    private lateinit var helpBtn: ImageButton
 
     companion object {
         fun newInstance(area: Area, mapSourceBundle: MapSourceBundle): WmtsLevelsDialogIgn {
@@ -81,17 +85,28 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
 
         buyBtn = view.findViewById(R.id.purchase_btn)
         buyBtn.text = getString(R.string.buy_btn)
+
+        helpBtn = view.findViewById(R.id.help_license_info)
+        helpBtn.setOnClickListener {
+            val url = "https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#cartes-ign"
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(url)
+            startActivity(intent)
+        }
     }
 
     private fun showPriceIGN() {
         priceInformation.visibility = View.VISIBLE
         priceValue.visibility = View.VISIBLE
         buyBtn.visibility = View.VISIBLE
+        helpBtn.visibility = View.VISIBLE
+        buyBtn.requestFocus()
     }
 
     private fun hidePriceIGN() {
         priceInformation.visibility = View.GONE
         priceValue.visibility = View.GONE
         buyBtn.visibility = View.GONE
+        helpBtn.visibility = View.GONE
     }
 }
