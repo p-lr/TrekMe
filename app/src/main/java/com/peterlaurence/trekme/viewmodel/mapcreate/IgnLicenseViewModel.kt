@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.Billing
 import kotlinx.coroutines.launch
 
-class MapCreateViewModel : ViewModel() {
+class IgnLicenseViewModel : ViewModel() {
     private val ignLicenseStatus = MutableLiveData<Boolean>()
 
     fun getIgnLicensePurchaseStatus(billing: Billing) {

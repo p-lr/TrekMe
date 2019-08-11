@@ -406,7 +406,11 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
             val fm = activity?.supportFragmentManager
             if (fm != null) {
                 mapSource.let {
-                    val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(area, MapSourceBundle(it))
+                    val wmtsLevelsDialog = if (it == MapSource.IGN) {
+                        WmtsLevelsDialogIgn.newInstance(area, MapSourceBundle(it))
+                    } else {
+                        WmtsLevelsDialog.newInstance(area, MapSourceBundle(it))
+                    }
                     wmtsLevelsDialog.show(fm, "fragment")
                 }
             }

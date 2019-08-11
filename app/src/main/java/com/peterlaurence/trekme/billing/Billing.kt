@@ -130,7 +130,7 @@ class Billing(val context: Context) : PurchasesUpdatedListener {
 
     /**
      */
-    suspend fun queryIgnLicenseSku() = suspendCoroutine<SkuQueryResult> {
+    private suspend fun queryIgnLicenseSku() = suspendCoroutine<SkuQueryResult> {
         val skuList = ArrayList<String>()
         skuList.add(IGN_LICENSE_SKU)
         val params = SkuDetailsParams.newBuilder()

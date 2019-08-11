@@ -26,7 +26,7 @@ import java.text.NumberFormat
  * This dialog fragment holds the settings of the minimum and maximum zoom level of the map, before
  * it is downloaded.
  */
-class WmtsLevelsDialog : DialogFragment() {
+open class WmtsLevelsDialog : DialogFragment() {
     /* Level thresholds */
     private val minLevel = 1
     private val maxLevel = 18
@@ -43,9 +43,6 @@ class WmtsLevelsDialog : DialogFragment() {
     private var mapSource: MapSource? = null
 
     companion object {
-        private const val ARG_AREA = "WmtsLevelsDialog_area"
-        private const val ARG_MAP_SOURCE = "WmtsLevelsDialog_mapSource"
-
         fun newInstance(area: Area, mapSourceBundle: MapSourceBundle): WmtsLevelsDialog {
             val f = WmtsLevelsDialog()
 
@@ -216,3 +213,6 @@ class WmtsLevelsDialog : DialogFragment() {
         return Pair(p1, p2)
     }
 }
+
+const val ARG_AREA = "WmtsLevelsDialog_area"
+const val ARG_MAP_SOURCE = "WmtsLevelsDialog_mapSource"

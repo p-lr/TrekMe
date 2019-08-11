@@ -8,13 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.ui.mapcreate.MapSourceAdapter.MapSourceSelectionListener
@@ -22,7 +19,6 @@ import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
 import com.peterlaurence.trekme.util.isEnglish
 import com.peterlaurence.trekme.util.isFrench
-import com.peterlaurence.trekme.viewmodel.mapcreate.MapCreateViewModel
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -38,13 +34,9 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     private lateinit var settingsButton: Button
 
     private lateinit var selectedMapSource: MapSource
-    private lateinit var billing: Billing
-    private lateinit var viewModel: MapCreateViewModel
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
-        billing = Billing(context)
 
         /**
          * When the app is in english, put [MapSource.USGS] in front.
@@ -59,17 +51,6 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
                 0
             }
         }.toTypedArray()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        viewModel = ViewModelProviders.of(activity!!).get(MapCreateViewModel::class.java)
-        viewModel.getIgnLicenseStatus().observe(this, Observer<Boolean> {
-            it?.also {
-                println("Ign license status $it")
-            }
-        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -106,13 +87,6 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
             adapter = viewAdapter
             addItemDecoration(dividerItemDecoration)
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        viewModel.getIgnLicensePurchaseStatus(billing)
-        viewModel.getIgnLicenseInfo(billing)
     }
 
     /**
