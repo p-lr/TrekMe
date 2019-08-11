@@ -191,6 +191,8 @@
     <string name="max_zoom">Maximun zoom</string>
     <string name="total_transactions">Total transactions</string>
     <string name="map_size">Map size</string>
+    <string name="ign_buy_license_banner">You have to buy the IGN license, valid for one year</string>
+    <string name="buy_btn">Purchase</string>
     <string name="download">Download</string>
     <string name="download_confirm">Download started. See the status in your notifications.</string>
     <string name="mapcreate_warning_ign">Please check your internet connection or your credentials.</string>

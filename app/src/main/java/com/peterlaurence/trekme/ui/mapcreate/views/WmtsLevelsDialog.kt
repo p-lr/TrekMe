@@ -72,7 +72,7 @@ open class WmtsLevelsDialog : DialogFragment() {
                 .create()
     }
 
-    private fun configureComponents(view: View) {
+    protected open fun configureComponents(view: View) {
         val barMinLevel = view.findViewById<SeekBar>(R.id.seekBarMinLevel)
         barMinLevel.progress = startMinLevel - minLevel
         barMinLevel.max = maxLevel - minLevel

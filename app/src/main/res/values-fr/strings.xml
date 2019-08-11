@@ -153,4 +153,6 @@
     <string name="preference_starton_lastmap">la dernière carte ouverte</string>
     <string name="preference_download_location_title">Répertoire de téléchargement</string>
     <string name="mapview_lock_on_position">Verrouiller sur la position</string>
+    <string name="ign_buy_license_banner">Vous devez acheter la licence IGN, valable un an</string>
+    <string name="buy_btn">Acheter</string>
 </resources>

@@ -191,4 +191,43 @@
         app:layout_constraintTop_toTopOf="@+id/textView5"
         tools:text="0" />
 
+    <TextView
+        android:id="@+id/price_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:textColor="@color/colorGreen"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/price_value"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView5"
+        tools:text="This is an optional info text" />
+
+    <TextView
+        android:id="@+id/price_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/colorPrimaryTextBlack"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/price_info"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/price_info"
+        tools:text="0" />
+
+    <Button
+        android:id="@+id/purchase_btn"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="4dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/price_info"
+        tools:text="Purchase" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
