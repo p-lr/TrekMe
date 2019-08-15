@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.billing
 
+import android.app.Activity
 import android.content.Context
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode.*
@@ -12,24 +13,11 @@ import kotlin.coroutines.suspendCoroutine
 
 const val IGN_LICENSE_SKU = "ign_license"
 
-class Billing(val context: Context) : PurchasesUpdatedListener {
+class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
 
     private val billingClient = BillingClient.newBuilder(context).setListener(this).enablePendingPurchases().build()
 
-//    private fun connectClient() {
-//        billingClient = BillingClient.newBuilder(context).setListener(this).enablePendingPurchases().build()
-//        billingClient.startConnection(object : BillingClientStateListener {
-//            override fun onBillingSetupFinished(billingResult: BillingResult) {
-//                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-//                    println("Billing client is ready")
-//                }
-//            }
-//
-//            override fun onBillingServiceDisconnected() {
-//                println("Billing client disconnected")
-//            }
-//        })
-//    }
+    private lateinit var purchaseCallback: () -> Unit
 
     /**
      * This function returns when we're connected to the billing service.
@@ -57,10 +45,33 @@ class Billing(val context: Context) : PurchasesUpdatedListener {
     }
 
     override fun onPurchasesUpdated(billingResult: BillingResult?, purchases: MutableList<Purchase>?) {
-        println("onPurchaseUpdated $billingResult")
-        purchases?.forEach {
-            println(it.sku)
+        fun acknowledge() {
+            purchases?.forEach {
+                if (!it.isAcknowledged && it.sku == IGN_LICENSE_SKU) {
+                    /* Approve the payment */
+                    val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+                            .setPurchaseToken(it.purchaseToken)
+                            .build()
+                    billingClient.acknowledgePurchase(acknowledgePurchaseParams, this)
+
+                    /* Then notify registered PurchaseListener that it completed normally */
+                    if (this::purchaseCallback.isInitialized) {
+                        purchaseCallback()
+                    }
+                }
+            }
         }
+
+        println("onPurchaseUpdated ${billingResult?.responseCode} count purchases ${purchases?.size}")
+        if (billingResult != null && purchases != null) {
+            if (billingResult.responseCode == OK) {
+                acknowledge()
+            }
+        }
+    }
+
+    override fun onAcknowledgePurchaseResponse(billingResult: BillingResult?) {
+        println("Acknowledgement of purchase : ${billingResult?.responseCode}")
     }
 
     suspend fun getIgnLicensePurchaseStatus(): Boolean {
@@ -74,6 +85,16 @@ class Billing(val context: Context) : PurchasesUpdatedListener {
         if (purchases == null || !purchases.purchasesList.containsIgnLicense()) {
             return queryPurchaseStatusNetwork()
         }
+
+        // consume
+//        purchases.purchasesList.forEach {
+//            if (it.sku == IGN_LICENSE_SKU) {
+//                val consumeParams = ConsumeParams.newBuilder().setPurchaseToken(it.purchaseToken).build()
+//                billingClient.consumeAsync(consumeParams) { responseCode, outToken ->
+//                    println("Consumed $responseCode")
+//                }
+//            }
+//        }
 
         /**
          * Look into the cache since a network call isn't necessary.
@@ -111,7 +132,7 @@ class Billing(val context: Context) : PurchasesUpdatedListener {
         val (billingResult, skuDetailsList) = queryIgnLicenseSku()
         return when (billingResult.responseCode) {
             OK -> skuDetailsList.find { it.sku == IGN_LICENSE_SKU }?.let {
-                IgnLicenseDetails(it.price)
+                IgnLicenseDetails(it)
             } ?: throw ProductNotFoundException()
             FEATURE_NOT_SUPPORTED -> throw NotSupportedException()
             SERVICE_DISCONNECTED -> error("should retry")
@@ -142,5 +163,14 @@ class Billing(val context: Context) : PurchasesUpdatedListener {
 
     data class SkuQueryResult(val billingResult: BillingResult, val skuDetailsList: List<SkuDetails>)
 
+    fun launchBilling(skuDetails: SkuDetails, purchaseCallback: () -> Unit) {
+        val flowParams = BillingFlowParams.newBuilder()
+                .setSkuDetails(skuDetails)
+                .build()
+        this.purchaseCallback = purchaseCallback
+        val responseCode = billingClient.launchBillingFlow(activity, flowParams)
+
+        println("result of billing flow : ${responseCode.responseCode} ${responseCode.debugMessage}")
+    }
 }
 

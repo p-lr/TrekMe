@@ -52,7 +52,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        billing = Billing(context)
+        billing = Billing(context, activity!!)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,6 +63,9 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
             it?.also {
                 if (!it) {
                     viewModel.getIgnLicenseInfo(billing)
+                } else {
+                    hidePriceIGN()
+                    setDownloadEnabled(true)
                 }
             }
         })
@@ -99,6 +102,9 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
 
         buyBtn = view.findViewById(R.id.purchase_btn)
         buyBtn.text = getString(R.string.buy_btn)
+        buyBtn.setOnClickListener {
+            viewModel.buyLicense(billing)
+        }
 
         helpBtn = view.findViewById(R.id.help_license_info)
         helpBtn.setOnClickListener {

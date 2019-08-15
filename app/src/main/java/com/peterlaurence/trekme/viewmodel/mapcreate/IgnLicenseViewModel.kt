@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.billingclient.api.SkuDetails
 import com.peterlaurence.trekme.billing.Billing
 import kotlinx.coroutines.launch
 
@@ -26,6 +27,16 @@ class IgnLicenseViewModel : ViewModel() {
         }
     }
 
+    fun buyLicense(billing: Billing) {
+        val ignLicenseDetails = ignLicenseDetails.value
+        if (ignLicenseDetails != null) {
+            billing.launchBilling(ignLicenseDetails.skuDetails) {
+                /* It's assumed that if this is called, it's a success */
+                ignLicenseStatus.postValue(true)
+            }
+        }
+    }
+
     fun getIgnLicenseStatus(): LiveData<Boolean> {
         return ignLicenseStatus
     }
@@ -35,6 +46,10 @@ class IgnLicenseViewModel : ViewModel() {
     }
 }
 
-data class IgnLicenseDetails(val price: String)
+data class IgnLicenseDetails(val skuDetails: SkuDetails) {
+    val price: String
+        get() = skuDetails.price
+}
+
 class NotSupportedException : Exception()
 class ProductNotFoundException : Exception()
