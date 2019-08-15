@@ -8,12 +8,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
+import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
 
 
@@ -26,6 +28,7 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
 class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     private lateinit var billing: Billing
     private lateinit var viewModel: IgnLicenseViewModel
+    private lateinit var ignLicensePrice: String
 
     private lateinit var priceInformation: TextView
     private lateinit var priceValue: TextView
@@ -58,7 +61,16 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         viewModel = ViewModelProviders.of(activity!!).get(IgnLicenseViewModel::class.java)
         viewModel.getIgnLicenseStatus().observe(this, Observer<Boolean> {
             it?.also {
-                println("Ign license status $it")
+                if (!it) {
+                    viewModel.getIgnLicenseInfo(billing)
+                }
+            }
+        })
+
+        viewModel.getIgnLicenseDetails().observe(this, Observer<IgnLicenseDetails> {
+            it?.also {
+                ignLicensePrice = it.price
+                showPriceIGN()
             }
         })
     }
@@ -66,9 +78,11 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onStart() {
         super.onStart()
 
+        /* Assume that the license isn't acquired */
+        setDownloadEnabled(false)
+
+        /* Then check the license status */
         viewModel.getIgnLicensePurchaseStatus(billing)
-        viewModel.getIgnLicenseInfo(billing)
-        showPriceIGN()
     }
 
     /**
@@ -98,6 +112,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     private fun showPriceIGN() {
         priceInformation.visibility = View.VISIBLE
         priceValue.visibility = View.VISIBLE
+        priceValue.text = ignLicensePrice
         buyBtn.visibility = View.VISIBLE
         helpBtn.visibility = View.VISIBLE
         buyBtn.requestFocus()
@@ -108,5 +123,9 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         priceValue.visibility = View.GONE
         buyBtn.visibility = View.GONE
         helpBtn.visibility = View.GONE
+    }
+
+    private fun setDownloadEnabled(enabled: Boolean) {
+        (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = enabled
     }
 }

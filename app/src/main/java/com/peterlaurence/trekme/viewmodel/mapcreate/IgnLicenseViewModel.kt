@@ -9,11 +9,12 @@ import kotlinx.coroutines.launch
 
 class IgnLicenseViewModel : ViewModel() {
     private val ignLicenseStatus = MutableLiveData<Boolean>()
+    private val ignLicenseDetails = MutableLiveData<IgnLicenseDetails>()
 
     fun getIgnLicensePurchaseStatus(billing: Billing) {
         viewModelScope.launch {
             billing.getIgnLicensePurchaseStatus().also {
-                println("IGN license purchase status: $it")
+                ignLicenseStatus.postValue(it)
             }
         }
     }
@@ -21,15 +22,16 @@ class IgnLicenseViewModel : ViewModel() {
     fun getIgnLicenseInfo(billing: Billing) {
         viewModelScope.launch {
             val licenseDetails = billing.getIgnLicenseDetails()
-            println("license details")
-            println(licenseDetails)
-
-            ignLicenseStatus.postValue(true)
+            ignLicenseDetails.postValue(licenseDetails)
         }
     }
 
     fun getIgnLicenseStatus(): LiveData<Boolean> {
         return ignLicenseStatus
+    }
+
+    fun getIgnLicenseDetails(): LiveData<IgnLicenseDetails> {
+        return ignLicenseDetails
     }
 }
 
