@@ -8,10 +8,14 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.delay
+import java.util.*
+import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 const val IGN_LICENSE_SKU = "ign_license"
+//const val IGN_LICENSE_SKU = "android.test.purchased"
 
 class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
 
@@ -83,48 +87,66 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
          * from a network call.
          */
         if (purchases == null || !purchases.purchasesList.containsIgnLicense()) {
-            return queryPurchaseStatusNetwork()
+            return queryPurchaseStatusNetwork()?.let {
+                if (!checkTime(it.purchaseTime)) {
+                    it.consumeIgnLicense()
+                    false
+                } else true
+            } ?: false
         }
-
-        // consume
-//        purchases.purchasesList.forEach {
-//            if (it.sku == IGN_LICENSE_SKU) {
-//                val consumeParams = ConsumeParams.newBuilder().setPurchaseToken(it.purchaseToken).build()
-//                billingClient.consumeAsync(consumeParams) { responseCode, outToken ->
-//                    println("Consumed $responseCode")
-//                }
-//            }
-//        }
 
         /**
          * Look into the cache since a network call isn't necessary.
          */
-        return purchases.purchasesList.validateIgnLicense()
+        return purchases.purchasesList.getValidIgnLicense()?.let {
+            if (!checkTime(it.purchaseTime)) {
+                it.consumeIgnLicense()
+                false
+            } else true
+        } ?: false
 
         // take into account pending transaction
         // probably return a enum with 3 possible states : PURCHASED, NOT_PURCHASED, PENDING
     }
 
-    private suspend fun queryPurchaseStatusNetwork() = suspendCoroutine<Boolean> { cont ->
+    private suspend fun queryPurchaseStatusNetwork() = suspendCoroutine<PurchaseHistoryRecord?> { cont ->
         billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.INAPP) { billingResult, purchaseHistoryRecordList ->
             if (billingResult.responseCode == OK) {
-                purchaseHistoryRecordList.firstOrNull {
+                val purchase = purchaseHistoryRecordList.firstOrNull {
                     it.sku == IGN_LICENSE_SKU
-                }?.let {
-                    cont.resume(true)
-                    return@queryPurchaseHistoryAsync
                 }
+                cont.resume(purchase)
+                return@queryPurchaseHistoryAsync
             }
-            cont.resume(false)
+            cont.resume(null)
         }
     }
 
-    private fun List<Purchase>.validateIgnLicense(): Boolean {
-        return any { it.sku == IGN_LICENSE_SKU && it.isAcknowledged }
+    private fun List<Purchase>.getValidIgnLicense(): Purchase? {
+        return firstOrNull { it.sku == IGN_LICENSE_SKU && it.isAcknowledged }
     }
 
     private fun List<Purchase>.containsIgnLicense(): Boolean {
         return any { it.sku == IGN_LICENSE_SKU }
+    }
+
+    private fun Purchase.consumeIgnLicense() {
+        if (sku == IGN_LICENSE_SKU) {
+            consume(purchaseToken)
+        }
+    }
+
+    private fun PurchaseHistoryRecord.consumeIgnLicense() {
+        if (sku == IGN_LICENSE_SKU) {
+            consume(purchaseToken)
+        }
+    }
+
+    private fun consume(token: String) {
+        val consumeParams = ConsumeParams.newBuilder().setPurchaseToken(token).build()
+        billingClient.consumeAsync(consumeParams) { responseCode, outToken ->
+            println("Consumed $responseCode")
+        }
     }
 
     suspend fun getIgnLicenseDetails(): IgnLicenseDetails {
@@ -171,6 +193,22 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
         val responseCode = billingClient.launchBillingFlow(activity, flowParams)
 
         println("result of billing flow : ${responseCode.responseCode} ${responseCode.debugMessage}")
+    }
+
+    /**
+     * The billing API uses a purchase time in milliseconds since the epoch (Jan 1, 1970), which is
+     * exactly the same as what we get with [Date.getTime].
+     * So we obtain the current time in millis and convert the difference with the purchase time in
+     * days. If the purchase is older than a year (365 days) or
+     */
+    private fun checkTime(timeMillis: Long): Boolean {
+        val now = Date().time
+        val millis = now - timeMillis
+        return if (millis > 0) {
+            TimeUnit.DAYS.convert(millis, TimeUnit.MILLISECONDS) <= 365
+        } else {
+            true    // purchase happened "in the future"
+        }
     }
 }
 

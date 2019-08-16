@@ -22,8 +22,17 @@ class IgnLicenseViewModel : ViewModel() {
 
     fun getIgnLicenseInfo(billing: Billing) {
         viewModelScope.launch {
-            val licenseDetails = billing.getIgnLicenseDetails()
-            ignLicenseDetails.postValue(licenseDetails)
+            try {
+                val licenseDetails = billing.getIgnLicenseDetails()
+                ignLicenseDetails.postValue(licenseDetails)
+            } catch (e: ProductNotFoundException) {
+                // something wrong on our side
+                ignLicenseStatus.postValue(true)
+            } catch (e: IllegalStateException) {
+                // can't check license info, so assume it's not valid
+            } catch (e: NotSupportedException) {
+                // TODO: alert the user that it can't buy the license and should ask for refund
+            }
         }
     }
 
