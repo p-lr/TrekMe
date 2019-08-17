@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.billing
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode.*
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
@@ -15,7 +16,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 const val IGN_LICENSE_SKU = "ign_license"
-//const val IGN_LICENSE_SKU = "android.test.purchased"
 
 class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
 
@@ -36,14 +36,12 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == OK) {
                     it.resume(true)
-                    println("Billing client is ready")
                 } else {
                     it.resume(false)
                 }
             }
 
             override fun onBillingServiceDisconnected() {
-                println("Billing client disconnected")
             }
         })
     }
@@ -51,22 +49,16 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
     override fun onPurchasesUpdated(billingResult: BillingResult?, purchases: MutableList<Purchase>?) {
         fun acknowledge() {
             purchases?.forEach {
-                if (!it.isAcknowledged && it.sku == IGN_LICENSE_SKU) {
+                if (!it.isAcknowledged && it.sku == IGN_LICENSE_SKU && it.purchaseState == Purchase.PurchaseState.PURCHASED) {
                     /* Approve the payment */
                     val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
                             .setPurchaseToken(it.purchaseToken)
                             .build()
                     billingClient.acknowledgePurchase(acknowledgePurchaseParams, this)
-
-                    /* Then notify registered PurchaseListener that it completed normally */
-                    if (this::purchaseCallback.isInitialized) {
-                        purchaseCallback()
-                    }
                 }
             }
         }
 
-        println("onPurchaseUpdated ${billingResult?.responseCode} count purchases ${purchases?.size}")
         if (billingResult != null && purchases != null) {
             if (billingResult.responseCode == OK) {
                 acknowledge()
@@ -74,8 +66,19 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
         }
     }
 
+    /**
+     * This is the callback of the [BillingClient.acknowledgePurchase] call.
+     * The [purchaseCallback] is called only if the purchase is successfully acknowledged.
+     */
     override fun onAcknowledgePurchaseResponse(billingResult: BillingResult?) {
-        println("Acknowledgement of purchase : ${billingResult?.responseCode}")
+        /* Then notify registered PurchaseListener that it completed normally */
+        billingResult?.also {
+            if (it.responseCode == OK && this::purchaseCallback.isInitialized) {
+                purchaseCallback()
+            } else {
+                Log.e(TAG, "Payment couldn't be acknowledged (code ${it.responseCode}): ${it.debugMessage}")
+            }
+        }
     }
 
     suspend fun getIgnLicensePurchaseStatus(): Boolean {
@@ -104,9 +107,6 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
                 false
             } else true
         } ?: false
-
-        // take into account pending transaction
-        // probably return a enum with 3 possible states : PURCHASED, NOT_PURCHASED, PENDING
     }
 
     private suspend fun queryPurchaseStatusNetwork() = suspendCoroutine<PurchaseHistoryRecord?> { cont ->
@@ -144,8 +144,8 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
 
     private fun consume(token: String) {
         val consumeParams = ConsumeParams.newBuilder().setPurchaseToken(token).build()
-        billingClient.consumeAsync(consumeParams) { responseCode, outToken ->
-            println("Consumed $responseCode")
+        billingClient.consumeAsync(consumeParams) { _, _ ->
+            Log.i(TAG, "Consumed the purchase. It can now be bought again.")
         }
     }
 
@@ -171,8 +171,6 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
         }
     }
 
-    /**
-     */
     private suspend fun queryIgnLicenseSku() = suspendCoroutine<SkuQueryResult> {
         val skuList = ArrayList<String>()
         skuList.add(IGN_LICENSE_SKU)
@@ -190,9 +188,7 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
                 .setSkuDetails(skuDetails)
                 .build()
         this.purchaseCallback = purchaseCallback
-        val responseCode = billingClient.launchBillingFlow(activity, flowParams)
-
-        println("result of billing flow : ${responseCode.responseCode} ${responseCode.debugMessage}")
+        billingClient.launchBillingFlow(activity, flowParams)
     }
 
     /**
@@ -211,4 +207,6 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
         }
     }
 }
+
+const val TAG = "Billing.kt"
 

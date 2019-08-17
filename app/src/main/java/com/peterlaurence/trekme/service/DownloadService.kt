@@ -163,7 +163,7 @@ class DownloadService : Service() {
 
                 /* Post-process if download reaches 100% */
                 if (p == 100.0) {
-                    postProcess(event.mapSpec)
+                    postProcess(event.mapSpec, source)
                 }
             }
         }
@@ -238,7 +238,7 @@ class DownloadService : Service() {
         EventBus.getDefault().post(progressEvent)
     }
 
-    private fun postProcess(mapSpec: MapSpec) {
+    private fun postProcess(mapSpec: MapSpec, source: MapSource) {
         val calibrationPoints = mapSpec.calibrationPoints
 
         /* Calibrate */
@@ -250,7 +250,12 @@ class DownloadService : Service() {
             MapLoader.addMap(map)
         }
 
-        val map = buildFromMapSpec(mapSpec, destDir, ".jpg")
+        val mapOrigin = if (source == MapSource.IGN) {
+            Map.MapOrigin.IGN_LICENSED
+        } else {
+            Map.MapOrigin.VIPS
+        }
+        val map = buildFromMapSpec(mapSpec, mapOrigin, destDir, ".jpg")
 
         handler.post {
             calibrate(map)

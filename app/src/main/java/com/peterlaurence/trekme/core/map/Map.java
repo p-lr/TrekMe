@@ -345,7 +345,7 @@ public class Map {
     }
 
     public enum MapOrigin {
-        VIPS, UNDEFINED
+        VIPS, IGN_LICENSED, UNDEFINED
     }
 
     /**
