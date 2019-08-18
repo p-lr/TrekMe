@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.ui.settings
 
 import android.os.Bundle
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekme.R
@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 
 
 class SettingsFragment : PreferenceFragmentCompat() {
-    private lateinit var viewModel: SettingsViewModel
+    private val viewModel: SettingsViewModel by viewModels()
 
     private var startOnPref: ListPreference? = null
 
@@ -20,7 +20,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.app_settings)
 
-        viewModel = ViewModelProviders.of(this).get(SettingsViewModel::class.java)
         initComponents()
 
         /* Observe the changes in the model */

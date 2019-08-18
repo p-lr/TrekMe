@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -35,7 +35,7 @@ class MapImportFragment : Fragment() {
     private var fabEnabled = false
     private lateinit var mapArchiveList: List<MapArchive>
     private var mapArchiveSelected: MapArchive? = null
-    private lateinit var viewModel: MapImportViewModel
+    private val viewModel: MapImportViewModel by activityViewModels()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -50,7 +50,6 @@ class MapImportFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel = ViewModelProviders.of(activity!!).get(MapImportViewModel::class.java)
         viewModel.getMapArchiveList().observe(this, Observer<List<MapArchive>> {
             it?.let { mapArchiveList ->
                 this.mapArchiveList = mapArchiveList

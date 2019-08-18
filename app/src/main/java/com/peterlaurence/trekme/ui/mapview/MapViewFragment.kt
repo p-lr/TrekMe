@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.markers.*
@@ -54,7 +54,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
     private lateinit var speedListener: SpeedListener
     private lateinit var distanceListener: DistanceLayer.DistanceListener
 
-    private lateinit var inMapRecordingViewModel: InMapRecordingViewModel
+    private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
 
     private lateinit var job: Job
 
@@ -84,7 +84,6 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
         /**
          * Listen to changes on the live route
          */
-        inMapRecordingViewModel = ViewModelProviders.of(this).get(InMapRecordingViewModel::class.java)
         inMapRecordingViewModel.getLiveRoute().observe(
                 this, Observer<InMapRecordingViewModel.LiveRoute> {
             it?.let { liveRoute ->

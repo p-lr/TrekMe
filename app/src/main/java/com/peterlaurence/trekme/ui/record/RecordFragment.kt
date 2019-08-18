@@ -8,9 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.map.Map
@@ -55,7 +55,7 @@ class RecordFragment : Fragment(), CoroutineScope {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val model = ViewModelProviders.of(this.activity!!).get(RecordingStatisticsViewModel::class.java)
+        val model: RecordingStatisticsViewModel by activityViewModels()
         recordingData = model.getRecordingData()
         recordingData.observe(this, Observer<List<RecordingData>> {
             it?.let { data ->
@@ -66,7 +66,8 @@ class RecordFragment : Fragment(), CoroutineScope {
         /**
          * Observe the changes in the Location service status, and update child views accordingly.
          */
-        ViewModelProviders.of(this.activity!!).get(LocationServiceViewModel::class.java).getStatus().observe(
+        val locationServiceViewModel : LocationServiceViewModel by activityViewModels()
+        locationServiceViewModel.getStatus().observe(
                 this, Observer<Boolean> {
             it?.let { isActive ->
                 dispatchLocationServiceStatus(isActive)
