@@ -9,10 +9,10 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.billing.Billing
+import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
@@ -27,7 +27,7 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
  */
 class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     private lateinit var billing: Billing
-    private lateinit var viewModel: IgnLicenseViewModel
+    private val viewModel: IgnLicenseViewModel by activityViewModels()
     private lateinit var ignLicensePrice: String
 
     private lateinit var priceInformation: TextView
@@ -58,7 +58,6 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel = ViewModelProviders.of(activity!!).get(IgnLicenseViewModel::class.java)
         viewModel.getIgnLicenseStatus().observe(this, Observer<Boolean> {
             it?.also {
                 if (!it) {

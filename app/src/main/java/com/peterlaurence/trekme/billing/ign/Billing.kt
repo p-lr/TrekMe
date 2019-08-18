@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.billing
+package com.peterlaurence.trekme.billing.ign
 
 import android.app.Activity
 import android.content.Context
@@ -9,19 +9,18 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.delay
-import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 const val IGN_LICENSE_SKU = "ign_license"
+typealias PurchaseAcknowledged = () -> Unit
 
 class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
 
     private val billingClient = BillingClient.newBuilder(context).setListener(this).enablePendingPurchases().build()
 
-    private lateinit var purchaseCallback: () -> Unit
+    private lateinit var purchaseAcknowledged: PurchaseAcknowledged
 
     /**
      * This function returns when we're connected to the billing service.
@@ -68,13 +67,13 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
 
     /**
      * This is the callback of the [BillingClient.acknowledgePurchase] call.
-     * The [purchaseCallback] is called only if the purchase is successfully acknowledged.
+     * The [purchaseAcknowledged] is called only if the purchase is successfully acknowledged.
      */
     override fun onAcknowledgePurchaseResponse(billingResult: BillingResult?) {
         /* Then notify registered PurchaseListener that it completed normally */
         billingResult?.also {
-            if (it.responseCode == OK && this::purchaseCallback.isInitialized) {
-                purchaseCallback()
+            if (it.responseCode == OK && this::purchaseAcknowledged.isInitialized) {
+                purchaseAcknowledged()
             } else {
                 Log.e(TAG, "Payment couldn't be acknowledged (code ${it.responseCode}): ${it.debugMessage}")
             }
@@ -183,30 +182,14 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
 
     data class SkuQueryResult(val billingResult: BillingResult, val skuDetailsList: List<SkuDetails>)
 
-    fun launchBilling(skuDetails: SkuDetails, purchaseCallback: () -> Unit) {
+    fun launchBilling(skuDetails: SkuDetails, purchaseAcknowledged: PurchaseAcknowledged) {
         val flowParams = BillingFlowParams.newBuilder()
                 .setSkuDetails(skuDetails)
                 .build()
-        this.purchaseCallback = purchaseCallback
+        this.purchaseAcknowledged = purchaseAcknowledged
         billingClient.launchBillingFlow(activity, flowParams)
-    }
-
-    /**
-     * The billing API uses a purchase time in milliseconds since the epoch (Jan 1, 1970), which is
-     * exactly the same as what we get with [Date.getTime].
-     * So we obtain the current time in millis and convert the difference with the purchase time in
-     * days. If the purchase is older than a year (365 days) or
-     */
-    private fun checkTime(timeMillis: Long): Boolean {
-        val now = Date().time
-        val millis = now - timeMillis
-        return if (millis > 0) {
-            TimeUnit.DAYS.convert(millis, TimeUnit.MILLISECONDS) <= 365
-        } else {
-            true    // purchase happened "in the future"
-        }
     }
 }
 
-const val TAG = "Billing.kt"
+const val TAG = "ign.Billing.kt"
 
