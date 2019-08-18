@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
-import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,6 +10,7 @@ import com.peterlaurence.trekme.billing.ign.LicenseInfo
 import com.peterlaurence.trekme.billing.ign.PersistenceStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 
 class IgnLicenseViewModel : ViewModel() {
     private val ignLicenseStatus = MutableLiveData<Boolean>()
@@ -20,9 +20,6 @@ class IgnLicenseViewModel : ViewModel() {
         viewModelScope.launch {
             billing.getIgnLicensePurchaseStatus().also {
                 ignLicenseStatus.postValue(it)
-
-                /* Update the license status */
-                persistLicense(billing.context, LicenseInfo(it))
             }
         }
     }
@@ -50,8 +47,8 @@ class IgnLicenseViewModel : ViewModel() {
                 /* It's assumed that if this is called, it's a success */
                 ignLicenseStatus.postValue(true)
 
-                /* Remember that the license was bought */
-                persistLicense(billing.context, LicenseInfo(true))
+                /* Remember when (it's not exact but it doesn't matter) the license was bought */
+                persistLicense(LicenseInfo(Date().time))
             }
         }
     }
@@ -65,14 +62,14 @@ class IgnLicenseViewModel : ViewModel() {
     }
 
     /**
-     * Persist licensing info in a custom way, as we need a consistent way to
+     * Persist licensing info in a custom way, as we need a relatively reliable way to
      * check the license while being offline. Indeed, even if a check using the cache of
      * the play store can help, the user could have cleared the cache and then there's
-     * no remote way to do the necessary verifications. So delegate to a more secure
-     * persistence */
-    private fun persistLicense(context: Context, licenseInfo: LicenseInfo) {
+     * no remote way to do the necessary verifications. So the persistence of the license buy
+     * date permits an alternate way of checking. */
+    private fun persistLicense(licenseInfo: LicenseInfo) {
         viewModelScope.launch(Dispatchers.IO) {
-            val persistenceStrategy = PersistenceStrategy(context)
+            val persistenceStrategy = PersistenceStrategy()
             persistenceStrategy.persist(licenseInfo)
         }
     }

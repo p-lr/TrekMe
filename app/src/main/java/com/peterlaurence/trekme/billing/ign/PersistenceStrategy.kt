@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.billing.ign
 
-import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.peterlaurence.trekme.core.TrekMeContext
@@ -15,7 +14,7 @@ import java.io.File
  * The reverse operation reads the string from the file, decrypts it, then converts the json string
  * to a [LicenseInfo] instance.
  */
-class PersistenceStrategy(val context: Context) {
+class PersistenceStrategy {
     private val gson = Gson()
     private val keyStoreFile = File(TrekMeContext.credentialsDir, "keystore")
 
@@ -45,5 +44,8 @@ class PersistenceStrategy(val context: Context) {
     }
 }
 
-class LicenseInfo(val isValid: Boolean)
+/**
+ * @param purchaseTimeMillis purchase time in milliseconds since the epoch (Jan 1, 1970)
+ */
+data class LicenseInfo(val purchaseTimeMillis: Long)
 
