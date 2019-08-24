@@ -17,24 +17,22 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.model.map.MapProvider
 import com.peterlaurence.trekme.ui.LocationProviderHolder
-import com.peterlaurence.trekme.ui.mapview.MapViewFragment.RequestManageTracksListener
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
+import com.peterlaurence.trekme.viewmodel.mapview.MapViewViewModel
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import kotlin.coroutines.CoroutineContext
 
 /**
- * Activities that contain this fragment must implement the [RequestManageTracksListener] and
- * [MapProvider] interfaces to handle interaction events.
+ * This fragment displays a [Map], using [MapView].
  *
- * @author peterLaurence
+ * @author peterLaurence on 10/02/2019
  */
 class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, CoroutineScope {
     private lateinit var rootView: FrameLayoutMapView
@@ -54,6 +52,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
     private lateinit var speedListener: SpeedListener
     private lateinit var distanceListener: DistanceLayer.DistanceListener
 
+    private val mapViewViewModel: MapViewViewModel by viewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
 
     private lateinit var job: Job
@@ -72,7 +71,8 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
             requestManageMarkerListener = context
             locationProvider = context.locationProvider
         } else {
-            throw RuntimeException("$context must implement RequestManageTracksListener, MapProvider and LocationProviderHolder")
+            throw RuntimeException("$context must implement RequestManageTracksListener, " +
+                    "RequestManageMarkerListener and LocationProviderHolder")
         }
     }
 
@@ -80,6 +80,18 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
         super.onCreate(savedInstanceState)
         retainInstance = true
         setHasOptionsMenu(true)
+
+        mapViewViewModel.getMapLiveData().observe(this, Observer<Map> {
+            it?.let {
+                onMapChanged(it)
+            }
+        })
+
+        mapViewViewModel.getCalibrationChangedLiveData().observe(this, Observer<Map> {
+            it?.let {
+                onSameMapButCalibrationMayChanged(it)
+            }
+        })
 
         /**
          * Listen to changes on the live route
@@ -230,7 +242,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
         job = Job()
         EventBus.getDefault().register(this)
 
-        updateMapIfNecessary()
+        mapViewViewModel.updateMapIfNecessary(mMap)
     }
 
     override fun onResume() {
@@ -263,7 +275,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
             distanceLayer.hide()
             orientationEventManager.stop()
         } else {
-            updateMapIfNecessary()
+            mapViewViewModel.updateMapIfNecessary(mMap)
         }
     }
 
@@ -281,30 +293,29 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
     }
 
     /**
-     * Only update the map if its a new one.
+     * The view model reported that map is still the same. But the calibration may have changed.
+     * Only the fragment can do this check because the difference between the old and new value is
+     * based on the state of an internal object of [MapView].
+     */
+    private fun onSameMapButCalibrationMayChanged(map: Map) {
+        if (::mapView.isInitialized) {
+            val newBounds = map.mapBounds
+            val c = mapView.coordinateTranslater
+            if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
+                setMapViewBounds(mapView, map)
+            }
+        }
+    }
+
+    /**
      * Once the map is updated, a [MapView] instance is created, so layers can be
      * updated.
      */
-    private fun updateMapIfNecessary() {
-        val map = MapProvider.getCurrentMap()
-        if (map != null) {
-            if (mMap != null && mMap!!.equals(map)) {
-                val newBounds = map.mapBounds
-
-                if (::mapView.isInitialized) {
-                    val c = mapView.coordinateTranslater
-                    if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
-                        setMapViewBounds(mapView, map)
-                    }
-                }
-            } else {
-                /* The map changed */
-                hasCenteredOnFirstLocation = false
-                setMap(map)
-                inMapRecordingViewModel.reload()
-                updateLayers()
-            }
-        }
+    private fun onMapChanged(map: Map) {
+        hasCenteredOnFirstLocation = false
+        setMap(map)
+        inMapRecordingViewModel.reload()
+        updateLayers()
     }
 
     private fun updateLayers() {

@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
-import com.peterlaurence.trekme.model.map.MapProvider;
+import com.peterlaurence.trekme.model.map.MapModel;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 
@@ -69,7 +69,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         rootView.setCalibrationModel(this);
 
         /* Set the map to calibrate */
-        Map map = MapProvider.INSTANCE.getSettingsMap();
+        Map map = MapModel.INSTANCE.getSettingsMap();
         setMap(map);
 
         /* If the fragment is created for the first time (e.g not re-created after a configuration

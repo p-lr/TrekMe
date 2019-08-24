@@ -40,7 +40,7 @@ import com.peterlaurence.trekme.core.mapsource.IGNCredentials;
 import com.peterlaurence.trekme.core.mapsource.MapSource;
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle;
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials;
-import com.peterlaurence.trekme.model.map.MapProvider;
+import com.peterlaurence.trekme.model.map.MapModel;
 import com.peterlaurence.trekme.service.event.MapDownloadEvent;
 import com.peterlaurence.trekme.service.event.Status;
 import com.peterlaurence.trekme.ui.LocationProviderHolder;
@@ -310,7 +310,7 @@ public class MainActivity extends AppCompatActivity
                     showMapViewFragment();
                     break;
                 case MAP_SETTINGS_FRAGMENT_TAG:
-                    Map map = MapProvider.INSTANCE.getSettingsMap();
+                    Map map = MapModel.INSTANCE.getSettingsMap();
                     if (map != null) {
                         showMapSettingsFragment(map.getId());
                         break;
@@ -509,7 +509,7 @@ public class MainActivity extends AppCompatActivity
 
     private void showMapViewFragment() {
         /* Don't show the fragment if no map has been selected yet */
-        if (MapProvider.INSTANCE.getCurrentMap() == null) {
+        if (MapModel.INSTANCE.getCurrentMap() == null) {
             return;
         }
 

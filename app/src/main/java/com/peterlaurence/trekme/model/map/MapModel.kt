@@ -10,14 +10,14 @@ import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment
  * * the [Map] that should be used when navigating to the [MapViewFragment]
  * * the [Map] that should be displayed when navigating to the [MapSettingsFragment]
  */
-object MapProvider {
+object MapModel {
     private var map: Map? = null
     private var settingsMap: Map? = null
 
     fun getCurrentMap(): Map? = map
 
     fun setCurrentMap(map: Map) {
-        MapProvider.map = map
+        MapModel.map = map
     }
 
     fun getSettingsMap() = settingsMap

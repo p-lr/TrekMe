@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.model.map.MapProvider
+import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
 import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
@@ -42,7 +42,7 @@ import org.greenrobot.eventbus.ThreadMode
  * When this view-model first starts or upon request from the fragment (when the map changes), it
  * uses the event-bus to request the channel from the producer.
  * Upon reception of the channel, it launches its consumer coroutine ([processNewTrackPoints]).
- * The [MapProvider] is used to fetch the current map.
+ * The [MapModel] is used to fetch the current map.
  */
 class InMapRecordingViewModel : ViewModel() {
     private val route = MutableLiveData<LiveRoute>()
@@ -69,7 +69,7 @@ class InMapRecordingViewModel : ViewModel() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onTrackPointChannelReceive(channel: Channel<TrackPoint>) {
-        val map = MapProvider.getCurrentMap()
+        val map = MapModel.getCurrentMap()
         if (map != null) {
             viewModelScope.processNewTrackPoints(channel, map)
         }

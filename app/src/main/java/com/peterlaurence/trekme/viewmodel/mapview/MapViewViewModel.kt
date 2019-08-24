@@ -1,0 +1,35 @@
+package com.peterlaurence.trekme.viewmodel.mapview
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.model.map.MapModel
+
+/**
+ * The view model of the fragment which displays [Map]s.
+ *
+ * @author peterLaurence on 24/08/2019
+ */
+class MapViewViewModel : ViewModel() {
+    private val mapLiveData = MutableLiveData<Map>()
+    private val calibrationChangeLiveData = MutableLiveData<Map>()
+
+    /**
+     * Only update the map if its a new one.
+     */
+    fun updateMapIfNecessary(oldMap: Map?) {
+        val map = MapModel.getCurrentMap()
+        if (map != null) {
+            if (oldMap != null && oldMap.equals(map)) {
+                calibrationChangeLiveData.postValue(map)
+            } else {
+                /* The map changed */
+                mapLiveData.postValue(map)
+            }
+        }
+    }
+
+    fun getMapLiveData(): LiveData<Map> = mapLiveData
+    fun getCalibrationChangedLiveData(): LiveData<Map> = calibrationChangeLiveData
+}

@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.ui.MarkerProvider;
-import com.peterlaurence.trekme.model.map.MapProvider;
+import com.peterlaurence.trekme.model.map.MapModel;
 
 import static android.view.View.GONE;
 
@@ -68,7 +68,7 @@ public class MarkerManageFragment extends Fragment {
             mMarkerManageFragmentInteractionListener = (MarkerManageFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement MapProvider and MarkerProvider");
+                    + " must implement MarkerManageFragmentInteractionListener and MarkerProvider");
         }
     }
 
@@ -93,7 +93,7 @@ public class MarkerManageFragment extends Fragment {
         mProjectionY = rootView.findViewById(R.id.marker_proj_y_id);
         mComment = rootView.findViewById(R.id.marker_comment_id);
 
-        mMap = MapProvider.INSTANCE.getCurrentMap();
+        mMap = MapModel.INSTANCE.getCurrentMap();
         mMarker = mMarkerProvider.getCurrentMarker();
 
         updateView();

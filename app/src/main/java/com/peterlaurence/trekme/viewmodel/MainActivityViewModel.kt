@@ -7,7 +7,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
-import com.peterlaurence.trekme.model.map.MapProvider
+import com.peterlaurence.trekme.model.map.MapModel
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 
@@ -38,7 +38,7 @@ class MainActivityViewModel : ViewModel() {
                     val found = id?.let {
                         val map = MapLoader.getMap(id)
                         map?.let {
-                            MapProvider.setCurrentMap(map)
+                            MapModel.setCurrentMap(map)
                             EventBus.getDefault().post(ShowMapViewEvent(map))
                             true
                         } ?: false

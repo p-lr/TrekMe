@@ -27,7 +27,7 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxUriToMapAsync
-import com.peterlaurence.trekme.model.map.MapProvider
+import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
@@ -63,7 +63,7 @@ class TracksManageFragment : Fragment(),
 
         rootView = inflater.inflate(R.layout.fragment_tracks_manage, container, false) as FrameLayout
         emptyRoutePanel = rootView.findViewById(R.id.emptyRoutePanel)
-        map = MapProvider.getCurrentMap()
+        map = MapModel.getCurrentMap()
         map?.let {
             generateTracks(it)
         }

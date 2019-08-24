@@ -23,7 +23,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.model.map.MapProvider;
+import com.peterlaurence.trekme.model.map.MapModel;
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
@@ -188,7 +188,7 @@ public class MapListFragment extends Fragment implements
 
     @Override
     public void onMapSettings(Map map) {
-        MapProvider.INSTANCE.setSettingsMap(map);
+        MapModel.INSTANCE.setSettingsMap(map);
         if (mListener != null) {
             mListener.onMapSettingsFragmentInteraction(map);
         }
