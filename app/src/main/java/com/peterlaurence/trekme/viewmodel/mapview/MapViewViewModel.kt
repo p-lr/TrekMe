@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.model.map.MapModel
+import org.greenrobot.eventbus.EventBus
 
 /**
  * The view model of the fragment which displays [Map]s.
@@ -13,7 +14,6 @@ import com.peterlaurence.trekme.model.map.MapModel
  */
 class MapViewViewModel : ViewModel() {
     private val mapLiveData = MutableLiveData<Map>()
-    private val calibrationChangeLiveData = MutableLiveData<Map>()
 
     /**
      * Only update the map if its a new one.
@@ -22,7 +22,7 @@ class MapViewViewModel : ViewModel() {
         val map = MapModel.getCurrentMap()
         if (map != null) {
             if (oldMap != null && oldMap.equals(map)) {
-                calibrationChangeLiveData.postValue(map)
+                EventBus.getDefault().post(CalibrationMayChangedEvent(map))
             } else {
                 /* The map changed */
                 mapLiveData.postValue(map)
@@ -31,5 +31,6 @@ class MapViewViewModel : ViewModel() {
     }
 
     fun getMapLiveData(): LiveData<Map> = mapLiveData
-    fun getCalibrationChangedLiveData(): LiveData<Map> = calibrationChangeLiveData
 }
+
+data class CalibrationMayChangedEvent(val map: Map)

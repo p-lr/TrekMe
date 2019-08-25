@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
+import com.peterlaurence.trekme.viewmodel.mapview.CalibrationMayChangedEvent
 import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
 import com.peterlaurence.trekme.viewmodel.mapview.MapViewViewModel
 import kotlinx.coroutines.*
@@ -84,12 +85,6 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
         mapViewViewModel.getMapLiveData().observe(this, Observer<Map> {
             it?.let {
                 onMapChanged(it)
-            }
-        })
-
-        mapViewViewModel.getCalibrationChangedLiveData().observe(this, Observer<Map> {
-            it?.let {
-                onSameMapButCalibrationMayChanged(it)
             }
         })
 
@@ -297,8 +292,10 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
      * Only the fragment can do this check because the difference between the old and new value is
      * based on the state of an internal object of [MapView].
      */
-    private fun onSameMapButCalibrationMayChanged(map: Map) {
+    @Subscribe
+    fun onSameMapButCalibrationMayChanged(calibrationMayChangedEvent: CalibrationMayChangedEvent) {
         if (::mapView.isInitialized) {
+            val map = calibrationMayChangedEvent.map
             val newBounds = map.mapBounds
             val c = mapView.coordinateTranslater
             if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
