@@ -90,7 +90,7 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
          */
         if (purchases == null || !purchases.purchasesList.containsIgnLicense()) {
             return queryPurchaseStatusNetwork()?.let {
-                if (!checkTime(it.purchaseTime)) {
+                if (checkTime(it.purchaseTime) !is AccessGranted) {
                     it.consumeIgnLicense()
                     false
                 } else true
@@ -101,7 +101,7 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
          * Look into the cache since a network call isn't necessary.
          */
         return purchases.purchasesList.getValidIgnLicense()?.let {
-            if (!checkTime(it.purchaseTime)) {
+            if (checkTime(it.purchaseTime) !is AccessGranted) {
                 it.consumeIgnLicense()
                 false
             } else true

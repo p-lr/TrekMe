@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
+import com.peterlaurence.mapview.MapView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import kotlinx.android.synthetic.main.fragment_map_view.view.*
@@ -47,6 +48,22 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 
     fun setPositionTouchListener(listener: PositionTouchListener) {
         positionTouchListener = listener
+    }
+
+    fun setMapView(mapView: MapView) {
+        addView(mapView, 0)
+
+        indicator_overlay.visibility = View.VISIBLE
+        fab_position.visibility = View.VISIBLE
+    }
+
+    fun removeMapView(mapView: MapView?) {
+        if (mapView != null) {
+            removeView(mapView)
+        }
+
+        indicator_overlay.visibility = View.GONE
+        fab_position.visibility = View.GONE
     }
 
     interface PositionTouchListener {

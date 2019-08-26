@@ -22,9 +22,7 @@ import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
-import com.peterlaurence.trekme.viewmodel.mapview.CalibrationMayChangedEvent
-import com.peterlaurence.trekme.viewmodel.mapview.InMapRecordingViewModel
-import com.peterlaurence.trekme.viewmodel.mapview.MapViewViewModel
+import com.peterlaurence.trekme.viewmodel.mapview.*
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -37,7 +35,7 @@ import kotlin.coroutines.CoroutineContext
  */
 class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, CoroutineScope {
     private lateinit var rootView: FrameLayoutMapView
-    private lateinit var mapView: MapView
+    private var mapView: MapView? = null
     private var mMap: Map? = null
     private lateinit var positionMarker: View
     private var lockView = false
@@ -226,9 +224,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
     }
 
     override fun onPositionTouch() {
-        if (::mapView.isInitialized) {
-            mapView.scale = 1f
-        }
+        mapView?.scale = 1f
         centerOnPosition()
     }
 
@@ -294,14 +290,29 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
      */
     @Subscribe
     fun onSameMapButCalibrationMayChanged(calibrationMayChangedEvent: CalibrationMayChangedEvent) {
-        if (::mapView.isInitialized) {
-            val map = calibrationMayChangedEvent.map
-            val newBounds = map.mapBounds
-            val c = mapView.coordinateTranslater
-            if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
-                setMapViewBounds(mapView, map)
-            }
+        val mapView = mapView ?: return
+        val map = calibrationMayChangedEvent.map
+        val newBounds = map.mapBounds
+        val c = mapView.coordinateTranslater
+        if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
+            setMapViewBounds(mapView, map)
         }
+    }
+
+    @Subscribe
+    fun onOutdatedIgnLicense(event: OutdatedIgnLicenseEvent) {
+        clearMap()
+    }
+
+    @Subscribe
+    fun onErrorIgnLicense(event: ErrorIgnLicenseEvent) {
+        clearMap()
+        // warn missing license
+    }
+
+    @Subscribe
+    fun onGracePeriodIgnLicense(event: GracePeriodIgnEvent) {
+        // pop-pup that warns the user
     }
 
     /**
@@ -317,6 +328,8 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
 
     private fun updateLayers() {
         mMap?.let { map ->
+            val mapView = mapView ?: return
+
             /* Update the marker layer */
             markerLayer.init(map, mapView)
 
@@ -355,12 +368,11 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
         if (isHidden) return
 
         /* If there is no MapView, no need to go further */
-        if (!::mapView.isInitialized) {
-            return
-        }
+        mapView ?: return
 
         /* In the case there is no Projection defined, the latitude and longitude are used */
-        val projection = mMap!!.projection
+        val map = mMap ?: return
+        val projection = map.projection
         if (projection != null) {
             launch {
                 val projectedValues = withContext(Dispatchers.Default) {
@@ -395,7 +407,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
      * @param y the projected Y coordinate, or latitude if there is no [Projection]
      */
     private fun updatePosition(x: Double, y: Double) {
-        mapView.moveMarker(positionMarker, x, y)
+        mapView?.moveMarker(positionMarker, x, y)
         landmarkLayer.onPositionUpdate(x, y)
 
         if (lockView || !hasCenteredOnFirstLocation) {
@@ -410,7 +422,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
         this.mapView = mapView
         mapView.id = R.id.tileview_id
         mapView.isSaveEnabled = true
-        rootView.addView(mapView, 0)
+        rootView.setMapView(mapView)
 
         /* The MapView can have only one MarkerTapListener.
          * It dispatches the tap event to child layers.
@@ -424,12 +436,16 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
     }
 
     private fun removeCurrentMapView() {
-        try {
-            mapView.destroy()
-            rootView.removeView(mapView)
-        } catch (e: Exception) {
-            // don't care
-        }
+        mapView?.destroy()
+        rootView.removeMapView(mapView)
+    }
+
+    /**
+     * Cleanup internal state and the [MapView].
+     */
+    private fun clearMap() {
+        mMap = null
+        removeCurrentMapView()
     }
 
     /**
@@ -467,9 +483,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
     }
 
     private fun centerOnPosition() {
-        if (::mapView.isInitialized) {
-            mapView.moveToMarker(positionMarker, true)
-        }
+        mapView?.moveToMarker(positionMarker, true)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
