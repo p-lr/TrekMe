@@ -45,7 +45,7 @@ class MapViewViewModel : ViewModel() {
             when (val accessState = checkTime(it.purchaseTimeMillis)) {
                 is AccessGranted -> true
                 is GracePeriod -> {
-                    eventBus.post(GracePeriodIgnEvent(map))
+                    eventBus.post(GracePeriodIgnEvent(map, accessState.remainingDays))
                     true
                 }
                 is AccessDeniedLicenseOutdated -> {
@@ -64,4 +64,4 @@ class MapViewViewModel : ViewModel() {
 data class CalibrationMayChangedEvent(val map: Map)
 data class OutdatedIgnLicenseEvent(val map: Map)
 data class ErrorIgnLicenseEvent(val map: Map)
-data class GracePeriodIgnEvent(val map: Map)
+data class GracePeriodIgnEvent(val map: Map, val remainingDays: Int)

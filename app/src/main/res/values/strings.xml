@@ -140,6 +140,8 @@
         You can import a gpx track downloaded from a website using the import button above, or you can import
     a recording of your own using the recording menu.</string>
     <string name="expired_ign_license">"Your IGN license has expired :(\n\nTo buy it for this year, go to map creation and create an IGN map."</string>
+    <string name="missing_ign_license">"Your IGN license is missing.\n\nTo retrieve it, go to map creation and create an IGN map."</string>
+    <string name="grace_period_ign_license">"You IGN license has expired. You have %1$d days to buy it for this year."</string>
 
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>

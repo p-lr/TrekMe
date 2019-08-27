@@ -12,7 +12,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="24dp"
-            android:text="@{expiredIgnLicense}"
+            android:text="@{message}"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -44,7 +44,7 @@
     <data>
 
         <variable
-            name="expiredIgnLicense"
+            name="message"
             type="String" />
     </data>
 </layout>

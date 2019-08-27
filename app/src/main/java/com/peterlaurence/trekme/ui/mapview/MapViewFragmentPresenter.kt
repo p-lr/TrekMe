@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 
 /**
  * Presenter for [MapViewFragment]. It is loosely coupled with it, so a different view could be used.
+ * It uses data binding from Android Jetpack.
  *
  * @author peterLaurence on 19/03/16 -- Converted to Kotlin on 10/05/2019
  */
@@ -45,8 +46,6 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
             binding.fabPosition.drawable.mutate().setTint(context.resources.getColor(R.color.colorAccent, null))
             positionTouchListener?.onPositionTouch()
         }
-
-        binding.expiredIgnLicense = context.getString(R.string.expired_ign_license)
     }
 
     override fun setPositionTouchListener(listener: PositionTouchListener) {
@@ -69,7 +68,8 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
         binding.fabPosition.visibility = View.GONE
     }
 
-    override fun showMessage() {
+    override fun showMessage(msg: String) {
+        binding.message = msg
         binding.frgmtMapViewMsg.visibility = View.VISIBLE
     }
 

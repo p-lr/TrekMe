@@ -156,4 +156,6 @@
     <string name="ign_buy_license_banner">Vous devez acheter la licence IGN, valable un an</string>
     <string name="buy_btn">Acheter</string>
     <string name="expired_ign_license">"Votre licence IGN a expirée :(\n\nL'achat de la licence se fait au moment de créer une nouvelle carte IGN.\nLa license est valable un an."</string>
+    <string name="missing_ign_license">"Votre licence IGN est introuvable.\n\nSi vous l'avez déjà achetée il y a moins d'un an, vous pouvez la récupérer en créant une nouvelle carte IGN."</string>
+    <string name="grace_period_ign_license">"Votre licence IGN a expirée. Vous avez %1$d jours pour l'acheter à nouveau."</string>
 </resources>

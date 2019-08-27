@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.markers.*
@@ -114,7 +115,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        /* Get the speed, distance and orientation indicators from the main layout */
+        /* Get the speed, distance and orientation indicators from the view */
         speedListener = presenter.view.speedIndicator
         distanceListener = presenter.view.distanceIndicator
         positionMarker = presenter.view.positionMarker
@@ -300,19 +301,25 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     @Subscribe
     fun onOutdatedIgnLicense(event: OutdatedIgnLicenseEvent) {
+        val context = context ?: return
         clearMap()
-        presenter.showMessage()
+        presenter.showMessage(context.getString(R.string.expired_ign_license))
     }
 
     @Subscribe
     fun onErrorIgnLicense(event: ErrorIgnLicenseEvent) {
+        val context = context ?: return
         clearMap()
-        // warn missing license
+        presenter.showMessage(context.getString(R.string.missing_ign_license))
     }
 
     @Subscribe
     fun onGracePeriodIgnLicense(event: GracePeriodIgnEvent) {
-        // pop-pup that warns the user
+        val view = view ?: return
+        val context = context ?: return
+        val msg = context.getString(R.string.grace_period_ign_license).format(event.remainingDays)
+        val snackBar = Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+        snackBar.show()
     }
 
     /**
@@ -551,7 +558,7 @@ interface MapViewFragmentContract {
     interface Presenter {
         val androidView: android.view.View
         val view: View
-        fun showMessage()
+        fun showMessage(msg: String)
         fun setPositionTouchListener(listener: MapViewFragmentPresenter.PositionTouchListener)
         fun setMapView(mapView: MapView)
         fun removeMapView(mapView: MapView?)
