@@ -6,6 +6,7 @@
 * [Je voudrais savoir où j'en suis dans mon quota de téléchargement IGN](#TOC-quota-IGN)
 * [Au moment de créer une carte, j'ai un message qui me dit de vérifier ma connexion internet](#TOC-no-internet)
 * [Mon enregistrement GPX s'arrête parfois tout seul](#TOC-record-gpx-stop)
+* [Mon contrat IGN expire bientôt et je dois le renouveller](#TOC-renew-ign)
 * [J'ai un autre problème](#TOC-other)
 
 ## <a name="TOC-ign-incorrect"></a> J'ai un message qui me dit qu'au moins un de mes identifiants est incorrect
@@ -70,6 +71,14 @@ Un enregistrement GPX est lancé sous forme de service Android, qui tourne en t�
 Mais certains téléphones sont réglés de manière a limiter ces tâches de fond, pour économiser la batterie (la tâche de fond est alors identifiée comme drainant la batterie, puis elle est stoppée).
 Il faut aller dans les réglages du téléphone, dans "Batterie". Ensuite, il faut y trouver un menu "Optimisation de la batterie" ou similaire (cela diffère d'un téléphone a l'autre). Là on peut définir pour chaque application si on limite ou pas son activité en arrière plan. 
 Donc pour Trekme, il faut désactiver l'optimisation.
+
+## <a name="TOC-renew-ign"></a> Mon contrat IGN expire bientôt et je dois le renouveller
+
+Il faut alors commander une nouvelle clé d'API dans l'espace professionnel IGN. Pour cela, suivez le tutoriel de commande de clé d'API à partir de l'étape de [commande d'une clé](https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN#commande-dune-cl%C3%A9).
+
+Vous recevrez votre nouvelle clé sous quelques jours (vous serez notifié par mail). Il faudra alors vous rendre dans votre espace professionnel pour récupérer la clé, et la copier-coller dans TrekMe. Pour cela, dans TrekMe, allez dans "Créer une carte", puis IGN, et au lieu d'appuyer sur "Continuer", faites "Paramètres". Vous pouvez alors mettre à jour les champs nécessaires.
+
+N.B. Lors de la nouvelle commande, vous pouvez mettre les même identifiants utilisateur/mot_de_passe que pour le contrat précédent. Ce sera plus facile pour vous car vous n'aurez que la clé d'API à mettre à jour dans TrekMe.
 
 ## <a name="TOC-other"></a> J'ai un autre problème
 

@@ -3,12 +3,13 @@
 </p>
 
 1. [Introduction](#TOC-Overview)
-2. [Résumé des fonctionnalités](#TOC-Features-sum)
-3. [Créer une carte](#TOC-Create-a-map)
+2. [Cartes IGN](#TOC-IGN-maps)
+3. [Résumé des fonctionnalités](#TOC-Features-sum)
+4. [Créer une carte](#TOC-Create-a-map)
   * [Sélectionner une zone](#TOC-Select-area)
   * [Depuis une archive](#TOC-Import-from-archive)
   * [Création manuelle](#TOC-The-hard-way)
-4. [Fonctionnalités](#TOC-Features)
+5. [Fonctionnalités](#TOC-Features)
   * [Mesurer une distance](#TOC-Measure-distance)
   * [Afficher la vitesse](#TOC-Show-speed)
   * [Ajouter un marqueur](#TOC-Add-markers)
@@ -17,10 +18,10 @@
   * [Visualiser un enregistrement en temps réel](#TOC-Display-live-route)
   * [Importer une trace GPX](#TOC-GPX-track-import)
   * [S'enregistrer au format GPX](#TOC-GPX-recording)
-5. [Paramètres](#TOC-Settings)
+6. [Paramètres](#TOC-Settings)
   * [Démarrer sur la dernière carte](#TOC-Start-on-last-map)
   * [Dossier de téléchargement](#TOC-Download-dir)
-6. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
+7. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
 
 
 ## <a name="TOC-Overview"></a>Introduction
@@ -28,17 +29,17 @@
 TrekMe est une application Android permettant de se localiser sur une carte topographique, sans nécessiter de connexion internet (sauf chez soi au moment de créer la carte). La différence principale avec les autres applications de la même catégorie est la source des cartes. Il est possible de télécharger des cartes IGN, USGS, et OpenStreetMap (d'autres sources seront ajoutées). Mais il est aussi possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser avec TrekMe.
 L'accent a été mis sur la faible consommation des ressources, pour maximiser l'autonomie lors d'une randonnée.
 
-Cartes IGN : 
+## <a name="TOC-IGN-amps"></a>Cartes IGN
 
-Contrairement à certaines applications qui font payer à la carte, TrekMe ne vous coûtera que 6€ par an.
-En effet, l'esprit de TrekMe est la consultation hors ligne des cartes IGN. Pour cela, le développeur de l’application doit s'acquitter d'une ["licence d'exploitation grand public numérique"](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf), qui coûte 6€ par an par utilisateur à TrekMe. TrekMe vous invitera à la régler quand vous voudrez créer votre première carte IGN. Si au bout d'un an vous ne renouvelez pas votre licence, vous ne pourrez plus consulter en mode hors ligne les cartes IGN.
+Contrairement à certaines applications qui font payer à la carte, TrekMe vous coûtera environ 8€ par an.
+En effet, l'esprit de TrekMe est la consultation hors ligne des cartes IGN. Pour cela, le développeur de l’application doit s'acquitter d'une ["licence d'exploitation grand public numérique"](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf), qui coûte ~8€ par an par utilisateur à TrekMe. TrekMe vous invitera à la régler quand vous voudrez créer votre première carte IGN. Si au bout d'un an vous ne renouvelez pas votre licence, vous ne pourrez plus consulter en mode hors ligne les cartes IGN.
 Il vous faudra disposer d'identifiants et clé d'API IGN à mettre directement dans TrekMe. Vous serez guidé pour vous inscrire sur le site de l'IGN et obtenir vos propres identifiants et clé d'API. Ceci vous permettra d’accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal. Il faut pour cela suivre scrupuleusement ce [tutoriel](https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN).
 
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
 	- USA : USGS
-	- France IGN (requiert une souscription **annuelle de 6€** à l'IGN)
+	- France IGN (requiert une souscription **annuelle d'environ 8€** à l'IGN)
  	- Espagne IGN 
  	- OpenStreetMap
 * Marqueurs (possibilité d'ajout de commentaire)
