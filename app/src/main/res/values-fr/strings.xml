@@ -155,4 +155,5 @@
     <string name="mapview_lock_on_position">Verrouiller sur la position</string>
     <string name="ign_buy_license_banner">Vous devez acheter la licence IGN, valable un an</string>
     <string name="buy_btn">Acheter</string>
+    <string name="expired_ign_license">"Votre licence IGN a expirée :(\n\nL'achat de la licence se fait au moment de créer une nouvelle carte IGN.\nLa license est valable un an."</string>
 </resources>

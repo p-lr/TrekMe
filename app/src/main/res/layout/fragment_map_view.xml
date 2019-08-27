@@ -1,25 +1,50 @@
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/map_view_frgmt_layout">
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <com.peterlaurence.trekme.ui.mapview.components.IndicatorOverlay
-        android:id="@+id/indicator_overlay"
-        android:layout_height="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map_view_frgmt_layout"
         android:layout_width="match_parent"
-        android:visibility="gone"
-        app:backgroundColor="@color/colorIndicatorOverlay"
-        android:layout_gravity="top" />
+        android:layout_height="match_parent">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_position"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginTop="0dp"
-        android:src="@drawable/ic_gps_fixed_24dp"
-        app:backgroundTint="@color/colorWhite"
-        android:tint="@color/colorDarkGrey"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginBottom="@dimen/fab_margin" />
-</merge>
+        <TextView
+            android:id="@+id/frgmt_map_view_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:text="@{expiredIgnLicense}"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Your IGN license has expired :(\n\nTo buy it for this year, go to map creation and create an IGN map." />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_gps_fixed_24dp"
+            android:tint="@color/colorDarkGrey"
+            app:backgroundTint="@color/colorWhite"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <com.peterlaurence.trekme.ui.mapview.components.IndicatorOverlay
+            android:id="@+id/indicator_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:backgroundColor="@color/colorIndicatorOverlay"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <data>
+
+        <variable
+            name="expiredIgnLicense"
+            type="String" />
+    </data>
+</layout>

@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.ui.LocationProviderHolder
+import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
@@ -33,11 +34,11 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author peterLaurence on 10/02/2019
  */
-class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, CoroutineScope {
-    private lateinit var rootView: FrameLayoutMapView
+class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener, CoroutineScope {
+    private lateinit var presenter: MapViewFragmentContract.Presenter
     private var mapView: MapView? = null
     private var mMap: Map? = null
-    private lateinit var positionMarker: View
+    private lateinit var positionMarker: PositionOrientationMarker
     private var lockView = false
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
@@ -101,31 +102,29 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        /* Create layout from scratch if it does not exist, else don't re-create the TileView,
-         * it handles configuration changes itself
-         */
-        if (!::rootView.isInitialized) {
-            rootView = FrameLayoutMapView(context!!)
-            rootView.setPositionTouchListener(this)
+        /* Create layout from scratch if it does not exist */
+        if (!::presenter.isInitialized) {
+            presenter = MapViewFragmentPresenter(layoutInflater, container, context!!)
+            presenter.setPositionTouchListener(this)
         }
 
-        return rootView
+        return presenter.androidView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         /* Get the speed, distance and orientation indicators from the main layout */
-        speedListener = rootView.speedIndicator
-        distanceListener = rootView.distanceIndicator
-        positionMarker = rootView.positionMarker
+        speedListener = presenter.view.speedIndicator
+        distanceListener = presenter.view.distanceIndicator
+        positionMarker = presenter.view.positionMarker
 
         /* Create the instance of the OrientationEventManager */
         if (!::orientationEventManager.isInitialized) {
             orientationEventManager = OrientationEventManager(activity)
 
             /* Register the position marker as an OrientationListener */
-            orientationEventManager.setOrientationListener(positionMarker as OrientationEventManager.OrientationListener?)
+            orientationEventManager.setOrientationListener(positionMarker)
             if (savedInstanceState != null) {
                 val shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION)
                 if (shouldDisplayOrientation) {
@@ -302,6 +301,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
     @Subscribe
     fun onOutdatedIgnLicense(event: OutdatedIgnLicenseEvent) {
         clearMap()
+        presenter.showMessage()
     }
 
     @Subscribe
@@ -422,7 +422,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
         this.mapView = mapView
         mapView.id = R.id.tileview_id
         mapView.isSaveEnabled = true
-        rootView.setMapView(mapView)
+        presenter.setMapView(mapView)
 
         /* The MapView can have only one MarkerTapListener.
          * It dispatches the tap event to child layers.
@@ -437,7 +437,7 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
 
     private fun removeCurrentMapView() {
         mapView?.destroy()
-        rootView.removeMapView(mapView)
+        presenter.removeMapView(mapView)
     }
 
     /**
@@ -544,5 +544,22 @@ class MapViewFragment : Fragment(), FrameLayoutMapView.PositionTouchListener, Co
     companion object {
         const val TAG = "MapViewFragment"
         private const val WAS_DISPLAYING_ORIENTATION = "wasDisplayingOrientation"
+    }
+}
+
+interface MapViewFragmentContract {
+    interface Presenter {
+        val androidView: android.view.View
+        val view: View
+        fun showMessage()
+        fun setPositionTouchListener(listener: MapViewFragmentPresenter.PositionTouchListener)
+        fun setMapView(mapView: MapView)
+        fun removeMapView(mapView: MapView?)
+    }
+
+    interface View {
+        val speedIndicator: MapViewFragment.SpeedListener
+        val distanceIndicator: DistanceLayer.DistanceListener
+        val positionMarker: PositionOrientationMarker
     }
 }

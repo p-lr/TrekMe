@@ -139,6 +139,7 @@
     <string name="no_track_message">You haven\'t created nor imported any track yet.
         You can import a gpx track downloaded from a website using the import button above, or you can import
     a recording of your own using the recording menu.</string>
+    <string name="expired_ign_license">"Your IGN license has expired :(\n\nTo buy it for this year, go to map creation and create an IGN map."</string>
 
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>

@@ -7,6 +7,9 @@ apply plugin: 'kotlinx-serialization'
 android {
     compileSdkVersion 28
 
+    dataBinding {
+        enabled = true
+    }
     defaultConfig {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 23
@@ -64,6 +67,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1'
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.0"
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.0-beta-3'
 }
 repositories {
     mavenCentral()
