@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -52,8 +54,10 @@ public class MapListFragment extends Fragment implements
         MapLoader.MapDeletedListener {
 
     private FrameLayout rootView;
+    private LinearLayoutManager llm;
     private RecyclerView recyclerView;
     private MapAdapter adapter;
+    private static final String llmStateKey = "llmState";
 
     private MapListViewModel viewModel;
     private OnMapListFragmentInteractionListener mListener;
@@ -80,7 +84,6 @@ public class MapListFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
         setHasOptionsMenu(true);
 
         FragmentActivity activity = getActivity();
@@ -88,7 +91,17 @@ public class MapListFragment extends Fragment implements
             viewModel = ViewModelProviders.of(activity).get(MapListViewModel.class);
             viewModel.getMaps().observe(this, maps -> {
                 if (maps != null) {
+                    /* Set data */
                     onMapListUpdate(maps);
+
+                    /* Restore the recyclerView state if the device was rotated */
+                    Parcelable llmState;
+                    if (savedInstanceState != null) {
+                        llmState = savedInstanceState.getParcelable(llmStateKey);
+                        if (llm != null) {
+                            llm.onRestoreInstanceState(llmState);
+                        }
+                    }
                 }
             });
         }
@@ -130,7 +143,7 @@ public class MapListFragment extends Fragment implements
             recyclerView = new RecyclerView(ctx);
             recyclerView.setHasFixedSize(false);
 
-            LinearLayoutManager llm = new LinearLayoutManager(ctx);
+            llm = new LinearLayoutManager(ctx);
             recyclerView.setLayoutManager(llm);
 
             adapter = new MapAdapter(null, this, this, this,
@@ -199,7 +212,10 @@ public class MapListFragment extends Fragment implements
         MapSettingsFragment.ConfirmDeleteFragment f = new MapSettingsFragment.ConfirmDeleteFragment();
         f.setMapWeakRef(new WeakReference<>(map));
         f.setDeleteMapListener(this);
-        f.show(getFragmentManager(), "delete");
+        FragmentManager fragmentManager = getFragmentManager();
+        if (fragmentManager != null) {
+            f.show(fragmentManager, "delete");
+        }
     }
 
     @Override
@@ -267,6 +283,14 @@ public class MapListFragment extends Fragment implements
             Snackbar snackbar = Snackbar.make(view, archiveOkMsg, Snackbar.LENGTH_SHORT);
             snackbar.show();
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        Parcelable llmState = llm.onSaveInstanceState();
+        outState.putParcelable(llmStateKey, llmState);
     }
 
     /**
