@@ -139,6 +139,7 @@ public class MainActivity extends AppCompatActivity
     private NavigationView mNavigationView;
     private MainActivityViewModel viewModel;
     private LocationProviderFactory locationProviderFactory;
+    private Boolean isFirstStart = true;
 
     static {
         /* Setup default eventbus to use an index instead of reflection, which is recommended for
@@ -238,6 +239,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        isFirstStart = savedInstanceState == null;
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
 
@@ -382,12 +384,11 @@ public class MainActivity extends AppCompatActivity
         if (checkStoragePermissions(this)) {
             TrekMeContext.INSTANCE.init(this);
 
-            /* If the list fragment already exists, the activity might have been recreated because
-             * of a configuration change. Then we don't want to show this fragment, as another
-             * one is probably already visible.
+            /* If the activity has been recreated because of a configuration change, then we don't
+             * to trigger the first start procedure (whether or not we start on the list fragment or
+             * the map view fragment. This is because one fragment is probably already visible.
              */
-            Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-            if (mapListFragment == null) {
+            if (isFirstStart) {
                 viewModel.onActivityStart();
             }
         }
@@ -463,12 +464,6 @@ public class MainActivity extends AppCompatActivity
         Fragment mapFragment = new MapViewFragment();
         transaction.add(R.id.content_frame, mapFragment, MAP_FRAGMENT_TAG);
         return mapFragment;
-    }
-
-    private Fragment createMapListFragment(FragmentTransaction transaction) {
-        Fragment mapListFragment = new MapListFragment();
-        transaction.add(R.id.content_frame, mapListFragment, MAP_LIST_FRAGMENT_TAG);
-        return mapListFragment;
     }
 
     private Fragment createMapSettingsFragment(FragmentTransaction transaction, int mapId) {
@@ -567,24 +562,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMapListFragment() {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments();
-
-        /* Hide other fragments */
-        FragmentTransaction hideTransaction = fragmentManager.beginTransaction();
-        hideOtherFragments(hideTransaction, MAP_LIST_FRAGMENT_TAG);
-        hideTransaction.commit();
-
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment mapListFragment = fragmentManager.findFragmentByTag(MAP_LIST_FRAGMENT_TAG);
-
-        /* Show the map list fragment if it exists */
-        if (mapListFragment == null) {
-            mapListFragment = createMapListFragment(transaction);
-        }
-        transaction.show(mapListFragment);
-
-        transaction.commit();
+        showFragment(MAP_LIST_FRAGMENT_TAG, null, MapListFragment.class);
     }
 
     private void showMapSettingsFragment(int mapId) {
