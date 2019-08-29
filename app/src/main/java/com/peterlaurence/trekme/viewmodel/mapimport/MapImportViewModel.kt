@@ -96,5 +96,9 @@ class MapImportViewModel : ViewModel() {
         fun bind(itemPresenter: ItemPresenter) {
             item = itemPresenter
         }
+
+        fun unBind() {
+            item = null
+        }
     }
 }

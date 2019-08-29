@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.core.map.mapimporter.MapImporter;
  * @author peterLaurence on 22/12/17.
  */
 public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
+    int position;
     ConstraintLayout layout;
     TextView mapArchiveName;
 
@@ -49,6 +50,19 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
         progressBarIndMapCreation.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
         iconMapCreated = itemView.findViewById(R.id.mapcreation_done);
         mapCreationLabel = itemView.findViewById(R.id.mapcreation_txtview);
+    }
+
+    public void init() {
+        progressBarHorizontal.setVisibility(View.GONE);
+        if (progressBarIndUnzip != null) {
+            progressBarIndUnzip.setVisibility(View.GONE);
+        }
+        iconMapExtracted.setVisibility(View.GONE);
+        iconMapExtractionError.setVisibility(View.GONE);
+        extractionLabel.setVisibility(View.GONE);
+        progressBarIndMapCreation.setVisibility(View.GONE);
+        iconMapCreated.setVisibility(View.GONE);
+        mapCreationLabel.setVisibility(View.GONE);
     }
 
     /**

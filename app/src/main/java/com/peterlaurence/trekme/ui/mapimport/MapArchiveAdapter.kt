@@ -34,6 +34,7 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
         val data = data ?: return
         val viewModel = data[position]
         val mapArchive = data[position].mapArchive
+        holder.position = position
         holder.mapArchiveName.text = mapArchive.name
 
         if (selectedPosition == position) {
@@ -45,6 +46,8 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
                 holder.layout.setBackgroundColor(-0x1)
             }
         }
+
+        holder.init()
 
         viewModel.bind(object : MapImportViewModel.ItemPresenter {
 
@@ -64,6 +67,14 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
                 holder.onMapImported(status)
             }
         })
+    }
+
+    override fun onViewRecycled(holder: MapArchiveViewHolder) {
+        super.onViewRecycled(holder)
+
+        val data = data ?: return
+        val viewModel = data[holder.position]
+        viewModel.unBind()
     }
 
     override fun getItemCount(): Int {
