@@ -9,25 +9,26 @@ import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.maparchiver.unarchive
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.ui.events.MapImportedEvent
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipErrorEvent
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipFinishedEvent
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipProgressionEvent
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 
-class MapImportViewModel: ViewModel() {
-    private val mapArchiveList = MutableLiveData<List<MapArchive>>()
+class MapImportViewModel : ViewModel() {
+    private val viewModels = MutableLiveData<List<ItemViewModel>>()
+
+    private var viewModelsMap: kotlin.collections.Map<Int, ItemViewModel> = mapOf()
 
     fun unarchiveAsync(mapArchive: MapArchive) {
         viewModelScope.unarchive(mapArchive, object : UnzipProgressionListener {
 
+            val viewModel = viewModelsMap[mapArchive.id]
+
             override fun onProgress(p: Int) {
-                EventBus.getDefault().post(UnzipProgressionEvent(mapArchive.id, p))
+                viewModelScope.launch {
+                    viewModel?.item?.onProgress(p)
+                }
             }
 
             /**
@@ -39,7 +40,9 @@ class MapImportViewModel: ViewModel() {
                 MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS,
                         object : MapImporter.MapImportListener {
                             override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
-                                EventBus.getDefault().post(MapImportedEvent(map, mapArchive.id, status))
+                                viewModelScope.launch {
+                                    viewModel?.item?.onMapImported(map, status)
+                                }
                             }
 
                             override fun onMapImportError(e: MapImporter.MapParseException?) {
@@ -47,11 +50,15 @@ class MapImportViewModel: ViewModel() {
                             }
                         })
 
-                EventBus.getDefault().post(UnzipFinishedEvent(mapArchive.id, outputDirectory))
+                viewModelScope.launch {
+                    viewModel?.item?.onUnzipFinished()
+                }
             }
 
             override fun onUnzipError() {
-                EventBus.getDefault().post(UnzipErrorEvent(mapArchive.id))
+                viewModelScope.launch {
+                    viewModel?.item?.onUnzipError()
+                }
             }
         })
     }
@@ -62,11 +69,32 @@ class MapImportViewModel: ViewModel() {
                 MapLoader.getMapArchiveList()
             }
 
-            mapArchiveList.postValue(archives)
+            viewModelsMap = archives.map {
+                ItemViewModel(it)
+            }.associateBy {
+                it.mapArchive.id
+            }
+
+            viewModels.postValue(viewModelsMap.values.toList())
         }
     }
 
-    fun getMapArchiveList(): LiveData<List<MapArchive>> {
-        return mapArchiveList
+    fun getItemViewModelList(): LiveData<List<ItemViewModel>> {
+        return viewModels
+    }
+
+    interface ItemPresenter {
+        fun onProgress(progress: Int)
+        fun onUnzipFinished()
+        fun onUnzipError()
+        fun onMapImported(map: Map, status: MapImporter.MapParserStatus)
+    }
+
+    class ItemViewModel(val mapArchive: MapArchive) {
+        var item: ItemPresenter? = null
+
+        fun bind(itemPresenter: ItemPresenter) {
+            item = itemPresenter
+        }
     }
 }

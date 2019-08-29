@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,9 +33,9 @@ class MapImportFragment : Fragment() {
     private var listener: OnMapArchiveFragmentInteractionListener? = null
     private var mView: View? = null
     private var fabEnabled = false
-    private lateinit var mapArchiveList: List<MapArchive>
+    private lateinit var data: List<MapImportViewModel.ItemViewModel>
     private var mapArchiveSelected: MapArchive? = null
-    private val viewModel: MapImportViewModel by activityViewModels()
+    private val viewModel: MapImportViewModel by viewModels()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -50,9 +50,9 @@ class MapImportFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.getMapArchiveList().observe(this, Observer<List<MapArchive>> {
+        viewModel.getItemViewModelList().observe(this, Observer<List<MapImportViewModel.ItemViewModel>> {
             it?.let { mapArchiveList ->
-                this.mapArchiveList = mapArchiveList
+                this.data = mapArchiveList
                 mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
                 hideProgressBar()
             }
@@ -116,7 +116,7 @@ class MapImportFragment : Fragment() {
         mapArchiveAdapter?.notifyDataSetChanged()
 
         /* Keep a reference on the selected archive */
-        mapArchiveSelected = mapArchiveList[position]
+        mapArchiveSelected = data[position].mapArchive
     }
 
     private fun FloatingActionButton.activate() {
@@ -135,14 +135,16 @@ class MapImportFragment : Fragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMapImported(event: MapImportedEvent) {
-        val snackbar = Snackbar.make(view!!, R.string.snack_msg_show_map_list, Snackbar.LENGTH_LONG)
+        val view = view ?: return
+        val snackbar = Snackbar.make(view, R.string.snack_msg_show_map_list, Snackbar.LENGTH_LONG)
         snackbar.setAction(R.string.ok_dialog) { v -> listener!!.onMapArchiveFragmentInteraction() }
         snackbar.show()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onRequestImportMapEvent(event: RequestImportMapEvent) {
-        val confirmImport = context!!.getString(R.string.confirm_import)
+        val context = context ?: return
+        val confirmImport = context.getString(R.string.confirm_import)
         val snackbar = Snackbar.make(view!!, confirmImport, Snackbar.LENGTH_LONG)
         snackbar.show()
     }
@@ -150,16 +152,10 @@ class MapImportFragment : Fragment() {
     override fun onStop() {
         EventBus.getDefault().unregister(this)
         super.onStop()
-
-        if (recyclerViewMapImport == null) return
-        for (i in 0 until recyclerViewMapImport.adapter!!.itemCount) {
-            val holder = recyclerViewMapImport.findViewHolderForAdapterPosition(i) as MapArchiveViewHolder?
-            holder?.unSubscribe()
-        }
     }
 
     private fun hideProgressBar() {
-        view!!.findViewById<View>(R.id.progress_import_frgmt).visibility = View.GONE
+        view?.findViewById<View>(R.id.progress_import_frgmt)?.visibility = View.GONE
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

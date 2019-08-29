@@ -8,25 +8,16 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.map.mapimporter.MapImporter;
-import com.peterlaurence.trekme.ui.events.MapImportedEvent;
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipErrorEvent;
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipFinishedEvent;
-import com.peterlaurence.trekme.ui.mapimport.events.UnzipProgressionEvent;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.peterlaurence.trekme.R;
+import com.peterlaurence.trekme.core.map.mapimporter.MapImporter;
 
 /**
  * @author peterLaurence on 22/12/17.
  */
 public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
-    int mArchiveId;
     ConstraintLayout layout;
     TextView mapArchiveName;
 
@@ -63,64 +54,42 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
     /**
      * Init views based on view stubs.
      */
-    private void init() {
+    private void initProgressBar() {
         if (progressBarIndUnzip == null) {
             progressBarIndUnzip = (ProgressBar) stubProgressBarUnzip.inflate();
             progressBarIndUnzip.getIndeterminateDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onProgressionEvent(UnzipProgressionEvent event) {
-        if (event.archiveId == mArchiveId) {
-            init();
-            progressBarHorizontal.setVisibility(View.VISIBLE);
-            progressBarIndUnzip.setVisibility(View.VISIBLE);
-            extractionLabel.setVisibility(View.VISIBLE);
-            progressBarHorizontal.setProgress(event.progression);
-        }
+    public void onProgress(int p) {
+        initProgressBar();
+        progressBarHorizontal.setVisibility(View.VISIBLE);
+        progressBarIndUnzip.setVisibility(View.VISIBLE);
+        extractionLabel.setVisibility(View.VISIBLE);
+        progressBarHorizontal.setProgress(p);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUnzipFinishedEvent(UnzipFinishedEvent event) {
-        if (event.archiveId == mArchiveId) {
-            progressBarHorizontal.setVisibility(View.GONE);
-            progressBarIndUnzip.setVisibility(View.GONE);
-            extractionLabel.setVisibility(View.VISIBLE);
-            mapCreationLabel.setVisibility(View.VISIBLE);
-            iconMapExtracted.setVisibility(View.VISIBLE);
-            progressBarIndMapCreation.setVisibility(View.VISIBLE);
-        }
+    public void onUnzipFinished() {
+        progressBarHorizontal.setVisibility(View.GONE);
+        progressBarIndUnzip.setVisibility(View.GONE);
+        extractionLabel.setVisibility(View.VISIBLE);
+        mapCreationLabel.setVisibility(View.VISIBLE);
+        iconMapExtracted.setVisibility(View.VISIBLE);
+        progressBarIndMapCreation.setVisibility(View.VISIBLE);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUnzipError(UnzipErrorEvent event) {
-        if (event.archiveId == mArchiveId) {
-            progressBarIndUnzip.setVisibility(View.GONE);
-            iconMapExtractionError.setVisibility(View.VISIBLE);
-            extractionLabel.setText(R.string.extraction_error);
-        }
+    public void onUnzipError() {
+        progressBarIndUnzip.setVisibility(View.GONE);
+        iconMapExtractionError.setVisibility(View.VISIBLE);
+        extractionLabel.setText(R.string.extraction_error);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMapImported(MapImportedEvent event) {
-        if (event.archiveId == mArchiveId) {
-            if (event.status == MapImporter.MapParserStatus.EXISTING_MAP) {
-                mapCreationLabel.setText(R.string.imported_untouched);
-            }
-            progressBarIndMapCreation.setVisibility(View.GONE);
-            iconMapCreated.setVisibility(View.VISIBLE);
-            mapCreationLabel.setVisibility(View.VISIBLE);
+    public void onMapImported(MapImporter.MapParserStatus status) {
+        if (status == MapImporter.MapParserStatus.EXISTING_MAP) {
+            mapCreationLabel.setText(R.string.imported_untouched);
         }
-    }
-
-    void subscribe() {
-        if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);
-        }
-    }
-
-    void unSubscribe() {
-        EventBus.getDefault().unregister(this);
+        progressBarIndMapCreation.setVisibility(View.GONE);
+        iconMapCreated.setVisibility(View.VISIBLE);
+        mapCreationLabel.setVisibility(View.VISIBLE);
     }
 }
