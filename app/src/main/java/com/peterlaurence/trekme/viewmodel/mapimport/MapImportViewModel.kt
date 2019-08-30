@@ -9,10 +9,13 @@ import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.maparchiver.unarchive
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import java.io.File
 
 class MapImportViewModel : ViewModel() {
@@ -20,15 +23,31 @@ class MapImportViewModel : ViewModel() {
 
     private var viewModelsMap: kotlin.collections.Map<Int, ItemViewModel> = mapOf()
 
+    data class UnzipProgressEvent(val archiveId: Int, val p: Int)
+    data class UnzipErrorEvent(val archiveId: Int)
+    data class UnzipFinishedEvent(val archiveId: Int, val outputFolder: File)
+
+    init {
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+
+        EventBus.getDefault().unregister(this)
+    }
+
+    /**
+     * Launch the unzip of an archive. The [EventBus] is used to decouple the task from the actual
+     * handler (which is this view model), to avoid memory leaks. This is because handler code has
+     * reference on an [ItemViewModel] which may have reference on a [ItemPresenter], which as a
+     * reference on a view holder.
+     */
     fun unarchiveAsync(mapArchive: MapArchive) {
         viewModelScope.unarchive(mapArchive, object : UnzipProgressionListener {
 
-            val viewModel = viewModelsMap[mapArchive.id]
-
             override fun onProgress(p: Int) {
-                viewModelScope.launch {
-                    viewModel?.item?.onProgress(p)
-                }
+                EventBus.getDefault().post(UnzipProgressEvent(mapArchive.id, p))
             }
 
             /**
@@ -40,9 +59,7 @@ class MapImportViewModel : ViewModel() {
                 MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS,
                         object : MapImporter.MapImportListener {
                             override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
-                                viewModelScope.launch {
-                                    viewModel?.item?.onMapImported(map, status)
-                                }
+                                EventBus.getDefault().post(MapImportedEvent(map, mapArchive.id, status))
                             }
 
                             override fun onMapImportError(e: MapImporter.MapParseException?) {
@@ -50,17 +67,45 @@ class MapImportViewModel : ViewModel() {
                             }
                         })
 
-                viewModelScope.launch {
-                    viewModel?.item?.onUnzipFinished()
-                }
+                EventBus.getDefault().post(UnzipFinishedEvent(mapArchive.id, outputDirectory))
             }
 
             override fun onUnzipError() {
-                viewModelScope.launch {
-                    viewModel?.item?.onUnzipError()
-                }
+                EventBus.getDefault().post(UnzipErrorEvent(mapArchive.id))
             }
         })
+    }
+
+    @Subscribe
+    fun onUnzipProgress(event: UnzipProgressEvent) {
+        val viewModel = viewModelsMap[event.archiveId]
+        viewModelScope.launch {
+            viewModel?.item?.onProgress(event.p)
+        }
+    }
+
+    @Subscribe
+    fun onMapImported(event: MapImportedEvent) {
+        val viewModel = viewModelsMap[event.archiveId]
+        viewModelScope.launch {
+            viewModel?.item?.onMapImported(event.map, event.status)
+        }
+    }
+
+    @Subscribe
+    fun onUnzipFinished(event: UnzipFinishedEvent) {
+        val viewModel = viewModelsMap[event.archiveId]
+        viewModelScope.launch {
+            viewModel?.item?.onUnzipFinished()
+        }
+    }
+
+    @Subscribe
+    fun onUnzipError(event: UnzipErrorEvent) {
+        val viewModel = viewModelsMap[event.archiveId]
+        viewModelScope.launch {
+            viewModel?.item?.onUnzipError()
+        }
     }
 
     fun updateMapArchiveList() {
