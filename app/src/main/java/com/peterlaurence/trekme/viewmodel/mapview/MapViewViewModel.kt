@@ -25,11 +25,11 @@ class MapViewViewModel : ViewModel() {
     fun updateMapIfNecessary(oldMap: Map?) {
         val map = MapModel.getCurrentMap()
         if (map != null) {
-            if (map.equals(oldMap)) {
-                eventBus.post(CalibrationMayChangedEvent(map))
-            } else {
-                /* The map changed */
-                if (checkForIgnLicense(map)) {
+            if (checkForIgnLicense(map)) {
+                if (map.equals(oldMap)) {
+                    eventBus.post(CalibrationMayChangedEvent(map))
+                } else {
+                    /* The map changed */
                     mapLiveData.postValue(map)
                 }
             }
