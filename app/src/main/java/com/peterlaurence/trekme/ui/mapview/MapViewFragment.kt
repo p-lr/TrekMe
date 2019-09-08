@@ -22,7 +22,6 @@ import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
-import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
 import kotlinx.coroutines.*
@@ -43,7 +42,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var lockView = false
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
-    private lateinit var locationProvider: LocationProvider
     private var hasCenteredOnFirstLocation = false
     private lateinit var orientationEventManager: OrientationEventManager
     private lateinit var markerLayer: MarkerLayer
@@ -70,7 +68,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 context is LocationProviderHolder) {
             requestManageTracksListener = context
             requestManageMarkerListener = context
-            locationProvider = context.locationProvider
         } else {
             throw RuntimeException("$context must implement RequestManageTracksListener, " +
                     "RequestManageMarkerListener and LocationProviderHolder")
@@ -79,12 +76,18 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
         setHasOptionsMenu(true)
+        mapViewViewModel.setLocationProvider((context as LocationProviderHolder).locationProvider)
 
         mapViewViewModel.getMapLiveData().observe(this, Observer<Map> {
             it?.let {
                 onMapChanged(it)
+            }
+        })
+
+        mapViewViewModel.getLocationLiveData().observe(this, Observer<Location> {
+            it?.let {
+                onLocationReceived(it)
             }
         })
 
@@ -239,24 +242,14 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onResume() {
         super.onResume()
 
-        startLocationUpdates()
-    }
-
-    private fun startLocationUpdates() {
-        locationProvider.start {
-            onLocationReceived(it)
-        }
-    }
-
-    private fun stopLocationUpdates() {
-        locationProvider.stop()
+        mapViewViewModel.startLocationUpdates()
     }
 
     override fun onPause() {
         super.onPause()
 
         /* Save battery */
-        stopLocationUpdates()
+        mapViewViewModel.stopLocationUpdates()
     }
 
     override fun onHiddenChanged(hidden: Boolean) {

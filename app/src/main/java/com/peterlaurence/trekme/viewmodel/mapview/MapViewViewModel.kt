@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.billing.ign.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.model.map.MapModel
+import com.peterlaurence.trekme.viewmodel.common.Location
+import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -15,9 +17,11 @@ import org.greenrobot.eventbus.EventBus
  */
 class MapViewViewModel : ViewModel() {
     private val mapLiveData = MutableLiveData<Map>()
+    private val locationLiveData = MutableLiveData<Location>()
     private val persistenceStrategy = PersistenceStrategy()
 
     private val eventBus = EventBus.getDefault()
+    private var locationProvider: LocationProvider? = null
 
     /**
      * Only update the map if its a new one.
@@ -59,6 +63,22 @@ class MapViewViewModel : ViewModel() {
             false
         }()
     }
+
+    fun setLocationProvider(locationProvider: LocationProvider) {
+        this.locationProvider = locationProvider
+    }
+
+    fun startLocationUpdates() {
+        locationProvider?.start {
+            locationLiveData.postValue(it)
+        }
+    }
+
+    fun stopLocationUpdates() {
+        locationProvider?.stop()
+    }
+
+    fun getLocationLiveData(): LiveData<Location> = locationLiveData
 }
 
 data class CalibrationMayChangedEvent(val map: Map)
