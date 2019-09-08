@@ -139,7 +139,6 @@ public class MainActivity extends AppCompatActivity
     private NavigationView mNavigationView;
     private MainActivityViewModel viewModel;
     private LocationProviderFactory locationProviderFactory;
-    private Boolean isFirstStart = true;
 
     static {
         /* Setup default eventbus to use an index instead of reflection, which is recommended for
@@ -239,7 +238,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        isFirstStart = savedInstanceState == null;
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
 
@@ -384,11 +382,11 @@ public class MainActivity extends AppCompatActivity
         if (checkStoragePermissions(this)) {
             TrekMeContext.INSTANCE.init(this);
 
-            /* If the activity has been recreated because of a configuration change, then we don't
-             * to trigger the first start procedure (whether or not we start on the list fragment or
-             * the map view fragment. This is because one fragment is probably already visible.
+            /* If the activity is starting for the first time, we launch the startup procedure.
+             * It gets the list of maps then shows it.
+             * If at least one fragment is already added (visible or not), we shouldn't do that.
              */
-            if (isFirstStart) {
+            if (fragmentManager.getFragments().size() == 0) {
                 viewModel.onActivityStart();
             }
         }
