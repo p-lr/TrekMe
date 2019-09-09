@@ -42,7 +42,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var lockView = false
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
-    private var hasCenteredOnFirstLocation = false
+    private var shouldCenterOnFirstLocation = false
     private lateinit var orientationEventManager: OrientationEventManager
     private lateinit var markerLayer: MarkerLayer
     private lateinit var routeLayer: RouteLayer
@@ -96,6 +96,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 }
             }
         })
+
+        /* When the fragment is created for the first time, center on first location */
+        shouldCenterOnFirstLocation = savedInstanceState == null
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -274,7 +277,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      * updated.
      */
     private fun applyMap(map: Map) {
-        hasCenteredOnFirstLocation = false
         setMap(map)
         inMapRecordingViewModel.reload()
         initLayers()
@@ -354,8 +356,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      * Actions taken when the position changes:
      * * Update the position on the [Map]
      * * Update the landmarks
-     * * If we locked the view, we center the TileView on the current position only if the position
-     * is inside the map.
+     * * If we locked the view or if the fragment has just been created, we center the TileView on
+     *   the current position only if the position is inside the map.
      *
      * @param x the projected X coordinate, or longitude if there is no [Projection]
      * @param y the projected Y coordinate, or latitude if there is no [Projection]
@@ -364,8 +366,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         mapView?.moveMarker(positionMarker, x, y)
         landmarkLayer.onPositionUpdate(x, y)
 
-        if (lockView || !hasCenteredOnFirstLocation) {
-            hasCenteredOnFirstLocation = true
+        if (lockView || shouldCenterOnFirstLocation) {
+            shouldCenterOnFirstLocation = false
             if (mMap?.containsLocation(x, y) == true) {
                 centerOnPosition()
             }
