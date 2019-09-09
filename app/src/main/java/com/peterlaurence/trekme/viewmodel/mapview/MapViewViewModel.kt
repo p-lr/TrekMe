@@ -16,7 +16,6 @@ import org.greenrobot.eventbus.EventBus
  * @author peterLaurence on 24/08/2019
  */
 class MapViewViewModel : ViewModel() {
-    private val mapLiveData = MutableLiveData<Map>()
     private val locationLiveData = MutableLiveData<Location>()
     private val persistenceStrategy = PersistenceStrategy()
 
@@ -24,23 +23,17 @@ class MapViewViewModel : ViewModel() {
     private var locationProvider: LocationProvider? = null
 
     /**
-     * Only update the map if its a new one.
+     * @return a [Map] instance, or null if there is none or there's a license issue
      */
-    fun updateMapIfNecessary(oldMap: Map?) {
+    fun getMap(): Map? {
         val map = MapModel.getCurrentMap()
         if (map != null) {
             if (checkForIgnLicense(map)) {
-                if (map.equals(oldMap)) {
-                    eventBus.post(CalibrationMayChangedEvent(map))
-                } else {
-                    /* The map changed */
-                    mapLiveData.postValue(map)
-                }
+                return map
             }
         }
+        return null
     }
-
-    fun getMapLiveData(): LiveData<Map> = mapLiveData
 
     private fun checkForIgnLicense(map: Map): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
@@ -81,7 +74,6 @@ class MapViewViewModel : ViewModel() {
     fun getLocationLiveData(): LiveData<Location> = locationLiveData
 }
 
-data class CalibrationMayChangedEvent(val map: Map)
 data class OutdatedIgnLicenseEvent(val map: Map)
 data class ErrorIgnLicenseEvent(val map: Map)
 data class GracePeriodIgnEvent(val map: Map, val remainingDays: Int)
