@@ -110,9 +110,9 @@ private class FileSettingsHandler : SettingsHandler {
     private val settingsFile = TrekMeContext.getSettingsFile()
 
     /* Channels */
-    private val settingsToWrite = Channel<SettingsData>(4)
+    private val settingsToWrite = Channel<SettingsData>(Channel.CONFLATED)
     private val requests = Channel<Unit>(capacity = Channel.CONFLATED)
-    private val lastSettings = Channel<SettingsData>(capacity = Channel.CONFLATED)
+    private val lastSettings = Channel<SettingsData>(capacity = Channel.RENDEZVOUS)
 
     init {
         GlobalScope.worker(settingsToWrite, requests, lastSettings)

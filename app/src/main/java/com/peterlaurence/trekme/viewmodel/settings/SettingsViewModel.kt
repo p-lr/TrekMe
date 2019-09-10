@@ -38,12 +38,14 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun setDownloadDirPath(newPath: String) {
+        downloadDir.postValue(newPath)
         viewModelScope.launch {
             Settings.setDownloadDir(File(newPath))
         }
     }
 
     fun setStartOnPolicy(policy: StartOnPolicy) {
+        startOnPolicy.postValue(policy)
         viewModelScope.launch {
             Settings.setStartOnPolicy(policy)
         }
