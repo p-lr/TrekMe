@@ -22,7 +22,6 @@ import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
-import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
 import kotlinx.coroutines.*
@@ -43,8 +42,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var lockView = false
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
-    private lateinit var locationProvider: LocationProvider
-    private var hasCenteredOnFirstLocation = false
+    private var shouldCenterOnFirstLocation = false
     private lateinit var orientationEventManager: OrientationEventManager
     private lateinit var markerLayer: MarkerLayer
     private lateinit var routeLayer: RouteLayer
@@ -56,7 +54,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private val mapViewViewModel: MapViewViewModel by viewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
 
-    private lateinit var job: Job
+    private val job: Job = Job()
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -70,7 +68,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 context is LocationProviderHolder) {
             requestManageTracksListener = context
             requestManageMarkerListener = context
-            locationProvider = context.locationProvider
         } else {
             throw RuntimeException("$context must implement RequestManageTracksListener, " +
                     "RequestManageMarkerListener and LocationProviderHolder")
@@ -79,12 +76,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
         setHasOptionsMenu(true)
+        mapViewViewModel.setLocationProvider((context as LocationProviderHolder).locationProvider)
 
-        mapViewViewModel.getMapLiveData().observe(this, Observer<Map> {
+        mapViewViewModel.getLocationLiveData().observe(this, Observer<Location> {
             it?.let {
-                onMapChanged(it)
+                onLocationReceived(it)
             }
         })
 
@@ -99,6 +96,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 }
             }
         })
+
+        /* When the fragment is created for the first time, center on first location */
+        shouldCenterOnFirstLocation = savedInstanceState == null
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -109,51 +109,41 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter.setPositionTouchListener(this)
         }
 
-        return presenter.androidView
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
         /* Get the speed, distance and orientation indicators from the view */
         speedListener = presenter.view.speedIndicator
         distanceListener = presenter.view.distanceIndicator
         positionMarker = presenter.view.positionMarker
 
         /* Create the instance of the OrientationEventManager */
-        if (!::orientationEventManager.isInitialized) {
-            orientationEventManager = OrientationEventManager(activity)
+        orientationEventManager = OrientationEventManager(activity)
 
-            /* Register the position marker as an OrientationListener */
-            orientationEventManager.setOrientationListener(positionMarker)
-            if (savedInstanceState != null) {
-                val shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION)
-                if (shouldDisplayOrientation) {
-                    orientationEventManager.start()
-                }
+        /* Register the position marker as an OrientationListener */
+        orientationEventManager.setOrientationListener(positionMarker)
+        if (savedInstanceState != null) {
+            val shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION)
+            if (shouldDisplayOrientation) {
+                orientationEventManager.start()
             }
         }
 
         /* Create the marker layer */
-        if (!::markerLayer.isInitialized) {
-            markerLayer = MarkerLayer(context)
-        }
+        markerLayer = MarkerLayer(context)
         markerLayer.setRequestManageMarkerListener(requestManageMarkerListener)
 
         /* Create the route layer */
-        if (!::routeLayer.isInitialized) {
-            routeLayer = RouteLayer(this)
-        }
+        routeLayer = RouteLayer(this)
 
         /* Create the distance layer */
-        if (!::distanceLayer.isInitialized) {
-            distanceLayer = DistanceLayer(context, distanceListener)
-        }
+        distanceLayer = DistanceLayer(context, distanceListener)
 
         /* Create the landmark layer */
-        if (!::landmarkLayer.isInitialized) {
-            context?.let {
-                landmarkLayer = LandmarkLayer(it, this)
+        context?.let {
+            landmarkLayer = LandmarkLayer(it, this)
+        }
+
+        return presenter.androidView.also {
+            mapViewViewModel.getMap()?.let {
+                applyMap(it)
             }
         }
     }
@@ -230,44 +220,20 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onStart() {
         super.onStart()
-        job = Job()
         EventBus.getDefault().register(this)
-
-        mapViewViewModel.updateMapIfNecessary(mMap)
     }
 
     override fun onResume() {
         super.onResume()
 
-        startLocationUpdates()
-    }
-
-    private fun startLocationUpdates() {
-        locationProvider.start {
-            onLocationReceived(it)
-        }
-    }
-
-    private fun stopLocationUpdates() {
-        locationProvider.stop()
+        mapViewViewModel.startLocationUpdates()
     }
 
     override fun onPause() {
         super.onPause()
 
         /* Save battery */
-        stopLocationUpdates()
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (hidden) {
-            speedListener.hideSpeed()
-            distanceLayer.hide()
-            orientationEventManager.stop()
-        } else {
-            mapViewViewModel.updateMapIfNecessary(mMap)
-        }
+        mapViewViewModel.stopLocationUpdates()
     }
 
     @Subscribe
@@ -280,22 +246,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         routeLayer.onTrackChanged(event.map, event.routes)
         if (event.newMarkersCount > 0) {
             markerLayer.onMapMarkerUpdate()
-        }
-    }
-
-    /**
-     * The view model reported that map is still the same. But the calibration may have changed.
-     * Only the fragment can do this check because the difference between the old and new value is
-     * based on the state of an internal object of [MapView].
-     */
-    @Subscribe
-    fun onSameMapButCalibrationMayChanged(calibrationMayChangedEvent: CalibrationMayChangedEvent) {
-        val mapView = mapView ?: return
-        val map = calibrationMayChangedEvent.map
-        val newBounds = map.mapBounds
-        val c = mapView.coordinateTranslater
-        if (newBounds != null && !newBounds.compareTo(c.left, c.top, c.right, c.bottom)) {
-            setMapViewBounds(mapView, map)
         }
     }
 
@@ -323,17 +273,16 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     /**
-     * Once the map is updated, a [MapView] instance is created, so layers can be
+     * Once we get a [Map], a [MapView] instance is created, so layers can be
      * updated.
      */
-    private fun onMapChanged(map: Map) {
-        hasCenteredOnFirstLocation = false
+    private fun applyMap(map: Map) {
         setMap(map)
         inMapRecordingViewModel.reload()
-        updateLayers()
+        initLayers()
     }
 
-    private fun updateLayers() {
+    private fun initLayers() {
         mMap?.let { map ->
             val mapView = mapView ?: return
 
@@ -352,7 +301,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     override fun onStop() {
-        job.cancel()
         super.onStop()
         EventBus.getDefault().unregister(this)
     }
@@ -366,6 +314,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onDetach() {
         super.onDetach()
 
+        job.cancel()
         requestManageTracksListener = null
         requestManageMarkerListener = null
         orientationEventManager.stop()
@@ -407,8 +356,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      * Actions taken when the position changes:
      * * Update the position on the [Map]
      * * Update the landmarks
-     * * If we locked the view, we center the TileView on the current position only if the position
-     * is inside the map.
+     * * If we locked the view or if the fragment has just been created, we center the TileView on
+     *   the current position only if the position is inside the map.
      *
      * @param x the projected X coordinate, or longitude if there is no [Projection]
      * @param y the projected Y coordinate, or latitude if there is no [Projection]
@@ -417,8 +366,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         mapView?.moveMarker(positionMarker, x, y)
         landmarkLayer.onPositionUpdate(x, y)
 
-        if (lockView || !hasCenteredOnFirstLocation) {
-            hasCenteredOnFirstLocation = true
+        if (lockView || shouldCenterOnFirstLocation) {
+            shouldCenterOnFirstLocation = false
             if (mMap?.containsLocation(x, y) == true) {
                 centerOnPosition()
             }
