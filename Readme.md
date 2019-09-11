@@ -26,19 +26,18 @@
 
 TrekMe is an Android app to get live position on a map and other useful information, without
 ever needing an internet connection (except when creating a map).
-It differs from other map apps in the source of maps.
+It differs from other similar apps in the source of maps.
 Usually, a map is downloaded from the internet and is sometimes cached for an offline access (e.g google map).
-TrekMe is designed for people willing to use particular maps like USGS in USA, or IGN in France for example.
-You can also use your own map if you possess a paper map and you want to use it for your next trek.
-In this case, just scan it, then prepare and view it in TrekMe (see below). It also works if you
-possess a huge single file (several Gb), as TrekMe is designed to work with arbitrary map size.
+TrekMe is designed for people willing to use particular maps like USGS in USA, or IGN in France for example. In fact, any WMTS source can be integrated inside TrekMe.
+But it's not limited to that. If you own a paper map and you want to use it for your next trek, just scan it, then prepare it to use inside TrekMe (see below). It also works if you have a huge single image (several Gb), as TrekMe is designed to work with arbitrary map size.
 The only limitation is the memory available on your device (smartphone, tablet).
+Finally, TrekMe is designed to consume very few CPU resources, to preserve the device's battery. 
 
 ## <a name="TOC-Features-sum"></a>Features summary
 
 * Support in-app map creation from:
 	- United States's USGS
-	- France IGN (requires a ** annual subscription of 6€ **)
+	- France IGN (requires a ** annual subscription of 8€ **)
  	- Spain IGN 
  	- OpenStreetMap
 * Marker support (with optional comments)
