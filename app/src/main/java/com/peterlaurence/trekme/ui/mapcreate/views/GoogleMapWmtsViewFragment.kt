@@ -10,6 +10,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
@@ -43,6 +45,7 @@ import com.peterlaurence.trekme.ui.mapcreate.views.components.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
+import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
@@ -92,6 +95,8 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private lateinit var fabSave: FloatingActionButton
     private val projection = MercatorProjection()
 
+    private val locationViewModel: LocationViewModel by viewModels()
+
     private lateinit var area: Area
 
     /* Size of level 18 */
@@ -135,6 +140,13 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
         mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
                 ?: MapSource.OPEN_STREET_MAP
+
+        locationViewModel.setLocationProvider(locationProvider)
+        locationViewModel.getLocationLiveData().observe(this, Observer<Location> {
+            it?.let {
+                onLocationReceived(it)
+            }
+        })
 
         setHasOptionsMenu(true)
     }
@@ -236,13 +248,11 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     }
 
     private fun startLocationUpdates() {
-        locationProvider.start {
-            onLocationReceived(it)
-        }
+        locationViewModel.startLocationUpdates()
     }
 
     private fun stopLocationUpdates() {
-        locationProvider.stop()
+        locationViewModel.stopLocationUpdates()
     }
 
     /**
