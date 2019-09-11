@@ -1,13 +1,17 @@
 package com.peterlaurence.trekme.ui.mapcreate
 
 import android.graphics.Color
-import androidx.cardview.widget.CardView
-import androidx.recyclerview.widget.RecyclerView
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import java.lang.ref.WeakReference
@@ -37,23 +41,31 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
                 holder.title.text = parentView.resources.getText(R.string.ign_source)
                 holder.description.text = parentView.resources.getText(R.string.ign_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_logo, null))
+                holder.ignLegalMention.apply {
+                    visibility = View.VISIBLE
+                    paintFlags = paintFlags or Paint.UNDERLINE_TEXT_FLAG
+                    typeface = Typeface.DEFAULT
+                }
             }
             MapSource.OPEN_STREET_MAP -> {
                 holder.title.text = parentView.resources.getText(R.string.open_street_map_source)
                 holder.description.text = parentView.resources.getText(
                         R.string.open_street_map_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.openstreetmap_logo, null))
+                holder.ignLegalMention.visibility = View.GONE
             }
             MapSource.USGS -> {
                 holder.title.text = parentView.resources.getText(R.string.usgs_map_source)
                 holder.description.text = parentView.resources.getText(
                         R.string.usgs_map_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.usgs_logo, null))
+                holder.ignLegalMention.visibility = View.GONE
             }
             MapSource.IGN_SPAIN -> {
                 holder.title.text = parentView.resources.getText(R.string.ign_spain_source)
                 holder.description.text = parentView.resources.getText(R.string.ign_spain_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_spain_logo, null))
+                holder.ignLegalMention.visibility = View.GONE
             }
         }
 
@@ -62,10 +74,12 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
             holder.cardView.setCardBackgroundColor(accentColor)
             holder.description.setTextColor(whiteTextColor)
             holder.title.setTextColor(whiteTextColor)
+            holder.ignLegalMention.setTextColor(whiteTextColor)
         } else {
             holder.cardView.setCardBackgroundColor(Color.WHITE)
             holder.description.setTextColor(blackTextColor)
             holder.title.setTextColor(blackTextColor)
+            holder.ignLegalMention.setTextColor(blackTextColor)
         }
     }
 
@@ -73,12 +87,19 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
         var title: TextView = cardView.findViewById(R.id.map_source_title)
         var description: TextView = cardView.findViewById(R.id.map_source_description)
         var image: ImageView = cardView.findViewById(R.id.map_source_image)
+        var ignLegalMention: Button = cardView.findViewById(R.id.ign_legal_notice)
 
         var clickListener = MapViewHolderClickListener(this@MapSourceViewHolder,
                 this@MapSourceAdapter)
 
         init {
             cardView.setOnClickListener(clickListener)
+            ignLegalMention.text = parentView.resources.getText(R.string.ign_legal_notice_btn)
+            ignLegalMention.setOnClickListener {
+                val builder = AlertDialog.Builder(parentView.context)
+                builder.setMessage(parentView.resources.getText(R.string.ign_legal_notice))
+                builder.show()
+            }
         }
     }
 

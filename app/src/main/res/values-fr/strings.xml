@@ -158,4 +158,10 @@
     <string name="expired_ign_license">"Votre licence IGN a expirée :(\n\nL'achat de la licence se fait au moment de créer une nouvelle carte IGN.\nLa license est valable un an."</string>
     <string name="missing_ign_license">"Votre licence IGN est introuvable.\n\nSi vous l'avez déjà achetée il y a moins d'un an, vous pouvez la récupérer en créant une nouvelle carte IGN."</string>
     <string name="grace_period_ign_license">"Votre licence IGN a expirée. Vous avez %1$d jours pour l'acheter à nouveau."</string>
+    <string name="ign_legal_notice_btn">mentions légales</string>
+    <string name="ign_legal_notice">L’offre intègre des Données et/ou Géoservices pour lesquels, soit l’IGN détient les droits de propriété intellectuelle, soit dispose de l’accord nécessaire des ayants droits.\n
+        La licence concédée à l\'utilisateur des Données ou Géoservices IGN n\'entraîne à son profit aucun transfert de propriété de ces données.\n
+        L\'utilisation de ces Données et/ou Géoservices IGN est strictement limitée à l’Usage Privé de l’Utilisateur Final.\n
+        Les Données et/ou Géoservices IGN ne doivent pas être extraits de l’Offre, ou utilisés indépendamment de celle-ci.\n
+        La reproduction pour diffusion à des tiers ou la commercialisation des sorties graphiques est interdite, sous quelque forme ou par quelque procédé que ce soit.</string>
 </resources>

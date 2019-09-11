@@ -76,7 +76,7 @@ From the "Create map" option menu, you get to choose between available providers
 <img src="doc/tuto/wmts-providers.jpg" width="300">
 </p>
 
-Except for France's IGN, for which a (free) subscription is required, you can directly select the
+Except for France's IGN, for which an annual subscription is required, you can directly select the
 provider and continue.
 
 <p align="center">

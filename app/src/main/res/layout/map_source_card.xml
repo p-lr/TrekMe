@@ -37,6 +37,21 @@
             app:layout_constraintTop_toBottomOf="@+id/map_source_title"
             tools:text="Source desciption" />
 
+        <Button
+            android:id="@+id/ign_legal_notice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_marginTop="8dp"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:minHeight="25dp"
+            android:minWidth="30dp"
+            app:layout_constraintStart_toStartOf="@+id/map_source_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="legal notice" />
+
         <ImageView
             android:id="@+id/map_source_image"
             android:layout_width="90dp"
