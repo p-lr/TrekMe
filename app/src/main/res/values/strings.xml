@@ -185,7 +185,9 @@
         The license granted to the user of IGN Data or Geoservices does not result in any transfer of ownership of this data.\n
         The use of these Data and / or IGN Geoservices is strictly limited to the End User Private Use.\n
         The IGN Data and / or Geoservices must not be extracted from or used independently of the Offer.\n
-        Reproduction for distribution to third parties or the marketing of graphic output is prohibited in any form or by any means whatsoever.</string>
+        Reproduction for distribution to third parties or the marketing of graphic output is prohibited in any form or by any means whatsoever.\n
+        ©IGN – 2019
+    </string>
     <string name="open_street_map_source_description">Free map</string>
     <string name="usgs_map_source" translatable="false">USGS</string>
     <string name="usgs_map_source_description" translatable="false">U.S. Geological Survey</string>
