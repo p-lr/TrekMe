@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 const val gracePeriodDays = 15 // number of days the user is allowed to use the app despite expired license
-const val p = 365 // validity duration in days
+const val p = 350 // validity duration in days (365 - 15)
 
 /**
  * The billing API uses a purchase time in milliseconds since the epoch (Jan 1, 1970), which is
