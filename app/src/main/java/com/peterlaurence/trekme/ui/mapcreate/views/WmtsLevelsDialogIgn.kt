@@ -17,6 +17,7 @@ import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
+import com.peterlaurence.trekme.viewmodel.mapcreate.LicenseStatus
 
 
 /**
@@ -58,13 +59,15 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.getIgnLicenseStatus().observe(this, Observer<Boolean> {
+        viewModel.getIgnLicenseStatus().observe(this, Observer<LicenseStatus> {
             it?.also {
-                if (!it) {
-                    viewModel.getIgnLicenseInfo(billing)
-                } else {
-                    hidePriceIGN()
-                    setDownloadEnabled(true)
+                when (it) {
+                    LicenseStatus.PURCHASED -> {
+                        hidePriceIGN()
+                        setDownloadEnabled(true)
+                    }
+                    LicenseStatus.NOT_PURCHASED -> viewModel.getIgnLicenseInfo(billing)
+                    LicenseStatus.PENDING -> showPending()
                 }
             }
         })
@@ -128,6 +131,11 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         priceValue.visibility = View.GONE
         buyBtn.visibility = View.GONE
         helpBtn.visibility = View.GONE
+    }
+
+    private fun showPending() {
+        priceInformation.text = getString(R.string.ign_buy_license_pending)
+        buyBtn.visibility = View.GONE
     }
 
     private fun setDownloadEnabled(enabled: Boolean) {

@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 class IgnLicenseViewModel : ViewModel() {
-    private val ignLicenseStatus = MutableLiveData<Boolean>()
+    private val ignLicenseStatus = MutableLiveData<LicenseStatus>()
     private val ignLicenseDetails = MutableLiveData<IgnLicenseDetails>()
 
     fun getIgnLicensePurchaseStatus(billing: Billing) {
@@ -24,7 +24,7 @@ class IgnLicenseViewModel : ViewModel() {
             /* Otherwise, do normal checks */
             if (!ackDone) {
                 billing.getIgnLicensePurchaseStatus().also {
-                    ignLicenseStatus.postValue(it)
+                    ignLicenseStatus.postValue(if (it) LicenseStatus.PURCHASED else LicenseStatus.NOT_PURCHASED)
                 }
             }
         }
@@ -37,7 +37,7 @@ class IgnLicenseViewModel : ViewModel() {
                 ignLicenseDetails.postValue(licenseDetails)
             } catch (e: ProductNotFoundException) {
                 // something wrong on our side
-                ignLicenseStatus.postValue(true)
+                ignLicenseStatus.postValue(LicenseStatus.PURCHASED)
             } catch (e: IllegalStateException) {
                 // can't check license info, so assume it's not valid
             } catch (e: NotSupportedException) {
@@ -49,8 +49,12 @@ class IgnLicenseViewModel : ViewModel() {
     fun buyLicense(billing: Billing) {
         val ignLicenseDetails = ignLicenseDetails.value
         if (ignLicenseDetails != null) {
-            billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchaseAcknowledged)
+            billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchaseAcknowledged, this::onPurchasePending)
         }
+    }
+
+    private fun onPurchasePending() {
+        ignLicenseStatus.postValue(LicenseStatus.PENDING)
     }
 
     /**
@@ -58,13 +62,13 @@ class IgnLicenseViewModel : ViewModel() {
      */
     private fun onPurchaseAcknowledged() {
         /* It's assumed that if this is called, it's a success */
-        ignLicenseStatus.postValue(true)
+        ignLicenseStatus.postValue(LicenseStatus.PURCHASED)
 
         /* Remember when (it's not exact but it doesn't matter) the license was bought */
         persistLicense(LicenseInfo(Date().time))
     }
 
-    fun getIgnLicenseStatus(): LiveData<Boolean> {
+    fun getIgnLicenseStatus(): LiveData<LicenseStatus> {
         return ignLicenseStatus
     }
 
@@ -84,6 +88,10 @@ class IgnLicenseViewModel : ViewModel() {
             persistenceStrategy.persist(licenseInfo)
         }
     }
+}
+
+enum class LicenseStatus {
+    PURCHASED, NOT_PURCHASED, PENDING
 }
 
 data class IgnLicenseDetails(val skuDetails: SkuDetails) {

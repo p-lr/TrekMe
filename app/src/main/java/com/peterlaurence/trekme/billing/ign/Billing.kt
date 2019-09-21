@@ -9,18 +9,19 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.delay
-import kotlin.collections.ArrayList
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 const val IGN_LICENSE_SKU = "ign_license"
-typealias PurchaseAcknowledged = () -> Unit
+typealias PurchaseAcknowledgedCallback = () -> Unit
+typealias PurchasePendingCallback = () -> Unit
 
 class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
 
     private val billingClient = BillingClient.newBuilder(context).setListener(this).enablePendingPurchases().build()
 
-    private lateinit var purchaseAcknowledged: PurchaseAcknowledged
+    private lateinit var purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback
+    private lateinit var purchasePendingCallback: PurchasePendingCallback
 
     /**
      * This function returns when we're connected to the billing service.
@@ -48,7 +49,15 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
     override fun onPurchasesUpdated(billingResult: BillingResult?, purchases: MutableList<Purchase>?) {
         fun acknowledge() {
             purchases?.forEach {
-                if (shouldAcknowledgeIgnLicense(it)) acknowledgeIgnLicense(it)
+                if (it.sku == IGN_LICENSE_SKU) {
+                    if (it.purchaseState == Purchase.PurchaseState.PURCHASED && !it.isAcknowledged) {
+                        acknowledgeIgnLicense(it)
+                    } else if (it.purchaseState == Purchase.PurchaseState.PENDING) {
+                        if (this::purchasePendingCallback.isInitialized) {
+                            purchasePendingCallback()
+                        }
+                    }
+                }
             }
         }
 
@@ -73,13 +82,13 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
 
     /**
      * This is the callback of the [BillingClient.acknowledgePurchase] call.
-     * The [purchaseAcknowledged] is called only if the purchase is successfully acknowledged.
+     * The [purchaseAcknowledgedCallback] is called only if the purchase is successfully acknowledged.
      */
     override fun onAcknowledgePurchaseResponse(billingResult: BillingResult?) {
         /* Then notify registered PurchaseListener that it completed normally */
         billingResult?.also {
-            if (it.responseCode == OK && this::purchaseAcknowledged.isInitialized) {
-                purchaseAcknowledged()
+            if (it.responseCode == OK && this::purchaseAcknowledgedCallback.isInitialized) {
+                purchaseAcknowledgedCallback()
             } else {
                 Log.e(TAG, "Payment couldn't be acknowledged (code ${it.responseCode}): ${it.debugMessage}")
             }
@@ -94,12 +103,12 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
      * in [Purchase.PurchaseState.PURCHASED] state but not acknowledged.
      * This is why the acknowledgement is also made here.
      */
-    suspend fun acknowledgeIgnLicense(purchaseAcknowledged: PurchaseAcknowledged): Boolean {
+    suspend fun acknowledgeIgnLicense(purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback): Boolean {
         connectWithRetry()
 
         val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
         return purchases?.purchasesList?.getIgnLicense()?.let {
-            this.purchaseAcknowledged = purchaseAcknowledged
+            this.purchaseAcknowledgedCallback = purchaseAcknowledgedCallback
             if (shouldAcknowledgeIgnLicense(it)) {
                 acknowledgeIgnLicense(it)
                 true
@@ -213,11 +222,12 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
 
     data class SkuQueryResult(val billingResult: BillingResult, val skuDetailsList: List<SkuDetails>)
 
-    fun launchBilling(skuDetails: SkuDetails, purchaseAcknowledged: PurchaseAcknowledged) {
+    fun launchBilling(skuDetails: SkuDetails, purchaseAcknowledgedCb: PurchaseAcknowledgedCallback, purchasePendingCb: PurchasePendingCallback) {
         val flowParams = BillingFlowParams.newBuilder()
                 .setSkuDetails(skuDetails)
                 .build()
-        this.purchaseAcknowledged = purchaseAcknowledged
+        this.purchaseAcknowledgedCallback = purchaseAcknowledgedCb
+        this.purchasePendingCallback = purchasePendingCb
         billingClient.launchBillingFlow(activity, flowParams)
     }
 }
