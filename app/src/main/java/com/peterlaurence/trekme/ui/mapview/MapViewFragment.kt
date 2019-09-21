@@ -81,6 +81,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        EventBus.getDefault().register(this)
         setHasOptionsMenu(true)
         locationViewModel.setLocationProvider(locationProvider)
         locationViewModel.getLocationLiveData().observe(this, Observer<Location> {
@@ -222,11 +223,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         centerOnPosition()
     }
 
-    override fun onStart() {
-        super.onStart()
-        EventBus.getDefault().register(this)
-    }
-
     override fun onResume() {
         super.onResume()
 
@@ -304,14 +300,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-        EventBus.getDefault().unregister(this)
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
 
+        EventBus.getDefault().unregister(this)
         MapLoader.clearMapMarkerUpdateListener()
     }
 
