@@ -48,13 +48,7 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
     override fun onPurchasesUpdated(billingResult: BillingResult?, purchases: MutableList<Purchase>?) {
         fun acknowledge() {
             purchases?.forEach {
-                if (!it.isAcknowledged && it.sku == IGN_LICENSE_SKU && it.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                    /* Approve the payment */
-                    val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
-                            .setPurchaseToken(it.purchaseToken)
-                            .build()
-                    billingClient.acknowledgePurchase(acknowledgePurchaseParams, this)
-                }
+                if (shouldAcknowledgeIgnLicense(it)) acknowledgeIgnLicense(it)
             }
         }
 
@@ -63,6 +57,18 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
                 acknowledge()
             }
         }
+    }
+
+    private fun acknowledgeIgnLicense(purchase: Purchase) {
+        /* Approve the payment */
+        val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(purchase.purchaseToken)
+                .build()
+        billingClient.acknowledgePurchase(acknowledgePurchaseParams, this)
+    }
+
+    private fun shouldAcknowledgeIgnLicense(purchase: Purchase): Boolean {
+        return purchase.sku == IGN_LICENSE_SKU && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
     }
 
     /**
@@ -78,6 +84,27 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
                 Log.e(TAG, "Payment couldn't be acknowledged (code ${it.responseCode}): ${it.debugMessage}")
             }
         }
+    }
+
+    /**
+     * This is one of the first things to do. If the IGN license is among the purchases, check if it
+     * should be acknowledged. This call is required when the acknowledgement wasn't done right after
+     * a billing flow (typically when the payment method is slow and the user didn't wait the end of
+     * the procedure with the [onPurchasesUpdated] call). So we can end up with a purchase which is
+     * in [Purchase.PurchaseState.PURCHASED] state but not acknowledged.
+     * This is why the acknowledgement is also made here.
+     */
+    suspend fun acknowledgeIgnLicense(purchaseAcknowledged: PurchaseAcknowledged): Boolean {
+        connectWithRetry()
+
+        val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
+        return purchases?.purchasesList?.getIgnLicense()?.let {
+            this.purchaseAcknowledged = purchaseAcknowledged
+            if (shouldAcknowledgeIgnLicense(it)) {
+                acknowledgeIgnLicense(it)
+                true
+            } else false
+        } ?: false
     }
 
     suspend fun getIgnLicensePurchaseStatus(): Boolean {
@@ -119,6 +146,10 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
             }
             cont.resume(null)
         }
+    }
+
+    private fun List<Purchase>.getIgnLicense(): Purchase? {
+        return firstOrNull { it.sku == IGN_LICENSE_SKU }
     }
 
     private fun List<Purchase>.getValidIgnLicense(): Purchase? {

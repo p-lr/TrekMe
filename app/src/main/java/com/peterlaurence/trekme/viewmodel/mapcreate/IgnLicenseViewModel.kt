@@ -18,8 +18,14 @@ class IgnLicenseViewModel : ViewModel() {
 
     fun getIgnLicensePurchaseStatus(billing: Billing) {
         viewModelScope.launch {
-            billing.getIgnLicensePurchaseStatus().also {
-                ignLicenseStatus.postValue(it)
+            /* First, check if we just need to acknowledge the purchase */
+            val ackDone = billing.acknowledgeIgnLicense(this@IgnLicenseViewModel::onPurchaseAcknowledged)
+
+            /* Otherwise, do normal checks */
+            if (!ackDone) {
+                billing.getIgnLicensePurchaseStatus().also {
+                    ignLicenseStatus.postValue(it)
+                }
             }
         }
     }
@@ -43,14 +49,19 @@ class IgnLicenseViewModel : ViewModel() {
     fun buyLicense(billing: Billing) {
         val ignLicenseDetails = ignLicenseDetails.value
         if (ignLicenseDetails != null) {
-            billing.launchBilling(ignLicenseDetails.skuDetails) {
-                /* It's assumed that if this is called, it's a success */
-                ignLicenseStatus.postValue(true)
-
-                /* Remember when (it's not exact but it doesn't matter) the license was bought */
-                persistLicense(LicenseInfo(Date().time))
-            }
+            billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchaseAcknowledged)
         }
+    }
+
+    /**
+     * This is the callback called when the IGN license is considered successfully bought.
+     */
+    private fun onPurchaseAcknowledged() {
+        /* It's assumed that if this is called, it's a success */
+        ignLicenseStatus.postValue(true)
+
+        /* Remember when (it's not exact but it doesn't matter) the license was bought */
+        persistLicense(LicenseInfo(Date().time))
     }
 
     fun getIgnLicenseStatus(): LiveData<Boolean> {
