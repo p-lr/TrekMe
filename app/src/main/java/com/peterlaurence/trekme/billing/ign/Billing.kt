@@ -34,10 +34,14 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
 
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
-                if (billingResult.responseCode == OK) {
-                    it.resume(true)
-                } else {
-                    it.resume(false)
+                /* It already happened that this continuation was called twice, resulting in IllegalStateException */
+                try {
+                    if (billingResult.responseCode == OK) {
+                        it.resume(true)
+                    } else {
+                        it.resume(false)
+                    }
+                } catch (e: Exception) {
                 }
             }
 
@@ -120,41 +124,12 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
         connectWithRetry()
         val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
 
-        /**
-         * If if can't find the purchase we're looking for in the cached purchases, try to get it
-         * from a network call.
-         */
-        if (purchases == null || !purchases.purchasesList.containsIgnLicense()) {
-            return queryPurchaseStatusNetwork()?.let {
-                if (checkTime(it.purchaseTime) !is AccessGranted) {
-                    it.consumeIgnLicense()
-                    false
-                } else true
-            } ?: false
-        }
-
-        /**
-         * Look into the cache since a network call isn't necessary.
-         */
         return purchases.purchasesList.getValidIgnLicense()?.let {
             if (checkTime(it.purchaseTime) !is AccessGranted) {
                 it.consumeIgnLicense()
                 false
             } else true
         } ?: false
-    }
-
-    private suspend fun queryPurchaseStatusNetwork() = suspendCoroutine<PurchaseHistoryRecord?> { cont ->
-        billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.INAPP) { billingResult, purchaseHistoryRecordList ->
-            if (billingResult.responseCode == OK) {
-                val purchase = purchaseHistoryRecordList.firstOrNull {
-                    it.sku == IGN_LICENSE_SKU
-                }
-                cont.resume(purchase)
-                return@queryPurchaseHistoryAsync
-            }
-            cont.resume(null)
-        }
     }
 
     private fun List<Purchase>.getIgnLicense(): Purchase? {
@@ -165,17 +140,7 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
         return firstOrNull { it.sku == IGN_LICENSE_SKU && it.isAcknowledged }
     }
 
-    private fun List<Purchase>.containsIgnLicense(): Boolean {
-        return any { it.sku == IGN_LICENSE_SKU }
-    }
-
     private fun Purchase.consumeIgnLicense() {
-        if (sku == IGN_LICENSE_SKU) {
-            consume(purchaseToken)
-        }
-    }
-
-    private fun PurchaseHistoryRecord.consumeIgnLicense() {
         if (sku == IGN_LICENSE_SKU) {
             consume(purchaseToken)
         }
