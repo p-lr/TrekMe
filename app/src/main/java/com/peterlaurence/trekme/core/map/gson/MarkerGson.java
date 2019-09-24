@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.map.gson;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class MarkerGson {
         markers = new ArrayList<>();
     }
 
-    public static class Marker {
+    public static class Marker implements Serializable {
         public String name;
         public double lat;
         public double lon;

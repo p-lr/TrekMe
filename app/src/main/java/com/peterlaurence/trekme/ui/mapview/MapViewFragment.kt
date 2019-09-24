@@ -474,7 +474,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      * Same as [RequestManageTracksListener].
      */
     interface RequestManageMarkerListener {
-        fun onRequestManageMarker(marker: MarkerGson.Marker)
+        fun onRequestManageMarker(mapId: Int, marker: MarkerGson.Marker)
     }
 
     /**

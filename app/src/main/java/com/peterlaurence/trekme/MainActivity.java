@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
@@ -44,7 +43,6 @@ import com.peterlaurence.trekme.model.map.MapModel;
 import com.peterlaurence.trekme.service.event.MapDownloadEvent;
 import com.peterlaurence.trekme.service.event.Status;
 import com.peterlaurence.trekme.ui.LocationProviderHolder;
-import com.peterlaurence.trekme.ui.MarkerProvider;
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent;
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent;
 import com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment;
@@ -84,7 +82,6 @@ public class MainActivity extends AppCompatActivity
         MapViewFragment.RequestManageTracksListener,
         MapSettingsFragment.MapCalibrationRequestListener,
         MarkerManageFragment.MarkerManageFragmentInteractionListener,
-        MarkerProvider,
         MapViewFragment.RequestManageMarkerListener,
         LocationProviderHolder {
 
@@ -491,8 +488,20 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestManageMarker(@NonNull MarkerGson.Marker marker) {
-        showMarkerManageFragment();
+    public void onRequestManageMarker(int mapId, @NonNull MarkerGson.Marker marker) {
+        /* Remove single-usage fragments */
+        removeSingleUsageFragments();
+
+        Fragment fragment = MarkerManageFragment.Companion.newInstance(mapId, marker);
+
+        hideAllFragments();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.add(R.id.content_frame, fragment, MARKER_MANAGE_FRAGMENT_TAG);
+        transaction.show(fragment);
+
+        /* Manually manage the back action*/
+        mBackFragmentTag = MARKER_MANAGE_FRAGMENT_TAG;
+        transaction.commit();
     }
 
     public TracksManageFragment getTracksManageFragment() {
@@ -797,24 +806,6 @@ public class MainActivity extends AppCompatActivity
                     // permission denied
                     // TODO : alert the user of the consequences
                 }
-        }
-    }
-
-    @Nullable
-    @Override
-    public MarkerGson.Marker getCurrentMarker() {
-        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapViewFragment instanceof MapViewFragment) {
-            return ((MapViewFragment) mapViewFragment).getCurrentMarker();
-        }
-        return null;
-    }
-
-    @Override
-    public void currentMarkerEdited() {
-        Fragment mapViewFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG);
-        if (mapViewFragment instanceof MapViewFragment) {
-            ((MapViewFragment) mapViewFragment).currentMarkerEdited();
         }
     }
 

@@ -104,7 +104,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
             MarkerCallout markerCallout = new MarkerCallout(mContext);
             markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
                     mMapView, mContext, mMap));
-            markerCallout.setEditAction(new EditMarkerRunnable(movableMarker, MarkerLayer.this,
+            markerCallout.setEditAction(new EditMarkerRunnable(mMap.getId(), movableMarker, MarkerLayer.this,
                     markerCallout, mMapView, mRequestManageMarkerListener));
             markerCallout.setDeleteAction(new DeleteMarkerRunnable(movableMarker, markerCallout,
                     mMapView, mMap));
@@ -343,10 +343,12 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
         private MapView mMapView;
         private WeakReference<MapViewFragment.RequestManageMarkerListener> mListenerWeakRef;
+        private int mMapId;
 
-        EditMarkerRunnable(MovableMarker movableMarker, MarkerLayer markerLayer,
+        EditMarkerRunnable(int mapId, MovableMarker movableMarker, MarkerLayer markerLayer,
                            MarkerCallout markerCallout, MapView mapView,
                            MapViewFragment.RequestManageMarkerListener listener) {
+            mMapId = mapId;
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerLayerWeakReference = new WeakReference<>(markerLayer);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
@@ -367,7 +369,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
                             markerLayer.setCurrentMarker(movableMarker);
                         }
 
-                        listener.onRequestManageMarker(movableMarker.getMarker());
+                        listener.onRequestManageMarker(mMapId, movableMarker.getMarker());
                     }
                 }
             }
