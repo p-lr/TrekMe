@@ -23,8 +23,8 @@ class IgnLicenseViewModel : ViewModel() {
 
             /* Otherwise, do normal checks */
             if (!ackDone) {
-                billing.getIgnLicensePurchaseStatus().also {
-                    ignLicenseStatus.postValue(if (it) LicenseStatus.PURCHASED else LicenseStatus.NOT_PURCHASED)
+                billing.getIgnLicensePurchase().also {
+                    ignLicenseStatus.postValue(if (it != null) LicenseStatus.PURCHASED else LicenseStatus.NOT_PURCHASED)
                 }
             }
         }

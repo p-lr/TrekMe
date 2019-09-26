@@ -19,18 +19,34 @@ class MapViewViewModel : ViewModel() {
     /**
      * @return a [Map] instance, or null if there is none or there's a license issue
      */
-    fun getMap(): Map? {
+    suspend fun getMap(billing: Billing?): Map? {
         val map = MapModel.getCurrentMap()
         if (map != null) {
-            if (checkForIgnLicense(map)) {
+            if (checkForIgnLicense(map, billing)) {
                 return map
             }
         }
         return null
     }
 
-    private fun checkForIgnLicense(map: Map): Boolean {
+    private suspend fun checkForIgnLicense(map: Map, billing: Billing?): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
+
+        /**
+         * In the event the persistence file doesn't exists and the license is proven to be purchased
+         * and still valid, create the persistence file.
+         * Otherwise, alter the user that the license is either missing or expired.
+         */
+        suspend fun onFailureToReadFile(): Boolean {
+            // missing license or something else wrong
+            return billing?.getIgnLicensePurchase()?.let {
+                persistenceStrategy.persist(LicenseInfo(it.purchaseTime))
+                true
+            } ?: {
+                eventBus.post(ErrorIgnLicenseEvent(map))
+                false
+            }()
+        }
 
         return persistenceStrategy.getLicenseInfo()?.let {
             when (val accessState = checkTime(it.purchaseTimeMillis)) {
@@ -44,11 +60,7 @@ class MapViewViewModel : ViewModel() {
                     false
                 }
             }
-        } ?: {
-            // missing license or something else wrong
-            eventBus.post(ErrorIgnLicenseEvent(map))
-            false
-        }()
+        } ?: onFailureToReadFile()
     }
 }
 

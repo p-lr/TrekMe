@@ -12,6 +12,7 @@ import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.markers.*
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.events.OrientationEventManager
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
@@ -53,6 +54,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private lateinit var speedListener: SpeedListener
     private lateinit var distanceListener: DistanceLayer.DistanceListener
     private lateinit var locationProvider: LocationProvider
+    private var billing: Billing? = null
 
     private val mapViewViewModel: MapViewViewModel by viewModels()
     private val locationViewModel: LocationViewModel by viewModels()
@@ -76,6 +78,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         } else {
             throw RuntimeException("$context must implement RequestManageTracksListener, " +
                     "RequestManageMarkerListener and LocationProviderHolder")
+        }
+        activity?.let {
+            billing = Billing(context, it)
         }
     }
 
@@ -147,8 +152,14 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         return presenter.androidView.also {
-            mapViewViewModel.getMap()?.let {
-                applyMap(it)
+            launch {
+                mapViewViewModel.getMap(billing)?.let {
+                    try {
+                        applyMap(it)
+                    } catch (t: Throwable) {
+                        // probably the fragment wasn't in the proper state
+                    }
+                }
             }
         }
     }

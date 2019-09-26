@@ -120,16 +120,16 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
         } ?: false
     }
 
-    suspend fun getIgnLicensePurchaseStatus(): Boolean {
+    suspend fun getIgnLicensePurchase(): Purchase? {
         connectWithRetry()
         val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
 
         return purchases.purchasesList.getValidIgnLicense()?.let {
             if (checkTime(it.purchaseTime) !is AccessGranted) {
                 it.consumeIgnLicense()
-                false
-            } else true
-        } ?: false
+                null
+            } else it
+        }
     }
 
     private fun List<Purchase>.getIgnLicense(): Purchase? {
