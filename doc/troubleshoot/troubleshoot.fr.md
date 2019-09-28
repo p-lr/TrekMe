@@ -82,7 +82,7 @@ N.B. Lors de la nouvelle commande, vous pouvez mettre les même identifiants uti
 
 ## <a name="TOC-other"></a> J'ai un autre problème
 
-Votre problème ne figure pas parmi ceux cités plus haut. Dans ce cas, contactez-moi par mail à peter.laurence@protonmail.com <br>
+Votre problème ne figure pas parmi ceux cités plus haut. Dans ce cas, contactez-moi par mail à plr.devs@gmail.com <br>
 Je ferai tout mon possible pour vous aider.
 
 

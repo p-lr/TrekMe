@@ -8,26 +8,39 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.viewmodel.markermanage.GeographicCoords
+import com.peterlaurence.trekme.viewmodel.markermanage.MakerManageViewModel
+import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
 
 /**
- * A [Fragment] subclass that provides tools to :
+ * A [Fragment] subclass that provides tools to:
  *
+ *  * Edit a marker's name
  *  * Edit a marker's associated comment
- *  * See the WGS84 and projected coordinates of the marker, if possible
- *  * Delete the marker
+ *  * See and edit WGS84 (and projected coordinates, if applicable)
  *
+ * When the latitude or longitude is changed, the projected coordinates are changed accordingly, if
+ * the map has a projection. Right after this change, this do not trigger un update of lat and lon,
+ * since this would result in a infinite loop.
+ *
+ * The reverse applies: when projected coordinates are changes, latitude and longitude are updated
+ * only once.
  *
  * @author peterLaurence on 23/04/2017 -- Converted to Kotlin on 24/09/2019
  */
 class MarkerManageFragment : Fragment() {
     private lateinit var rootView: View
+    private val viewModel: MakerManageViewModel by viewModels()
     private var markerManageFragmentInteractionListener: MarkerManageFragmentInteractionListener? = null
 
     private var map: Map? = null
@@ -40,6 +53,13 @@ class MarkerManageFragment : Fragment() {
     private var projectionX: TextInputEditText? = null
     private var projectionY: TextInputEditText? = null
     private var comment: EditText? = null
+
+    /*
+     * Be VERY careful not to break the logic of those flags, since their purpose is to prevent
+     * infinite modification loop (geo_coord change -> proj_coord change -> geo_coord change -> ...)
+     */
+    private var infiniteLoopGuardGeo = false
+    private var infiniteLoopGuardProj = false
 
     interface MarkerManageFragmentInteractionListener {
         fun showCurrentMap()
@@ -57,6 +77,22 @@ class MarkerManageFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        viewModel.getGeographicLiveData().observe(this, Observer<GeographicCoords> {
+            it?.let {
+                lonEditText?.setText("${it.lon}")
+                latEditText?.setText("${it.lat}")
+            }
+            infiniteLoopGuardGeo = false
+        })
+
+        viewModel.getProjectedLiveData().observe(this, Observer<ProjectedCoords> {
+            it?.let {
+                projectionX?.setText("${it.X}")
+                projectionY?.setText("${it.Y}")
+            }
+            infiniteLoopGuardProj = false
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -82,6 +118,38 @@ class MarkerManageFragment : Fragment() {
                 this.marker = it
             }
         }
+
+        latEditText?.addTextChangedListener(
+                onTextChanged = { _, _, _, _ ->
+                    if (!infiniteLoopGuardGeo) {
+                        onGeographicCoordsChanged()
+                    }
+                }
+        )
+
+        lonEditText?.addTextChangedListener(
+                onTextChanged = { _, _, _, _ ->
+                    if (!infiniteLoopGuardGeo) {
+                        onGeographicCoordsChanged()
+                    }
+                }
+        )
+
+        projectionX?.addTextChangedListener(
+                onTextChanged = { _, _, _, _ ->
+                    if (!infiniteLoopGuardProj) {
+                        onProjectedCoordsChanged()
+                    }
+                }
+        )
+
+        projectionY?.addTextChangedListener(
+                onTextChanged = { _, _, _, _ ->
+                    if (!infiniteLoopGuardProj) {
+                        onProjectedCoordsChanged()
+                    }
+                }
+        )
 
         updateView()
         return rootView
@@ -111,6 +179,46 @@ class MarkerManageFragment : Fragment() {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun onGeographicCoordsChanged() {
+        if (infiniteLoopGuardProj) {
+            return
+        }
+        map?.let {
+            var lat: Double? = null
+            var lon: Double? = null
+            try {
+                lat = latEditText?.text?.toString()?.toDouble()
+                lon = lonEditText?.text?.toString()?.toDouble()
+            } catch (e: Exception) {
+            }
+
+            if (lat != null && lon != null) {
+                infiniteLoopGuardProj = true
+                viewModel.onGeographicValuesChanged(it, lat, lon)
+            }
+        }
+    }
+
+    private fun onProjectedCoordsChanged() {
+        if (infiniteLoopGuardGeo) {
+            return
+        }
+        map?.let {
+            var X: Double? = null
+            var Y: Double? = null
+            try {
+                X = projectionX?.text?.toString()?.toDouble()
+                Y = projectionY?.text?.toString()?.toDouble()
+            } catch (e: Exception) {
+            }
+
+            if (X != null && Y != null) {
+                infiniteLoopGuardGeo = true
+                viewModel.onProjectedCoordsChanged(it, X, Y)
+            }
         }
     }
 
