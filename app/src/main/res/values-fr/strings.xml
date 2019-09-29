@@ -167,4 +167,6 @@
         ©IGN – 2019
     </string>
     <string name="ign_buy_license_pending">Veillez attendre quelques minutes, paiement en cours</string>
+    <string name="maps_category">Cartes</string>
+    <string name="preference_magnifying_factor">Facteur de grossissement</string>
 </resources>

@@ -46,6 +46,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
     private var shouldCenterOnFirstLocation = false
+    private var magnifyingFactor: Int? = null
     private lateinit var orientationEventManager: OrientationEventManager
     private lateinit var markerLayer: MarkerLayer
     private lateinit var routeLayer: RouteLayer
@@ -153,13 +154,25 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         return presenter.androidView.also {
             launch {
-                mapViewViewModel.getMap(billing)?.let {
-                    try {
-                        applyMap(it)
-                    } catch (t: Throwable) {
-                        // probably the fragment wasn't in the proper state
-                    }
-                }
+                /* First, the settings */
+                getMapSettings()
+
+                /* Then, the Map */
+                getMap()
+            }
+        }
+    }
+
+    private suspend fun getMapSettings() {
+        magnifyingFactor = mapViewViewModel.getMagnifyingFactor()
+    }
+
+    private suspend fun getMap() {
+        mapViewViewModel.getMap(billing)?.let {
+            try {
+                applyMap(it)
+            } catch (t: Throwable) {
+                // probably the fragment wasn't in the proper state
             }
         }
     }
@@ -355,10 +368,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    fun currentMarkerEdited() {
-        markerLayer.updateCurrentMarker()
-    }
-
     /**
      * Actions taken when the position changes:
      * * Update the position on the [Map]
@@ -421,8 +430,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         val mapView = MapView(this.context!!)
         val tileSize = map.levelList.firstOrNull()?.tile_size?.x ?: return
 
+        /* The magnifying factor - default to 1 */
+        val factor = this.magnifyingFactor ?: 1
+
         val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize,
-                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(1).setPadding(tileSize * 2)
+                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(factor).setPadding(tileSize * 2)
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)

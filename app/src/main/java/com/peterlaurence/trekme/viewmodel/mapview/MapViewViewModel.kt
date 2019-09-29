@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.viewmodel.mapview
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.billing.ign.*
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.map.MapModel
 import org.greenrobot.eventbus.EventBus
 
@@ -28,6 +29,8 @@ class MapViewViewModel : ViewModel() {
         }
         return null
     }
+
+    suspend fun getMagnifyingFactor(): Int = Settings.getMagnifyingFactor()
 
     private suspend fun checkForIgnLicense(map: Map, billing: Billing?): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true

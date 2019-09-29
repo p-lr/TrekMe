@@ -9,13 +9,17 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 
-
+/**
+ * Global app settings are managed here.
+ *
+ * @author peterLaurence on 05/05/19
+ */
 class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by viewModels()
 
     private var startOnPref: ListPreference? = null
-
     private var downloadPref: ListPreference? = null
+    private var magnifyingPref: ListPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.app_settings)
@@ -40,6 +44,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 updateStartOnPolicy(policy)
             }
         })
+
+        viewModel.getMagnifyingFactorLiveData().observe(this, Observer<Int> {
+            it?.let {
+                updateMagnifyingFactor(it)
+            }
+        })
     }
 
     private fun updateDownloadDirList(dirs: Array<String>) {
@@ -60,9 +70,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         startOnPref?.setSummaryAndValue(txt)
     }
 
+    private fun updateMagnifyingFactor(factor: Int) {
+        magnifyingPref?.setSummaryAndValue(factor.toString())
+    }
+
     private fun initComponents() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
         downloadPref = preferenceManager.findPreference(getString(R.string.preference_download_location_key))
+        magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
 
         downloadPref?.setOnPreferenceChangeListener { _, newValue ->
             val newPath = newValue as String
@@ -79,6 +94,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 else -> StartOnPolicy.MAP_LIST
             }
             viewModel.setStartOnPolicy(policy)
+            true
+        }
+
+        magnifyingPref?.setOnPreferenceChangeListener { _, newValue ->
+            val strValue = newValue as String
+            magnifyingPref?.setSummaryAndValue(strValue)
+            val factor = strValue.toInt()
+            viewModel.setMagnifyingFactor(factor)
             true
         }
     }

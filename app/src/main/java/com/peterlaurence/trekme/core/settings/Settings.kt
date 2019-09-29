@@ -67,6 +67,13 @@ object Settings {
         settingsHandler.writeSetting(new)
     }
 
+    suspend fun setMagnifyingFactor(factor: Int) {
+        val new = settingsHandler.getLastSetting().copy(magnifyingFactor = factor)
+        settingsHandler.writeSetting(new)
+    }
+
+    suspend fun getMagnifyingFactor(): Int = settingsHandler.getLastSetting().magnifyingFactor
+
     /**
      * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
      * empty.
@@ -92,7 +99,8 @@ object Settings {
 @Serializable
 private data class SettingsData(val downloadDir: String = defaultDownloadDir.absolutePath,
                                 val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
-                                val lastMapId: Int = -1)
+                                val lastMapId: Int = -1,
+                                val magnifyingFactor: Int = 1)
 
 enum class StartOnPolicy {
     MAP_LIST, LAST_MAP
@@ -123,9 +131,13 @@ private class FileSettingsHandler : SettingsHandler {
     }
 
     override suspend fun getLastSetting(): SettingsData {
-        // offer a request first then receive, to be sure to get something
-        requests.send(Unit)
-        return lastSettings.receive()
+        // offer a request while be don't get something back, to be sure to get something
+        var settingsData: SettingsData?
+        do {
+            requests.offer(Unit)
+            settingsData = lastSettings.poll()
+        } while (settingsData == null)
+        return settingsData
     }
 
     /**
