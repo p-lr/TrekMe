@@ -96,18 +96,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             }
         })
 
-        /**
-         * Listen to changes on the live route
-         */
-        inMapRecordingViewModel.getLiveRoute().observe(
-                this, Observer<InMapRecordingViewModel.LiveRoute> {
-            it?.let { liveRoute ->
-                if (::routeLayer.isInitialized) {
-                    routeLayer.updateLiveRoute(liveRoute.route, liveRoute.map)
-                }
-            }
-        })
-
         /* When the fragment is created for the first time, center on first location */
         shouldCenterOnFirstLocation = savedInstanceState == null
     }
@@ -153,7 +141,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         return presenter.androidView.also {
-            launch {
+            /* Attached views must be known before onCreateView returns, or the save/restore state
+             * won't work
+             */
+            runBlocking {
                 /* First, the settings */
                 getMapSettings()
 
@@ -304,6 +295,17 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         setMap(map)
         inMapRecordingViewModel.reload()
         initLayers()
+
+        /**
+         * Listen to changes on the live route.
+         * It's called only now because the [RouteLayer] must be first initialized.
+         */
+        inMapRecordingViewModel.getLiveRoute().observe(
+                this, Observer<InMapRecordingViewModel.LiveRoute> {
+            it?.let { liveRoute ->
+                routeLayer.updateLiveRoute(liveRoute.route, liveRoute.map)
+            }
+        })
     }
 
     private fun initLayers() {
