@@ -76,10 +76,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         markerGrab.morphIn();
     }
 
-    MarkerGson.Marker getCurrentMarker() {
-        return mCurrentMovableMarker.getMarker();
-    }
-
     private void setCurrentMarker(MovableMarker movableMarker) {
         mCurrentMovableMarker = movableMarker;
     }

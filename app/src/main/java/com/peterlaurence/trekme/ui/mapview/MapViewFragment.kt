@@ -6,6 +6,7 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
@@ -66,9 +67,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
-    val currentMarker: MarkerGson.Marker
-        get() = markerLayer.currentMarker
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is RequestManageTracksListener && context is RequestManageMarkerListener &&
@@ -102,9 +100,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        val context = context ?: return null
         /* Create layout from scratch if it does not exist */
         if (!::presenter.isInitialized) {
-            presenter = MapViewFragmentPresenter(layoutInflater, container, context!!)
+            presenter = MapViewFragmentPresenter(layoutInflater, container, context)
             presenter.setPositionTouchListener(this)
         }
 
@@ -136,21 +135,33 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         distanceLayer = DistanceLayer(context, distanceListener)
 
         /* Create the landmark layer */
-        context?.let {
+        context.let {
             landmarkLayer = LandmarkLayer(it, this)
         }
 
-        return presenter.androidView.also {
-            /* Attached views must be known before onCreateView returns, or the save/restore state
-             * won't work
-             */
-            runBlocking {
-                /* First, the settings */
-                getMapSettings()
-
-                /* Then, the Map */
-                getMap()
+        /* Create the MapView.
+         * Attached views must be known before onCreateView returns, or the save/restore state
+         * won't work.
+         */
+        mapView = MapView(context).also {
+            it.apply {
+                id = R.id.tileview_id
+                isSaveEnabled = true
             }
+            presenter.setMapView(it)
+        }
+
+        return presenter.androidView
+    }
+
+    override fun onStart() {
+        super.onStart()
+        launch {
+            /* First, the settings */
+            getMapSettings()
+
+            /* Then, the Map */
+            getMap()
         }
     }
 
@@ -161,7 +172,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private suspend fun getMap() {
         mapViewViewModel.getMap(billing)?.let {
             try {
-                applyMap(it)
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                    applyMap(it)
+                }
             } catch (t: Throwable) {
                 // probably the fragment wasn't in the proper state
             }
@@ -292,7 +305,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      * updated.
      */
     private fun applyMap(map: Map) {
-        setMap(map)
+        mapView?.also {
+            configureMapView(it, map)
+        }
         inMapRecordingViewModel.reload()
         initLayers()
 
@@ -392,23 +407,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    private fun setMapView(mapView: MapView) {
-        this.mapView = mapView
-        mapView.id = R.id.tileview_id
-        mapView.isSaveEnabled = true
-        presenter.setMapView(mapView)
-
-        /* The MapView can have only one MarkerTapListener.
-         * It dispatches the tap event to child layers.
-         */
-        mapView.setMarkerTapListener(object : MarkerTapListener {
-            override fun onMarkerTap(view: View, x: Int, y: Int) {
-                markerLayer.onMarkerTap(view, x, y)
-                landmarkLayer.onMarkerTap(view, x, y)
-            }
-        })
-    }
-
     private fun removeCurrentMapView() {
         mapView?.destroy()
         presenter.removeMapView(mapView)
@@ -423,13 +421,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     /**
-     * Sets the map to generate a new [MapView].
+     * Sets the map to configure the [MapView].
      *
      * @param map The new [Map] object
      */
-    private fun setMap(map: Map) {
+    private fun configureMapView(mapView: MapView, map: Map) {
         mMap = map
-        val mapView = MapView(this.context!!)
         val tileSize = map.levelList.firstOrNull()?.tile_size?.x ?: return
 
         /* The magnifying factor - default to 1 */
@@ -454,9 +451,15 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         mapView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
 
-        /* Remove the existing MapView, then add the new one */
-        removeCurrentMapView()
-        setMapView(mapView)
+        /* The MapView can have only one MarkerTapListener.
+         * It dispatches the tap event to child layers.
+         */
+        mapView.setMarkerTapListener(object : MarkerTapListener {
+            override fun onMarkerTap(view: View, x: Int, y: Int) {
+                markerLayer.onMarkerTap(view, x, y)
+                landmarkLayer.onMarkerTap(view, x, y)
+            }
+        })
     }
 
     private fun centerOnPosition() {
