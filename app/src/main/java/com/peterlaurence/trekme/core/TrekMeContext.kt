@@ -35,7 +35,7 @@ object TrekMeContext {
     val credentialsDir = File(defaultAppDir, "credentials")
 
     /* Where maps are searched */
-    lateinit var mapsDirList: List<File>
+    var mapsDirList: List<File> = listOf(defaultAppDir)
 
     /* Where maps can be downloaded */
     val downloadDirList: List<File>
@@ -43,7 +43,7 @@ object TrekMeContext {
             File(it, "downloaded")
         }
 
-    private lateinit var settingsFile: File
+    private var settingsFile: File? = null
 
     private const val TAG = "TrekMeContext"
 
@@ -76,7 +76,7 @@ object TrekMeContext {
      * is called before its creation.
      */
     fun getSettingsFile(): File? {
-        return if (settingsFile.exists()) {
+        return if (settingsFile?.exists() != null) {
             settingsFile
         } else {
             null
@@ -90,8 +90,8 @@ object TrekMeContext {
      * Take at least the default app folder.
      */
     private fun resolveMapDirs(context: Context) {
-        val dirs = context.getExternalFilesDirs(null).filterIndexed { index, file ->
-            index > 0
+        val dirs: List<File> = context.getExternalFilesDirs(null).filterIndexed { index, file ->
+            index > 0 && file != null
         }
 
         mapsDirList = listOf(defaultAppDir) + dirs
@@ -103,8 +103,10 @@ object TrekMeContext {
      */
     private fun createSettingsFile(context: Context) {
         settingsFile = File(context.filesDir, "settings.json")
-        if (!settingsFile.exists()) {
-            settingsFile.createNewFile()
+        settingsFile?.also {
+            if (!it.exists()) {
+                it.createNewFile()
+            }
         }
     }
 

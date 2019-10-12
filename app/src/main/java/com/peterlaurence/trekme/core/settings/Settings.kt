@@ -17,7 +17,7 @@ import java.io.File
 
 /**
  * Holds global settings of TrekMe and exposes public methods to read/update those settings.
- * This class is thread safe (as the its internal [FileSettingsHandler] is specifically designed
+ * This class is thread safe (as its internal [FileSettingsHandler] is specifically designed
  * to have no shared mutable state).
  */
 object Settings {
@@ -173,6 +173,7 @@ private class FileSettingsHandler : SettingsHandler {
         return try {
             readSettings()
         } catch (e: Exception) {
+            /* In case of any error, return default settings */
             SettingsData()
         }
     }
@@ -184,12 +185,8 @@ private class FileSettingsHandler : SettingsHandler {
         // 2- if it exists, read it
         if (file.exists()) {
             val json = FileUtils.getStringFromFile(file)
-            return try {
-                Json.parse(SettingsData.serializer(), json)
-            } catch (e: Exception) {
-                /* In case of any error, return default settings */
-                SettingsData()
-            }
+            /* This may throw Exceptions */
+            Json.parse(SettingsData.serializer(), json)
         }
         throw Exception("Settings file path is wrong")
     }
