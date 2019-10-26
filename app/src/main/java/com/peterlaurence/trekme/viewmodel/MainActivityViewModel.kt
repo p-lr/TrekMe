@@ -17,9 +17,12 @@ import org.greenrobot.eventbus.EventBus
  * It manages model specific considerations that are set here outside of the main activity which
  * should mainly used to manage fragments.
  *
+ * Avoids excessive [MapLoader.updateMaps] calls by managing an internal [doneAtLeastOnce] flag.
+ *
  * @author peterLaurence on 07/10/2019
  */
 class MainActivityViewModel : ViewModel() {
+    private var doneAtLeastOnce = false
 
     /**
      * When the [MainActivity] first starts, we either:
@@ -28,8 +31,10 @@ class MainActivityViewModel : ViewModel() {
      */
     fun onActivityStart() {
         viewModelScope.launch {
-            MapLoader.clearMaps()
-            MapLoader.updateMaps()
+            if (!doneAtLeastOnce) {
+                MapLoader.clearMaps()
+                MapLoader.updateMaps()
+            }
 
             when (Settings.getStartOnPolicy()) {
                 StartOnPolicy.MAP_LIST -> EventBus.getDefault().post(ShowMapListEvent())
@@ -50,6 +55,7 @@ class MainActivityViewModel : ViewModel() {
                     }
                 }
             }
+            doneAtLeastOnce = MapLoader.maps.isNotEmpty()
         }
     }
 }

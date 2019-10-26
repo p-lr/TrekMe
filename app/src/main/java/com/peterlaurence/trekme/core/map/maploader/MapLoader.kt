@@ -133,6 +133,7 @@ object MapLoader : MapImporter.MapImportListener {
             it.addIfNew()
         }
 
+        notifyMapListUpdateListeners()
         return maps
     }
 

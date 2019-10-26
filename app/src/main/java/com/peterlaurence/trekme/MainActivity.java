@@ -3,6 +3,7 @@ package com.peterlaurence.trekme;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
@@ -224,16 +226,25 @@ public class MainActivity extends AppCompatActivity
             String warningTitle = getString(R.string.warning_title);
             if (TrekMeContext.INSTANCE.isAppDirReadOnly()) {
                 /* If its read only for sure, be explicit */
-                showWarningDialog(getString(R.string.storage_read_only), warningTitle);
+                showWarningDialog(getString(R.string.storage_read_only), warningTitle, null);
             } else {
                 /* Else, just say there is something wrong */
-                showWarningDialog(getString(R.string.bad_storage_status), warningTitle);
+                showWarningDialog(getString(R.string.bad_storage_status), warningTitle, null);
             }
         }
     }
 
+    private void warnNoStoragePerm() {
+        showWarningDialog(getString(R.string.no_storage_perm), getString(R.string.warning_title),
+                dialog -> {
+                    if (!checkStoragePermissions(this)) {
+                        finish();
+                    }
+                });
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
@@ -369,24 +380,23 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onStart() {
+        requestMinimalPermissions(this);
+
+        /* This must be done before activity's onStart */
+        if (checkStoragePermissions(this)) {
+            TrekMeContext.INSTANCE.init(this);
+        }
+
         super.onStart();
 
         /* Register eventbus */
         EventBus.getDefault().register(this);
 
-        requestMinimalPermissions(this);
-
-        if (checkStoragePermissions(this)) {
-            TrekMeContext.INSTANCE.init(this);
-
-            /* If the activity is starting for the first time, we launch the startup procedure.
-             * It gets the list of maps then shows it.
-             * If at least one fragment is already added (visible or not), we shouldn't do that.
-             */
-            if (fragmentManager.getFragments().size() == 0) {
-                viewModel.onActivityStart();
-            }
-        }
+        /* If the activity is starting for the first time, we launch the startup procedure.
+         * It gets the list of maps then shows it.
+         * If at least one fragment is already added (visible or not), we shouldn't do that.
+         */
+        viewModel.onActivityStart();
     }
 
     @Subscribe
@@ -740,11 +750,13 @@ public class MainActivity extends AppCompatActivity
         snackbar.show();
     }
 
-    private void showWarningDialog(String message, String title) {
+    private void showWarningDialog(String message, String title, DialogInterface.OnDismissListener dismiss) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setMessage(message).setTitle(title);
-
+        if (dismiss != null) {
+            builder.setOnDismissListener(dismiss);
+        }
         AlertDialog dialog = builder.create();
         dialog.show();
     }
@@ -789,23 +801,20 @@ public class MainActivity extends AppCompatActivity
         showMapListFragment();
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[], @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_MINIMAL:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    /* Restart the activity to ensure that every component can access local storage
-                     * This may not be required in future versions of Android, since lifecycle around
-                     * this callback has been improved after api lvl 23 (excluded) */
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_MINIMAL) {
+            if (grantResults.length >= 2) {
+                /* Storage read perm is at index 1 */
+                if (grantResults[1] != PackageManager.PERMISSION_GRANTED) {
+                    warnNoStoragePerm();
+                } else {
+                    /* Restart the activity to ensure that every component can access local storage */
                     finish();
                     startActivity(getIntent());
-                } else {
-                    // permission denied
-                    // TODO : alert the user of the consequences
                 }
+            }
         }
     }
 
@@ -856,7 +865,7 @@ public class MainActivity extends AppCompatActivity
     @Subscribe
     public void onMapDownloadEvent(MapDownloadEvent event) {
         if (event.getStatus().equals(Status.STORAGE_ERROR)) {
-            showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title));
+            showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title), null);
         }
     }
 
