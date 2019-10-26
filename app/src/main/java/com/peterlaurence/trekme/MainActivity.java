@@ -389,13 +389,10 @@ public class MainActivity extends AppCompatActivity
 
         super.onStart();
 
-        /* Register eventbus */
+        /* Register event-bus */
         EventBus.getDefault().register(this);
 
-        /* If the activity is starting for the first time, we launch the startup procedure.
-         * It gets the list of maps then shows it.
-         * If at least one fragment is already added (visible or not), we shouldn't do that.
-         */
+        /* Start the view-model */
         viewModel.onActivityStart();
     }
 
