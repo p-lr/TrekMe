@@ -16,7 +16,6 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderDefault
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -83,26 +82,6 @@ object MapLoader : MapImporter.MapImportListener {
      */
     fun clearMaps() {
         mMapList.clear()
-    }
-
-    /**
-     * TODO: this function was added for compatibility with legacy java code. Remove when possible.
-     * Only the signature with a list of [File] should be used.
-     */
-    fun generateMaps(dir: File): List<Map> {
-        return generateMaps(listOf(dir))
-    }
-
-    /**
-     * TODO: this function was added for compatibility with legacy java code. Remove when possible.
-     * Launches the map search then sets the found [Map]s as the internal list of [Map] : [mMapList].
-     */
-    private fun generateMaps(dirs: List<File>): List<Map> = runBlocking {
-        withContext(Dispatchers.Main) {
-            val maps = findMaps(dirs)
-            notifyMapListUpdateListeners()
-            maps
-        }
     }
 
     private fun Map.addIfNew() {

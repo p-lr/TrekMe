@@ -55,17 +55,10 @@ class MapImportViewModel : ViewModel() {
              * For instance, only support extraction of [Map.MapOrigin.VIPS] maps.
              */
             override fun onUnzipFinished(outputDirectory: File) {
-
-                MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS,
-                        object : MapImporter.MapImportListener {
-                            override fun onMapImported(map: Map, status: MapImporter.MapParserStatus) {
-                                EventBus.getDefault().post(MapImportedEvent(map, mapArchive.id, status))
-                            }
-
-                            override fun onMapImportError(e: MapImporter.MapParseException?) {
-                                // TODO : show an error message that something went wrong and send an event.
-                            }
-                        })
+                viewModelScope.launch {
+                    val res = MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS)
+                    EventBus.getDefault().post(MapImportedEvent(res.map, mapArchive.id, res.status))
+                }
 
                 EventBus.getDefault().post(UnzipFinishedEvent(mapArchive.id, outputDirectory))
             }
