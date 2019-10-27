@@ -151,25 +151,23 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter.setMapView(it)
         }
 
-        return presenter.androidView
-    }
-
-    override fun onStart() {
-        super.onStart()
+        /* Then, asynchronously get the required settings and apply the map */
         launch {
             /* First, the settings */
             getMapSettings()
 
-            /* Then, the Map */
-            getMap()
+            /* Then, apply the Map */
+            getAndApplyMap()
         }
+
+        return presenter.androidView
     }
 
     private suspend fun getMapSettings() {
         magnifyingFactor = mapViewViewModel.getMagnifyingFactor()
     }
 
-    private suspend fun getMap() {
+    private suspend fun getAndApplyMap() {
         mapViewViewModel.getMap(billing)?.let {
             try {
                 if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {

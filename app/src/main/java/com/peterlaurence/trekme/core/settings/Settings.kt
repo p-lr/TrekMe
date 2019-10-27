@@ -173,6 +173,7 @@ private class FileSettingsHandler : SettingsHandler {
         return try {
             readSettings()
         } catch (e: Exception) {
+            e.printStackTrace()
             /* In case of any error, return default settings */
             SettingsData()
         }
@@ -186,7 +187,7 @@ private class FileSettingsHandler : SettingsHandler {
         if (file.exists()) {
             val json = FileUtils.getStringFromFile(file)
             /* This may throw Exceptions */
-            Json.parse(SettingsData.serializer(), json)
+            return Json.parse(SettingsData.serializer(), json)
         }
         throw Exception("Settings file path is wrong")
     }

@@ -31,10 +31,9 @@ class MainActivityViewModel : ViewModel() {
      */
     fun onActivityStart() {
         viewModelScope.launch {
-            if (!doneAtLeastOnce) {
-                MapLoader.clearMaps()
-                MapLoader.updateMaps()
-            }
+            if (doneAtLeastOnce) return@launch
+            MapLoader.clearMaps()
+            MapLoader.updateMaps()
 
             when (Settings.getStartOnPolicy()) {
                 StartOnPolicy.MAP_LIST -> EventBus.getDefault().post(ShowMapListEvent())
