@@ -25,3 +25,8 @@ fun checkIgnSpainProvider(tileStreamProvider: TileStreamProvider): Boolean {
     val bitmapProvider = BitmapProvider(tileStreamProvider)
     return bitmapProvider.getBitmap(24, 31, 6) != null
 }
+
+fun checkSwissTopoProvider(tileStreamProvider: TileStreamProvider): Boolean {
+    val bitmapProvider = BitmapProvider(tileStreamProvider)
+    return bitmapProvider.getBitmap(180, 266, 9) != null
+}

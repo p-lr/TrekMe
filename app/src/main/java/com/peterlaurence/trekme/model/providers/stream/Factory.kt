@@ -32,5 +32,9 @@ fun createTileStreamProvider(mapSource: MapSource, layer: String): TileStreamPro
             val urlTileBuilder = UrlTileBuilderIgnSpain()
             TileStreamProviderIgnSpain(urlTileBuilder)
         }
+        MapSource.SWISS_TOPO -> {
+            val urlTileBuilder = UrlTileBuilderSwiss()
+            TileStreamProviderSwiss(urlTileBuilder)
+        }
     }
 }

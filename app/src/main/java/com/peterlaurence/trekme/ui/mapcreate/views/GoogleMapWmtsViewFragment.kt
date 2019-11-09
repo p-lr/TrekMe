@@ -24,10 +24,7 @@ import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.projection.MercatorProjection
-import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
-import com.peterlaurence.trekme.core.providers.bitmap.checkIgnSpainProvider
-import com.peterlaurence.trekme.core.providers.bitmap.checkOSMProvider
-import com.peterlaurence.trekme.core.providers.bitmap.checkUSGSProvider
+import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.ui.LocationProviderHolder
@@ -304,6 +301,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
                 MapSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
                 MapSource.USGS -> checkUSGSProvider(tileStreamProvider)
                 MapSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
+                MapSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
             }
         }.await().also {
             try {

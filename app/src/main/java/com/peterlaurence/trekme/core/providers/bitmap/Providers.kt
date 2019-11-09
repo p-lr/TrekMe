@@ -16,11 +16,10 @@ import java.net.URL
  * tile using the provided [UrlTileBuilder] to build an [URL] and make an HTTP request.
  * The caller is responsible for closing the stream.
  */
-class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder) : TileStreamProvider {
+class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder, private val requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
         val url = URL(urlTileBuilder.build(zoomLvl, row, col))
-        val connection = url.openConnection() as HttpURLConnection
-        connection.doInput = true
+        val connection = createConnection(url)
 
         return try {
             connection.connect()
@@ -30,17 +29,26 @@ class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder) : TileS
             null
         }
     }
+
+    fun createConnection(url: URL): HttpURLConnection {
+        val connection = url.openConnection() as HttpURLConnection
+        connection.doInput = true
+        requestProperties.forEach {
+            connection.setRequestProperty(it.key, it.value)
+        }
+        return connection
+    }
 }
 
 /**
  * Same as [TileStreamProviderHttp], but using basic authentication.
  */
 class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, private val user: String,
-                                 private val pwd: String) : TileStreamProvider {
+                                 private val pwd: String, private val requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
         val url = URL(urlTileBuilder.build(zoomLvl, row, col))
-        val connection = url.openConnection() as HttpURLConnection
-        connection.doInput = true
+        val tileStreamProviderHttp = TileStreamProviderHttp(urlTileBuilder, requestProperties)
+        val connection = tileStreamProviderHttp.createConnection(url)
 
         /* Set authentication */
         connection.setAuth()
