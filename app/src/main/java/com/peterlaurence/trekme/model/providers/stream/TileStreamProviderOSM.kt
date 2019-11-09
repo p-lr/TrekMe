@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.model.providers.stream
 
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttp
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderOSM
+import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 import java.io.InputStream
 
 /**
@@ -10,13 +10,8 @@ import java.io.InputStream
  *
  * @author peterLaurence on 20/16/19
  */
-class TileStreamProviderOSM: TileStreamProvider {
-    private val base: TileStreamProviderHttp
-
-    init {
-        val urlTileBuilder = UrlTileBuilderOSM()
-        base = TileStreamProviderHttp(urlTileBuilder)
-    }
+class TileStreamProviderOSM(urlTileBuilder: UrlTileBuilder): TileStreamProvider {
+    private val base: TileStreamProviderHttp = TileStreamProviderHttp(urlTileBuilder)
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
         return base.getTileStream(row, col, zoomLvl)

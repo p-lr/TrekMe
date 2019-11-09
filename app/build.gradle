@@ -42,7 +42,7 @@ androidExtensions {
 }
 
 dependencies {
-    def lifecycle_version = '2.2.0-rc01'
+    def lifecycle_version = '2.2.0-rc02'
     def coroutine_version = '1.3.2'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
@@ -55,7 +55,7 @@ dependencies {
     implementation 'com.android.billingclient:billing:2.0.1'
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
-    implementation 'androidx.fragment:fragment-ktx:1.2.0-rc01'
+    implementation 'androidx.fragment:fragment-ktx:1.2.0-rc02'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.1.0-beta01'

@@ -1,17 +1,19 @@
 package com.peterlaurence.trekme.ui.mapcreate.views.ign
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import android.text.method.LinkMovementMethod
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
-import android.text.method.LinkMovementMethod
-import android.widget.TextView
+import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.IGNCredentials
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
+import com.peterlaurence.trekme.core.providers.layers.IgnLayers
+import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
@@ -97,7 +99,12 @@ class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
     private fun CoroutineScope.afterIgnCredentialsSaved() = launch {
         /* Test IGN credentials */
         val isOk = async(Dispatchers.IO) {
-            checkIgnProvider(ignApiKey, ignUser, ignPwd)
+            val tileStreamProvider = try {
+                createTileStreamProvider(MapSource.IGN, IgnLayers.ScanExpressStandard.realName)
+            } catch (e: Exception) {
+                return@async false
+            }
+            checkIgnProvider(tileStreamProvider)
         }
 
         /* Then, either invite to proceed to map creation, or show a warning */

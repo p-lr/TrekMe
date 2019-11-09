@@ -22,18 +22,12 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
-import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnSpainProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkOSMProvider
 import com.peterlaurence.trekme.core.providers.bitmap.checkUSGSProvider
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
-import com.peterlaurence.trekme.model.providers.layers.LayerForSource
-import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderIgn
-import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderIgnSpain
-import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderOSM
-import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderUSGS
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog
@@ -47,6 +41,7 @@ import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
+import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -95,6 +90,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private lateinit var fabSave: FloatingActionButton
     private val projection = MercatorProjection()
 
+    private val viewModel: GoogleMapWmtsViewModel by viewModels()
     private val locationViewModel: LocationViewModel by viewModels()
 
     private lateinit var area: Area
@@ -215,7 +211,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
                 val event = LayerSelectEvent(arrayListOf())
                 val title = getString(R.string.ign_select_layer_title)
                 val values = IgnLayers.values().map { it.publicName }
-                val layerPublicName = LayerForSource.getLayerPublicNameForSource(mapSource)
+                val layerPublicName = viewModel.getLayerPublicNameForSource(mapSource)
                 val layerSelectDialog = SelectDialog.newInstance(title, values, layerPublicName, event)
                 layerSelectDialog.show(activity!!.supportFragmentManager, "SelectDialog-${event.javaClass.canonicalName}")
             }
@@ -271,7 +267,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     @Subscribe
     fun onLayerDefined(e: LayerSelectEvent) {
         /* Update the layer preference */
-        LayerForSource.setLayerPublicNameForSource(mapSource, e.getSelection())
+        viewModel.setLayerPublicNameForSource(mapSource, e.getSelection())
 
         /* The re-create the mapview */
         removeMapView()
@@ -280,9 +276,12 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     private fun createMapView() {
         checkTileAccessibility()
-        val layerRealName = LayerForSource.resolveLayerName(mapSource)
-        val streamProvider = createTileStreamProvider(layerRealName)
-        addMapView(streamProvider)
+        val streamProvider = viewModel.createTileStreamProvider(mapSource)
+        if (streamProvider != null) {
+            addMapView(streamProvider)
+        } else {
+            showWarningMessage()
+        }
     }
 
     /**
@@ -291,18 +290,19 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
      */
     private fun CoroutineScope.checkTileAccessibility(): Job = launch {
         async(Dispatchers.IO) {
+            val tileStreamProvider = viewModel.createTileStreamProvider(mapSource)
+                    ?: return@async false
             return@async when (mapSource) {
                 MapSource.IGN -> {
                     try {
-                        val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
-                        checkIgnProvider(ignCredentials.api!!, ignCredentials.user!!, ignCredentials.pwd!!)
+                        checkIgnProvider(tileStreamProvider)
                     } catch (e: Exception) {
                         false
                     }
                 }
-                MapSource.IGN_SPAIN -> checkIgnSpainProvider()
-                MapSource.USGS -> checkUSGSProvider()
-                MapSource.OPEN_STREET_MAP -> checkOSMProvider()
+                MapSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
+                MapSource.USGS -> checkUSGSProvider(tileStreamProvider)
+                MapSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
             }
         }.await().also {
             try {
@@ -368,25 +368,6 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         val params = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         rootView.addView(mapView, 0, params)
-    }
-
-    /**
-     * TODO: this should be the responsibility of a view-model
-     */
-    private fun createTileStreamProvider(layer: String): TileStreamProvider {
-        return when (mapSource) {
-            MapSource.IGN -> {
-                val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
-                if (layer.isNotEmpty()) {
-                    TileStreamProviderIgn(ignCredentials, layer)
-                } else {
-                    TileStreamProviderIgn(ignCredentials)
-                }
-            }
-            MapSource.USGS -> TileStreamProviderUSGS()
-            MapSource.OPEN_STREET_MAP -> TileStreamProviderOSM()
-            MapSource.IGN_SPAIN -> TileStreamProviderIgnSpain()
-        }
     }
 
     private fun removeMapView() {

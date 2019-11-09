@@ -4,6 +4,7 @@ import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.IGNCredentials
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
+import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgn
 import java.io.InputStream
 
@@ -17,11 +18,10 @@ import java.io.InputStream
  *
  * @author peterLaurence on 20/06/19
  */
-class TileStreamProviderIgn(credentials: IGNCredentials, layer: String = IgnLayers.ScanExpressStandard.realName): TileStreamProvider {
+class TileStreamProviderIgn(credentials: IGNCredentials, layer: String = IgnLayers.ScanExpressStandard.realName, urlTileBuilder: UrlTileBuilder): TileStreamProvider {
     private val base: TileStreamProvider
 
     init {
-        val urlTileBuilder = UrlTileBuilderIgn(credentials.api ?: "", layer)
         base = TileStreamProviderHttpAuth(urlTileBuilder, credentials.user ?: "", credentials.pwd ?: "")
     }
 
