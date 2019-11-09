@@ -17,23 +17,16 @@ import androidx.core.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.mapbuilder.buildFromMapSpec
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.MapSource
-import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProviderRetry
-import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttp
-import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgn
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgnSpain
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderOSM
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderUSGS
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.model.providers.layers.LayerForSource
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
@@ -156,6 +149,7 @@ class DownloadService : Service() {
                 ?: return
         val source = event.source
         val tileSequence = event.mapSpec.tileSequence
+        val tileStreamProvider = event.tileStreamProvider
 
         val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles) { p ->
             if (started) {
@@ -204,7 +198,7 @@ class DownloadService : Service() {
 
         /* Specific to OSM, don't use more than 2 threads */
         val effectiveThreadCount = if (source == MapSource.OPEN_STREET_MAP) 2 else threadCount
-        launchDownloadTask(effectiveThreadCount, source, threadSafeTileIterator, tileWriter)
+        launchDownloadTask(effectiveThreadCount, source, threadSafeTileIterator, tileWriter, tileStreamProvider)
     }
 
     private fun createDestDir(): File? = runBlocking {
@@ -290,43 +284,11 @@ class DownloadService : Service() {
 }
 
 private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator: ThreadSafeTileIterator,
-                               tileWriter: TileWriter) {
+                               tileWriter: TileWriter, tileStreamProvider: TileStreamProvider) {
     for (i in 0 until threadCount) {
-        when (source) {
-            MapSource.IGN -> {
-                val ignCredentials = MapSourceCredentials.getIGNCredentials()!!
-
-                val layerRealName = LayerForSource.resolveLayerName(source)
-                val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", layerRealName)
-                val tileStreamProvider = TileStreamProviderHttpAuth(urlTileBuilder, ignCredentials.user
-                        ?: "",
-                        ignCredentials.pwd ?: "")
-                val bitmapProvider = BitmapProviderRetry(20, 1000, tileStreamProvider)
-                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
-                downloadThread.start()
-            }
-            MapSource.USGS -> {
-                val urlTileBuilder = UrlTileBuilderUSGS()
-                val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
-                val bitmapProvider = BitmapProviderRetry(20, 1000, tileStreamProvider)
-                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
-                downloadThread.start()
-            }
-            MapSource.OPEN_STREET_MAP -> {
-                val urlTileBuilder = UrlTileBuilderOSM()
-                val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
-                val bitmapProvider = BitmapProviderRetry(20, 1000, tileStreamProvider)
-                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
-                downloadThread.start()
-            }
-            MapSource.IGN_SPAIN -> {
-                val urlTileBuilder = UrlTileBuilderIgnSpain()
-                val tileStreamProvider = TileStreamProviderHttp(urlTileBuilder)
-                val bitmapProvider = BitmapProviderRetry(20, 1000, tileStreamProvider)
-                val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
-                downloadThread.start()
-            }
-        }
+        val bitmapProvider = BitmapProviderRetry(20, 1000, tileStreamProvider)
+        val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
+        downloadThread.start()
     }
 }
 

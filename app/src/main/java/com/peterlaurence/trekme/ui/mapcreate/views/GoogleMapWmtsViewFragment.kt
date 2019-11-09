@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -90,7 +91,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private lateinit var fabSave: FloatingActionButton
     private val projection = MercatorProjection()
 
-    private val viewModel: GoogleMapWmtsViewModel by viewModels()
+    private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
     private val locationViewModel: LocationViewModel by viewModels()
 
     private lateinit var area: Area

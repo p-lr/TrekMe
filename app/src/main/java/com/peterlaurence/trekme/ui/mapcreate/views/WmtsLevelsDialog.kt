@@ -11,14 +11,17 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
-import com.peterlaurence.trekme.core.mapsource.wmts.*
+import com.peterlaurence.trekme.core.mapsource.wmts.Point
+import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
+import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
+import com.peterlaurence.trekme.core.mapsource.wmts.toTransactionsNumber
 import com.peterlaurence.trekme.service.DownloadService
-import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
-import org.greenrobot.eventbus.EventBus
+import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
 import java.text.NumberFormat
 
 
@@ -41,6 +44,7 @@ open class WmtsLevelsDialog : DialogFragment() {
     private lateinit var transactionsTextView: TextView
     private lateinit var mapSizeTextView: TextView
     private var mapSource: MapSource? = null
+    private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
 
     companion object {
         fun newInstance(area: Area, mapSourceBundle: MapSourceBundle): WmtsLevelsDialog {
@@ -193,11 +197,8 @@ open class WmtsLevelsDialog : DialogFragment() {
      */
     private fun onDownloadFormConfirmed() {
         val (p1, p2) = getPointsOfArea()
-        val mapSpec = getMapSpec(currentMinLevel, currentMaxLevel, p1, p2)
-        val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
-
         mapSource?.let {
-            EventBus.getDefault().postSticky(RequestDownloadMapEvent(it, mapSpec, tileCount))
+            viewModel.onDownloadFormConfirmed(it, p1, p2, currentMinLevel, currentMaxLevel)
         }
 
         activity?.apply {
