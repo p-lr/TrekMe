@@ -171,7 +171,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
             EventBus.getDefault().post(MapSourceSettingsEvent(MapSource.IGN))
         }
 
-        createMapView()
+        configure()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -269,16 +269,25 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
         /* The re-create the mapview */
         removeMapView()
-        createMapView()
+        configure()
     }
 
-    private fun createMapView() {
+    private fun configure() {
+        /* 1- Check current condition are OK */
         checkTileAccessibility()
+
+        /* 2- Create and add the MapView */
         val streamProvider = viewModel.createTileStreamProvider(mapSource)
         if (streamProvider != null) {
             addMapView(streamProvider)
         } else {
             showWarningMessage()
+        }
+
+        /* 3- Scroll to the init position if there is one pre-configured */
+        viewModel.getScaleAndScrollInitConfig(mapSource)?.also {
+            mapView.scale = it.scale
+            mapView.scrollTo(it.scrollX, it.scrollY)
         }
     }
 

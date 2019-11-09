@@ -13,15 +13,24 @@ import org.greenrobot.eventbus.EventBus
 
 /**
  * View-model for [GoogleMapWmtsViewFragment]. It takes care of:
+ * * storing the predefined init scale and position for each [MapSource]
  * * keeping track of the layer (as to each [MapSource] may correspond multiple layers)
  * * providing a [TileStreamProvider] for the fragment
  *
  * @author peterLaurence on 09/11/19
  */
 class GoogleMapWmtsViewModel : ViewModel() {
+    private val scaleAndScrollInitConfig = mapOf (
+            MapSource.SWISS_TOPO to ScaleAndScrollInitConfig(0.0006149545f, 21064, 13788)
+    )
+
     private val layerForSource = mutableMapOf(
             MapSource.IGN to IgnLayers.ScanExpressStandard.publicName
     )
+
+    fun getScaleAndScrollInitConfig(mapSource: MapSource): ScaleAndScrollInitConfig? {
+        return scaleAndScrollInitConfig[mapSource]
+    }
 
     fun getLayerPublicNameForSource(mapSource: MapSource): String {
         return layerForSource[mapSource] ?: ""
@@ -74,3 +83,5 @@ class GoogleMapWmtsViewModel : ViewModel() {
         }
     }
 }
+
+data class ScaleAndScrollInitConfig(val scale: Float, val scrollX: Int, val scrollY: Int)
