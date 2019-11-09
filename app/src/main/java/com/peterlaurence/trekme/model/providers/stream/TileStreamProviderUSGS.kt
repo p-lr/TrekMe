@@ -14,6 +14,9 @@ class TileStreamProviderUSGS(urlTileBuilder: UrlTileBuilder) : TileStreamProvide
     private val base: TileStreamProviderHttp = TileStreamProviderHttp(urlTileBuilder)
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+        /* Safeguard */
+        if (zoomLvl > 17) return null
+
         return base.getTileStream(row, col, zoomLvl)
     }
 }

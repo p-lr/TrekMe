@@ -26,6 +26,13 @@ class TileStreamProviderIgn(credentials: IGNCredentials, layer: String = IgnLaye
     }
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+        /* Filter-out inaccessible tiles at lower levels */
+        when(zoomLvl) {
+            3 -> if (row > 7 || col > 7) return null
+        }
+        /* Safeguard */
+        if (zoomLvl > 17) return null
+
         return base.getTileStream(row, col, zoomLvl)
     }
 }
