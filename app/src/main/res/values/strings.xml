@@ -195,6 +195,8 @@
     <string name="ign_spain_source">IGN Spain</string>
     <string name="ign_spain_source_description" translatable="false">Instituto Geográfico Nacional</string>
     <string name="ign_select_layer_title">Choose a layer</string>
+    <string name="swiss_topo_source" translatable="false">Swiss Topo</string>
+    <string name="swiss_topo_source_description">Federal Office of Topography</string>
 
     <string name="mapcreate_define_area">Choose area</string>
     <string name="mapcreate_define_layer">Choose layer</string>

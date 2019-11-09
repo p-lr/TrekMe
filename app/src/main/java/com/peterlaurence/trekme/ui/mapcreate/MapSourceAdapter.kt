@@ -67,6 +67,12 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_spain_logo, null))
                 holder.ignLegalMention.visibility = View.GONE
             }
+            MapSource.SWISS_TOPO -> {
+                holder.title.text = parentView.resources.getText(R.string.swiss_topo_source)
+                holder.description.text = parentView.resources.getText(R.string.swiss_topo_source_description)
+                holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ic_swiss_topo_logo, null))
+                holder.ignLegalMention.visibility = View.GONE
+            }
         }
 
         /* Take the selection into account to set colors */
