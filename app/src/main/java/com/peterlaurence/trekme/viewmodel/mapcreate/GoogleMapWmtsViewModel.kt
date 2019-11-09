@@ -21,7 +21,8 @@ import org.greenrobot.eventbus.EventBus
  */
 class GoogleMapWmtsViewModel : ViewModel() {
     private val scaleAndScrollInitConfig = mapOf (
-            MapSource.SWISS_TOPO to ScaleAndScrollInitConfig(0.0006149545f, 21064, 13788)
+            MapSource.SWISS_TOPO to ScaleAndScrollInitConfig(0.0006149545f, 21064, 13788),
+            MapSource.IGN_SPAIN to ScaleAndScrollInitConfig(0.0003546317f, 11127, 8123)
     )
 
     private val layerForSource = mutableMapOf(
