@@ -39,6 +39,7 @@ Finally, TrekMe is designed to consume very few CPU resources, to preserve the d
 	- United States's USGS
 	- France IGN (requires a ** annual subscription of 8€ **)
  	- Spain IGN 
+ 	- Swiss Topo
  	- OpenStreetMap
 * Marker support (with optional comments)
 * GPX tracks import

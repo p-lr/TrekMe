@@ -38,8 +38,9 @@ Il vous faudra disposer d'identifiants et clé d'API IGN à mettre directement d
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
+    - France IGN (requiert une souscription **annuelle d'environ 8€** à l'IGN)
+    - Swiss Topo
 	- USA : USGS
-	- France IGN (requiert une souscription **annuelle d'environ 8€** à l'IGN)
  	- Espagne IGN 
  	- OpenStreetMap
 * Marqueurs (possibilité d'ajout de commentaire)
@@ -47,7 +48,7 @@ Il vous faudra disposer d'identifiants et clé d'API IGN à mettre directement d
 * Indicateur d'orientation
 * Indicateur de vitesse
 * Indicateur de distance à vol d'oiseau
-* Vérouiller la vue à la position courante
+* Verrouiller la vue à la position courante
 
 ## <a name="TOC-Create-a-map"></a>Créer une carte
 
