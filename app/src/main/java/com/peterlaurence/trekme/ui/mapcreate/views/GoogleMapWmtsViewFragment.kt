@@ -349,7 +349,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         val mapView = MapView(context)
 
         val config = MapViewConfiguration(19, mapSize, mapSize, tileSize,
-                tileStreamProvider.toMapViewTileStreamProvider())
+                tileStreamProvider.toMapViewTileStreamProvider()).setWorkerCount(16)
 
         /* Particular case of OSM Maps, limit concurrency while fetching tiles to avoid being banned */
         if (mapSource == MapSource.OPEN_STREET_MAP) {
