@@ -26,10 +26,9 @@
 
 TrekMe is an Android app to get live position on a map and other useful information, without
 ever needing an internet connection (except when creating a map).
-It differs from other similar apps in the source of maps.
-Usually, a map is downloaded from the internet and is sometimes cached for an offline access (e.g google map).
-TrekMe is designed for people willing to use particular maps like USGS in USA, or IGN in France for example. In fact, any WMTS source can be integrated inside TrekMe.
-But it's not limited to that. If you own a paper map and you want to use it for your next trek, just scan it, then prepare it to use inside TrekMe (see below). It also works if you have a huge single image (several Gb), as TrekMe is designed to work with arbitrary map size.
+It differs from other similar apps in the source of maps as it isn't limited to OpenStreetMap.
+TrekMe is designed to work with any WMTS source such as USGS in USA, IGN France, Swiss topo, and so on. You will be able to download an area of your choice so the cached tiles will be available for offline usage during your trek.
+But it's not limited to that. If you own a paper map, just scan it, then prepare it to use inside TrekMe (see below). It also works if you have a huge single image (several Gb), as TrekMe is designed to work with arbitrary map size.
 The only limitation is the memory available on your device (smartphone, tablet).
 Finally, TrekMe is designed to consume very few CPU resources, to preserve the device's battery. 
 
