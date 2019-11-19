@@ -26,7 +26,8 @@ class TrekmeFilesProvider : ContentProvider() {
      */
     @Throws(SecurityException::class)
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
-        val file = File(uri.path?.substringAfter(authority))
+        val path = uri.path?.substringAfter(authority) ?: return null
+        val file = File(path)
         return if (file.exists()) {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
         } else {
@@ -45,27 +46,13 @@ class TrekmeFilesProvider : ContentProvider() {
         }
     }
 
-    override fun update(uri: Uri, contentvalues: ContentValues?, s: String?,
-                        `as`: Array<String>?): Int {
-        return 0
-    }
-
-    override fun delete(uri: Uri, s: String, `as`: Array<String>?): Int {
-        return 0
-    }
-
-    override fun insert(uri: Uri, contentvalues: ContentValues?): Uri? {
-        return null
-    }
-
-    override fun getType(uri: Uri): String? {
-        return null
-    }
-
+    override fun update(uri: Uri, contentvalues: ContentValues?, selection: String?,
+                        selectionArgs: Array<String>?): Int = 0
+    override fun delete(uri: Uri, s: String?, selectionArgs: Array<out String>?): Int = 0
+    override fun insert(uri: Uri, contentvalues: ContentValues?): Uri? = null
+    override fun getType(uri: Uri): String? = null
     override fun query(uri: Uri, projection: Array<String>?, s: String?, as1: Array<String>?,
-                       s1: String?): Cursor? {
-        return null
-    }
+                       s1: String?): Cursor? = null
 
     companion object MyCompanion {
         // The authority is the symbolic name for the provider class
