@@ -14,8 +14,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 55
-        versionName "1.9.0"
+        versionCode 56
+        versionName "1.9.1"
     }
     buildTypes {
         release {
@@ -48,8 +48,8 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testImplementation 'org.robolectric:robolectric:4.3'
-    implementation 'com.peterlaurence:mapview:1.0.6'
+    testImplementation 'org.robolectric:robolectric:4.3.1'
+    implementation 'com.peterlaurence:mapview:1.0.7'
     implementation 'org.greenrobot:eventbus:3.1.1'
     kapt 'org.greenrobot:eventbus-annotation-processor:3.1.1'
     implementation 'com.android.billingclient:billing:2.0.1'
