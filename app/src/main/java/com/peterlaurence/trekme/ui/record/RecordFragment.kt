@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.map.Map
@@ -26,11 +27,12 @@ import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import kotlinx.android.synthetic.main.fragment_record.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Holds controls and displays information about the [LocationService].
@@ -40,12 +42,8 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author peterLaurence -- converted to Kotlin on 01/11/18
  */
-class RecordFragment : Fragment(), CoroutineScope {
-    private lateinit var job: Job
+class RecordFragment : Fragment() {
     private lateinit var recordingData: LiveData<List<RecordingData>>
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -66,7 +64,7 @@ class RecordFragment : Fragment(), CoroutineScope {
         /**
          * Observe the changes in the Location service status, and update child views accordingly.
          */
-        val locationServiceViewModel : LocationServiceViewModel by activityViewModels()
+        val locationServiceViewModel: LocationServiceViewModel by activityViewModels()
         locationServiceViewModel.getStatus().observe(
                 this, Observer<Boolean> {
             it?.let { isActive ->
@@ -77,7 +75,6 @@ class RecordFragment : Fragment(), CoroutineScope {
 
     override fun onStart() {
         super.onStart()
-        job = Job()
         EventBus.getDefault().register(this)
         EventBus.getDefault().register(recordListView)
 
@@ -89,7 +86,6 @@ class RecordFragment : Fragment(), CoroutineScope {
     override fun onStop() {
         EventBus.getDefault().unregister(recordListView)
         EventBus.getDefault().unregister(this)
-        job.cancel()
         super.onStop()
     }
 
@@ -143,7 +139,7 @@ class RecordFragment : Fragment(), CoroutineScope {
     }
 
     @Subscribe
-    fun onImportRecordingEvent(event: RequestImportRecording) = launch {
+    fun onImportRecordingEvent(event: RequestImportRecording) = lifecycleScope.launch {
         /* If unhandled Exceptions need to be caught, it should be done here */
         applyGpxFileToMap(event.file, event.map)
     }

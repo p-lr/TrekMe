@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
@@ -28,17 +29,18 @@ import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import kotlin.coroutines.CoroutineContext
 
 /**
  * This fragment displays a [Map], using [MapView].
  *
  * @author peterLaurence on 10/02/2019
  */
-class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener, CoroutineScope {
+class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener {
     private lateinit var presenter: MapViewFragmentContract.Presenter
     private var mapView: MapView? = null
     private var mMap: Map? = null
@@ -61,11 +63,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private val mapViewViewModel: MapViewViewModel by viewModels()
     private val locationViewModel: LocationViewModel by viewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
-
-    private val job: Job = Job()
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -129,14 +126,14 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         markerLayer.setRequestManageMarkerListener(requestManageMarkerListener)
 
         /* Create the route layer */
-        routeLayer = RouteLayer(this)
+        routeLayer = RouteLayer(lifecycleScope)
 
         /* Create the distance layer */
         distanceLayer = DistanceLayer(context, distanceListener)
 
         /* Create the landmark layer */
         context.let {
-            landmarkLayer = LandmarkLayer(it, this)
+            landmarkLayer = LandmarkLayer(it, lifecycleScope)
         }
 
         /* Create the MapView.
@@ -152,7 +149,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         /* Then, asynchronously get the required settings and apply the map */
-        launch {
+        lifecycleScope.launch {
             /* First, the settings */
             getMapSettings()
 
@@ -349,7 +346,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onDetach() {
         super.onDetach()
 
-        job.cancel()
         requestManageTracksListener = null
         requestManageMarkerListener = null
         orientationEventManager.stop()
@@ -365,7 +361,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         val map = mMap ?: return
         val projection = map.projection
         if (projection != null) {
-            launch {
+            lifecycleScope.launch {
                 val projectedValues = withContext(Dispatchers.Default) {
                     projection.doProjection(location.latitude, location.longitude)
                 }
