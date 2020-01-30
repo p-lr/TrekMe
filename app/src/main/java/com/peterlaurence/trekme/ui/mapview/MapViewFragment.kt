@@ -12,6 +12,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
+import com.peterlaurence.mapview.api.addMarker
+import com.peterlaurence.mapview.api.moveMarker
+import com.peterlaurence.mapview.api.moveToMarker
+import com.peterlaurence.mapview.api.setMarkerTapListener
 import com.peterlaurence.mapview.markers.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.ign.Billing
@@ -311,7 +315,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
          * It's called only now because the [RouteLayer] must be first initialized.
          */
         inMapRecordingViewModel.getLiveRoute().observe(
-                this, Observer<InMapRecordingViewModel.LiveRoute> {
+                viewLifecycleOwner, Observer<InMapRecordingViewModel.LiveRoute> {
             it?.let { liveRoute ->
                 routeLayer.updateLiveRoute(liveRoute.route, liveRoute.map)
             }
@@ -336,11 +340,17 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
+    private fun destroyLayers() {
+        distanceLayer.destroy()
+        landmarkLayer.destroy()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
 
         EventBus.getDefault().unregister(this)
         MapLoader.clearMapMarkerUpdateListener()
+        destroyLayers()
     }
 
     override fun onDetach() {
@@ -427,7 +437,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         val factor = this.magnifyingFactor ?: 1
 
         val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize,
-                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(factor).setPadding(tileSize * 2)
+                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(factor).setPadding(tileSize * 2).enableRotation()
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)

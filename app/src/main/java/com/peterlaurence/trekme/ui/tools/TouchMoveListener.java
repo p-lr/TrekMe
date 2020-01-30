@@ -5,6 +5,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.peterlaurence.mapview.MapView;
+import com.peterlaurence.mapview.ReferentialData;
 import com.peterlaurence.mapview.core.CoordinateTranslater;
 
 /**
@@ -12,7 +13,7 @@ import com.peterlaurence.mapview.core.CoordinateTranslater;
  * Example of usage :
  * <pre>{@code
  * MoveCallback callback = new ClassImplementsMoveCallback();
- * TouchMoveListener markerTouchListener = new TouchMoveListener(tileView, callback);
+ * TouchMoveListener markerTouchListener = new TouchMoveListener(mapView, callback);
  * View marker = new CustomMarker(context);
  * marker.setOnTouchListener(markerTouchListener);
  * tileView.addMarker(marker, ...);
@@ -35,6 +36,8 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     private double mRightBound;
     private double mTopBound;
     private double mBottomBound;
+
+    public ReferentialData referentialData;
 
     public TouchMoveListener(MapView mapView, MoveCallback markerMoveCallback) {
         this(mapView, markerMoveCallback, null);
@@ -60,22 +63,57 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
             return true;
         }
 
+        ReferentialData rd = referentialData;
+        double angle = 0.0;
+        if (rd != null) {
+            angle = -Math.toRadians(rd.getAngle());
+        }
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                deltaX = event.getX() - (view.getWidth() >> 1);
-                deltaY = event.getY() - (view.getHeight() >> 1);
+                deltaX = event.getX();
+                deltaY = event.getY();
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                double X = getRelativeX(view.getX() + event.getX() - deltaX);
-                double Y = getRelativeY(view.getY() + event.getY() - deltaY);
-                mMarkerMoveCallback.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
+                float dX;
+                float dY;
+                if (rd != null && rd.getRotationEnabled()) {
+                    dX = (float) ((event.getX() - deltaX) * Math.cos(angle) - (event.getY() - deltaY) * Math.sin(angle));
+                    dY = (float) ((event.getX() - deltaX) * Math.sin(angle) + (event.getY() - deltaY) * Math.cos(angle));
+                } else {
+                    dX = event.getX() - deltaX;
+                    dY = event.getY() - deltaY;
+                }
+                if (rd != null && rd.getRotationEnabled()) {
+                    double X = getRelativeX(getXorig(view.getX() + (view.getWidth() >> 1), view.getY() + (view.getHeight() >> 1), angle) + dX);
+                    double Y = getRelativeY(getYorig(view.getX() + (view.getWidth() >> 1), view.getY() + (view.getHeight() >> 1), angle) + dY);
+                    mMarkerMoveCallback.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
+                } else {
+                    double X = getRelativeX(view.getX() + dX + (view.getWidth() >> 1));
+                    double Y = getRelativeY(view.getY() + dY + (view.getHeight() >> 1));
+                    mMarkerMoveCallback.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
+                }
                 break;
 
             default:
                 return false;
         }
         return true;
+    }
+
+    private float getXorig(float Xr, float Yr, double angle) {
+        ReferentialData rd = referentialData;
+        double Cx = rd.getCenterX() * mMapView.getCoordinateTranslater().getBaseWidth() * rd.getScale();
+        double Cy = rd.getCenterY() * mMapView.getCoordinateTranslater().getBaseHeight() * rd.getScale();
+        return (float) (Cx + (Xr - Cx) * Math.cos(angle) - (Yr - Cy) * Math.sin(angle));
+    }
+
+    private float getYorig(float Xr, float Yr, double angle) {
+        ReferentialData rd = referentialData;
+        double Cx = rd.getCenterX() * mMapView.getCoordinateTranslater().getBaseWidth() * rd.getScale();
+        double Cy = rd.getCenterY() * mMapView.getCoordinateTranslater().getBaseHeight() * rd.getScale();
+        return (float) (Cy + (Xr - Cx) * Math.sin(angle) + (Yr - Cy) * Math.cos(angle));
     }
 
     @Override

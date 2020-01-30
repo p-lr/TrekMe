@@ -4,9 +4,9 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.markers.addMarker
-import com.peterlaurence.mapview.markers.moveMarker
-import com.peterlaurence.mapview.markers.removeMarker
+import com.peterlaurence.mapview.api.addMarker
+import com.peterlaurence.mapview.api.moveMarker
+import com.peterlaurence.mapview.api.removeMarker
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 
 class AreaLayer(val context: Context, val areaListener: AreaListener) {
@@ -28,8 +28,8 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
         this.mapView = mapView
 
         /* Create the area view between the two markers */
-        areaView = AreaView(context, mapView.scale)
-        mapView.addScaleChangeListener(areaView)
+        areaView = AreaView(context)
+        mapView.addReferentialOwner(areaView)
         mapView.addView(areaView)
 
         /* Setup the first marker */
@@ -74,7 +74,7 @@ class AreaLayer(val context: Context, val areaListener: AreaListener) {
             mapView.removeMarker(areaMarkerFirst)
             mapView.removeMarker(areaMarkerSecond)
             mapView.removeView(areaView)
-            mapView.removeScaleChangeListener(areaView)
+            mapView.removeReferentialOwner(areaView)
         }
 
         visible = false

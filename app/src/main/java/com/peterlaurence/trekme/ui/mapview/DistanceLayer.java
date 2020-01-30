@@ -10,6 +10,8 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.peterlaurence.mapview.MapView;
+import com.peterlaurence.mapview.ReferentialData;
+import com.peterlaurence.mapview.ReferentialOwner;
 import com.peterlaurence.mapview.core.CoordinateTranslater;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.projection.Projection;
@@ -17,9 +19,11 @@ import com.peterlaurence.trekme.ui.mapview.components.DistanceMarker;
 import com.peterlaurence.trekme.ui.mapview.components.LineView;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addMarker;
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveMarker;
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.removeMarker;
+import org.jetbrains.annotations.NotNull;
+
+import static com.peterlaurence.mapview.api.MarkerApiKt.addMarker;
+import static com.peterlaurence.mapview.api.MarkerApiKt.moveMarker;
+import static com.peterlaurence.mapview.api.MarkerApiKt.removeMarker;
 import static com.peterlaurence.trekme.core.geotools.GeoToolsKt.distanceApprox;
 
 /**
@@ -27,13 +31,15 @@ import static com.peterlaurence.trekme.core.geotools.GeoToolsKt.distanceApprox;
  *
  * @author peterLaurence on 17/06/17.
  */
-public class DistanceLayer {
+public class DistanceLayer implements ReferentialOwner {
     private HandlerThread mDistanceThread;
     private LimitedHandler mHandler;
     private Context mContext;
     private DistanceMarker mDistanceMarkerFirst;
     private DistanceMarker mDistanceMarkerSecond;
     private LineView mLineView;
+    private TouchMoveListener mFirstTouchMoveListener;
+    private TouchMoveListener mSecondTouchMoveListener;
     private boolean mVisible;
     private DistanceListener mDistanceListener;
     private MapView mMapView;
@@ -43,6 +49,21 @@ public class DistanceLayer {
     private double mFirstMarkerRelativeY;
     private double mSecondMarkerRelativeX;
     private double mSecondMarkerRelativeY;
+    private ReferentialData mReferentialData;
+
+    @NotNull
+    @Override
+    public ReferentialData getReferentialData() {
+        return mReferentialData;
+    }
+
+    @Override
+    public void setReferentialData(@NotNull ReferentialData referentialData) {
+        mReferentialData = referentialData;
+        if (mLineView != null) mLineView.setReferentialData(referentialData);
+        if (mFirstTouchMoveListener != null) mFirstTouchMoveListener.referentialData = referentialData;
+        if (mSecondTouchMoveListener != null) mSecondTouchMoveListener.referentialData = referentialData;
+    }
 
     DistanceLayer(Context context, DistanceListener listener) {
         mContext = context;
@@ -55,14 +76,20 @@ public class DistanceLayer {
         mMapView = mapView;
     }
 
+    public void destroy() {
+        mMapView.removeReferentialOwner(this);
+    }
+
     /**
      * Shows the two {@link DistanceMarker} and the {@link LineView}.<br>
      * {@link #init(Map, MapView)} must have been called before.
      */
     public void show() {
+        mMapView.addReferentialOwner(this);
+
         /* Create the DistanceView (the line between the two markers) */
-        mLineView = new LineView(mContext, mMapView.getScale());
-        mMapView.addScaleChangeListener(mLineView);
+        mLineView = new LineView(mContext, mReferentialData);
+        mLineView.setReferentialData(mReferentialData);
         mMapView.addView(mLineView);
 
         /* Setup the first marker */
@@ -76,8 +103,9 @@ public class DistanceLayer {
                 onMarkerMoved();
             }
         };
-        TouchMoveListener firstTouchMoveListener = new TouchMoveListener(mMapView, firstMarkerMoveCallback);
-        mDistanceMarkerFirst.setOnTouchListener(firstTouchMoveListener);
+        mFirstTouchMoveListener = new TouchMoveListener(mMapView, firstMarkerMoveCallback);
+        mFirstTouchMoveListener.referentialData = mReferentialData;
+        mDistanceMarkerFirst.setOnTouchListener(mFirstTouchMoveListener);
 
         /* Setup the second marker*/
         mDistanceMarkerSecond = new DistanceMarker(mContext);
@@ -90,8 +118,9 @@ public class DistanceLayer {
                 onMarkerMoved();
             }
         };
-        TouchMoveListener secondTouchMoveListener = new TouchMoveListener(mMapView, secondMarkerMoveCallback);
-        mDistanceMarkerSecond.setOnTouchListener(secondTouchMoveListener);
+        mSecondTouchMoveListener = new TouchMoveListener(mMapView, secondMarkerMoveCallback);
+        mSecondTouchMoveListener.referentialData = mReferentialData;
+        mDistanceMarkerSecond.setOnTouchListener(mSecondTouchMoveListener);
 
         /* Set their positions */
         initDistanceMarkers();
@@ -113,6 +142,7 @@ public class DistanceLayer {
      */
     public void hide() {
         if (mMapView != null) {
+            mMapView.removeReferentialOwner(this);
             if (mDistanceMarkerFirst != null) {
                 removeMarker(mMapView, mDistanceMarkerFirst);
             }
@@ -121,7 +151,6 @@ public class DistanceLayer {
             }
             if (mLineView != null) {
                 mMapView.removeView(mLineView);
-                mMapView.removeScaleChangeListener(mLineView);
             }
         }
 

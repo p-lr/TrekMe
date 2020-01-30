@@ -6,7 +6,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.TypedValue
 import android.view.View
-import com.peterlaurence.mapview.ScaleChangeListener
+import com.peterlaurence.mapview.ReferentialData
+import com.peterlaurence.mapview.ReferentialOwner
 import com.peterlaurence.trekme.R
 
 /**
@@ -14,7 +15,7 @@ import com.peterlaurence.trekme.R
  *
  * @author peterLaurence on 12/05/18
  */
-class AreaView(context: Context, private var scale: Float = 1f) : View(context), ScaleChangeListener {
+class AreaView(context: Context) : View(context), ReferentialOwner {
     private val strokeWidth: Float
     private val paintBackground: Paint = Paint()
     private val paintStroke: Paint = Paint()
@@ -24,6 +25,12 @@ class AreaView(context: Context, private var scale: Float = 1f) : View(context),
     private var y1: Float = 0f
     private var x2: Float = 0f
     private var y2: Float = 0f
+
+    override var referentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     init {
         setWillNotDraw(false)
@@ -64,6 +71,7 @@ class AreaView(context: Context, private var scale: Float = 1f) : View(context),
     }
 
     override fun onDraw(canvas: Canvas) {
+        val scale = referentialData.scale
         canvas.scale(scale, scale)
         paintStroke.strokeWidth = strokeWidth / scale
         canvas.drawLine(x1, y1, x2, y1, paintStroke)
@@ -72,11 +80,6 @@ class AreaView(context: Context, private var scale: Float = 1f) : View(context),
         canvas.drawLine(x2, y2, x1, y2, paintStroke)
         canvas.drawRect(x1, y1, x2, y2, paintBackground)
         super.onDraw(canvas)
-    }
-
-    override fun onScaleChanged(scale: Float) {
-        this.scale = scale
-        invalidate()
     }
 }
 

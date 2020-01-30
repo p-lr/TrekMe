@@ -19,11 +19,12 @@ import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addCallout;
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addMarker;
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveMarker;
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.removeCallout;
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.removeMarker;
+import static com.peterlaurence.mapview.api.MarkerApiKt.addCallout;
+import static com.peterlaurence.mapview.api.MarkerApiKt.addMarker;
+import static com.peterlaurence.mapview.api.MarkerApiKt.moveMarker;
+import static com.peterlaurence.mapview.api.MarkerApiKt.removeCallout;
+import static com.peterlaurence.mapview.api.MarkerApiKt.removeMarker;
+
 
 /**
  * All {@link MovableMarker} and {@link MarkerCallout} are managed here. <br>

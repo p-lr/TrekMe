@@ -7,7 +7,10 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 
-import com.peterlaurence.mapview.ScaleChangeListener;
+import com.peterlaurence.mapview.ReferentialData;
+import com.peterlaurence.mapview.ReferentialOwner;
+
+import org.jetbrains.annotations.NotNull;
 
 
 /**
@@ -16,23 +19,35 @@ import com.peterlaurence.mapview.ScaleChangeListener;
  *
  * @author peterLaurence on 21/06/17.
  */
-public class LineView extends View implements ScaleChangeListener {
+public class LineView extends View implements ReferentialOwner {
     private static final int DEFAULT_STROKE_COLOR = 0xCC311B92;
     private static final int DEFAULT_STROKE_WIDTH_DP = 4;
     private float mStrokeWidth;
     private Paint mPaint = new Paint();
     private float[] mLine = new float[4];
 
-    private float mScale;
+    private ReferentialData mReferentialData;
 
-    public LineView(Context context, float scale) {
-        this(context, scale, null);
+    @NotNull
+    @Override
+    public ReferentialData getReferentialData() {
+        return mReferentialData;
     }
 
-    public LineView(Context context, float scale, Integer color) {
+    @Override
+    public void setReferentialData(@NotNull ReferentialData referentialData) {
+        mReferentialData = referentialData;
+        invalidate();
+    }
+
+    public LineView(Context context, ReferentialData rd) {
+        this(context, rd, null);
+    }
+
+    public LineView(Context context, ReferentialData rd, Integer color) {
         super(context);
         setWillNotDraw(false);
-        mScale = scale;
+        mReferentialData = rd;
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         mStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_STROKE_WIDTH_DP, metrics);
@@ -61,15 +76,16 @@ public class LineView extends View implements ScaleChangeListener {
 
     @Override
     public void onDraw(Canvas canvas) {
-        canvas.scale(mScale, mScale);
-        mPaint.setStrokeWidth(mStrokeWidth / mScale);
+        float scale = mReferentialData.getScale();
+
+        if (mReferentialData.getRotationEnabled()) {
+            canvas.rotate(mReferentialData.getAngle(), (float) (getWidth() * mReferentialData.getCenterX()),
+                    (float) (getHeight() * mReferentialData.getCenterY()));
+        }
+
+        canvas.scale(scale, scale);
+        mPaint.setStrokeWidth(mStrokeWidth / scale);
         canvas.drawLine(mLine[0], mLine[1], mLine[2], mLine[3], mPaint);
         super.onDraw(canvas);
-    }
-
-    @Override
-    public void onScaleChanged(float scale) {
-        mScale = scale;
-        invalidate();
     }
 }

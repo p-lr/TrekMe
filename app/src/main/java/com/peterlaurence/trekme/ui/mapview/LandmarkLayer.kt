@@ -5,7 +5,9 @@ import android.graphics.drawable.Animatable2
 import android.graphics.drawable.Drawable
 import android.view.View
 import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.ScaleChangeListener
+import com.peterlaurence.mapview.ReferentialData
+import com.peterlaurence.mapview.ReferentialOwner
+import com.peterlaurence.mapview.api.*
 import com.peterlaurence.mapview.markers.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.Landmark
@@ -20,22 +22,38 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineScope) :
-        MarkerTapListener, ScaleChangeListener, CoroutineScope by coroutineScope {
+        MarkerTapListener, ReferentialOwner, CoroutineScope by coroutineScope {
     private lateinit var map: Map
     private lateinit var mapView: MapView
     private var visible = false
     private var lastKnownPosition: Pair<Double, Double> = Pair(0.0, 0.0)
     private val movableLandmarkList: MutableList<MovableLandmark> = mutableListOf()
+    private var touchMoveListener: TouchMoveListener? = null
+
+    override var referentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
+        set(value) {
+            field = value
+
+            movableLandmarkList.forEach {
+                it.getLineView().referentialData = value
+                touchMoveListener?.referentialData = value
+            }
+        }
 
     fun init(map: Map, mapView: MapView) {
         this.map = map
         setMapView(mapView)
+        mapView.addReferentialOwner(this)
 
         if (map.areLandmarksDefined()) {
             drawLandmarks()
         } else {
             acquireThenDrawLandmarks()
         }
+    }
+
+    fun destroy() {
+        mapView.removeReferentialOwner(this)
     }
 
     private fun CoroutineScope.acquireThenDrawLandmarks() = launch {
@@ -129,7 +147,9 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             MapLoader.saveLandmarks(map)
         }
 
-        markerGrab.setOnTouchListener(TouchMoveListener(this.mapView, landmarkMoveCallback, landmarkClickCallback))
+        touchMoveListener = TouchMoveListener(this.mapView, landmarkMoveCallback, landmarkClickCallback)
+        touchMoveListener?.referentialData = referentialData
+        markerGrab.setOnTouchListener(touchMoveListener)
         if (movableLandmark.relativeX != null && movableLandmark.relativeY != null) {
             this.mapView.addMarker(markerGrab, movableLandmark.relativeX!!, movableLandmark.relativeY!!, -0.5f, -0.5f)
             markerGrab.morphIn()
@@ -197,24 +217,16 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         }
     }
 
-    override fun onScaleChanged(scale: Float) {
-        movableLandmarkList.forEach {
-            it.getLineView().onScaleChanged(scale)
-        }
-    }
-
     /**
      * Remove the associated [LineView]
      */
     private fun MovableLandmark.deleteLine() {
         val lineView = getLineView()
-        mapView.removeScaleChangeListener(lineView)
         mapView.removeView(lineView)
     }
 
     private fun newLineView(): LineView {
-        val lineView = LineView(context, mapView.scale, -0x3363d850)
-        mapView.addScaleChangeListener(lineView)
+        val lineView = LineView(context, referentialData, -0x3363d850)
         /* The index 1 is due to how MapView is designed and how we want landmarks to render (which
          * is above the map but beneath markers) */
         mapView.addView(lineView, 1)

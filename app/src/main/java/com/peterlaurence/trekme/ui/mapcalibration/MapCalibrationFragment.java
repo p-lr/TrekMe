@@ -24,9 +24,9 @@ import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.addMarker;
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveMarker;
-import static com.peterlaurence.mapview.markers.MarkerLayoutKt.moveToMarker;
+import static com.peterlaurence.mapview.api.MarkerApiKt.addMarker;
+import static com.peterlaurence.mapview.api.MarkerApiKt.moveMarker;
+import static com.peterlaurence.mapview.api.MarkerApiKt.moveToMarker;
 import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.CompatibityUtilsKt.makeTileStreamProvider;
 
 
