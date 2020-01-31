@@ -72,7 +72,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         MarkerGrab markerGrab = new MarkerGrab(context);
         TouchMoveListener.ClickCallback markerClickCallback = new MovableMarkerClickCallback(
                 movableMarker, markerGrab, mapView, map);
-        markerGrab.setOnTouchListener(new TouchMoveListener(mapView, markerMoveCallback, markerClickCallback));
+        TouchMoveListener touchMoveListener = new TouchMoveListener(mapView, markerMoveCallback, markerClickCallback);
+        mapView.addReferentialOwner(touchMoveListener);
+        markerGrab.setOnTouchMoveListener(touchMoveListener);
         addMarker(mapView, markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f, 0f, 0f);
         markerGrab.morphIn();
     }
@@ -261,6 +263,10 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
                         super.onAnimationEnd(drawable);
                         if (markerGrab != null) {
                             removeMarker(mMapView, markerGrab);
+                            TouchMoveListener l = markerGrab.getOnTouchMoveListener();
+                            if (l != null) {
+                                mMapView.removeReferentialOwner(l);
+                            }
                         }
                     }
                 });

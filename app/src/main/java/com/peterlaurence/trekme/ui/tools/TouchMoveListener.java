@@ -6,7 +6,10 @@ import android.view.View;
 
 import com.peterlaurence.mapview.MapView;
 import com.peterlaurence.mapview.ReferentialData;
+import com.peterlaurence.mapview.ReferentialOwner;
 import com.peterlaurence.mapview.core.CoordinateTranslater;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A touch listener that enables touch-moves of a view (also called marker) on a {@link MapView}. <br>
@@ -16,7 +19,7 @@ import com.peterlaurence.mapview.core.CoordinateTranslater;
  * TouchMoveListener markerTouchListener = new TouchMoveListener(mapView, callback);
  * View marker = new CustomMarker(context);
  * marker.setOnTouchListener(markerTouchListener);
- * tileView.addMarker(marker, ...);
+ * mapView.addMarker(marker, ...);
  * }</pre>
  * <p>
  * It can also react to single-tap event. To be notified, provide a {@link ClickCallback} to
@@ -24,8 +27,9 @@ import com.peterlaurence.mapview.core.CoordinateTranslater;
  *
  * @author peterLaurence
  */
-public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
+public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener, ReferentialOwner {
     private final MapView mMapView;
+    private final CoordinateTranslater mCoordinateTranslater;
     private GestureDetector mGestureDetector;
     private float deltaX;
     private float deltaY;
@@ -37,7 +41,18 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     private double mTopBound;
     private double mBottomBound;
 
-    public ReferentialData referentialData;
+    private ReferentialData referentialData;
+
+    @NotNull
+    @Override
+    public ReferentialData getReferentialData() {
+        return referentialData;
+    }
+
+    @Override
+    public void setReferentialData(@NotNull ReferentialData referentialData) {
+        this.referentialData = referentialData;
+    }
 
     public TouchMoveListener(MapView mapView, MoveCallback markerMoveCallback) {
         this(mapView, markerMoveCallback, null);
@@ -50,11 +65,11 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
         mMarkerMoveCallback = markerMoveCallback;
         mMarkerClickCallback = markerClickCallback;
 
-        CoordinateTranslater coordinateTranslater = mapView.getCoordinateTranslater();
-        mLeftBound = coordinateTranslater.getLeft();
-        mRightBound = coordinateTranslater.getRight();
-        mTopBound = coordinateTranslater.getTop();
-        mBottomBound = coordinateTranslater.getBottom();
+        mCoordinateTranslater = mapView.getCoordinateTranslater();
+        mLeftBound = mCoordinateTranslater.getLeft();
+        mRightBound = mCoordinateTranslater.getRight();
+        mTopBound = mCoordinateTranslater.getTop();
+        mBottomBound = mCoordinateTranslater.getBottom();
     }
 
     @Override
@@ -76,8 +91,7 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                float dX;
-                float dY;
+                float dX, dY;
                 if (rd != null && rd.getRotationEnabled()) {
                     dX = (float) ((event.getX() - deltaX) * Math.cos(angle) - (event.getY() - deltaY) * Math.sin(angle));
                     dY = (float) ((event.getX() - deltaX) * Math.sin(angle) + (event.getY() - deltaY) * Math.cos(angle));
@@ -85,35 +99,23 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
                     dX = event.getX() - deltaX;
                     dY = event.getY() - deltaY;
                 }
+                double X, Y;
                 if (rd != null && rd.getRotationEnabled()) {
-                    double X = getRelativeX(getXorig(view.getX() + (view.getWidth() >> 1), view.getY() + (view.getHeight() >> 1), angle) + dX);
-                    double Y = getRelativeY(getYorig(view.getX() + (view.getWidth() >> 1), view.getY() + (view.getHeight() >> 1), angle) + dY);
-                    mMarkerMoveCallback.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
+                    double Xorig = mCoordinateTranslater.reverseRotationX(rd, view.getX() + (view.getWidth() >> 1), view.getY() + (view.getHeight() >> 1));
+                    double Yorig = mCoordinateTranslater.reverseRotationY(rd, view.getX() + (view.getWidth() >> 1), view.getY() + (view.getHeight() >> 1));
+                    X = getRelativeX((float) Xorig + dX);
+                    Y = getRelativeY((float) Yorig + dY);
                 } else {
-                    double X = getRelativeX(view.getX() + dX + (view.getWidth() >> 1));
-                    double Y = getRelativeY(view.getY() + dY + (view.getHeight() >> 1));
-                    mMarkerMoveCallback.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
+                    X = getRelativeX(view.getX() + dX + (view.getWidth() >> 1));
+                    Y = getRelativeY(view.getY() + dY + (view.getHeight() >> 1));
                 }
+                mMarkerMoveCallback.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
                 break;
 
             default:
                 return false;
         }
         return true;
-    }
-
-    private float getXorig(float Xr, float Yr, double angle) {
-        ReferentialData rd = referentialData;
-        double Cx = rd.getCenterX() * mMapView.getCoordinateTranslater().getBaseWidth() * rd.getScale();
-        double Cy = rd.getCenterY() * mMapView.getCoordinateTranslater().getBaseHeight() * rd.getScale();
-        return (float) (Cx + (Xr - Cx) * Math.cos(angle) - (Yr - Cy) * Math.sin(angle));
-    }
-
-    private float getYorig(float Xr, float Yr, double angle) {
-        ReferentialData rd = referentialData;
-        double Cx = rd.getCenterX() * mMapView.getCoordinateTranslater().getBaseWidth() * rd.getScale();
-        double Cy = rd.getCenterY() * mMapView.getCoordinateTranslater().getBaseHeight() * rd.getScale();
-        return (float) (Cy + (Xr - Cx) * Math.sin(angle) + (Yr - Cy) * Math.cos(angle));
     }
 
     @Override
@@ -125,11 +127,11 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     }
 
     private double getRelativeX(float x) {
-        return mMapView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeX((int) x, mMapView.getScale());
+        return mCoordinateTranslater.translateAndScaleAbsoluteToRelativeX((int) x, mMapView.getScale());
     }
 
     private double getRelativeY(float y) {
-        return mMapView.getCoordinateTranslater().translateAndScaleAbsoluteToRelativeY((int) y, mMapView.getScale());
+        return mCoordinateTranslater.translateAndScaleAbsoluteToRelativeY((int) y, mMapView.getScale());
     }
 
     private double getConstrainedX(double x) {

@@ -61,8 +61,8 @@ public class DistanceLayer implements ReferentialOwner {
     public void setReferentialData(@NotNull ReferentialData referentialData) {
         mReferentialData = referentialData;
         if (mLineView != null) mLineView.setReferentialData(referentialData);
-        if (mFirstTouchMoveListener != null) mFirstTouchMoveListener.referentialData = referentialData;
-        if (mSecondTouchMoveListener != null) mSecondTouchMoveListener.referentialData = referentialData;
+        if (mFirstTouchMoveListener != null) mFirstTouchMoveListener.setReferentialData(referentialData);
+        if (mSecondTouchMoveListener != null) mSecondTouchMoveListener.setReferentialData(referentialData);
     }
 
     DistanceLayer(Context context, DistanceListener listener) {
@@ -104,7 +104,7 @@ public class DistanceLayer implements ReferentialOwner {
             }
         };
         mFirstTouchMoveListener = new TouchMoveListener(mMapView, firstMarkerMoveCallback);
-        mFirstTouchMoveListener.referentialData = mReferentialData;
+        mFirstTouchMoveListener.setReferentialData(mReferentialData);
         mDistanceMarkerFirst.setOnTouchListener(mFirstTouchMoveListener);
 
         /* Setup the second marker*/
@@ -119,7 +119,7 @@ public class DistanceLayer implements ReferentialOwner {
             }
         };
         mSecondTouchMoveListener = new TouchMoveListener(mMapView, secondMarkerMoveCallback);
-        mSecondTouchMoveListener.referentialData = mReferentialData;
+        mSecondTouchMoveListener.setReferentialData(mReferentialData);
         mDistanceMarkerSecond.setOnTouchListener(mSecondTouchMoveListener);
 
         /* Set their positions */
