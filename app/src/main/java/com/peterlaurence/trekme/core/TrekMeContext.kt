@@ -84,8 +84,9 @@ object TrekMeContext {
     }
 
     /**
-     * The first [File] returned by [Context.getExternalFilesDirs] corresponds to the internal
-     * storage, which we already have with [defaultAppDir]. So we strip this one.
+     * The first [File] returned by [Context.getExternalFilesDirs] corresponds to an internal
+     * storage which will be erased upon app uninstall. We don't want that so we strip this one and
+     * keep [defaultAppDir] instead.
      *
      * Take at least the default app folder.
      */
