@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
+import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
 import com.peterlaurence.trekme.ui.mapcreate.MapSourceAdapter.MapSourceSelectionListener
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
@@ -27,11 +27,11 @@ import org.greenrobot.eventbus.EventBus
  * @author peterLaurence on 08/04/18
  */
 class MapCreateFragment : Fragment(), MapSourceSelectionListener {
-    private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var mapSourceSet: Array<MapSource>
-    private lateinit var nextButton: Button
-    private lateinit var settingsButton: Button
+
+    private var _binding: FragmentMapCreateBinding? = null
+    private val binding get() = _binding!!
 
     private lateinit var selectedMapSource: MapSource
 
@@ -53,35 +53,51 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         }.toTypedArray()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_map_create, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentMapCreateBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        nextButton = view.findViewById(R.id.next_button)
-        nextButton.setOnClickListener { EventBus.getDefault().post(MapSourceSelectedEvent(selectedMapSource)) }
+        binding.nextButton.setOnClickListener {
+            EventBus.getDefault().post(MapSourceSelectedEvent(selectedMapSource))
+        }
 
-        settingsButton = view.findViewById(R.id.mapcreate_settings_button)
-        settingsButton.setOnClickListener { EventBus.getDefault().post(MapSourceSettingsEvent(selectedMapSource)) }
+        binding.settingsButton.setOnClickListener {
+            EventBus.getDefault().post(MapSourceSettingsEvent(selectedMapSource))
+        }
 
         val viewManager = LinearLayoutManager(context)
-        viewAdapter = MapSourceAdapter(mapSourceSet, this, context?.getColor(R.color.colorAccent)
+        viewAdapter = MapSourceAdapter(
+            mapSourceSet, this, context?.getColor(R.color.colorAccent)
                 ?: Color.BLUE,
-                context?.getColor(R.color.colorPrimaryTextWhite)
-                        ?: Color.WHITE, context?.getColor(R.color.colorPrimaryTextBlack)
-                ?: Color.BLACK)
+            context?.getColor(R.color.colorPrimaryTextWhite)
+                ?: Color.WHITE, context?.getColor(R.color.colorPrimaryTextBlack)
+                ?: Color.BLACK
+        )
 
         /* Item decoration : divider */
-        val dividerItemDecoration = DividerItemDecoration(context,
-                DividerItemDecoration.VERTICAL)
+        val dividerItemDecoration = DividerItemDecoration(
+            context,
+            DividerItemDecoration.VERTICAL
+        )
         val divider = this.context?.getDrawable(R.drawable.divider)
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider)
         }
 
-        recyclerView = view.findViewById<RecyclerView>(R.id.recyclerview_map_create).apply {
+        binding.recyclerviewMapCreate.apply {
             setHasFixedSize(true)
             layoutManager = viewManager
             adapter = viewAdapter
@@ -93,9 +109,9 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
      * For instance, settings are only relevant for [MapSource.IGN] provider.
      */
     private fun setButtonsAvailability(m: MapSource) {
-        nextButton.visibility = View.VISIBLE
+        binding.nextButton.visibility = View.VISIBLE
 
-        settingsButton.visibility = if (m == MapSource.IGN) {
+        binding.settingsButton.visibility = if (m == MapSource.IGN) {
             View.VISIBLE
         } else {
             View.INVISIBLE

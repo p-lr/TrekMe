@@ -21,7 +21,7 @@
         tools:visibility="visible"/>
 
     <Button
-        android:id="@+id/mapcreate_settings_button"
+        android:id="@+id/settings_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"

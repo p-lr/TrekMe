@@ -10,6 +10,9 @@ android {
     dataBinding {
         enabled = true
     }
+    viewBinding {
+        enabled = true
+    }
     defaultConfig {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
