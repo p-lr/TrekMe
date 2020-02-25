@@ -437,7 +437,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         val factor = this.magnifyingFactor ?: 1
 
         val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize,
-                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(factor).setPadding(tileSize * 2).enableRotation()
+                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(factor).setPadding(tileSize * 2)
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)
