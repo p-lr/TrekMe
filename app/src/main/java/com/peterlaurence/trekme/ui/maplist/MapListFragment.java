@@ -17,7 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,6 +38,7 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
+import static android.os.Build.VERSION_CODES.Q;
 
 /**
  * A {@link Fragment} that displays the list of available maps, using a {@link RecyclerView}.
@@ -88,7 +89,7 @@ public class MapListFragment extends Fragment implements
 
         FragmentActivity activity = getActivity();
         if (activity != null) {
-            viewModel = ViewModelProviders.of(activity).get(MapListViewModel.class);
+            viewModel = new ViewModelProvider(activity).get(MapListViewModel.class);
             viewModel.getMaps().observe(this, maps -> {
                 if (maps != null) {
                     /* Set data */
@@ -177,6 +178,11 @@ public class MapListFragment extends Fragment implements
             rootView.findViewById(R.id.emptyMapPanel).setVisibility(View.VISIBLE);
             Button btn = rootView.findViewById(R.id.button_go_to_map_create);
             btn.setOnClickListener((e) -> mListener.onGoToMapCreation());
+
+            /* Specifically for Android 10, temporarily explain why the list of map is empty. */
+            if (android.os.Build.VERSION.SDK_INT == Q) {
+                rootView.findViewById(R.id.android10_warning).setVisibility(View.VISIBLE);
+            }
         } else {
             rootView.findViewById(R.id.emptyMapPanel).setVisibility(View.GONE);
         }

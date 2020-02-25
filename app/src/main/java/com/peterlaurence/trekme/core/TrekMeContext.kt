@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core
 
 import android.content.Context
+import android.os.Build.VERSION_CODES.Q
 import android.os.Environment
 import android.util.Log
 
@@ -22,30 +23,40 @@ import java.io.IOException
  * @author peterLaurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
 object TrekMeContext {
-    const val appFolderName = "trekme"
+    private const val appFolderName = "trekme"
     private const val appFolderNameLegacy = "trekadvisor"
-    val defaultAppDir = File(Environment.getExternalStorageDirectory(),
-            appFolderName)
-    private val legacyAppDir = File(Environment.getExternalStorageDirectory(),
-            appFolderNameLegacy)
-    private val defaultMapsDir = defaultAppDir
 
-    val defaultMapsDownloadDir = File(defaultMapsDir, "downloaded")
-    val recordingsDir = File(defaultAppDir, "recordings")
-    val credentialsDir = File(defaultAppDir, "credentials")
+    var defaultAppDir: File? = null
 
-    /* Where maps are searched */
-    var mapsDirList: List<File> = listOf(defaultAppDir)
-
-    /* Where maps can be downloaded */
-    val downloadDirList: List<File>
-        get() = mapsDirList.map {
+    val defaultMapsDownloadDir: File? by lazy {
+        defaultAppDir?.let {
             File(it, "downloaded")
         }
+    }
+
+    val recordingsDir: File?  by lazy {
+        defaultAppDir?.let {
+            File(it, "recordings")
+        }
+    }
+
+    /* Where maps are searched */
+    var mapsDirList: List<File>? = null
+
+    /* Where maps can be downloaded */
+    val downloadDirList: List<File>? by lazy {
+        mapsDirList?.map {
+            File(it, "downloaded")
+        }
+    }
 
     private var settingsFile: File? = null
 
     private const val TAG = "TrekMeContext"
+
+    val credentialsDir: File by lazy {
+        File(defaultAppDir, "credentials")
+    }
 
     /**
      * Check whether the app root dir is in read-only state or not. This is usually used only if the
@@ -59,11 +70,12 @@ object TrekMeContext {
      * into.
      */
     fun init(context: Context) {
+        val applicationContext = context.applicationContext
         try {
+            resolveDirs(applicationContext)
             createAppDirs()
             createNomediaFile()
-            resolveMapDirs(context)
-            createSettingsFile(context)
+            createSettingsFile(applicationContext)
         } catch (e: SecurityException) {
             Log.e(TAG, "We don't have right access to create application folder")
         } catch (e: IOException) {
@@ -90,20 +102,25 @@ object TrekMeContext {
      *
      * Take at least the default app folder.
      */
-    private fun resolveMapDirs(context: Context) {
-        val dirs: List<File> = context.getExternalFilesDirs(null).filterIndexed { index, file ->
-            index > 0 && file != null
-        }
+    private fun resolveDirs(applicationContext: Context) {
+        val dirs: List<File> = applicationContext.getExternalFilesDirs(null).filterNotNull()
 
-        mapsDirList = listOf(defaultAppDir) + dirs
+        if (android.os.Build.VERSION.SDK_INT >= Q) {
+            defaultAppDir = dirs.firstOrNull()
+            mapsDirList = dirs
+        } else {
+            defaultAppDir = File(Environment.getExternalStorageDirectory(), appFolderName)
+            val otherDirs = dirs.drop(1)
+            mapsDirList = listOf(defaultAppDir!!) + otherDirs
+        }
     }
 
     /**
      * The settings file is stored in a private folder of the app, and this folder will be deleted
      * if the app is uninstalled. This is intended, not to persist those settings.
      */
-    private fun createSettingsFile(context: Context) {
-        settingsFile = File(context.filesDir, "settings.json")
+    private fun createSettingsFile(applicationContext: Context) {
+        settingsFile = File(applicationContext.filesDir, "settings.json")
         settingsFile?.also {
             if (!it.exists()) {
                 it.createNewFile()
@@ -136,15 +153,25 @@ object TrekMeContext {
 
     /**
      * If we detect the existence of the legacy dir, rename it.
+     * Only do this for Android version under 10, since the former default app dir was obtained with
+     * a now deprecated call. People with Android 10 or new are very unlikely to have installed
+     * TrekAdvisor anyway.
      */
     private fun renameLegacyDir() {
-        if (legacyAppDir.exists()) {
-            legacyAppDir.renameTo(defaultAppDir)
+        if (android.os.Build.VERSION.SDK_INT < Q) {
+            val legacyAppDir = File(Environment.getExternalStorageDirectory(),
+                appFolderNameLegacy)
+            if (legacyAppDir.exists()) {
+                val defaultAppDir = defaultAppDir
+                if (defaultAppDir != null) {
+                    legacyAppDir.renameTo(defaultAppDir)
+                }
+            }
         }
     }
 
-    private fun createDir(dir: File, label: String) {
-        if (!dir.exists()) {
+    private fun createDir(dir: File?, label: String) {
+        if (dir != null && !dir.exists()) {
             val created = dir.mkdir()
             if (!created) {
                 Log.e(TAG, "Could not create $label folder")
@@ -153,17 +180,21 @@ object TrekMeContext {
     }
 
     /**
-     * We have to create an empty ".nomedia" file at the root of the application folder, so other
-     * apps don't index this content for media files.
+     * We have to create an empty ".nomedia" file at the root of each folder where TrekMe can
+     * download maps. This way, other apps don't index this content for media files.
      */
     @Throws(SecurityException::class, IOException::class)
     private fun createNomediaFile() {
-        if (defaultAppDir.exists()) {
-            val noMedia = File(defaultAppDir, ".nomedia")
-            val created = noMedia.createNewFile()
-            if (!created) {
-                Log.e(TAG, "Could not create .nomedia file")
+        mapsDirList?.forEach {
+            if (it.exists()) {
+                val noMedia = File(defaultAppDir, ".nomedia")
+                val created = noMedia.createNewFile()
+                if (!created) {
+                    Log.e(TAG, "Could not create .nomedia file")
+                }
             }
         }
     }
 }
+
+const val appName = "TrekMe"

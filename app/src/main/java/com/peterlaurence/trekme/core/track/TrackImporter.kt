@@ -39,7 +39,7 @@ object TrackImporter {
      * [com.peterlaurence.trekme.core.TrekMeContext.recordingsDir].
      */
     val recordings: Array<File>?
-        get() = recordingsDir.listFiles(SUPPORTED_FILE_FILTER)
+        get() = recordingsDir?.listFiles(SUPPORTED_FILE_FILTER)
 
     private val supportedTrackFilesExtensions = arrayOf("gpx", "xml")
 

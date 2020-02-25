@@ -30,12 +30,12 @@ object Settings {
      * the path isn't among the list of possible paths.
      * It's also a security in the case the download directories change across versions.
      */
-    suspend fun getDownloadDir(): File {
+    suspend fun getDownloadDir(): File? {
         return settingsHandler.getLastSetting().downloadDir.let {
             if (checkDownloadPath(it)) {
                 File(it)
             } else {
-                defaultDownloadDir
+                TrekMeContext.defaultMapsDownloadDir
             }
         }
     }
@@ -53,9 +53,9 @@ object Settings {
     }
 
     private fun checkDownloadPath(path: String): Boolean {
-        return TrekMeContext.downloadDirList.map {
+        return TrekMeContext.downloadDirList?.map {
             it.absolutePath
-        }.contains(path)
+        }?.contains(path) ?: false
     }
 
     suspend fun getStartOnPolicy(): StartOnPolicy {
@@ -97,17 +97,15 @@ object Settings {
 }
 
 @Serializable
-private data class SettingsData(val downloadDir: String = defaultDownloadDir.absolutePath,
+private data class SettingsData(val downloadDir: String,
                                 val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
                                 val lastMapId: Int = -1,
-                                val magnifyingFactor: Int = 1)
+                                val magnifyingFactor: Int = 0)
 
 enum class StartOnPolicy {
     MAP_LIST, LAST_MAP
 }
 
-
-private val defaultDownloadDir = TrekMeContext.defaultMapsDownloadDir
 
 private interface SettingsHandler {
     fun writeSetting(settingsData: SettingsData)
@@ -175,7 +173,7 @@ private class FileSettingsHandler : SettingsHandler {
         } catch (e: Exception) {
             e.printStackTrace()
             /* In case of any error, return default settings */
-            SettingsData()
+            SettingsData(TrekMeContext.defaultMapsDownloadDir?.absolutePath ?: "error")
         }
     }
 

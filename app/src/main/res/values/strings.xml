@@ -47,6 +47,12 @@
     <string name="download_map_dialog_title">Map download</string>
     <string name="download_map_dialog_msg">Downloading %s…</string>
     <string name="menu_sample_map">Download sample map</string>
+    <string name="android10_temp_warning">Where are my maps?\nIf you had maps before, don\'t worry, your maps aren\'t gone.
+        Android 10 forced me to change the default location of maps to respect user privacy - sorry for the inconvenience.
+        By default, everything was stored inside /storage/emulated/0/trekme\n
+        All you have to do is to copy the content of that folder inside /storage/emulated/0/Android/data/com.peterlaurence.trekme/files\n
+        If you need more help, contact me at plr.devs@gmail.com
+    </string>
 
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>

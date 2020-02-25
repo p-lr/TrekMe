@@ -103,7 +103,7 @@ object MapLoader : MapImporter.MapImportListener {
             TrekMeContext.mapsDirList
         } else {
             dirs
-        }
+        } ?: return emptyList()
 
         val maps = findMaps(realDirs)
 

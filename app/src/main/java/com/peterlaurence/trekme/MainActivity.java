@@ -77,6 +77,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static android.os.Build.VERSION_CODES.Q;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         MapListFragment.OnMapListFragmentInteractionListener,
@@ -170,8 +172,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private static boolean checkStoragePermissions(Activity activity) {
-        int permissionWrite = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        return (permissionWrite == PackageManager.PERMISSION_GRANTED);
+        if (android.os.Build.VERSION.SDK_INT < Q) {
+            int permissionWrite = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return (permissionWrite == PackageManager.PERMISSION_GRANTED);
+        }
+        return true; // we don't need write permission for Android >= 10
     }
 
     public boolean checkMapCreationPermission() {
@@ -801,6 +806,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
+        /* If Android >= 10 we don't need to restart the activity as we don't request write permission */
+        if (android.os.Build.VERSION.SDK_INT >= Q) return;
+
+        /* Else, we want to restart the activity */
         if (requestCode == REQUEST_MINIMAL) {
             if (grantResults.length >= 2) {
                 /* Storage read perm is at index 1 */

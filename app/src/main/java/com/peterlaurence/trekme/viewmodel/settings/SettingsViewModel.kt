@@ -62,12 +62,12 @@ class SettingsViewModel : ViewModel() {
     }
 
     private fun updateDownloadDirList() {
-        downloadDirListLiveData.postValue(TrekMeContext.downloadDirList.map { it.absolutePath })
+        downloadDirListLiveData.postValue(TrekMeContext.downloadDirList?.map { it.absolutePath } ?: emptyList())
     }
 
     private fun updateDownloadDir() {
         viewModelScope.launch {
-            downloadDirLiveData.postValue(Settings.getDownloadDir().absolutePath)
+            downloadDirLiveData.postValue(Settings.getDownloadDir()?.absolutePath ?: "error")
         }
     }
 

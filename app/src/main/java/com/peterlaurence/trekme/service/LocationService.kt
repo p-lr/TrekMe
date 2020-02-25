@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
@@ -156,7 +157,7 @@ class LocationService : Service() {
 
             val wayPoints = ArrayList<TrackPoint>()
 
-            val gpx = Gpx(trkList, wayPoints, TrekMeContext.appFolderName, GPX_VERSION)
+            val gpx = Gpx(trkList, wayPoints, appName, GPX_VERSION)
             try {
                 val gpxFileName = "$trackName.gpx"
                 val gpxFile = File(TrekMeContext.recordingsDir, gpxFileName)
