@@ -14,11 +14,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.MapArchive
+import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel
-import kotlinx.android.synthetic.main.fragment_map_import.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -29,9 +29,12 @@ import org.greenrobot.eventbus.ThreadMode
  * @author peterLaurence on 08/06/16 -- Converted to Kotlin on 18/01/19
  */
 class MapImportFragment : Fragment() {
+    /* View binding boilerplate */
+    private var _binding: FragmentMapImportBinding? = null
+    private val binding get() = _binding!!
+
     private var mapArchiveAdapter: MapArchiveAdapter? = null
     private var listener: OnMapArchiveFragmentInteractionListener? = null
-    private var mView: View? = null
     private var fabEnabled = false
     private lateinit var data: List<MapImportViewModel.ItemViewModel>
     private var mapArchiveSelected: MapArchive? = null
@@ -50,28 +53,30 @@ class MapImportFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.getItemViewModelList().observe(this, Observer<List<MapImportViewModel.ItemViewModel>> {
-            it?.let { mapArchiveList ->
-                this.data = mapArchiveList
-                mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
-                hideProgressBar()
-            }
-        })
+        viewModel.getItemViewModelList()
+            .observe(this, Observer<List<MapImportViewModel.ItemViewModel>> {
+                it?.let { mapArchiveList ->
+                    this.data = mapArchiveList
+                    mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
+                    hideProgressBar()
+                }
+            })
 
         setHasOptionsMenu(false)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-
-        return inflater.inflate(R.layout.fragment_map_import, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentMapImportBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mView = view
-
+        val recyclerViewMapImport = binding.recyclerViewMapImport
         recyclerViewMapImport.setHasFixedSize(false)
 
         val llm = LinearLayoutManager(context)
@@ -80,22 +85,26 @@ class MapImportFragment : Fragment() {
         mapArchiveAdapter = MapArchiveAdapter()
         recyclerViewMapImport.adapter = mapArchiveAdapter
 
-        recyclerViewMapImport.addOnItemTouchListener(RecyclerItemClickListener(this.context,
+        recyclerViewMapImport.addOnItemTouchListener(
+            RecyclerItemClickListener(this.context,
                 recyclerViewMapImport, object : RecyclerItemClickListener.OnItemClickListener {
 
-            override fun onItemClick(view: View, position: Int) {
-                fab.activate()
-                singleSelect(position)
-            }
+                    override fun onItemClick(view: View, position: Int) {
+                        binding.fab.activate()
+                        singleSelect(position)
+                    }
 
-            override fun onItemLongClick(view: View?, position: Int) {
-                // no-op
-            }
-        }))
+                    override fun onItemLongClick(view: View?, position: Int) {
+                        // no-op
+                    }
+                })
+        )
 
         /* Item decoration : divider */
-        val dividerItemDecoration = DividerItemDecoration(view.context,
-                DividerItemDecoration.VERTICAL)
+        val dividerItemDecoration = DividerItemDecoration(
+            view.context,
+            DividerItemDecoration.VERTICAL
+        )
         val divider = view.context.getDrawable(R.drawable.divider)
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider)
@@ -120,6 +129,7 @@ class MapImportFragment : Fragment() {
     }
 
     private fun FloatingActionButton.activate() {
+        val fab = binding.fab
         if (!fabEnabled) {
             fab.isEnabled = true
             fab.drawable.mutate().setTint(resources.getColor(R.color.colorWhite, null))
