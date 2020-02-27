@@ -30,7 +30,7 @@ import org.greenrobot.eventbus.ThreadMode
  */
 class MapImportFragment : Fragment() {
     /* View binding boilerplate */
-    private var _binding: FragmentMapImportBinding? = null
+    private var _binding: FragmentMapImportBinding? = null // backing field
     private val binding get() = _binding!!
 
     private var mapArchiveAdapter: MapArchiveAdapter? = null
@@ -71,6 +71,11 @@ class MapImportFragment : Fragment() {
     ): View? {
         _binding = FragmentMapImportBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
