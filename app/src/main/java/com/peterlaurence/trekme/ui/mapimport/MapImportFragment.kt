@@ -1,30 +1,42 @@
 package com.peterlaurence.trekme.ui.mapimport
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.MimeTypeMap
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.ui.events.RequestImportMapEvent
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 /**
  * A [Fragment] subclass that displays the list of maps archives available for import.
+ * Leverages the Storage Access Framework (SAF) to get the list of [DocumentFile]s from a directory
+ * selected by the user. The SAF guarantees that the application is granted access to that folder.
+ * Using ContentResolver, an InputStream is created from a [DocumentFile] when the user selects it
+ * press the extract button. Then, the view-model is involved for the rest of the process.
  *
  * @author peterLaurence on 08/06/16 -- Converted to Kotlin on 18/01/19
  */
@@ -37,7 +49,7 @@ class MapImportFragment : Fragment() {
     private var listener: OnMapArchiveFragmentInteractionListener? = null
     private var fabEnabled = false
     private lateinit var data: List<MapImportViewModel.ItemViewModel>
-    private var mapArchiveSelected: MapArchive? = null
+    private var itemSelected: MapImportViewModel.ItemViewModel? = null
     private val viewModel: MapImportViewModel by viewModels()
 
     override fun onAttach(context: Context) {
@@ -54,20 +66,22 @@ class MapImportFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         viewModel.getItemViewModelList()
-            .observe(this, Observer<List<MapImportViewModel.ItemViewModel>> {
-                it?.let { mapArchiveList ->
-                    this.data = mapArchiveList
-                    mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
-                    hideProgressBar()
-                }
-            })
+                .observe(this, Observer<List<MapImportViewModel.ItemViewModel>> {
+                    it?.let { mapArchiveList ->
+                        this.data = mapArchiveList
+                        mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
+                        binding.progressListUris.visibility = View.GONE
+                        binding.welcomePanel.visibility = View.GONE
+                        binding.archiveListPanel.visibility = View.VISIBLE
+                    }
+                })
 
         setHasOptionsMenu(false)
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentMapImportBinding.inflate(inflater, container, false)
         return binding.root
@@ -81,6 +95,11 @@ class MapImportFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.buttonImport.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            startActivityForResult(intent, MAP_IMPORT_CODE)
+        }
+
         val recyclerViewMapImport = binding.recyclerViewMapImport
         recyclerViewMapImport.setHasFixedSize(false)
 
@@ -91,8 +110,8 @@ class MapImportFragment : Fragment() {
         recyclerViewMapImport.adapter = mapArchiveAdapter
 
         recyclerViewMapImport.addOnItemTouchListener(
-            RecyclerItemClickListener(this.context,
-                recyclerViewMapImport, object : RecyclerItemClickListener.OnItemClickListener {
+                RecyclerItemClickListener(this.context,
+                        recyclerViewMapImport, object : RecyclerItemClickListener.OnItemClickListener {
 
                     override fun onItemClick(view: View, position: Int) {
                         binding.fab.activate()
@@ -107,8 +126,8 @@ class MapImportFragment : Fragment() {
 
         /* Item decoration : divider */
         val dividerItemDecoration = DividerItemDecoration(
-            view.context,
-            DividerItemDecoration.VERTICAL
+                view.context,
+                DividerItemDecoration.VERTICAL
         )
         val divider = view.context.getDrawable(R.drawable.divider)
         if (divider != null) {
@@ -120,8 +139,34 @@ class MapImportFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
+    }
 
-        viewModel.updateMapArchiveList()
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == Activity.RESULT_OK) {
+            data?.data?.let { uri ->
+                lifecycleScope.launch {
+                    showProgressBar()
+                    binding.buttonImport.isEnabled = false
+                    val zipDocs = listZipDocs(uri)
+                    viewModel.updateUriList(zipDocs)
+                }
+            }
+        }
+    }
+
+    private suspend fun listZipDocs(uri: Uri): List<DocumentFile> = withContext(Dispatchers.IO) {
+        val context = context ?: return@withContext listOf<DocumentFile>()
+        val docFile = DocumentFile.fromTreeUri(context, uri)
+                ?: return@withContext listOf<DocumentFile>()
+        if (docFile.isDirectory) {
+            val zipDocs = docFile.listFiles().filter {
+                MimeTypeMap.getSingleton().getExtensionFromMimeType(it.type) == "zip"
+            }
+
+            zipDocs
+        } else listOf()
     }
 
     private fun singleSelect(position: Int) {
@@ -130,7 +175,7 @@ class MapImportFragment : Fragment() {
         mapArchiveAdapter?.notifyDataSetChanged()
 
         /* Keep a reference on the selected archive */
-        mapArchiveSelected = data[position].mapArchive
+        itemSelected = data[position]
     }
 
     private fun FloatingActionButton.activate() {
@@ -141,8 +186,11 @@ class MapImportFragment : Fragment() {
             fab.background.setTint(resources.getColor(R.color.colorAccent, null))
 
             fab.setOnClickListener {
-                mapArchiveSelected?.let { mapArchive ->
-                    viewModel.unarchiveAsync(mapArchive)
+                itemSelected?.let { item ->
+                    val inputStream = context.contentResolver.openInputStream(item.docFile.uri)
+                    if (inputStream != null) {
+                        viewModel.unarchiveAsync(inputStream, item)
+                    }
                 }
             }
         }
@@ -169,8 +217,8 @@ class MapImportFragment : Fragment() {
         super.onStop()
     }
 
-    private fun hideProgressBar() {
-        view?.findViewById<View>(R.id.progress_import_frgmt)?.visibility = View.GONE
+    private fun showProgressBar() {
+        binding.progressListUris.visibility = View.VISIBLE
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -187,3 +235,5 @@ class MapImportFragment : Fragment() {
         private const val CREATE_FROM_SCREEN_ROTATE = "create"
     }
 }
+
+private const val MAP_IMPORT_CODE = 5847

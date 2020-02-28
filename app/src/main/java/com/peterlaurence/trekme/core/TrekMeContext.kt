@@ -34,6 +34,13 @@ object TrekMeContext {
         }
     }
 
+    /* Where zip archives are extracted */
+    val importedDir: File? by lazy {
+        defaultAppDir?.let {
+            File(it, "imported")
+        }
+    }
+
     val recordingsDir: File?  by lazy {
         defaultAppDir?.let {
             File(it, "recordings")

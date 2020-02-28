@@ -1,17 +1,16 @@
 package com.peterlaurence.trekme.util
 
 import android.util.Log
-
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.zip.ZipFile
+import java.io.InputStream
 import java.util.zip.ZipInputStream
 
 private const val TAG = "UnzipTask"
 
-fun unzipTask(zipFile: File, outputFolder: File, unzipProgressionListener: UnzipProgressionListener) {
+
+fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipProgressionListener: UnzipProgressionListener) {
     val buffer = ByteArray(1024)
     var result = true
 
@@ -21,15 +20,12 @@ fun unzipTask(zipFile: File, outputFolder: File, unzipProgressionListener: Unzip
             outputFolder.mkdirs()
         }
 
-        val zip = ZipFile(zipFile)
-        val totalEntries = zip.size().toLong()
-        var entryCount = 0
-
-        val zis = ZipInputStream(FileInputStream(zipFile))
+        var bytesRead = 0L
+        val zis = ZipInputStream(inputStream)
 
         while (true) {
             val entry = zis.nextEntry ?: break
-            entryCount++
+            bytesRead += entry.size
             val fileName = entry.name
             val newFile = File(outputFolder, fileName)
             if (!newFile.canonicalPath.startsWith(outputFolder.canonicalPath)) {
@@ -57,7 +53,7 @@ fun unzipTask(zipFile: File, outputFolder: File, unzipProgressionListener: Unzip
                     fos.write(buffer, 0, len)
                 }
 
-                unzipProgressionListener.onProgress((entryCount / totalEntries.toFloat() * 100).toInt())
+                unzipProgressionListener.onProgress((bytesRead / size.toDouble() * 100).toInt())
 
                 fos.close()
             } catch (e: IOException) {

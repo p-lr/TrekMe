@@ -8,6 +8,7 @@ import java.io.File
 import java.io.IOException
 
 import org.junit.Assert.fail
+import java.io.FileInputStream
 
 /**
  * This tests the [ZipTask] against the [unzipTask].
@@ -46,6 +47,7 @@ class ZipTest {
 
             try {
                 val tempMapArchive = File(mTestFolder, "testmap.zip")
+                val size = tempMapArchive.length()
                 tempMapArchive.parentFile.mkdirs()
                 tempMapArchive.createNewFile()
 
@@ -59,7 +61,7 @@ class ZipTest {
                     }
 
                     override fun onZipFinished(outputDirectory: File) {
-                        unzipTask(tempMapArchive, mTestFolder, unzipProgressionListener)
+                        unzipTask(FileInputStream(tempMapArchive), mTestFolder, size, unzipProgressionListener)
                     }
 
                     override fun onZipError() {

@@ -1,35 +1,33 @@
 package com.peterlaurence.trekme.core.map.maparchiver
 
-import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.util.unzipTask
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
 import java.io.File
+import java.io.InputStream
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 /**
- * For instance, just unzips in a subfolder of the same parent folder of the archive
- * [File] passed as parameter. The subfolder is named from a formatting of the current
- * date.
- * The provided [listener] is called from a background thread.
+ * Unzips the given [inputStream] (by creating a [ZipInputStream] and reading from it).
+ * The output folder must be provided, along with:
+ * * a name, which is used as prefix for the direct parent folder of the map. The current date is
+ * appended.
+ * * the size in bytes of the document being read
  *
- * @author peterLaurence on 14/10/17 --  converted to Kotlin on 18/05/2019
+ * @author peterLaurence on 28/02/20
  */
-fun CoroutineScope.unarchive(mapArchive: MapArchive, listener: UnzipProgressionListener) {
+fun CoroutineScope.unarchive(inputStream: InputStream, outputDirectory: File, name: String, size: Long, listener: UnzipProgressionListener) {
     /* Generate an output directory with the date */
     val date = Date()
     val dateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
-    val parentFolderName = mapArchive.name + "-" + dateFormat.format(date)
-    val zipFile = mapArchive.archiveFile
-    val outputDirectory = File(zipFile.parentFile, parentFolderName)
+    val parentFolderName = name + "-" + dateFormat.format(date)
+    val intermediateDirectory = File(outputDirectory, parentFolderName)
 
     /* Launch the unzip task */
-    launch(Dispatchers.Default) {
-        unzipTask(zipFile, outputDirectory, listener)
+    launch(Dispatchers.IO) {
+        unzipTask(inputStream, intermediateDirectory, size, listener)
     }
 }

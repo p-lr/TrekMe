@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderDefault
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -23,7 +24,6 @@ import java.io.IOException
 import java.io.PrintWriter
 import java.util.*
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Singleton object that acts as central point for most operations related to the maps.
@@ -164,14 +164,19 @@ object MapLoader : MapImporter.MapImportListener {
      * Launch a task which gets the list of [MapArchive].
      * It also shows how a java [Thread] can be wrapped inside a coroutine so that it can be used
      * by Kotlin code.
+     *
+     * TODO: Remove this along with MapArchiveSearchTask class. This logic isn't used anymore.
      */
-    suspend fun getMapArchiveList(): List<MapArchive> = suspendCoroutine { cont ->
-        val dirs = listOf(TrekMeContext.defaultAppDir)
+    suspend fun getMapArchiveList(dirs: List<File>): List<MapArchive> = suspendCancellableCoroutine { cont ->
         val task = MapArchiveSearchTask(dirs, object : MapArchiveListUpdateListener {
             override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
                 cont.resume(mapArchiveList)
             }
         })
+
+        cont.invokeOnCancellation {
+            task.cancel()
+        }
 
         task.start()
     }

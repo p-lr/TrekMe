@@ -32,10 +32,10 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
 
     override fun onBindViewHolder(holder: MapArchiveViewHolder, position: Int) {
         val data = data ?: return
-        val viewModel = data[position]
-        val mapArchive = data[position].mapArchive
+        val itemViewModel = data[position]
+        val docFile = data[position].docFile
         holder.position = position
-        holder.mapArchiveName.text = mapArchive.name
+        holder.mapArchiveName.text = docFile.name
 
         if (selectedPosition == position) {
             holder.layout.setBackgroundColor(Color.parseColor("#442196f3"))
@@ -49,7 +49,7 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
 
         holder.init()
 
-        viewModel.bind(object : MapImportViewModel.ItemPresenter {
+        itemViewModel.bind(object : MapImportViewModel.ItemPresenter {
 
             override fun onProgress(progress: Int) {
                 holder.onProgress(progress)

@@ -23,7 +23,7 @@
     <string name="calibration_projection_saved_ok">Projection changée</string>
     <string name="ok_dialog">OK</string>
     <string name="import_menu_title">Importer une carte</string>
-    <string name="import_btn">Importer</string>
+    <string name="import_from_folder_btn">Importer depuis un dossier</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Création de la carte</string>
     <string name="map_manage_btn_string">Gérer</string>

@@ -24,6 +24,7 @@ public class MapArchiveSearchTask extends Thread {
     private MapLoader.MapArchiveListUpdateListener mMapArchiveUpdateListener;
     private List<File> mMapArchiveFilesFoundList;
     private List<File> mFoldersToLookInto;
+    private Boolean isCancelled = false;
 
     static {
         mArchiveFormatList = new ArrayList<>();
@@ -36,6 +37,10 @@ public class MapArchiveSearchTask extends Thread {
         mMapArchiveFilesFoundList = new ArrayList<>();
         mMapArchiveUpdateListener = callback;
         mFoldersToLookInto = dirsToLookInto;
+    }
+
+    public void cancel() {
+        isCancelled = true;
     }
 
     @Override
@@ -69,6 +74,7 @@ public class MapArchiveSearchTask extends Thread {
         }
 
         for (File f : list) {
+            if (isCancelled) break;
             if (f.isDirectory()) {
                 File jsonFile = new File(f, MapLoader.MAP_FILE_NAME);
 

@@ -101,10 +101,10 @@
     <string name="projected_x_short">E</string>
     <string name="projected_y_short">N</string>
 
-    <!-- Import map cardview -->
+    <!-- MapImport fragment -->
+    <string name="import_from_folder_btn">Import from folder</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Map creation</string>
-    <string name="import_btn">Import</string>
     <string name="imported_untouched">Imported without modification</string>
     <string name="extraction_error">Extraction error</string>
     <string name="snack_msg_show_map_list">Show map list?</string>

@@ -1,27 +1,38 @@
 package com.peterlaurence.trekme.viewmodel.mapimport
 
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.maparchiver.unarchive
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.util.UnzipProgressionListener
-import kotlinx.coroutines.Dispatchers
+import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel.ItemPresenter
+import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel.ItemViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
+import java.io.InputStream
 
+/**
+ * This view-model manages [ItemViewModel]s, which are wrappers around [DocumentFile]s.
+ * The view supplies the list of [DocumentFile]s when the user selects a directory.
+ * An [ItemViewModel] can be bound to an [ItemPresenter]. From this view-model standpoint, it's only
+ * an interface. The view binds and unbinds concrete implementations of [ItemPresenter]
+ * (a RecyclerView binds and unbinds ViewHolders).
+ * For example, when this view-model gets notified by a background task of a progress for an
+ * extraction of an [ItemViewModel], the corresponding [ItemPresenter] bound instance can be called
+ * if it exists.
+ */
 class MapImportViewModel : ViewModel() {
     private val viewModels = MutableLiveData<List<ItemViewModel>>()
 
-    private var viewModelsMap: kotlin.collections.Map<Int, ItemViewModel> = mapOf()
+    private var viewModelsMap = mapOf<Int, ItemViewModel>()
 
     data class UnzipProgressEvent(val archiveId: Int, val p: Int)
     data class UnzipErrorEvent(val archiveId: Int)
@@ -29,6 +40,20 @@ class MapImportViewModel : ViewModel() {
 
     init {
         EventBus.getDefault().register(this)
+    }
+
+    /**
+     * The view gives the view-model the list of [DocumentFile].
+     * Then we prepare the model and notify the view with the corresponding list of [ItemViewModel].
+     */
+    fun updateUriList(docs: List<DocumentFile>) {
+        viewModelsMap = docs.map {
+            ItemViewModel(it)
+        }.associateBy {
+            it.id
+        }
+
+        viewModels.postValue(viewModelsMap.values.toList())
     }
 
     override fun onCleared() {
@@ -43,30 +68,36 @@ class MapImportViewModel : ViewModel() {
      * reference on an [ItemViewModel] which may have reference on a [ItemPresenter], which as a
      * reference on a view holder.
      */
-    fun unarchiveAsync(mapArchive: MapArchive) {
-        viewModelScope.unarchive(mapArchive, object : UnzipProgressionListener {
+    fun unarchiveAsync(inputStream: InputStream, item: ItemViewModel) {
+        val outputFolder = TrekMeContext.importedDir ?: return
 
-            override fun onProgress(p: Int) {
-                EventBus.getDefault().post(UnzipProgressEvent(mapArchive.id, p))
-            }
+        /* If the document has no name, give it one */
+        val name = item.docFile.name ?: "mapImported"
 
-            /**
-             * Import the extracted map.
-             * For instance, only support extraction of [Map.MapOrigin.VIPS] maps.
-             */
-            override fun onUnzipFinished(outputDirectory: File) {
-                viewModelScope.launch {
-                    val res = MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS)
-                    EventBus.getDefault().post(MapImportedEvent(res.map, mapArchive.id, res.status))
+        viewModelScope.unarchive(inputStream, outputFolder, name, item.docFile.length(),
+                object : UnzipProgressionListener {
+                    override fun onProgress(p: Int) {
+                        EventBus.getDefault().post(UnzipProgressEvent(item.id, p))
+                    }
+
+                    /**
+                     * Import the extracted map.
+                     * For instance, only support extraction of [Map.MapOrigin.VIPS] maps.
+                     */
+                    override fun onUnzipFinished(outputDirectory: File) {
+                        viewModelScope.launch {
+                            val res = MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS)
+                            EventBus.getDefault().post(MapImportedEvent(res.map, item.id, res.status))
+                        }
+
+                        EventBus.getDefault().post(UnzipFinishedEvent(item.id, outputDirectory))
+                    }
+
+                    override fun onUnzipError() {
+                        EventBus.getDefault().post(UnzipErrorEvent(item.id))
+                    }
                 }
-
-                EventBus.getDefault().post(UnzipFinishedEvent(mapArchive.id, outputDirectory))
-            }
-
-            override fun onUnzipError() {
-                EventBus.getDefault().post(UnzipErrorEvent(mapArchive.id))
-            }
-        })
+        )
     }
 
     @Subscribe
@@ -101,22 +132,6 @@ class MapImportViewModel : ViewModel() {
         }
     }
 
-    fun updateMapArchiveList() {
-        viewModelScope.launch {
-            val archives = withContext(Dispatchers.Default) {
-                MapLoader.getMapArchiveList()
-            }
-
-            viewModelsMap = archives.map {
-                ItemViewModel(it)
-            }.associateBy {
-                it.mapArchive.id
-            }
-
-            viewModels.postValue(viewModelsMap.values.toList())
-        }
-    }
-
     fun getItemViewModelList(): LiveData<List<ItemViewModel>> {
         return viewModels
     }
@@ -128,8 +143,9 @@ class MapImportViewModel : ViewModel() {
         fun onMapImported(map: Map, status: MapImporter.MapParserStatus)
     }
 
-    class ItemViewModel(val mapArchive: MapArchive) {
+    class ItemViewModel(val docFile: DocumentFile) {
         var item: ItemPresenter? = null
+        val id: Int = docFile.uri.hashCode()
 
         fun bind(itemPresenter: ItemPresenter) {
             item = itemPresenter
