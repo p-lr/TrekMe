@@ -93,6 +93,7 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void onUnzipError() {
+        initProgressBar();
         progressBarIndUnzip.setVisibility(View.GONE);
         iconMapExtractionError.setVisibility(View.VISIBLE);
         extractionLabel.setText(R.string.extraction_error);

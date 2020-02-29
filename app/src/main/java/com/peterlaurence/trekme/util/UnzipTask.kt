@@ -39,7 +39,7 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipPro
                         newFile.mkdirs()
                         continue
                     } else {
-                        newFile.parentFile.mkdirs()
+                        newFile.parentFile?.mkdirs()
                         newFile.createNewFile()
                     }
                 }

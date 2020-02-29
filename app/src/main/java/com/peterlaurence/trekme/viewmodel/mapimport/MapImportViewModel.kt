@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maparchiver.unarchive
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.ui.events.MapImportedEvent
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel.ItemPresenter
@@ -69,35 +70,39 @@ class MapImportViewModel : ViewModel() {
      * reference on a view holder.
      */
     fun unarchiveAsync(inputStream: InputStream, item: ItemViewModel) {
-        val outputFolder = TrekMeContext.importedDir ?: return
+        viewModelScope.launch {
+            // TODO: create a new settings dedicated to ImportedDir
+            val rootFolder = Settings.getDownloadDir()?.parentFile ?: return@launch
+            val outputFolder = File(rootFolder, "imported")
 
-        /* If the document has no name, give it one */
-        val name = item.docFile.name ?: "mapImported"
+            /* If the document has no name, give it one */
+            val name = item.docFile.name ?: "mapImported"
 
-        viewModelScope.unarchive(inputStream, outputFolder, name, item.docFile.length(),
-                object : UnzipProgressionListener {
-                    override fun onProgress(p: Int) {
-                        EventBus.getDefault().post(UnzipProgressEvent(item.id, p))
-                    }
-
-                    /**
-                     * Import the extracted map.
-                     * For instance, only support extraction of [Map.MapOrigin.VIPS] maps.
-                     */
-                    override fun onUnzipFinished(outputDirectory: File) {
-                        viewModelScope.launch {
-                            val res = MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS)
-                            EventBus.getDefault().post(MapImportedEvent(res.map, item.id, res.status))
+            unarchive(inputStream, outputFolder, name, item.docFile.length(),
+                    object : UnzipProgressionListener {
+                        override fun onProgress(p: Int) {
+                            EventBus.getDefault().post(UnzipProgressEvent(item.id, p))
                         }
 
-                        EventBus.getDefault().post(UnzipFinishedEvent(item.id, outputDirectory))
-                    }
+                        /**
+                         * Import the extracted map.
+                         * For instance, only support extraction of [Map.MapOrigin.VIPS] maps.
+                         */
+                        override fun onUnzipFinished(outputDirectory: File) {
+                            viewModelScope.launch {
+                                val res = MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS)
+                                EventBus.getDefault().post(MapImportedEvent(res.map, item.id, res.status))
+                            }
 
-                    override fun onUnzipError() {
-                        EventBus.getDefault().post(UnzipErrorEvent(item.id))
+                            EventBus.getDefault().post(UnzipFinishedEvent(item.id, outputDirectory))
+                        }
+
+                        override fun onUnzipError() {
+                            EventBus.getDefault().post(UnzipErrorEvent(item.id))
+                        }
                     }
-                }
-        )
+            )
+        }
     }
 
     @Subscribe
