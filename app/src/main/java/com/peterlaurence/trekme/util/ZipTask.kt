@@ -3,7 +3,10 @@ package com.peterlaurence.trekme.util
 import android.os.AsyncTask
 import android.util.Log
 import com.peterlaurence.trekme.util.ZipTask.ZipProgressionListener
-import java.io.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.OutputStream
 import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -12,18 +15,15 @@ import java.util.zip.ZipOutputStream
 /**
  * Utility class to zip a map, but can be used with any folder.
  *
+ * @param mFolderToZip The directory to archive.
+ * @param outputStream The stream in which the archive will be written.
+ * @param mZipProgressionListener    The [ZipProgressionListener] will be called back.
+ *
  * @author peterLaurence on 31/07/17.
  */
-
-class ZipTask
-/**
- * @param mFolderToZip The directory to archive.
- * @param mOutputFile  The zip [File] to write into. This file must exist.
- * @param mZipProgressionListener    The [ZipProgressionListener] will be called back.
- */
-(private val mFolderToZip: File, private val mOutputFile: File,
- private val mZipProgressionListener: ZipProgressionListener) : AsyncTask<Void, Int, Boolean>() {
-    private val TAG = "ZipTask"
+class ZipTask(private val mFolderToZip: File,
+              private val outputStream: OutputStream,
+              private val mZipProgressionListener: ZipProgressionListener) : AsyncTask<Void, Int, Boolean>() {
 
     override fun doInBackground(vararg params: Void): Boolean? {
 
@@ -33,16 +33,7 @@ class ZipTask
         mZipProgressionListener.fileListAcquired()
 
         try {
-
-            /* Create parent directory if necessary */
-            if (!mOutputFile.exists()) {
-                if (!mOutputFile.mkdir()) {
-                    return false
-                }
-            }
-            val fos = FileOutputStream(mOutputFile)
-            val zos = ZipOutputStream(fos)
-
+            val zos = ZipOutputStream(outputStream)
 
             var entryCount = 0
             val totalEntries = filePathList.size
@@ -75,6 +66,8 @@ class ZipTask
         } catch (e: IOException) {
             Log.e(TAG, stackTraceToString(e))
             return false
+        } finally {
+            outputStream.close()
         }
 
         return true
@@ -86,7 +79,7 @@ class ZipTask
 
     override fun onPostExecute(result: Boolean?) {
         if (result!!) {
-            mZipProgressionListener.onZipFinished(mOutputFile)
+            mZipProgressionListener.onZipFinished()
         } else {
             mZipProgressionListener.onZipError()
         }
@@ -104,10 +97,8 @@ class ZipTask
 
         /**
          * Called once the compression is done.
-         *
-         * @param outputDirectory the (just created) parent folder
          */
-        fun onZipFinished(outputDirectory: File)
+        fun onZipFinished()
 
         /**
          * Called whenever an error happens during compression.
@@ -128,3 +119,5 @@ private fun getFileList(directory: File, filePathList: MutableList<String>) {
         }
     }
 }
+
+private const val TAG = "ZipTask"

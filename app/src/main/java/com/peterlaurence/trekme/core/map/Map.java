@@ -7,7 +7,6 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,7 +25,6 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -34,8 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import static com.peterlaurence.trekme.util.ToolsKt.stackTraceToString;
 
 /**
  * A {@code Map} contains all the information that defines a map. That includes :
@@ -474,26 +470,18 @@ public class Map {
      *
      * @param listener The {@link com.peterlaurence.trekme.util.ZipTask.ZipProgressionListener}.
      */
-    public void zip(ZipTask.ZipProgressionListener listener) {
-        /* Generate an output zip file named with the map name and the date */
+    public void zip(ZipTask.ZipProgressionListener listener, OutputStream outputStream) {
+        File mapFolder = mConfigFile.getParentFile();
+        if (mapFolder != null) {
+            ZipTask zipTask = new ZipTask(mConfigFile.getParentFile(), outputStream, listener);
+            zipTask.execute();
+        }
+    }
+
+    public String generateNewNameWithDate() {
         Date date = new Date();
         DateFormat dateFormat = new SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH);
-        String zipFileName = getName() + "-" + dateFormat.format(date) + ".zip";
-
-        /* By default and for instance, the archive is placed in the parent folder of the map */
-        File zipDirectory = mConfigFile.getParentFile().getParentFile();
-        File outputFile = new File(zipDirectory, zipFileName);
-        try {
-            if (!outputFile.createNewFile()) {
-                listener.onZipError();
-            }
-        } catch (IOException e) {
-            Log.e(TAG, stackTraceToString(e));
-            listener.onZipError();
-        }
-
-        ZipTask zipTask = new ZipTask(mConfigFile.getParentFile(), outputFile, listener);
-        zipTask.execute();
+        return getName() + "-" + dateFormat.format(date);
     }
 
     public enum CalibrationStatus {

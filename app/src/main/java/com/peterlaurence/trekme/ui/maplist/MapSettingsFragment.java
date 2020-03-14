@@ -12,13 +12,17 @@ import android.widget.Toast;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog;
+import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -48,7 +52,10 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
 
     private static final String ARG_MAP_ID = "arg_map_id";
     private static final int IMAGE_REQUEST_CODE = 1338;
-    private WeakReference<Map> mMapWeakReference;
+    private Map mMap;
+    private MapListViewModel mapListViewModel;
+    private AlertDialog saveMapDialog;
+    private static final int MAP_SAVE_CODE = 3465;
 
     private MapCalibrationRequestListener mMapCalibrationRequestListener;
 
@@ -88,6 +95,8 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mapListViewModel = new ViewModelProvider(requireActivity()).get(MapListViewModel.class);
+
         Bundle args = getArguments();
         if (args != null) {
             int mapId = args.getInt(ARG_MAP_ID);
@@ -114,7 +123,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      */
     public void setMap(int mapId) {
         Map map = MapLoader.INSTANCE.getMap(mapId);
-        mMapWeakReference = new WeakReference<>(map);
+        mMap = map;
 
         if (map != null) {
             /* Choice is made to have the preference file name equal to the map name */
@@ -150,16 +159,15 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         });
 
         /* Set the summaries and the values of preferences according to the Map object */
-        final Map map = mMapWeakReference.get();
-        if (map != null) {
+        if (mMap != null) {
             String projectionName;
-            if ((projectionName = map.getProjectionName()) == null) {
+            if ((projectionName = mMap.getProjectionName()) == null) {
                 projectionName = getString(R.string.projection_none);
             }
             setListPreferenceSummaryAndValue(mCalibrationListPreference, projectionName);
             setListPreferenceSummaryAndValue(mCalibrationPointsNumberPreference,
-                    String.valueOf(map.getCalibrationPointsNumber()));
-            setEditTextPreferenceSummaryAndValue(mapNamePreference, map.getName());
+                    String.valueOf(mMap.getCalibrationPointsNumber()));
+            setEditTextPreferenceSummaryAndValue(mapNamePreference, mMap.getName());
         }
 
         calibrationButton.setOnPreferenceClickListener(preference -> {
@@ -168,20 +176,19 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         });
 
         mCalibrationPointsNumberPreference.setOnPreferenceChangeListener(((preference, newValue) -> {
-            Map map_ = mMapWeakReference.get();
-            if (map_ != null) {
+            if (mMap != null) {
                 switch ((String) newValue) {
                     case "2":
-                        map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
+                        mMap.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
                         break;
                     case "3":
-                        map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_3_POINTS);
+                        mMap.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_3_POINTS);
                         break;
                     case "4":
-                        map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_4_POINTS);
+                        mMap.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_4_POINTS);
                         break;
                     default:
-                        map_.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
+                        mMap.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
                 }
                 return true;
             }
@@ -190,7 +197,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
 
         mapNamePreference.setOnPreferenceChangeListener((preference, newValue) -> {
             try {
-                mMapWeakReference.get().setName((String) newValue);
+                mMap.setName((String) newValue);
                 return true;
             } catch (Exception e) {
                 return false;
@@ -201,11 +208,11 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
             try {
                 /* If the projection is set to none */
                 if (getString(R.string.projection_none).equals(projectionName)) {
-                    mMapWeakReference.get().setProjection(null);
+                    mMap.setProjection(null);
                     return true;
                 }
 
-                if (MapLoader.INSTANCE.mutateMapProjection(mMapWeakReference.get(), (String) projectionName)) {
+                if (MapLoader.INSTANCE.mutateMapProjection(mMap, (String) projectionName)) {
                     String saveOkMsg = getString(R.string.calibration_projection_saved_ok);
                     Toast toast = Toast.makeText(getContext(), saveOkMsg, Toast.LENGTH_SHORT);
                     toast.show();
@@ -219,8 +226,26 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         });
 
         saveButton.setOnPreferenceClickListener(preference -> {
-            ArchiveMapDialog archiveMapDialog = ArchiveMapDialog.newInstance(map.getId());
-            archiveMapDialog.show(getFragmentManager(), "ArchiveMapDialog");
+            Context context = getContext();
+            if (context == null) return true;
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+            String title = context.getString(R.string.archive_dialog_title);
+            builder.setTitle(title)
+                    .setMessage(R.string.archive_dialog_description)
+                    .setPositiveButton(R.string.ok_dialog,
+                            (dialog, whichButton) -> {
+                                if (mapListViewModel != null) {
+                                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                                    startActivityForResult(intent, MAP_SAVE_CODE);
+                                }
+                            })
+                    .setNegativeButton(R.string.cancel_dialog_string,
+                            (dialog, whichButton) -> dialog.dismiss()
+                    );
+
+            saveMapDialog = builder.create();
+            saveMapDialog.show();
+
             return true;
         });
     }
@@ -237,20 +262,47 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         super.onPause();
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
+
+        if (saveMapDialog != null) saveMapDialog.dismiss();
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         /* Check if the request code is the one we are interested in */
         if (requestCode == IMAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            if (resultData != null) {
-                Uri uri = resultData.getData();
+            if (data != null) {
+                Uri uri = data.getData();
 
                 try {
-                    mMapWeakReference.get().setImage(uri, getContext().getContentResolver());
+                    mMap.setImage(uri, getContext().getContentResolver());
                     saveChanges();
                 } catch (Exception e) {
                     // no-op
+                }
+            }
+        }
+
+        /* After the user selected a folder in which to save a map, create an OutputStream using
+         * the Storage Access Framework, and call the relevant view-model */
+        if (requestCode == MAP_SAVE_CODE && resultCode == Activity.RESULT_OK) {
+            if (data == null) return;
+            Uri uri = data.getData();
+            if (uri == null) return;
+            Context context = getContext();
+            if (context == null) return;
+            DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);
+            if (docFile == null) return;
+            if (docFile.isDirectory()) {
+                if (mMap == null) return;
+                String newFileName = mMap.generateNewNameWithDate() + ".zip";
+                DocumentFile newFile = docFile.createFile("application/zip", newFileName);
+                if (newFile == null) return;
+                Uri uriZip = newFile.getUri();
+                try {
+                    OutputStream out = context.getContentResolver().openOutputStream(uriZip);
+                    mapListViewModel.startZipTask(mMap.getId(), out);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -291,8 +343,9 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      * Save the Map content
      */
     private void saveChanges() {
-        Map map = mMapWeakReference.get();
-        MapLoader.INSTANCE.saveMap(map);
+        if (mMap != null) {
+            MapLoader.INSTANCE.saveMap(mMap);
+        }
     }
 
     /**

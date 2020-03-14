@@ -9,6 +9,7 @@ import java.io.IOException
 
 import org.junit.Assert.fail
 import java.io.FileInputStream
+import java.io.FileOutputStream
 
 /**
  * This tests the [ZipTask] against the [unzipTask].
@@ -60,7 +61,7 @@ class ZipTest {
 
                     }
 
-                    override fun onZipFinished(outputDirectory: File) {
+                    override fun onZipFinished() {
                         unzipTask(FileInputStream(tempMapArchive), mTestFolder, size, unzipProgressionListener)
                     }
 
@@ -69,7 +70,7 @@ class ZipTest {
                     }
                 }
 
-                val zipTask = ZipTask(libVipsMapDir, tempMapArchive, progressionListener)
+                val zipTask = ZipTask(libVipsMapDir, FileOutputStream(tempMapArchive), progressionListener)
                 zipTask.execute()
 
             } catch (e: IOException) {

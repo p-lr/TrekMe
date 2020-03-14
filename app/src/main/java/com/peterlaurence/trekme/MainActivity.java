@@ -61,6 +61,7 @@ import com.peterlaurence.trekme.ui.mapcreate.views.ign.IgnCredentialsFragment;
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment;
 import com.peterlaurence.trekme.ui.maplist.MapListFragment;
 import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment;
+import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent;
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
 import com.peterlaurence.trekme.ui.mapview.MapViewFragment;
@@ -273,6 +274,11 @@ public class MainActivity extends AppCompatActivity
             }
             if (event instanceof ZipFinishedEvent) {
                 onZipFinishedEvent((ZipFinishedEvent) event);
+            }
+            if (event instanceof ZipCloseEvent) {
+                // When resumed, the fragment is notified with this event (this is how LiveData
+                // works). To avoid emitting a new notification for a ZipFinishedEvent, we use
+                // ZipCloseEvent on which we do nothing.
             }
         });
 
@@ -967,11 +973,14 @@ public class MainActivity extends AppCompatActivity
     private void onZipFinishedEvent(ZipFinishedEvent event) {
         String archiveOkMsg = getString(R.string.archive_snackbar_finished);
 
+        if (builder == null) return;
         /* When the loop is finished, updates the notification */
         builder.setContentText(archiveOkMsg)
                 // Removes the progress bar
                 .setProgress(0, 0, false);
-        notifyMgr.notify(event.getMapId(), builder.build());
+        if (notifyMgr != null) {
+            notifyMgr.notify(event.getMapId(), builder.build());
+        }
 
         if (mNavigationView != null) {
             Snackbar snackbar = Snackbar.make(mNavigationView, archiveOkMsg, Snackbar.LENGTH_SHORT);

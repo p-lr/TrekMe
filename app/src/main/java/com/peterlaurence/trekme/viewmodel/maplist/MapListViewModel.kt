@@ -10,10 +10,7 @@ import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
-import com.peterlaurence.trekme.ui.maplist.events.ZipError
-import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
-import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
-import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
+import com.peterlaurence.trekme.ui.maplist.events.*
 import com.peterlaurence.trekme.util.ZipTask
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -24,7 +21,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import java.io.File
+import java.io.OutputStream
 
 /**
  * The view-model intended to be used by the [MapListFragment], which is the only view where the
@@ -65,18 +62,19 @@ class MapListViewModel : ViewModel() {
     }
 
     /**
-     * Start zipping a map.
+     * Start zipping a map and write into the provided [outputStream].
+     * The underlying task which writes into the stream is responsible for closing this stream.
      * Internally uses a [Flow] which only emits distinct events.
      */
-    fun startZipTask(mapId: Int) = viewModelScope.launch {
-        zipProgressFlow(mapId).distinctUntilChanged().collect {
+    fun startZipTask(mapId: Int, outputStream: OutputStream) = viewModelScope.launch {
+        zipProgressFlow(mapId, outputStream).distinctUntilChanged().collect {
             _zipEvents.value = it
         }
     }
 
 
     @ExperimentalCoroutinesApi
-    fun zipProgressFlow(mapId: Int): Flow<ZipEvent> = callbackFlow {
+    fun zipProgressFlow(mapId: Int, outputStream: OutputStream): Flow<ZipEvent> = callbackFlow {
         val map = MapLoader.getMap(mapId) ?: return@callbackFlow
 
         val callback = object : ZipTask.ZipProgressionListener {
@@ -88,8 +86,9 @@ class MapListViewModel : ViewModel() {
                 offer(ZipProgressEvent(p, mapName, mapId))
             }
 
-            override fun onZipFinished(outputDirectory: File) {
+            override fun onZipFinished() {
                 offer(ZipFinishedEvent(mapId))
+                offer(ZipCloseEvent)
                 channel.close()
             }
 
@@ -98,7 +97,7 @@ class MapListViewModel : ViewModel() {
                 channel.close()
             }
         }
-        map.zip(callback)
+        map.zip(callback, outputStream)
         awaitClose()
     }
 
