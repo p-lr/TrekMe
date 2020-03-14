@@ -1,10 +1,6 @@
 package com.peterlaurence.trekme.ui.maplist;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -15,29 +11,20 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.model.map.MapModel;
-import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
-import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import static android.content.Context.NOTIFICATION_SERVICE;
 import static android.os.Build.VERSION_CODES.Q;
 
 /**
@@ -63,10 +50,6 @@ public class MapListFragment extends Fragment implements
     private MapListViewModel viewModel;
     private OnMapListFragmentInteractionListener mListener;
 
-    /* Used for map saving */
-    private Notification.Builder builder;
-    private NotificationManager notifyMgr;
-
     public MapListFragment() {
         // Required empty public constructor
     }
@@ -87,25 +70,22 @@ public class MapListFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        FragmentActivity activity = getActivity();
-        if (activity != null) {
-            viewModel = new ViewModelProvider(activity).get(MapListViewModel.class);
-            viewModel.getMaps().observe(this, maps -> {
-                if (maps != null) {
-                    /* Set data */
-                    onMapListUpdate(maps);
+        viewModel = new ViewModelProvider(requireActivity()).get(MapListViewModel.class);
+        viewModel.getMaps().observe(this, maps -> {
+            if (maps != null) {
+                /* Set data */
+                onMapListUpdate(maps);
 
-                    /* Restore the recyclerView state if the device was rotated */
-                    Parcelable llmState;
-                    if (savedInstanceState != null) {
-                        llmState = savedInstanceState.getParcelable(llmStateKey);
-                        if (llm != null) {
-                            llm.onRestoreInstanceState(llmState);
-                        }
+                /* Restore the recyclerView state if the device was rotated */
+                Parcelable llmState;
+                if (savedInstanceState != null) {
+                    llmState = savedInstanceState.getParcelable(llmStateKey);
+                    if (llm != null) {
+                        llm.onRestoreInstanceState(llmState);
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
     @Override
@@ -129,7 +109,6 @@ public class MapListFragment extends Fragment implements
     @Override
     public void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
 
         if (recyclerView != null) {
             return;
@@ -189,12 +168,6 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
-    public void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
-    }
-
-    @Override
     public void onDestroyView() {
         super.onDestroyView();
     }
@@ -227,68 +200,6 @@ public class MapListFragment extends Fragment implements
     @Override
     public void onMapDeleted() {
         adapter.notifyDataSetChanged();
-    }
-
-    /**
-     * A {@link Notification} is sent to the user showing the progression in percent. The
-     * {@link NotificationManager} only process one notification at a time, which is handy since
-     * it prevents the application from using too much cpu.
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onZipProgressEvent(ZipProgressEvent event) {
-        final String notificationChannelId = "trekadvisor_map_save";
-
-        if (builder == null || notifyMgr == null) {
-            /* Build the notification and issue it */
-            builder = new Notification.Builder(getActivity())
-                    .setSmallIcon(R.drawable.ic_map_black_24dp)
-                    .setContentTitle(getString(R.string.archive_dialog_title));
-
-            try {
-                notifyMgr = (NotificationManager) getActivity().getSystemService(NOTIFICATION_SERVICE);
-            } catch (Exception e) {
-                // notifyMgr will be null
-            }
-
-            if (android.os.Build.VERSION.SDK_INT >= 26) {
-                //This only needs to be run on Devices on Android O and above
-                NotificationChannel mChannel = new NotificationChannel(notificationChannelId,
-                        getText(R.string.archive_dialog_title), NotificationManager.IMPORTANCE_LOW);
-                mChannel.enableLights(true);
-                mChannel.setLightColor(Color.YELLOW);
-                if (notifyMgr != null) {
-                    notifyMgr.createNotificationChannel(mChannel);
-                }
-                builder.setChannelId(notificationChannelId);
-            }
-
-            if (notifyMgr != null) {
-                notifyMgr.notify(event.getMapId(), builder.build());
-            }
-        }
-
-        builder.setContentText(String.format(getString(R.string.archive_notification_msg), event.getMapName()));
-        builder.setProgress(100, event.getP(), false);
-        if (notifyMgr != null) {
-            notifyMgr.notify(event.getMapId(), builder.build());
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onZipFinishedEvent(ZipFinishedEvent event) {
-        String archiveOkMsg = getString(R.string.archive_snackbar_finished);
-
-        /* When the loop is finished, updates the notification */
-        builder.setContentText(archiveOkMsg)
-                // Removes the progress bar
-                .setProgress(0, 0, false);
-        notifyMgr.notify(event.getMapId(), builder.build());
-
-        View view = getView();
-        if (view != null) {
-            Snackbar snackbar = Snackbar.make(view, archiveOkMsg, Snackbar.LENGTH_SHORT);
-            snackbar.show();
-        }
     }
 
     @Override

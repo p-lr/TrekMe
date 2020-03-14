@@ -2,10 +2,14 @@ package com.peterlaurence.trekme;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -29,6 +33,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -56,6 +61,8 @@ import com.peterlaurence.trekme.ui.mapcreate.views.ign.IgnCredentialsFragment;
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment;
 import com.peterlaurence.trekme.ui.maplist.MapListFragment;
 import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment;
+import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent;
+import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent;
 import com.peterlaurence.trekme.ui.mapview.MapViewFragment;
 import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment;
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment;
@@ -68,6 +75,7 @@ import com.peterlaurence.trekme.viewmodel.ShowMapListEvent;
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent;
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider;
 import com.peterlaurence.trekme.viewmodel.common.LocationProviderFactory;
+import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
@@ -140,6 +148,10 @@ public class MainActivity extends AppCompatActivity
     private NavigationView mNavigationView;
     private MainActivityViewModel viewModel;
     private LocationProviderFactory locationProviderFactory;
+
+    /* Used for notifications */
+    private Notification.Builder builder;
+    private NotificationManager notifyMgr;
 
     static {
         /* Setup default eventbus to use an index instead of reflection, which is recommended for
@@ -252,7 +264,17 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+        viewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+
+        MapListViewModel mapListViewModel = new ViewModelProvider(this).get(MapListViewModel.class);
+        mapListViewModel.getZipEvents().observe(this, event -> {
+            if (event instanceof ZipProgressEvent) {
+                onZipProgressEvent((ZipProgressEvent) event);
+            }
+            if (event instanceof ZipFinishedEvent) {
+                onZipFinishedEvent((ZipFinishedEvent) event);
+            }
+        });
 
         fragmentManager = this.getSupportFragmentManager();
         setContentView(R.layout.activity_main);
@@ -896,5 +918,64 @@ public class MainActivity extends AppCompatActivity
             locationProviderFactory = new LocationProviderFactory(getApplicationContext());
         }
         return locationProviderFactory.getLocationProvider();
+    }
+
+    /**
+     * A {@link Notification} is sent to the user showing the progression in percent. The
+     * {@link NotificationManager} only process one notification at a time, which is handy since
+     * it prevents the application from using too much cpu.
+     */
+    private void onZipProgressEvent(ZipProgressEvent event) {
+        final String notificationChannelId = "trekadvisor_map_save";
+
+        if (builder == null || notifyMgr == null) {
+            /* Build the notification and issue it */
+            builder = new Notification.Builder(this)
+                    .setSmallIcon(R.drawable.ic_map_black_24dp)
+                    .setContentTitle(getString(R.string.archive_dialog_title));
+
+            try {
+                notifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            } catch (Exception e) {
+                // notifyMgr will be null
+            }
+
+            if (android.os.Build.VERSION.SDK_INT >= 26) {
+                //This only needs to be run on Devices on Android O and above
+                NotificationChannel mChannel = new NotificationChannel(notificationChannelId,
+                        getText(R.string.archive_dialog_title), NotificationManager.IMPORTANCE_LOW);
+                mChannel.enableLights(true);
+                mChannel.setLightColor(Color.YELLOW);
+                if (notifyMgr != null) {
+                    notifyMgr.createNotificationChannel(mChannel);
+                }
+                builder.setChannelId(notificationChannelId);
+            }
+
+            if (notifyMgr != null) {
+                notifyMgr.notify(event.getMapId(), builder.build());
+            }
+        }
+
+        builder.setContentText(String.format(getString(R.string.archive_notification_msg), event.getMapName()));
+        builder.setProgress(100, event.getP(), false);
+        if (notifyMgr != null) {
+            notifyMgr.notify(event.getMapId(), builder.build());
+        }
+    }
+
+    private void onZipFinishedEvent(ZipFinishedEvent event) {
+        String archiveOkMsg = getString(R.string.archive_snackbar_finished);
+
+        /* When the loop is finished, updates the notification */
+        builder.setContentText(archiveOkMsg)
+                // Removes the progress bar
+                .setProgress(0, 0, false);
+        notifyMgr.notify(event.getMapId(), builder.build());
+
+        if (mNavigationView != null) {
+            Snackbar snackbar = Snackbar.make(mNavigationView, archiveOkMsg, Snackbar.LENGTH_SHORT);
+            snackbar.show();
+        }
     }
 }

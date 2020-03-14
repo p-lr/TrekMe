@@ -10,10 +10,17 @@ import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
-import com.peterlaurence.trekme.ui.maplist.dialogs.ArchiveMapDialog
+import com.peterlaurence.trekme.ui.maplist.events.ZipError
+import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
 import com.peterlaurence.trekme.util.ZipTask
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -24,17 +31,17 @@ import java.io.File
  * user can change of [Map].
  * So, all necessary model actions are taken in this view-model.
  */
-class MapListViewModel: ViewModel() {
-    private val maps = MutableLiveData<List<Map>>()
+class MapListViewModel : ViewModel() {
+    private val _maps = MutableLiveData<List<Map>>()
+    val maps: LiveData<List<Map>> = _maps
+
+    private val _zipEvents = MutableLiveData<ZipEvent>()
+    val zipEvents: LiveData<ZipEvent> = _zipEvents
 
     init {
         EventBus.getDefault().register(this)
 
         updateMapListInFragment()
-    }
-
-    fun getMaps(): LiveData<List<Map>> {
-        return maps
     }
 
     fun setMap(map: Map) {
@@ -54,35 +61,45 @@ class MapListViewModel: ViewModel() {
 
     private fun updateMapListInFragment() {
         val mapList = MapLoader.maps
-        maps.postValue(mapList)
+        _maps.postValue(mapList)
     }
 
     /**
-     * Process a request to archive a [Map]. This is typically called from a [ArchiveMapDialog].
-     *
-     * @param event The [ArchiveMapDialog.SaveMapEvent] which contains the id of the [Map].
+     * Start zipping a map.
+     * Internally uses a [Flow] which only emits distinct events.
      */
-    @Subscribe
-    fun onSaveMapEvent(event: ArchiveMapDialog.SaveMapEvent) {
-        val map = MapLoader.getMap(event.mapId) ?: return
+    fun startZipTask(mapId: Int) = viewModelScope.launch {
+        zipProgressFlow(mapId).distinctUntilChanged().collect {
+            _zipEvents.value = it
+        }
+    }
 
-        /* Effectively launch the archive task */
-        map.zip(object : ZipTask.ZipProgressionListener {
+
+    @ExperimentalCoroutinesApi
+    fun zipProgressFlow(mapId: Int): Flow<ZipEvent> = callbackFlow {
+        val map = MapLoader.getMap(mapId) ?: return@callbackFlow
+
+        val callback = object : ZipTask.ZipProgressionListener {
             private val mapName = map.name
-            private val mapId = map.id
 
             override fun fileListAcquired() {}
 
             override fun onProgress(p: Int) {
-                EventBus.getDefault().post(ZipProgressEvent(p, mapName, mapId))
+                offer(ZipProgressEvent(p, mapName, mapId))
             }
 
             override fun onZipFinished(outputDirectory: File) {
-                EventBus.getDefault().post(ZipFinishedEvent(mapId))
+                offer(ZipFinishedEvent(mapId))
+                channel.close()
             }
 
-            override fun onZipError() {}
-        })
+            override fun onZipError() {
+                offer(ZipError)
+                channel.close()
+            }
+        }
+        map.zip(callback)
+        awaitClose()
     }
 
     override fun onCleared() {
