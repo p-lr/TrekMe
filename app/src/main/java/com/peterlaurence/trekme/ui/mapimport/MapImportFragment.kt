@@ -20,16 +20,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
-import com.peterlaurence.trekme.ui.events.MapImportedEvent
-import com.peterlaurence.trekme.ui.events.RequestImportMapEvent
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel
+import com.peterlaurence.trekme.viewmodel.mapimport.UnzipMapImportedEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 /**
  * A [Fragment] subclass that displays the list of maps archives available for import.
@@ -48,8 +44,8 @@ class MapImportFragment : Fragment() {
     private var mapArchiveAdapter: MapArchiveAdapter? = null
     private var listener: OnMapArchiveFragmentInteractionListener? = null
     private var fabEnabled = false
-    private lateinit var data: List<MapImportViewModel.ItemViewModel>
-    private var itemSelected: MapImportViewModel.ItemViewModel? = null
+    private lateinit var data: List<MapImportViewModel.ItemData>
+    private var itemSelected: MapImportViewModel.ItemData? = null
     private val viewModel: MapImportViewModel by viewModels()
 
     override fun onAttach(context: Context) {
@@ -65,16 +61,29 @@ class MapImportFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.getItemViewModelList()
-                .observe(this, Observer {
-                    it?.let { mapArchiveList ->
-                        this.data = mapArchiveList
-                        mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
-                        binding.progressListUris.visibility = View.GONE
-                        binding.welcomePanel.visibility = View.GONE
-                        binding.archiveListPanel.visibility = View.VISIBLE
-                    }
-                })
+        viewModel.itemLiveData.observe(this, Observer {
+            it?.let { mapArchiveList ->
+                this.data = mapArchiveList
+                mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
+                binding.progressListUris.visibility = View.GONE
+                binding.welcomePanel.visibility = View.GONE
+                binding.archiveListPanel.visibility = View.VISIBLE
+            }
+        })
+
+        viewModel.unzipEvents.observe(this, Observer {
+            it?.let { event ->
+                val itemData = data.firstOrNull { item ->
+                    item.id == event.itemId
+                } ?: return@let
+
+                mapArchiveAdapter?.setUnzipEventForItem(itemData, event)
+
+                if (event is UnzipMapImportedEvent) {
+                    onMapImported()
+                }
+            }
+        })
 
         setHasOptionsMenu(false)
     }
@@ -136,11 +145,6 @@ class MapImportFragment : Fragment() {
         recyclerViewMapImport.addItemDecoration(dividerItemDecoration)
     }
 
-    override fun onStart() {
-        super.onStart()
-        EventBus.getDefault().register(this)
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -187,7 +191,7 @@ class MapImportFragment : Fragment() {
 
             fab.setOnClickListener {
                 itemSelected?.let { item ->
-                    val inputStream = context.contentResolver.openInputStream(item.docFile.uri)
+                    val inputStream = context.contentResolver.openInputStream(item.uri)
                     if (inputStream != null) {
                         viewModel.unarchiveAsync(inputStream, item)
                     }
@@ -196,25 +200,11 @@ class MapImportFragment : Fragment() {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMapImported(event: MapImportedEvent) {
+    private fun onMapImported() {
         val view = view ?: return
         val snackbar = Snackbar.make(view, R.string.snack_msg_show_map_list, Snackbar.LENGTH_LONG)
         snackbar.setAction(R.string.ok_dialog) { listener!!.onMapArchiveFragmentInteraction() }
         snackbar.show()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onRequestImportMapEvent(event: RequestImportMapEvent) {
-        val context = context ?: return
-        val confirmImport = context.getString(R.string.confirm_import)
-        val snackbar = Snackbar.make(view!!, confirmImport, Snackbar.LENGTH_LONG)
-        snackbar.show()
-    }
-
-    override fun onStop() {
-        EventBus.getDefault().unregister(this)
-        super.onStop()
     }
 
     private fun showProgressBar() {

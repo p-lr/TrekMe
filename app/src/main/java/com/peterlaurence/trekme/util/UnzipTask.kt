@@ -47,12 +47,12 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipPro
 
                 while (true) {
                     val len = zis.read(buffer)
-                    bytesRead += len
                     if (len <= 0)
                         break
                     fos.write(buffer, 0, len)
                 }
 
+                bytesRead += entry.compressedSize
                 unzipProgressionListener.onProgress((bytesRead / size.toDouble() * 100).toInt())
 
                 fos.close()

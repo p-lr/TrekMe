@@ -807,15 +807,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDefaultMapDownloaded() {
-        runOnUiThread(() -> {
-            showMapImportFragment();
-            fragmentManager.executePendingTransactions();
-            EventBus.getDefault().post(new RequestImportMapEvent());
-        });
-    }
-
-    @Override
     public void onGoToMapCreation() {
         showMapCreateFragment();
     }

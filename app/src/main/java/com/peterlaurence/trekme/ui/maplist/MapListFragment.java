@@ -221,8 +221,6 @@ public class MapListFragment extends Fragment implements
 
         void onMapSettingsFragmentInteraction(Map map);
 
-        void onDefaultMapDownloaded();
-
         void onGoToMapCreation();
     }
 }
