@@ -58,7 +58,7 @@
     <string name="snack_msg_show_map_list">Afficher la liste des cartes ?</string>
     <string name="archive_dialog_title">Sauvegarder la carte</string>
     <string name="archive_dialog_description">La sauvegarde va créer une archive qui pourra à tout moment être restaurée dans le menu
-        d\'importation.\n\nLa progression apparaîtra dans une notification.</string>
+        d\'importation. Vous choisissez le dossier de destination de cette archive.\n\nLa progression apparaîtra dans une notification.</string>
     <string name="archive_notification_msg">Sauvegarde de la carte %s en  cours</string>
     <string name="archive_snackbar_finished">Sauvegarde terminée</string>
     <string name="archive_notification_title">Archivage</string>

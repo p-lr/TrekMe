@@ -25,7 +25,6 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipPro
 
         while (true) {
             val entry = zis.nextEntry ?: break
-            bytesRead += entry.size
             val fileName = entry.name
             val newFile = File(outputFolder, fileName)
             if (!newFile.canonicalPath.startsWith(outputFolder.canonicalPath)) {
@@ -48,6 +47,7 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipPro
 
                 while (true) {
                     val len = zis.read(buffer)
+                    bytesRead += len
                     if (len <= 0)
                         break
                     fos.write(buffer, 0, len)
