@@ -108,7 +108,7 @@ enum class StartOnPolicy {
 
 
 private interface SettingsHandler {
-    fun writeSetting(settingsData: SettingsData)
+    suspend fun writeSetting(settingsData: SettingsData)
     suspend fun getLastSetting(): SettingsData
 }
 
@@ -117,25 +117,27 @@ private class FileSettingsHandler : SettingsHandler {
 
     /* Channels */
     private val settingsToWrite = Channel<SettingsData>(Channel.CONFLATED)
-    private val requests = Channel<Unit>(capacity = Channel.CONFLATED)
-    private val lastSettings = Channel<SettingsData>(capacity = Channel.RENDEZVOUS)
+    private val requests = Channel<Unit>(capacity = 1)
+    private val lastSettings = Channel<SettingsData>(capacity = Channel.CONFLATED)
 
     init {
         GlobalScope.worker(settingsToWrite, requests, lastSettings)
     }
 
-    override fun writeSetting(settingsData: SettingsData) {
-        settingsToWrite.offer(settingsData)
+    override suspend fun writeSetting(settingsData: SettingsData) {
+        settingsToWrite.send(settingsData)
     }
 
+    /**
+     * The internal [requests] channel having a capacity of 1, the order in which this method
+     * returns a [SettingsData] instance is preserved. For example, if two consumers call
+     * [getLastSetting] at approximately the same time, the first one which adds an element to
+     * [requests] is guaranteed to receive a [SettingsData] instance before the other consumer which
+     * is then suspended trying to send an element to [requests].
+     */
     override suspend fun getLastSetting(): SettingsData {
-        // offer a request while be don't get something back, to be sure to get something
-        var settingsData: SettingsData?
-        do {
-            requests.offer(Unit)
-            settingsData = lastSettings.poll()
-        } while (settingsData == null)
-        return settingsData
+        requests.send(Unit)
+        return lastSettings.receive()
     }
 
     /**
