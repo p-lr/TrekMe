@@ -7,11 +7,11 @@
             android:entries="@array/starton_options"
             android:entryValues="@array/starton_options"/>
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/download_category">
+    <PreferenceCategory android:title="@string/root_folder_category">
 
         <ListPreference
-            android:key="@string/preference_download_location_key"
-            android:title="@string/preference_download_location_title"
+            android:key="@string/preference_root_location_key"
+            android:title="@string/preference_root_location_title"
             android:entries="@array/empty"
             android:entryValues="@array/empty" />
 

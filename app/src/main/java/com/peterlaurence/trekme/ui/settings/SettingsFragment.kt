@@ -18,7 +18,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by viewModels()
 
     private var startOnPref: ListPreference? = null
-    private var downloadPref: ListPreference? = null
+    private var rootFolderPref: ListPreference? = null
     private var magnifyingPref: ListPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -27,25 +27,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
         initComponents()
 
         /* Observe the changes in the model */
-        viewModel.getDownloadDirList().observe(this, Observer<List<String>> {
+        viewModel.appDirListLiveData.observe(this, Observer {
             it?.let { dirs ->
                 updateDownloadDirList(dirs.toTypedArray())
             }
         })
 
-        viewModel.getDownloadDir().observe(this, Observer<String> {
+        viewModel.appDirLiveData.observe(this, Observer {
             it?.let { path ->
                 updateDownloadSelection(path)
             }
         })
 
-        viewModel.getStartOnPolicy().observe(this, Observer<StartOnPolicy> {
+        viewModel.startOnPolicyLiveData.observe(this, Observer {
             it?.let { policy ->
                 updateStartOnPolicy(policy)
             }
         })
 
-        viewModel.getMagnifyingFactorLiveData().observe(this, Observer<Int> {
+        viewModel.magnifyingFactorLiveData.observe(this, Observer {
             it?.let {
                 updateMagnifyingFactor(it)
             }
@@ -53,12 +53,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun updateDownloadDirList(dirs: Array<String>) {
-        downloadPref?.entries = dirs
-        downloadPref?.entryValues = dirs
+        rootFolderPref?.entries = dirs
+        rootFolderPref?.entryValues = dirs
     }
 
     private fun updateDownloadSelection(path: String) {
-        downloadPref?.setSummaryAndValue(path)
+        rootFolderPref?.setSummaryAndValue(path)
     }
 
     private fun updateStartOnPolicy(policy: StartOnPolicy) {
@@ -76,10 +76,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun initComponents() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
-        downloadPref = preferenceManager.findPreference(getString(R.string.preference_download_location_key))
+        rootFolderPref = preferenceManager.findPreference(getString(R.string.preference_root_location_key))
         magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
 
-        downloadPref?.setOnPreferenceChangeListener { _, newValue ->
+        rootFolderPref?.setOnPreferenceChangeListener { _, newValue ->
             val newPath = newValue as String
             viewModel.setDownloadDirPath(newPath)
             updateDownloadSelection(newPath)

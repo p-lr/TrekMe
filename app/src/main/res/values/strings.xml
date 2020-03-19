@@ -232,9 +232,9 @@
     <string name="preference_starton_title">Start TrekMe on</string>
     <string name="preference_starton_maplist">the map list</string>
     <string name="preference_starton_lastmap">the last map</string>
-    <string name="download_category">Download</string>
-    <string name="preference_download_location_key" translatable="false">pref_download_location</string>
-    <string name="preference_download_location_title">Download folder</string>
+    <string name="root_folder_category">Root folder</string>
+    <string name="preference_root_location_key" translatable="false">pref_download_location</string>
+    <string name="preference_root_location_title">Selected folder</string>
     <string name="maps_category">Maps</string>
     <string name="preference_magnifying_factor">Magnifying factor</string>
     <string name="preference_magnifying_key" translatable="false">pref_map_magnifying</string>

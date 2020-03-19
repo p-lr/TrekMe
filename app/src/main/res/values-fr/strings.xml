@@ -146,12 +146,12 @@
     <string name="mapview_add_landmark">Ajouter un repère</string>
     <string name="callout_landmark_title">Repère</string>
     <string name="settings_menu_title">Paramètres</string>
-    <string name="download_category">Téléchargement</string>
+    <string name="root_folder_category">Dossier racine</string>
     <string name="general_category">Général</string>
     <string name="preference_starton_title">Lancer TrekMe sur</string>
     <string name="preference_starton_maplist">la liste des cartes</string>
     <string name="preference_starton_lastmap">la dernière carte ouverte</string>
-    <string name="preference_download_location_title">Répertoire de téléchargement</string>
+    <string name="preference_root_location_title">Répertoire sélectionné</string>
     <string name="mapview_lock_on_position">Verrouiller sur la position</string>
     <string name="ign_buy_license_banner">Vous devez acheter la licence IGN, valable un an</string>
     <string name="buy_btn">Acheter</string>

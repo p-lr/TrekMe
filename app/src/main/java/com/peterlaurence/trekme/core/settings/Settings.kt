@@ -24,36 +24,36 @@ object Settings {
     private val settingsHandler = FileSettingsHandler()
 
     /**
-     * Get the download directory as [File].
+     * Get the current application directory as [File].
      * This implementation tries to get it from the configuration file. Since this file might have
-     * been modified by an human, a check is done to fallback to the default download directory if
-     * the path isn't among the list of possible paths.
-     * It's also a security in the case the download directories change across versions.
+     * been modified by an human, a check is done to fallback to the default application directory
+     * if the path isn't among the list of possible paths.
+     * It's also a security in the case the application directories change across versions.
      */
-    suspend fun getDownloadDir(): File? {
-        return settingsHandler.getLastSetting().downloadDir.let {
-            if (checkDownloadPath(it)) {
+    suspend fun getAppDir(): File? {
+        return settingsHandler.getLastSetting().appDir.let {
+            if (checkAppPath(it)) {
                 File(it)
             } else {
-                TrekMeContext.defaultMapsDownloadDir
+                TrekMeContext.defaultAppDir
             }
         }
     }
 
     /**
-     * Set the download directory.
+     * Set the application directory.
      * This implementation first reads the current settings, creates a new instance of
      * [SettingsData], then then gives it to the [SettingsHandler] for write.
      */
-    suspend fun setDownloadDir(file: File) {
-        if (checkDownloadPath(file.absolutePath)) {
-            val new = settingsHandler.getLastSetting().copy(downloadDir = file.absolutePath)
+    suspend fun setAppDir(file: File) {
+        if (checkAppPath(file.absolutePath)) {
+            val new = settingsHandler.getLastSetting().copy(appDir = file.absolutePath)
             settingsHandler.writeSetting(new)
         }
     }
 
-    private fun checkDownloadPath(path: String): Boolean {
-        return TrekMeContext.downloadDirList?.map {
+    private fun checkAppPath(path: String): Boolean {
+        return TrekMeContext.mapsDirList?.map {
             it.absolutePath
         }?.contains(path) ?: false
     }
@@ -97,7 +97,7 @@ object Settings {
 }
 
 @Serializable
-private data class SettingsData(val downloadDir: String,
+private data class SettingsData(val appDir: String,
                                 val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
                                 val lastMapId: Int = -1,
                                 val magnifyingFactor: Int = 0)
@@ -175,7 +175,7 @@ private class FileSettingsHandler : SettingsHandler {
         } catch (e: Exception) {
             e.printStackTrace()
             /* In case of any error, return default settings */
-            SettingsData(TrekMeContext.defaultMapsDownloadDir?.absolutePath ?: "error")
+            SettingsData(TrekMeContext.defaultAppDir?.absolutePath ?: "error")
         }
     }
 

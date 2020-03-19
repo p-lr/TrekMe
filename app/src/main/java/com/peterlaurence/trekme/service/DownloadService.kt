@@ -206,7 +206,7 @@ class DownloadService : Service() {
         val date = Date()
         val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(date)
-        val destFolder = File(Settings.getDownloadDir(), folderName)
+        val destFolder = File(Settings.getAppDir(), folderName)
 
         if (destFolder.mkdirs()) {
             destFolder

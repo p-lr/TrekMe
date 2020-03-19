@@ -11,75 +11,63 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class SettingsViewModel : ViewModel() {
-    private val downloadDirListLiveData = MutableLiveData<List<String>>()
-    private val downloadDirLiveData = MutableLiveData<String>()
-    private val startOnPolicyLiveData = MutableLiveData<StartOnPolicy>()
-    private val magnifyingFactorLiveData = MutableLiveData<Int>()
+    private val _appDirListLiveData = MutableLiveData<List<String>>()
+    val appDirListLiveData: LiveData<List<String>> = _appDirListLiveData
+    private val _appDirLiveData = MutableLiveData<String>()
+    val appDirLiveData: LiveData<String> = _appDirLiveData
+    private val _startOnPolicyLiveData = MutableLiveData<StartOnPolicy>()
+    val startOnPolicyLiveData: LiveData<StartOnPolicy> = _startOnPolicyLiveData
+    private val _magnifyingFactorLiveData = MutableLiveData<Int>()
+    val magnifyingFactorLiveData: LiveData<Int> = _magnifyingFactorLiveData
 
     init {
         /* For instance the need is only to fetch this once */
-        updateDownloadDirList()
-        updateDownloadDir()
+        updateAppDirList()
+        updateAppDir()
         updateStartOnPolicy()
         updateMagnifyingFactor()
     }
 
-    fun getDownloadDirList(): LiveData<List<String>> {
-        return downloadDirListLiveData
-    }
-
-    fun getDownloadDir(): LiveData<String> {
-        return downloadDirLiveData
-    }
-
-    fun getStartOnPolicy(): LiveData<StartOnPolicy> {
-        return startOnPolicyLiveData
-    }
-
-    fun getMagnifyingFactorLiveData(): LiveData<Int> {
-        return magnifyingFactorLiveData
-    }
-
     fun setDownloadDirPath(newPath: String) {
-        downloadDirLiveData.postValue(newPath)
+        _appDirLiveData.postValue(newPath)
         viewModelScope.launch {
-            Settings.setDownloadDir(File(newPath))
+            Settings.setAppDir(File(newPath))
         }
     }
 
     fun setStartOnPolicy(policy: StartOnPolicy) {
-        startOnPolicyLiveData.postValue(policy)
+        _startOnPolicyLiveData.postValue(policy)
         viewModelScope.launch {
             Settings.setStartOnPolicy(policy)
         }
     }
 
     fun setMagnifyingFactor(factor: Int) {
-        magnifyingFactorLiveData.postValue(factor)
+        _magnifyingFactorLiveData.postValue(factor)
         viewModelScope.launch {
             Settings.setMagnifyingFactor(factor)
         }
     }
 
-    private fun updateDownloadDirList() {
-        downloadDirListLiveData.postValue(TrekMeContext.downloadDirList?.map { it.absolutePath } ?: emptyList())
+    private fun updateAppDirList() {
+        _appDirListLiveData.postValue(TrekMeContext.mapsDirList?.map { it.absolutePath } ?: emptyList())
     }
 
-    private fun updateDownloadDir() {
+    private fun updateAppDir() {
         viewModelScope.launch {
-            downloadDirLiveData.postValue(Settings.getDownloadDir()?.absolutePath ?: "error")
+            _appDirLiveData.postValue(Settings.getAppDir()?.absolutePath ?: "error")
         }
     }
 
     private fun updateStartOnPolicy() {
         viewModelScope.launch {
-            startOnPolicyLiveData.postValue(Settings.getStartOnPolicy())
+            _startOnPolicyLiveData.postValue(Settings.getStartOnPolicy())
         }
     }
 
     private fun updateMagnifyingFactor() {
         viewModelScope.launch {
-            magnifyingFactorLiveData.postValue(Settings.getMagnifyingFactor())
+            _magnifyingFactorLiveData.postValue(Settings.getMagnifyingFactor())
         }
     }
 }

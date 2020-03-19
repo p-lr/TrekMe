@@ -53,8 +53,7 @@ class MapImportViewModel : ViewModel() {
      */
     fun unarchiveAsync(inputStream: InputStream, item: ItemData) {
         viewModelScope.launch {
-            // TODO: create a new settings dedicated to ImportedDir
-            val rootFolder = Settings.getDownloadDir()?.parentFile ?: return@launch
+            val rootFolder = Settings.getAppDir() ?: return@launch
             val outputFolder = File(rootFolder, "imported")
 
             /* If the document has no name, give it one */
