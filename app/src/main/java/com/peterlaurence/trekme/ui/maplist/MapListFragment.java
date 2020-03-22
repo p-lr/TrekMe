@@ -191,10 +191,8 @@ public class MapListFragment extends Fragment implements
         MapSettingsFragment.ConfirmDeleteFragment f = new MapSettingsFragment.ConfirmDeleteFragment();
         f.setMapWeakRef(new WeakReference<>(map));
         f.setDeleteMapListener(this);
-        FragmentManager fragmentManager = getFragmentManager();
-        if (fragmentManager != null) {
-            f.show(fragmentManager, "delete");
-        }
+        FragmentManager fragmentManager = getParentFragmentManager();
+        f.show(fragmentManager, "delete");
     }
 
     @Override
@@ -206,6 +204,7 @@ public class MapListFragment extends Fragment implements
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        if (llm == null) return;
         Parcelable llmState = llm.onSaveInstanceState();
         outState.putParcelable(llmStateKey, llmState);
     }
