@@ -12,7 +12,6 @@ import android.view.View;
 import com.peterlaurence.mapview.ReferentialData;
 import com.peterlaurence.mapview.ReferentialOwner;
 import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.events.OrientationEventManager;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -21,8 +20,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author peterLaurence on 03/04/16.
  */
-public class PositionOrientationMarker extends View implements OrientationEventManager.OrientationListener,
-        ReferentialOwner {
+public class PositionOrientationMarker extends View implements ReferentialOwner {
     private int mMeasureDimension;
     private int mOrientationRadius1Dimension;
     private int mPositionDimension;
@@ -35,7 +33,7 @@ public class PositionOrientationMarker extends View implements OrientationEventM
 
     private Bitmap mBitmap;
 
-    private int mAzimuth;
+    private float mAzimuth;
     private ReferentialData referentialData;
 
     public PositionOrientationMarker(Context context) {
@@ -149,22 +147,19 @@ public class PositionOrientationMarker extends View implements OrientationEventM
         setMeasuredDimension(mMeasureDimension, mMeasureDimension);
     }
 
-    @Override
-    public void onOrientation(int azimuth) {
+    public void onOrientation(float azimuth) {
         if (Math.abs(azimuth - mAzimuth) > 0.5) {
             mAzimuth = azimuth;
             invalidate();
         }
     }
 
-    @Override
     public void onOrientationEnable() {
         mOrientationEnabled = true;
         prepareBitmap();
         invalidate();
     }
 
-    @Override
     public void onOrientationDisable() {
         mOrientationEnabled = false;
         prepareBitmap();
