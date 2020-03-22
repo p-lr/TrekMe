@@ -51,7 +51,6 @@ import com.peterlaurence.trekme.service.event.MapDownloadEvent;
 import com.peterlaurence.trekme.service.event.Status;
 import com.peterlaurence.trekme.ui.LocationProviderHolder;
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent;
-import com.peterlaurence.trekme.ui.events.RequestImportMapEvent;
 import com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment;
 import com.peterlaurence.trekme.ui.mapcreate.MapCreateFragment;
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent;
@@ -131,15 +130,18 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_MINIMAL = 1;
     private static final int REQUEST_MAP_CREATION = 2;
 
-    private static final String[] MINIMAL_PERMISSIONS = {
+    private static final String[] PERMISSIONS_BELOW_ANDROID_10 = {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+
+    private static final String[] PERMISSIONS_ANDROID_10_AND_ABOVE = {
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
+
     private static final String[] PERMISSIONS_MAP_CREATION = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.INTERNET,
+            Manifest.permission.INTERNET
     };
     private static final String TAG = "MainActivity";
     private static final String KEY_BUNDLE_BACK = "keyBackFragmentTag";
@@ -176,11 +178,19 @@ public class MainActivity extends AppCompatActivity
 
         if (permissionLocation != PackageManager.PERMISSION_GRANTED || permissionWrite != PackageManager.PERMISSION_GRANTED) {
             // We don't have the required permissions, so we prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    MINIMAL_PERMISSIONS,
-                    REQUEST_MINIMAL
-            );
+            if (android.os.Build.VERSION.SDK_INT < Q) {
+                ActivityCompat.requestPermissions(
+                        activity,
+                        PERMISSIONS_BELOW_ANDROID_10,
+                        REQUEST_MINIMAL
+                );
+            } else {
+                ActivityCompat.requestPermissions(
+                        activity,
+                        PERMISSIONS_ANDROID_10_AND_ABOVE,
+                        REQUEST_MINIMAL
+                );
+            }
         }
     }
 
