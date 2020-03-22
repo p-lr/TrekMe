@@ -16,7 +16,7 @@ import com.peterlaurence.mapview.api.addMarker
 import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.api.moveToMarker
 import com.peterlaurence.mapview.api.setMarkerTapListener
-import com.peterlaurence.mapview.markers.*
+import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.events.OrientationEventManager
@@ -117,7 +117,19 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         orientationEventManager = OrientationEventManager(activity)
 
         /* Register the position marker as an OrientationListener */
-        orientationEventManager.setOrientationListener(positionMarker)
+        orientationEventManager.setOrientationListener(object : OrientationEventManager.OrientationListener {
+            override fun onOrientation(azimuth: Int) {
+                positionMarker.onOrientation(azimuth)
+            }
+
+            override fun onOrientationEnable() {
+                positionMarker.onOrientationEnable()
+            }
+
+            override fun onOrientationDisable() {
+                positionMarker.onOrientationDisable()
+            }
+        })
         if (savedInstanceState != null) {
             val shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION)
             if (shouldDisplayOrientation) {
@@ -351,6 +363,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         EventBus.getDefault().unregister(this)
         MapLoader.clearMapMarkerUpdateListener()
         destroyLayers()
+        mapView?.removeReferentialOwner(positionMarker)
     }
 
     override fun onDetach() {
@@ -436,8 +449,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* The magnifying factor - default to 1 */
         val factor = this.magnifyingFactor ?: 1
 
-        val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize,
-                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(factor).setPadding(tileSize * 2)
+        val config = MapViewConfiguration(
+                map.levelList.size, map.widthPx, map.heightPx, tileSize, makeTileStreamProvider(map))
+                .setMaxScale(2f)
+                .setMagnifyingFactor(factor)
+                .setPadding(tileSize * 2)
+                .enableRotation()
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)
@@ -454,6 +471,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         mapView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
+        mapView.addReferentialOwner(positionMarker)
 
         /* The MapView can have only one MarkerTapListener.
          * It dispatches the tap event to child layers.
