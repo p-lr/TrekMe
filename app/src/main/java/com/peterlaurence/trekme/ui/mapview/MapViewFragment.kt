@@ -12,18 +12,17 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
-import com.peterlaurence.mapview.api.addMarker
-import com.peterlaurence.mapview.api.moveMarker
-import com.peterlaurence.mapview.api.moveToMarker
-import com.peterlaurence.mapview.api.setMarkerTapListener
-import com.peterlaurence.mapview.markers.*
+import com.peterlaurence.mapview.ReferentialData
+import com.peterlaurence.mapview.ReferentialOwner
+import com.peterlaurence.mapview.api.*
+import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.ign.Billing
-import com.peterlaurence.trekme.core.events.OrientationEventManager
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
+import com.peterlaurence.trekme.core.sensors.OrientationSensor
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
@@ -34,6 +33,8 @@ import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
@@ -44,17 +45,19 @@ import org.greenrobot.eventbus.Subscribe
  *
  * @author peterLaurence on 10/02/2019
  */
-class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener {
+class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener,
+        ReferentialOwner {
     private lateinit var presenter: MapViewFragmentContract.Presenter
     private var mapView: MapView? = null
     private var mMap: Map? = null
     private lateinit var positionMarker: PositionOrientationMarker
     private var lockView = false
+    private var rotateMapWithOrientation = false
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
     private var shouldCenterOnFirstLocation = false
     private var magnifyingFactor: Int? = null
-    private lateinit var orientationEventManager: OrientationEventManager
+    private var orientationSensor: OrientationSensor? = null
     private lateinit var markerLayer: MarkerLayer
     private lateinit var routeLayer: RouteLayer
     private lateinit var distanceLayer: DistanceLayer
@@ -62,11 +65,19 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private lateinit var speedListener: SpeedListener
     private lateinit var distanceListener: DistanceLayer.DistanceListener
     private lateinit var locationProvider: LocationProvider
+    private var orientationJob: Job? = null
+
     private var billing: Billing? = null
 
     private val mapViewViewModel: MapViewViewModel by viewModels()
     private val locationViewModel: LocationViewModel by viewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
+
+    override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
+        set(value) {
+            field = value
+            if (::positionMarker.isInitialized) positionMarker.referentialData = value
+        }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -89,7 +100,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         EventBus.getDefault().register(this)
         setHasOptionsMenu(true)
         locationViewModel.setLocationProvider(locationProvider)
-        locationViewModel.getLocationLiveData().observe(this, Observer<Location> {
+        locationViewModel.getLocationLiveData().observe(this, Observer {
             it?.let {
                 onLocationReceived(it)
             }
@@ -113,15 +124,14 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         distanceListener = presenter.view.distanceIndicator
         positionMarker = presenter.view.positionMarker
 
-        /* Create the instance of the OrientationEventManager */
-        orientationEventManager = OrientationEventManager(activity)
+        /* Create the instance of the OrientationSensor */
+        orientationSensor = OrientationSensor(requireActivity())
 
-        /* Register the position marker as an OrientationListener */
-        orientationEventManager.setOrientationListener(positionMarker)
         if (savedInstanceState != null) {
             val shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION)
             if (shouldDisplayOrientation) {
-                orientationEventManager.start()
+                orientationSensor?.start()
+                onOrientationSensorChanged()
             }
         }
 
@@ -157,15 +167,41 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             /* First, the settings */
             getMapSettings()
 
-            /* Then, apply the Map */
+            /* Then, apply the Map to the current MapView */
             getAndApplyMap()
         }
 
         return presenter.androidView
     }
 
+    /**
+     * When the [OrientationSensor] is started or stopped, this function should be called.
+     */
+    private fun onOrientationSensorChanged() {
+        if (orientationSensor!!.isStarted) {
+            positionMarker.onOrientationEnable()
+
+            orientationJob = lifecycleScope.launch {
+                orientationSensor?.getAzimuthFlow()?.collect { azimuth ->
+                    positionMarker.onOrientation(azimuth)
+                    if (rotateMapWithOrientation) {
+                        mapView?.setAngle(-azimuth)
+                    }
+                }
+            }
+        } else {
+            positionMarker.onOrientationDisable()
+            orientationJob?.cancel()
+            /* Set the MapView like it was before: North-oriented */
+            orientationJob?.invokeOnCompletion {
+                mapView?.setAngle(0f)
+            }
+        }
+    }
+
     private suspend fun getMapSettings() {
         magnifyingFactor = mapViewViewModel.getMagnifyingFactor()
+        rotateMapWithOrientation = mapViewViewModel.getRotateWithOrientation()
     }
 
     private suspend fun getAndApplyMap() {
@@ -196,7 +232,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         item.isChecked = distanceLayer.isVisible
 
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
-        itemOrientation.isChecked = orientationEventManager.isStarted
+        itemOrientation.isChecked = orientationSensor?.isStarted ?: false
 
         val itemLockOnPosition = menu.findItem(R.id.lock_on_position_id)
         itemLockOnPosition.isChecked = lockView
@@ -229,7 +265,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 return true
             }
             R.id.orientation_enable_id -> {
-                item.isChecked = orientationEventManager.toggleOrientation()
+                item.isChecked = orientationSensor?.toggle() ?: false
+                onOrientationSensorChanged()
                 return true
             }
             R.id.landmark_id -> {
@@ -358,7 +395,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         requestManageTracksListener = null
         requestManageMarkerListener = null
-        orientationEventManager.stop()
+        orientationSensor?.stop()
     }
 
     private fun onLocationReceived(location: Location) {
@@ -436,8 +473,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* The magnifying factor - default to 1 */
         val factor = this.magnifyingFactor ?: 1
 
-        val config = MapViewConfiguration(map.levelList.size, map.widthPx, map.heightPx, tileSize,
-                makeTileStreamProvider(map)).setMaxScale(2f).setMagnifyingFactor(factor).setPadding(tileSize * 2)
+        val config = MapViewConfiguration(
+                map.levelList.size, map.widthPx, map.heightPx, tileSize, makeTileStreamProvider(map))
+                .setMaxScale(2f)
+                .setMagnifyingFactor(factor)
+                .setPadding(tileSize * 2)
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)
@@ -464,6 +504,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 landmarkLayer.onMarkerTap(view, x, y)
             }
         })
+
+        if (rotateMapWithOrientation) {
+            mapView.enableRotation(false)
+        }
+
+        mapView.addReferentialOwner(this)
     }
 
     private fun centerOnPosition() {
@@ -473,7 +519,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationEventManager.isStarted)
+        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
     }
 
     private fun setMapViewBounds(mapView: MapView, map: Map) {

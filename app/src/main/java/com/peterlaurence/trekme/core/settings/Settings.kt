@@ -74,6 +74,15 @@ object Settings {
 
     suspend fun getMagnifyingFactor(): Int = settingsHandler.getLastSetting().magnifyingFactor
 
+    suspend fun getRotateWithOrientation(): Boolean {
+        return settingsHandler.getLastSetting().rotateWithOrientation
+    }
+
+    suspend fun setRotateWithOrientation(rotate: Boolean) {
+        val new = settingsHandler.getLastSetting().copy(rotateWithOrientation = rotate)
+        settingsHandler.writeSetting(new)
+    }
+
     /**
      * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
      * empty.
@@ -100,7 +109,8 @@ object Settings {
 private data class SettingsData(val appDir: String,
                                 val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
                                 val lastMapId: Int = -1,
-                                val magnifyingFactor: Int = 0)
+                                val magnifyingFactor: Int = 0,
+                                val rotateWithOrientation: Boolean = false)
 
 enum class StartOnPolicy {
     MAP_LIST, LAST_MAP
@@ -116,12 +126,12 @@ private class FileSettingsHandler : SettingsHandler {
     private val settingsFile = TrekMeContext.getSettingsFile()
 
     /* Channels */
-    private val settingsToWrite = Channel<SettingsData>(Channel.CONFLATED)
+    private val settingsToWrite = Channel<SettingsData>()
     private val requests = Channel<Unit>(capacity = 1)
-    private val lastSettings = Channel<SettingsData>(capacity = Channel.CONFLATED)
+    private val lastSettings = Channel<SettingsData>()
 
     init {
-        GlobalScope.worker(settingsToWrite, requests, lastSettings)
+        GlobalScope.actor(settingsToWrite, requests, lastSettings)
     }
 
     override suspend fun writeSetting(settingsData: SettingsData) {
@@ -143,14 +153,14 @@ private class FileSettingsHandler : SettingsHandler {
     /**
      * The core coroutine that enables concurrent read/write of [SettingsData].
      * * [settingsToWrite] is the receive channel that is consumed to write into the config file
-     * * [requests] is the receive channel that is consumed to update the conflated value of the
+     * * [requests] is the receive channel that is consumed to update the last value of the
      * [lastSettings] channel.
      *
      * This way, the last value of [SettingsData] is stored in a thread-safe way.
      */
-    private fun CoroutineScope.worker(settingsToWrite: ReceiveChannel<SettingsData>,
-                                      requests: ReceiveChannel<Unit>,
-                                      lastSettings: SendChannel<SettingsData>) {
+    private fun CoroutineScope.actor(settingsToWrite: ReceiveChannel<SettingsData>,
+                                     requests: ReceiveChannel<Unit>,
+                                     lastSettings: SendChannel<SettingsData>) {
         launch {
             var lastSetting = readSettingsOrDefault()
             lastSettings.send(lastSetting)

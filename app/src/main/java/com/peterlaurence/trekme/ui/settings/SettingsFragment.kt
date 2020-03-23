@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.ui.settings
 import android.os.Bundle
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekme.R
@@ -20,6 +21,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var startOnPref: ListPreference? = null
     private var rootFolderPref: ListPreference? = null
     private var magnifyingPref: ListPreference? = null
+    private var rotateWithOrientationPref: CheckBoxPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.app_settings)
@@ -50,6 +52,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 updateMagnifyingFactor(it)
             }
         })
+
+        viewModel.rotateWithOrientationLiveData.observe(this, Observer {
+            it?.let {
+                rotateWithOrientationPref?.isChecked = it
+            }
+        })
     }
 
     private fun updateDownloadDirList(dirs: Array<String>) {
@@ -78,6 +86,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
         rootFolderPref = preferenceManager.findPreference(getString(R.string.preference_root_location_key))
         magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
+        rotateWithOrientationPref = preferenceManager.findPreference(getString(R.string.preference_rotate_with_orientation_key))
 
         rootFolderPref?.setOnPreferenceChangeListener { _, newValue ->
             val newPath = newValue as String
@@ -102,6 +111,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             magnifyingPref?.setSummaryAndValue(strValue)
             val factor = strValue.toInt()
             viewModel.setMagnifyingFactor(factor)
+            true
+        }
+
+        rotateWithOrientationPref?.setOnPreferenceChangeListener { _, _ ->
+            viewModel.toggleRotateWithOrientation()
             true
         }
     }

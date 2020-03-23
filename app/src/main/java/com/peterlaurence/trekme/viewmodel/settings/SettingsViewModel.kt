@@ -19,6 +19,8 @@ class SettingsViewModel : ViewModel() {
     val startOnPolicyLiveData: LiveData<StartOnPolicy> = _startOnPolicyLiveData
     private val _magnifyingFactorLiveData = MutableLiveData<Int>()
     val magnifyingFactorLiveData: LiveData<Int> = _magnifyingFactorLiveData
+    private val _rotateWithOrientationLiveData = MutableLiveData<Boolean>()
+    val rotateWithOrientationLiveData = _rotateWithOrientationLiveData
 
     init {
         /* For instance the need is only to fetch this once */
@@ -26,6 +28,7 @@ class SettingsViewModel : ViewModel() {
         updateAppDir()
         updateStartOnPolicy()
         updateMagnifyingFactor()
+        updateRotateWithOrientation()
     }
 
     fun setDownloadDirPath(newPath: String) {
@@ -49,8 +52,17 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    fun toggleRotateWithOrientation() {
+        viewModelScope.launch {
+            val rotate = !Settings.getRotateWithOrientation()
+            _rotateWithOrientationLiveData.value = rotate
+            Settings.setRotateWithOrientation(rotate)
+        }
+    }
+
     private fun updateAppDirList() {
-        _appDirListLiveData.postValue(TrekMeContext.mapsDirList?.map { it.absolutePath } ?: emptyList())
+        _appDirListLiveData.postValue(TrekMeContext.mapsDirList?.map { it.absolutePath }
+                ?: emptyList())
     }
 
     private fun updateAppDir() {
@@ -68,6 +80,12 @@ class SettingsViewModel : ViewModel() {
     private fun updateMagnifyingFactor() {
         viewModelScope.launch {
             _magnifyingFactorLiveData.postValue(Settings.getMagnifyingFactor())
+        }
+    }
+
+    private fun updateRotateWithOrientation() {
+        viewModelScope.launch {
+            _rotateWithOrientationLiveData.value = Settings.getRotateWithOrientation()
         }
     }
 }

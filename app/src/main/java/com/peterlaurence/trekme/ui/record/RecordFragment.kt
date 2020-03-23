@@ -125,12 +125,15 @@ class RecordFragment : Fragment() {
 
     @Subscribe
     fun onRequestShareRecording(event: RequestShareRecording) {
+        val activity = activity ?: return
         val intentBuilder = ShareCompat.IntentBuilder.from(activity)
                 .setType("text/plain")
         event.recordings.forEach {
             try {
                 val uri = TrekmeFilesProvider.generateUri(it)
-                intentBuilder.addStream(uri)
+                if (uri != null) {
+                    intentBuilder.addStream(uri)
+                }
             } catch (e: IllegalArgumentException) {
                 e.printStackTrace()
             }

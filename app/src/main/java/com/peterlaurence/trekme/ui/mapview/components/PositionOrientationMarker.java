@@ -9,15 +9,18 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.view.View;
 
+import com.peterlaurence.mapview.ReferentialData;
+import com.peterlaurence.mapview.ReferentialOwner;
 import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.events.OrientationEventManager;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Custom marker for indicating the current position, and optionally the orientation.
  *
  * @author peterLaurence on 03/04/16.
  */
-public class PositionOrientationMarker extends View implements OrientationEventManager.OrientationListener {
+public class PositionOrientationMarker extends View implements ReferentialOwner {
     private int mMeasureDimension;
     private int mOrientationRadius1Dimension;
     private int mPositionDimension;
@@ -30,11 +33,23 @@ public class PositionOrientationMarker extends View implements OrientationEventM
 
     private Bitmap mBitmap;
 
-    private int mAzimuth;
+    private float mAzimuth;
+    private ReferentialData referentialData;
 
     public PositionOrientationMarker(Context context) {
         super(context);
         init(context);
+    }
+
+    @NotNull
+    @Override
+    public ReferentialData getReferentialData() {
+        return referentialData;
+    }
+
+    @Override
+    public void setReferentialData(@NotNull ReferentialData referentialData) {
+        this.referentialData = referentialData;
     }
 
     private void init(Context context) {
@@ -117,7 +132,11 @@ public class PositionOrientationMarker extends View implements OrientationEventM
         super.onDraw(canvas);
 
         if (mOrientationEnabled) {
-            canvas.rotate(mAzimuth, mMeasureDimension / 2f, mMeasureDimension / 2f);
+            float mapRotation = 0f;
+            if (referentialData != null) {
+                mapRotation = referentialData.getAngle();
+            }
+            canvas.rotate(mAzimuth + mapRotation, mMeasureDimension / 2f, mMeasureDimension / 2f);
         }
 
         canvas.drawBitmap(mBitmap, 0, 0, null);
@@ -128,22 +147,19 @@ public class PositionOrientationMarker extends View implements OrientationEventM
         setMeasuredDimension(mMeasureDimension, mMeasureDimension);
     }
 
-    @Override
-    public void onOrientation(int azimuth) {
+    public void onOrientation(float azimuth) {
         if (Math.abs(azimuth - mAzimuth) > 0.5) {
             mAzimuth = azimuth;
             invalidate();
         }
     }
 
-    @Override
     public void onOrientationEnable() {
         mOrientationEnabled = true;
         prepareBitmap();
         invalidate();
     }
 
-    @Override
     public void onOrientationDisable() {
         mOrientationEnabled = false;
         prepareBitmap();
