@@ -25,7 +25,7 @@ class OrientationSensor(val activity: Activity) : SensorEventListener {
 
     fun getAzimuthFlow(): Flow<Float> = flow {
         while (true) {
-            delay(5)
+            delay(1)
             updateOrientation()
             val screenRotation: Int = activity.windowManager.defaultDisplay.rotation
             var fix = 0
