@@ -32,6 +32,8 @@ class MapViewViewModel : ViewModel() {
 
     suspend fun getMagnifyingFactor(): Int = Settings.getMagnifyingFactor()
 
+    suspend fun getRotateWithOrientation(): Boolean = Settings.getRotateWithOrientation()
+
     private suspend fun checkForIgnLicense(map: Map, billing: Billing?): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
 

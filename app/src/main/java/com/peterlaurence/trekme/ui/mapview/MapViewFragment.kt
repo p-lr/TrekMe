@@ -52,6 +52,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var mMap: Map? = null
     private lateinit var positionMarker: PositionOrientationMarker
     private var lockView = false
+    private var rotateMapWithOrientation = false
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
     private var shouldCenterOnFirstLocation = false
@@ -166,7 +167,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             /* First, the settings */
             getMapSettings()
 
-            /* Then, apply the Map */
+            /* Then, apply the Map to the current MapView */
             getAndApplyMap()
         }
 
@@ -183,7 +184,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             orientationJob = lifecycleScope.launch {
                 orientationSensor?.getAzimuthFlow()?.collect { azimuth ->
                     positionMarker.onOrientation(azimuth)
-                    mapView?.setAngle(-azimuth)
+                    if (rotateMapWithOrientation) {
+                        mapView?.setAngle(-azimuth)
+                    }
                 }
             }
         } else {
@@ -198,6 +201,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private suspend fun getMapSettings() {
         magnifyingFactor = mapViewViewModel.getMagnifyingFactor()
+        rotateMapWithOrientation = mapViewViewModel.getRotateWithOrientation()
     }
 
     private suspend fun getAndApplyMap() {
@@ -474,7 +478,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 .setMaxScale(2f)
                 .setMagnifyingFactor(factor)
                 .setPadding(tileSize * 2)
-                .enableRotation(false)
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)
@@ -501,6 +504,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 landmarkLayer.onMarkerTap(view, x, y)
             }
         })
+
+        if (rotateMapWithOrientation) {
+            mapView.enableRotation(false)
+        }
 
         mapView.addReferentialOwner(this)
     }
