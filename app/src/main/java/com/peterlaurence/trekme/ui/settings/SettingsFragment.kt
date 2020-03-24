@@ -3,10 +3,10 @@ package com.peterlaurence.trekme.ui.settings
 import android.os.Bundle
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 
@@ -21,7 +21,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var startOnPref: ListPreference? = null
     private var rootFolderPref: ListPreference? = null
     private var magnifyingPref: ListPreference? = null
-    private var rotateWithOrientationPref: CheckBoxPreference? = null
+    private var rotationModePref: ListPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.app_settings)
@@ -53,9 +53,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         })
 
-        viewModel.rotateWithOrientationLiveData.observe(this, Observer {
+        viewModel.rotationModeLiveData.observe(this, Observer {
             it?.let {
-                rotateWithOrientationPref?.isChecked = it
+                updateRotationMode(it)
             }
         })
     }
@@ -82,11 +82,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
         magnifyingPref?.setSummaryAndValue(factor.toString())
     }
 
+    private fun updateRotationMode(mode: RotationMode) {
+        val txt = when(mode) {
+            RotationMode.NONE -> getString(R.string.preference_rotate_none)
+            RotationMode.FREE -> getString(R.string.preference_rotate_free)
+            RotationMode.FOLLOW_ORIENTATION -> getString(R.string.preference_rotate_with_orientation)
+        }
+
+        rotationModePref?.setSummaryAndValue(txt)
+    }
+
     private fun initComponents() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
         rootFolderPref = preferenceManager.findPreference(getString(R.string.preference_root_location_key))
         magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
-        rotateWithOrientationPref = preferenceManager.findPreference(getString(R.string.preference_rotate_with_orientation_key))
+        rotationModePref = preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
 
         rootFolderPref?.setOnPreferenceChangeListener { _, newValue ->
             val newPath = newValue as String
@@ -114,8 +124,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
-        rotateWithOrientationPref?.setOnPreferenceChangeListener { _, _ ->
-            viewModel.toggleRotateWithOrientation()
+        rotationModePref?.setOnPreferenceChangeListener { _, newValue ->
+            rotationModePref?.setSummaryAndValue(newValue as String)
+            val rotationMode = when(newValue) {
+                getString(R.string.preference_rotate_with_orientation) -> RotationMode.FOLLOW_ORIENTATION
+                getString(R.string.preference_rotate_none) -> RotationMode.NONE
+                getString(R.string.preference_rotate_free) -> RotationMode.FREE
+                else -> RotationMode.NONE
+            }
+            viewModel.setRotationMode(rotationMode)
             true
         }
     }

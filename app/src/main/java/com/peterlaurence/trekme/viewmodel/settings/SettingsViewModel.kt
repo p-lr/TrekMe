@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import kotlinx.coroutines.launch
@@ -19,8 +20,8 @@ class SettingsViewModel : ViewModel() {
     val startOnPolicyLiveData: LiveData<StartOnPolicy> = _startOnPolicyLiveData
     private val _magnifyingFactorLiveData = MutableLiveData<Int>()
     val magnifyingFactorLiveData: LiveData<Int> = _magnifyingFactorLiveData
-    private val _rotateWithOrientationLiveData = MutableLiveData<Boolean>()
-    val rotateWithOrientationLiveData = _rotateWithOrientationLiveData
+    private val _rotationModeLiveData = MutableLiveData<RotationMode>()
+    val rotationModeLiveData = _rotationModeLiveData
 
     init {
         /* For instance the need is only to fetch this once */
@@ -52,11 +53,10 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
-    fun toggleRotateWithOrientation() {
+    fun setRotationMode(mode: RotationMode) {
+        _rotationModeLiveData.postValue(mode)
         viewModelScope.launch {
-            val rotate = !Settings.getRotateWithOrientation()
-            _rotateWithOrientationLiveData.value = rotate
-            Settings.setRotateWithOrientation(rotate)
+            Settings.setRotationMode(mode)
         }
     }
 
@@ -85,7 +85,7 @@ class SettingsViewModel : ViewModel() {
 
     private fun updateRotateWithOrientation() {
         viewModelScope.launch {
-            _rotateWithOrientationLiveData.value = Settings.getRotateWithOrientation()
+            _rotationModeLiveData.value = Settings.getRotationMode()
         }
     }
 }

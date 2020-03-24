@@ -23,4 +23,10 @@
         <item>0</item>
         <item>1</item>
     </string-array>
+
+    <string-array name="rotation_modes" translatable="false">
+        <item>@string/preference_rotate_none</item>
+        <item>@string/preference_rotate_with_orientation</item>
+        <item>@string/preference_rotate_free</item>
+    </string-array>
 </resources>

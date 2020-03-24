@@ -23,6 +23,7 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.sensors.OrientationSensor
+import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
@@ -52,7 +53,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var mMap: Map? = null
     private lateinit var positionMarker: PositionOrientationMarker
     private var lockView = false
-    private var rotateMapWithOrientation = false
+    private var rotationMode: RotationMode = RotationMode.NONE
     private var requestManageTracksListener: RequestManageTracksListener? = null
     private var requestManageMarkerListener: RequestManageMarkerListener? = null
     private var shouldCenterOnFirstLocation = false
@@ -184,7 +185,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             orientationJob = lifecycleScope.launch {
                 orientationSensor?.getAzimuthFlow()?.collect { azimuth ->
                     positionMarker.onOrientation(azimuth)
-                    if (rotateMapWithOrientation) {
+                    if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
                         mapView?.setAngle(-azimuth)
                     }
                 }
@@ -201,7 +202,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private suspend fun getMapSettings() {
         magnifyingFactor = mapViewViewModel.getMagnifyingFactor()
-        rotateMapWithOrientation = mapViewViewModel.getRotateWithOrientation()
+        rotationMode = mapViewViewModel.getRotationMode()
     }
 
     private suspend fun getAndApplyMap() {
@@ -505,8 +506,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             }
         })
 
-        if (rotateMapWithOrientation) {
-            mapView.enableRotation(false)
+        when (rotationMode) {
+            RotationMode.FREE -> mapView.enableRotation(true)
+            RotationMode.FOLLOW_ORIENTATION -> mapView.enableRotation(false)
+            RotationMode.NONE -> {
+            } // nothing to do
         }
 
         mapView.addReferentialOwner(this)

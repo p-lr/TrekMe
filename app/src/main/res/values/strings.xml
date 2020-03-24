@@ -238,7 +238,10 @@
     <string name="maps_category">Maps</string>
     <string name="preference_magnifying_factor">Magnifying factor</string>
     <string name="preference_magnifying_key" translatable="false">pref_map_magnifying</string>
-    <string name="preference_rotate_with_orientation_key" translatable="false">pref_rotate_w_orientation</string>
-    <string name="preference_rotate_with_orientation">Rotate map when showing orientation</string>
+    <string name="preference_rotation_mode_key" translatable="false">pref_rotation_mode</string>
+    <string name="preference_rotation_mode">Rotation mode</string>
+    <string name="preference_rotate_with_orientation">Rotate only when showing orientation</string>
+    <string name="preference_rotate_none">None</string>
+    <string name="preference_rotate_free">Free</string>
 
 </resources>

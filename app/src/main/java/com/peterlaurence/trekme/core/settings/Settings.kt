@@ -74,12 +74,12 @@ object Settings {
 
     suspend fun getMagnifyingFactor(): Int = settingsHandler.getLastSetting().magnifyingFactor
 
-    suspend fun getRotateWithOrientation(): Boolean {
-        return settingsHandler.getLastSetting().rotateWithOrientation
+    suspend fun getRotationMode(): RotationMode {
+        return settingsHandler.getLastSetting().rotationMode
     }
 
-    suspend fun setRotateWithOrientation(rotate: Boolean) {
-        val new = settingsHandler.getLastSetting().copy(rotateWithOrientation = rotate)
+    suspend fun setRotationMode(mode: RotationMode) {
+        val new = settingsHandler.getLastSetting().copy(rotationMode = mode)
         settingsHandler.writeSetting(new)
     }
 
@@ -110,10 +110,14 @@ private data class SettingsData(val appDir: String,
                                 val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
                                 val lastMapId: Int = -1,
                                 val magnifyingFactor: Int = 0,
-                                val rotateWithOrientation: Boolean = false)
+                                val rotationMode: RotationMode = RotationMode.NONE)
 
 enum class StartOnPolicy {
     MAP_LIST, LAST_MAP
+}
+
+enum class RotationMode {
+    NONE, FOLLOW_ORIENTATION, FREE
 }
 
 

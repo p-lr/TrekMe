@@ -169,7 +169,10 @@
     <string name="ign_buy_license_pending">Veillez attendre quelques minutes, paiement en cours</string>
     <string name="maps_category">Cartes</string>
     <string name="preference_magnifying_factor">Facteur de grossissement</string>
+    <string name="preference_rotation_mode">Mode de rotation</string>
     <string name="preference_rotate_with_orientation">Tourner la carte selon l\'orientation</string>
+    <string name="preference_rotate_none">Aucune rotation</string>
+    <string name="preference_rotate_free">Rotation libre</string>
     <string name="no_storage_perm">TrekMe a besoin d\'avoir accès au stockage interne pour y stocker des cartes, notamment. Rassurez-vous, cette application ne tentera jamais d\'accéder à vos données personnelles.\n\nPour modifier les permissions de TrekMe, il faut aller dans vos réglages Android dans la section Applications > TrekMe.</string>
     <string name="swiss_topo_source_description">Office fédéral de topographie</string>
     <string name="android10_temp_warning">Où sont passées mes cartes?\nSi vous aviez des cartes, ne vous inquiétez pas, elles ne sont pas perdues.\n

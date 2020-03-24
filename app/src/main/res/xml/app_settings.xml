@@ -24,8 +24,10 @@
             android:entries="@array/magnifying_factors"
             android:entryValues="@array/magnifying_factors" />
 
-        <CheckBoxPreference
-            android:key="@string/preference_rotate_with_orientation_key"
-            android:title="@string/preference_rotate_with_orientation" />
+        <ListPreference
+            android:key="@string/preference_rotation_mode_key"
+            android:title="@string/preference_rotation_mode"
+            android:entries="@array/rotation_modes"
+            android:entryValues="@array/rotation_modes"/>
     </PreferenceCategory>
 </PreferenceScreen>
