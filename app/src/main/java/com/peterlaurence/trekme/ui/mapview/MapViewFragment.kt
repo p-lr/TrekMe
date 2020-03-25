@@ -132,21 +132,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         compassView = presenter.view.compassView
 
         compassView.setOnClickListener {
-            /* Wrapper class, necessary for the the animator to work (which uses reflection to infer
-             * method names..) */
-            val wrapper = object {
-                fun setAngle(angle: Float) {
-                    mapView?.setAngle(angle)
-                }
-
-                fun getAngle(): Float {
-                    return referentialData.angle
-                }
-            }
-            ObjectAnimator.ofFloat(wrapper, "angle", if (referentialData.angle > 180f) 360f else 0f).apply {
-                interpolator = DecelerateInterpolator()
-                duration = 800
-                start()
+            if (rotationMode == RotationMode.FREE) {
+                animateMapViewToNorth()
             }
         }
 
@@ -195,6 +182,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
             /* Then, apply the Map to the current MapView */
             getAndApplyMap()
+
+            /* In free-rotating mode, show the compass right from the start */
+            if (rotationMode == RotationMode.FREE) {
+                compassView.visibility = View.VISIBLE
+            }
         }
 
         return presenter.androidView
@@ -206,6 +198,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private fun onOrientationSensorChanged() {
         if (orientationSensor!!.isStarted) {
             positionMarker.onOrientationEnable()
+            if (rotationMode != RotationMode.NONE) {
+                compassView.visibility = View.VISIBLE
+            }
 
             orientationJob = lifecycleScope.launch {
                 orientationSensor?.getAzimuthFlow()?.collect { azimuth ->
@@ -220,8 +215,30 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             orientationJob?.cancel()
             /* Set the MapView like it was before: North-oriented */
             orientationJob?.invokeOnCompletion {
-                mapView?.setAngle(0f)
+                if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
+                    animateMapViewToNorth()
+                    compassView.visibility = View.GONE
+                }
             }
+        }
+    }
+
+    private fun animateMapViewToNorth() {
+        /* Wrapper class, necessary for the the animator to work (which uses reflection to infer
+             * method names..) */
+        val wrapper = object {
+            fun setAngle(angle: Float) {
+                mapView?.setAngle(angle)
+            }
+
+            fun getAngle(): Float {
+                return referentialData.angle
+            }
+        }
+        ObjectAnimator.ofFloat(wrapper, "angle", if (referentialData.angle > 180f) 360f else 0f).apply {
+            interpolator = DecelerateInterpolator()
+            duration = 800
+            start()
         }
     }
 
