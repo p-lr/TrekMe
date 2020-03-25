@@ -26,6 +26,7 @@ import com.peterlaurence.trekme.core.sensors.OrientationSensor
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.ui.LocationProviderHolder
+import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
@@ -52,6 +53,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var mapView: MapView? = null
     private var mMap: Map? = null
     private lateinit var positionMarker: PositionOrientationMarker
+    private lateinit var compassView: CompassView
     private var lockView = false
     private var rotationMode: RotationMode = RotationMode.NONE
     private var requestManageTracksListener: RequestManageTracksListener? = null
@@ -78,6 +80,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         set(value) {
             field = value
             if (::positionMarker.isInitialized) positionMarker.referentialData = value
+            if (::compassView.isInitialized) compassView.referentialData = value
         }
 
     override fun onAttach(context: Context) {
@@ -124,6 +127,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         speedListener = presenter.view.speedIndicator
         distanceListener = presenter.view.distanceIndicator
         positionMarker = presenter.view.positionMarker
+        compassView = presenter.view.compassView
 
         /* Create the instance of the OrientationSensor */
         orientationSensor = OrientationSensor(requireActivity())
@@ -595,5 +599,6 @@ interface MapViewFragmentContract {
         val speedIndicator: MapViewFragment.SpeedListener
         val distanceIndicator: DistanceLayer.DistanceListener
         val positionMarker: PositionOrientationMarker
+        val compassView: CompassView
     }
 }

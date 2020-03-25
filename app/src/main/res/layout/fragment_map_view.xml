@@ -39,6 +39,16 @@
             android:visibility="gone"
             app:backgroundColor="@color/colorIndicatorOverlay"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <com.peterlaurence.trekme.ui.mapview.components.CompassView
+            android:id="@+id/compass"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            app:backgroundTint="@color/colorWhite"
+            app:layout_constraintBottom_toTopOf="@id/fab_position"
+            app:layout_constraintRight_toRightOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <data>

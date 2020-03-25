@@ -8,6 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapViewBinding
+import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 
 /**
@@ -30,6 +31,8 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
             get() = binding.indicatorOverlay
         override val positionMarker: PositionOrientationMarker
             get() = marker
+        override val compassView: CompassView
+            get() = binding.compass
     }
 
     override val androidView: View
