@@ -1,8 +1,10 @@
 package com.peterlaurence.trekme.ui.mapview
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.os.Bundle
 import android.view.*
+import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -128,6 +130,25 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         distanceListener = presenter.view.distanceIndicator
         positionMarker = presenter.view.positionMarker
         compassView = presenter.view.compassView
+
+        compassView.setOnClickListener {
+            /* Wrapper class, necessary for the the animator to work (which uses reflection to infer
+             * method names..) */
+            val wrapper = object {
+                fun setAngle(angle: Float) {
+                    mapView?.setAngle(angle)
+                }
+
+                fun getAngle(): Float {
+                    return referentialData.angle
+                }
+            }
+            ObjectAnimator.ofFloat(wrapper, "angle", if (referentialData.angle > 180f) 360f else 0f).apply {
+                interpolator = DecelerateInterpolator()
+                duration = 800
+                start()
+            }
+        }
 
         /* Create the instance of the OrientationSensor */
         orientationSensor = OrientationSensor(requireActivity())
