@@ -17,8 +17,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 60
-        versionName "1.9.5"
+        versionCode 61
+        versionName "2.0.0"
     }
     buildTypes {
         release {

@@ -20,6 +20,7 @@
 5. [Settings](#TOC-Settings)
   * [Start on the last map](#TOC-Start-on-last-map)
   * [Download folder](#TOC-Download-dir)
+  * [Rotation mode](#TOC-Rotation-mode)
 
 
 ## <a name="TOC-Overview"></a>Overview
@@ -334,3 +335,30 @@ In the "Download" section > "Download folder", you can chose between to director
 The first directory always corresponds to the internal memory. The second, if available, corresponds to a directory on the SD card. This directory is `Android/data/com.peterlaurence.trekme/downloaded`.
 
 Once the download folder is changed, your next map download will use it. But existing maps aren't moved.
+
+### <a name="#TOC-Rotation-mode"></a>Rotation mode
+
+Three rotation modes are available:
+
+* No rotation (by default)
+* Rotate only when showing orientation
+* Free rotation
+
+*Rotate only when showing orientation*
+
+In this mode, the map is rotated along with your device's orientation *if* you enable orientation
+display (while displaying a map, in the upper right menu > Show orientation).
+When orientation display is enabled, a small compass appears in the bottom right of the screen - the
+read side indicates the North. Whenever you like, you can disable orientation display. In this case, 
+the map is aligned to the North and the compass disappears. Also note that in this mode, pressing the
+compass has no effect. An example:
+
+<p align="center">
+<img src="doc/tuto/rotation-oriented.jpg" width="300">
+</p>
+
+*Free rotation*
+
+In this mode, you can rotate the map as will. The compass is always displayed, and pressing it aligns
+the map to the North. You can also enable or disable orientation display - it won't have consequences 
+on the orientation of the map.

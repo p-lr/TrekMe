@@ -21,6 +21,7 @@
 6. [Paramètres](#TOC-Settings)
   * [Démarrer sur la dernière carte](#TOC-Start-on-last-map)
   * [Dossier de téléchargement](#TOC-Download-dir)
+  * [Mode de rotation](#TOC-Rotation-mode)
 7. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
 
 
@@ -326,3 +327,31 @@ Dans la section Téléchargment > "Répertoire de téléchargement", vous avez l
 Le premier répertoire correspond toujours à la mémoire interne. Le second, s'il y en a un, à la carte SD. Ce dossier est `Android/data/com.peterlaurence.trekme/downloaded`.
 
 Une fois le répertoire modifié, votre prochain téléchargement de carte utilisera ce dossier. Mais les cartes existantes ne sont pas déplacées.
+
+### <a name="#TOC-Rotation-mode"></a>Mode de rotation
+
+Vous pouvez sélectionner parmi trois mode de rotation:
+
+* Aucune rotation (mode par défaut)
+* Tourner la carte selon l'orientation
+* Rotation libre
+
+*Tourner la carte selon l'orientation*
+
+Dans ce mode, la carte s'oriente en fonction d'orientation de votre appareil *si* vous activez l'affichage de
+l'orientation (lors du visionnage d'une carte, menu en haut à droite > Afficher l'orientation).
+Lorsque l'orientation est activée, apparaît également en bas à droite une petite boussole, dont
+l'aiguille rouge indique le Nord. Vous pouvez à tout moment choisir de désactiver temporairement la 
+rotation de la carte en désactivant l'affichage de l'orientation. Dans ce cas, la carte s'aligne sur
+le Nord et la boussole disparaît. A noter que dans ce mode, appuyer sur la boussole n'a aucun effet.
+Par exemple:
+
+<p align="center">
+<img src="doc/tuto/rotation-oriented.jpg" width="300">
+</p>
+
+*Rotation libre*
+
+Dans ce mode, vous pouvez tourner la carte à volonté. La boussole s'affiche toujours, et appuyer dessus
+aligne la carte sur le Nord. Vous pouvez aussi afficher ou masquer l'orientation, sans conséquence sur
+l'alignement de la carte.
