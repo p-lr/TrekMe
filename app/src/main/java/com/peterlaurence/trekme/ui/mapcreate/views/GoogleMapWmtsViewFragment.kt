@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -89,7 +88,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private val projection = MercatorProjection()
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
-    private val locationViewModel: LocationViewModel by viewModels()
+    private val locationViewModel: LocationViewModel by activityViewModels()
 
     private lateinit var area: Area
 
@@ -133,7 +132,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         super.onCreate(savedInstanceState)
 
         mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
-            ?: MapSource.OPEN_STREET_MAP
+                ?: MapSource.OPEN_STREET_MAP
 
         locationViewModel.setLocationProvider(locationProvider)
         locationViewModel.getLocationLiveData().observe(this, Observer<Location> {
@@ -146,12 +145,12 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View {
         rootView =
-            inflater.inflate(R.layout.fragment_wmts_view, container, false) as ConstraintLayout
+                inflater.inflate(R.layout.fragment_wmts_view, container, false) as ConstraintLayout
 
         return rootView
     }
@@ -216,10 +215,10 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
                 val values = IgnLayers.values().map { it.publicName }
                 val layerPublicName = viewModel.getLayerPublicNameForSource(mapSource)
                 val layerSelectDialog =
-                    SelectDialog.newInstance(title, values, layerPublicName, event)
+                        SelectDialog.newInstance(title, values, layerPublicName, event)
                 layerSelectDialog.show(
-                    activity!!.supportFragmentManager,
-                    "SelectDialog-${event.javaClass.canonicalName}"
+                        requireActivity().supportFragmentManager,
+                        "SelectDialog-${event.javaClass.canonicalName}"
                 )
             }
         }
@@ -307,7 +306,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     private fun CoroutineScope.checkTileAccessibility(): Job = launch {
         async(Dispatchers.IO) {
             val tileStreamProvider = viewModel.createTileStreamProvider(mapSource)
-                ?: return@async false
+                    ?: return@async false
             return@async when (mapSource) {
                 MapSource.IGN -> {
                     try {
@@ -358,8 +357,8 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         val mapView = MapView(context)
 
         val config = MapViewConfiguration(
-            19, mapSize, mapSize, tileSize,
-            tileStreamProvider.toMapViewTileStreamProvider()
+                19, mapSize, mapSize, tileSize,
+                tileStreamProvider.toMapViewTileStreamProvider()
         ).setWorkerCount(16)
 
         /* Particular case of OSM Maps, limit concurrency while fetching tiles to avoid being banned */
@@ -385,7 +384,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         this.mapView.id = R.id.tileview_ign_id
         this.mapView.isSaveEnabled = true
         val params = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
         rootView.addView(mapView, 0, params)
     }
@@ -396,7 +395,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     private fun addAreaLayer() {
         view?.post {
-            areaLayer = AreaLayer(context!!, object : AreaListener {
+            areaLayer = AreaLayer(requireContext(), object : AreaListener {
                 override fun areaChanged(area: Area) {
                     this@GoogleMapWmtsViewFragment.area = area
                 }

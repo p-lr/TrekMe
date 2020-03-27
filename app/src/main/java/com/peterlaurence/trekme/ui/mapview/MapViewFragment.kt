@@ -7,6 +7,7 @@ import android.view.*
 import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
@@ -75,7 +76,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var billing: Billing? = null
 
     private val mapViewViewModel: MapViewViewModel by viewModels()
-    private val locationViewModel: LocationViewModel by viewModels()
+    private val locationViewModel: LocationViewModel by activityViewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
 
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
@@ -175,7 +176,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter.setMapView(it)
         }
 
-        /* Then, asynchronously get the required settings and apply the map */
+        /* Then, asynchronously launch all required tasks */
         lifecycleScope.launch {
             /* First, the settings */
             getMapSettings()
@@ -186,6 +187,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             /* In free-rotating mode, show the compass right from the start */
             if (rotationMode == RotationMode.FREE) {
                 compassView.visibility = View.VISIBLE
+            }
+
+            /* Now that everything is set-up, update with latest location */
+            locationViewModel.getLocationLiveData().value?.also {
+                onLocationReceived(it)
             }
         }
 
@@ -447,8 +453,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* If there is no MapView, no need to go further */
         mapView ?: return
 
-        /* In the case there is no Projection defined, the latitude and longitude are used */
+        /* If the map isn't configured (yet), no need to go further */
         val map = mMap ?: return
+        /* In the case there is no Projection defined, the latitude and longitude are used */
         val projection = map.projection
         if (projection != null) {
             lifecycleScope.launch {
