@@ -14,6 +14,7 @@ import com.peterlaurence.trekme.ui.maplist.events.*
 import com.peterlaurence.trekme.util.ZipTask
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collect
@@ -87,13 +88,14 @@ class MapListViewModel : ViewModel() {
             }
 
             override fun onZipFinished() {
-                offer(ZipFinishedEvent(mapId))
-                offer(ZipCloseEvent)
+                /* Use sendBlocking instead of offer to be sure not to lose those events */
+                sendBlocking(ZipFinishedEvent(mapId))
+                sendBlocking(ZipCloseEvent)
                 channel.close()
             }
 
             override fun onZipError() {
-                offer(ZipError)
+                sendBlocking(ZipError)
                 channel.close()
             }
         }
