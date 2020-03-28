@@ -21,6 +21,7 @@
   * [Start on the last map](#TOC-Start-on-last-map)
   * [Download folder](#TOC-Download-dir)
   * [Rotation mode](#TOC-Rotation-mode)
+6. [Save your maps](#TOC-Save-maps)
 
 
 ## <a name="TOC-Overview"></a>Overview
@@ -126,22 +127,12 @@ From the map configuration view, you can:
 
 ### <a name="TOC-Import-from-archive"></a>Import from an archive
 
-In this mode you use an archive made from an existing TrekMe map. The archive can be made by
-yourself or someone else.
-A map can be archived from the map list menu, using the save button at the bottom right corner:
-
-<p align="center">
-<img src="doc/tuto/bali.jpg" width="300">
-</p>
-
-This creates a zip file (which we call archive) inside the `trekme/archives` folder of your device's SD card.
-To use someone else's archive:
-1. Copy the zip file inside the `trekme` folder or any of its subdirectories
-2. Menu > Import
-3. Click the import button of the archive of your choice
-
-This archive feature can also be used for backup purposes, as everything related to the map is saved
-(calibration, routes, points of interest, etc.).
+A map can also be created from an existing archive. The archive can be made by yourself or someone 
+else (see below to create an archive). An archive is a zip file.
+To import from an archive, use the main menu and choose "Import a map". Then, press the button 
+"Import from folder" in the middle of the screen. Navigate to the folder which contains the archive(s)
+and select that folder. Then, TrekMe shows you the recognized archives, which you can individually
+import.
 
 ### <a name="TOC-The-hard-way"></a>Manual map creation - the hard way
 
@@ -336,7 +327,7 @@ The first directory always corresponds to the internal memory. The second, if av
 
 Once the download folder is changed, your next map download will use it. But existing maps aren't moved.
 
-### <a name="#TOC-Rotation-mode"></a>Rotation mode
+### <a name="TOC-Rotation-mode"></a>Rotation mode
 
 Three rotation modes are available:
 
@@ -362,3 +353,23 @@ compass has no effect. An example:
 In this mode, you can rotate the map as will. The compass is always displayed, and pressing it aligns
 the map to the North. You can also enable or disable orientation display - it won't have consequences 
 on the orientation of the map.
+
+### <a name="TOC-Save-maps"></a>Save your maps
+
+Starting from Android 10, all maps (no matter if they're on the internal memory or SD card) are
+deleted when TrekMe is uninstalled. Consequently, it's highly recommended to use the backup feature
+of TrekMe. You'll be able to restore your maps if you e.g change for a new device.
+
+To create an archive, go to the list of maps and press the "MANAGE" button at the bottom left:
+
+<p align="center">
+<img src="doc/tuto/bali-en.jpg" width="300">
+</p>
+
+You land on a bunch of options related to the selected map. The last option is a "Save" button - press
+it. A dialog explains that you're about to choose the folder in which the archive will be created.
+You can choose whatever folder you want, but don't select a subdirectory of TrekMe. If you continue,
+the archive will be created in background - you can see the progression in the notification area of the
+device.
+
+An archive contains everything related to the map (calibration, routes, points of interest, etc.).

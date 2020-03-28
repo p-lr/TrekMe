@@ -22,7 +22,8 @@
   * [Démarrer sur la dernière carte](#TOC-Start-on-last-map)
   * [Dossier de téléchargement](#TOC-Download-dir)
   * [Mode de rotation](#TOC-Rotation-mode)
-7. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
+7. [Sauvegardez vos cartes](#TOC-Save-maps)
+8. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
 
 
 ## <a name="TOC-Overview"></a>Introduction
@@ -117,20 +118,12 @@ Vous accédez alors à la configuration de la carte, où vous pouvez :
 
 ### <a name="TOC-Import-from-archive"></a>Depuis une archive
 
-Une carte peut aussi être créée en important une archive d'une carte existante. L'archive peut avoir été faite par vous même ou quelqu'un d'autre. 
-Pour créer une archive, depuis la liste des cartes, utilisez le bouton qui ressemble à une disquette, sous l'image de présentation :
-
-<p align="center">
-<img src="doc/tuto/bali.jpg" width="300">
-</p>
-
-Cela  crée un fichier zip (que l'on appelle archive) dans le dossier `trekme/archives` de la mémoire interne de votre téléphone.
-Pour utiliser une archive faite par quelqu'un d'autre que vous :
-1. Copiez le fichier zip dans le dossier `trekme` ou n'importe quel de ses sous dossiers
-2. Menu > "Importer"
-3. Utilisez le bouton "Importer" de l'archive de votre choix
-
-Cette fonctionnalité d'archive peut aussi être utilisée pour de la sauvegarde, puisque tout ce qui est relatif à la carte est enregistré (calibration, traces, points d'intérêt, etc).
+Une carte peut aussi être créée en important une archive d'une carte existante. L'archive peut avoir été faite par vous même ou quelqu'un d'autre (voir plus bas pour créer une archive). Elle se présente sous la 
+forme d'un fichier zip.
+Pour importer une archive, utilisez le menu principal puis "Importer une carte". Appuyez alors sur le
+bouton "Importer depuis un dossier", au milieu de l'écran. Naviguez alors vers le dossier qui contient
+la ou les archives et sélectionnez-le. TrekMe liste alors les archives reconnues, que vous pouvez 
+importer individuellement.
 
 ### <a name="TOC-The-hard-way"></a>Création manuelle - le plus difficile
 
@@ -328,7 +321,7 @@ Le premier répertoire correspond toujours à la mémoire interne. Le second, s'
 
 Une fois le répertoire modifié, votre prochain téléchargement de carte utilisera ce dossier. Mais les cartes existantes ne sont pas déplacées.
 
-### <a name="#TOC-Rotation-mode"></a>Mode de rotation
+### <a name="TOC-Rotation-mode"></a>Mode de rotation
 
 Vous pouvez sélectionner parmi trois mode de rotation:
 
@@ -355,3 +348,24 @@ Par exemple:
 Dans ce mode, vous pouvez tourner la carte à volonté. La boussole s'affiche toujours, et appuyer dessus
 aligne la carte sur le Nord. Vous pouvez aussi afficher ou masquer l'orientation, sans conséquence sur
 l'alignement de la carte.
+
+### <a name="TOC-Save-maps"></a>Sauvegardez vos cartes
+
+A partir d'Android 10, toutes les cartes (qu'elles soient sur mémoire interne ou carte SD) sont supprimées
+si TrekMe est désinstallé. Il vous est donc fortement conseillé d'utiliser la fonctionnalité de sauvegarde
+intégrée à TrekMe. Cela vous permettra de restaurer vos cartes si vous changez de téléphone par exemple.
+
+Pour créer une archive, depuis la liste des cartes, utilisez le bouton "GERER", en bas à gauche :
+
+<p align="center">
+<img src="doc/tuto/bali-fr.jpg" width="300">
+</p>
+
+Vous arrivez alors dans les options pour cette carte. Tout en bas, il y a un bouton "Sauvegarder".
+Appuyez dessus ; un message vous explique alors que vous devez choisir le dossier dans votre téléphone
+où l'archive va être créée. Vous pouvez en effet choisir le dossier que vous voulez (ne choisissez pas
+un dossier interne à l'application TrekMe..).
+Si vous continuez la procédure, l'archive a être créée et vous pouvez suivre la progression dans la
+zone de notification du téléphone.
+
+Une archive contient tout ce qui est relatif à la carte (calibration, traces, points d'intérêt, etc).
