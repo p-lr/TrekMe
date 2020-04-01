@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -39,7 +40,9 @@ class IgnLicenseViewModel : ViewModel() {
                 // something wrong on our side
                 ignLicenseStatus.postValue(LicenseStatus.PURCHASED)
             } catch (e: IllegalStateException) {
-                // can't check license info, so assume it's not valid
+                // can't check license info, so assume it's not valid by not posting a value to the
+                // LiveData.
+                Log.e(TAG, e.message ?: Log.getStackTraceString(e))
             } catch (e: NotSupportedException) {
                 // TODO: alert the user that it can't buy the license and should ask for refund
             }
@@ -101,3 +104,5 @@ data class IgnLicenseDetails(val skuDetails: SkuDetails) {
 
 class NotSupportedException : Exception()
 class ProductNotFoundException : Exception()
+
+private const val TAG = "IgnLicenceViewModel"

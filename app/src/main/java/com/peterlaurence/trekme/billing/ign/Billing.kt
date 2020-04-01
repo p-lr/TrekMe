@@ -108,10 +108,10 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
      * This is why the acknowledgement is also made here.
      */
     suspend fun acknowledgeIgnLicense(purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback): Boolean {
-        connectWithRetry()
-
+        runCatching { connectWithRetry() }.onFailure { return false }
         val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
-        return purchases?.purchasesList?.getIgnLicense()?.let {
+
+        return purchases.purchasesList?.getIgnLicense()?.let {
             this.purchaseAcknowledgedCallback = purchaseAcknowledgedCallback
             if (shouldAcknowledgeIgnLicense(it)) {
                 acknowledgeIgnLicense(it)
@@ -121,7 +121,7 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
     }
 
     suspend fun getIgnLicensePurchase(): Purchase? {
-        connectWithRetry()
+        runCatching { connectWithRetry() }.onFailure { return null }
         val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
 
         return purchases.purchasesList.getValidIgnLicense()?.let {

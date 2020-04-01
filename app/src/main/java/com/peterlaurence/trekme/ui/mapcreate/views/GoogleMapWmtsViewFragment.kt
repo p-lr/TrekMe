@@ -12,6 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
@@ -39,10 +40,11 @@ import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Displays Google Maps - compatible tile matrix sets.
@@ -73,8 +75,7 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author peterLaurence on 11/05/18
  */
-class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
-    private var job = Job()
+class GoogleMapWmtsViewFragment : Fragment() {
     private lateinit var mapSource: MapSource
     private lateinit var rootView: ConstraintLayout
     private lateinit var mapView: MapView
@@ -114,9 +115,6 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
             return fragment
         }
     }
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -227,7 +225,6 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     override fun onStart() {
         super.onStart()
-        job = Job()
         EventBus.getDefault().register(this)
     }
 
@@ -245,7 +242,6 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
 
     override fun onStop() {
         EventBus.getDefault().unregister(this)
-        job.cancel()
         super.onStop()
     }
 
@@ -280,57 +276,57 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         configure()
     }
 
-    private fun configure() {
-        /* 1- Check current condition are OK */
-        checkTileAccessibility()
+    private fun configure() = lifecycleScope.launch {
+        /* 0- TODO: Show an infinite scrollbar to the user until all operations below are done */
 
-        /* 2- Create and add the MapView */
+        /* 1- Create the TileStreamProvider */
         val streamProvider = viewModel.createTileStreamProvider(mapSource)
-        if (streamProvider != null) {
-            addMapView(streamProvider)
-        } else {
+        if (streamProvider == null) {
             showWarningMessage()
+            return@launch
+        }
+
+        /* 2- Configure the mapView only if the test succeeds */
+        val checkResult = checkTileAccessibility(streamProvider)
+        try {
+            if (!checkResult) {
+                showWarningMessage()
+                return@launch
+            } else {
+                addMapView(streamProvider)
+                hideWarningMessage()
+            }
+        } catch (e: IllegalStateException) {
+            /* Since this can happen anytime during the lifecycle of this fragment, we should be
+             * resilient and discard this error */
         }
 
         /* 3- Scroll to the init position if there is one pre-configured */
         viewModel.getScaleAndScrollInitConfig(mapSource)?.also {
-            mapView.scale = it.scale
-            mapView.scrollTo(it.scrollX, it.scrollY)
+            /* At this point the mapView should be initialized, but we never know.. */
+            if (::mapView.isInitialized) {
+                mapView.scale = it.scale
+                mapView.scrollTo(it.scrollX, it.scrollY)
+            }
         }
     }
 
     /**
      * Simple check whether we are able to download tiles or not.
-     * If not, display a warning.
      */
-    private fun CoroutineScope.checkTileAccessibility(): Job = launch {
-        async(Dispatchers.IO) {
-            val tileStreamProvider = viewModel.createTileStreamProvider(mapSource)
-                    ?: return@async false
-            return@async when (mapSource) {
-                MapSource.IGN -> {
-                    try {
-                        checkIgnProvider(tileStreamProvider)
-                    } catch (e: Exception) {
-                        false
-                    }
+    private suspend fun checkTileAccessibility(tileStreamProvider: TileStreamProvider): Boolean = withContext(Dispatchers.IO) {
+        when (mapSource) {
+            MapSource.IGN -> {
+                try {
+                    checkIgnProvider(tileStreamProvider)
+                } catch (e: Exception) {
+                    false
                 }
-                MapSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
-                MapSource.USGS -> checkUSGSProvider(tileStreamProvider)
-                MapSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
-                MapSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
             }
-        }.await().also {
-            try {
-                if (!it) {
-                    showWarningMessage()
-                } else {
-                    hideWarningMessage()
-                }
-            } catch (e: IllegalStateException) {
-                /* Since the result of this job can happen anytime during the lifecycle of this
-                 * fragment, we should be resilient regarding this kind of error */
-            }
+            MapSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
+            MapSource.USGS -> checkUSGSProvider(tileStreamProvider)
+            MapSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
+            MapSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
         }
     }
 
@@ -394,6 +390,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
     }
 
     private fun addAreaLayer() {
+        if (!::mapView.isInitialized) return
         view?.post {
             areaLayer = AreaLayer(requireContext(), object : AreaListener {
                 override fun areaChanged(area: Area) {
@@ -434,7 +431,7 @@ class GoogleMapWmtsViewFragment : Fragment(), CoroutineScope {
         }
 
         /* A Projection is always defined in this case */
-        launch {
+        lifecycleScope.launch {
             val projectedValues = withContext(Dispatchers.Default) {
                 projection.doProjection(location.latitude, location.longitude)
             }

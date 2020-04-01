@@ -53,7 +53,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        billing = Billing(context, activity!!)
+        billing = Billing(context, requireActivity())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
