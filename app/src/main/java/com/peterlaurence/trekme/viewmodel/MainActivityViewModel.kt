@@ -17,12 +17,14 @@ import org.greenrobot.eventbus.EventBus
  * It manages model specific considerations that are set here outside of the main activity which
  * should mainly used to manage fragments.
  *
- * Avoids excessive [MapLoader.updateMaps] calls by managing an internal [doneAtLeastOnce] flag.
+ * Avoids excessive [MapLoader.updateMaps] calls by managing an internal [attemptedAtLeastOnce] flag.
+ * It is also important because the activity might start after an Intent with a result code. In this
+ * case, [attemptedAtLeastOnce] is true and we shall not trigger background processing.
  *
  * @author peterLaurence on 07/10/2019
  */
 class MainActivityViewModel : ViewModel() {
-    private var doneAtLeastOnce = false
+    private var attemptedAtLeastOnce = false
 
     /**
      * When the [MainActivity] first starts, we either:
@@ -31,7 +33,9 @@ class MainActivityViewModel : ViewModel() {
      */
     fun onActivityStart() {
         viewModelScope.launch {
-            if (doneAtLeastOnce) return@launch
+            if (attemptedAtLeastOnce) return@launch
+            attemptedAtLeastOnce = true // remember that we tried once
+
             MapLoader.clearMaps()
             MapLoader.updateMaps()
 
@@ -54,7 +58,6 @@ class MainActivityViewModel : ViewModel() {
                     }
                 }
             }
-            doneAtLeastOnce = MapLoader.maps.isNotEmpty()
         }
     }
 }

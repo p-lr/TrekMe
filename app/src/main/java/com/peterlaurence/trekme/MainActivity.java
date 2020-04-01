@@ -34,7 +34,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.google.android.material.navigation.NavigationView;
@@ -410,7 +409,8 @@ public class MainActivity extends AppCompatActivity
      * Here should be all observable subscriptions on various ViewModel's LivaData.
      */
     private void initViewModels() {
-        ViewModelProviders.of(this).get(LocationServiceViewModel.class).getStatus().observe(this,
+        LocationServiceViewModel locationServiceViewModel = new ViewModelProvider(this).get(LocationServiceViewModel.class);
+        locationServiceViewModel.getStatus().observe(this,
                 isActive -> {
                     // Set the visibility of the "Track Statistics" fragment menu, which we want to
                     // see only if the LocationService is started.
