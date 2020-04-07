@@ -13,6 +13,10 @@ import org.greenrobot.eventbus.ThreadMode
  * Expose to the activity and fragment/views the state of the [LocationService].
  * It listens the [LocationServiceStatus] event that the service sends through the event-bus.
  *
+ * TODO: Remove the dependency on EventBus from this class and only expose a LiveData from the
+ * LocationService, or (maybe better) expose a Flow of [Boolean], to be converted to LiveData in this
+ * ViewModel (using Flow.asLiveData()).
+ *
  * @author peterLaurence on 27/04/2019
  */
 class LocationServiceViewModel: ViewModel() {

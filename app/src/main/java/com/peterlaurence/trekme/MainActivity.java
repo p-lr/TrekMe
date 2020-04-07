@@ -68,6 +68,7 @@ import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageF
 import com.peterlaurence.trekme.ui.record.RecordFragment;
 import com.peterlaurence.trekme.ui.settings.SettingsFragment;
 import com.peterlaurence.trekme.ui.trackview.TrackViewFragment;
+import com.peterlaurence.trekme.ui.wifip2p.WifiP2pFragment;
 import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel;
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel;
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent;
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity
     private static final String SETTINGS_FRAGMENT = "settingsFragment";
     private static final String TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment";
     private static final String MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment";
+    private static final String WIFI_P2P_FRAGMENT_TAG = "wifiP2pFragment";
     private static final List<String> FRAGMENT_TAGS = Collections.unmodifiableList(
             new ArrayList<String>() {{
                 add(MAP_FRAGMENT_TAG);
@@ -124,6 +126,7 @@ public class MainActivity extends AppCompatActivity
                 add(RECORD_FRAGMENT_TAG);
                 add(TRACK_VIEW_FRAGMENT_TAG);
                 add(SETTINGS_FRAGMENT);
+                add(WIFI_P2P_FRAGMENT_TAG);
             }});
     /* Permission-group codes */
     private static final int REQUEST_MINIMAL = 1;
@@ -481,6 +484,10 @@ public class MainActivity extends AppCompatActivity
                 showMapImportFragment();
                 break;
 
+            case R.id.nav_share:
+                showWifiP2pFragment();
+                break;
+
             case R.id.nav_track_stats:
                 showTrackViewFragment();
                 break;
@@ -718,6 +725,10 @@ public class MainActivity extends AppCompatActivity
 
     private void showMapImportFragment() {
         showFragment(MAP_IMPORT_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, MapImportFragment.class);
+    }
+
+    private void showWifiP2pFragment() {
+        showFragment(WIFI_P2P_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, WifiP2pFragment.class);
     }
 
     private void showRecordFragment() {

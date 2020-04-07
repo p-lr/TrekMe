@@ -12,6 +12,7 @@
     <string name="record_menu_title">Gpx Record</string>
     <string name="track_stats_menu_title">Recording stats</string>
     <string name="import_menu_title">Import a map</string>
+    <string name="share_menu_title">Receive or send</string>
     <string name="settings_menu_title">Settings</string>
     <string name="help">Help</string>
     <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.md</string>
@@ -32,6 +33,10 @@
     <string name="service_download_finished">Map download finished</string>
     <string name="service_download_stop">Stop</string>
     <string name="service_download_bad_storage">TrekMe can\'t write to your internal storage or your SD card. It can be a permission issue. Please check that all permissions of TrekMe are granted, and reboot your phone, if necessary.</string>
+
+    <!-- WifiP2pService -->
+    <string name="service_wifip2p_name">WifiP2p service</string>
+    <string name="service_wifip2p_action">Map send and receive</string>
 
     <!-- MapDownloadDialog -->
     <string name="map_download_dialog_title">Current map download</string>

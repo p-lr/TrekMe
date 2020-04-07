@@ -181,4 +181,7 @@
         Il vous faut simplement copier-coller le contenu de ce dossier dans /storage/emulated/0/Android/data/com.peterlaurence.trekme/files\n
         Si vous avez besoin d\'aide, contactez-moi par mail: plr.devs@gmail.com
     </string>
+    <string name="service_wifip2p_name">Service WifiP2p</string>
+    <string name="service_wifip2p_action">Envoi et réception de carte</string>
+    <string name="share_menu_title">Recevoir et envoyer</string>
 </resources>
