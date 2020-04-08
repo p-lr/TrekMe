@@ -7,8 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.Network
@@ -16,16 +14,19 @@ import android.net.NetworkRequest
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class WifiP2pService : Service() {
     private val notificationChannelId = "peterlaurence.WifiP2pService"
     private val wifiP2pServiceNofificationId = 659531
-    private lateinit var icon: Bitmap
     private val intentFilter = IntentFilter()
     private var channel: WifiP2pManager.Channel? = null
     private var manager: WifiP2pManager? = null
@@ -35,15 +36,31 @@ class WifiP2pService : Service() {
     private var isWifiP2pEnabled = false
         private set(value) {
             field = value
-            if (!value) reset()
+            if (!value) resetWifiP2p()
         }
 
     private var isDiscoveryActive = false
 
     private var isNetworkAvailable = false
 
-    private val stopAction = "stop"
-    private var started = false
+    enum class StartAction {
+        START_SEND, START_RCV
+    }
+
+    object StopAction
+
+    private var serviceStarted = false
+
+    private var wifiP2pState: WifiP2pState = Stopped
+        private set(value) {
+            field = value
+            stateChannel.offer(value)
+        }
+
+    companion object {
+        private val stateChannel = ConflatedBroadcastChannel<WifiP2pState>()
+        val stateFlow: Flow<WifiP2pState> = stateChannel.asFlow()
+    }
 
     private val receiver: BroadcastReceiver by lazy {
         object : BroadcastReceiver() {
@@ -79,12 +96,7 @@ class WifiP2pService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        icon = BitmapFactory.decodeResource(resources,
-                R.drawable.ic_share_black_24dp, BitmapFactory.Options().apply {
-            outWidth = 128
-            outHeight = 128
-        })
-
+        println("CREATE")
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
@@ -103,16 +115,36 @@ class WifiP2pService : Service() {
                 })
 
         manager = getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
-        channel = manager?.initialize(this, mainLooper, null)
 
         /* register the BroadcastReceiver with the intent values to be matched  */
         registerReceiver(receiver, intentFilter)
     }
 
+    /**
+     * Accepts only three possible actions:
+     * * [StartAction.START_RCV]  -> Starts the service in receiving mode
+     * * [StartAction.START_SEND] -> Starts the service in sending mode
+     * * [StopAction]             -> Stops the service
+     */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        if (intent.action !in (StartAction.values().map { it.name } + StopAction::class.java.name)) {
+            Log.e(TAG, "Illegal action sent to WifiP2pService")
+            return START_NOT_STICKY
+        }
+
         /* If the user used the notification action-stop button, stop the service */
-        if (intent.action == stopAction) {
-            started = false
+        if (intent.action == StopAction::class.java.name) {
+            /* Unregister Android-specific listener */
+            unregisterReceiver(receiver)
+
+            /* Stop any ongoing coroutine */
+            scope.cancel()
+
+            /* Stop the WifiP2p framework */
+            resetWifiP2p()
+
+            /* Stop the service */
+            serviceStarted = false
             stopForeground(true)
             stopSelf()
             return START_NOT_STICKY
@@ -122,9 +154,7 @@ class WifiP2pService : Service() {
                 .setContentTitle(getText(R.string.app_name))
                 .setContentText(getText(R.string.service_location_action))
                 .setSmallIcon(R.drawable.ic_share_black_24dp)
-                .setLargeIcon(icon)
                 .setOngoing(true)
-
 
         /* This is only needed on Devices on Android O and above */
         if (android.os.Build.VERSION.SDK_INT >= 26) {
@@ -137,17 +167,33 @@ class WifiP2pService : Service() {
         }
 
         startForeground(wifiP2pServiceNofificationId, notificationBuilder.build())
-        started = true
+
+        initialize()
+        serviceStarted = true
 
         return START_NOT_STICKY
     }
 
-    /**
-     * Remove all peers and clear all fields. This is called on
-     * BroadcastReceiver receiving a state change event.
-     */
-    private fun reset() {
+    private fun resetWifiP2p() {
+        val manager = manager ?: return
+        val channel = channel ?: return
 
+        /* We don't care about the success or failure of this call, this service is going to
+         * shutdown anyway. */
+        manager.cancelConnect(channel, null)
+        wifiP2pState = Stopped
+    }
+
+    private fun initialize() {
+        channel = manager?.initialize(this, mainLooper) {
+            channel = null
+
+            /* Notify stopped */
+            wifiP2pState = Stopped
+        }
+
+        /* Notify started */
+        wifiP2pState = Started
     }
 }
 
@@ -155,3 +201,21 @@ private suspend fun WifiP2pManager.requestPeers(c: WifiP2pManager.Channel): Wifi
     val wrapper = WifiP2pManager.PeerListListener { peers -> continuation.resume(peers) }
     requestPeers(c, wrapper)
 }
+
+sealed class WifiP2pState : Comparable<WifiP2pState> {
+    abstract val index: Int
+    override fun compareTo(other: WifiP2pState): Int {
+        if (this == other) return 0
+        return if (index < other.index) -1 else 1
+    }
+}
+
+object Started : WifiP2pState() {
+    override val index: Int = 0
+}
+
+object Stopped : WifiP2pState() {
+    override val index: Int = 10
+}
+
+private val TAG = WifiP2pService::class.java.name

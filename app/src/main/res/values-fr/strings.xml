@@ -68,7 +68,7 @@
     <string name="confirm_import">Vous pouvez maintenant importer la carte</string>
     <string name="service_location_name">Service de localisation</string>
     <string name="service_location_action">Enregistrement GPX</string>
-    <string name="record_menu_title">Enregistrement du parcours</string>
+    <string name="record_menu_title">Enregistrement GPX</string>
     <string name="control_card_title">Commandes</string>
     <string name="control_card_subtitle">Démarrer ou arrêter l\'enregistrement</string>
     <string name="recordings_list_title">Enregistrements GPX</string>

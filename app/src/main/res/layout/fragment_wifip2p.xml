@@ -41,18 +41,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/receive_btn" />
 
-    <TextView
+    <EditText
         android:id="@+id/text_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/button3"
+        app:layout_constraintBottom_toTopOf="@+id/stop_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/divider" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/stop_btn"
         style="@style/Widget.AppCompat.Button.Colored"
         android:backgroundTint="@color/colorAccentRed"
         android:layout_width="wrap_content"

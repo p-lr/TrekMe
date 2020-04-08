@@ -27,4 +27,8 @@ class LocationViewModel: ViewModel() {
     }
 
     fun getLocationLiveData(): LiveData<Location> = locationLiveData
+
+    override fun onCleared() {
+        locationProvider = null
+    }
 }
