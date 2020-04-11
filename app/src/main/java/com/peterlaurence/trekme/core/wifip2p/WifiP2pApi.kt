@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.wifip2p
 
+import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pServiceInfo
@@ -110,4 +111,17 @@ suspend fun WifiP2pManager.discoverServices(c: WifiP2pManager.Channel): Boolean 
         }
     }
     discoverServices(c, listener)
+}
+
+suspend fun WifiP2pManager.connect(c: WifiP2pManager.Channel, conf: WifiP2pConfig): Boolean = suspendCoroutine { cont ->
+    val listener = object : WifiP2pManager.ActionListener {
+        override fun onSuccess() {
+            cont.resume(true)
+        }
+
+        override fun onFailure(reason: Int) {
+            cont.resume(false)
+        }
+    }
+    connect(c, conf, listener)
 }
