@@ -6,6 +6,7 @@ import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pServiceRequest
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 suspend fun WifiP2pManager.requestPeers(c: WifiP2pManager.Channel): WifiP2pDeviceList? = suspendCoroutine { continuation ->
@@ -22,7 +23,7 @@ suspend fun WifiP2pManager.addLocalService(c: WifiP2pManager.Channel, servInfo: 
         override fun onFailure(reason: Int) {
             cont.resume(false)
             if (reason == WifiP2pManager.P2P_UNSUPPORTED) {
-                throw IllegalStateException()
+                cont.resumeWithException(IllegalStateException())
             } else cont.resume(false)
         }
     }
@@ -77,7 +78,7 @@ suspend fun WifiP2pManager.discoverPeers(c: WifiP2pManager.Channel): Boolean = s
         override fun onFailure(reason: Int) {
             cont.resume(false)
             if (reason == WifiP2pManager.P2P_UNSUPPORTED) {
-                throw IllegalStateException()
+                cont.resumeWithException(IllegalStateException())
             } else cont.resume(false)
         }
     }
@@ -106,7 +107,7 @@ suspend fun WifiP2pManager.discoverServices(c: WifiP2pManager.Channel): Boolean 
         override fun onFailure(reason: Int) {
             cont.resume(false)
             if (reason == WifiP2pManager.P2P_UNSUPPORTED) {
-                throw IllegalStateException()
+                cont.resumeWithException(IllegalStateException())
             } else cont.resume(false)
         }
     }

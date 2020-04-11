@@ -21,15 +21,12 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import kotlin.coroutines.resumeWithException
 
 class WifiP2pService : Service() {
     private val notificationChannelId = "peterlaurence.WifiP2pService"
@@ -39,6 +36,9 @@ class WifiP2pService : Service() {
     private var manager: WifiP2pManager? = null
     private var job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.Main)
+
+    private val serviceName = "_trekme_mapshare"
+    private val serviceType = "_presence._tcp"
 
     private var isWifiP2pEnabled = false
         private set(value) {
@@ -192,6 +192,7 @@ class WifiP2pService : Service() {
                     connectDevice(device)
                 }
             }.onFailure {
+                println("Caught exception $it")
                 // Warn the user that Wifi P2P isn't supported
             }
         }
@@ -235,7 +236,7 @@ class WifiP2pService : Service() {
         )
 
         val serviceInfo =
-                WifiP2pDnsSdServiceInfo.newInstance("_trekme_mapshare", "_presence._tcp", record)
+                WifiP2pDnsSdServiceInfo.newInstance(serviceName, "_presence._tcp", record)
 
         val channel = channel ?: return
         val manager = manager ?: return
@@ -248,17 +249,22 @@ class WifiP2pService : Service() {
         }
     }
 
-
-    private suspend fun discoverReceivingDevice(): WifiP2pDevice = suspendCoroutine { cont ->
-        val channel = channel ?: return@suspendCoroutine
-        val manager = manager ?: return@suspendCoroutine
+    /**
+     * Discovers the service which the receiving device exposes.
+     * If the service is discovered, this suspending function resumes with a [WifiP2pDevice].
+     * If anything goes wrong other than an IllegalStateException, the continuation is cancelled.
+     * An IllegalStateException is thrown if WifiP2P isn't supported by the sending device.
+     */
+    private suspend fun discoverReceivingDevice(): WifiP2pDevice = suspendCancellableCoroutine { cont ->
+        val channel = channel ?: return@suspendCancellableCoroutine
+        val manager = manager ?: return@suspendCancellableCoroutine
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
             println("First listener")
             Log.d(TAG, "DnsSdTxtRecord available -$record")
             if (fullDomain.startsWith("_trekme_mapshare")) {
                 record["listenport"]?.also {
                     println(device.deviceAddress)
-                    cont.resume(device)
+                    if (cont.isActive) cont.resume(device)
                 }
             }
         }
@@ -270,15 +276,25 @@ class WifiP2pService : Service() {
         manager.setDnsSdResponseListeners(channel, servListener, txtListener)
 
         /* Now that listeners are set, discover the service */
-        val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance("_trekme_mapshare", "_presence._tcp")
+        val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance(serviceName, serviceType)
         scope.launch {
-            val serviceAdded = manager.addServiceRequest(channel, serviceRequest)
-            if (serviceAdded) {
-                manager.discoverServices(channel).also { success ->
-                    if (success) {
-                        println("Service successfully discovered")
+            runCatching {
+                val serviceAdded = manager.addServiceRequest(channel, serviceRequest)
+                if (serviceAdded) {
+                    manager.discoverServices(channel).also { success ->
+                        if (success) {
+                            println("Service successfully discovered")
+                        } else {
+                            // Something went wrong. Alert user - retry?
+                            cont.cancel()
+                        }
                     }
+                } else {
+                    // Something went wrong. Alert user - retry?
+                    cont.cancel()
                 }
+            }.onFailure {
+                cont.resumeWithException(IllegalStateException())
             }
         }
     }
