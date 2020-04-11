@@ -11,18 +11,20 @@ import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
-import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.launch
 
 class WifiP2pService : Service() {
     private val notificationChannelId = "peterlaurence.WifiP2pService"
@@ -36,7 +38,7 @@ class WifiP2pService : Service() {
     private var isWifiP2pEnabled = false
         private set(value) {
             field = value
-            if (!value) resetWifiP2p()
+//            if (!value) resetWifiP2p()
         }
 
     private var isDiscoveryActive = false
@@ -69,13 +71,14 @@ class WifiP2pService : Service() {
                     WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> {
                         val state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)
                         isWifiP2pEnabled = state == WifiP2pManager.WIFI_P2P_STATE_ENABLED
+                        println("Wifi P2p enabled: $isWifiP2pEnabled")
                     }
                     WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION -> {
                         val state = intent.getIntExtra(WifiP2pManager.EXTRA_DISCOVERY_STATE, -1)
                         isDiscoveryActive = state == WifiP2pManager.WIFI_P2P_DISCOVERY_STARTED
                     }
                     WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
-
+                        println("Peers changed")
                         /* Request available peers */
                         val channel = channel ?: return
                         scope.launch {
@@ -135,18 +138,21 @@ class WifiP2pService : Service() {
         /* If the user used the notification action-stop button, stop the service */
         if (intent.action == StopAction::class.java.name) {
             /* Unregister Android-specific listener */
-            unregisterReceiver(receiver)
-
-            /* Stop any ongoing coroutine */
-            scope.cancel()
+            runCatching {
+                // May throw IllegalStateException
+                unregisterReceiver(receiver)
+            }
 
             /* Stop the WifiP2p framework */
-            resetWifiP2p()
+            scope.launch {
+                stopForeground(true)
+                resetWifiP2p()
 
-            /* Stop the service */
-            serviceStarted = false
-            stopForeground(true)
-            stopSelf()
+                /* Stop the service */
+                serviceStarted = false
+                stopSelf()
+            }
+
             return START_NOT_STICKY
         }
 
@@ -168,23 +174,39 @@ class WifiP2pService : Service() {
 
         startForeground(wifiP2pServiceNofificationId, notificationBuilder.build())
 
-        initialize()
         serviceStarted = true
+
+        scope.launch {
+            runCatching {
+                initialize()
+                if (intent.action == StartAction.START_RCV.name) {
+                    startRegistration()
+                }
+                if (intent.action == StartAction.START_SEND.name) {
+                    discoverService()
+                }
+            }.onFailure {
+                // Warn the user that Wifi P2P isn't supported
+            }
+        }
 
         return START_NOT_STICKY
     }
 
-    private fun resetWifiP2p() {
+    private suspend fun resetWifiP2p() {
         val manager = manager ?: return
         val channel = channel ?: return
 
         /* We don't care about the success or failure of this call, this service is going to
          * shutdown anyway. */
-        manager.cancelConnect(channel, null)
+        manager.cancelConnect(channel).also { println("Cancel connect $it") }
+        manager.clearLocalServices(channel).also { println("ClearLocalServices $it") }
+        manager.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
+
         wifiP2pState = Stopped
     }
 
-    private fun initialize() {
+    private suspend fun initialize() {
         channel = manager?.initialize(this, mainLooper) {
             channel = null
 
@@ -194,12 +216,64 @@ class WifiP2pService : Service() {
 
         /* Notify started */
         wifiP2pState = Started
-    }
-}
 
-private suspend fun WifiP2pManager.requestPeers(c: WifiP2pManager.Channel): WifiP2pDeviceList? = suspendCoroutine { continuation ->
-    val wrapper = WifiP2pManager.PeerListListener { peers -> continuation.resume(peers) }
-    requestPeers(c, wrapper)
+        println("Starting peer discovery..")
+        val channel = channel ?: return
+        manager?.discoverPeers(channel)
+    }
+
+    private suspend fun startRegistration() {
+        val record: Map<String, String> = mapOf(
+                "listenport" to 8988.toString(),
+                "available" to "visible"
+        )
+
+        val serviceInfo =
+                WifiP2pDnsSdServiceInfo.newInstance("_trekme_mapshare", "_presence._tcp", record)
+
+        val channel = channel ?: return
+        val manager = manager ?: return
+        manager.addLocalService(channel, serviceInfo).also { success ->
+            if (success) {
+                println("Local service SUCCESS")
+            } else {
+                println("Local service FAIL")
+            }
+        }
+    }
+
+
+    private suspend fun discoverService() {
+        val channel = channel ?: return
+        val manager = manager ?: return
+        val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
+            println("First listener")
+            Log.d(TAG, "DnsSdTxtRecord available -$record")
+            if (fullDomain.startsWith("_trekme_mapshare")) {
+                record["listenport"]?.also {
+                    println(device.deviceAddress)
+                    // then connect to the device
+                }
+            }
+        }
+
+        val servListener = WifiP2pManager.DnsSdServiceResponseListener { _, _, _ ->
+            // Don't care for now
+        }
+
+        manager.setDnsSdResponseListeners(channel, servListener, txtListener)
+
+        /* Now that listeners are set, discover the service */
+        val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance("_trekme_mapshare", "_presence._tcp")
+        val serviceAdded = manager.addServiceRequest(channel, serviceRequest)
+        if (serviceAdded) {
+            manager.discoverServices(channel).also { success ->
+                if (success) {
+                    println("Service successfully discovered")
+                }
+            }
+        }
+    }
 }
 
 sealed class WifiP2pState : Comparable<WifiP2pState> {
