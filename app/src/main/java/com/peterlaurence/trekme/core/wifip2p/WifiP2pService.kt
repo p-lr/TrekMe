@@ -27,6 +27,7 @@ import java.io.*
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -243,21 +244,6 @@ class WifiP2pService : Service() {
         return START_NOT_STICKY
     }
 
-    private suspend fun resetWifiP2p() {
-        val manager = manager ?: return
-        val channel = channel ?: return
-
-        /* We don't care about the success or failure of this call, this service is going to
-         * shutdown anyway. */
-        manager.cancelConnect(channel).also { println("Cancel connect $it") }
-        manager.clearLocalServices(channel).also { println("ClearLocalServices $it") }
-        manager.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
-        manager.removeGroup(channel).also { println("Removegroup $it") }
-        peerListChannel.poll()
-
-        wifiP2pState = Stopped
-    }
-
     private suspend fun initialize() {
         channel = manager?.initialize(this, mainLooper) {
             channel = null
@@ -395,7 +381,11 @@ class WifiP2pService : Service() {
             var bytes = inputStream.read(buffer)
             while (bytes >= 0 && isActive) {
                 myOutput.write(buffer, 0, bytes)
-                bytes = inputStream.read(buffer)
+                try {
+                    bytes = inputStream.read(buffer)
+                } catch (e: SocketException) {
+                    break
+                }
             }
 
             serverSocket.close()
@@ -437,17 +427,20 @@ class WifiP2pService : Service() {
         val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
         archivesDir.listFiles()?.firstOrNull()?.also {
             println("Sending ${it.name}")
-            outputStream.writeUTF(it.name)
-            outputStream.writeLong(it.length())
-            FileInputStream(it).use {
-                it.copyTo(outputStream)
+            try {
+                outputStream.writeUTF(it.name)
+                outputStream.writeLong(it.length())
+                FileInputStream(it).use {
+                    it.copyTo(outputStream)
+                }
+            } catch (e: SocketException) {
+                // abort
             }
         }
         outputStream.close()
     }
 
     private fun clientReceives(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
-        // TODO: catch SockectException: Connection reset (server stops)
         val socket = Socket()
         socket.bind(null)
         socket.connect(socketAddress)
@@ -475,12 +468,32 @@ class WifiP2pService : Service() {
         var bytes = inputStream.read(buffer)
         while (bytes >= 0 && isActive) {
             myOutput.write(buffer, 0, bytes)
-            bytes = inputStream.read(buffer)
+            try {
+                bytes = inputStream.read(buffer)
+            } catch (e:SocketException) {
+                break
+            }
         }
 
         inputStream.close()
         myOutput.close()
         socket.close()
+    }
+
+    private suspend fun resetWifiP2p() {
+        val manager = manager ?: return
+        val channel = channel ?: return
+
+        /* We don't care about the success or failure of this call, this service is going to
+         * shutdown anyway. */
+        manager.cancelConnect(channel).also { println("Cancel connect $it") }
+        manager.clearLocalServices(channel).also { println("ClearLocalServices $it") }
+        manager.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
+        manager.removeGroup(channel).also { println("Removegroup $it") }
+        manager.stopPeerDiscovery(channel).also { println("Stop peer discovery $it") }
+        peerListChannel.poll()
+
+        wifiP2pState = Stopped
     }
 }
 
