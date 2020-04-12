@@ -8,23 +8,25 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkRequest
+import android.net.*
 import android.net.wifi.WpsInfo
-import android.net.wifi.p2p.WifiP2pConfig
-import android.net.wifi.p2p.WifiP2pDevice
-import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.p2p.*
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.TrekMeContext
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import java.io.*
+import java.net.InetSocketAddress
+import java.net.ServerSocket
+import java.net.Socket
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -32,13 +34,16 @@ class WifiP2pService : Service() {
     private val notificationChannelId = "peterlaurence.WifiP2pService"
     private val wifiP2pServiceNofificationId = 659531
     private val intentFilter = IntentFilter()
+    private var mode: StartAction? = null
     private var channel: WifiP2pManager.Channel? = null
     private var manager: WifiP2pManager? = null
+    private val peerListChannel = Channel<WifiP2pDeviceList>()
     private var job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.Main)
 
     private val serviceName = "_trekme_mapshare"
     private val serviceType = "_presence._tcp"
+    private val listenPort = 8988
 
     private var isWifiP2pEnabled = false
         private set(value) {
@@ -88,7 +93,41 @@ class WifiP2pService : Service() {
                         val channel = channel ?: return
                         scope.launch {
                             val peers = manager?.requestPeers(channel)
+                            if (peers != null) peerListChannel.offer(peers)
                             // we have a list of peers - should display in a list ?
+                        }
+                    }
+                    WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
+                        manager?.let { manager ->
+                            println("Notice $isNetworkAvailable")
+
+                            if (channel == null) return@let
+                            manager.requestConnectionInfo(channel, object : WifiP2pManager.ConnectionInfoListener {
+                                override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
+                                    println("Connection info")
+                                    println(info?.isGroupOwner)
+                                    println(info?.groupOwnerAddress?.hostAddress)
+
+                                    if (info == null) return
+                                    if (info.isGroupOwner) {
+                                        // server
+                                        if (mode!! == StartAction.START_RCV) {
+                                            serverReceives()
+                                        } else {
+                                            serverSends()
+                                        }
+                                    } else {
+                                        // client
+                                        if (info.groupOwnerAddress == null) return
+                                        val inetSocketAddress = InetSocketAddress(info.groupOwnerAddress?.hostAddress, listenPort)
+                                        if (mode!! == StartAction.START_RCV) {
+                                            clientReceives(inetSocketAddress)
+                                        } else {
+                                            clientSends(inetSocketAddress)
+                                        }
+                                    }
+                                }
+                            })
                         }
                     }
                 }
@@ -104,7 +143,6 @@ class WifiP2pService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        println("CREATE")
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
@@ -114,10 +152,12 @@ class WifiP2pService : Service() {
         cm.registerNetworkCallback(NetworkRequest.Builder().build(),
                 object : ConnectivityManager.NetworkCallback() {
                     override fun onAvailable(network: Network) {
+                        println("Network changed: available")
                         isNetworkAvailable = true
                     }
 
                     override fun onLost(network: Network) {
+                        println("Network changed: lost")
                         isNetworkAvailable = false
                     }
                 })
@@ -149,12 +189,13 @@ class WifiP2pService : Service() {
             }
 
             /* Stop the WifiP2p framework */
-            scope.launch {
+            scope.launch(NonCancellable) {
                 stopForeground(true)
                 resetWifiP2p()
 
                 /* Stop the service */
                 serviceStarted = false
+                scope.cancel()
                 stopSelf()
             }
 
@@ -185,9 +226,11 @@ class WifiP2pService : Service() {
             runCatching {
                 initialize()
                 if (intent.action == StartAction.START_RCV.name) {
+                    mode = StartAction.START_RCV
                     startRegistration()
                 }
                 if (intent.action == StartAction.START_SEND.name) {
+                    mode = StartAction.START_SEND
                     val device = discoverReceivingDevice()
                     connectDevice(device)
                 }
@@ -209,6 +252,8 @@ class WifiP2pService : Service() {
         manager.cancelConnect(channel).also { println("Cancel connect $it") }
         manager.clearLocalServices(channel).also { println("ClearLocalServices $it") }
         manager.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
+        manager.removeGroup(channel).also { println("Removegroup $it") }
+        peerListChannel.poll()
 
         wifiP2pState = Stopped
     }
@@ -227,11 +272,15 @@ class WifiP2pService : Service() {
         println("Starting peer discovery..")
         val channel = channel ?: return
         manager?.discoverPeers(channel)
+        peerListChannel.receive().also {
+            println("Peer list updated")
+            println(it)
+        }
     }
 
     private suspend fun startRegistration() {
         val record: Map<String, String> = mapOf(
-                "listenport" to 8988.toString(),
+                "listenport" to listenPort.toString(),
                 "available" to "visible"
         )
 
@@ -279,8 +328,10 @@ class WifiP2pService : Service() {
         val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance(serviceName, serviceType)
         scope.launch {
             runCatching {
+                println("Making service request..")
                 val serviceAdded = manager.addServiceRequest(channel, serviceRequest)
                 if (serviceAdded) {
+                    println("Discovering services..")
                     manager.discoverServices(channel).also { success ->
                         if (success) {
                             println("Service successfully discovered")
@@ -308,6 +359,128 @@ class WifiP2pService : Service() {
         manager?.connect(channel, config).also {
             println("Connection success $it")
         }
+    }
+
+    private fun serverReceives() = scope.launch(Dispatchers.IO) {
+        val serverSocket = ServerSocket(listenPort)
+        serverSocket.use {
+            /* Wait for client connection. Blocks until a connection is accepted from a client */
+            println("waiting for client connect..")
+            val client = serverSocket.accept()
+
+            /* The client is assumed to write into a DataOutputStream */
+            println("Client connected!")
+            val inputStream = DataInputStream(client.getInputStream())
+
+            val mapName = inputStream.readUTF()
+            println("Recieving $mapName from server")
+            val size = inputStream.readLong()
+            println("Size: $size")
+
+            var c = 0L
+            var x = 0
+            val myOutput = object: OutputStream() {
+                override fun write(b: Int) {
+                    x++
+                    val percent = c++.toFloat() / size
+                    if (x > DEFAULT_BUFFER_SIZE) {
+                        println(percent)
+                        x = 0
+                    }
+
+                }
+            }
+
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            var bytes = inputStream.read(buffer)
+            while (bytes >= 0 && isActive) {
+                myOutput.write(buffer, 0, bytes)
+                bytes = inputStream.read(buffer)
+            }
+
+            serverSocket.close()
+        }
+        println("Closed server socket")
+    }
+
+    private fun serverSends() = scope.launch(Dispatchers.IO) {
+        val serverSocket = ServerSocket(listenPort)
+        serverSocket.use {
+            /* Wait for client connection. Blocks until a connection is accepted from a client */
+            println("waiting for client connect..")
+            val client = serverSocket.accept()
+
+            val outputStream = DataOutputStream(client.getOutputStream())
+            val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
+            archivesDir.listFiles()?.firstOrNull()?.also {
+                println("Sending ${it.name}")
+                outputStream.writeUTF(it.name)
+                outputStream.writeLong(it.length())
+                FileInputStream(it).use {
+                    it.copyTo(outputStream)
+                }
+            }
+            outputStream.close()
+
+            serverSocket.close()
+        }
+        println("Closed server socket")
+    }
+
+    private fun clientSends(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
+        // TODO: catch SockectException: Connection reset (server stops)
+        val socket = Socket()
+        socket.bind(null)
+        socket.connect(socketAddress)
+
+        val outputStream = DataOutputStream(socket.getOutputStream())
+        val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
+        archivesDir.listFiles()?.firstOrNull()?.also {
+            println("Sending ${it.name}")
+            outputStream.writeUTF(it.name)
+            outputStream.writeLong(it.length())
+            FileInputStream(it).use {
+                it.copyTo(outputStream)
+            }
+        }
+        outputStream.close()
+    }
+
+    private fun clientReceives(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
+        // TODO: catch SockectException: Connection reset (server stops)
+        val socket = Socket()
+        socket.bind(null)
+        socket.connect(socketAddress)
+
+        val inputStream = DataInputStream(socket.getInputStream())
+        val mapName = inputStream.readUTF()
+        println("Recieving $mapName from client")
+        val size = inputStream.readLong()
+        println("Size: size")
+        var c = 0L
+        var x = 0
+        val myOutput = object: OutputStream() {
+            override fun write(b: Int) {
+                x++
+                val percent = c++.toFloat() / size
+                if (x > DEFAULT_BUFFER_SIZE) {
+                    println(percent)
+                    x = 0
+                }
+
+            }
+        }
+
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var bytes = inputStream.read(buffer)
+        while (bytes >= 0 && isActive) {
+            myOutput.write(buffer, 0, bytes)
+            bytes = inputStream.read(buffer)
+        }
+
+        inputStream.close()
+        myOutput.close()
+        socket.close()
     }
 }
 

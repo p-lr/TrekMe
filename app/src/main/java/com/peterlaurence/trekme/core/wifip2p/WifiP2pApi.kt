@@ -69,6 +69,19 @@ suspend fun WifiP2pManager.cancelConnect(c: WifiP2pManager.Channel): Boolean = s
     cancelConnect(c, listener)
 }
 
+suspend fun WifiP2pManager.removeGroup(c: WifiP2pManager.Channel): Boolean = suspendCoroutine { cont ->
+    val listener = object : WifiP2pManager.ActionListener {
+        override fun onSuccess() {
+            cont.resume(true)
+        }
+
+        override fun onFailure(reason: Int) {
+            cont.resume(false)
+        }
+    }
+    removeGroup(c, listener)
+}
+
 suspend fun WifiP2pManager.discoverPeers(c: WifiP2pManager.Channel): Boolean = suspendCoroutine { cont ->
     val listener = object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
