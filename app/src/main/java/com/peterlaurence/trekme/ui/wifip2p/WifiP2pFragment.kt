@@ -4,12 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.peterlaurence.trekme.core.wifip2p.Started
+import com.peterlaurence.trekme.core.wifip2p.*
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
 import com.peterlaurence.trekme.viewmodel.wifip2p.Errors
 import com.peterlaurence.trekme.viewmodel.wifip2p.ServiceAlreadyStarted
@@ -40,9 +41,7 @@ class WifiP2pFragment : Fragment() {
 
         viewModel.state.observe(this, Observer {
             it?.let { state ->
-                when (state) {
-                    Started -> onStarted()
-                }
+                onState(state)
             }
         })
 
@@ -56,26 +55,44 @@ class WifiP2pFragment : Fragment() {
 
         binding.receiveBtn.setOnClickListener {
             viewModel.onRequestReceive()
+            binding.sendBtn.isEnabled = false
         }
 
         binding.sendBtn.setOnClickListener {
             viewModel.onRequestSend()
+            binding.receiveBtn.isEnabled = false
         }
 
         binding.stopBtn.setOnClickListener {
             viewModel.onRequestStop()
         }
+        binding.stopBtn.isVisible = false
 
         return binding.root
+    }
+
+    private fun onState(state: WifiP2pState) {
+        binding.receiveBtn.isEnabled = false
+        binding.sendBtn.isEnabled = false
+        binding.stopBtn.isVisible = true
+
+        when (state) {
+            Started -> onStarted()
+            is Loading -> onLoading(state.progress)
+        }
     }
 
     private fun onStarted() {
 
     }
 
+    private fun onLoading(percent: Int) {
+        binding.progressBar.progress = percent
+    }
+
     private fun onError(error: Errors) {
         when (error) {
-            ServiceAlreadyStarted -> binding.textView.editableText.append("Service already started")
+            ServiceAlreadyStarted -> binding.status.editableText.append("Service already started")
         }
     }
 }

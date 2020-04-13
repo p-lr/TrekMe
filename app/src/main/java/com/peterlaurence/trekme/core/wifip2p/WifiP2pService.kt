@@ -73,6 +73,9 @@ class WifiP2pService : Service() {
     companion object {
         private val stateChannel = ConflatedBroadcastChannel<WifiP2pState>()
         val stateFlow: Flow<WifiP2pState> = stateChannel.asFlow()
+
+//        private val progressChannel = ConflatedBroadcastChannel<Int>()
+//        val progressFlow: Flow<Int> = progressChannel.asFlow()
     }
 
     private val receiver: BroadcastReceiver by lazy {
@@ -373,7 +376,6 @@ class WifiP2pService : Service() {
                         println(percent)
                         x = 0
                     }
-
                 }
             }
 
@@ -387,7 +389,8 @@ class WifiP2pService : Service() {
                     break
                 }
             }
-
+            inputStream.close()
+            myOutput.close()
             serverSocket.close()
         }
         println("Closed server socket")
@@ -405,13 +408,13 @@ class WifiP2pService : Service() {
             archivesDir.listFiles()?.firstOrNull()?.also {
                 println("Sending ${it.name}")
                 outputStream.writeUTF(it.name)
-                outputStream.writeLong(it.length())
+                val totalByteCount = it.length()
+                outputStream.writeLong(totalByteCount)
                 FileInputStream(it).use {
-                    it.copyTo(outputStream)
+                    it.copyToWithProgress(outputStream, this, totalByteCount)
                 }
             }
             outputStream.close()
-
             serverSocket.close()
         }
         println("Closed server socket")
@@ -428,16 +431,20 @@ class WifiP2pService : Service() {
         archivesDir.listFiles()?.firstOrNull()?.also {
             println("Sending ${it.name}")
             try {
+                val totalByteCount = it.length()
                 outputStream.writeUTF(it.name)
-                outputStream.writeLong(it.length())
+                outputStream.writeLong(totalByteCount)
+
                 FileInputStream(it).use {
-                    it.copyTo(outputStream)
+                    it.copyToWithProgress(outputStream, this, totalByteCount)
                 }
             } catch (e: SocketException) {
                 // abort
+            } finally {
+                outputStream.close()
+                socket.close()
             }
         }
-        outputStream.close()
     }
 
     private fun clientReceives(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
@@ -449,18 +456,23 @@ class WifiP2pService : Service() {
         val mapName = inputStream.readUTF()
         println("Recieving $mapName from client")
         val size = inputStream.readLong()
-        println("Size: size")
+        println("Size: $size")
         var c = 0L
         var x = 0
+        var percent = 0
+        stateChannel.offer(Loading(0))
         val myOutput = object: OutputStream() {
             override fun write(b: Int) {
                 x++
-                val percent = c++.toFloat() / size
+                val newPercent = (c++ * 100f / size).toInt()
+                if (percent != newPercent) {
+                    percent = newPercent
+                    stateChannel.offer(Loading(percent))
+                }
                 if (x > DEFAULT_BUFFER_SIZE) {
                     println(percent)
                     x = 0
                 }
-
             }
         }
 
@@ -495,6 +507,28 @@ class WifiP2pService : Service() {
 
         wifiP2pState = Stopped
     }
+
+    private fun InputStream.copyToWithProgress(outputStream: OutputStream, scope: CoroutineScope, totalByteCount: Long) {
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var bytes = read(buffer)
+        var bytesCopied: Long = 0
+        var percent = 0
+        stateChannel.offer(Loading(0))
+        while (bytes >= 0 && scope.isActive) {
+            outputStream.write(buffer, 0, bytes)
+            try {
+                bytes = read(buffer)
+                bytesCopied += bytes
+                val newPercent = (bytesCopied * 100f / totalByteCount).toInt()
+                if (newPercent != percent) {
+                    percent = newPercent
+                    stateChannel.offer(Loading(percent))
+                }
+            } catch (e:SocketException) {
+                break
+            }
+        }
+    }
 }
 
 sealed class WifiP2pState : Comparable<WifiP2pState> {
@@ -507,6 +541,14 @@ sealed class WifiP2pState : Comparable<WifiP2pState> {
 
 object Started : WifiP2pState() {
     override val index: Int = 0
+}
+
+data class Loading(val progress: Int) : WifiP2pState() {
+    override val index: Int = 2
+}
+
+object Stopping : WifiP2pState() {
+    override val index: Int = 9
 }
 
 object Stopped : WifiP2pState() {

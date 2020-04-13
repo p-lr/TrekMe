@@ -51,4 +51,8 @@
         <item name="strokeColor">@color/colorStrokeAreaView</item>
     </style>
 
+    <style name="GreenTheme" parent="AppTheme">
+        <item name="android:colorAccent">@color/colorGreen</item>
+    </style>
+
 </resources>
