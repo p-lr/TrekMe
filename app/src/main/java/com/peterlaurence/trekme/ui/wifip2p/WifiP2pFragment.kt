@@ -66,7 +66,7 @@ class WifiP2pFragment : Fragment() {
         binding.stopBtn.setOnClickListener {
             viewModel.onRequestStop()
         }
-        binding.stopBtn.isVisible = false
+//        binding.stopBtn.isVisible = false
 
         return binding.root
     }
@@ -79,6 +79,10 @@ class WifiP2pFragment : Fragment() {
         when (state) {
             Started -> onStarted()
             is Loading -> onLoading(state.progress)
+            Stopped -> {
+                binding.receiveBtn.isEnabled = true
+                binding.sendBtn.isEnabled = true
+            }
         }
     }
 

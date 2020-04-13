@@ -460,7 +460,7 @@ class WifiP2pService : Service() {
         val size = inputStream.readLong()
         println("Size: $size")
 
-        val dir = File(TrekMeContext.importedDir, mapName)
+        val dir = File(TrekMeContext.importedDir, mapName).unique()
         dir.mkdir()
         unzipTask(inputStream, dir, size, object : UnzipProgressionListener {
             override fun onProgress(p: Int) {
@@ -546,6 +546,27 @@ object Stopped : WifiP2pState() {
 
 enum class WifiP2pServiceErrors {
     UNZIP_ERROR
+}
+
+/**
+ * Appends a dash and a number so that the returned [File] is guaranteed to not exist (unique file).
+ * Uses a recursive algorithm.
+ */
+private tailrec fun File.unique(): File {
+    return if (!exists()) {
+        this
+    } else {
+        val regex = """(.*)-(\d+)""".toRegex()
+        val matchResult = regex.find(name)
+        if (matchResult == null) {
+            File("$path-1").unique()
+        } else {
+            val (basename, index) = matchResult.destructured
+            val newIndex = index.toInt() + 1
+            val newFile = File(parent, "$basename-$newIndex")
+            newFile.unique()
+        }
+    }
 }
 
 private val TAG = WifiP2pService::class.java.name
