@@ -18,6 +18,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.util.UnzipProgressionListener
+import com.peterlaurence.trekme.util.unzipTask
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -74,8 +76,8 @@ class WifiP2pService : Service() {
         private val stateChannel = ConflatedBroadcastChannel<WifiP2pState>()
         val stateFlow: Flow<WifiP2pState> = stateChannel.asFlow()
 
-//        private val progressChannel = ConflatedBroadcastChannel<Int>()
-//        val progressFlow: Flow<Int> = progressChannel.asFlow()
+        private val errorChannel = ConflatedBroadcastChannel<WifiP2pServiceErrors>()
+        val errorFlow: Flow<WifiP2pServiceErrors> = errorChannel.asFlow()
     }
 
     private val receiver: BroadcastReceiver by lazy {
@@ -457,38 +459,25 @@ class WifiP2pService : Service() {
         println("Recieving $mapName from client")
         val size = inputStream.readLong()
         println("Size: $size")
-        var c = 0L
-        var x = 0
-        var percent = 0
-        stateChannel.offer(Loading(0))
-        val myOutput = object: OutputStream() {
-            override fun write(b: Int) {
-                x++
-                val newPercent = (c++ * 100f / size).toInt()
-                if (percent != newPercent) {
-                    percent = newPercent
-                    stateChannel.offer(Loading(percent))
-                }
-                if (x > DEFAULT_BUFFER_SIZE) {
-                    println(percent)
-                    x = 0
-                }
-            }
-        }
 
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-        var bytes = inputStream.read(buffer)
-        while (bytes >= 0 && isActive) {
-            myOutput.write(buffer, 0, bytes)
-            try {
-                bytes = inputStream.read(buffer)
-            } catch (e:SocketException) {
-                break
+        val dir = File(TrekMeContext.importedDir, mapName)
+        dir.mkdir()
+        unzipTask(inputStream, dir, size, object : UnzipProgressionListener {
+            override fun onProgress(p: Int) {
+                println(p)
+                stateChannel.offer(Loading(p))
             }
-        }
+
+            override fun onUnzipFinished(outputDirectory: File) {
+                stateChannel.offer(Loading(100))
+            }
+
+            override fun onUnzipError() {
+                errorChannel.offer(WifiP2pServiceErrors.UNZIP_ERROR)
+            }
+        })
 
         inputStream.close()
-        myOutput.close()
         socket.close()
     }
 
@@ -553,6 +542,10 @@ object Stopping : WifiP2pState() {
 
 object Stopped : WifiP2pState() {
     override val index: Int = 10
+}
+
+enum class WifiP2pServiceErrors {
+    UNZIP_ERROR
 }
 
 private val TAG = WifiP2pService::class.java.name
