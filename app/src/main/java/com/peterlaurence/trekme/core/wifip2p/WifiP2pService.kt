@@ -113,13 +113,22 @@ class WifiP2pService : Service() {
                             println("Notice $isNetworkAvailable")
 
                             if (channel == null) return@let
+                            Log.d(TAG, "Requesting connection info..")
                             manager.requestConnectionInfo(channel, object : WifiP2pManager.ConnectionInfoListener {
                                 override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
-                                    println("Connection info")
-                                    println(info?.isGroupOwner)
-                                    println(info?.groupOwnerAddress?.hostAddress)
-
-                                    if (info == null) return
+                                    Log.d(TAG, "Got connection info $info")
+                                    if (info == null) {
+                                        /* This matters while in sending mode */
+                                        if (wifiP2pState != Started) {
+                                            Log.d(TAG, "Connection info is empty - go back to Started state")
+                                            /* Go back to the started state */
+                                            wifiP2pState = Started
+                                            scope.launch {
+                                                initialize()
+                                            }
+                                        }
+                                        return
+                                    }
                                     if (info.isGroupOwner) {
                                         // server
                                         if (mode!! == StartAction.START_RCV) {
@@ -233,45 +242,15 @@ class WifiP2pService : Service() {
 
         serviceStarted = true
 
+        if (intent.action == StartAction.START_RCV.name) {
+            mode = StartAction.START_RCV
+        }
+        if (intent.action == StartAction.START_SEND.name) {
+            mode = StartAction.START_SEND
+        }
+
         scope.launch {
-            runCatching {
-                initialize()
-                if (intent.action == StartAction.START_RCV.name) {
-                    mode = StartAction.START_RCV
-                    scope.launch {
-                        while (wifiP2pState == Started) {
-                            println("Re-advertise service")
-                            launch {
-                                manager?.clearLocalServices(channel)
-                                startRegistration()
-                            }
-                            delay(15000)
-                            manager?.clearLocalServices(channel)
-                            manager?.stopPeerDiscovery(channel)
-                            manager?.discoverPeers(channel)
-                        }
-                    }
-                }
-                if (intent.action == StartAction.START_SEND.name) {
-                    mode = StartAction.START_SEND
-                    scope.launch {
-                        while (wifiP2pState == Started) {
-                            launch {
-                                val device = discoverReceivingDevice()
-                                connectDevice(device)
-                            }
-                            delay(15000)
-                            manager?.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
-                            manager?.stopPeerDiscovery(channel)
-                            manager?.discoverPeers(channel)
-                            println("Connection timeout - retry")
-                        }
-                    }
-                }
-            }.onFailure {
-                println("Caught exception $it")
-                // Warn the user that Wifi P2P isn't supported
-            }
+            initialize()
         }
 
         return START_NOT_STICKY
@@ -285,9 +264,40 @@ class WifiP2pService : Service() {
         /* Notify started */
         wifiP2pState = Started
 
-        println("Starting peer discovery..")
+        Log.d(TAG, "Starting peer discovery..")
         val channel = channel ?: return
         manager?.discoverPeers(channel)
+
+        if (mode == StartAction.START_RCV) {
+            scope.launch {
+                while (wifiP2pState == Started) {
+                    Log.d(TAG,"Re-advertise service")
+                    launch {
+                        manager?.clearLocalServices(channel)
+                        startRegistration()
+                    }
+                    delay(15000)
+                    manager?.clearLocalServices(channel)
+                    manager?.stopPeerDiscovery(channel)
+                    manager?.discoverPeers(channel)
+                }
+            }
+        }
+        if (mode == StartAction.START_SEND) {
+            scope.launch {
+                while (wifiP2pState == Started) {
+                    launch {
+                        val device = discoverReceivingDevice()
+                        connectDevice(device)
+                    }
+                    delay(15000)
+                    manager?.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
+                    manager?.stopPeerDiscovery(channel)
+                    manager?.discoverPeers(channel)
+                    Log.d(TAG,"Connection timeout - retry")
+                }
+            }
+        }
     }
 
     private suspend fun startRegistration() {
