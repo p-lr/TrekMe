@@ -8,7 +8,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
-import android.net.*
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkRequest
 import android.net.wifi.WpsInfo
 import android.net.wifi.p2p.*
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
@@ -40,7 +42,7 @@ class WifiP2pService : Service() {
     private var mode: StartAction? = null
     private var channel: WifiP2pManager.Channel? = null
     private var manager: WifiP2pManager? = null
-    private val peerListChannel = Channel<WifiP2pDeviceList>()
+    private val peerListChannel = Channel<WifiP2pDeviceList>(capacity = 64)
     private var job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.Main)
 
@@ -95,15 +97,18 @@ class WifiP2pService : Service() {
                     }
                     WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
                         println("Peers changed")
-                        /* Request available peers */
-                        val channel = channel ?: return
-                        scope.launch {
-                            val peers = manager?.requestPeers(channel)
-                            if (peers != null) peerListChannel.offer(peers)
-                            // we have a list of peers - should display in a list ?
-                        }
+//                        val channel = channel ?: return
+                        /* Request available peers only if we are starting */
+//                        if (wifiP2pState == Started) {
+//                            scope.launch {
+//                                val peers = manager?.requestPeers(channel)
+//                                if (peers != null) peerListChannel.offer(peers)
+//                                // we have a list of peers - should display in a list ?
+//                            }
+//                        }
                     }
                     WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
+                        println("Connection changed")
                         manager?.let { manager ->
                             println("Notice $isNetworkAvailable")
 
@@ -233,12 +238,35 @@ class WifiP2pService : Service() {
                 initialize()
                 if (intent.action == StartAction.START_RCV.name) {
                     mode = StartAction.START_RCV
-                    startRegistration()
+                    scope.launch {
+                        while (wifiP2pState == Started) {
+                            println("Re-advertise service")
+                            launch {
+                                manager?.clearLocalServices(channel)
+                                startRegistration()
+                            }
+                            delay(15000)
+                            manager?.clearLocalServices(channel)
+                            manager?.stopPeerDiscovery(channel)
+                            manager?.discoverPeers(channel)
+                        }
+                    }
                 }
                 if (intent.action == StartAction.START_SEND.name) {
                     mode = StartAction.START_SEND
-                    val device = discoverReceivingDevice()
-                    connectDevice(device)
+                    scope.launch {
+                        while (wifiP2pState == Started) {
+                            launch {
+                                val device = discoverReceivingDevice()
+                                connectDevice(device)
+                            }
+                            delay(15000)
+                            manager?.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
+                            manager?.stopPeerDiscovery(channel)
+                            manager?.discoverPeers(channel)
+                            println("Connection timeout - retry")
+                        }
+                    }
                 }
             }.onFailure {
                 println("Caught exception $it")
@@ -251,10 +279,7 @@ class WifiP2pService : Service() {
 
     private suspend fun initialize() {
         channel = manager?.initialize(this, mainLooper) {
-            channel = null
-
-            /* Notify stopped */
-            wifiP2pState = Stopped
+            // TODO: react on this
         }
 
         /* Notify started */
@@ -263,10 +288,6 @@ class WifiP2pService : Service() {
         println("Starting peer discovery..")
         val channel = channel ?: return
         manager?.discoverPeers(channel)
-        peerListChannel.receive().also {
-            println("Peer list updated")
-            println(it)
-        }
     }
 
     private suspend fun startRegistration() {
@@ -302,6 +323,7 @@ class WifiP2pService : Service() {
             println("First listener")
             Log.d(TAG, "DnsSdTxtRecord available -$record")
             if (fullDomain.startsWith("_trekme_mapshare")) {
+                wifiP2pState = AwaitingConnection
                 record["listenport"]?.also {
                     println(device.deviceAddress)
                     if (cont.isActive) cont.resume(device)
@@ -348,6 +370,7 @@ class WifiP2pService : Service() {
         }
         val channel = channel ?: return
         manager?.connect(channel, config).also {
+            wifiP2pState = Connected
             println("Connection success $it")
         }
     }
@@ -370,7 +393,7 @@ class WifiP2pService : Service() {
 
             var c = 0L
             var x = 0
-            val myOutput = object: OutputStream() {
+            val myOutput = object : OutputStream() {
                 override fun write(b: Int) {
                     x++
                     val percent = c++.toFloat() / size
@@ -423,7 +446,6 @@ class WifiP2pService : Service() {
     }
 
     private fun clientSends(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
-        // TODO: catch SockectException: Connection reset (server stops)
         val socket = Socket()
         socket.bind(null)
         socket.connect(socketAddress)
@@ -450,6 +472,8 @@ class WifiP2pService : Service() {
     }
 
     private fun clientReceives(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
+        wifiP2pState = Loading(0)
+
         val socket = Socket()
         socket.bind(null)
         socket.connect(socketAddress)
@@ -465,11 +489,11 @@ class WifiP2pService : Service() {
         unzipTask(inputStream, dir, size, object : UnzipProgressionListener {
             override fun onProgress(p: Int) {
                 println(p)
-                stateChannel.offer(Loading(p))
+                wifiP2pState = Loading(p)
             }
 
             override fun onUnzipFinished(outputDirectory: File) {
-                stateChannel.offer(Loading(100))
+                wifiP2pState = Loading(100)
             }
 
             override fun onUnzipError() {
@@ -504,8 +528,8 @@ class WifiP2pService : Service() {
         var percent = 0
         stateChannel.offer(Loading(0))
         while (bytes >= 0 && scope.isActive) {
-            outputStream.write(buffer, 0, bytes)
             try {
+                outputStream.write(buffer, 0, bytes)
                 bytes = read(buffer)
                 bytesCopied += bytes
                 val newPercent = (bytesCopied * 100f / totalByteCount).toInt()
@@ -513,7 +537,7 @@ class WifiP2pService : Service() {
                     percent = newPercent
                     stateChannel.offer(Loading(percent))
                 }
-            } catch (e:SocketException) {
+            } catch (e: SocketException) {
                 break
             }
         }
@@ -532,8 +556,16 @@ object Started : WifiP2pState() {
     override val index: Int = 0
 }
 
-data class Loading(val progress: Int) : WifiP2pState() {
+object AwaitingConnection : WifiP2pState() {
+    override val index: Int = 1
+}
+
+object Connected : WifiP2pState() {
     override val index: Int = 2
+}
+
+data class Loading(val progress: Int) : WifiP2pState() {
+    override val index: Int = 3
 }
 
 object Stopping : WifiP2pState() {

@@ -11,7 +11,7 @@ private const val TAG = "UnzipTask"
 
 
 fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipProgressionListener: UnzipProgressionListener) {
-    val buffer = ByteArray(1024)
+    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
     var result = true
 
     try {
@@ -22,7 +22,7 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipPro
 
         var bytesRead = 0L
         val zis = ZipInputStream(inputStream)
-
+        var progress = -1
         while (true) {
             val entry = zis.nextEntry ?: break
             val fileName = entry.name
@@ -53,7 +53,11 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipPro
                 }
 
                 bytesRead += entry.compressedSize
-                unzipProgressionListener.onProgress((bytesRead / size.toDouble() * 100).toInt())
+                val newProgress = (bytesRead / size.toDouble() * 100).toInt()
+                if (newProgress != progress) {
+                    unzipProgressionListener.onProgress(newProgress)
+                    progress = newProgress
+                }
 
                 fos.close()
             } catch (e: IOException) {

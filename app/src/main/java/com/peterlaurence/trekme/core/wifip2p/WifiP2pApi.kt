@@ -21,7 +21,6 @@ suspend fun WifiP2pManager.addLocalService(c: WifiP2pManager.Channel, servInfo: 
         }
 
         override fun onFailure(reason: Int) {
-            cont.resume(false)
             if (reason == WifiP2pManager.P2P_UNSUPPORTED) {
                 cont.resumeWithException(IllegalStateException())
             } else cont.resume(false)
@@ -30,7 +29,10 @@ suspend fun WifiP2pManager.addLocalService(c: WifiP2pManager.Channel, servInfo: 
     addLocalService(c, servInfo, listener)
 }
 
-suspend fun WifiP2pManager.clearLocalServices(c: WifiP2pManager.Channel): Boolean = suspendCoroutine { cont ->
+suspend fun WifiP2pManager.clearLocalServices(c: WifiP2pManager.Channel?): Boolean = suspendCoroutine { cont ->
+    if (c == null) {
+        return@suspendCoroutine
+    }
     val listener = object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
             cont.resume(true)
@@ -43,7 +45,10 @@ suspend fun WifiP2pManager.clearLocalServices(c: WifiP2pManager.Channel): Boolea
     clearLocalServices(c, listener)
 }
 
-suspend fun WifiP2pManager.clearServiceRequests(c: WifiP2pManager.Channel): Boolean = suspendCoroutine { cont ->
+suspend fun WifiP2pManager.clearServiceRequests(c: WifiP2pManager.Channel?): Boolean = suspendCoroutine { cont ->
+    if (c == null) {
+        return@suspendCoroutine
+    }
     val listener = object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
             cont.resume(true)
@@ -82,7 +87,10 @@ suspend fun WifiP2pManager.removeGroup(c: WifiP2pManager.Channel): Boolean = sus
     removeGroup(c, listener)
 }
 
-suspend fun WifiP2pManager.stopPeerDiscovery(c: WifiP2pManager.Channel): Boolean = suspendCoroutine { cont ->
+suspend fun WifiP2pManager.stopPeerDiscovery(c: WifiP2pManager.Channel?): Boolean = suspendCoroutine { cont ->
+    if (c == null) {
+        return@suspendCoroutine
+    }
     val listener = object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
             cont.resume(true)
@@ -95,7 +103,10 @@ suspend fun WifiP2pManager.stopPeerDiscovery(c: WifiP2pManager.Channel): Boolean
     stopPeerDiscovery(c, listener)
 }
 
-suspend fun WifiP2pManager.discoverPeers(c: WifiP2pManager.Channel): Boolean = suspendCoroutine { cont ->
+suspend fun WifiP2pManager.discoverPeers(c: WifiP2pManager.Channel?): Boolean = suspendCoroutine { cont ->
+    if (c == null) {
+        return@suspendCoroutine
+    }
     val listener = object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
             cont.resume(true)
@@ -130,7 +141,6 @@ suspend fun WifiP2pManager.discoverServices(c: WifiP2pManager.Channel): Boolean 
         }
 
         override fun onFailure(reason: Int) {
-            cont.resume(false)
             if (reason == WifiP2pManager.P2P_UNSUPPORTED) {
                 cont.resumeWithException(IllegalStateException())
             } else cont.resume(false)
