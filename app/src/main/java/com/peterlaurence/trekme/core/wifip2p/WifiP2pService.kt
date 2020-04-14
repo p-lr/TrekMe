@@ -12,7 +12,10 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
 import android.net.wifi.WpsInfo
-import android.net.wifi.p2p.*
+import android.net.wifi.p2p.WifiP2pConfig
+import android.net.wifi.p2p.WifiP2pDevice
+import android.net.wifi.p2p.WifiP2pDeviceList
+import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.os.IBinder
@@ -108,46 +111,54 @@ class WifiP2pService : Service() {
 //                        }
                     }
                     WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-                        println("Connection changed")
-                        manager?.let { manager ->
-                            println("Notice $isNetworkAvailable")
+                        Log.d(TAG, "WifiP2p connection changed. Requesting connection info..")
+                        val manager = manager ?: return
+                        val channel = channel ?: return
 
-                            if (channel == null) return@let
-                            Log.d(TAG, "Requesting connection info..")
-                            manager.requestConnectionInfo(channel, object : WifiP2pManager.ConnectionInfoListener {
-                                override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
-                                    Log.d(TAG, "Got connection info $info")
-                                    if (info == null) {
-                                        /* This matters while in sending mode */
-                                        if (wifiP2pState != Started) {
-                                            Log.d(TAG, "Connection info is empty - go back to Started state")
-                                            /* Go back to the started state */
-                                            wifiP2pState = Started
-                                            scope.launch {
-                                                initialize()
-                                            }
-                                        }
-                                        return
-                                    }
-                                    if (info.isGroupOwner) {
-                                        // server
-                                        if (mode!! == StartAction.START_RCV) {
-                                            serverReceives()
-                                        } else {
-                                            serverSends()
-                                        }
-                                    } else {
-                                        // client
-                                        if (info.groupOwnerAddress == null) return
-                                        val inetSocketAddress = InetSocketAddress(info.groupOwnerAddress?.hostAddress, listenPort)
-                                        if (mode!! == StartAction.START_RCV) {
-                                            clientReceives(inetSocketAddress)
-                                        } else {
-                                            clientSends(inetSocketAddress)
-                                        }
+                        manager.requestConnectionInfo(channel) { info ->
+                            Log.d(TAG, "Got connection info $info")
+                            if (info?.groupOwnerAddress == null) {
+                                /* This matters while in sending mode */
+                                if (wifiP2pState != Started) {
+                                    Log.d(TAG, "Connection info is empty - go back to Started state")
+                                    /* Go back to the started state */
+                                    wifiP2pState = Started
+                                    scope.launch {
+                                        initialize()
                                     }
                                 }
-                            })
+                                return@requestConnectionInfo
+                            }
+
+                            /* At this point we consider ourselves connected */
+                            wifiP2pState = P2pConnected
+
+                            /* Immediately stop on-going P2P discovering operations */
+                            if (mode == StartAction.START_SEND) {
+                                manager.clearServiceRequests(channel, null)
+                                manager.stopPeerDiscovery(channel, null)
+                            }
+                            if (mode == StartAction.START_RCV) {
+                                manager.clearLocalServices(channel, null)
+                                manager.stopPeerDiscovery(channel, null)
+                            }
+
+                            if (info.isGroupOwner) {
+                                // server
+                                if (mode!! == StartAction.START_RCV) {
+                                    serverReceives()
+                                } else {
+                                    serverSends()
+                                }
+                            } else {
+                                // client
+                                val inetSocketAddress = InetSocketAddress(info.groupOwnerAddress?.hostAddress, listenPort)
+                                if (mode!! == StartAction.START_RCV) {
+                                    clientReceives(inetSocketAddress)
+                                } else {
+                                    clientSends(inetSocketAddress)
+                                }
+                            }
                         }
                     }
                 }
@@ -202,6 +213,7 @@ class WifiP2pService : Service() {
 
         /* If the user used the notification action-stop button, stop the service */
         if (intent.action == StopAction::class.java.name) {
+            wifiP2pState = Stopping
             /* Unregister Android-specific listener */
             runCatching {
                 // May throw IllegalStateException
@@ -216,6 +228,7 @@ class WifiP2pService : Service() {
                 /* Stop the service */
                 serviceStarted = false
                 scope.cancel()
+                wifiP2pState = Stopped
                 stopSelf()
             }
 
@@ -270,22 +283,22 @@ class WifiP2pService : Service() {
 
         if (mode == StartAction.START_RCV) {
             scope.launch {
-                while (wifiP2pState == Started) {
-                    Log.d(TAG,"Re-advertise service")
+                while (true) {
+                    Log.d(TAG, "Re-advertise service")
                     launch {
-                        manager?.clearLocalServices(channel)
                         startRegistration()
                     }
                     delay(15000)
                     manager?.clearLocalServices(channel)
                     manager?.stopPeerDiscovery(channel)
+                    if (wifiP2pState != Started) break
                     manager?.discoverPeers(channel)
                 }
             }
         }
         if (mode == StartAction.START_SEND) {
             scope.launch {
-                while (wifiP2pState == Started) {
+                while (true) {
                     launch {
                         val device = discoverReceivingDevice()
                         connectDevice(device)
@@ -293,8 +306,9 @@ class WifiP2pService : Service() {
                     delay(15000)
                     manager?.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
                     manager?.stopPeerDiscovery(channel)
+                    if (wifiP2pState != Started) break
                     manager?.discoverPeers(channel)
-                    Log.d(TAG,"Connection timeout - retry")
+                    Log.d(TAG, "Connection timeout - retry")
                 }
             }
         }
@@ -311,13 +325,7 @@ class WifiP2pService : Service() {
 
         val channel = channel ?: return
         val manager = manager ?: return
-        manager.addLocalService(channel, serviceInfo).also { success ->
-            if (success) {
-                println("Local service SUCCESS")
-            } else {
-                println("Local service FAIL")
-            }
-        }
+        manager.addLocalService(channel, serviceInfo)
     }
 
     /**
@@ -330,10 +338,8 @@ class WifiP2pService : Service() {
         val channel = channel ?: return@suspendCancellableCoroutine
         val manager = manager ?: return@suspendCancellableCoroutine
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
-            println("First listener")
             Log.d(TAG, "DnsSdTxtRecord available -$record")
-            if (fullDomain.startsWith("_trekme_mapshare")) {
-                wifiP2pState = AwaitingConnection
+            if (fullDomain.startsWith(serviceName)) {
                 record["listenport"]?.also {
                     println(device.deviceAddress)
                     if (cont.isActive) cont.resume(device)
@@ -351,13 +357,13 @@ class WifiP2pService : Service() {
         val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance(serviceName, serviceType)
         scope.launch {
             runCatching {
-                println("Making service request..")
+                Log.d(TAG, "Making service request..")
                 val serviceAdded = manager.addServiceRequest(channel, serviceRequest)
                 if (serviceAdded) {
-                    println("Discovering services..")
+                    Log.d(TAG, "Discovering services..")
                     manager.discoverServices(channel).also { success ->
                         if (success) {
-                            println("Service successfully discovered")
+                            Log.d(TAG, "Service successfully discovered")
                         } else {
                             // Something went wrong. Alert user - retry?
                             cont.cancel()
@@ -380,20 +386,26 @@ class WifiP2pService : Service() {
         }
         val channel = channel ?: return
         manager?.connect(channel, config).also {
-            wifiP2pState = Connected
-            println("Connection success $it")
+            /**
+             * At this point, although the API has returned successfully, we still need to wait for
+             * the broadcast event WIFI_P2P_CONNECTION_CHANGED_ACTION to be sure we're indeed
+             * connected to the targeted device. We can infer this if the ip of the group owner is
+             * not null.
+             */
+            wifiP2pState = AwaitingP2pConnection
         }
     }
 
     private fun serverReceives() = scope.launch(Dispatchers.IO) {
+        wifiP2pState = AwaitingSocketConnection
         val serverSocket = ServerSocket(listenPort)
         serverSocket.use {
             /* Wait for client connection. Blocks until a connection is accepted from a client */
-            println("waiting for client connect..")
+            Log.d(TAG, "waiting for client connect..")
             val client = serverSocket.accept()
+            wifiP2pState = SocketConnected
 
             /* The client is assumed to write into a DataOutputStream */
-            println("Client connected!")
             val inputStream = DataInputStream(client.getInputStream())
 
             val mapName = inputStream.readUTF()
@@ -432,12 +444,14 @@ class WifiP2pService : Service() {
     }
 
     private fun serverSends() = scope.launch(Dispatchers.IO) {
+        wifiP2pState = AwaitingSocketConnection
         val serverSocket = ServerSocket(listenPort)
         serverSocket.use {
             /* Wait for client connection. Blocks until a connection is accepted from a client */
             println("waiting for client connect..")
             val client = serverSocket.accept()
 
+            wifiP2pState = SocketConnected
             val outputStream = DataOutputStream(client.getOutputStream())
             val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
             archivesDir.listFiles()?.firstOrNull()?.also {
@@ -452,14 +466,16 @@ class WifiP2pService : Service() {
             outputStream.close()
             serverSocket.close()
         }
-        println("Closed server socket")
+        Log.d(TAG, "Closed server socket")
     }
 
     private fun clientSends(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
+        wifiP2pState = AwaitingSocketConnection
         val socket = Socket()
         socket.bind(null)
         socket.connect(socketAddress)
 
+        wifiP2pState = SocketConnected
         val outputStream = DataOutputStream(socket.getOutputStream())
         val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
         archivesDir.listFiles()?.firstOrNull()?.also {
@@ -479,14 +495,15 @@ class WifiP2pService : Service() {
                 socket.close()
             }
         }
+        Log.d(TAG, "Client is no longer sending")
     }
 
     private fun clientReceives(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
-        wifiP2pState = Loading(0)
-
+        wifiP2pState = AwaitingSocketConnection
         val socket = Socket()
         socket.bind(null)
         socket.connect(socketAddress)
+        wifiP2pState = SocketConnected
 
         val inputStream = DataInputStream(socket.getInputStream())
         val mapName = inputStream.readUTF()
@@ -513,6 +530,7 @@ class WifiP2pService : Service() {
 
         inputStream.close()
         socket.close()
+        Log.d(TAG, "Client is no longer receiving")
     }
 
     private suspend fun resetWifiP2p() {
@@ -536,7 +554,7 @@ class WifiP2pService : Service() {
         var bytes = read(buffer)
         var bytesCopied: Long = 0
         var percent = 0
-        stateChannel.offer(Loading(0))
+        wifiP2pState = Loading(0)
         while (bytes >= 0 && scope.isActive) {
             try {
                 outputStream.write(buffer, 0, bytes)
@@ -545,7 +563,7 @@ class WifiP2pService : Service() {
                 val newPercent = (bytesCopied * 100f / totalByteCount).toInt()
                 if (newPercent != percent) {
                     percent = newPercent
-                    stateChannel.offer(Loading(percent))
+                    wifiP2pState = Loading(percent)
                 }
             } catch (e: SocketException) {
                 break
@@ -566,16 +584,24 @@ object Started : WifiP2pState() {
     override val index: Int = 0
 }
 
-object AwaitingConnection : WifiP2pState() {
+object AwaitingP2pConnection : WifiP2pState() {
     override val index: Int = 1
 }
 
-object Connected : WifiP2pState() {
+object P2pConnected : WifiP2pState() {
     override val index: Int = 2
 }
 
-data class Loading(val progress: Int) : WifiP2pState() {
+object AwaitingSocketConnection : WifiP2pState() {
     override val index: Int = 3
+}
+
+object SocketConnected : WifiP2pState() {
+    override val index: Int = 4
+}
+
+data class Loading(val progress: Int) : WifiP2pState() {
+    override val index: Int = 5
 }
 
 object Stopping : WifiP2pState() {
