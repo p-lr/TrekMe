@@ -10,7 +10,6 @@ import android.view.WindowManager
 import android.widget.EditText
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog.Companion.newInstance
-import kotlinx.android.parcel.Parcelize
 import org.greenrobot.eventbus.EventBus
 
 
@@ -60,9 +59,9 @@ class EditFieldDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = AlertDialog.Builder(activity!!)
+        val builder = AlertDialog.Builder(requireActivity())
         builder.setTitle(title)
-        val view = activity!!.layoutInflater.inflate(R.layout.edit_field_dialog, null)
+        val view = requireActivity().layoutInflater.inflate(R.layout.edit_field_dialog, null)
 
         editText = view.findViewById(R.id.edit_field_edittext)
         editText.setText(initialValue)
@@ -94,5 +93,4 @@ class EditFieldDialog : DialogFragment() {
  * type [EditFieldEvent] that have a different purpose.
  * It is sent when the user presses the "OK" button of the dialog.
  */
-@Parcelize
-open class EditFieldEvent(var initialValue: String, var newValue: String) : Parcelable
+abstract class EditFieldEvent(var initialValue: String, var newValue: String) : Parcelable

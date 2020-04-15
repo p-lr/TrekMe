@@ -10,8 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.ui.record.components.events.*
+import com.peterlaurence.trekme.ui.record.components.events.RecordingDeletionFailed
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import org.greenrobot.eventbus.EventBus
@@ -27,12 +26,19 @@ import java.util.*
  */
 class RecordListView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : CardView(context, attrs, defStyleAttr) {
     private var isMultiSelectMode = false
-    private var selectedRecordings = ArrayList<File>()
+    var selectedRecordings = ArrayList<File>()
+        private set
+
     private lateinit var recordingAdapter: RecordingAdapter
     private val recordingDataList = arrayListOf<RecordingData>()
+    private var listener: RecordListViewListener? = null
 
     init {
         init(context)
+    }
+
+    fun setListener(listener: RecordListViewListener) {
+        this.listener = listener
     }
 
     fun setRecordingData(data: List<RecordingData>) {
@@ -58,22 +64,22 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         editNameButton.setOnClickListener {
             if (selectedRecordings.size == 1) {
                 val recording = selectedRecordings[0]
-                EventBus.getDefault().post(RequestEditRecording(recording))
+                EventBus.getDefault().post(listener?.onRequestEditRecording(recording))
             }
         }
 
         importButton.isEnabled = false
-        importButton.setOnClickListener { EventBus.getDefault().post(RequestChooseMap()) }
+        importButton.setOnClickListener { listener?.onRequestChooseMap() }
 
         shareButton.isEnabled = false
         shareButton.setOnClickListener {
             if (selectedRecordings.size >= 1) {
-                EventBus.getDefault().post(RequestShareRecording(selectedRecordings))
+                EventBus.getDefault().post(listener?.onRequestShareRecording(selectedRecordings))
             }
         }
 
         deleteRecordingButton.setOnClickListener {
-            EventBus.getDefault().post(RequestDeleteRecordings(selectedRecordings))
+            EventBus.getDefault().post(listener?.onRequestDeleteRecordings(selectedRecordings))
 
             /* Remove immediately the corresponding views (for better responsiveness) */
             for (file in selectedRecordings) {
@@ -153,24 +159,14 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         } else {
             selectedRecordings.add(recording)
         }
+        listener?.onSelectionChanged(selectedRecordings)
     }
 
     private fun singleSelect(position: Int) {
         val recording = recordingDataList[position].recording
         selectedRecordings.clear()
         selectedRecordings.add(recording)
-    }
-
-    @Subscribe
-    fun onMapSelectedForRecord(event: MapSelectedForRecord) {
-        val map = MapLoader.getMap(event.mapId) ?: return
-        val recording = selectedRecordings[0]
-
-        EventBus.getDefault().post(RequestImportRecording(recording, map))
-
-        /* Tell the user that the track will be shortly available in the map */
-        val snackbar = Snackbar.make(rootView, R.string.track_is_being_added, Snackbar.LENGTH_LONG)
-        snackbar.show()
+        listener?.onSelectionChanged(selectedRecordings)
     }
 
     @Subscribe
@@ -179,5 +175,13 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
         val snackbar = Snackbar.make(rootView, R.string.files_could_not_be_deleted,
                 Snackbar.LENGTH_SHORT)
         snackbar.show()
+    }
+
+    interface RecordListViewListener {
+        fun onRequestShareRecording(recordings: List<File>)
+        fun onRequestChooseMap()
+        fun onRequestEditRecording(recording: File)
+        fun onRequestDeleteRecordings(recordings: List<File>)
+        fun onSelectionChanged(recordings: List<File>)
     }
 }

@@ -12,7 +12,6 @@ import com.peterlaurence.trekme.core.track.hpFilter
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.components.events.RecordingDeletionFailed
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
-import com.peterlaurence.trekme.ui.record.components.events.RequestDeleteRecordings
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.GPXParser
 import com.peterlaurence.trekme.util.gpx.GPXWriter
@@ -77,10 +76,9 @@ class RecordingStatisticsViewModel : ViewModel() {
         }
     }
 
-    @Subscribe
-    fun onRequestDeleteRecordings(event: RequestDeleteRecordings) {
+    fun onRequestDeleteRecordings(recordings: List<File>) {
         var success = true
-        event.recordingList.forEach {
+        recordings.forEach {
             if (it.exists()) {
                 if (!it.delete()) {
                     success = false

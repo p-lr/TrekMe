@@ -1,16 +1,16 @@
-package com.peterlaurence.trekme.ui.record.components.dialogs
+package com.peterlaurence.trekme.ui.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.fragment.app.DialogFragment
-import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -33,19 +33,23 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     private var mapSelected: Map? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        selectedIndex = savedInstanceState?.getInt(KEY_BUNDLE_MAP_INDEX) ?: -1
-
-        recyclerView = RecyclerView(activity!!.baseContext)
+        recyclerView = RecyclerView(requireActivity().baseContext)
         val llm = LinearLayoutManager(activity)
         recyclerView.layoutManager = llm
 
         /* Fetch the list of maps */
         val mapList = MapLoader.maps
 
+        /* Restore the selection after device rotation */
+        selectedIndex = savedInstanceState?.getInt(KEY_BUNDLE_MAP_INDEX) ?: -1
+        if (selectedIndex != -1) {
+            mapSelected = mapList.getOrNull(selectedIndex)
+        }
+
         mapChoiceAdapter = MapChoiceAdapter(mapList, this, selectedIndex)
         recyclerView.adapter = mapChoiceAdapter
 
-        val builder = AlertDialog.Builder(activity!!)
+        val builder = AlertDialog.Builder(requireActivity())
         builder.setTitle(getString(R.string.choose_a_map))
         builder.setView(recyclerView)
         builder.setPositiveButton(getString(R.string.ok_dialog)) { _, _ ->
@@ -122,7 +126,7 @@ class MapChoiceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var index: Int = -1
 
     fun setItemClickListener(listener: MapChoiceItemClickListener) {
-        itemView.setOnClickListener { _ -> listener.onItemClick(index) }
+        itemView.setOnClickListener { listener.onItemClick(index) }
     }
 }
 
