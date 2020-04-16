@@ -19,7 +19,8 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.core.projection.ProjectionTask;
-import com.peterlaurence.trekme.util.ZipTask;
+import com.peterlaurence.trekme.util.ZipProgressionListener;
+import com.peterlaurence.trekme.util.ZipTaskKt;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -467,14 +468,12 @@ public class Map {
      * Archives the map. <p>
      * Creates a zip file named with this {@link Map} name and the date. This file is placed in the
      * parent folder of the {@link Map}.
-     *
-     * @param listener The {@link com.peterlaurence.trekme.util.ZipTask.ZipProgressionListener}.
+     * Beware that this is a blocking call and should be executed from inside a background thread.
      */
-    public void zip(ZipTask.ZipProgressionListener listener, OutputStream outputStream) {
+    public void zip(ZipProgressionListener listener, OutputStream outputStream) {
         File mapFolder = mConfigFile.getParentFile();
         if (mapFolder != null) {
-            ZipTask zipTask = new ZipTask(mConfigFile.getParentFile(), outputStream, listener);
-            zipTask.execute();
+            ZipTaskKt.zipTask(mConfigFile.getParentFile(), outputStream, listener);
         }
     }
 

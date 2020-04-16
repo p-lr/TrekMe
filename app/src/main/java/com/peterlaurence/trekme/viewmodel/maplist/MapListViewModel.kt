@@ -11,7 +11,8 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
 import com.peterlaurence.trekme.ui.maplist.events.*
-import com.peterlaurence.trekme.util.ZipTask
+import com.peterlaurence.trekme.util.ZipProgressionListener
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
@@ -79,7 +80,7 @@ class MapListViewModel : ViewModel() {
     private fun zipProgressFlow(mapId: Int, outputStream: OutputStream): Flow<ZipEvent> = callbackFlow {
         val map = MapLoader.getMap(mapId) ?: return@callbackFlow
 
-        val callback = object : ZipTask.ZipProgressionListener {
+        val callback = object : ZipProgressionListener {
             private val mapName = map.name
 
             override fun fileListAcquired() {}
@@ -100,7 +101,9 @@ class MapListViewModel : ViewModel() {
                 cancel()
             }
         }
-        map.zip(callback, outputStream)
+        viewModelScope.launch(Dispatchers.IO) {
+            map.zip(callback, outputStream)
+        }
         awaitClose()
     }
 

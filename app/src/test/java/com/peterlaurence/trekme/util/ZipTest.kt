@@ -12,7 +12,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 
 /**
- * This tests the [ZipTask] against the [unzipTask].
+ * This tests the [zipTask] function against the [unzipTask].
  *
  * A sample map (a simple folder structure) located in the resources of the app is zipped in a
  * temporary folder. Right after that, it's unzipped in the same location. <br></br>
@@ -49,10 +49,10 @@ class ZipTest {
             try {
                 val tempMapArchive = File(mTestFolder, "testmap.zip")
                 val size = tempMapArchive.length()
-                tempMapArchive.parentFile.mkdirs()
+                tempMapArchive.parentFile?.mkdirs()
                 tempMapArchive.createNewFile()
 
-                val progressionListener = object : ZipTask.ZipProgressionListener {
+                val progressionListener = object : ZipProgressionListener {
                     override fun fileListAcquired() {
                         println("File list acquired")
                     }
@@ -70,13 +70,10 @@ class ZipTest {
                     }
                 }
 
-                val zipTask = ZipTask(libVipsMapDir, FileOutputStream(tempMapArchive), progressionListener)
-                zipTask.execute()
-
+                zipTask(libVipsMapDir, FileOutputStream(tempMapArchive), progressionListener)
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-
         } else {
             fail()
         }
