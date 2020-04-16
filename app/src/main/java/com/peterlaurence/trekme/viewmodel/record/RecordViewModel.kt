@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.ui.record.components.events.MapSelectedForRecord
+import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -31,7 +31,7 @@ class RecordViewModel : ViewModel() {
      * The business logic of parsing a GPX file.
      */
     @Subscribe
-    fun onMapSelectedForRecord(event: MapSelectedForRecord) {
+    fun onMapSelectedForRecord(event: MapSelectedEvent) {
         val map = MapLoader.getMap(event.mapId) ?: return
 
         val recording = recordingsSelected.firstOrNull() ?: return

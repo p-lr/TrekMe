@@ -221,14 +221,13 @@ object MapImporter {
         private fun findParentFolder(imageFile: File?): File? {
             if (imageFile != null) {
                 try {
-                    val parentFolder = imageFile.parentFile.parentFile.parentFile
-                    if (parentFolder.isDirectory) {
+                    val parentFolder = imageFile.parentFile?.parentFile?.parentFile
+                    if (parentFolder != null && parentFolder.isDirectory) {
                         return parentFolder
                     }
                 } catch (e: NullPointerException) {
                     // don't care, will return null
                 }
-
             }
             return null
         }
@@ -250,7 +249,7 @@ object MapImporter {
                         }
                     } else {
                         val listImage = dir.listFiles(IMAGE_FILTER)
-                        if (listImage.isNotEmpty()) {
+                        if (!listImage.isNullOrEmpty()) {
                             return listImage[0]
                         }
                     }

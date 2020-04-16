@@ -14,14 +14,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.ui.record.components.events.MapSelectedForRecord
 import org.greenrobot.eventbus.EventBus
 
-private const val KEY_BUNDLE_MAP_INDEX = "mapIndex"
 
 /**
  * A dialog that displays the list of maps. The user can only select one map, and confirm or not the
- * selection.
+ * selection. Upon selection of a map, a [MapSelectedEvent] is fired.
  *
  * @author peterLaurence on 01/09/2018
  */
@@ -54,7 +52,7 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         builder.setView(recyclerView)
         builder.setPositiveButton(getString(R.string.ok_dialog)) { _, _ ->
             if (mapSelected != null) {
-                EventBus.getDefault().post(MapSelectedForRecord(mapSelected?.id!!))
+                EventBus.getDefault().post(MapSelectedEvent(mapSelected?.id!!))
             }
         }
         builder.setNegativeButton(getString(R.string.cancel_dialog_string)) { _, _ ->
@@ -76,9 +74,10 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     }
 }
 
+class MapSelectedEvent(val mapId: Int)
 
-class MapChoiceAdapter(private val mapList: List<Map>, val listener: MapChoiceSelectionListener,
-                       selectedIndex: Int) : RecyclerView.Adapter<MapChoiceViewHolder>(), MapChoiceItemClickListener {
+private class MapChoiceAdapter(private val mapList: List<Map>, val listener: MapChoiceSelectionListener,
+                               selectedIndex: Int) : RecyclerView.Adapter<MapChoiceViewHolder>(), MapChoiceItemClickListener {
     private var index = selectedIndex
     private var oldIndex = -1
 
@@ -120,7 +119,7 @@ class MapChoiceAdapter(private val mapList: List<Map>, val listener: MapChoiceSe
     }
 }
 
-class MapChoiceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+private class MapChoiceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val layout: ConstraintLayout = itemView.findViewById(R.id.map_choice_layout)
     val textView: TextView = itemView.findViewById(R.id.map_choice_textview)
     var index: Int = -1
@@ -130,10 +129,12 @@ class MapChoiceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 }
 
-interface MapChoiceItemClickListener {
+private const val KEY_BUNDLE_MAP_INDEX = "mapIndex"
+
+private interface MapChoiceItemClickListener {
     fun onItemClick(position: Int)
 }
 
-interface MapChoiceSelectionListener {
+private interface MapChoiceSelectionListener {
     fun onMapSelected(map: Map, position: Int)
 }

@@ -23,6 +23,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.util.unzipTask
 import kotlinx.coroutines.*
@@ -63,12 +65,6 @@ class WifiP2pService : Service() {
 
     private var isNetworkAvailable = false
 
-    enum class StartAction {
-        START_SEND, START_RCV
-    }
-
-    object StopAction
-
     private var serviceStarted = false
 
     private var wifiP2pState: WifiP2pState = Stopped
@@ -101,11 +97,12 @@ class WifiP2pService : Service() {
                     WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
                         println("Peers changed")
 //                        val channel = channel ?: return
-                        /* Request available peers only if we are starting */
+//                        /* Request available peers only if we are starting */
 //                        if (wifiP2pState == Started) {
 //                            scope.launch {
 //                                val peers = manager?.requestPeers(channel)
-//                                if (peers != null) peerListChannel.offer(peers)
+//                                println(peers)
+////                                if (peers != null) peerListChannel.offer(peers)
 //                                // we have a list of peers - should display in a list ?
 //                            }
 //                        }
@@ -134,18 +131,18 @@ class WifiP2pService : Service() {
                             wifiP2pState = P2pConnected
 
                             /* Immediately stop on-going P2P discovering operations */
-                            if (mode == StartAction.START_SEND) {
+                            if (mode is StartSend) {
                                 manager.clearServiceRequests(channel, null)
                                 manager.stopPeerDiscovery(channel, null)
                             }
-                            if (mode == StartAction.START_RCV) {
+                            if (mode is StartRcv) {
                                 manager.clearLocalServices(channel, null)
                                 manager.stopPeerDiscovery(channel, null)
                             }
 
                             if (info.isGroupOwner) {
                                 // server
-                                if (mode!! == StartAction.START_RCV) {
+                                if (mode!! is StartRcv) {
                                     serverReceives()
                                 } else {
                                     serverSends()
@@ -153,7 +150,7 @@ class WifiP2pService : Service() {
                             } else {
                                 // client
                                 val inetSocketAddress = InetSocketAddress(info.groupOwnerAddress?.hostAddress, listenPort)
-                                if (mode!! == StartAction.START_RCV) {
+                                if (mode!! is StartRcv) {
                                     clientReceives(inetSocketAddress)
                                 } else {
                                     clientSends(inetSocketAddress)
@@ -206,7 +203,7 @@ class WifiP2pService : Service() {
      * * [StopAction]             -> Stops the service
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if (intent.action !in (StartAction.values().map { it.name } + StopAction::class.java.name)) {
+        if (intent.action !in listOf(StartRcv::class.java.name, StartSend::class.java.name, StopAction::class.java.name)) {
             Log.e(TAG, "Illegal action sent to WifiP2pService")
             return START_NOT_STICKY
         }
@@ -255,11 +252,19 @@ class WifiP2pService : Service() {
 
         serviceStarted = true
 
-        if (intent.action == StartAction.START_RCV.name) {
-            mode = StartAction.START_RCV
+        if (intent.action == StartRcv::class.java.name) {
+            mode = StartRcv
         }
-        if (intent.action == StartAction.START_SEND.name) {
-            mode = StartAction.START_SEND
+        if (intent.action == StartSend::class.java.name) {
+            val mapId = intent.getIntExtra("mapId", -1)
+            val map = MapLoader.getMap(mapId)
+            if (map != null) {
+                mode = StartSend(map)
+            } else {
+                Log.e(TAG, "Couldn't find a map with the given id")
+                stopSelf()
+                return START_NOT_STICKY
+            }
         }
 
         scope.launch {
@@ -281,7 +286,7 @@ class WifiP2pService : Service() {
         val channel = channel ?: return
         manager?.discoverPeers(channel)
 
-        if (mode == StartAction.START_RCV) {
+        if (mode is StartRcv) {
             scope.launch {
                 while (true) {
                     Log.d(TAG, "Re-advertise service")
@@ -296,7 +301,7 @@ class WifiP2pService : Service() {
                 }
             }
         }
-        if (mode == StartAction.START_SEND) {
+        if (mode is StartSend) {
             scope.launch {
                 while (true) {
                     launch {
@@ -315,7 +320,7 @@ class WifiP2pService : Service() {
     }
 
     private suspend fun startRegistration() {
-        val record: Map<String, String> = mapOf(
+        val record: kotlin.collections.Map<String, String> = mapOf(
                 "listenport" to listenPort.toString(),
                 "available" to "visible"
         )
@@ -571,6 +576,16 @@ class WifiP2pService : Service() {
         }
     }
 }
+
+/**
+ * This service can be started in two ways.
+ * Either in receiving or sending mode.
+ */
+sealed class StartAction
+object StartRcv : StartAction()
+data class StartSend(val map: Map) : StartAction()
+
+object StopAction
 
 sealed class WifiP2pState : Comparable<WifiP2pState> {
     abstract val index: Int

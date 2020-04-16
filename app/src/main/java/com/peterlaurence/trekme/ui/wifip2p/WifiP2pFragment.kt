@@ -10,12 +10,18 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.peterlaurence.trekme.core.wifip2p.*
+import com.peterlaurence.trekme.core.wifip2p.Loading
+import com.peterlaurence.trekme.core.wifip2p.Started
+import com.peterlaurence.trekme.core.wifip2p.Stopped
+import com.peterlaurence.trekme.core.wifip2p.WifiP2pState
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
+import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
+import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
 import com.peterlaurence.trekme.viewmodel.wifip2p.Errors
 import com.peterlaurence.trekme.viewmodel.wifip2p.ServiceAlreadyStarted
 import com.peterlaurence.trekme.viewmodel.wifip2p.WifiP2pViewModel
-import java.lang.Exception
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 
 /**
  *
@@ -59,16 +65,21 @@ class WifiP2pFragment : Fragment() {
         }
 
         binding.sendBtn.setOnClickListener {
-            viewModel.onRequestSend()
+            val dialog = MapChoiceDialog()
+            dialog.show(requireActivity().supportFragmentManager, "MapChoiceDialog")
             binding.receiveBtn.isEnabled = false
         }
 
         binding.stopBtn.setOnClickListener {
             viewModel.onRequestStop()
         }
-//        binding.stopBtn.isVisible = false
 
         return binding.root
+    }
+
+    @Subscribe
+    fun onMapSelected(event: MapSelectedEvent) {
+        viewModel.onRequestSend(event.mapId)
     }
 
     private fun onState(state: WifiP2pState) {
@@ -98,5 +109,15 @@ class WifiP2pFragment : Fragment() {
         when (error) {
             ServiceAlreadyStarted -> binding.status.editableText.append("Service already started")
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        EventBus.getDefault().unregister(this)
+        super.onStop()
     }
 }
