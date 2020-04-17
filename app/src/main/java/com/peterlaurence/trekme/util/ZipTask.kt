@@ -31,7 +31,8 @@ fun zipTask(folderToZip: File, outputStream: OutputStream, listener: ZipProgress
 
         var entryCount = 0
         val totalEntries = filePathList.size
-        val buffer = ByteArray(1024)
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var progress = -1
         for (filePath in filePathList) {
             entryCount++
             /* Create a zip entry */
@@ -45,12 +46,16 @@ fun zipTask(folderToZip: File, outputStream: OutputStream, listener: ZipProgress
 
             while (true) {
                 val len = fis.read(buffer)
-                if (len <= 0)
+                if (len < 0)
                     break
                 zos.write(buffer, 0, len)
             }
 
-            listener.onProgress((entryCount / totalEntries.toFloat() * 100).toInt())
+            val newProgress = (entryCount / totalEntries.toFloat() * 100).toInt()
+            if (newProgress != progress) {
+                listener.onProgress(newProgress)
+                progress = newProgress
+            }
 
             /* Close the zip entry and the file input stream */
             zos.closeEntry()

@@ -144,7 +144,7 @@ class WifiP2pService : Service() {
                                 // server
                                 if (mode is StartRcv) {
                                     serverReceives()
-                                } else if (mode is StartSend)  {
+                                } else if (mode is StartSend) {
                                     serverSends(mode.map)
                                 }
                             } else {
@@ -152,8 +152,8 @@ class WifiP2pService : Service() {
                                 val inetSocketAddress = InetSocketAddress(info.groupOwnerAddress?.hostAddress, listenPort)
                                 if (mode is StartRcv) {
                                     clientReceives(inetSocketAddress)
-                                } else {
-                                    clientSends(inetSocketAddress)
+                                } else if (mode is StartSend) {
+                                    clientSends(inetSocketAddress, mode.map)
                                 }
                             }
                         }
@@ -403,144 +403,95 @@ class WifiP2pService : Service() {
 
     private fun serverReceives() = scope.launch(Dispatchers.IO) {
         wifiP2pState = AwaitingSocketConnection
-        val serverSocket = ServerSocket(listenPort)
-        serverSocket.use {
-            /* Wait for client connection. Blocks until a connection is accepted from a client */
-            Log.d(TAG, "waiting for client connect..")
-            val client = serverSocket.accept()
-            wifiP2pState = SocketConnected
 
-            /* The client is assumed to write into a DataOutputStream */
-            val inputStream = DataInputStream(client.getInputStream())
+        runCatching {
+            val serverSocket = ServerSocket(listenPort)
+            serverSocket.use {
+                /* Wait for client connection. Blocks until a connection is accepted from a client */
+                Log.d(TAG, "waiting for client connect..")
+                val client = serverSocket.accept()
 
-            val mapName = inputStream.readUTF()
-            println("Recieving $mapName from server")
-            val size = inputStream.readLong()
-            println("Size: $size")
+                wifiP2pState = SocketConnected
 
-            var c = 0L
-            var x = 0
-            val myOutput = object : OutputStream() {
-                override fun write(b: Int) {
-                    x++
-                    val percent = c++.toFloat() / size
-                    if (x > DEFAULT_BUFFER_SIZE) {
-                        println(percent)
-                        x = 0
-                    }
-                }
+                /* The client is assumed to write into a DataOutputStream */
+                val inputStream = DataInputStream(client.getInputStream())
+                receive(inputStream)
             }
-
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-            var bytes = inputStream.read(buffer)
-            while (bytes >= 0 && isActive) {
-                myOutput.write(buffer, 0, bytes)
-                try {
-                    bytes = inputStream.read(buffer)
-                } catch (e: SocketException) {
-                    break
-                }
-            }
-            inputStream.close()
-            myOutput.close()
-            serverSocket.close()
         }
-        println("Closed server socket")
+        Log.d(TAG, "Server is done receiving")
     }
 
     private fun serverSends(map: Map) = scope.launch(Dispatchers.IO) {
         wifiP2pState = AwaitingSocketConnection
-        val serverSocket = ServerSocket(listenPort)
-        serverSocket.soTimeout = 0
-        serverSocket.use {
-            /* Wait for client connection. Blocks until a connection is accepted from a client */
-            println("waiting for client connect..")
-            val client = serverSocket.accept()
 
-            wifiP2pState = SocketConnected
-            val outputStream = DataOutputStream(client.getOutputStream())
-            outputStream.writeUTF(map.name)
-            val size = FileUtils.dirSize(map.directory)
-            outputStream.writeLong(size)
-            zipTask(map.directory, outputStream, object : ZipProgressionListener {
-                override fun fileListAcquired() {
-                    wifiP2pState = Loading(0)
-                }
+        runCatching {
+            val serverSocket = ServerSocket(listenPort)
+            serverSocket.soTimeout = 0
+            serverSocket.use {
+                /* Wait for client connection. Blocks until a connection is accepted from a client */
+                Log.d(TAG, "Waiting for client connect..")
+                val client = serverSocket.accept()
 
-                override fun onProgress(p: Int) {
-                    wifiP2pState = Loading(p)
-                }
-
-                override fun onZipFinished() {
-                    wifiP2pState = Loading(100)
-                }
-
-                override fun onZipError() {
-                    errorChannel.offer(WifiP2pServiceErrors.UNZIP_ERROR)
-                }
-            })
-//            val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
-//            archivesDir.listFiles()?.firstOrNull()?.also {
-//                println("Sending ${it.name}")
-//                outputStream.writeUTF(it.name)
-//                val totalByteCount = it.length()
-//                outputStream.writeLong(totalByteCount)
-//                FileInputStream(it).use {
-//                    it.copyToWithProgress(outputStream, this, totalByteCount)
-//                }
-//            }
-            outputStream.close()
-            serverSocket.close()
-        }
-        Log.d(TAG, "Closed server socket")
-    }
-
-    private fun clientSends(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
-        wifiP2pState = AwaitingSocketConnection
-        val socket = Socket()
-        socket.bind(null)
-        socket.connect(socketAddress)
-
-        wifiP2pState = SocketConnected
-        val outputStream = DataOutputStream(socket.getOutputStream())
-        val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
-        archivesDir.listFiles()?.firstOrNull()?.also {
-            println("Sending ${it.name}")
-            try {
-                val totalByteCount = it.length()
-                outputStream.writeUTF(it.name)
-                outputStream.writeLong(totalByteCount)
-
-                FileInputStream(it).use {
-                    it.copyToWithProgress(outputStream, this, totalByteCount)
-                }
-            } catch (e: SocketException) {
-                // abort
-            } finally {
-                outputStream.close()
-                socket.close()
+                wifiP2pState = SocketConnected
+                val outputStream = DataOutputStream(client.getOutputStream())
+                send(map, outputStream)
             }
         }
-        Log.d(TAG, "Client is no longer sending")
+        Log.d(TAG, "Server is done sending")
+    }
+
+    private fun clientSends(socketAddress: InetSocketAddress, map: Map) = scope.launch(Dispatchers.IO) {
+        Log.d(TAG, "Sending ${map.name} from client")
+        wifiP2pState = AwaitingSocketConnection
+
+        runCatching {
+            val socket = Socket()
+            socket.bind(null)
+            socket.connect(socketAddress)
+            socket.soTimeout = 0
+
+            wifiP2pState = SocketConnected
+
+            socket.use {
+                val outputStream = DataOutputStream(socket.getOutputStream())
+                send(map, outputStream)
+            }
+        }
+
+        Log.d(TAG, "Client is done sending")
     }
 
     private fun clientReceives(socketAddress: InetSocketAddress) = scope.launch(Dispatchers.IO) {
         wifiP2pState = AwaitingSocketConnection
-        val socket = Socket()
-        socket.bind(null)
-        socket.connect(socketAddress)
-        socket.soTimeout = 0
-        wifiP2pState = SocketConnected
 
-        val inputStream = DataInputStream(socket.getInputStream())
+        runCatching {
+            val socket = Socket()
+            socket.bind(null)
+            socket.connect(socketAddress)
+            socket.soTimeout = 0
+            wifiP2pState = SocketConnected
+
+            socket.use {
+                val inputStream = DataInputStream(socket.getInputStream())
+                receive(inputStream)
+            }
+        }
+
+        Log.d(TAG, "Client is done receiving")
+    }
+
+    private fun receive(inputStream: DataInputStream) {
+        /* The name of the map is expected to be the first data */
         val mapName = inputStream.readUTF()
-        println("Recieving $mapName from client")
-        val sizeUncompresssed = inputStream.readLong()
-        println("Size: $sizeUncompresssed")
+        Log.d(TAG, "Receiving $mapName..")
 
+        /* The uncompressed size is expected to come second */
+        val sizeUncompressed = inputStream.readLong()
         val dir = File(TrekMeContext.importedDir, mapName).unique()
         dir.mkdir()
-        unzipTask(inputStream, dir, sizeUncompresssed, false, object : UnzipProgressionListener {
+
+        /* Finally comes the compressed stream */
+        unzipTask(inputStream, dir, sizeUncompressed, false, object : UnzipProgressionListener {
             override fun onProgress(p: Int) {
                 println(p)
                 wifiP2pState = Loading(p)
@@ -554,10 +505,40 @@ class WifiP2pService : Service() {
                 errorChannel.offer(WifiP2pServiceErrors.UNZIP_ERROR)
             }
         })
+        runCatching {
+            inputStream.close()
+        }
+    }
 
-        inputStream.close()
-        socket.close()
-        Log.d(TAG, "Client is no longer receiving")
+    private fun send(map: Map, outputStream: DataOutputStream) {
+        /* The name of the map is expected to be the first data */
+        outputStream.writeUTF(map.name)
+
+        /* The uncompressed size is expected to come second */
+        val size = FileUtils.dirSize(map.directory)
+        outputStream.writeLong(size)
+
+        /* Finally comes the compressed stream */
+        zipTask(map.directory, outputStream, object : ZipProgressionListener {
+            override fun fileListAcquired() {
+                wifiP2pState = Loading(0)
+            }
+
+            override fun onProgress(p: Int) {
+                wifiP2pState = Loading(p)
+            }
+
+            override fun onZipFinished() {
+                wifiP2pState = Loading(100)
+            }
+
+            override fun onZipError() {
+                errorChannel.offer(WifiP2pServiceErrors.UNZIP_ERROR)
+            }
+        })
+        runCatching {
+            outputStream.close()
+        }
     }
 
     private suspend fun resetWifiP2p() {

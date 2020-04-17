@@ -51,14 +51,17 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, isSizeCo
 
                 val fos = FileOutputStream(newFile)
 
+                /* We don't rely on entry.size to get the actual number of bytes read */
+                var bytesEntry = 0L
                 while (true) {
                     val len = zis.read(buffer)
-                    if (len <= 0)
+                    if (len < 0)
                         break
                     fos.write(buffer, 0, len)
+                    bytesEntry += len
                 }
 
-                bytesRead += if (isSizeCompressed) entry.compressedSize else entry.size
+                bytesRead += if (isSizeCompressed) entry.compressedSize else bytesEntry
                 val newProgress = (bytesRead / size.toDouble() * 100).toInt()
                 if (newProgress != progress) {
                     unzipProgressionListener.onProgress(newProgress)
