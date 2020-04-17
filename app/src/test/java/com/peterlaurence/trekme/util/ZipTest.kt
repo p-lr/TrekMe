@@ -62,7 +62,7 @@ class ZipTest {
                     }
 
                     override fun onZipFinished() {
-                        unzipTask(FileInputStream(tempMapArchive), mTestFolder, size, unzipProgressionListener)
+                        unzipTask(FileInputStream(tempMapArchive), mTestFolder, size, true, unzipProgressionListener)
                     }
 
                     override fun onZipError() {

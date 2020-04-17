@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Stack;
 
 /**
  * Utility class.
@@ -180,5 +181,34 @@ public class FileUtils {
             pw.flush();
             pw.close();
         }
+    }
+
+    /**
+     * Computes the logical size of a directory (recursively). The returned size is most probably
+     * *not* the physical size (which depends on cluster size, file system, etc.).
+     *
+     * @return the size in bytes
+     */
+    public static long dirSize(File dir) {
+        long result = 0;
+
+        Stack<File> dirList = new Stack<>();
+        dirList.clear();
+        dirList.push(dir);
+
+        while (!dirList.isEmpty()) {
+            File dirCurrent = dirList.pop();
+
+            File[] fileList = dirCurrent.listFiles();
+            if (fileList == null) break;
+            for (File f : fileList) {
+                if (f.isDirectory())
+                    dirList.push(f);
+                else
+                    result += f.length();
+            }
+        }
+
+        return result;
     }
 }

@@ -24,7 +24,7 @@ fun CoroutineScope.unarchive(inputStream: InputStream, outputDirectory: File, na
 
     /* Launch the unzip task */
     launch(Dispatchers.IO) {
-        unzipTask(inputStream, intermediateDirectory, size, listener)
+        unzipTask(inputStream, intermediateDirectory, size, true, listener)
     }
 }
 

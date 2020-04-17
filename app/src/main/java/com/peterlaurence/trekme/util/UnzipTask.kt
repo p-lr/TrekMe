@@ -9,8 +9,14 @@ import java.util.zip.ZipInputStream
 
 private const val TAG = "UnzipTask"
 
-
-fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipProgressionListener: UnzipProgressionListener) {
+/**
+ * Unzips from an [InputStream] into an [outputFolder].
+ * To compute progress and callback the provided [unzipProgressionListener] with correct values, this
+ * function also expects the size of the input stream as [size] parameter. As this size might be the
+ * compressed or uncompressed size of the stream, the [isInitialized] flag is expected.
+ */
+fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, isSizeCompressed: Boolean,
+              unzipProgressionListener: UnzipProgressionListener) {
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
     var result = true
 
@@ -52,7 +58,7 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipPro
                     fos.write(buffer, 0, len)
                 }
 
-                bytesRead += entry.compressedSize
+                bytesRead += if (isSizeCompressed) entry.compressedSize else entry.size
                 val newProgress = (bytesRead / size.toDouble() * 100).toInt()
                 if (newProgress != progress) {
                     unzipProgressionListener.onProgress(newProgress)
@@ -85,6 +91,9 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, unzipPro
 }
 
 interface UnzipProgressionListener {
+    /**
+     * Provides the progress in percent.
+     */
     fun onProgress(p: Int)
 
     /**

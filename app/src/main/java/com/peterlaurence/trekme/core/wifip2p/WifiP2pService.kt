@@ -25,8 +25,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.util.UnzipProgressionListener
-import com.peterlaurence.trekme.util.unzipTask
+import com.peterlaurence.trekme.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -131,6 +130,7 @@ class WifiP2pService : Service() {
                             wifiP2pState = P2pConnected
 
                             /* Immediately stop on-going P2P discovering operations */
+                            val mode = mode ?: return@requestConnectionInfo
                             if (mode is StartSend) {
                                 manager.clearServiceRequests(channel, null)
                                 manager.stopPeerDiscovery(channel, null)
@@ -142,15 +142,15 @@ class WifiP2pService : Service() {
 
                             if (info.isGroupOwner) {
                                 // server
-                                if (mode!! is StartRcv) {
+                                if (mode is StartRcv) {
                                     serverReceives()
-                                } else {
-                                    serverSends()
+                                } else if (mode is StartSend)  {
+                                    serverSends(mode.map)
                                 }
                             } else {
                                 // client
                                 val inetSocketAddress = InetSocketAddress(info.groupOwnerAddress?.hostAddress, listenPort)
-                                if (mode!! is StartRcv) {
+                                if (mode is StartRcv) {
                                     clientReceives(inetSocketAddress)
                                 } else {
                                     clientSends(inetSocketAddress)
@@ -448,9 +448,10 @@ class WifiP2pService : Service() {
         println("Closed server socket")
     }
 
-    private fun serverSends() = scope.launch(Dispatchers.IO) {
+    private fun serverSends(map: Map) = scope.launch(Dispatchers.IO) {
         wifiP2pState = AwaitingSocketConnection
         val serverSocket = ServerSocket(listenPort)
+        serverSocket.soTimeout = 0
         serverSocket.use {
             /* Wait for client connection. Blocks until a connection is accepted from a client */
             println("waiting for client connect..")
@@ -458,16 +459,36 @@ class WifiP2pService : Service() {
 
             wifiP2pState = SocketConnected
             val outputStream = DataOutputStream(client.getOutputStream())
-            val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
-            archivesDir.listFiles()?.firstOrNull()?.also {
-                println("Sending ${it.name}")
-                outputStream.writeUTF(it.name)
-                val totalByteCount = it.length()
-                outputStream.writeLong(totalByteCount)
-                FileInputStream(it).use {
-                    it.copyToWithProgress(outputStream, this, totalByteCount)
+            outputStream.writeUTF(map.name)
+            val size = FileUtils.dirSize(map.directory)
+            outputStream.writeLong(size)
+            zipTask(map.directory, outputStream, object : ZipProgressionListener {
+                override fun fileListAcquired() {
+                    wifiP2pState = Loading(0)
                 }
-            }
+
+                override fun onProgress(p: Int) {
+                    wifiP2pState = Loading(p)
+                }
+
+                override fun onZipFinished() {
+                    wifiP2pState = Loading(100)
+                }
+
+                override fun onZipError() {
+                    errorChannel.offer(WifiP2pServiceErrors.UNZIP_ERROR)
+                }
+            })
+//            val archivesDir = File(TrekMeContext.defaultAppDir, "archives")
+//            archivesDir.listFiles()?.firstOrNull()?.also {
+//                println("Sending ${it.name}")
+//                outputStream.writeUTF(it.name)
+//                val totalByteCount = it.length()
+//                outputStream.writeLong(totalByteCount)
+//                FileInputStream(it).use {
+//                    it.copyToWithProgress(outputStream, this, totalByteCount)
+//                }
+//            }
             outputStream.close()
             serverSocket.close()
         }
@@ -508,17 +529,18 @@ class WifiP2pService : Service() {
         val socket = Socket()
         socket.bind(null)
         socket.connect(socketAddress)
+        socket.soTimeout = 0
         wifiP2pState = SocketConnected
 
         val inputStream = DataInputStream(socket.getInputStream())
         val mapName = inputStream.readUTF()
         println("Recieving $mapName from client")
-        val size = inputStream.readLong()
-        println("Size: $size")
+        val sizeUncompresssed = inputStream.readLong()
+        println("Size: $sizeUncompresssed")
 
         val dir = File(TrekMeContext.importedDir, mapName).unique()
         dir.mkdir()
-        unzipTask(inputStream, dir, size, object : UnzipProgressionListener {
+        unzipTask(inputStream, dir, sizeUncompresssed, false, object : UnzipProgressionListener {
             override fun onProgress(p: Int) {
                 println(p)
                 wifiP2pState = Loading(p)
