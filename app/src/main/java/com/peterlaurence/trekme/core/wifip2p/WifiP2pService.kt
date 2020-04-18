@@ -24,6 +24,7 @@ import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.*
 import kotlinx.coroutines.*
@@ -31,11 +32,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
-import java.io.*
+import java.io.DataInputStream
+import java.io.DataOutputStream
+import java.io.File
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.net.SocketException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -70,6 +72,12 @@ class WifiP2pService : Service() {
         private set(value) {
             field = value
             stateChannel.offer(value)
+        }
+
+    private var lastError: WifiP2pServiceErrors = WifiP2pServiceErrors.NONE
+        private set(value) {
+            field = value
+            errorChannel.offer(value)
         }
 
     companion object {
@@ -499,10 +507,24 @@ class WifiP2pService : Service() {
 
             override fun onUnzipFinished(outputDirectory: File) {
                 wifiP2pState = Loading(100)
+
+                /* Import the map */
+                scope.launch(Dispatchers.IO) {
+                    val result = MapImporter.importFromFile(dir, Map.MapOrigin.VIPS)
+                    result.map?.also { map ->
+                        MapLoader.addMap(map)
+                        wifiP2pState = MapImported
+                    }
+                    if (result.status != MapImporter.MapParserStatus.NEW_MAP) {
+                        exitWithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR)
+                    }
+                }
             }
 
             override fun onUnzipError() {
-                errorChannel.offer(WifiP2pServiceErrors.UNZIP_ERROR)
+                scope.launch {
+                    exitWithError(WifiP2pServiceErrors.UNZIP_ERROR)
+                }
             }
         })
         runCatching {
@@ -533,7 +555,9 @@ class WifiP2pService : Service() {
             }
 
             override fun onZipError() {
-                errorChannel.offer(WifiP2pServiceErrors.UNZIP_ERROR)
+                scope.launch {
+                    exitWithError(WifiP2pServiceErrors.UNZIP_ERROR)
+                }
             }
         })
         runCatching {
@@ -557,26 +581,10 @@ class WifiP2pService : Service() {
         wifiP2pState = Stopped
     }
 
-    private fun InputStream.copyToWithProgress(outputStream: OutputStream, scope: CoroutineScope, totalByteCount: Long) {
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-        var bytes = read(buffer)
-        var bytesCopied: Long = 0
-        var percent = 0
-        wifiP2pState = Loading(0)
-        while (bytes >= 0 && scope.isActive) {
-            try {
-                outputStream.write(buffer, 0, bytes)
-                bytes = read(buffer)
-                bytesCopied += bytes
-                val newPercent = (bytesCopied * 100f / totalByteCount).toInt()
-                if (newPercent != percent) {
-                    percent = newPercent
-                    wifiP2pState = Loading(percent)
-                }
-            } catch (e: SocketException) {
-                break
-            }
-        }
+    private suspend fun exitWithError(error: WifiP2pServiceErrors) {
+        lastError = error
+        resetWifiP2p()
+        stopSelf()
     }
 }
 
@@ -622,6 +630,11 @@ data class Loading(val progress: Int) : WifiP2pState() {
     override val index: Int = 5
 }
 
+/* Only applicable when receiving */
+object MapImported : WifiP2pState() {
+    override val index: Int = 6
+}
+
 object Stopping : WifiP2pState() {
     override val index: Int = 9
 }
@@ -631,7 +644,7 @@ object Stopped : WifiP2pState() {
 }
 
 enum class WifiP2pServiceErrors {
-    UNZIP_ERROR
+    NONE, UNZIP_ERROR, MAP_IMPORT_ERROR
 }
 
 /**
