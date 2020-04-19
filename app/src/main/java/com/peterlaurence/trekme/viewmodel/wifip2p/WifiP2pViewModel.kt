@@ -24,7 +24,7 @@ class WifiP2pViewModel(private val app: Application) : AndroidViewModel(app) {
      */
     fun onRequestReceive() {
         val state = state.value
-        if (state == null || state == Stopped) {
+        if (state == null || state is Stopped) {
             val intent = Intent(app, WifiP2pService::class.java)
             intent.action = StartRcv::class.java.name
             app.startService(intent)
@@ -39,7 +39,7 @@ class WifiP2pViewModel(private val app: Application) : AndroidViewModel(app) {
      */
     fun onRequestSend(mapId: Int) {
         val state = state.value
-        if (state == null || state == Stopped) {
+        if (state == null || state is Stopped) {
             val intent = Intent(app, WifiP2pService::class.java)
             intent.action = StartSend::class.java.name
             intent.putExtra("mapId", mapId)

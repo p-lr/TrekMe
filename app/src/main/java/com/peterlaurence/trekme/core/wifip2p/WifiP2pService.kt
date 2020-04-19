@@ -42,8 +42,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class WifiP2pService : Service() {
-    private val notificationChannelId = "peterlaurence.WifiP2pService"
-    private val wifiP2pServiceNofificationId = 659531
+    private val notificationChannelId = "trekme.WifiP2pService"
+    private val wifiP2pServiceNotificationId = 659531
     private val intentFilter = IntentFilter()
     private var mode: StartAction? = null
     private var channel: WifiP2pManager.Channel? = null
@@ -57,35 +57,19 @@ class WifiP2pService : Service() {
     private val listenPort = 8988
 
     private var isWifiP2pEnabled = false
-        private set(value) {
-            field = value
-//            if (!value) resetWifiP2p()
-        }
-
     private var isDiscoveryActive = false
-
     private var isNetworkAvailable = false
-
     private var serviceStarted = false
 
-    private var wifiP2pState: WifiP2pState = Stopped
+    private var wifiP2pState: WifiP2pState = Stopped()
         private set(value) {
             field = value
             stateChannel.offer(value)
         }
 
-    private var lastError: WifiP2pServiceErrors = WifiP2pServiceErrors.NONE
-        private set(value) {
-            field = value
-            errorChannel.offer(value)
-        }
-
     companion object {
         private val stateChannel = ConflatedBroadcastChannel<WifiP2pState>()
         val stateFlow: Flow<WifiP2pState> = stateChannel.asFlow()
-
-        private val errorChannel = ConflatedBroadcastChannel<WifiP2pServiceErrors>()
-        val errorFlow: Flow<WifiP2pServiceErrors> = errorChannel.asFlow()
     }
 
     private val receiver: BroadcastReceiver by lazy {
@@ -136,6 +120,12 @@ class WifiP2pService : Service() {
 
                             /* At this point we consider ourselves connected */
                             wifiP2pState = P2pConnected
+
+                            /* Unregister the broadcast receiver */
+                            runCatching {
+                                // May throw IllegalStateException
+                                unregisterReceiver(receiver)
+                            }
 
                             /* Immediately stop on-going P2P discovering operations */
                             val mode = mode ?: return@requestConnectionInfo
@@ -206,9 +196,9 @@ class WifiP2pService : Service() {
 
     /**
      * Accepts only three possible actions:
-     * * [StartAction.START_RCV]  -> Starts the service in receiving mode
-     * * [StartAction.START_SEND] -> Starts the service in sending mode
-     * * [StopAction]             -> Stops the service
+     * * [StartRcv]   -> Starts the service in receiving mode
+     * * [StartSend]  -> Starts the service in sending mode
+     * * [StopAction] -> Stops the service
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.action !in listOf(StartRcv::class.java.name, StartSend::class.java.name, StopAction::class.java.name)) {
@@ -233,7 +223,7 @@ class WifiP2pService : Service() {
                 /* Stop the service */
                 serviceStarted = false
                 scope.cancel()
-                wifiP2pState = Stopped
+                wifiP2pState = Stopped(ByUser)
                 stopSelf()
             }
 
@@ -256,7 +246,7 @@ class WifiP2pService : Service() {
             notificationBuilder.setChannelId(notificationChannelId)
         }
 
-        startForeground(wifiP2pServiceNofificationId, notificationBuilder.build())
+        startForeground(wifiP2pServiceNotificationId, notificationBuilder.build())
 
         serviceStarted = true
 
@@ -317,7 +307,7 @@ class WifiP2pService : Service() {
                         connectDevice(device)
                     }
                     delay(15000)
-                    manager?.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
+                    manager?.clearServiceRequests(channel).also { Log.d(TAG, "ClearServiceRequests $it") }
                     manager?.stopPeerDiscovery(channel)
                     if (wifiP2pState != Started) break
                     manager?.discoverPeers(channel)
@@ -328,13 +318,8 @@ class WifiP2pService : Service() {
     }
 
     private suspend fun startRegistration() {
-        val record: kotlin.collections.Map<String, String> = mapOf(
-                "listenport" to listenPort.toString(),
-                "available" to "visible"
-        )
-
         val serviceInfo =
-                WifiP2pDnsSdServiceInfo.newInstance(serviceName, "_presence._tcp", record)
+                WifiP2pDnsSdServiceInfo.newInstance(serviceName, serviceType, null)
 
         val channel = channel ?: return
         val manager = manager ?: return
@@ -351,12 +336,10 @@ class WifiP2pService : Service() {
         val channel = channel ?: return@suspendCancellableCoroutine
         val manager = manager ?: return@suspendCancellableCoroutine
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
-            Log.d(TAG, "DnsSdTxtRecord available -$record")
+            Log.d(TAG, "Found a device advertising the right service")
             if (fullDomain.startsWith(serviceName)) {
-                record["listenport"]?.also {
-                    println(device.deviceAddress)
-                    if (cont.isActive) cont.resume(device)
-                }
+                Log.d(TAG, device.deviceAddress)
+                if (cont.isActive) cont.resume(device)
             }
         }
 
@@ -513,17 +496,18 @@ class WifiP2pService : Service() {
                     val result = MapImporter.importFromFile(dir, Map.MapOrigin.VIPS)
                     result.map?.also { map ->
                         MapLoader.addMap(map)
-                        wifiP2pState = MapImported
                     }
-                    if (result.status != MapImporter.MapParserStatus.NEW_MAP) {
-                        exitWithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR)
+                    when (result.status) {
+                        MapImporter.MapParserStatus.NEW_MAP,
+                        MapImporter.MapParserStatus.EXISTING_MAP -> exitWithReason(MapSuccessfullyLoaded(result.map?.name ?: ""))
+                        else -> exitWithReason(WithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR))
                     }
                 }
             }
 
             override fun onUnzipError() {
                 scope.launch {
-                    exitWithError(WifiP2pServiceErrors.UNZIP_ERROR)
+                    exitWithReason(WithError(WifiP2pServiceErrors.UNZIP_ERROR))
                 }
             }
         })
@@ -552,11 +536,14 @@ class WifiP2pService : Service() {
 
             override fun onZipFinished() {
                 wifiP2pState = Loading(100)
+                scope.launch {
+                    exitWithReason(MapSuccessfullyLoaded(map.name))
+                }
             }
 
             override fun onZipError() {
                 scope.launch {
-                    exitWithError(WifiP2pServiceErrors.UNZIP_ERROR)
+                    exitWithReason(WithError(WifiP2pServiceErrors.UNZIP_ERROR))
                 }
             }
         })
@@ -577,13 +564,11 @@ class WifiP2pService : Service() {
         manager.removeGroup(channel).also { println("Removegroup $it") }
         manager.stopPeerDiscovery(channel).also { println("Stop peer discovery $it") }
         peerListChannel.poll()
-
-        wifiP2pState = Stopped
     }
 
-    private suspend fun exitWithError(error: WifiP2pServiceErrors) {
-        lastError = error
+    private suspend fun exitWithReason(reason: StopReason) {
         resetWifiP2p()
+        wifiP2pState = Stopped(reason)
         stopSelf()
     }
 }
@@ -630,21 +615,21 @@ data class Loading(val progress: Int) : WifiP2pState() {
     override val index: Int = 5
 }
 
-/* Only applicable when receiving */
-object MapImported : WifiP2pState() {
-    override val index: Int = 6
-}
-
 object Stopping : WifiP2pState() {
     override val index: Int = 9
 }
 
-object Stopped : WifiP2pState() {
+data class Stopped(val stopReason: StopReason? = null) : WifiP2pState() {
     override val index: Int = 10
 }
 
+sealed class StopReason
+object ByUser: StopReason()
+data class WithError(val error: WifiP2pServiceErrors): StopReason()
+data class MapSuccessfullyLoaded(val name: String): StopReason()
+
 enum class WifiP2pServiceErrors {
-    NONE, UNZIP_ERROR, MAP_IMPORT_ERROR
+    UNZIP_ERROR, MAP_IMPORT_ERROR
 }
 
 /**

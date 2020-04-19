@@ -10,10 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.peterlaurence.trekme.core.wifip2p.Loading
-import com.peterlaurence.trekme.core.wifip2p.Started
-import com.peterlaurence.trekme.core.wifip2p.Stopped
-import com.peterlaurence.trekme.core.wifip2p.WifiP2pState
+import com.peterlaurence.trekme.core.wifip2p.*
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
 import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
@@ -90,19 +87,41 @@ class WifiP2pFragment : Fragment() {
         when (state) {
             Started -> onStarted()
             is Loading -> onLoading(state.progress)
-            Stopped -> {
+            is Stopped -> {
                 binding.receiveBtn.isEnabled = true
                 binding.sendBtn.isEnabled = true
+                binding.stopBtn.visibility = View.GONE
+                binding.uploadView.visibility = View.GONE
+
+                when (state.stopReason) {
+                    is MapSuccessfullyLoaded -> {
+                        binding.stoppedView.visibility = View.VISIBLE
+                        binding.emojiDisappointedFace.visibility = View.GONE
+                        binding.emojiPartyFace.visibility = View.VISIBLE
+                        binding.stoppedStatus.text = "Successfully imported ${state.stopReason.name}"
+                    }
+                    is WithError -> {
+                        binding.stoppedView.visibility = View.VISIBLE
+                        binding.emojiDisappointedFace.visibility = View.VISIBLE
+                        binding.emojiPartyFace.visibility = View.GONE
+                        binding.stoppedStatus.text = "Something went wrong. Maybe retry."
+                    }
+                }
             }
         }
     }
 
     private fun onStarted() {
-
+        binding.uploadView.visibility = View.GONE
+        binding.stoppedView.visibility = View.GONE
+        binding.stopBtn.visibility = View.GONE
     }
 
     private fun onLoading(percent: Int) {
+        binding.uploadView.visibility = View.VISIBLE
+        binding.stoppedView.visibility = View.GONE
         binding.progressBar.progress = percent
+        binding.stopBtn.visibility = View.VISIBLE
     }
 
     private fun onError(error: Errors) {
