@@ -1,0 +1,112 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="heart-beat"
+            android:width="128dp"
+            android:height="128dp"
+            android:viewportHeight="48"
+            android:viewportWidth="48">
+            <path
+                android:name="background-circle"
+                android:fillAlpha="1"
+                android:fillColor="#2196F3"
+                android:pathData="M24,24m-5,0a5,5 0,0.5 0.5,10 0a5,5 0,0.5 0.5,-10 0"
+                android:strokeWidth="3" />
+
+            <group
+                android:name="wave-group-1"
+                android:pivotX="24.0"
+                android:pivotY="24.0"
+                android:rotation="0">
+                <path
+                    android:name="wave1"
+                    android:strokeAlpha="0.3"
+                    android:strokeColor="#2196F3"
+                    android:pathData="M24,24m-5,0a5,5 0,0.5 0.5,10 0a5,5 0,0.5 0.5,-10 0"
+                    android:strokeWidth="1" />
+            </group>
+            <group
+                android:name="wave-group-2"
+                android:pivotX="24.0"
+                android:pivotY="24.0"
+                android:rotation="0">
+                <path
+                    android:name="wave2"
+                    android:strokeAlpha="0.3"
+                    android:strokeColor="#2196F3"
+                    android:pathData="M24,24m-5,0a5,5 0,0.5 0.5,10 0a5,5 0,0.5 0.5,-10 0"
+                    android:strokeWidth="1" />
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="wave-group-1">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:duration="1000"
+                    android:repeatCount="infinite"
+                    android:propertyName="scaleX"
+                    android:valueFrom="1"
+                    android:valueTo="4" />
+                <objectAnimator
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:duration="1000"
+                    android:repeatCount="infinite"
+                    android:propertyName="scaleY"
+                    android:valueFrom="1"
+                    android:valueTo="4" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="wave1">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:duration="1000"
+                    android:repeatCount="infinite"
+                    android:propertyName="strokeAlpha"
+                    android:valueFrom="0.3"
+                    android:valueTo="0" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="wave-group-2">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:duration="1000"
+                    android:startOffset="200"
+                    android:repeatCount="infinite"
+                    android:propertyName="scaleX"
+                    android:valueFrom="1"
+                    android:valueTo="4" />
+                <objectAnimator
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:duration="1000"
+                    android:startOffset="200"
+                    android:repeatCount="infinite"
+                    android:propertyName="scaleY"
+                    android:valueFrom="1"
+                    android:valueTo="4" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="wave2">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:duration="1000"
+                    android:startOffset="200"
+                    android:repeatCount="infinite"
+                    android:propertyName="strokeAlpha"
+                    android:valueFrom="0.3"
+                    android:valueTo="0" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

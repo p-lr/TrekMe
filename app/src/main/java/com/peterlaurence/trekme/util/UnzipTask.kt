@@ -77,7 +77,9 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, isSizeCo
         }
 
         zis.closeEntry()
-        zis.close()
+        runCatching {
+            zis.close()
+        }
     } catch (ex: IOException) {
         Log.e(TAG, stackTraceToString(ex))
         result = false

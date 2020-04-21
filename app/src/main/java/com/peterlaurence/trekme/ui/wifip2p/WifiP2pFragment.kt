@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wifip2p.*
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
 import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
@@ -70,6 +71,7 @@ class WifiP2pFragment : Fragment() {
         binding.stopBtn.setOnClickListener {
             viewModel.onRequestStop()
         }
+        binding.stopBtn.isVisible = false
 
         return binding.root
     }
@@ -82,29 +84,37 @@ class WifiP2pFragment : Fragment() {
     private fun onState(state: WifiP2pState) {
         binding.receiveBtn.isEnabled = false
         binding.sendBtn.isEnabled = false
-        binding.stopBtn.isVisible = true
+
+        if (state > Started) {
+            binding.searchView.visibility = View.GONE
+            binding.waveSearchIndicator.stop()
+            binding.stopBtn.isVisible = true
+        }
 
         when (state) {
             Started -> onStarted()
+            AwaitingP2pConnection -> binding.status.text = getString(R.string.wifip2p_device_found)
+            P2pConnected -> binding.status.text = getString(R.string.wifip2p_connected)
             is Loading -> onLoading(state.progress)
             is Stopped -> {
                 binding.receiveBtn.isEnabled = true
                 binding.sendBtn.isEnabled = true
                 binding.stopBtn.visibility = View.GONE
                 binding.uploadView.visibility = View.GONE
+                binding.status.text = ""
 
                 when (state.stopReason) {
                     is MapSuccessfullyLoaded -> {
                         binding.stoppedView.visibility = View.VISIBLE
                         binding.emojiDisappointedFace.visibility = View.GONE
                         binding.emojiPartyFace.visibility = View.VISIBLE
-                        binding.stoppedStatus.text = "Successfully imported ${state.stopReason.name}"
+                        binding.stoppedStatus.text = getString(R.string.wifip2p_successful_load).format(state.stopReason.name)
                     }
                     is WithError -> {
                         binding.stoppedView.visibility = View.VISIBLE
                         binding.emojiDisappointedFace.visibility = View.VISIBLE
                         binding.emojiPartyFace.visibility = View.GONE
-                        binding.stoppedStatus.text = "Something went wrong. Maybe retry."
+                        binding.stoppedStatus.text = getString(R.string.wifip2p_error)
                     }
                 }
             }
@@ -112,12 +122,16 @@ class WifiP2pFragment : Fragment() {
     }
 
     private fun onStarted() {
+        binding.status.text = getString(R.string.wifip2p_searching)
+        binding.waveSearchIndicator.start()
         binding.uploadView.visibility = View.GONE
         binding.stoppedView.visibility = View.GONE
-        binding.stopBtn.visibility = View.GONE
+        binding.stopBtn.visibility = View.VISIBLE
+        binding.searchView.visibility = View.VISIBLE
     }
 
     private fun onLoading(percent: Int) {
+        binding.status.text = getString(R.string.wifip2p_loading)
         binding.uploadView.visibility = View.VISIBLE
         binding.stoppedView.visibility = View.GONE
         binding.progressBar.progress = percent

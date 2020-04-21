@@ -249,4 +249,15 @@
     <string name="preference_rotate_none">None</string>
     <string name="preference_rotate_free">Free</string>
 
+    <!-- WifiP2pFragment -->
+    <string name="wifip2p_stop_btn">Stop</string>
+    <string name="wifip2p_rcv_btn">Receive</string>
+    <string name="wifip2p_send_btn">Send</string>
+    <string name="wifip2p_searching">Searching for another device..\nThis step can take a few minutes</string>
+    <string name="wifip2p_device_found">Device found. Awaiting connection..</string>
+    <string name="wifip2p_connected">Connected. Loading should start shortly.</string>
+    <string name="wifip2p_loading">Load in progress</string>
+    <string name="wifip2p_error">Something went wrong.\nMaybe retry.</string>
+    <string name="wifip2p_successful_load">Successfully loaded %1$s</string>
+
 </resources>

@@ -61,7 +61,9 @@ fun zipTask(folderToZip: File, outputStream: OutputStream, listener: ZipProgress
             zos.closeEntry()
             fis.close()
         }
-        zos.close()
+        runCatching {
+            zos.close()
+        }
     } catch (e: IOException) {
         Log.e(TAG, stackTraceToString(e))
         return listener.onZipError()

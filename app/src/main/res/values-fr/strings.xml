@@ -184,4 +184,13 @@
     <string name="service_wifip2p_name">Service WifiP2p</string>
     <string name="service_wifip2p_action">Envoi et réception de carte</string>
     <string name="share_menu_title">Recevoir et envoyer</string>
+    <string name="wifip2p_stop_btn">Stop</string>
+    <string name="wifip2p_rcv_btn">Recevoir</string>
+    <string name="wifip2p_send_btn">Envoyer</string>
+    <string name="wifip2p_device_found">Appareil trouvé. En attente de la connexion…</string>
+    <string name="wifip2p_connected">Connecté. Le chargement va commencer.</string>
+    <string name="wifip2p_searching">Recherche d\'un autre appareil…\nCette étape peut durer 2 à 3 minutes</string>
+    <string name="wifip2p_loading">Chargement en cours</string>
+    <string name="wifip2p_error">Une erreur est survenue.\nUne nouvelle tentative peut réussir.</string>
+    <string name="wifip2p_successful_load">La carte %1$s a été chargée avec success</string>
 </resources>
