@@ -2,7 +2,6 @@
     xmlns:aapt="http://schemas.android.com/aapt">
     <aapt:attr name="android:drawable">
         <vector
-            android:name="heart-beat"
             android:width="128dp"
             android:height="128dp"
             android:viewportHeight="48"

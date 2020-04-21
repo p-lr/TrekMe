@@ -22,6 +22,8 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 
 /**
+ * The frontend for the [WifiP2pService].
+ * It reacts to some of the [WifiP2pState]s emitted by the service.
  *
  * @author P.Laurence on 07/04/20
  */
