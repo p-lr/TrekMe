@@ -79,24 +79,10 @@ class WifiP2pService : Service() {
                     WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> {
                         val state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)
                         isWifiP2pEnabled = state == WifiP2pManager.WIFI_P2P_STATE_ENABLED
-                        println("Wifi P2p enabled: $isWifiP2pEnabled")
                     }
                     WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION -> {
                         val state = intent.getIntExtra(WifiP2pManager.EXTRA_DISCOVERY_STATE, -1)
                         isDiscoveryActive = state == WifiP2pManager.WIFI_P2P_DISCOVERY_STARTED
-                    }
-                    WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
-                        println("Peers changed")
-//                        val channel = channel ?: return
-//                        /* Request available peers only if we are starting */
-//                        if (wifiP2pState == Started) {
-//                            scope.launch {
-//                                val peers = manager?.requestPeers(channel)
-//                                println(peers)
-////                                if (peers != null) peerListChannel.offer(peers)
-//                                // we have a list of peers - should display in a list ?
-//                            }
-//                        }
                     }
                     WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
                         Log.d(TAG, "WifiP2p connection changed. Requesting connection info..")
@@ -170,7 +156,6 @@ class WifiP2pService : Service() {
         super.onCreate()
 
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
 

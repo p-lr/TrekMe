@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.ui.wifip2p
 
+import android.content.Context
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -119,6 +121,9 @@ class WifiP2pFragment : Fragment() {
                         binding.stoppedStatus.text = getString(R.string.wifip2p_error)
                     }
                 }
+
+                /* Check Wifi state again */
+                checkWifiState(requireContext())
             }
         }
     }
@@ -130,6 +135,7 @@ class WifiP2pFragment : Fragment() {
         binding.stoppedView.visibility = View.GONE
         binding.stopBtn.visibility = View.VISIBLE
         binding.searchView.visibility = View.VISIBLE
+        binding.warningView.visibility = View.GONE
     }
 
     private fun onLoading(percent: Int) {
@@ -149,10 +155,21 @@ class WifiP2pFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
+        checkWifiState(requireContext())
     }
 
     override fun onStop() {
         EventBus.getDefault().unregister(this)
         super.onStop()
+    }
+
+    private fun checkWifiState(context: Context) {
+        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+        if (wifiManager != null) {
+            if (!wifiManager.isWifiEnabled) {
+                binding.warningView.visibility = View.VISIBLE
+                binding.warningMessage.text = getString(R.string.wifip2p_warning_wifi)
+            }
+        }
     }
 }

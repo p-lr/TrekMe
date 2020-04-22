@@ -259,5 +259,6 @@
     <string name="wifip2p_loading">Load in progress</string>
     <string name="wifip2p_error">Something went wrong.\nMaybe retry.</string>
     <string name="wifip2p_successful_load">Successfully loaded %1$s</string>
+    <string name="wifip2p_warning_wifi">You need to enable Wifi on your device to use this feature, even if there is no network or Hotspot.</string>
 
 </resources>
