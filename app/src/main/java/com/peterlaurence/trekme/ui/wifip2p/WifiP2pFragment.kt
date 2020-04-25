@@ -1,11 +1,12 @@
 package com.peterlaurence.trekme.ui.wifip2p
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -60,6 +61,7 @@ class WifiP2pFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentWifip2pBinding.inflate(inflater, container, false)
+        setHasOptionsMenu(true)
 
         binding.receiveBtn.setOnClickListener {
             viewModel.onRequestReceive()
@@ -78,6 +80,32 @@ class WifiP2pFragment : Fragment() {
         binding.stopBtn.isVisible = false
 
         return binding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        /* Hide the app title */
+        val actionBar = (activity as AppCompatActivity).supportActionBar
+        actionBar?.setDisplayShowTitleEnabled(false)
+
+        /* Clear the existing action menu */
+        menu.clear()
+
+        /* Fill the new one */
+        inflater.inflate(R.menu.menu_fragment_wifip2p, menu)
+
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.help_wifip2p_id -> {
+                val url = getString(R.string.wifip2p_help_url)
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(browserIntent)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     @Subscribe

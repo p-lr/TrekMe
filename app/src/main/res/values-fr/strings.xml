@@ -194,4 +194,5 @@
     <string name="wifip2p_error">Une erreur est survenue (%1$s).\nUne nouvelle tentative peut réussir.</string>
     <string name="wifip2p_successful_load">La carte %1$s a été chargée avec success</string>
     <string name="wifip2p_warning_wifi">Vous devez activer la Wifi pour profiter de cette fonctionnalité. La communican avec l\'autre appareil se fait directement en Wifi.</string>
+    <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#partage-de-carte</string>
 </resources>
