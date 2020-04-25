@@ -22,6 +22,7 @@
   * [Download folder](#TOC-Download-dir)
   * [Rotation mode](#TOC-Rotation-mode)
 6. [Save your maps](#TOC-Save-maps)
+7. [Share your maps](#TOC-Share-maps)
 
 
 ## <a name="TOC-Overview"></a>Overview
@@ -373,3 +374,24 @@ the archive will be created in background - you can see the progression in the n
 device.
 
 An archive contains everything related to the map (calibration, routes, points of interest, etc.).
+
+### <a name="TOC-Share-maps"></a>Map sharing
+
+A map is sometimes heavy and takes quite some time to download. When a friend also has TrekMe, it's
+possible send him/her one of your maps. This feature requires the Wifi to be enabled on the two devices,
+even if there is no router or hotspot in the vicinity - the sender directly send to the receiving
+device over Wifi. Make sure that the two devices stay relatively close to each other. Even if some
+loads have completed successfully with several meters between the two devices, experience has shown 
+that keeping the two devices close to each other lowers the risk of error.
+
+Go ahead in the main menu > "Receive and send". There's a button to receive and another one to send.
+When you choose to receive, the device is awaiting for a connection with the sender. This step can
+take several minutes - please be patient. Meanwhile, the sender uses the send button and the map to send.
+
+When the connexion is established, the load starts and you can see the progression. If everything goes
+well, a gorgeous emoticon is shown. Otherwise, and especially if the load got interrupted, you're advised
+to start again (Wifi isn't 100% reliable).
+
+If the two devices really take too much time to establish a connection and start the load, try to
+reboot the two devices and retry the procedure.
+

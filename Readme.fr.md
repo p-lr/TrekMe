@@ -23,7 +23,8 @@
   * [Dossier de téléchargement](#TOC-Download-dir)
   * [Mode de rotation](#TOC-Rotation-mode)
 7. [Sauvegardez vos cartes](#TOC-Save-maps)
-8. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
+8. [Partage de carte](#TOC-Share-maps)
+9. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
 
 
 ## <a name="TOC-Overview"></a>Introduction
@@ -369,3 +370,25 @@ Si vous continuez la procédure, l'archive a être créée et vous pouvez suivre
 zone de notification du téléphone.
 
 Une archive contient tout ce qui est relatif à la carte (calibration, traces, points d'intérêt, etc).
+
+### <a name="TOC-Share-maps"></a>Partage de carte
+
+Une carte est parfois volumineuse et longue à télécharger. Quand un(e) ami(e) a aussi TrekMe, vous
+pouvez lui envoyer directement une de vos cartes. Cela fonctionne avec la Wifi, sans nécessité d'être
+à proximité d'une box ou un hotspot : la communication se fait directement avec l'autre appareil (qui
+lui aussi doit activer sa Wifi). Veuillez donc bien à activer la Wifi pour la suite, et faites en sorte 
+que les deux appareils soient relativement proches (même si des transferts ont réussi avec plusieurs
+mètres de distance, l'expérience montre que plus ils sont proches, moins il y a de risque d'erreur).
+
+Rendez-vous dans le menu principal > "Recevoir et envoyer". L'interface propose un bouton pour
+recevoir une carte, et un autre pour envoyer. Lorsque vous choisissez de recevoir, l'interface indique
+qu'elle est en attente de réception. Les deux appareils cherchent à établir un canal de communication.
+Cette phase peut durer plusieurs minutes ; il faut être patient(e).
+Pendant ce temps, votre ami(e) utilise le bouton d'envoi, et choisit alors la carte à envoyer.
+Quand la connexion est établie, le transfert commence et vous pouvez voir la progression en temps réel.
+Si tout se passe bien, le transfert va jusqu'au bout et une magnifique emoticon vous l'indique. Dans
+le cas contraire, et en particulier si le transfert s'est interrompu en cours de chargement, une nouvelle
+tentative peut réussir (ce sont les aléas de la Wifi).
+
+Si les deux appareils mettent vraiment trop de temps à se connecter et à débuter le transfert, essayez 
+de redémarrer les deux apprareils puis re-tentez la procédure.
