@@ -118,7 +118,7 @@ class WifiP2pFragment : Fragment() {
                         binding.stoppedView.visibility = View.VISIBLE
                         binding.emojiDisappointedFace.visibility = View.VISIBLE
                         binding.emojiPartyFace.visibility = View.GONE
-                        binding.stoppedStatus.text = getString(R.string.wifip2p_error)
+                        binding.stoppedStatus.text = getString(R.string.wifip2p_error).format(state.stopReason.error.name)
                     }
                 }
 

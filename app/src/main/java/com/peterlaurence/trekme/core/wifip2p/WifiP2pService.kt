@@ -259,7 +259,7 @@ class WifiP2pService : Service() {
 
     private suspend fun initialize() {
         channel = manager?.initialize(this, mainLooper) {
-            // TODO: react on this
+            Log.e(TAG, "Lost wifip2p connection")
         }
 
         /* Notify started */
@@ -267,7 +267,13 @@ class WifiP2pService : Service() {
 
         Log.d(TAG, "Starting peer discovery..")
         val channel = channel ?: return
-        manager?.discoverPeers(channel)
+
+        runCatching {
+            manager?.discoverPeers(channel)
+        }.onFailure {
+            wifiP2pState = Stopped(WithError(WifiP2pServiceErrors.WIFIP2P_UNSUPPORTED))
+            return
+        }
 
         if (mode is StartRcv) {
             scope.launch {
@@ -614,7 +620,7 @@ data class WithError(val error: WifiP2pServiceErrors): StopReason()
 data class MapSuccessfullyLoaded(val name: String): StopReason()
 
 enum class WifiP2pServiceErrors {
-    UNZIP_ERROR, MAP_IMPORT_ERROR
+    UNZIP_ERROR, MAP_IMPORT_ERROR, WIFIP2P_UNSUPPORTED
 }
 
 /**
