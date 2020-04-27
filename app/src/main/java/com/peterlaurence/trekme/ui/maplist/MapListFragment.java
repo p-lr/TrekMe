@@ -129,7 +129,8 @@ public class MapListFragment extends Fragment implements
             adapter = new MapAdapter(null, this, this, this,
                     ctx.getColor(R.color.colorAccent),
                     ctx.getColor(R.color.colorPrimaryTextWhite),
-                    ctx.getColor(R.color.colorPrimaryTextBlack));
+                    ctx.getColor(R.color.colorPrimaryTextBlack),
+                    getResources());
 
             recyclerView.setAdapter(adapter);
 

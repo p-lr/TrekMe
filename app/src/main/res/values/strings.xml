@@ -260,6 +260,6 @@
     <string name="wifip2p_error">Something went wrong (%1$s).\nMaybe retry.</string>
     <string name="wifip2p_successful_load">Successfully loaded %1$s</string>
     <string name="wifip2p_warning_wifi">You need to enable Wifi on your device to use this feature, even if there is no network or Hotspot.</string>
-    <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe#map-sharing</string>
+    <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.md#map-sharing</string>
 
 </resources>

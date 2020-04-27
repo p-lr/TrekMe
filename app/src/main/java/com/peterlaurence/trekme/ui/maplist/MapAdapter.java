@@ -1,9 +1,12 @@
 package com.peterlaurence.trekme.ui.maplist;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,11 +40,12 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     private int mColorAccent;
     private int mColorWhiteText;
     private int mColorBlackText;
+    private Resources mResources;
 
     MapAdapter(@Nullable List<Map> maps, MapSelectionListener mapSelectionListener,
                MapSettingsListener mapSettingsListener, MapDeleteListener mapDeleteListener,
                int accentColor, int whiteTextColor,
-               int blackTextColor) {
+               int blackTextColor, Resources resources) {
         this.maps = maps;
         mMapSelectionListener = mapSelectionListener;
         mMapSettingsListener = mapSettingsListener;
@@ -50,6 +54,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         mColorAccent = accentColor;
         mColorWhiteText = whiteTextColor;
         mColorBlackText = blackTextColor;
+        mResources = resources;
     }
 
     void onMapListUpdate(List<Map> mapList) {
@@ -84,7 +89,9 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     @Override
     public void onBindViewHolder(MapViewHolder holder, int position) {
         final Map map = maps.get(position);
-        holder.mapImage.setImageBitmap(map.getImage());
+        RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(mResources, map.getImage());
+        dr.setCornerRadius(16f);
+        holder.mapImage.setImageDrawable(dr);
         holder.mapName.setText(map.getName());
         holder.calibrationStatus.setText(map.getDescription());
 
