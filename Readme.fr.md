@@ -8,6 +8,7 @@
 4. [Créer une carte](#TOC-Create-a-map)
   * [Sélectionner une zone](#TOC-Select-area)
   * [Depuis une archive](#TOC-Import-from-archive)
+  * [Recevoir une carte](#TOC-Share-maps)
   * [Création manuelle](#TOC-The-hard-way)
 5. [Fonctionnalités](#TOC-Features)
   * [Mesurer une distance](#TOC-Measure-distance)

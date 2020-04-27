@@ -7,6 +7,7 @@
 3. [Create a map](#TOC-Create-a-map)
   * [Select an area](#TOC-Select-area)
   * [From an archive](#TOC-Import-from-archive)
+  * [Receive a map](#TOC-Share-maps)
   * [Manual map creation](#TOC-The-hard-way)
 4. [Features](#TOC-Features)
   * [Measure a distance](#TOC-Measure-distance)
@@ -53,10 +54,11 @@ Finally, TrekMe is designed to consume very few CPU resources, to preserve the d
 
 ## <a name="TOC-Create-a-map"></a>Create a map
 
-There are three ways to create a map:
+There are four ways to create a map:
 1. Select an area from an official source provider like IGN or USGS
 2. Import from an archive
-3. Make it yourself (the hard way)
+3. Receive a map from a nearby TrekMe user (over Wifi)
+4. Make it yourself (the hard way)
 
 The preferred and easiest way is the first one. Below are detailed each methods.
 
@@ -125,7 +127,6 @@ From the map configuration view, you can:
 * Change the name
 * Delete the map
 
-
 ### <a name="TOC-Import-from-archive"></a>Import from an archive
 
 A map can also be created from an existing archive. The archive can be made by yourself or someone 
@@ -134,6 +135,10 @@ To import from an archive, use the main menu and choose "Import a map". Then, pr
 "Import from folder" in the middle of the screen. Navigate to the folder which contains the archive(s)
 and select that folder. Then, TrekMe shows you the recognized archives, which you can individually
 import.
+
+### <a name="TOC-Import-from-sharing"></a>Receive a map
+
+See [Map Sharing](#TOC-Share-maps).
 
 ### <a name="TOC-The-hard-way"></a>Manual map creation - the hard way
 
