@@ -55,10 +55,11 @@ Il vous faudra disposer d'identifiants et clé d'API IGN à mettre directement d
 
 ## <a name="TOC-Create-a-map"></a>Créer une carte
 
-Il y a trois manières de créer une carte :
+Il y a quatre manières de créer une carte :
 1. Sélectionner une zone avec une source de carte comme l'IGN par ex
 2. Import d'une archive
-3. La faire soi-même (pour les utilisateurs avancés)
+3. Recevoir une carte d'un autre utilisateur de TrekMe (à proximité, en Wifi)
+4. La faire soi-même (pour les utilisateurs avancés)
 
 La méthode la plus facile et recommandée est la première. Ci-dessous sont décrites ces trois méthodes.
 
@@ -125,6 +126,10 @@ Pour importer une archive, utilisez le menu principal puis "Importer une carte".
 bouton "Importer depuis un dossier", au milieu de l'écran. Naviguez alors vers le dossier qui contient
 la ou les archives et sélectionnez-le. TrekMe liste alors les archives reconnues, que vous pouvez 
 importer individuellement.
+
+### <a name="TOC-Import-from-sharing"></a>Recevoir une carte
+
+Reportez-vous à la section [Partage de carte](#TOC-Share-maps).
 
 ### <a name="TOC-The-hard-way"></a>Création manuelle - le plus difficile
 
@@ -364,9 +369,9 @@ Pour créer une archive, depuis la liste des cartes, utilisez le bouton "GERER",
 
 Vous arrivez alors dans les options pour cette carte. Tout en bas, il y a un bouton "Sauvegarder".
 Appuyez dessus ; un message vous explique alors que vous devez choisir le dossier dans votre téléphone
-où l'archive va être créée. Vous pouvez en effet choisir le dossier que vous voulez (ne choisissez pas
+où l'archive sera créée. Vous pouvez en effet choisir le dossier que vous voulez (ne choisissez pas
 un dossier interne à l'application TrekMe..).
-Si vous continuez la procédure, l'archive a être créée et vous pouvez suivre la progression dans la
+Si vous continuez la procédure, l'archive va être créée et vous pouvez suivre la progression dans la
 zone de notification du téléphone.
 
 Une archive contient tout ce qui est relatif à la carte (calibration, traces, points d'intérêt, etc).
@@ -376,7 +381,7 @@ Une archive contient tout ce qui est relatif à la carte (calibration, traces, p
 Une carte est parfois volumineuse et longue à télécharger. Quand un(e) ami(e) a aussi TrekMe, vous
 pouvez lui envoyer directement une de vos cartes. Cela fonctionne avec la Wifi, sans nécessité d'être
 à proximité d'une box ou un hotspot : la communication se fait directement avec l'autre appareil (qui
-lui aussi doit activer sa Wifi). Veuillez donc bien à activer la Wifi pour la suite, et faites en sorte 
+lui aussi doit activer sa Wifi). Veillez donc bien à activer la Wifi pour la suite, et faites en sorte 
 que les deux appareils soient relativement proches (même si des transferts ont réussi avec plusieurs
 mètres de distance, l'expérience montre que plus ils sont proches, moins il y a de risque d'erreur).
 
