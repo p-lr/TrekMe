@@ -306,7 +306,7 @@ class TracksManageFragment : Fragment(),
     }
 
     class ChangeRouteNameFragment : DialogFragment() {
-        private lateinit var tracksManageFragment: TracksManageFragment
+        private var tracksManageFragment: TracksManageFragment? = null
         private var text: String? = null
         private lateinit var mainActivity: MainActivity
 
@@ -326,7 +326,7 @@ class TracksManageFragment : Fragment(),
                 mainActivity = activity as MainActivity? ?: return
                 tracksManageFragment = mainActivity.tracksManageFragment
 
-                val route = tracksManageFragment.trackAdapter?.selectedRoute ?: return
+                val route = tracksManageFragment?.trackAdapter?.selectedRoute ?: return
                 text = route.name
             } catch (e: NullPointerException) {
                 /* The fragment is being recreated upon configuration change */
@@ -352,6 +352,7 @@ class TracksManageFragment : Fragment(),
             builder.setView(view)
             builder.setMessage(R.string.track_name_change)
                     .setPositiveButton(R.string.ok_dialog) { _, _ ->
+                        val tracksManageFragment = tracksManageFragment ?: return@setPositiveButton
                         val route = tracksManageFragment.trackAdapter?.selectedRoute
                         val editText = view.findViewById<View>(R.id.track_name_edittext) as EditText
                         if (route != null) {
