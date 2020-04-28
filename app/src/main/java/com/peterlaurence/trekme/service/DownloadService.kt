@@ -12,6 +12,7 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
@@ -31,6 +32,7 @@ import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import com.peterlaurence.trekme.service.event.Status
+import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -171,7 +173,6 @@ class DownloadService : Service() {
             destDir = destDirRes
         } else {
             /* Storage issue, warn and stop the service */
-            notifyDownloadFinished(getText(R.string.service_download_bad_storage))
             EventBus.getDefault().post(MapDownloadEvent(Status.STORAGE_ERROR))
             stopSelf()
             return
@@ -198,7 +199,7 @@ class DownloadService : Service() {
 
         /* Specific to OSM, don't use more than 2 threads */
         val effectiveThreadCount = if (source == MapSource.OPEN_STREET_MAP) 2 else threadCount
-        launchDownloadTask(effectiveThreadCount, source, threadSafeTileIterator, tileWriter, tileStreamProvider)
+        launchDownloadTask(effectiveThreadCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
     }
 
     private fun createDestDir(): File? = runBlocking {
@@ -218,12 +219,12 @@ class DownloadService : Service() {
     private fun onDownloadProgress(progress: Double) {
         /* Update the notification */
         notificationBuilder.setProgress(100, progress.toInt(), false)
-        notificationBuilder.setWhen(0)
         notificationBuilder.setOngoing(false)
         try {
             notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
         } catch (e: RuntimeException) {
-            // can't figure out why it's (rarely) thrown. Ignore it for now
+            // can't figure out why it's (rarely) thrown. Log it for now
+            Log.e(TAG, stackTraceToString(e))
         }
 
 
@@ -254,28 +255,14 @@ class DownloadService : Service() {
         handler.post {
             calibrate(map)
 
-            /* Notify that the download is finished correctly*/
-            notifyDownloadFinished(getText(R.string.service_download_finished))
+            /* Notify that the download is finished correctly.
+             * Don't attempt to send more notifications, they will be dismissed anyway since the
+             * service is about to stop. */
+            EventBus.getDefault().post(MapDownloadEvent(Status.FINISHED))
 
             /* Finally, stop the service */
             stopSelf()
         }
-    }
-
-    private fun notifyDownloadFinished(message: CharSequence) {
-        /* Update the notification */
-        notificationBuilder.setContentText(message)
-        notificationBuilder.setProgress(0, 0, false)
-        notificationBuilder.mActions.clear()
-        try {
-            notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
-        } catch (e: Exception) {
-            // can't figure out why it's (rarely) thrown. Ignore it for now
-        }
-
-
-        /* Tell the rest of the app that the download is finished */
-        EventBus.getDefault().post(MapDownloadEvent(Status.FINISHED))
     }
 
     private fun sendStartedStatus() {
@@ -283,7 +270,7 @@ class DownloadService : Service() {
     }
 }
 
-private fun launchDownloadTask(threadCount: Int, source: MapSource, tileIterator: ThreadSafeTileIterator,
+private fun launchDownloadTask(threadCount: Int, tileIterator: ThreadSafeTileIterator,
                                tileWriter: TileWriter, tileStreamProvider: TileStreamProvider) {
     for (i in 0 until threadCount) {
         val bitmapProvider = BitmapProviderRetry(20, 1000, tileStreamProvider)
@@ -346,3 +333,5 @@ private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>, v
 private abstract class TileWriter(val destDir: File) {
     abstract fun write(tile: Tile, bitmap: Bitmap)
 }
+
+const val TAG = "DownloadService.kt"

@@ -91,10 +91,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         OnMapListFragmentInteractionListener, OnMapArchiveFragmentInteractionListener,
         RequestManageTracksListener, MapCalibrationRequestListener,
         MarkerManageFragmentInteractionListener, RequestManageMarkerListener, LocationProviderHolder {
-    private var mBackFragmentTag: String? = null
+    private var backFragmentTag: String? = null
     private var fragmentManager: FragmentManager? = null
-    private var mSnackBarExit: Snackbar? = null
-    private var mNavigationView: NavigationView? = null
+    private var snackBarExit: Snackbar? = null
+    private var navigationView: NavigationView? = null
     private var viewModel: MainActivityViewModel? = null
     private var locationProviderFactory: LocationProviderFactory? = null
 
@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         private fun hasPermissions(context: Context?, vararg permissions: String): Boolean {
-            if (context != null && permissions != null) {
+            if (context != null) {
                 for (permission in permissions) {
                     if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
                         return false
@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    fun checkMapCreationPermission(): Boolean {
+    private fun checkMapCreationPermission(): Boolean {
         return hasPermissions(this, *PERMISSIONS_MAP_CREATION)
     }
 
@@ -260,7 +260,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun warnNoStoragePerm() {
         showWarningDialog(getString(R.string.no_storage_perm), getString(R.string.warning_title),
-                DialogInterface.OnDismissListener { dialog: DialogInterface? ->
+                DialogInterface.OnDismissListener {
                     if (!checkStoragePermissions(this)) {
                         finish()
                     }
@@ -272,16 +272,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
         val mapListViewModel = ViewModelProvider(this).get(MapListViewModel::class.java)
         mapListViewModel.zipEvents.observe(this, Observer { event: ZipEvent? ->
-            if (event is ZipProgressEvent) {
-                onZipProgressEvent(event)
-            }
-            if (event is ZipFinishedEvent) {
-                onZipFinishedEvent(event)
-            }
-            if (event is ZipCloseEvent) {
-                // When resumed, the fragment is notified with this event (this is how LiveData
-                // works). To avoid emitting a new notification for a ZipFinishedEvent, we use
-                // ZipCloseEvent on which we do nothing.
+            when (event) {
+                is ZipProgressEvent -> onZipProgressEvent(event)
+                is ZipFinishedEvent -> onZipFinishedEvent(event)
+                is ZipCloseEvent -> {
+                    // When resumed, the fragment is notified with this event (this is how LiveData
+                    // works). To avoid emitting a new notification for a ZipFinishedEvent, we use
+                    // ZipCloseEvent on which we do nothing.
+                }
             }
         })
         fragmentManager = this.supportFragmentManager
@@ -298,10 +296,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         drawer?.addDrawerListener(toggle)
         toggle.syncState()
-        mNavigationView = findViewById(R.id.nav_view)
-        if (mNavigationView != null) {
-            mNavigationView!!.setNavigationItemSelectedListener(this)
-            val headerView = mNavigationView!!.getHeaderView(0)
+        navigationView = findViewById(R.id.nav_view)
+        if (navigationView != null) {
+            navigationView!!.setNavigationItemSelectedListener(this)
+            val headerView = navigationView!!.getHeaderView(0)
             val versionTextView = headerView.findViewById<TextView>(R.id.app_version)
             try {
                 val version = "v." + packageManager.getPackageInfo(packageName, 0).versionName
@@ -311,7 +309,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
         if (drawer != null) {
-            mSnackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
+            snackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
         }
         initViewModels()
     }
@@ -330,12 +328,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
-        } else if (mBackFragmentTag != null) {
-            when (mBackFragmentTag) {
+        } else if (backFragmentTag != null) {
+            when (backFragmentTag) {
                 MAP_LIST_FRAGMENT_TAG -> {
                     showMapListFragment()
                     /* Clear the tag so that the back stack is popped the next time, unless a new retained
-                     * fragment is created in the meanwhile. */mBackFragmentTag = null
+                     * fragment is created in the meanwhile. */backFragmentTag = null
                 }
                 MAP_FRAGMENT_TAG -> showMapViewFragment()
                 MAP_SETTINGS_FRAGMENT_TAG -> {
@@ -343,7 +341,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (map != null) {
                         showMapSettingsFragment(map.id)
                     } else {
-                        mBackFragmentTag = null
+                        backFragmentTag = null
                     }
                     showMapViewFragment()
                 }
@@ -351,21 +349,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 MARKER_MANAGE_FRAGMENT_TAG -> showMapViewFragment()
                 IGN_CREDENTIALS_FRAGMENT_TAG -> {
                     showMapCreateFragment()
-                    mBackFragmentTag = MAP_LIST_FRAGMENT_TAG
+                    backFragmentTag = MAP_LIST_FRAGMENT_TAG
                 }
                 else -> {
                     showMapListFragment()
-                    mBackFragmentTag = null
+                    backFragmentTag = null
                 }
             }
         } else if (fragmentManager!!.backStackEntryCount > 0) {
             fragmentManager!!.popBackStack()
         } else {
             /* BACK button twice to exit */
-            if (mSnackBarExit == null || mSnackBarExit!!.isShown) {
+            val snackBarExit = snackBarExit
+            if (snackBarExit == null || snackBarExit.isShown) {
                 super.onBackPressed()
             } else {
-                mSnackBarExit!!.show()
+                snackBarExit.show()
             }
         }
     }
@@ -396,27 +395,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     public override fun onStart() {
         requestMinimalPermissions(this)
 
-        /* This must be done before activity's onStart */if (checkStoragePermissions(this)) {
+        /* This must be done before activity's onStart */
+        if (checkStoragePermissions(this)) {
             init(this)
         }
         super.onStart()
 
-        /* Register event-bus */EventBus.getDefault().register(this)
+        /* Register event-bus */
+        EventBus.getDefault().register(this)
 
-        /* Start the view-model */viewModel!!.onActivityStart()
+        /* Start the view-model */
+        viewModel?.onActivityStart()
     }
 
     @Subscribe
     fun onShowMapListEvent(event: ShowMapListEvent?) {
         showMapListFragment()
         warnIfBadStorageState()
-        mBackFragmentTag = null
+        backFragmentTag = null
     }
 
     @Subscribe
     fun onShowMapViewEvent(event: ShowMapViewEvent?) {
         showMapViewFragment()
-        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG
+        backFragmentTag = MAP_LIST_FRAGMENT_TAG
     }
 
     override fun onStop() {
@@ -484,17 +486,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         removeSingleUsageFragments()
         val fragment = newInstance(mapId, marker)
         hideAllFragments()
-        val transaction = fragmentManager!!.beginTransaction()
+
+        val fragmentManager = fragmentManager ?: return
+        val transaction = fragmentManager.beginTransaction()
         transaction.add(R.id.content_frame, fragment, MARKER_MANAGE_FRAGMENT_TAG)
         transaction.show(fragment)
 
-        /* Manually manage the back action*/mBackFragmentTag = MARKER_MANAGE_FRAGMENT_TAG
+        /* Manually manage the back action*/
+        backFragmentTag = MARKER_MANAGE_FRAGMENT_TAG
         transaction.commit()
     }
 
     val tracksManageFragment: TracksManageFragment?
         get() {
-            val fragment = fragmentManager!!.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG)
+            val fragment = fragmentManager?.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG)
             return if (fragment != null) fragment as TracksManageFragment? else null
         }
 
@@ -507,17 +512,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         /* Remove single-usage fragments */removeSingleUsageFragments()
 
         /* Hide other fragments */
-        val hideTransaction = fragmentManager!!.beginTransaction()
+        val fragmentManager = fragmentManager ?: return
+        val hideTransaction = fragmentManager.beginTransaction()
         hideOtherFragments(hideTransaction, MAP_FRAGMENT_TAG)
         hideTransaction.commit()
-        val transaction = fragmentManager!!.beginTransaction()
-        var mapFragment = fragmentManager!!.findFragmentByTag(MAP_FRAGMENT_TAG)
+        val transaction = fragmentManager.beginTransaction()
+        var mapFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG)
         if (mapFragment == null) {
             mapFragment = createMapViewFragment(transaction)
         }
         transaction.show(mapFragment)
 
-        /* Manually manage the back action*/mBackFragmentTag = MAP_LIST_FRAGMENT_TAG
+        /* Manually manage the back action*/
+        backFragmentTag = MAP_LIST_FRAGMENT_TAG
         transaction.commit()
     }
 
@@ -541,7 +548,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         transaction.add(R.id.content_frame, fragment, tag)
         transaction.show(fragment)
 
-        /* Manually manage the back action*/mBackFragmentTag = tag
+        /* Manually manage the back action*/
+        backFragmentTag = tag
         transaction.commit()
     }
 
@@ -569,7 +577,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         transaction.show(mapSettingsFragment)
 
         /* Manually manage the back action*/
-        mBackFragmentTag = MAP_LIST_FRAGMENT_TAG
+        backFragmentTag = MAP_LIST_FRAGMENT_TAG
         transaction.commit()
     }
 
@@ -595,7 +603,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             transaction.show(fragment)
 
             /* Manually manage the back action */
-            mBackFragmentTag = backFragmentTag
+            this.backFragmentTag = backFragmentTag
             transaction.commit()
         } catch (e: InstantiationException) {
             e.printStackTrace()
@@ -633,7 +641,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val wmtsViewFragment = createWmtsViewFragment(transaction, mapSource)
         transaction.show(wmtsViewFragment)
 
-        /* Manually manage the back action*/mBackFragmentTag = WMTS_VIEW_FRAGMENT_TAG
+        /* Manually manage the back action*/backFragmentTag = WMTS_VIEW_FRAGMENT_TAG
         transaction.commit()
         warnIfNotInternet()
     }
@@ -754,7 +762,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         /* If Android >= 10 we don't need to restart the activity as we don't request write permission */
         if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) return
 
-        /* Else, we want to restart the activity */if (requestCode == REQUEST_MINIMAL) {
+        /* Else, we want to restart the activity */
+        if (requestCode == REQUEST_MINIMAL) {
             if (grantResults.size >= 2) {
                 /* Storage read perm is at index 1 */
                 if (grantResults[1] != PackageManager.PERMISSION_GRANTED) {
@@ -774,8 +783,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Subscribe
     fun onMapSourceSelected(event: MapSourceSelectedEvent) {
-        val mapSource = event.mapSource
-        when (mapSource) {
+        when (val mapSource = event.mapSource) {
             MapSource.IGN -> {
                 /* Check whether credentials are already set or not */
                 val ignCredentials = getIGNCredentials()
@@ -791,8 +799,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Subscribe
     fun onMapSourceSettings(event: MapSourceSettingsEvent) {
-        val mapSource = event.mapSource
-        when (mapSource) {
+        when (event.mapSource) {
             MapSource.IGN -> showIgnCredentialsFragment()
             MapSource.OPEN_STREET_MAP -> {
             }
@@ -802,25 +809,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setTrackStatsMenuVisibility(visibility: Boolean) {
-        val menu = mNavigationView!!.menu
-        menu.findItem(R.id.nav_track_stats).isVisible = visibility
+        val menu = navigationView?.menu
+        menu?.findItem(R.id.nav_track_stats)?.isVisible = visibility
     }
 
     @Subscribe
     fun onMapDownloadEvent(event: MapDownloadEvent) {
-        if (event.status == Status.STORAGE_ERROR) {
-            showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title), null)
+        when (event.status) {
+            Status.FINISHED -> showMessageInSnackbar(getString(R.string.service_download_finished))
+            Status.STORAGE_ERROR -> showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title), null)
+            Status.PENDING -> {
+                // Nothing particular to do, the service which fire those events already sends
+                // notifications with the progression.
+            }
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(KEY_BUNDLE_BACK, mBackFragmentTag)
+        outState.putString(KEY_BUNDLE_BACK, backFragmentTag)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        mBackFragmentTag = savedInstanceState.getString(KEY_BUNDLE_BACK)
+        backFragmentTag = savedInstanceState.getString(KEY_BUNDLE_BACK)
     }
 
     override val locationProvider: LocationProvider
@@ -840,7 +852,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val notificationChannelId = "trekadvisor_map_save"
         if (builder == null || notifyMgr == null) {
             try {
-                notifyMgr = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notifyMgr = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
             } catch (e: Exception) {
                 // notifyMgr will be null
             }
@@ -860,27 +872,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             builder?.setSmallIcon(R.drawable.ic_map_black_24dp)
                     ?.setContentTitle(getString(R.string.archive_dialog_title))
-            if (notifyMgr != null) {
-                notifyMgr!!.notify(event.mapId, builder?.build())
-            }
+            notifyMgr?.notify(event.mapId, builder?.build())
         }
         builder?.setContentText(String.format(getString(R.string.archive_notification_msg), event.mapName))
         builder?.setProgress(100, event.p, false)
-        if (notifyMgr != null) {
-            notifyMgr!!.notify(event.mapId, builder!!.build())
-        }
+        notifyMgr?.notify(event.mapId, builder!!.build())
     }
 
     private fun onZipFinishedEvent(event: ZipFinishedEvent) {
         val archiveOkMsg = getString(R.string.archive_snackbar_finished)
-        if (builder == null) return
-        /* When the loop is finished, updates the notification */builder!!.setContentText(archiveOkMsg) // Removes the progress bar
+        val builder = builder ?: return
+        /* When the loop is finished, updates the notification */
+        builder.setContentText(archiveOkMsg) // Removes the progress bar
                 .setProgress(0, 0, false)
-        if (notifyMgr != null) {
-            notifyMgr!!.notify(event.mapId, builder!!.build())
-        }
-        if (mNavigationView != null) {
-            val snackbar = Snackbar.make(mNavigationView!!, archiveOkMsg, Snackbar.LENGTH_SHORT)
+        notifyMgr?.notify(event.mapId, builder.build())
+        if (navigationView != null) {
+            val snackbar = Snackbar.make(navigationView!!, archiveOkMsg, Snackbar.LENGTH_SHORT)
             snackbar.show()
         }
     }
