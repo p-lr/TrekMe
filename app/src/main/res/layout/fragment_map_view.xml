@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/map_view_frgmt_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -29,7 +30,7 @@
             android:src="@drawable/ic_gps_fixed_24dp"
             android:tint="@color/colorDarkGrey"
             app:backgroundTint="@color/colorWhite"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/stats_panel"
             app:layout_constraintRight_toRightOf="parent" />
 
         <com.peterlaurence.trekme.ui.mapview.components.IndicatorOverlay
@@ -49,6 +50,18 @@
             android:visibility="gone"
             app:backgroundTint="@color/colorWhite"
             app:layout_constraintBottom_toTopOf="@id/fab_position"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <com.peterlaurence.trekme.ui.mapview.components.StatsPanel
+            android:id="@+id/stats_panel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorIndicatorOverlay"
+            app:alignContent="stretch"
+            app:alignItems="stretch"
+            app:flexWrap="wrap"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapViewBinding
@@ -56,7 +57,18 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
     }
 
     override fun setMapView(mapView: MapView) {
+        /* The MapView should take all space available horizontally, and fill available space
+         * vertically*/
+        mapView.layoutParams = ViewGroup.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, 0)
         layout.addView(mapView, 0)
+
+        /* We ensure the the bottom of the MapView is connected to the top of the stats panel, so
+         * they don't overlap */
+        val constraintSet = ConstraintSet()
+        constraintSet.clone(layout)
+        constraintSet.connect(mapView.id, ConstraintSet.TOP, binding.mapViewFrgmtLayout.id, ConstraintSet.TOP)
+        constraintSet.connect(mapView.id, ConstraintSet.BOTTOM, binding.statsPanel.id, ConstraintSet.TOP)
+        constraintSet.applyTo(layout)
 
         binding.fabPosition.visibility = View.VISIBLE
         binding.frgmtMapViewMsg.visibility = View.GONE
