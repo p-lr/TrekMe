@@ -125,6 +125,15 @@ class TrackStatCalculator {
     }
 }
 
+/**
+ * Container for statistics of a track.
+ *
+ * @param distance The distance in meters
+ * @param elevationUpStack The cumulative elevation up in meters
+ * @param elevationDownStack The cumulative elevation down in meters
+ * @param elevationDifferenceMax The difference between the highest and lowest altitude
+ * @param durationInSecond The total time in seconds
+ */
 @Parcelize
 data class TrackStatistics(var distance: Double, var elevationDifferenceMax: Double,
                            var elevationUpStack: Double, var elevationDownStack: Double,

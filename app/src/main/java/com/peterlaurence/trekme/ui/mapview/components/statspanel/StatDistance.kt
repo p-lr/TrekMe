@@ -16,7 +16,8 @@ class StatDistance @JvmOverloads constructor(
         binding = StatWithImageBinding.inflate(inflater, this )
         binding.image.background = context.getDrawable(R.drawable.ic_directions_walk_black_16dp)
 
-        setText("1.18 km")
+        /* Initial value */
+        setText("0 m")
     }
 
     fun setText(txt: String) {

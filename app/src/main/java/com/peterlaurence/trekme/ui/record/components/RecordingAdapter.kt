@@ -8,7 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
-import com.peterlaurence.trekme.util.UnitFormatter
+import com.peterlaurence.trekme.util.formatDistance
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import java.io.File
 import java.util.*
@@ -67,12 +67,12 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
 
     private fun ConstraintLayout.setStatistics(stat: TrackStatistics) {
         val distanceText = findViewById<TextView>(R.id.record_item_distance_stat)
-        distanceText.text = UnitFormatter.formatDistance(stat.distance)
+        distanceText.text = formatDistance(stat.distance)
 
         val elevationUpStackText = findViewById<TextView>(R.id.record_item_up_stat)
-        elevationUpStackText.text = "+".plus(UnitFormatter.formatDistance(stat.elevationUpStack))
+        elevationUpStackText.text = "+".plus(formatDistance(stat.elevationUpStack))
 
         val elevationDownStackText = findViewById<TextView>(R.id.record_item_down_stat)
-        elevationDownStackText.text = "-".plus(UnitFormatter.formatDistance(stat.elevationDownStack))
+        elevationDownStackText.text = "-".plus(formatDistance(stat.elevationDownStack))
     }
 }

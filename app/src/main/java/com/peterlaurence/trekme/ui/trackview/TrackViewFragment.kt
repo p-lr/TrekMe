@@ -7,7 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
-import com.peterlaurence.trekme.util.UnitFormatter
+import com.peterlaurence.trekme.util.formatDistance
+import com.peterlaurence.trekme.util.formatDuration
 import kotlinx.android.synthetic.main.fragment_track_view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -67,14 +68,14 @@ class TrackViewFragment : Fragment() {
 
     private fun setStatistics(statistics: TrackStatistics) {
         trackDistanceView.setDistanceText(
-                UnitFormatter.formatDistance(statistics.distance))
+                formatDistance(statistics.distance))
 
         trackElevationStackView.setElevationStack(
-                UnitFormatter.formatDistance(statistics.elevationUpStack),
-                UnitFormatter.formatDistance(statistics.elevationDownStack))
+                formatDistance(statistics.elevationUpStack),
+                formatDistance(statistics.elevationDownStack))
 
         trackDurationView.setDurationText(
-                UnitFormatter.formationDuration(statistics.durationInSecond)
+                formatDuration(statistics.durationInSecond)
         )
     }
 }

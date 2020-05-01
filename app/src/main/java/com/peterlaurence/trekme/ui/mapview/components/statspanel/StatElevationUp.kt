@@ -16,7 +16,7 @@ class StatElevationUp @JvmOverloads constructor(
         binding = StatWithImageBinding.inflate(inflater, this )
         binding.image.background = context.getDrawable(R.drawable.elevation_up)
 
-        setText("450 m")
+        setText("0 m")
     }
 
     fun setText(txt: String) {

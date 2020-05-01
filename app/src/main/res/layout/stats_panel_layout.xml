@@ -1,22 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
 
     <com.peterlaurence.trekme.ui.mapview.components.statspanel.StatDistance
-        android:layout_width="85dp"
-        android:layout_height="wrap_content">
+        android:id="@+id/stat_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp">
     </com.peterlaurence.trekme.ui.mapview.components.statspanel.StatDistance>
 
     <com.peterlaurence.trekme.ui.mapview.components.statspanel.StatElevationUp
-        android:layout_width="85dp"
-        android:layout_height="wrap_content"/>
+        android:id="@+id/stat_elevation_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"/>
 
     <com.peterlaurence.trekme.ui.mapview.components.statspanel.StatElevationDown
-        android:layout_width="85dp"
-        android:layout_height="wrap_content"/>
+        android:id="@+id/stat_elevation_down"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"/>
 
     <com.peterlaurence.trekme.ui.mapview.components.statspanel.StatChrono
-        android:layout_width="85dp"
-        android:layout_height="wrap_content"/>
+        android:id="@+id/stat_chrono"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"/>
 </merge>

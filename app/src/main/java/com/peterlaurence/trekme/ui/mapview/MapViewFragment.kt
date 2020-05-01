@@ -28,6 +28,7 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.sensors.OrientationSensor
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
@@ -78,6 +79,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private val mapViewViewModel: MapViewViewModel by viewModels()
     private val locationViewModel: LocationViewModel by activityViewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
+    private val statisticsViewModel: StatisticsViewModel by viewModels()
 
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
@@ -125,6 +127,15 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter = MapViewFragmentPresenter(layoutInflater, container, context)
             presenter.setPositionTouchListener(this)
         }
+
+        /* Observe track statistics changes */
+        statisticsViewModel.stats.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                presenter.showStatistics(it)
+            } else {
+                presenter.hideStatistics()
+            }
+        })
 
         /* Get the speed, distance and orientation indicators from the view */
         speedListener = presenter.view.speedIndicator
@@ -638,6 +649,8 @@ interface MapViewFragmentContract {
         fun setPositionTouchListener(listener: MapViewFragmentPresenter.PositionTouchListener)
         fun setMapView(mapView: MapView)
         fun removeMapView(mapView: MapView?)
+        fun showStatistics(trackStatistics: TrackStatistics)
+        fun hideStatistics()
     }
 
     interface View {

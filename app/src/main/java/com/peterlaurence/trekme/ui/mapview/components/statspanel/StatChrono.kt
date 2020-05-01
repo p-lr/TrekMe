@@ -16,7 +16,8 @@ class StatChrono @JvmOverloads constructor(
         binding = StatWithImageBinding.inflate(inflater, this )
         binding.image.background = context.getDrawable(R.drawable.timer_16dp)
 
-        setText("01:12")
+        /* Initial value */
+        setText("00:00")
     }
 
     fun setText(txt: String) {
