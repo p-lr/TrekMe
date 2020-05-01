@@ -52,11 +52,12 @@
             app:layout_constraintBottom_toTopOf="@id/fab_position"
             app:layout_constraintRight_toRightOf="parent" />
 
-        <com.peterlaurence.trekme.ui.mapview.components.StatsPanel
+        <com.peterlaurence.trekme.ui.mapview.components.statspanel.StatsPanel
             android:id="@+id/stats_panel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@color/colorIndicatorOverlay"
+            android:background="@color/colorWhite"
+            android:elevation="10dp"
             app:alignContent="stretch"
             app:alignItems="stretch"
             app:flexWrap="wrap"

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapview.components
+package com.peterlaurence.trekme.ui.mapview.components.statspanel
 
 import android.content.Context
 import android.util.AttributeSet
