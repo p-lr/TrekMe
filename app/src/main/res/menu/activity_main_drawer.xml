@@ -19,11 +19,6 @@
             android:icon="@drawable/record_rec"
             android:title="@string/record_menu_title" />
         <item
-            android:id="@+id/nav_track_stats"
-            android:icon="@drawable/chart"
-            android:visible="false"
-            android:title="@string/track_stats_menu_title" />
-        <item
             android:id="@+id/nav_import"
             android:icon="@drawable/import_30dp"
             android:title="@string/import_menu_title" />

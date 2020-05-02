@@ -73,9 +73,7 @@ import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageF
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.record.RecordFragment
 import com.peterlaurence.trekme.ui.settings.SettingsFragment
-import com.peterlaurence.trekme.ui.trackview.TrackViewFragment
 import com.peterlaurence.trekme.ui.wifip2p.WifiP2pFragment
-import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
@@ -311,7 +309,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (drawer != null) {
             snackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
         }
-        initViewModels()
     }
 
     /**
@@ -376,22 +373,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    /**
-     * Here should be all observable subscriptions on various ViewModel's LivaData.
-     */
-    private fun initViewModels() {
-        val locationServiceViewModel = ViewModelProvider(this).get(LocationServiceViewModel::class.java)
-        locationServiceViewModel.getStatus().observe(this,
-                Observer { isActive: Boolean ->
-                    // Set the visibility of the "Track Statistics" fragment menu, which we want to
-                    // see only if the LocationService is started.
-                    setTrackStatsMenuVisibility(isActive)
-                    // Then, invalidate
-                    invalidateOptionsMenu()
-                }
-        )
-    }
-
     public override fun onStart() {
         requestMinimalPermissions(this)
 
@@ -434,7 +415,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_record -> showRecordFragment()
             R.id.nav_import -> showMapImportFragment()
             R.id.nav_share -> showWifiP2pFragment()
-            R.id.nav_track_stats -> showTrackViewFragment()
             R.id.nav_settings -> showSettingsFragment()
             R.id.nav_help -> {
                 val url = getString(R.string.help_url)
@@ -658,10 +638,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         showFragment(RECORD_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, RecordFragment::class.java)
     }
 
-    private fun showTrackViewFragment() {
-        showFragment(TRACK_VIEW_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, TrackViewFragment::class.java)
-    }
-
     private fun showSettingsFragment() {
         showFragment(SETTINGS_FRAGMENT, MAP_LIST_FRAGMENT_TAG, SettingsFragment::class.java)
     }
@@ -806,11 +782,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             else -> {
             }
         }
-    }
-
-    private fun setTrackStatsMenuVisibility(visibility: Boolean) {
-        val menu = navigationView?.menu
-        menu?.findItem(R.id.nav_track_stats)?.isVisible = visibility
     }
 
     @Subscribe
