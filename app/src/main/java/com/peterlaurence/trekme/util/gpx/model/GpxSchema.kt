@@ -22,9 +22,12 @@ const val TAG_SEGMENT = "trkseg"
 const val TAG_EXTENSIONS = "extensions"
 
 /* Track segment nodes */
-const val TAG_POINT = "trkpt"
+const val TAG_TRK_POINT = "trkpt"
 
-/* Track point (but oddly called WayPoint in the GPX1.1 documentation) attributes and nodes */
+/* Route point, which type is exactly the same as a Track point (see below) */
+const val TAG_RTE_POINT = "rtept"
+
+/* Track point, which is a WayPoint type */
 const val ATTR_LAT = "lat"
 const val ATTR_LON = "lon"
 const val TAG_ELEVATION = "ele"

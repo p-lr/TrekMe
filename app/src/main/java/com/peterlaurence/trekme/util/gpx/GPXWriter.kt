@@ -112,7 +112,7 @@ object GPXWriter {
         val tsNode = doc.createElement(TAG_SEGMENT)
 
         for (trkpt in ts.trackPoints) {
-            addWaypointToNode(TAG_POINT, trkpt, tsNode, doc)
+            addWaypointToNode(TAG_TRK_POINT, trkpt, tsNode, doc)
         }
 
         n.appendChild(tsNode)

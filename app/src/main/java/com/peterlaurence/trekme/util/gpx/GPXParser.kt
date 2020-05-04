@@ -56,11 +56,11 @@ object GPXParser {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
             }
-            val name = parser.name
             // Starts by looking for the entry tag
-            when (name) {
+            when (parser.name) {
                 TAG_TRACK -> tracks.add(readTrack(parser))
                 TAG_WAYPOINT -> wayPoints.add(readPoint(parser, tag = TAG_WAYPOINT))
+                TAG_ROUTE -> tracks.add(readRoute(parser))
                 else -> skip(parser)
             }
         }
@@ -69,7 +69,34 @@ object GPXParser {
     }
 
     /**
-     * Parses the contents of an entry.
+     * Parses the contents of a route, which interpreted as a track with a single segment.
+     */
+    @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
+    private fun readRoute(parser: XmlPullParser): Track {
+        val segments = ArrayList<TrackSegment>()
+        val points = ArrayList<TrackPoint>()
+        parser.require(XmlPullParser.START_TAG, ns, TAG_ROUTE)
+        var trackName = ""
+        var trackStatistics: TrackStatistics? = null
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) {
+                continue
+            }
+            when (parser.name) {
+                TAG_NAME -> trackName = readName(parser)
+                TAG_RTE_POINT -> points.add(readPoint(parser, tag = TAG_RTE_POINT))
+                TAG_EXTENSIONS -> trackStatistics = readTrackExtensions(parser)
+                else -> skip(parser)
+            }
+        }
+        parser.require(XmlPullParser.END_TAG, ns, TAG_ROUTE)
+
+        segments.add(TrackSegment(points))
+        return Track(trackSegments = segments, name = trackName, statistics = trackStatistics)
+    }
+
+    /**
+     * Parses the contents of a track.
      *
      * If it encounters a title, summary, or link tag, hands them off to their respective "read"
      * methods for processing. Otherwise, skips the tag.
@@ -84,8 +111,7 @@ object GPXParser {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
             }
-            val name = parser.name
-            when (name) {
+            when (parser.name) {
                 TAG_NAME -> trackName = readName(parser)
                 TAG_SEGMENT -> segments.add(readSegment(parser))
                 TAG_EXTENSIONS -> trackStatistics = readTrackExtensions(parser)
@@ -118,11 +144,16 @@ object GPXParser {
     private fun readTrackStatistics(parser: XmlPullParser): TrackStatistics {
         parser.require(XmlPullParser.START_TAG, ns, TAG_TRACK_STATISTICS)
         val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0, 0)
-        trackStatistics.distance = parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble() ?: 0.0
-        trackStatistics.elevationDifferenceMax = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DIFF_MAX)?.toDouble() ?: 0.0
-        trackStatistics.elevationUpStack = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_UP_STACK)?.toDouble() ?: 0.0
-        trackStatistics.elevationDownStack = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DOWN_STACK)?.toDouble() ?: 0.0
-        trackStatistics.durationInSecond = parser.getAttributeValue(null, ATTR_TRK_STAT_DURATION)?.toLong() ?: 0
+        trackStatistics.distance = parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble()
+                ?: 0.0
+        trackStatistics.elevationDifferenceMax = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DIFF_MAX)?.toDouble()
+                ?: 0.0
+        trackStatistics.elevationUpStack = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_UP_STACK)?.toDouble()
+                ?: 0.0
+        trackStatistics.elevationDownStack = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DOWN_STACK)?.toDouble()
+                ?: 0.0
+        trackStatistics.durationInSecond = parser.getAttributeValue(null, ATTR_TRK_STAT_DURATION)?.toLong()
+                ?: 0
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
@@ -142,9 +173,8 @@ object GPXParser {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
             }
-            val name = parser.name
-            when (name) {
-                TAG_POINT -> points.add(readPoint(parser))
+            when (parser.name) {
+                TAG_TRK_POINT -> points.add(readPoint(parser))
                 else -> skip(parser)
             }
         }
@@ -154,7 +184,7 @@ object GPXParser {
 
     /* Process summary tags in the feed */
     @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
-    private fun readPoint(parser: XmlPullParser, tag: String = TAG_POINT): TrackPoint {
+    private fun readPoint(parser: XmlPullParser, tag: String = TAG_TRK_POINT): TrackPoint {
         val trackPoint = TrackPoint()
 
         parser.require(XmlPullParser.START_TAG, ns, tag)
@@ -164,8 +194,7 @@ object GPXParser {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
             }
-            val name = parser.name
-            when (name) {
+            when (parser.name) {
                 TAG_ELEVATION -> trackPoint.elevation = readElevation(parser)
                 TAG_TIME -> trackPoint.time = readTime(parser)
                 TAG_NAME -> trackPoint.name = readName(parser)
@@ -198,7 +227,7 @@ object GPXParser {
             parser.require(XmlPullParser.START_TAG, ns, TAG_TIME)
             val time = DATE_PARSER.parse(readText(parser))
             parser.require(XmlPullParser.END_TAG, ns, TAG_TIME)
-            time.time
+            time?.time
         } catch (e: Exception) {
             null
         }

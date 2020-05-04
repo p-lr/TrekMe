@@ -50,17 +50,17 @@ public class GPXTest {
     @Rule
     public TemporaryFolder mTestFolder = new TemporaryFolder();
 
-    private final File referenceGpxFile = new File(mGpxFilesDirectory, "sample_gpx_1.gpx");
+    private final File gpxFile = new File(mGpxFilesDirectory, "sample_gpx_1.gpx");
 
     @Test
     public void simpleFileTest() {
         if (mGpxFilesDirectory != null) {
-            if (referenceGpxFile.exists()) {
+            if (gpxFile.exists()) {
                 try {
-                    Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(referenceGpxFile));
+                    Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(gpxFile));
 
                     List<Track> trackList = gpx.getTracks();
-                    assertEquals(1, trackList.size());
+                    assertEquals(2, trackList.size());  // 1 track, 1 route
 
                     Track track = trackList.get(0);
                     List<TrackSegment> trackSegmentList = track.getTrackSegments();
@@ -94,6 +94,23 @@ public class GPXTest {
                     assertEquals(9.860624216140083, wayPoint1.getLongitude());
                     assertEquals("Waypoint 1", wayPoint1.getName());
                     assertEquals(127.1, wayPoint1.getElevation());
+
+                    /*
+                     * Route tests
+                     */
+                    Track route = trackList.get(1);
+                    assertEquals("Patrick's Route", route.getName());
+                    assertEquals(1, route.getTrackSegments().size());
+                    // we only look after the first segment, as in our representation a route is
+                    // a track with a single segment.
+                    TrackSegment routeSegment = route.getTrackSegments().get(0);
+                    List<TrackPoint> routePointList = routeSegment.getTrackPoints();
+                    assertEquals(4, routePointList.size());
+                    TrackPoint firstRoutePoint = routePointList.get(0);
+
+                    assertEquals(54.9328621088893, firstRoutePoint.getLatitude());
+                    assertEquals(9.860624216140083, firstRoutePoint.getLongitude());
+                    assertEquals(141.7, firstRoutePoint.getElevation());
                 } catch (Exception e) {
                     e.printStackTrace();
                     fail();
@@ -114,7 +131,7 @@ public class GPXTest {
             /* First read an existing gpx file */
             Gpx gpxInput = null;
             try {
-                gpxInput = GPXParser.INSTANCE.parse(new FileInputStream(referenceGpxFile));
+                gpxInput = GPXParser.INSTANCE.parse(new FileInputStream(gpxFile));
             } catch (Exception e) {
                 e.printStackTrace();
                 fail();
@@ -128,7 +145,7 @@ public class GPXTest {
             /* Now read it back */
             Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(testFile));
             List<Track> trackList = gpx.getTracks();
-            assertEquals(1, trackList.size());
+            assertEquals(2, trackList.size());
 
             Track track = trackList.get(0);
             List<TrackSegment> trackSegmentList = track.getTrackSegments();
