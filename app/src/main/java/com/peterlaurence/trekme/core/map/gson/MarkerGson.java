@@ -18,6 +18,7 @@ public class MarkerGson {
         public String name;
         public double lat;
         public double lon;
+        public Double elevation;
         public Double proj_x;
         public Double proj_y;
         public String comment;

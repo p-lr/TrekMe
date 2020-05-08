@@ -131,8 +131,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
 
         /* The calibration marker */
         mCalibrationMarker = new CalibrationMarker(this.getContext());
-        TouchMoveListener.MoveCallback callback = new CalibrationMarkerMoveCallback();
-        mCalibrationMarker.setOnTouchListener(new TouchMoveListener(mapView, callback));
+        TouchMoveListener.MarkerMoveAgent moveAgent = new CalibrationMarkerMarkerMoveAgent();
+        mCalibrationMarker.setOnTouchListener(new TouchMoveListener(mapView, moveAgent));
         addMarker(mapView, mCalibrationMarker, 0.5, 0.5, -0.5f, -0.5f, 0f, 0f);
 
         /* Add the MapView to the root view */
@@ -340,7 +340,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         double getYValue();
     }
 
-    private static class CalibrationMarkerMoveCallback implements TouchMoveListener.MoveCallback {
+    private static class CalibrationMarkerMarkerMoveAgent implements TouchMoveListener.MarkerMoveAgent {
         @Override
         public void onMarkerMove(MapView mapView, View view, double x, double y) {
             moveCalibrationMarker(mapView, view, x, y);

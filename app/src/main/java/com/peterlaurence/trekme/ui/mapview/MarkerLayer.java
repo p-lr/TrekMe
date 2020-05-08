@@ -59,7 +59,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
     private static void attachMarkerGrab(final MovableMarker movableMarker, MapView mapView,
                                          Map map, Context context) {
         /* Add a view as background, to move easily the marker */
-        TouchMoveListener.MoveCallback markerMoveCallback = new TouchMoveListener.MoveCallback() {
+        TouchMoveListener.MarkerMoveAgent markerMarkerMoveAgent = new TouchMoveListener.MarkerMoveAgent() {
             @Override
             public void onMarkerMove(MapView mapView, View view, double x, double y) {
                 moveMarker(mapView, view, x, y);
@@ -72,7 +72,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         MarkerGrab markerGrab = new MarkerGrab(context);
         TouchMoveListener.ClickCallback markerClickCallback = new MovableMarkerClickCallback(
                 movableMarker, markerGrab, mapView, map);
-        TouchMoveListener touchMoveListener = new TouchMoveListener(mapView, markerMoveCallback, markerClickCallback);
+        TouchMoveListener touchMoveListener = new TouchMoveListener(mapView, markerMarkerMoveAgent, markerClickCallback);
         mapView.addReferentialOwner(touchMoveListener);
         markerGrab.setOnTouchMoveListener(touchMoveListener);
         addMarker(mapView, markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f, 0f, 0f);

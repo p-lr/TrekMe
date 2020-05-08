@@ -83,6 +83,9 @@ object TrackImporter {
         /* In any case, we store the wgs84 coordinates */
         marker.lat = latitude
         marker.lon = longitude
+
+        /* If we have elevation information, store it */
+        marker.elevation = elevation
         return marker
     }
 

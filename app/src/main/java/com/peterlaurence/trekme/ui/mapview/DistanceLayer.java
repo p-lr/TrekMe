@@ -94,22 +94,19 @@ public class DistanceLayer implements ReferentialOwner {
 
         /* Setup the first marker */
         mDistanceMarkerFirst = new DistanceMarker(mContext);
-        TouchMoveListener.MoveCallback firstMarkerMoveCallback = new TouchMoveListener.MoveCallback() {
-            @Override
-            public void onMarkerMove(MapView mapView, View view, double x, double y) {
-                mFirstMarkerRelativeX = x;
-                mFirstMarkerRelativeY = y;
-                moveMarker(mapView, mDistanceMarkerFirst, x, y);
-                onMarkerMoved();
-            }
+        TouchMoveListener.MarkerMoveAgent firstMarkerMarkerMoveAgent = (mapView, view, x, y) -> {
+            mFirstMarkerRelativeX = x;
+            mFirstMarkerRelativeY = y;
+            moveMarker(mapView, mDistanceMarkerFirst, x, y);
+            onMarkerMoved();
         };
-        mFirstTouchMoveListener = new TouchMoveListener(mMapView, firstMarkerMoveCallback);
+        mFirstTouchMoveListener = new TouchMoveListener(mMapView, firstMarkerMarkerMoveAgent);
         mFirstTouchMoveListener.setReferentialData(mReferentialData);
         mDistanceMarkerFirst.setOnTouchListener(mFirstTouchMoveListener);
 
         /* Setup the second marker*/
         mDistanceMarkerSecond = new DistanceMarker(mContext);
-        TouchMoveListener.MoveCallback secondMarkerMoveCallback = new TouchMoveListener.MoveCallback() {
+        TouchMoveListener.MarkerMoveAgent secondMarkerMarkerMoveAgent = new TouchMoveListener.MarkerMoveAgent() {
             @Override
             public void onMarkerMove(MapView mapView, View view, double x, double y) {
                 mSecondMarkerRelativeX = x;
@@ -118,7 +115,7 @@ public class DistanceLayer implements ReferentialOwner {
                 onMarkerMoved();
             }
         };
-        mSecondTouchMoveListener = new TouchMoveListener(mMapView, secondMarkerMoveCallback);
+        mSecondTouchMoveListener = new TouchMoveListener(mMapView, secondMarkerMarkerMoveAgent);
         mSecondTouchMoveListener.setReferentialData(mReferentialData);
         mDistanceMarkerSecond.setOnTouchListener(mSecondTouchMoveListener);
 

@@ -13,17 +13,20 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * A touch listener that enables touch-moves of a view (also called marker) on a {@link MapView}. <br>
+ * The logic of moving the marker is delegated to the provided {@link MarkerMoveAgent}. <br>
+ * It can also react to single-tap event. To be notified, provide a {@link ClickCallback} to
+ * the overloaded constructor.
+ *
+ * <p>
  * Example of usage :
  * <pre>{@code
- * MoveCallback callback = new ClassImplementsMoveCallback();
- * TouchMoveListener markerTouchListener = new TouchMoveListener(mapView, callback);
+ * MarkerMoveAgent agent = new ClassImplementsMoveAgent();
+ * TouchMoveListener markerTouchListener = new TouchMoveListener(mapView, agent);
  * View marker = new CustomMarker(context);
  * marker.setOnTouchListener(markerTouchListener);
  * mapView.addMarker(marker, ...);
  * }</pre>
- * <p>
- * It can also react to single-tap event. To be notified, provide a {@link ClickCallback} to
- * the overloaded constructor.
+ * </p>
  *
  * @author peterLaurence
  */
@@ -33,7 +36,7 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     private GestureDetector mGestureDetector;
     private float deltaX;
     private float deltaY;
-    private MoveCallback mMarkerMoveCallback;
+    private MarkerMoveAgent mMarkerMarkerMoveAgent;
     private ClickCallback mMarkerClickCallback;
 
     private double mLeftBound;
@@ -54,15 +57,15 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
         this.referentialData = referentialData;
     }
 
-    public TouchMoveListener(MapView mapView, MoveCallback markerMoveCallback) {
-        this(mapView, markerMoveCallback, null);
+    public TouchMoveListener(MapView mapView, MarkerMoveAgent markerMarkerMoveAgent) {
+        this(mapView, markerMarkerMoveAgent, null);
     }
 
-    public TouchMoveListener(MapView mapView, MoveCallback markerMoveCallback,
+    public TouchMoveListener(MapView mapView, MarkerMoveAgent markerMarkerMoveAgent,
                              ClickCallback markerClickCallback) {
         mMapView = mapView;
         mGestureDetector = new GestureDetector(mapView.getContext(), this);
-        mMarkerMoveCallback = markerMoveCallback;
+        mMarkerMarkerMoveAgent = markerMarkerMoveAgent;
         mMarkerClickCallback = markerClickCallback;
 
         mCoordinateTranslater = mapView.getCoordinateTranslater();
@@ -109,7 +112,7 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
                     X = getRelativeX(view.getX() + dX + (view.getWidth() >> 1));
                     Y = getRelativeY(view.getY() + dY + (view.getHeight() >> 1));
                 }
-                mMarkerMoveCallback.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
+                mMarkerMarkerMoveAgent.onMarkerMove(mMapView, view, getConstrainedX(X), getConstrainedY(Y));
                 break;
 
             default:
@@ -169,10 +172,11 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     }
 
     /**
-     * A callback that gives the "relative coordinates" of the view added to the MapView.
-     * Most of the time, the callee sets the given coordinates of the view on the MapView.
+     * A {@link MarkerMoveAgent} is given the "relative coordinates" of the view added to the
+     * {@link MapView}.
+     * Most of the time, the callee sets the given coordinates of the view on the {@link MapView}.
      */
-    public interface MoveCallback {
+    public interface MarkerMoveAgent {
         void onMarkerMove(MapView mapView, View view, double x, double y);
     }
 

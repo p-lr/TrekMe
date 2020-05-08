@@ -109,14 +109,14 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         map.addLandmark(newLandmark)
 
         /* Easily move the marker */
-        attachMarkerGrab(movableLandmark, mapView, map, context)
+        attachMarkerGrab(movableLandmark, map, context)
 
         mapView.addMarker(movableLandmark, relativeX, relativeY, -0.5f, -0.5f)
     }
 
-    private fun attachMarkerGrab(movableLandmark: MovableLandmark, mapView: MapView, map: Map, context: Context) {
+    private fun attachMarkerGrab(movableLandmark: MovableLandmark, map: Map, context: Context) {
         /* Add a view as background, to move easily the marker */
-        val landmarkMoveCallback = TouchMoveListener.MoveCallback { mapView, view, x, y ->
+        val landmarkMoveAgent = TouchMoveListener.MarkerMoveAgent { mapView, view, x, y ->
             mapView.moveMarker(view, x, y)
             mapView.moveMarker(movableLandmark, x, y)
             movableLandmark.relativeX = x
@@ -147,7 +147,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             MapLoader.saveLandmarks(map)
         }
 
-        touchMoveListener = TouchMoveListener(this.mapView, landmarkMoveCallback, landmarkClickCallback)
+        touchMoveListener = TouchMoveListener(this.mapView, landmarkMoveAgent, landmarkClickCallback)
         touchMoveListener?.referentialData = referentialData
         markerGrab.setOnTouchListener(touchMoveListener)
         if (movableLandmark.relativeX != null && movableLandmark.relativeY != null) {
@@ -173,7 +173,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
                 view.morphToDynamicForm()
 
                 /* Easily move the landmark */
-                attachMarkerGrab(view, mapView, map, context)
+                attachMarkerGrab(view, map, context)
 
                 /* Use a trick to bring the landmark to the foreground */
                 mapView.removeMarker(view)
