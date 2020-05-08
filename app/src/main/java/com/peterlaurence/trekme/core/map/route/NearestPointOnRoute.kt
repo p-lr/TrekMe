@@ -4,22 +4,61 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.launch
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 
 class NearestPointCalculator(val route: RouteGson.Route, val scope: CoroutineScope) {
 
     private val chunkSize = sqrt(route.route_markers.size / 3.0).toInt()
+    private var chunker: Chunker? = null
+
+    private val channel = Channel<Point>(Channel.CONFLATED)
+    private val outputChannel = ConflatedBroadcastChannel<MarkerGson.Marker>()
+    val nearestMarkersFlow = outputChannel.asFlow()
 
     init {
         scope.launch(Dispatchers.Default) {
-            val chunker = Chunker(route.route_markers, chunkSize)
+            for (point in channel) {
+                val marker = findNearestPointOnRoute(point.x, point.y)
+                if (marker != null) outputChannel.offer(marker)
+            }
         }
     }
 
-    fun findNearestPointOnRoute(lat: Double, lon: Double): MarkerGson.Marker {
-        TODO()
+    fun updatePosition(x: Double, y: Double) {
+        channel.offer(Point(x, y)) // always returns true
+    }
+
+    private fun findNearestPointOnRoute(x: Double, y: Double): MarkerGson.Marker? {
+        val chunker = getOrMakeChunker()
+        val markers = chunker.getMarkersInVicinity(x, y)
+
+        var distMin = Double.MAX_VALUE
+        var nearestMarker: MarkerGson.Marker? = null
+        for (markerList in markers) {
+            for (marker in markerList) {
+                val d = computeDistSquared(x, y, marker.proj_x, marker.proj_y)
+                if (d < distMin) {
+                    distMin = d
+                    nearestMarker = marker
+                }
+            }
+        }
+        return nearestMarker
+    }
+
+    private fun getOrMakeChunker(): Chunker {
+        if (chunker != null) return chunker!!
+        return Chunker(route.route_markers, chunkSize)
+    }
+
+    private fun computeDistSquared(x1: Double, y1: Double, x2: Double, y2: Double): Double {
+        return (x2 - x1).pow(2) + (y2 - y1).pow(2)
     }
 }
 
@@ -35,31 +74,42 @@ private class Chunker(val points: List<MarkerGson.Marker>, chunkSize: Int) {
         barycenters = chunksByBarycenter.keys.toList()
     }
 
-    fun getBarycenters(): List<Barycenter> = barycenters
-
-    fun getBarycenterGroup(barycenter: Barycenter): BarycenterGroup {
+    fun getMarkersInVicinity(x: Double, y: Double): List<List<MarkerGson.Marker>> {
+        val barycenter = getNearestBarycenter(x, y)
         val index = barycenters.indexOf(barycenter)
+        println("Barycenter index : $index")
         val previous = if (index > 0) {
             barycenters[index - 1]
         } else null
         val next = if (index < barycenters.size - 1) {
-            barycenters.lastOrNull()
+            barycenters[index + 1]
         } else null
 
-        return BarycenterGroup(barycenter, previous, next)
+        return listOf(barycenter, previous, next).mapNotNull {
+            it?.let { chunksByBarycenter[it] }
+        }
     }
 
     private fun get2DBarycenter(points: List<MarkerGson.Marker>): Barycenter {
-        var sumLat = 0.0
-        var sumLon = 0.0
+        var sumX = 0.0
+        var sumY = 0.0
         for (point in points) {
-            sumLat += point.lat
-            sumLon += point.lon
+            sumX += point.proj_x
+            sumY += point.proj_y
         }
-        return Barycenter(sumLat / points.size, sumLon / points.size)
+        return Barycenter(sumX / points.size, sumY / points.size)
+    }
+
+    private fun getNearestBarycenter(x: Double, y: Double): Barycenter {
+        return barycenters.minBy {
+            computeNorm(x, y, it)
+        } ?: barycenters.first()
+    }
+
+    private fun computeNorm(x: Double, y: Double, barycenter: Barycenter): Double {
+        return (barycenter.x - x).pow(2) + (barycenter.y - y).pow(2)
     }
 }
 
-private data class BarycenterGroup(val current: Barycenter, val previous: Barycenter?, val next: Barycenter?)
-private data class Barycenter(val lat: Double, val lon: Double)
-//private data class Barycenter(val point: Point, val index: Int)
+private data class Barycenter(val x: Double, val y: Double)
+data class Point(val x: Double, val y: Double)

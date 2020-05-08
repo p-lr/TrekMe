@@ -2,7 +2,10 @@ package com.peterlaurence.trekme.ui.mapview
 
 import android.graphics.Paint
 import android.util.Log
+import android.view.View
 import com.peterlaurence.mapview.MapView
+import com.peterlaurence.mapview.api.addMarker
+import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.paths.PathView
 import com.peterlaurence.mapview.paths.addPathView
 import com.peterlaurence.trekme.R
@@ -10,12 +13,16 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
+import com.peterlaurence.trekme.core.map.route.NearestPointCalculator
+import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
+import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -98,6 +105,16 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
         /* Then draw them */
         drawRoutes()
+
+        // TODO: this is just a POC
+        map.routes?.map { route ->
+            val view = MarkerGrab(mapView.context)
+            view.morphIn()
+            val markerMoveAlongRoute = MarkerMoveAlongRoute(route, coroutineScope, mapView, view)
+            view.setOnTouchListener(TouchMoveListener(mapView, markerMoveAlongRoute))
+            val firstMarker =  route.route_markers.first()
+            mapView.addMarker(view, firstMarker.proj_x, firstMarker.proj_y, -0.5f, -0.5f)
+        }
     }
 
     private fun drawRoutes() {
@@ -241,5 +258,22 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     private fun MarkerGson.Marker.getRelativeY(map: Map): Double {
         val mapUsesProjection = map.projection != null
         return if (mapUsesProjection) proj_y else lat
+    }
+}
+
+private class MarkerMoveAlongRoute(route: RouteGson.Route, private val scope: CoroutineScope,
+                                   private val mapView: MapView, private val view: View) : TouchMoveListener.MarkerMoveAgent {
+    val nearestPointCalculator = NearestPointCalculator(route, scope)
+
+    init {
+        scope.launch {
+            nearestPointCalculator.nearestMarkersFlow.collect {
+                mapView.moveMarker(view, it.proj_x, it.proj_y)
+            }
+        }
+    }
+
+    override fun onMarkerMove(mapView: MapView?, view: View?, x: Double, y: Double) {
+        nearestPointCalculator.updatePosition(x, y)
     }
 }
