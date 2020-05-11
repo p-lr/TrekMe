@@ -412,9 +412,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
          * It's called only now because the [RouteLayer] must be first initialized.
          */
         inMapRecordingViewModel.getLiveRoute().observe(
-                viewLifecycleOwner, Observer<InMapRecordingViewModel.LiveRoute> {
+                viewLifecycleOwner, Observer {
             it?.let { liveRoute ->
-                routeLayer.updateLiveRoute(liveRoute.route, liveRoute.map)
+                routeLayer.drawLiveRoute(liveRoute)
             }
         })
     }

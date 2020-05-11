@@ -109,15 +109,16 @@ class InMapRecordingViewModel : ViewModel() {
     }
 
     class RouteBuilder(val map: Map) {
-        val liveRoute = LiveRoute(RouteGson.Route(), map)
+        val liveRoute = LiveRoute()
 
         fun add(point: TrackPoint) {
             with(TrackImporter) {
                 val marker = point.toMarker(map)
-                liveRoute.route.route_markers.add(marker)
+                liveRoute.route_markers.add(marker)
             }
         }
     }
-
-    data class LiveRoute(val route: RouteGson.Route, val map: Map)
 }
+
+/* A LiveRoute is just one particular route */
+typealias LiveRoute = RouteGson.Route

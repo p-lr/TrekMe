@@ -94,9 +94,10 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     /**
      * The "live" route will be re-drawn completely, using the same pattern as other routes.
      */
-    fun updateLiveRoute(route: RouteGson.Route, map: Map) {
-        /* Redraw completely */
-        drawLiveRouteCompletely(route)
+    fun drawLiveRoute(liveRoute: RouteGson.Route) {
+        computePaths(listOf(liveRoute), mapView) {
+            liveRouteView.updatePaths(this.map { it.data as PathView.DrawablePath })
+        }
     }
 
     private fun CoroutineScope.acquireThenDrawRoutes(map: Map) = launch {
@@ -121,25 +122,11 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         /* Display all routes */
         map.routes?.let { routes ->
             if (routes.isNotEmpty()) {
-                drawRoutes(routes, mapView) {
-                    drawRoutes(this)
+                computePaths(routes, mapView) {
+                    pathView.updatePaths(this.map { it.data as PathView.DrawablePath })
                 }
             }
         }
-    }
-
-    private fun drawRoutes(routeList: List<RouteGson.Route>) {
-        pathView.updatePaths(routeList.map { it.data as PathView.DrawablePath })
-    }
-
-    private fun drawLiveRouteCompletely(liveRoute: RouteGson.Route) {
-        drawRoutes(listOf(liveRoute), mapView) {
-            drawLiveRoute(this)
-        }
-    }
-
-    private fun drawLiveRoute(routeList: List<RouteGson.Route>) {
-        liveRouteView.updatePaths(routeList.map { it.data as PathView.DrawablePath })
     }
 
     private fun setMapView(mapView: MapView) {
@@ -160,7 +147,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
      *                  |  -------------  |
      *                  ------------------
      */
-    private fun CoroutineScope.drawRoutes(routeList: List<RouteGson.Route>,
+    private fun CoroutineScope.computePaths(routeList: List<RouteGson.Route>,
                                           mapView: MapView,
                                           action: List<RouteGson.Route>.() -> Unit) = launch {
 
@@ -179,7 +166,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
     /**
      * Each [RouteGson.Route] of a [Map] needs to provide data in a format that the
-     * [MapView] understands.
+     * [MapView] understands (e.g [PathView] accepts path data as [FloatArray]).
      * This is done off UI thread.
      */
     private fun CoroutineScope.producePath(routes: ReceiveChannel<RouteGson.Route>,
