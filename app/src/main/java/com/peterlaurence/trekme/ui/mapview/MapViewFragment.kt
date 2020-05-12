@@ -188,29 +188,30 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter.setMapView(it)
         }
 
-        /* Then, asynchronously launch all required tasks */
-        lifecycleScope.launch {
+        /* Then, load the map (even if they are suspend functions, we want to invoke them
+         * synchronously in this context */
+        runBlocking {
             /* First, the settings */
             getMapSettings()
 
             /* Then, apply the Map to the current MapView */
             getAndApplyMap()
+        }
 
-            /* Configure some layers */
-            if (distanceLayerState != null && distanceLayerState.visible) {
-                presenter.view.distanceIndicator.showDistance()
-                distanceLayer.show(distanceLayerState)
-            }
+        /* Configure some layers */
+        if (distanceLayerState != null && distanceLayerState.visible) {
+            presenter.view.distanceIndicator.showDistance()
+            distanceLayer.show(distanceLayerState)
+        }
 
-            /* In free-rotating mode, show the compass right from the start */
-            if (rotationMode == RotationMode.FREE) {
-                compassView.visibility = View.VISIBLE
-            }
+        /* In free-rotating mode, show the compass right from the start */
+        if (rotationMode == RotationMode.FREE) {
+            compassView.visibility = View.VISIBLE
+        }
 
-            /* Now that everything is set-up, update with latest location */
-            locationViewModel.getLocationLiveData().value?.also {
-                onLocationReceived(it)
-            }
+        /* Now that everything is set-up, update with latest location */
+        locationViewModel.getLocationLiveData().value?.also {
+            onLocationReceived(it)
         }
 
         return presenter.androidView
@@ -249,7 +250,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private fun animateMapViewToNorth() {
         /* Wrapper class, necessary for the the animator to work (which uses reflection to infer
-             * method names..) */
+         * method names..) */
+        @Suppress("unused")
         val wrapper = object {
             fun setAngle(angle: Float) {
                 mapView?.setAngle(angle)
