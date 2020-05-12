@@ -13,7 +13,8 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
-import com.peterlaurence.trekme.core.map.route.NearestPointCalculator
+import com.peterlaurence.trekme.core.map.route.MarkerIndexed
+import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
@@ -41,7 +42,8 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     private lateinit var pathView: PathView
     private lateinit var liveRouteView: PathView
 
-    private val TAG = "RouteLayer"
+    var isDistanceOnTrackActive: Boolean = false
+        private set
 
     /**
      * When a track file has been parsed, this method is called. At this stage, the new
@@ -74,9 +76,28 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
         if (this.map.areRoutesDefined()) {
             drawRoutes()
+            if (isDistanceOnTrackActive) activateDistanceOnTrack()
         } else {
             acquireThenDrawRoutes(this.map)
         }
+    }
+
+    fun activateDistanceOnTrack() {
+        // TODO: this is just a POC and should be moved elsewhere
+        map.routes?.map { route ->
+            val view = MarkerGrab(mapView.context)
+            view.morphIn()
+            val markerMoveAlongRoute = MarkerMoveAlongRoute(route, coroutineScope, mapView, view)
+            view.setOnTouchListener(TouchMoveListener(mapView, markerMoveAlongRoute))
+            val firstMarker = route.route_markers.firstOrNull()
+            if (firstMarker != null) {
+                mapView.addMarker(view, firstMarker.proj_x, firstMarker.proj_y, -0.5f, -0.5f)
+            }
+        }
+    }
+
+    fun disableDistanceOnTrack() {
+
     }
 
     private fun createPathView() {
@@ -106,16 +127,6 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
         /* Then draw them */
         drawRoutes()
-
-        // TODO: this is just a POC
-        map.routes?.map { route ->
-            val view = MarkerGrab(mapView.context)
-            view.morphIn()
-            val markerMoveAlongRoute = MarkerMoveAlongRoute(route, coroutineScope, mapView, view)
-            view.setOnTouchListener(TouchMoveListener(mapView, markerMoveAlongRoute))
-            val firstMarker =  route.route_markers.first()
-            mapView.addMarker(view, firstMarker.proj_x, firstMarker.proj_y, -0.5f, -0.5f)
-        }
     }
 
     private fun drawRoutes() {
@@ -146,10 +157,11 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
      *                  | | producePath | |
      *                  |  -------------  |
      *                  ------------------
+     * TODO: this could probably be implemented with Flows, as this is one-shot processing machinery
      */
     private fun CoroutineScope.computePaths(routeList: List<RouteGson.Route>,
-                                          mapView: MapView,
-                                          action: List<RouteGson.Route>.() -> Unit) = launch {
+                                            mapView: MapView,
+                                            action: List<RouteGson.Route>.() -> Unit) = launch {
 
         val routes = Channel<RouteGson.Route>()
         val paths = Channel<Pair<RouteGson.Route, FloatArray>>()
@@ -250,12 +262,15 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
 private class MarkerMoveAlongRoute(route: RouteGson.Route, private val scope: CoroutineScope,
                                    private val mapView: MapView, private val view: View) : TouchMoveListener.MarkerMoveAgent {
-    val nearestPointCalculator = NearestPointCalculator(route, scope)
+    val nearestPointCalculator = NearestMarkerCalculator(route, scope)
+    var markerIndexed: MarkerIndexed? = null
+        private set
 
     init {
         scope.launch {
             nearestPointCalculator.nearestMarkersFlow.collect {
-                mapView.moveMarker(view, it.proj_x, it.proj_y)
+                markerIndexed = it
+                mapView.moveMarker(view, it.marker.proj_x, it.marker.proj_y)
             }
         }
     }
@@ -264,3 +279,30 @@ private class MarkerMoveAlongRoute(route: RouteGson.Route, private val scope: Co
         nearestPointCalculator.updatePosition(x, y)
     }
 }
+
+private class RouteRenderer(private val pathView: PathView) {
+    private var routes: List<RouteGson.Route> = listOf()
+    private var routeWithActiveDistance: RouteGson.Route? = null
+
+    fun setRoutes(routeList: List<RouteGson.Route>) {
+        routes = routeList
+    }
+
+    fun setRouteWithActiveDistance(route: RouteGson.Route, index1: Int, index2: Int) {
+        routeWithActiveDistance = route
+    }
+
+    fun render() {
+        val drawablePaths = routes.map {
+            if (it != routeWithActiveDistance) {
+                it.data as PathView.DrawablePath
+            } else {
+                it.data as PathView.DrawablePath
+            }
+        }
+
+        pathView.updatePaths(drawablePaths)
+    }
+}
+
+private const val TAG = "RouteLayer"

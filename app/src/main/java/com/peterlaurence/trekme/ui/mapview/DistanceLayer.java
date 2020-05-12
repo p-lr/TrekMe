@@ -5,9 +5,9 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.View;
-
-import androidx.annotation.Nullable;
 
 import com.peterlaurence.mapview.MapView;
 import com.peterlaurence.mapview.ReferentialData;
@@ -20,6 +20,7 @@ import com.peterlaurence.trekme.ui.mapview.components.LineView;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static com.peterlaurence.mapview.api.MarkerApiKt.addMarker;
 import static com.peterlaurence.mapview.api.MarkerApiKt.moveMarker;
@@ -40,6 +41,7 @@ public class DistanceLayer implements ReferentialOwner {
     private LineView mLineView;
     private TouchMoveListener mFirstTouchMoveListener;
     private TouchMoveListener mSecondTouchMoveListener;
+    private boolean scheduledToShow;
     private boolean mVisible;
     private DistanceListener mDistanceListener;
     private MapView mMapView;
@@ -61,8 +63,10 @@ public class DistanceLayer implements ReferentialOwner {
     public void setReferentialData(@NotNull ReferentialData referentialData) {
         mReferentialData = referentialData;
         if (mLineView != null) mLineView.setReferentialData(referentialData);
-        if (mFirstTouchMoveListener != null) mFirstTouchMoveListener.setReferentialData(referentialData);
-        if (mSecondTouchMoveListener != null) mSecondTouchMoveListener.setReferentialData(referentialData);
+        if (mFirstTouchMoveListener != null)
+            mFirstTouchMoveListener.setReferentialData(referentialData);
+        if (mSecondTouchMoveListener != null)
+            mSecondTouchMoveListener.setReferentialData(referentialData);
     }
 
     DistanceLayer(Context context, DistanceListener listener) {
@@ -80,11 +84,20 @@ public class DistanceLayer implements ReferentialOwner {
         mMapView.removeReferentialOwner(this);
     }
 
+    public void toggle() {
+        /* Not allowed to toggle while it's scheduled to be displayed */
+        if (scheduledToShow) return;
+        if (!mVisible) {
+            show(getState());
+        } else hide();
+    }
+
     /**
      * Shows the two {@link DistanceMarker} and the {@link LineView}.<br>
      * {@link #init(Map, MapView)} must have been called before.
      */
-    public void show() {
+    public void show(@NotNull State state) {
+        scheduledToShow = false;
         mMapView.addReferentialOwner(this);
 
         /* Create the DistanceView (the line between the two markers) */
@@ -119,9 +132,15 @@ public class DistanceLayer implements ReferentialOwner {
         mSecondTouchMoveListener.setReferentialData(mReferentialData);
         mDistanceMarkerSecond.setOnTouchListener(mSecondTouchMoveListener);
 
-        /* Set their positions */
-        initDistanceMarkers();
-        onMarkerMoved();
+        /* Set their positions - use default position if previous state was not visible */
+        if (!state.visible) {
+            initDistanceMarkers();
+        } else {
+            mFirstMarkerRelativeX = state.firstMarkerRelativeX;
+            mFirstMarkerRelativeY = state.firstMarkerRelativeY;
+            mSecondMarkerRelativeX = state.secondMarkerRelativeX;
+            mSecondMarkerRelativeY = state.secondMarkerRelativeY;
+        }
 
         /* ..and add them to the MapView */
         addMarker(mMapView, mDistanceMarkerFirst, mFirstMarkerRelativeX, mFirstMarkerRelativeY,
@@ -132,6 +151,9 @@ public class DistanceLayer implements ReferentialOwner {
 
         /* Start the thread that will process distance calculations */
         prepareDistanceCalculation();
+
+        /* Trigger the first computation */
+        onMarkerMoved();
     }
 
     /**
@@ -164,6 +186,24 @@ public class DistanceLayer implements ReferentialOwner {
 
     public boolean isVisible() {
         return mVisible;
+    }
+
+    public void markAsScheduledToShow() {
+        scheduledToShow = true;
+    }
+
+    public boolean isVisibleOrScheduledToShow() {
+        return mVisible || scheduledToShow;
+    }
+
+    public boolean isScheduledToShow() {
+        return scheduledToShow;
+    }
+
+    @NotNull
+    public State getState() {
+        return new State(mVisible, mFirstMarkerRelativeX, mFirstMarkerRelativeY, mSecondMarkerRelativeX,
+                mSecondMarkerRelativeY);
     }
 
     private void initDistanceMarkers() {
@@ -240,6 +280,8 @@ public class DistanceLayer implements ReferentialOwner {
         void onDistance(float distance, @Nullable DistanceUnit unit);
 
         void toggleDistanceVisibility();
+
+        void showDistance();
 
         void hideDistance();
     }
@@ -337,6 +379,57 @@ public class DistanceLayer implements ReferentialOwner {
         @Override
         public void run() {
             mDistanceListener.onDistance((float) mDistance, null);
+        }
+    }
+
+    public static class State implements Parcelable {
+        boolean visible;
+        double firstMarkerRelativeX;
+        double firstMarkerRelativeY;
+        double secondMarkerRelativeX;
+        double secondMarkerRelativeY;
+
+        State(boolean visible, double x1, double y1, double x2, double y2) {
+            this.visible = visible;
+            firstMarkerRelativeX = x1;
+            firstMarkerRelativeY = y1;
+            secondMarkerRelativeX = x2;
+            secondMarkerRelativeY = y2;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            int visibleInt = visible ? 1 : 0;
+            out.writeInt(visibleInt);
+            out.writeDouble(firstMarkerRelativeX);
+            out.writeDouble(firstMarkerRelativeY);
+            out.writeDouble(secondMarkerRelativeX);
+            out.writeDouble(secondMarkerRelativeY);
+        }
+
+        public static final Parcelable.Creator<State> CREATOR
+                = new Parcelable.Creator<State>() {
+            public State createFromParcel(Parcel in) {
+                return new State(in);
+            }
+
+            public State[] newArray(int size) {
+                return new State[size];
+            }
+        };
+
+        private State(Parcel in) {
+            int visibleInt = in.readInt();
+            visible = visibleInt == 1;
+            firstMarkerRelativeX = in.readDouble();
+            firstMarkerRelativeY = in.readDouble();
+            secondMarkerRelativeX = in.readDouble();
+            secondMarkerRelativeY = in.readDouble();
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
         }
     }
 }

@@ -152,7 +152,7 @@
     <string name="preference_starton_maplist">la liste des cartes</string>
     <string name="preference_starton_lastmap">la dernière carte ouverte</string>
     <string name="preference_root_location_title">Répertoire sélectionné</string>
-    <string name="mapview_lock_on_position">Verrouiller sur la position</string>
+    <string name="mapview_lock_on_position">Verrouiller la position</string>
     <string name="ign_buy_license_banner">Vous devez acheter la licence IGN, valable un an</string>
     <string name="buy_btn">Acheter</string>
     <string name="expired_ign_license">"Votre licence IGN a expirée :(\n\nL'achat de la licence se fait au moment de créer une nouvelle carte IGN.\nLa license est valable un an."</string>
@@ -195,4 +195,5 @@
     <string name="wifip2p_successful_load">La carte %1$s a été chargée avec success</string>
     <string name="wifip2p_warning_wifi">Vous devez activer la Wifi pour profiter de cette fonctionnalité. La communican avec l\'autre appareil se fait directement en Wifi.</string>
     <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#partage-de-carte</string>
+    <string name="mapview_measure_distance_on_track">Distance sur trace</string>
 </resources>

@@ -12,13 +12,13 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 
-class NearestPointCalculator(val route: RouteGson.Route, val scope: CoroutineScope) {
+class NearestMarkerCalculator(val route: RouteGson.Route, scope: CoroutineScope) {
 
     private val chunkSize = sqrt(route.route_markers.size / 3.0).toInt()
     private var chunker: Chunker? = null
 
     private val channel = Channel<Point>(Channel.CONFLATED)
-    private val outputChannel = ConflatedBroadcastChannel<MarkerGson.Marker>()
+    private val outputChannel = ConflatedBroadcastChannel<MarkerIndexed>()
     val nearestMarkersFlow = outputChannel.asFlow()
 
     init {
@@ -34,7 +34,7 @@ class NearestPointCalculator(val route: RouteGson.Route, val scope: CoroutineSco
         channel.offer(Point(x, y)) // always returns true
     }
 
-    private fun findNearestPointOnRoute(x: Double, y: Double): MarkerGson.Marker? {
+    private fun findNearestPointOnRoute(x: Double, y: Double): MarkerIndexed? {
         val chunker = getOrMakeChunker()
         val markers = chunker.getMarkersInVicinity(x, y)
 
@@ -49,7 +49,8 @@ class NearestPointCalculator(val route: RouteGson.Route, val scope: CoroutineSco
                 }
             }
         }
-        return nearestMarker
+        val index = route.route_markers.indexOf(nearestMarker)
+        return if (nearestMarker != null) MarkerIndexed(nearestMarker, index) else null
     }
 
     private fun getOrMakeChunker(): Chunker {
@@ -112,4 +113,9 @@ private class Chunker(val points: List<MarkerGson.Marker>, chunkSize: Int) {
 }
 
 private data class Barycenter(val x: Double, val y: Double)
-data class Point(val x: Double, val y: Double)
+private data class Point(val x: Double, val y: Double)
+
+/**
+ * A [MarkerGson.Marker] which also bundles the index of this marker on the corresponding route.
+ */
+data class MarkerIndexed(val marker: MarkerGson.Marker, val index: Int)

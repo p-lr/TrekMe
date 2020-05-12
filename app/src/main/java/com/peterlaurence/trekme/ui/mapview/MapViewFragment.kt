@@ -38,11 +38,8 @@ import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 
@@ -169,6 +166,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* Create the distance layer */
         distanceLayer = DistanceLayer(context, distanceListener)
+        val distanceLayerState = savedInstanceState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
+        if (distanceLayerState != null && distanceLayerState.visible) {
+            distanceLayer.markAsScheduledToShow()
+        }
 
         /* Create the landmark layer */
         context.let {
@@ -194,6 +195,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
             /* Then, apply the Map to the current MapView */
             getAndApplyMap()
+
+            /* Configure some layers */
+            if (distanceLayerState != null && distanceLayerState.visible) {
+                presenter.view.distanceIndicator.showDistance()
+                distanceLayer.show(distanceLayerState)
+            }
 
             /* In free-rotating mode, show the compass right from the start */
             if (rotationMode == RotationMode.FREE) {
@@ -289,7 +296,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* .. and restore some checkable state */
         val item = menu.findItem(R.id.distancemeter_id)
-        item.isChecked = distanceLayer.isVisible
+        item.isChecked = distanceLayer.isVisibleOrScheduledToShow
+
+        val itemDistanceTrack = menu.findItem(R.id.distance_on_track_id)
+        itemDistanceTrack.isChecked = routeLayer.isDistanceOnTrackActive
 
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
         itemOrientation.isChecked = orientationSensor?.isStarted ?: false
@@ -316,11 +326,17 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             }
             R.id.distancemeter_id -> {
                 distanceListener.toggleDistanceVisibility()
+                if (distanceLayer.isScheduledToShow) return true
+                item.isChecked = !item.isChecked
+                distanceLayer.toggle()
+                return true
+            }
+            R.id.distance_on_track_id -> {
                 item.isChecked = !item.isChecked
                 if (item.isChecked) {
-                    distanceLayer.show()
+                    routeLayer.activateDistanceOnTrack()
                 } else {
-                    distanceLayer.hide()
+                    routeLayer.disableDistanceOnTrack()
                 }
                 return true
             }
@@ -584,6 +600,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         super.onSaveInstanceState(outState)
 
         outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
+        outState.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
     }
 
     private fun setMapViewBounds(mapView: MapView, map: Map) {
@@ -638,6 +655,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     companion object {
         const val TAG = "MapViewFragment"
         private const val WAS_DISPLAYING_ORIENTATION = "wasDisplayingOrientation"
+        private const val DISTANCE_LAYER_STATE = "distanceLayerState"
     }
 }
 

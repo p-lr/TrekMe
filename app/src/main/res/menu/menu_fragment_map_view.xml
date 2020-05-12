@@ -33,6 +33,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/distance_on_track_id"
+        android:checkable="true"
+        android:title="@string/mapview_measure_distance_on_track"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/lock_on_position_id"
         android:checkable="true"
         app:showAsAction="never"

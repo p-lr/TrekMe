@@ -138,6 +138,7 @@
     <string name="mapview_show_speed">Show speed</string>
     <string name="mapview_add_marker">Add marker</string>
     <string name="mapview_measure_distance">Measure distance</string>
+    <string name="mapview_measure_distance_on_track">Distance on track</string>
     <string name="mapview_orientation_enable">Show orientation</string>
     <string name="mapview_add_landmark">Add landmark</string>
     <string name="mapview_lock_on_position">Lock on position</string>

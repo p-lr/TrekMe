@@ -137,6 +137,13 @@ public class IndicatorOverlay extends RelativeLayout implements MapViewFragment.
     }
 
     @Override
+    public void showDistance() {
+        mDistanceVisibility = true;
+        mDistanceTextView.setVisibility(VISIBLE);
+        updateVisibility();
+    }
+
+    @Override
     public void hideDistance() {
         mDistanceVisibility = false;
         mDistanceTextView.setVisibility(GONE);
