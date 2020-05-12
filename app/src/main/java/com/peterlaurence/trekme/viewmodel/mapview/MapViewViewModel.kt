@@ -39,9 +39,9 @@ class MapViewViewModel : ViewModel() {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
 
         /**
-         * In the event the persistence file doesn't exists and the license is proven to be purchased
+         * If the persistence file doesn't exists and the license is proven to be purchased
          * and still valid, create the persistence file.
-         * Otherwise, alter the user that the license is either missing or expired.
+         * Otherwise, warn the user that the license is either missing or expired.
          */
         suspend fun onFailureToReadFile(): Boolean {
             // missing license or something else wrong

@@ -41,7 +41,6 @@ public class DistanceLayer implements ReferentialOwner {
     private LineView mLineView;
     private TouchMoveListener mFirstTouchMoveListener;
     private TouchMoveListener mSecondTouchMoveListener;
-    private boolean scheduledToShow;
     private boolean mVisible;
     private DistanceListener mDistanceListener;
     private MapView mMapView;
@@ -85,8 +84,6 @@ public class DistanceLayer implements ReferentialOwner {
     }
 
     public void toggle() {
-        /* Not allowed to toggle while it's scheduled to be displayed */
-        if (scheduledToShow) return;
         if (!mVisible) {
             show(getState());
         } else hide();
@@ -97,7 +94,6 @@ public class DistanceLayer implements ReferentialOwner {
      * {@link #init(Map, MapView)} must have been called before.
      */
     public void show(@NotNull State state) {
-        scheduledToShow = false;
         mMapView.addReferentialOwner(this);
 
         /* Create the DistanceView (the line between the two markers) */
@@ -186,18 +182,6 @@ public class DistanceLayer implements ReferentialOwner {
 
     public boolean isVisible() {
         return mVisible;
-    }
-
-    public void markAsScheduledToShow() {
-        scheduledToShow = true;
-    }
-
-    public boolean isVisibleOrScheduledToShow() {
-        return mVisible || scheduledToShow;
-    }
-
-    public boolean isScheduledToShow() {
-        return scheduledToShow;
     }
 
     @NotNull

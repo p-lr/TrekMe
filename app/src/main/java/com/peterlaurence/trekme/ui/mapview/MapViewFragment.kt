@@ -166,15 +166,13 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* Create the distance layer */
         distanceLayer = DistanceLayer(context, distanceListener)
-        val distanceLayerState = savedInstanceState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
-        if (distanceLayerState != null && distanceLayerState.visible) {
-            distanceLayer.markAsScheduledToShow()
-        }
+//        val distanceLayerState = savedInstanceState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
+//        if (distanceLayerState != null && distanceLayerState.visible) {
+//            distanceLayer.markAsScheduledToShow()
+//        }
 
         /* Create the landmark layer */
-        context.let {
-            landmarkLayer = LandmarkLayer(it, lifecycleScope)
-        }
+        landmarkLayer = LandmarkLayer(context, lifecycleScope)
 
         /* Create the MapView.
          * Attached views must be known before onCreateView returns, or the save/restore state
@@ -198,7 +196,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             getAndApplyMap()
         }
 
-        /* Configure some layers */
+        /* Eventually restore the distance layer if it was visible before device rotation */
+        val distanceLayerState = savedInstanceState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
         if (distanceLayerState != null && distanceLayerState.visible) {
             presenter.view.distanceIndicator.showDistance()
             distanceLayer.show(distanceLayerState)
@@ -298,7 +297,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* .. and restore some checkable state */
         val item = menu.findItem(R.id.distancemeter_id)
-        item.isChecked = distanceLayer.isVisibleOrScheduledToShow
+        item.isChecked = distanceLayer.isVisible
 
         val itemDistanceTrack = menu.findItem(R.id.distance_on_track_id)
         itemDistanceTrack.isChecked = routeLayer.isDistanceOnTrackActive
@@ -328,7 +327,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             }
             R.id.distancemeter_id -> {
                 distanceListener.toggleDistanceVisibility()
-                if (distanceLayer.isScheduledToShow) return true
                 item.isChecked = !item.isChecked
                 distanceLayer.toggle()
                 return true
