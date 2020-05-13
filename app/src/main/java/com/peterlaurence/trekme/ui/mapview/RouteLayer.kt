@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.ui.mapview
 
+import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
 import android.view.View
@@ -8,7 +9,6 @@ import com.peterlaurence.mapview.api.addMarker
 import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.paths.PathView
 import com.peterlaurence.mapview.paths.addPathView
-import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
@@ -20,9 +20,6 @@ import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageF
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -40,7 +37,9 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     private lateinit var mapView: MapView
     private lateinit var map: Map
     private lateinit var pathView: PathView
-    private lateinit var liveRouteView: PathView
+    private lateinit var liveRoutePaint: Paint
+    private val processedStaticRoutes = mutableListOf<RouteGson.Route>()
+    private val processedLiveRoute = mutableListOf<RouteGson.Route>()
 
     var isDistanceOnTrackActive: Boolean = false
         private set
@@ -71,8 +70,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         this.map = map
         setMapView(mapView)
         createPathView()
-        createLiveRouteView()
-
+        initLiveRouteView()
 
         if (this.map.areRoutesDefined()) {
             drawStaticRoutes()
@@ -105,19 +103,37 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         mapView.addPathView(pathView)
     }
 
-    private fun createLiveRouteView() {
-        val context = mapView.context
-        liveRouteView = PathView(context)
-        liveRouteView.color = context.getColor(R.color.colorLiveRoute)
-        mapView.addPathView(liveRouteView)
+    private fun initLiveRouteView() {
+        liveRoutePaint = Paint().apply {
+            this.color = Color.parseColor("#FF9800")
+        }
     }
 
     /**
-     * The "live" route will be re-drawn completely, using the same pattern as other routes.
+     * The "live" route will be re-drawn completely, using the same pattern as static routes.
      */
     fun drawLiveRoute(liveRoute: RouteGson.Route) {
-        computePaths(listOf(liveRoute), mapView) {
-            liveRouteView.updatePaths(this.map { it.data as PathView.DrawablePath })
+        val liveRouteFlow = drawRoutes(listOf(liveRoute)) { route, path ->
+            val drawablePath = object : PathView.DrawablePath {
+                override val visible: Boolean
+                    get() = route.visible
+                override var path: FloatArray = path
+                override var paint: Paint? = liveRoutePaint
+                override val width: Float? = null
+            }
+            route.data = drawablePath
+            route
+        }
+
+        processedLiveRoute.clear()
+        coroutineScope.launch {
+            liveRouteFlow.collect {
+                processedLiveRoute.add(it)
+                val allRoutes = processedStaticRoutes + processedLiveRoute
+                pathView.updatePaths(allRoutes.map { route ->
+                    route.data as PathView.DrawablePath
+                })
+            }
         }
     }
 
@@ -129,114 +145,51 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         drawStaticRoutes()
     }
 
+    /**
+     * For each route, make a [PathView.DrawablePath] out of the path given by the flow.
+     * Then, on the UI thread, render all static routes and liveroute.
+     */
     private fun drawStaticRoutes() {
         val routes = map.routes ?: return
-        drawRoutes(routes)
-    }
+        val staticRouteFlow = drawRoutes(routes) { route, path ->
+            val drawablePath = object : PathView.DrawablePath {
+                override val visible: Boolean
+                    get() = route.visible
+                override var path: FloatArray = path
+                override var paint: Paint? = null
+                override val width: Float? = null
+            }
+            route.data = drawablePath
+            route
+        }
 
-    /**
-     * Use [Flow] to asynchronously compute [PathView.DrawablePath] for each route.
-     * Then, on the UI thread, trigger the render.
-     */
-    private fun drawRoutes(routeList: List<RouteGson.Route>) {
-        val routeFlow = routeList.asFlow().mapNotNull { route ->
-            val path = route.toPath(mapView)
-            if (path != null) {
-                val drawablePath = object : PathView.DrawablePath {
-                    override val visible: Boolean
-                        get() = route.visible
-                    override var path: FloatArray = path
-                    override var paint: Paint? = null
-                    override val width: Float? = null
-                }
-                route.data = drawablePath
-                route
-            } else null
-        }.buffer().flowOn(Dispatchers.Default)
-
-        val processedRoutes = mutableListOf<RouteGson.Route>()
+        processedStaticRoutes.clear()
         coroutineScope.launch {
-            routeFlow.collect {
-                processedRoutes.add(it)
-                pathView.updatePaths(processedRoutes.map { route ->
+            staticRouteFlow.collect {
+                processedStaticRoutes.add(it)
+                val allRoutes = processedStaticRoutes + processedLiveRoute
+                pathView.updatePaths(allRoutes.map { route ->
                     route.data as PathView.DrawablePath
                 })
             }
         }
     }
 
+    /**
+     * Returns a [Flow] which asynchronously compute [PathView.DrawablePath] for each route.
+     */
+    private fun drawRoutes(routeList: List<RouteGson.Route>,
+                           action: (RouteGson.Route, FloatArray) -> RouteGson.Route): Flow<RouteGson.Route> {
+        return routeList.asFlow().mapNotNull { route ->
+            val path = route.toPath(mapView)
+            if (path != null) {
+                action(route, path)
+            } else null
+        }.buffer().flowOn(Dispatchers.Default)
+    }
+
     private fun setMapView(mapView: MapView) {
         this.mapView = mapView
-    }
-
-    /**
-     * Use [Channel]s to communicate between coroutines and ensure no concurrent access on resources.
-     * A [Channel] is represented here with ****
-     *
-     *                      Worker pool
-     *                   _________________
-     *   routes         |  _____________  |         paths          _______________
-     * [********] ----> | | producePath | | ----> [*******] ----> | pathProcessor |
-     *                  |  -------------  |                        ---------------
-     *                  |  _____________  |
-     *                  | | producePath | |
-     *                  |  -------------  |
-     *                  ------------------
-     * TODO: this could probably be implemented with Flows, as this is one-shot processing machinery
-     */
-    private fun CoroutineScope.computePaths(routeList: List<RouteGson.Route>,
-                                            mapView: MapView,
-                                            action: List<RouteGson.Route>.() -> Unit) = launch {
-
-        val routes = Channel<RouteGson.Route>()
-        val paths = Channel<Pair<RouteGson.Route, FloatArray>>()
-
-        repeat(2) {
-            producePath(routes, paths, mapView)
-        }
-        pathProcessor(paths, action)
-
-        routeList.forEach {
-            routes.send(it)
-        }
-    }
-
-    /**
-     * Each [RouteGson.Route] of a [Map] needs to provide data in a format that the
-     * [MapView] understands (e.g [PathView] accepts path data as [FloatArray]).
-     * This is done off UI thread.
-     */
-    private fun CoroutineScope.producePath(routes: ReceiveChannel<RouteGson.Route>,
-                                           paths: SendChannel<Pair<RouteGson.Route, FloatArray>>,
-                                           mapView: MapView) = launch(Dispatchers.Default) {
-        for (route in routes) {
-            try {
-                val lines = route.toPath(mapView) ?: continue
-                paths.send(Pair(route, lines))
-            } catch (e: Exception) {
-                // ignore and continue the loop
-            }
-        }
-    }
-
-    private fun CoroutineScope.pathProcessor(paths: ReceiveChannel<Pair<RouteGson.Route, FloatArray>>,
-                                             action: List<RouteGson.Route>.() -> Unit) = launch {
-        val routesToDraw = mutableListOf<RouteGson.Route>()
-        for ((route, lines) in paths) {
-            /* Set the route data */
-            val drawablePath = object : PathView.DrawablePath {
-                override val visible: Boolean
-                    get() = route.visible
-                override var path: FloatArray = lines
-                override var paint: Paint? = null
-                override val width: Float? = null
-            }
-            route.apply {
-                data = drawablePath
-            }
-            routesToDraw.add(route)
-            routesToDraw.action()
-        }
     }
 
     /**

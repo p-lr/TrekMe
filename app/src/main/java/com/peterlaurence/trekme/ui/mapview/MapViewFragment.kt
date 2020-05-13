@@ -166,10 +166,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* Create the distance layer */
         distanceLayer = DistanceLayer(context, distanceListener)
-//        val distanceLayerState = savedInstanceState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
-//        if (distanceLayerState != null && distanceLayerState.visible) {
-//            distanceLayer.markAsScheduledToShow()
-//        }
 
         /* Create the landmark layer */
         landmarkLayer = LandmarkLayer(context, lifecycleScope)
