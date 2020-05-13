@@ -37,7 +37,12 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     private lateinit var mapView: MapView
     private lateinit var map: Map
     private lateinit var pathView: PathView
-    private lateinit var liveRoutePaint: Paint
+    private val liveRouteView: PathView by lazy {
+        val context = mapView.context
+        val view = PathView(context)
+        mapView.addPathView(view)
+        view
+    }
     private val processedStaticRoutes = mutableListOf<RouteGson.Route>()
     private val processedLiveRoute = mutableListOf<RouteGson.Route>()
 
@@ -70,7 +75,6 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         this.map = map
         setMapView(mapView)
         createPathView()
-        initLiveRouteView()
 
         if (this.map.areRoutesDefined()) {
             drawStaticRoutes()
@@ -103,16 +107,15 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         mapView.addPathView(pathView)
     }
 
-    private fun initLiveRouteView() {
-        liveRoutePaint = Paint().apply {
-            this.color = Color.parseColor("#FF9800")
-        }
-    }
-
     /**
      * The "live" route will be re-drawn completely, using the same pattern as static routes.
      */
     fun drawLiveRoute(liveRoute: RouteGson.Route) {
+        /* Beware, don't make this a class attribute of the flow below will keep a reference on
+         * the RouteLayer instance and consequently also the MapView. */
+        val liveRoutePaint = Paint().apply {
+            this.color = Color.parseColor("#FF9800")
+        }
         val liveRouteFlow = drawRoutes(listOf(liveRoute)) { route, path ->
             val drawablePath = object : PathView.DrawablePath {
                 override val visible: Boolean
@@ -129,8 +132,8 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         coroutineScope.launch {
             liveRouteFlow.collect {
                 processedLiveRoute.add(it)
-                val allRoutes = processedStaticRoutes + processedLiveRoute
-                pathView.updatePaths(allRoutes.map { route ->
+                val allRoutes = processedLiveRoute
+                liveRouteView.updatePaths(allRoutes.map { route ->
                     route.data as PathView.DrawablePath
                 })
             }
@@ -147,7 +150,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
     /**
      * For each route, make a [PathView.DrawablePath] out of the path given by the flow.
-     * Then, on the UI thread, render all static routes and liveroute.
+     * Then, on the UI thread, render all static routes.
      */
     private fun drawStaticRoutes() {
         val routes = map.routes ?: return
@@ -167,8 +170,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         coroutineScope.launch {
             staticRouteFlow.collect {
                 processedStaticRoutes.add(it)
-                val allRoutes = processedStaticRoutes + processedLiveRoute
-                pathView.updatePaths(allRoutes.map { route ->
+                pathView.updatePaths(processedStaticRoutes.map { route ->
                     route.data as PathView.DrawablePath
                 })
             }
