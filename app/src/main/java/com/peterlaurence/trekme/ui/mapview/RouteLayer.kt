@@ -23,7 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
@@ -55,7 +55,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     override fun onTrackChanged(map: Map, routeList: List<RouteGson.Route>) {
         Log.d(TAG, routeList.size.toString() + " new route received for map " + map.name)
 
-        drawRoutes()
+        drawStaticRoutes()
     }
 
     override fun onTrackVisibilityChanged() {
@@ -75,7 +75,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
 
         if (this.map.areRoutesDefined()) {
-            drawRoutes()
+            drawStaticRoutes()
             if (isDistanceOnTrackActive) activateDistanceOnTrack()
         } else {
             acquireThenDrawRoutes(this.map)
@@ -126,16 +126,41 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
         getRoutesForMap(map)
 
         /* Then draw them */
-        drawRoutes()
+        drawStaticRoutes()
     }
 
-    private fun drawRoutes() {
-        /* Display all routes */
-        map.routes?.let { routes ->
-            if (routes.isNotEmpty()) {
-                computePaths(routes, mapView) {
-                    pathView.updatePaths(this.map { it.data as PathView.DrawablePath })
+    private fun drawStaticRoutes() {
+        val routes = map.routes ?: return
+        drawRoutes(routes)
+    }
+
+    /**
+     * Use [Flow] to asynchronously compute [PathView.DrawablePath] for each route.
+     * Then, on the UI thread, trigger the render.
+     */
+    private fun drawRoutes(routeList: List<RouteGson.Route>) {
+        val routeFlow = routeList.asFlow().mapNotNull { route ->
+            val path = route.toPath(mapView)
+            if (path != null) {
+                val drawablePath = object : PathView.DrawablePath {
+                    override val visible: Boolean
+                        get() = route.visible
+                    override var path: FloatArray = path
+                    override var paint: Paint? = null
+                    override val width: Float? = null
                 }
+                route.data = drawablePath
+                route
+            } else null
+        }.buffer().flowOn(Dispatchers.Default)
+
+        val processedRoutes = mutableListOf<RouteGson.Route>()
+        coroutineScope.launch {
+            routeFlow.collect {
+                processedRoutes.add(it)
+                pathView.updatePaths(processedRoutes.map { route ->
+                    route.data as PathView.DrawablePath
+                })
             }
         }
     }
