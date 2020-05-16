@@ -2,36 +2,20 @@ package com.peterlaurence.trekme.core.map.route
 
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 
-class NearestMarkerCalculator(val route: RouteGson.Route, scope: CoroutineScope) {
+class NearestMarkerCalculator(val route: RouteGson.Route) {
 
     private val chunkSize = sqrt(route.route_markers.size / 3.0).toInt()
     private var chunker: Chunker? = null
 
-    private val channel = Channel<Point>(Channel.CONFLATED)
-    private val outputChannel = ConflatedBroadcastChannel<MarkerIndexed>()
-    val nearestMarkersFlow = outputChannel.asFlow()
 
-    init {
-        scope.launch(Dispatchers.Default) {
-            for (point in channel) {
-                val marker = findNearestPointOnRoute(point.x, point.y)
-                if (marker != null) outputChannel.offer(marker)
-            }
-        }
-    }
-
-    fun updatePosition(x: Double, y: Double) {
-        channel.offer(Point(x, y)) // always returns true
+    suspend fun findNearest(x: Double, y: Double): MarkerIndexed? = withContext(Dispatchers.Default) {
+        findNearestPointOnRoute(x, y)
     }
 
     private fun findNearestPointOnRoute(x: Double, y: Double): MarkerIndexed? {
@@ -78,7 +62,6 @@ private class Chunker(val points: List<MarkerGson.Marker>, chunkSize: Int) {
     fun getMarkersInVicinity(x: Double, y: Double): List<List<MarkerGson.Marker>> {
         val barycenter = getNearestBarycenter(x, y)
         val index = barycenters.indexOf(barycenter)
-        println("Barycenter index : $index")
         val previous = if (index > 0) {
             barycenters[index - 1]
         } else null
@@ -111,9 +94,6 @@ private class Chunker(val points: List<MarkerGson.Marker>, chunkSize: Int) {
         return (barycenter.x - x).pow(2) + (barycenter.y - y).pow(2)
     }
 }
-
-private data class Barycenter(val x: Double, val y: Double)
-private data class Point(val x: Double, val y: Double)
 
 /**
  * A [MarkerGson.Marker] which also bundles the index of this marker on the corresponding route.
