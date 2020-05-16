@@ -331,9 +331,6 @@ private class DistanceOnRouteController(private val pathView: PathView,
 
         val info = infoForRoute[route]
 
-        mapView.removeMarker(grab1)
-        mapView.removeMarker(grab2)
-
         /* Animate the markers */
         grab1.morphIn()
         grab2.morphIn()
@@ -378,12 +375,20 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private fun positionGrabMarkers(route: RouteGson.Route, index1: Int, index2: Int) {
         val firstMarker = route.route_markers[index1]
         if (firstMarker != null) {
-            mapView.addMarker(grab1, firstMarker.proj_x, firstMarker.proj_y, -0.5f, -0.5f)
+            if (grab1.parent == null) {
+                mapView.addMarker(grab1, firstMarker.proj_x, firstMarker.proj_y, -0.5f, -0.5f)
+            } else {
+                mapView.moveMarker(grab1, firstMarker.proj_x, firstMarker.proj_y)
+            }
         }
 
         val secondMarker = route.route_markers[index2]
         if (secondMarker != null) {
-            mapView.addMarker(grab2, secondMarker.proj_x, secondMarker.proj_y, -0.5f, -0.5f)
+            if (grab2.parent == null) {
+                mapView.addMarker(grab2, secondMarker.proj_x, secondMarker.proj_y, -0.5f, -0.5f)
+            } else {
+                mapView.moveMarker(grab2, secondMarker.proj_x, secondMarker.proj_y)
+            }
         }
     }
 
