@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.ui.mapview
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
-import android.view.View
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.ReferentialData
 import com.peterlaurence.mapview.ReferentialOwner
@@ -18,14 +17,12 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
 import com.peterlaurence.trekme.core.map.route.Barycenter
-import com.peterlaurence.trekme.core.map.route.MarkerIndexed
 import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -256,23 +253,9 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 }
 
-private class MoveAlongRouteAgent(private val scope: CoroutineScope,
-                                  private val nearestMarkerCalculator: NearestMarkerCalculator) : TouchMoveListener.MarkerMoveAgent {
-
-    override fun onMarkerMove(mapView: MapView?, view: View?, x: Double, y: Double) {
-        /* Those coroutines execute so quickly that it isn't necessary to throttle them */
-        scope.launch {
-            val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
-            if (markerIndexed != null && view != null) {
-                mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
-            }
-        }
-    }
-}
-
 private class DistanceOnRouteController(private val pathView: PathView,
                                         private val mapView: MapView,
-                                        private val scope: CoroutineScope): ReferentialOwner {
+                                        private val scope: CoroutineScope) : ReferentialOwner {
     private var routes: List<RouteGson.Route> = listOf()
     private var routeWithActiveDistance: RouteGson.Route? = null
     private var barycenterToRoute: kotlin.collections.Map<Barycenter, RouteGson.Route>? = null
@@ -282,10 +265,10 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private val grab2 = MarkerGrab(mapView.context)
 
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
-    set(value) {
-        field = value
-        scrollUpdateChannel.offer(Unit)
-    }
+        set(value) {
+            field = value
+            scrollUpdateChannel.offer(Unit)
+        }
 
     init {
         scope.launch {
@@ -293,6 +276,10 @@ private class DistanceOnRouteController(private val pathView: PathView,
                 updateActiveRoute()
             }
         }
+
+        // should be in enable()
+        grab1.morphIn()
+        grab2.morphIn()
     }
 
     fun enable() {
@@ -332,14 +319,9 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val x = mapView.coordinateTranslater.translateAbsoluteToRelativeX((referentialData.centerX * mapView.coordinateTranslater.baseWidth).toInt())
         val y = mapView.coordinateTranslater.translateAbsoluteToRelativeY((referentialData.centerY * mapView.coordinateTranslater.baseHeight).toInt())
 
-//        println("x: $x ; y: $y")
-//        println("centerX: ${referentialData.centerX} ; centerY: ${referentialData.centerY}")
-//        println(barycenterToRoute?.keys)
-//        mapView.coordinateTranslater.translateAbsoluteToRelativeX()
         barycenterToRoute?.filter { it.value.visible }?.minBy {
             computeDistance(x, y, it.key)
         }?.also {
-            println("Closest map is ${it.value.name}")
             /* Only if this is a different route, position the markers on this route */
             if (it.value != routeWithActiveDistance) {
                 setRouteWithActiveDistance(it.value)
@@ -348,30 +330,46 @@ private class DistanceOnRouteController(private val pathView: PathView,
     }
 
     private fun setRouteWithActiveDistance(route: RouteGson.Route) {
+        routeWithActiveDistance = route
+
         val info = infoForRoute[route]
         mapView.removeMarker(grab1)
         mapView.removeMarker(grab2)
 
+        val nearestMarkerCalculator = NearestMarkerCalculator(route)
+        grab1.setOnTouchListener(TouchMoveListener(mapView,
+                TouchMoveListener.MarkerMoveAgent { mapView, view, x, y ->
+                    scope.launch {
+                        val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
+                        if (markerIndexed != null && view != null) {
+                            mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
+                            infoForRoute[route]?.index1 = markerIndexed.index
+                        }
+                    }
+                })
+        )
+
+        grab2.setOnTouchListener(TouchMoveListener(mapView,
+                TouchMoveListener.MarkerMoveAgent { mapView, view, x, y ->
+                    scope.launch {
+                        val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
+                        if (markerIndexed != null && view != null) {
+                            mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
+                            infoForRoute[route]?.index2 = markerIndexed.index
+                        }
+                    }
+                })
+        )
+
         if (info == null) {
-            // set default position
+            /* This is the first time we are positioning markers - use default position */
             val index1 = 0
             val index2 = route.route_markers.size / 4
-            positionGrabMarkers(route, index1, index2)
-
-            val nearestMarkerCalculator = NearestMarkerCalculator(route)
-            val grab1MoveAlongRoute = MoveAlongRouteAgent(scope, nearestMarkerCalculator)
-            grab1.setOnTouchListener(TouchMoveListener(mapView, grab1MoveAlongRoute))
-            grab1.morphIn()
-
-            val grab2MoveAlongRoute = MoveAlongRouteAgent(scope, nearestMarkerCalculator)
-            grab2.setOnTouchListener(TouchMoveListener(mapView, grab2MoveAlongRoute))
-            grab2.morphIn()
-
             infoForRoute[route] = Info(index1, index2)
+            positionGrabMarkers(route, index1, index2)
         } else {
-            // use those positions
-
-
+            /* The user is "navigating back" to this route - use remembered positions */
+            positionGrabMarkers(route, info.index1, info.index2)
         }
     }
 
@@ -417,7 +415,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mapView.scale)
     }
 
-    private data class Info(val index1: Int, val index2: Int)
+    private data class Info(var index1: Int, var index2: Int)
 }
 
 private const val TAG = "RouteLayer"
