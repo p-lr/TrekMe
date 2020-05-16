@@ -53,7 +53,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation 'org.robolectric:robolectric:4.3.1'
     //implementation project(":mapview-debug")
-    implementation 'com.peterlaurence:mapview:2.0.4'
+    implementation 'com.peterlaurence:mapview:2.0.5'
     implementation 'org.greenrobot:eventbus:3.1.1'
     kapt 'org.greenrobot:eventbus-annotation-processor:3.1.1'
     implementation 'com.android.billingclient:billing:2.2.0'

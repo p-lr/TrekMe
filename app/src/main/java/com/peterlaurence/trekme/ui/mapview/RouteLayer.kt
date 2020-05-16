@@ -11,7 +11,6 @@ import com.peterlaurence.mapview.ReferentialOwner
 import com.peterlaurence.mapview.api.addMarker
 import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.api.removeMarker
-import com.peterlaurence.mapview.core.CoordinateTranslater
 import com.peterlaurence.mapview.paths.PathView
 import com.peterlaurence.mapview.paths.addPathView
 import com.peterlaurence.trekme.core.map.Map
@@ -29,6 +28,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.min
 import kotlin.math.pow
 
 /**
@@ -322,6 +323,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
             /* Only if this is a different route, position the markers on this route */
             if (it.value != routeWithActiveDistance) {
                 setRouteWithActiveDistance(it.value)
+                render()
             }
         }
     }
@@ -343,6 +345,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                         if (markerIndexed != null && view != null) {
                             mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
                             infoForRoute[route]?.index1 = markerIndexed.index
+                            pathView.invalidate()
                         }
                     }
                 })
@@ -355,6 +358,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                         if (markerIndexed != null && view != null) {
                             mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
                             infoForRoute[route]?.index2 = markerIndexed.index
+                            pathView.invalidate()
                         }
                     }
                 })
@@ -392,33 +396,42 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }
     }
 
-    fun setRouteWithActiveDistance(route: RouteGson.Route, index1: Int, index2: Int) {
-        routeWithActiveDistance = route
-    }
-
     fun render() {
-        val drawablePaths = routes.map {
-            if (it != routeWithActiveDistance) {
-                it.data as PathView.DrawablePath
-            } else {
-                it.data as PathView.DrawablePath
-            }
+        val routeWithActiveDistance = routeWithActiveDistance ?: return
+        val otherPaths = routes.filter { it != routeWithActiveDistance }.map {
+            it.data as PathView.DrawablePath
         }
 
-        pathView.updatePaths(drawablePaths)
+        val drawablePath = routeWithActiveDistance.data as PathView.DrawablePath
+        val distancePaint = Paint().apply { color = Color.MAGENTA }
+
+        val distancePath = object : PathView.DrawablePath {
+            override val visible: Boolean
+                get() = routeWithActiveDistance.visible
+            override var path: FloatArray = drawablePath.path
+            override val width: Float? = null
+            override var paint: Paint? = distancePaint
+            override val count: Int
+                get() = abs(i2 - i1).coerceAtMost(length)
+
+            override val offset: Int
+                get() = min(i1, i2).coerceAtMost(length)
+
+            /* Since each index in the route takes 4 numbers in the FloatArray, indexes are
+             * multiplied by 4 */
+            val i1: Int
+                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index1 ?: 0)
+            val i2: Int
+                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index2 ?: 0)
+            val length: Int
+                get() = 4 * drawablePath.path.size
+        }
+
+        pathView.updatePaths(otherPaths + distancePath)
     }
 
     private fun computeDistance(x: Double, y: Double, barycenter: Barycenter): Double {
         return (barycenter.x - x).pow(2) + (barycenter.y - y).pow(2)
-    }
-
-    private fun getCenterOfScreen() {
-        /* Calculate the relative coordinates of the first marker */
-        val x: Int = mapView.scrollX + (mapView.width * 0.5f).toInt() - mapView.offsetX
-        val y: Int = mapView.scrollY + (mapView.height * 0.5f).toInt() - mapView.offsetY
-        val coordinateTranslater: CoordinateTranslater = mapView.coordinateTranslater
-        val relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mapView.scale)
-        val relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mapView.scale)
     }
 
     private data class Info(var index1: Int, var index2: Int)
