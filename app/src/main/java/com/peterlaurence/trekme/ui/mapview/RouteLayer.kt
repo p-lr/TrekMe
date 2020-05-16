@@ -29,6 +29,7 @@ import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -427,7 +428,50 @@ private class DistanceOnRouteController(private val pathView: PathView,
                 get() = 4 * drawablePath.path.size
         }
 
-        pathView.updatePaths(otherPaths + distancePath)
+        val beforePath = object : PathView.DrawablePath {
+            override val visible: Boolean
+                get() = routeWithActiveDistance.visible
+            override var path: FloatArray = drawablePath.path
+            override val width: Float? = null
+            override var paint: Paint? = null
+            override val count: Int
+                get() = min(i1, i2).coerceAtMost(length)
+
+            override val offset: Int = 0
+
+            /* Since each index in the route takes 4 numbers in the FloatArray, indexes are
+             * multiplied by 4 */
+            val i1: Int
+                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index1 ?: 0)
+            val i2: Int
+                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index2 ?: 0)
+            val length: Int
+                get() = 4 * drawablePath.path.size
+        }
+
+        val afterPath = object : PathView.DrawablePath {
+            override val visible: Boolean
+                get() = routeWithActiveDistance.visible
+            override var path: FloatArray = drawablePath.path
+            override val width: Float? = null
+            override var paint: Paint? = null
+            override val count: Int
+                get() = (drawablePath.path.size - max(i1, i2)).coerceAtLeast(0)
+
+            override val offset: Int
+                get() = max(i1, i2).coerceAtMost(length)
+
+            /* Since each index in the route takes 4 numbers in the FloatArray, indexes are
+             * multiplied by 4 */
+            val i1: Int
+                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index1 ?: 0)
+            val i2: Int
+                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index2 ?: 0)
+            val length: Int
+                get() = 4 * drawablePath.path.size
+        }
+
+        pathView.updatePaths(otherPaths + beforePath + distancePath + afterPath)
     }
 
     private fun computeDistance(x: Double, y: Double, barycenter: Barycenter): Double {
