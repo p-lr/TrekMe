@@ -41,17 +41,15 @@ class MarkerGrab(context: Context) : AppCompatImageView(context) {
             setImageDrawable(mOutAnimation)
             mOutAnimation.registerAnimationCallback(animationEndCallback)
             mOutAnimation.start()
-
-        } else if (mCurrentDrawable === mOutAnimation) {
-            mOutAnimation.stop()
         }
     }
 
     fun morphIn() {
-        if (mCurrentDrawable != null) {
-            mCurrentDrawable!!.stop()
+        if (mCurrentDrawable === mOutAnimation) {
+            mOutAnimation.clearAnimationCallbacks()
         }
         mCurrentDrawable = mInAnimation
+        setImageDrawable(mInAnimation)
         mInAnimation.start()
     }
 

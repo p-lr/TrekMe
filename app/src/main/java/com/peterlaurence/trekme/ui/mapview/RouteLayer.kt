@@ -2,6 +2,8 @@ package com.peterlaurence.trekme.ui.mapview
 
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.Drawable
 import android.util.Log
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.ReferentialData
@@ -23,7 +25,8 @@ import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageF
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlin.math.pow
@@ -94,24 +97,12 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
     fun activateDistanceOnTrack() {
         mapView.addReferentialOwner(distanceOnRouteController)
-
-        // TODO: this is just a POC and should be moved elsewhere
-//        map.routes?.map { route ->
-//            val view = MarkerGrab(mapView.context)
-//            view.morphIn()
-//            val nearestMarkerCalculator = NearestMarkerCalculator(route, coroutineScope)
-//            val markerMoveAlongRoute = MoveAlongRouteAgent(route, coroutineScope,
-//                    nearestMarkerCalculator, mapView, view)
-//            view.setOnTouchListener(TouchMoveListener(mapView, markerMoveAlongRoute))
-//            val firstMarker = route.route_markers.firstOrNull()
-//            if (firstMarker != null) {
-//                mapView.addMarker(view, firstMarker.proj_x, firstMarker.proj_y, -0.5f, -0.5f)
-//            }
-//        }
+        distanceOnRouteController.enable()
     }
 
     fun disableDistanceOnTrack() {
         mapView.removeReferentialOwner(distanceOnRouteController)
+        distanceOnRouteController.disable()
     }
 
     private fun createPathView() {
@@ -259,10 +250,11 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private var routes: List<RouteGson.Route> = listOf()
     private var routeWithActiveDistance: RouteGson.Route? = null
     private var barycenterToRoute: kotlin.collections.Map<Barycenter, RouteGson.Route>? = null
-    private var scrollUpdateChannel = Channel<Unit>(Channel.CONFLATED)
+    private var scrollUpdateChannel = ConflatedBroadcastChannel<Unit>()
     private val infoForRoute: MutableMap<RouteGson.Route, Info> = mutableMapOf()
     private val grab1 = MarkerGrab(mapView.context)
     private val grab2 = MarkerGrab(mapView.context)
+    private var activeRouteLookupJob: Job? = null
 
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
@@ -270,24 +262,30 @@ private class DistanceOnRouteController(private val pathView: PathView,
             scrollUpdateChannel.offer(Unit)
         }
 
-    init {
-        scope.launch {
-            scrollUpdateChannel.consumeAsFlow().sample(32).collect {
+    fun enable() {
+        activeRouteLookupJob = scope.launch {
+            scrollUpdateChannel.asFlow().sample(32).collect {
                 updateActiveRoute()
             }
         }
-
-        // should be in enable()
-        grab1.morphIn()
-        grab2.morphIn()
-    }
-
-    fun enable() {
-
     }
 
     fun disable() {
+        activeRouteLookupJob?.cancel()
 
+        routeWithActiveDistance = null
+        grab1.morphOut(object : Animatable2.AnimationCallback() {
+            override fun onAnimationEnd(drawable: Drawable) {
+                super.onAnimationEnd(drawable)
+                mapView.removeMarker(grab1)
+            }
+        })
+        grab2.morphOut(object : Animatable2.AnimationCallback() {
+            override fun onAnimationEnd(drawable: Drawable) {
+                super.onAnimationEnd(drawable)
+                mapView.removeMarker(grab2)
+            }
+        })
     }
 
     fun setRoutes(routeList: List<RouteGson.Route>) {
@@ -299,7 +297,6 @@ private class DistanceOnRouteController(private val pathView: PathView,
 
         scope.launch {
             barycenterToRoute = baryCentersFlow.toList().toMap()
-            println("Route to barycenter done!")
         }
     }
 
@@ -333,8 +330,13 @@ private class DistanceOnRouteController(private val pathView: PathView,
         routeWithActiveDistance = route
 
         val info = infoForRoute[route]
+
         mapView.removeMarker(grab1)
         mapView.removeMarker(grab2)
+
+        /* Animate the markers */
+        grab1.morphIn()
+        grab2.morphIn()
 
         val nearestMarkerCalculator = NearestMarkerCalculator(route)
         grab1.setOnTouchListener(TouchMoveListener(mapView,
@@ -383,7 +385,6 @@ private class DistanceOnRouteController(private val pathView: PathView,
         if (secondMarker != null) {
             mapView.addMarker(grab2, secondMarker.proj_x, secondMarker.proj_y, -0.5f, -0.5f)
         }
-
     }
 
     fun setRouteWithActiveDistance(route: RouteGson.Route, index1: Int, index2: Int) {

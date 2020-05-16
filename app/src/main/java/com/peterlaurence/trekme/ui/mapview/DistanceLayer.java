@@ -80,7 +80,7 @@ public class DistanceLayer implements ReferentialOwner {
     }
 
     public void destroy() {
-        mMapView.removeReferentialOwner(this);
+        if (mMapView != null) mMapView.removeReferentialOwner(this);
     }
 
     public void toggle() {
