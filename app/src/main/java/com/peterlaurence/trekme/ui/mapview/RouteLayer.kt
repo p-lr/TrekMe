@@ -406,6 +406,12 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val drawablePath = routeWithActiveDistance.data as PathView.DrawablePath
         val distancePaint = Paint().apply { color = Color.MAGENTA }
 
+        /* Since each index in the route takes 4 numbers in the FloatArray, indexes are
+         * multiplied by 4 */
+        fun i1(): Int = 4 * (infoForRoute[routeWithActiveDistance]?.index1 ?: 0)
+        fun i2(): Int = 4 * (infoForRoute[routeWithActiveDistance]?.index2 ?: 0)
+        val length = drawablePath.path.size
+
         val distancePath = object : PathView.DrawablePath {
             override val visible: Boolean
                 get() = routeWithActiveDistance.visible
@@ -413,21 +419,13 @@ private class DistanceOnRouteController(private val pathView: PathView,
             override val width: Float? = null
             override var paint: Paint? = distancePaint
             override val count: Int
-                get() = abs(i2 - i1).coerceAtMost(length)
+                get() = abs(i2() - i1()).coerceAtMost(length)
 
             override val offset: Int
-                get() = min(i1, i2).coerceAtMost(length)
-
-            /* Since each index in the route takes 4 numbers in the FloatArray, indexes are
-             * multiplied by 4 */
-            val i1: Int
-                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index1 ?: 0)
-            val i2: Int
-                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index2 ?: 0)
-            val length: Int
-                get() = 4 * drawablePath.path.size
+                get() = min(i1(), i2()).coerceAtMost(length)
         }
 
+        /* The part between the start of the original path and the start of the distance path */
         val beforePath = object : PathView.DrawablePath {
             override val visible: Boolean
                 get() = routeWithActiveDistance.visible
@@ -435,20 +433,12 @@ private class DistanceOnRouteController(private val pathView: PathView,
             override val width: Float? = null
             override var paint: Paint? = null
             override val count: Int
-                get() = min(i1, i2).coerceAtMost(length)
+                get() = min(i1(), i2()).coerceAtMost(length)
 
             override val offset: Int = 0
-
-            /* Since each index in the route takes 4 numbers in the FloatArray, indexes are
-             * multiplied by 4 */
-            val i1: Int
-                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index1 ?: 0)
-            val i2: Int
-                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index2 ?: 0)
-            val length: Int
-                get() = 4 * drawablePath.path.size
         }
 
+        /* The part between the end of the distance path and the end of the original path */
         val afterPath = object : PathView.DrawablePath {
             override val visible: Boolean
                 get() = routeWithActiveDistance.visible
@@ -456,19 +446,10 @@ private class DistanceOnRouteController(private val pathView: PathView,
             override val width: Float? = null
             override var paint: Paint? = null
             override val count: Int
-                get() = (drawablePath.path.size - max(i1, i2)).coerceAtLeast(0)
+                get() = (drawablePath.path.size - max(i1(), i2())).coerceAtLeast(0)
 
             override val offset: Int
-                get() = max(i1, i2).coerceAtMost(length)
-
-            /* Since each index in the route takes 4 numbers in the FloatArray, indexes are
-             * multiplied by 4 */
-            val i1: Int
-                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index1 ?: 0)
-            val i2: Int
-                get() = 4 * (infoForRoute[routeWithActiveDistance]?.index2 ?: 0)
-            val length: Int
-                get() = 4 * drawablePath.path.size
+                get() = max(i1(), i2()).coerceAtMost(length)
         }
 
         pathView.updatePaths(otherPaths + beforePath + distancePath + afterPath)
