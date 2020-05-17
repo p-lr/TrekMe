@@ -5,6 +5,7 @@ import android.graphics.Paint
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.Drawable
 import android.util.Log
+import android.util.TypedValue
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.ReferentialData
 import com.peterlaurence.mapview.ReferentialOwner
@@ -257,6 +258,11 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private val grab1 = MarkerGrab(mapView.context)
     private val grab2 = MarkerGrab(mapView.context)
     private var activeRouteLookupJob: Job? = null
+    private val distancePathWidth: Float
+        get() {
+            val metrics = pathView.resources.displayMetrics
+            return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, metrics)
+        }
 
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
@@ -416,7 +422,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
             override val visible: Boolean
                 get() = routeWithActiveDistance.visible
             override var path: FloatArray = drawablePath.path
-            override val width: Float? = null
+            override val width: Float? = distancePathWidth
             override var paint: Paint? = distancePaint
             override val count: Int
                 get() = abs(i2() - i1()).coerceAtMost(length)
