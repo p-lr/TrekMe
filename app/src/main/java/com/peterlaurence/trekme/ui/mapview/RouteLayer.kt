@@ -364,6 +364,9 @@ private class DistanceOnRouteController(private val pathView: PathView,
             if (it.value != routeWithActiveDistance) {
                 setRouteWithActiveDistance(it.value)
                 render()
+
+                /* And trigger the first distance calculation */
+                distanceCalculateChannel.offer(Unit)
             }
         }
     }
