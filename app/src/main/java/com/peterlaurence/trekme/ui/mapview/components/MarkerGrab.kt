@@ -1,23 +1,47 @@
 package com.peterlaurence.trekme.ui.mapview.components
 
+import android.animation.Animator
+import android.animation.ObjectAnimator
 import android.content.Context
-import android.graphics.drawable.Animatable2
-import android.graphics.drawable.AnimatedVectorDrawable
-import androidx.appcompat.widget.AppCompatImageView
-
-import com.peterlaurence.trekme.R
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.view.View
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
+import com.peterlaurence.trekme.util.px
 
 /**
- * An marker meant to cast its move so it can be used to move other views that are e.g to small to
- * be dragged easily.
+ * A marker with a circle shape, and which offers [morphIn] and [morphOut] methods to respectively
+ * animate the appearing and disappearing of the marker.
+ * At first creation, this marker has diameter of 0 - so is not visible.
  *
- * @author peterLaurence on 10/04/17 -- Converted to Kotlin on 24/02/2019
+ * @author P.Laurence on 18/05/2020
  */
-class MarkerGrab(context: Context) : AppCompatImageView(context) {
-    private val mOutAnimation: AnimatedVectorDrawable = context.getDrawable(R.drawable.avd_marker_circle_grab_out) as AnimatedVectorDrawable
-    private val mInAnimation: AnimatedVectorDrawable = context.getDrawable(R.drawable.avd_marker_circle_grab_in) as AnimatedVectorDrawable
-    private var mCurrentDrawable: AnimatedVectorDrawable? = null
+class MarkerGrab @JvmOverloads constructor(context: Context, private val fullSized: Int = 100.px) : View(context) {
+    private var paint: Paint = Paint().apply {
+        color = Color.parseColor("#55448AFF")
+        isAntiAlias = true
+    }
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    private var diameter: Int = 0
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    /* A simple wrapper just for the Animation framework */
+    @Suppress("unused")
+    private val wrapper = object {
+        fun setDiameter(d: Int) {
+            diameter = d
+        }
+
+        fun getDiameter(): Int = diameter
+    }
 
     /**
      * When the setter is called, we keep a reference on the [TouchMoveListener].
@@ -31,26 +55,35 @@ class MarkerGrab(context: Context) : AppCompatImageView(context) {
             field = value
         }
 
-    init {
-        setImageDrawable(mInAnimation)
-    }
-
-    fun morphOut(animationEndCallback: Animatable2.AnimationCallback) {
-        if (mCurrentDrawable === mInAnimation) {
-            mCurrentDrawable = mOutAnimation
-            setImageDrawable(mOutAnimation)
-            mOutAnimation.registerAnimationCallback(animationEndCallback)
-            mOutAnimation.start()
+    fun morphIn(animatorListener: Animator.AnimatorListener? = null) {
+        ObjectAnimator.ofInt(wrapper, "diameter", 0, fullSized).apply {
+            duration = 500
+            if (animatorListener != null) {
+                addListener(animatorListener)
+            }
+            start()
         }
     }
 
-    fun morphIn() {
-        if (mCurrentDrawable === mOutAnimation) {
-            mOutAnimation.clearAnimationCallbacks()
+    fun morphOut(animatorListener: Animator.AnimatorListener? = null) {
+        ObjectAnimator.ofInt(wrapper, "diameter", 0).apply {
+            duration = 500
+            if (animatorListener != null) {
+                addListener(animatorListener)
+            }
+            start()
         }
-        mCurrentDrawable = mInAnimation
-        setImageDrawable(mInAnimation)
-        mInAnimation.start()
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        canvas.save()
+        canvas.drawCircle(fullSized / 2.toFloat(), fullSized / 2.toFloat(), diameter / 2.toFloat(), paint)
+        canvas.restore()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        setMeasuredDimension(fullSized, fullSized)
     }
 
     override fun performClick(): Boolean {

@@ -1,14 +1,14 @@
 package com.peterlaurence.trekme.ui.mapview
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.Context
-import android.graphics.drawable.Animatable2
-import android.graphics.drawable.Drawable
 import android.view.View
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.ReferentialData
 import com.peterlaurence.mapview.ReferentialOwner
 import com.peterlaurence.mapview.api.*
-import com.peterlaurence.mapview.markers.*
+import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -130,9 +130,9 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             movableLandmark.morphToStaticForm()
 
             /* After the morph, remove the MarkerGrab */
-            markerGrab.morphOut(object : Animatable2.AnimationCallback() {
-                override fun onAnimationEnd(drawable: Drawable) {
-                    super.onAnimationEnd(drawable)
+            markerGrab.morphOut(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    super.onAnimationEnd(animation)
                     this@LandmarkLayer.mapView.removeMarker(markerGrab)
                 }
             })

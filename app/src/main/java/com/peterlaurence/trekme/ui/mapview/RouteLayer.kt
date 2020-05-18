@@ -1,9 +1,9 @@
 package com.peterlaurence.trekme.ui.mapview
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.drawable.Animatable2
-import android.graphics.drawable.Drawable
 import android.util.Log
 import android.util.TypedValue
 import com.peterlaurence.mapview.MapView
@@ -23,6 +23,7 @@ import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
+import com.peterlaurence.trekme.util.px
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -255,8 +256,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private var barycenterToRoute: kotlin.collections.Map<Barycenter, RouteGson.Route>? = null
     private var scrollUpdateChannel = ConflatedBroadcastChannel<Unit>()
     private val infoForRoute: MutableMap<RouteGson.Route, Info> = mutableMapOf()
-    private val grab1 = MarkerGrab(mapView.context)
-    private val grab2 = MarkerGrab(mapView.context)
+    private val grab1 = MarkerGrab(mapView.context, 50.px)
+    private val grab2 = MarkerGrab(mapView.context, 50.px)
     private var activeRouteLookupJob: Job? = null
     private val distancePathWidth: Float
         get() {
@@ -282,15 +283,15 @@ private class DistanceOnRouteController(private val pathView: PathView,
         activeRouteLookupJob?.cancel()
 
         routeWithActiveDistance = null
-        grab1.morphOut(object : Animatable2.AnimationCallback() {
-            override fun onAnimationEnd(drawable: Drawable) {
-                super.onAnimationEnd(drawable)
+        grab1.morphOut(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
                 mapView.removeMarker(grab1)
             }
         })
-        grab2.morphOut(object : Animatable2.AnimationCallback() {
-            override fun onAnimationEnd(drawable: Drawable) {
-                super.onAnimationEnd(drawable)
+        grab2.morphOut(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
                 mapView.removeMarker(grab2)
             }
         })

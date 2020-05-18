@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.ui.mapview;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
-import android.graphics.drawable.Animatable2;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import com.peterlaurence.mapview.MapView;
@@ -76,7 +76,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         mapView.addReferentialOwner(touchMoveListener);
         markerGrab.setOnTouchMoveListener(touchMoveListener);
         addMarker(mapView, markerGrab, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -0.5f, 0f, 0f);
-        markerGrab.morphIn();
+        markerGrab.morphIn(null);
     }
 
     private void setCurrentMarker(MovableMarker movableMarker) {
@@ -257,10 +257,10 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
 
                 /* After the morph, remove the MarkerGrab */
                 final MarkerGrab markerGrab = mMarkerGrabWeakReference.get();
-                markerGrab.morphOut(new Animatable2.AnimationCallback() {
+                markerGrab.morphOut(new AnimatorListenerAdapter() {
                     @Override
-                    public void onAnimationEnd(Drawable drawable) {
-                        super.onAnimationEnd(drawable);
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
                         if (markerGrab != null) {
                             removeMarker(mMapView, markerGrab);
                             TouchMoveListener l = markerGrab.getOnTouchMoveListener();

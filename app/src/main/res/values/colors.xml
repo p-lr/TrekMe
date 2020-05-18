@@ -18,7 +18,6 @@
     <color name="colorAreaMarker">#55448AFF</color>
     <color name="colorBackgroundAreaView">#55448AFF</color>
     <color name="colorStrokeAreaView">#FF448AFF</color>
-    <color name="colorMarkerGrabBg">#55448AFF</color>
     <color name="colorMarker">#F16157</color>
     <color name="colorMarkerStroke">#B6392F</color>
     <color name="colorLandmark">#9C27B0</color>
