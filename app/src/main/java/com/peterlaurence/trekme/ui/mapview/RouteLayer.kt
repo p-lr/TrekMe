@@ -6,6 +6,9 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
 import android.util.TypedValue
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.ReferentialData
 import com.peterlaurence.mapview.ReferentialOwner
@@ -14,6 +17,7 @@ import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.api.removeMarker
 import com.peterlaurence.mapview.paths.PathView
 import com.peterlaurence.mapview.paths.addPathView
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
@@ -24,6 +28,7 @@ import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
+import com.peterlaurence.trekme.util.formatDistance
 import com.peterlaurence.trekme.util.px
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -264,6 +269,12 @@ private class DistanceOnRouteController(private val pathView: PathView,
             val metrics = pathView.resources.displayMetrics
             return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, metrics)
         }
+    private val distMarker = TextView(mapView.context).apply {
+        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        setBackgroundResource(R.drawable.bordered_shape)
+        setTextColor(Color.WHITE)
+        setPadding(10, 0, 10, 0)
+    }
 
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
@@ -283,6 +294,9 @@ private class DistanceOnRouteController(private val pathView: PathView,
                 updateDistance()
             }
         }
+
+        mapView.addMarker(distMarker, 0.0, 0.0, -0.5f, -0.5f)
+        distMarker.visibility = View.GONE
     }
 
     fun disable() {
@@ -304,6 +318,9 @@ private class DistanceOnRouteController(private val pathView: PathView,
                 mapView.removeMarker(grab2)
             }
         })
+
+        /* Remove the distance indicator */
+        mapView.removeMarker(distMarker)
 
         /* Finally, restore original paths */
         val originalPaths = routes.filter { it.visible }.map {
@@ -428,7 +445,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }
 
         val drawablePath = routeWithActiveDistance.data as PathView.DrawablePath
-        val distancePaint = Paint().apply { color = Color.MAGENTA }
+        val distancePaint = Paint().apply { color = Color.parseColor("#F50057") }
 
         /* Since each index in the route takes 4 numbers in the FloatArray, indexes are
          * multiplied by 4 */
@@ -488,6 +505,15 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val info = infoForRoute[activeRoute] ?: return
 
         val distance = computeDistance(activeRoute, info)
+        distMarker.text = formatDistance(distance)
+        distMarker.visibility = View.VISIBLE
+
+        val firstMarker = activeRoute.route_markers[info.index1]
+        val secondMarker = activeRoute.route_markers[info.index2]
+        val x = (firstMarker.proj_x + secondMarker.proj_x) / 2
+        val y = (firstMarker.proj_y + secondMarker.proj_y) / 2
+
+        mapView.moveMarker(distMarker, x, y)
     }
 
     private suspend fun computeDistance(route: RouteGson.Route, info: Info): Double = withContext(Dispatchers.Default) {
