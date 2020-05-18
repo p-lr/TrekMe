@@ -14,6 +14,7 @@ import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.api.removeMarker
 import com.peterlaurence.mapview.paths.PathView
 import com.peterlaurence.mapview.paths.addPathView
+import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
@@ -24,12 +25,9 @@ import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import com.peterlaurence.trekme.util.px
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -254,11 +252,13 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private var routes: List<RouteGson.Route> = listOf()
     private var routeWithActiveDistance: RouteGson.Route? = null
     private var barycenterToRoute: kotlin.collections.Map<Barycenter, RouteGson.Route>? = null
-    private var scrollUpdateChannel = ConflatedBroadcastChannel<Unit>()
+    private val scrollUpdateChannel = ConflatedBroadcastChannel<Unit>()
+    private val distanceCalculateChannel = ConflatedBroadcastChannel<Unit>()
     private val infoForRoute: MutableMap<RouteGson.Route, Info> = mutableMapOf()
     private val grab1 = MarkerGrab(mapView.context, 50.px)
     private val grab2 = MarkerGrab(mapView.context, 50.px)
     private var activeRouteLookupJob: Job? = null
+    private var distanceCalculationJob: Job? = null
     private val distancePathWidth: Float
         get() {
             val metrics = pathView.resources.displayMetrics
@@ -277,11 +277,18 @@ private class DistanceOnRouteController(private val pathView: PathView,
                 updateActiveRoute()
             }
         }
+
+        distanceCalculationJob = scope.launch {
+            distanceCalculateChannel.asFlow().sample(150).collect {
+                updateDistance()
+            }
+        }
     }
 
     fun disable() {
         /* Cancel any ongoing operation */
         activeRouteLookupJob?.cancel()
+        distanceCalculationJob?.cancel()
         routeWithActiveDistance = null
 
         /* Remove the grab markers */
@@ -361,6 +368,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                         if (markerIndexed != null && view != null) {
                             mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
                             infoForRoute[route]?.index1 = markerIndexed.index
+                            distanceCalculateChannel.offer(Unit)
                             pathView.invalidate()
                         }
                     }
@@ -374,6 +382,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                         if (markerIndexed != null && view != null) {
                             mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
                             infoForRoute[route]?.index2 = markerIndexed.index
+                            distanceCalculateChannel.offer(Unit)
                             pathView.invalidate()
                         }
                     }
@@ -472,6 +481,34 @@ private class DistanceOnRouteController(private val pathView: PathView,
 
     private fun computeDistance(x: Double, y: Double, barycenter: Barycenter): Double {
         return (barycenter.x - x).pow(2) + (barycenter.y - y).pow(2)
+    }
+
+    private suspend fun updateDistance() {
+        val activeRoute = routeWithActiveDistance ?: return
+        val info = infoForRoute[activeRoute] ?: return
+
+        val distance = computeDistance(activeRoute, info)
+    }
+
+    private suspend fun computeDistance(route: RouteGson.Route, info: Info): Double = withContext(Dispatchers.Default) {
+        val iMin = min(info.index1, info.index2)
+        val iMax = max(info.index1, info.index2)
+        val iterator = route.route_markers.listIterator(iMin)
+
+        var previous = iterator.next()
+        var distance = 0.0
+        for (i in iMin until iMax) {
+            val nextMarker = iterator.next()
+            distance += if (previous.elevation == null || nextMarker.elevation == null) {
+                deltaTwoPoints(previous.lat, previous.lon, nextMarker.lat, nextMarker.lon)
+            } else {
+                deltaTwoPoints(previous.lat, previous.lon, previous.elevation, nextMarker.lat,
+                        nextMarker.lon, nextMarker.elevation)
+            }
+            previous = nextMarker
+        }
+
+        distance
     }
 
     private data class Info(var index1: Int, var index2: Int)
