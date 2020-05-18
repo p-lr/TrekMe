@@ -280,9 +280,11 @@ private class DistanceOnRouteController(private val pathView: PathView,
     }
 
     fun disable() {
+        /* Cancel any ongoing operation */
         activeRouteLookupJob?.cancel()
-
         routeWithActiveDistance = null
+
+        /* Remove the grab markers */
         grab1.morphOut(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 super.onAnimationEnd(animation)
@@ -295,6 +297,12 @@ private class DistanceOnRouteController(private val pathView: PathView,
                 mapView.removeMarker(grab2)
             }
         })
+
+        /* Finally, restore original paths */
+        val originalPaths = routes.filter { it.visible }.map {
+            it.data as PathView.DrawablePath
+        }
+        pathView.updatePaths(originalPaths)
     }
 
     fun setRoutes(routeList: List<RouteGson.Route>) {
