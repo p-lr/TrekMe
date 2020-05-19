@@ -28,7 +28,7 @@ import org.greenrobot.eventbus.EventBus
  * * password
  * * API key
  *
- * It warns the user if any error arises.
+ * It warns the user if case of any error.
  *
  * @author peterLaurence on 14/04/18
  */
@@ -87,17 +87,16 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
     }
 
     /**
-     * We first try to download a single tile, using the credentials. This is done inside a coroutine
-     * which is cancelled if this fragment is left before this check completes.
+     * The test consists in downloading a single tile, using the credentials.
      */
     private suspend fun testIgnCredentials() {
         /* Skip the test if one or several of the fields are empty */
-        if (ignUser == "" || ignPwd == "" && ignApiKey == "") return
+        if (ignUser == "" || ignPwd == "" || ignApiKey == "") return
 
         /* Test IGN credentials */
         val isOk = withContext(Dispatchers.IO) {
             val tileStreamProvider = try {
-                createTileStreamProvider(MapSource.IGN, IgnLayers.ScanExpressStandard.realName)
+                createTileStreamProvider(MapSource.IGN, IgnLayers.IgnClassic.realName)
             } catch (e: Exception) {
                 return@withContext false
             }
