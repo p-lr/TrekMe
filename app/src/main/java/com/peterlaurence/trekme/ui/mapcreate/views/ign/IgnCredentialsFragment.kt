@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.snackbar.Snackbar
@@ -15,9 +17,10 @@ import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.core.providers.layers.IgnLayers
 import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
-import kotlin.coroutines.CoroutineContext
 
 /**
  * This fragment is for filling IGN France credentials:
@@ -29,20 +32,10 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author peterLaurence on 14/04/18
  */
-class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
-    private lateinit var ignUser: String
-    private lateinit var ignPwd: String
-    private lateinit var ignApiKey: String
-
-    private val job: Job = Job()
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
-
-    override fun onStop() {
-        job.cancel()
-        super.onStop()
-    }
+class IgnCredentialsFragment : PreferenceFragmentCompat() {
+    private var ignUser: String = ""
+    private var ignPwd: String = ""
+    private var ignApiKey: String = ""
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.ign_credentials_settings)
@@ -57,7 +50,7 @@ class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
         ignUserPreference?.text = ignUser
         ignUserPreference?.setOnPreferenceChangeListener { _, ignUser ->
             this.ignUser = ignUser as String
-            saveCredentials()
+            saveAndTest()
             true
         }
 
@@ -65,7 +58,7 @@ class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
         ignPwdPreference?.text = ignPwd
         ignPwdPreference?.setOnPreferenceChangeListener { _, ignPwd ->
             this.ignPwd = ignPwd as String
-            saveCredentials()
+            saveAndTest()
             true
         }
 
@@ -73,21 +66,22 @@ class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
         ignApiKeyPreference?.text = ignApiKey
         ignApiKeyPreference?.setOnPreferenceChangeListener { _, ignApiKey ->
             this.ignApiKey = ignApiKey as String
-            saveCredentials()
+            saveAndTest()
             true
         }
     }
 
-    private fun saveCredentials() {
-        if (this::ignUser.isInitialized && this::ignPwd.isInitialized && this::ignApiKey.isInitialized) {
-            val ignCredentials = IGNCredentials(ignUser, ignPwd, ignApiKey)
-            MapSourceCredentials.saveIGNCredentials(ignCredentials).let { success ->
-                if (success) {
-                    afterIgnCredentialsSaved()
-                } else {
-                    /* Warn the user that we don't have storage rights */
-                    showWarningDialog(getString(R.string.ign_warning_storage_rights))
-                }
+    private fun saveAndTest() = lifecycleScope.launch {
+        saveCredentials()
+        testIgnCredentials()
+    }
+
+    private suspend fun saveCredentials() {
+        val ignCredentials = IGNCredentials(ignUser, ignPwd, ignApiKey)
+        MapSourceCredentials.saveIGNCredentials(ignCredentials).let { success ->
+            if (!success && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                /* Warn the user that we don't have storage rights */
+                showWarningDialog(getString(R.string.ign_warning_storage_rights))
             }
         }
     }
@@ -96,19 +90,23 @@ class IgnCredentialsFragment : PreferenceFragmentCompat(), CoroutineScope {
      * We first try to download a single tile, using the credentials. This is done inside a coroutine
      * which is cancelled if this fragment is left before this check completes.
      */
-    private fun CoroutineScope.afterIgnCredentialsSaved() = launch {
+    private suspend fun testIgnCredentials() {
+        /* Skip the test if one or several of the fields are empty */
+        if (ignUser == "" || ignPwd == "" && ignApiKey == "") return
+
         /* Test IGN credentials */
-        val isOk = async(Dispatchers.IO) {
+        val isOk = withContext(Dispatchers.IO) {
             val tileStreamProvider = try {
                 createTileStreamProvider(MapSource.IGN, IgnLayers.ScanExpressStandard.realName)
             } catch (e: Exception) {
-                return@async false
+                return@withContext false
             }
             checkIgnProvider(tileStreamProvider)
         }
 
         /* Then, either invite to proceed to map creation, or show a warning */
-        if (isOk.await()) {
+        if (isOk) {
+            if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
             view?.let {
                 val snackBar = Snackbar.make(it, R.string.ign_snackbar_continue, Snackbar.LENGTH_LONG)
                 snackBar.setAction(R.string.ok_dialog) {

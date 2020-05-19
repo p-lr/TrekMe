@@ -4,6 +4,8 @@ import android.util.Log
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.util.FileUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
@@ -31,12 +33,12 @@ object MapSourceCredentials {
         return credentials.ignCredentials
     }
 
-    fun saveIGNCredentials(ignCredentials: IGNCredentials): Boolean {
+    suspend fun saveIGNCredentials(ignCredentials: IGNCredentials): Boolean = withContext(Dispatchers.IO) {
         credentials.ignCredentials = ignCredentials
 
         val jsonString = gson.toJson(credentials)
 
-        return try {
+        try {
             val writer = PrintWriter(configFile)
             writer.print(jsonString)
             writer.close()
