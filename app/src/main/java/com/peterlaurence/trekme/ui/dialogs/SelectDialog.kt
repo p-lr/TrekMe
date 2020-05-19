@@ -50,7 +50,7 @@ class SelectDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = AlertDialog.Builder(activity!!)
+        val builder = AlertDialog.Builder(requireActivity())
         builder.setTitle(title)
         val indexSelected = values.indexOf(valueSelected)
         builder.setSingleChoiceItems(values.toTypedArray(), indexSelected) { _: DialogInterface, i: Int ->

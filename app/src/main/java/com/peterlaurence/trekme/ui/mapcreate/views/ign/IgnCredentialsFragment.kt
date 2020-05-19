@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.core.mapsource.IGNCredentials
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
-import com.peterlaurence.trekme.core.providers.layers.IgnLayers
+import com.peterlaurence.trekme.core.providers.layers.IgnClassic
 import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +28,7 @@ import org.greenrobot.eventbus.EventBus
  * * password
  * * API key
  *
- * It warns the user if case of any error.
+ * It warns the user in case of any error.
  *
  * @author peterLaurence on 14/04/18
  */
@@ -96,7 +96,7 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
         /* Test IGN credentials */
         val isOk = withContext(Dispatchers.IO) {
             val tileStreamProvider = try {
-                createTileStreamProvider(MapSource.IGN, IgnLayers.IgnClassic.realName)
+                createTileStreamProvider(MapSource.IGN, IgnClassic.realName)
             } catch (e: Exception) {
                 return@withContext false
             }
@@ -104,8 +104,8 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
         }
 
         /* Then, either invite to proceed to map creation, or show a warning */
+        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
         if (isOk) {
-            if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
             view?.let {
                 val snackBar = Snackbar.make(it, R.string.ign_snackbar_continue, Snackbar.LENGTH_LONG)
                 snackBar.setAction(R.string.ok_dialog) {

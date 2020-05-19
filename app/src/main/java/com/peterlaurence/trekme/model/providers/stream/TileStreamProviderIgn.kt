@@ -3,9 +3,8 @@ package com.peterlaurence.trekme.model.providers.stream
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.IGNCredentials
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
-import com.peterlaurence.trekme.core.providers.layers.IgnLayers
+import com.peterlaurence.trekme.core.providers.layers.ScanExpressStandard
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilderIgn
 import java.io.InputStream
 
 /**
@@ -18,16 +17,17 @@ import java.io.InputStream
  *
  * @author peterLaurence on 20/06/19
  */
-class TileStreamProviderIgn(credentials: IGNCredentials, layer: String = IgnLayers.ScanExpressStandard.realName, urlTileBuilder: UrlTileBuilder): TileStreamProvider {
+class TileStreamProviderIgn(credentials: IGNCredentials, layer: String = ScanExpressStandard.realName, urlTileBuilder: UrlTileBuilder) : TileStreamProvider {
     private val base: TileStreamProvider
 
     init {
-        base = TileStreamProviderHttpAuth(urlTileBuilder, credentials.user ?: "", credentials.pwd ?: "")
+        base = TileStreamProviderHttpAuth(urlTileBuilder, credentials.user ?: "", credentials.pwd
+                ?: "")
     }
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
         /* Filter-out inaccessible tiles at lower levels */
-        when(zoomLvl) {
+        when (zoomLvl) {
             3 -> if (row > 7 || col > 7) return null
         }
         /* Safeguard */

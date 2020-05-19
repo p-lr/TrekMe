@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
-import com.peterlaurence.trekme.core.providers.layers.IgnLayers
+import com.peterlaurence.trekme.core.providers.layers.ignLayers
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog
@@ -210,7 +210,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             R.id.map_layer_menu_id -> {
                 val event = LayerSelectEvent(arrayListOf())
                 val title = getString(R.string.ign_select_layer_title)
-                val values = IgnLayers.values().map { it.publicName }
+                val values = ignLayers
                 val layerPublicName = viewModel.getLayerPublicNameForSource(mapSource)
                 val layerSelectDialog =
                         SelectDialog.newInstance(title, values, layerPublicName, event)
@@ -271,7 +271,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* Update the layer preference */
         viewModel.setLayerPublicNameForSource(mapSource, e.getSelection())
 
-        /* The re-create the mapview */
+        /* Then re-create the MapView */
         removeMapView()
         configure()
     }

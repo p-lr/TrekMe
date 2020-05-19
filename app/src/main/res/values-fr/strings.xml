@@ -139,7 +139,7 @@
     <string name="warning_title">Attention</string>
     <string name="service_download_bad_storage">TrekMe ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekMe dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
     <string name="ign_warning_help"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#TOC-ign-incorrect">Besoin d\'aide ?</a></string>
-    <string name="mapcreate_warning_ign">Veuillez vérifier votre connexion internet ou vos identifiants IGN.</string>
+    <string name="mapcreate_warning_ign">Il semble que votre clé n\'a pas accès à cette couche, ou bien votre connexion internet ou vos identifiants IGN sont en cause.</string>
     <string name="mapcreate_warning_others">Veuillez vérifier votre connexion internet. Une autre cause est l\'indisponibilité temporaire du fournisseur, car surchargé.</string>
     <string name="general_help_link"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#que-faire-si">Besoin d\'aide ?</a></string>
     <string name="mapcreate_btn_nav_credentials">Corriger mes identifiants</string>

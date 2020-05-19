@@ -223,7 +223,7 @@
     <string name="buy_btn">Purchase</string>
     <string name="download">Download</string>
     <string name="download_confirm">Download started. See the status in your notifications.</string>
-    <string name="mapcreate_warning_ign">Please check your internet connection or your credentials.</string>
+    <string name="mapcreate_warning_ign">Either your API key doesn\'t have granted access to this layer, or there\'s an issue with your internet connection or your credentials.</string>
     <string name="mapcreate_warning_others">Please check your internet connection. Another explanation is a temporary outage of the provider, due to an intense use.</string>
     <string name="mapcreate_btn_nav_credentials">Fix my credentials</string>
 
