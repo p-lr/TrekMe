@@ -189,16 +189,18 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 
     /**
-     * Returns a [Flow] which asynchronously compute [PathView.DrawablePath] for each route.
+     * Returns a [Flow] which concurrently compute [PathView.DrawablePath] for each route.
      */
     private fun getRouteFlow(routeList: List<RouteGson.Route>,
                              action: (RouteGson.Route, FloatArray) -> RouteGson.Route): Flow<RouteGson.Route> {
-        return routeList.asFlow().mapNotNull { route ->
-            val path = route.toPath(mapView)
-            if (path != null) {
-                action(route, path)
-            } else null
-        }.buffer().flowOn(Dispatchers.Default)
+        return routeList.map { route ->
+            flow {
+                val path = route.toPath(mapView)
+                if (path != null) {
+                    emit(action(route, path))
+                }
+            }.flowOn(Dispatchers.Default)
+        }.merge()
     }
 
     private fun setMapView(mapView: MapView) {
@@ -251,6 +253,13 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 }
 
+/**
+ * Contains all the logic related to the "distance on track" feature.
+ * Public high-level methods are [enable] and [disable]. When the list of routes changes, the
+ * [setRoutes] method should be used.
+ *
+ * @author P.Laurence on 19/05/2020
+ */
 private class DistanceOnRouteController(private val pathView: PathView,
                                         private val mapView: MapView,
                                         private val scope: CoroutineScope) : ReferentialOwner {
@@ -290,7 +299,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }
 
         distanceCalculationJob = scope.launch {
-            distanceCalculateChannel.asFlow().sample(150).collect {
+            distanceCalculateChannel.asFlow().sample(32).collect {
                 updateDistance()
             }
         }
@@ -329,15 +338,19 @@ private class DistanceOnRouteController(private val pathView: PathView,
         pathView.updatePaths(originalPaths)
     }
 
+    /**
+     * Update the internal list of routes.
+     * It immediately triggers an internal computation of each chunk's barycenter (off UI thread).
+     */
     fun setRoutes(routeList: List<RouteGson.Route>) {
         routes = routeList
 
-        val baryCentersFlow = routeList.asFlow().map { route ->
-            Pair(computeBarycenter(route), route)
-        }.flowOn(Dispatchers.Default).buffer()
-
         scope.launch {
-            barycenterToRoute = baryCentersFlow.toList().toMap()
+            barycenterToRoute = routeList.map { route ->
+                async(Dispatchers.Default) {
+                    Pair(computeBarycenter(route), route)
+                }
+            }.awaitAll().toMap()
         }
     }
 
