@@ -13,6 +13,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getLandmarksForMap
+import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.ui.mapview.components.LandmarkCallout
 import com.peterlaurence.trekme.ui.mapview.components.LineView
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
@@ -23,9 +24,8 @@ import kotlinx.coroutines.launch
 
 class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineScope) :
         MarkerTapListener, ReferentialOwner, CoroutineScope by coroutineScope {
-    private lateinit var map: Map
-    private lateinit var mapView: MapView
-    private var visible = false
+    private var map: Map? = null
+    private var mapView: MapView? = null
     private var lastKnownPosition: Pair<Double, Double> = Pair(0.0, 0.0)
     private val movableLandmarkList: MutableList<MovableLandmark> = mutableListOf()
     private var touchMoveListener: TouchMoveListener? = null
@@ -53,15 +53,17 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
     }
 
     fun destroy() {
-        mapView.removeReferentialOwner(this)
+        mapView?.removeReferentialOwner(this)
     }
 
     private fun CoroutineScope.acquireThenDrawLandmarks() = launch {
+        val map = map ?: return@launch
         getLandmarksForMap(map)
         drawLandmarks()
     }
 
     private fun drawLandmarks() {
+        val map = map ?: return
         val landmarks = map.landmarkGson.landmarks
 
         for (landmark in landmarks) {
@@ -79,12 +81,15 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             /* Keep a reference on it */
             movableLandmarkList.add(movableLandmark)
 
-            mapView.addMarker(movableLandmark, movableLandmark.relativeX!!,
+            mapView?.addMarker(movableLandmark, movableLandmark.relativeX!!,
                     movableLandmark.relativeY!!, -0.5f, -0.5f)
         }
     }
 
     fun addNewLandmark() {
+        val mapView = this.mapView ?: return
+        val map = map ?: return
+
         /* Calculate the relative coordinates of the center of the screen */
         val x = mapView.scrollX + mapView.width / 2 - mapView.offsetX
         val y = mapView.scrollY + mapView.height / 2 - mapView.offsetY
@@ -95,7 +100,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         val movableLandmark: MovableLandmark
 
         /* Create a new landmark and add it to the map */
-        val newLandmark = Landmark("", 0.0, 0.0, 0.0, 0.0, "").newCoords(relativeX, relativeY)
+        val newLandmark = Landmark("", 0.0, 0.0, 0.0, 0.0, "").newCoords(relativeX, relativeY, map)
 
         /* Create the corresponding view */
         movableLandmark = MovableLandmark(context, false, newLandmark, newLineView())
@@ -133,14 +138,14 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             markerGrab.morphOut(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     super.onAnimationEnd(animation)
-                    this@LandmarkLayer.mapView.removeMarker(markerGrab)
+                    this@LandmarkLayer.mapView?.removeMarker(markerGrab)
                 }
             })
 
             /* The view has been moved, update the associated model object */
             val landmark = movableLandmark.getLandmark()
             if (movableLandmark.relativeX != null && movableLandmark.relativeY != null) {
-                landmark.newCoords(movableLandmark.relativeX!!, movableLandmark.relativeY!!)
+                landmark.newCoords(movableLandmark.relativeX!!, movableLandmark.relativeY!!, map)
             }
 
             /* Save the changes on the markers.json file */
@@ -151,21 +156,19 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         touchMoveListener?.referentialData = referentialData
         markerGrab.setOnTouchListener(touchMoveListener)
         if (movableLandmark.relativeX != null && movableLandmark.relativeY != null) {
-            this.mapView.addMarker(markerGrab, movableLandmark.relativeX!!, movableLandmark.relativeY!!, -0.5f, -0.5f)
+            this.mapView?.addMarker(markerGrab, movableLandmark.relativeX!!, movableLandmark.relativeY!!, -0.5f, -0.5f)
             markerGrab.morphIn()
         }
     }
-
-    /**
-     * Return a copy of the private [visible] flag.
-     */
-    fun isVisible() = visible
 
     private fun setMapView(mapView: MapView) {
         this.mapView = mapView
     }
 
     override fun onMarkerTap(view: View, x: Int, y: Int) {
+        val mapView = mapView ?: return
+        val map = map ?: return
+
         if (view is MovableLandmark && view.relativeX != null && view.relativeY != null) {
             /* Prepare the callout */
             val landmarkCallout = LandmarkCallout(context)
@@ -204,7 +207,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         }
     }
 
-    private fun Landmark.newCoords(relativeX: Double, relativeY: Double): Landmark = apply {
+    private fun Landmark.newCoords(relativeX: Double, relativeY: Double, map: Map): Landmark = apply {
         if (map.projection == null) {
             lat = relativeY
             lon = relativeX
@@ -222,21 +225,21 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
      */
     private fun MovableLandmark.deleteLine() {
         val lineView = getLineView()
-        mapView.removeView(lineView)
+        mapView?.removeView(lineView)
     }
 
     private fun newLineView(): LineView {
         val lineView = LineView(context, referentialData, -0x3363d850)
         /* The index 1 is due to how MapView is designed and how we want landmarks to render (which
          * is above the map but beneath markers) */
-        mapView.addView(lineView, 1)
+        mapView?.addView(lineView, 1)
         return lineView
     }
 
     private fun MovableLandmark.updateLine() {
         val lineView = getLineView()
         if (relativeX != null && relativeY != null) {
-            val coordinateTranslater = mapView.coordinateTranslater
+            val coordinateTranslater = mapView?.coordinateTranslater ?: return
 
             lineView.updateLine(
                     coordinateTranslater.translateX(lastKnownPosition.first).toFloat(),
