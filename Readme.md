@@ -172,9 +172,9 @@ Adjust the distance by dragging two blue circles.
 
 *Along track distance*
 
-While following a track, it's sometime handy to know the distance between two points on that track. For example, you evaluate whether you have enough time to reach some point then go around before nightfall.
+While following a track, it's sometimes handy to know the distance between two points on that track. For example, you can evaluate whether you have enough time to reach some point, then go around before nightfall.
 
-This is an option from the top-right menu while viewing a map: "Distance on track". It can be activated/disabled. When enabled, two blue circles appear on the nearest track from the center of the screen. The portion of the track between the two blue circle is highlighted in red, and its distance is shown.
+This is an option from the top-right menu while viewing a map: "Distance on track". It can be activated/disabled. When enabled, two blue circles appear on the nearest track from the center of the screen. The portion of the track between the two blue circles is highlighted in red, and its distance is shown.
 
 <p align="center">
 <img src="doc/tuto/dist-on-track.jpg" width="300">
