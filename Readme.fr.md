@@ -150,12 +150,32 @@ Ensuite, poursuivez avec le [Guide de création manuelle de carte](MapCreation-M
 
 ### <a name="TOC-Measure-distance"></a>Mesurer une distance
 
-C'est une option en haut à droite alors qu'une carte est affichée.
-Ajuster la mesure en déplaçant les deux ronds bleus. C'est une distance "à vol d'oiseau".
+Il y deux manières de mesurer une distance dans TrekMe :
+
+*Distance à vol d'oiseau*
+
+C'est une option en haut à droite alors qu'une carte est affichée: "Mesurer une distance".
+Ajuster la mesure en déplaçant les deux ronds bleus.
 
 <p align="center">
 <img src="doc/tuto/distance.jpg" width="300">
 </p>
+
+*Distance le long d'une trace*
+
+Quand on fait une randonnée en suivant une trace, il est parfois utile de connaître la distance entre
+deux points le long de la trace. Cela permet par exemple de connaître la distance restante avec un 
+point particulier, et évaluer si on a assez de temps pour faire l'aller-retour.
+
+Il s'agit d'un mode à activer/désactiver dans les options d'une carte: "Distance sur trace".
+Lorsque activée, deux rond bleus appraissent sur la trace la plus proche du centre de l'écran. La
+portion de la trace entre les deux ronds est en rouge sa longueur est indiquée:
+
+<p align="center">
+<img src="doc/tuto/dist-on-track.jpg" width="300">
+</p>
+
+La distance affichée tient compte du dénivellé *si* la trace contient l'information d'altitude.
 
 ### <a name="TOC-Show-speed"></a>Afficher la vitesse
 

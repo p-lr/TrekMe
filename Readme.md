@@ -159,12 +159,28 @@ Then, proceed with the [Manual map creation guide](MapCreation-Manual.md).
 
 ### <a name="TOC-Measure-distance"></a>Measure a distance
 
-This is an option from the top-right menu while viewing a map.
-Adjust the distance by dragging two blue circles. This is a "as the crow flies" distance.
+Distance can be measured using two different tools in TrekMe:
+
+*As the crow flies distance*
+
+This is an option from the top-right menu while viewing a map: 
+Adjust the distance by dragging two blue circles.
 
 <p align="center">
 <img src="doc/tuto/distance.jpg" width="300">
 </p>
+
+*Along track distance*
+
+While following a track, it's sometime handy to know the distance between two points on that track. For example, you evaluate whether you have enough time to reach some point then go around before nightfall.
+
+This is an option from the top-right menu while viewing a map: "Distance on track". It can be activated/disabled. When enabled, two blue circles appear on the nearest track from the center of the screen. The portion of the track between the two blue circle is highlighted in red, and its distance is shown.
+
+<p align="center">
+<img src="doc/tuto/dist-on-track.jpg" width="300">
+</p>
+
+The distance accounts for elevation *only if* the track contains elevation data for each point.
 
 ### <a name="TOC-Show-speed"></a>Show the speed
 
