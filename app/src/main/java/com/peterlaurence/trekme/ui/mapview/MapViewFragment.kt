@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
@@ -57,8 +58,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private lateinit var compassView: CompassView
     private var lockView = false
     private var rotationMode: RotationMode = RotationMode.NONE
-    private var requestManageTracksListener: RequestManageTracksListener? = null
-    private var requestManageMarkerListener: RequestManageMarkerListener? = null
     private var shouldCenterOnFirstLocation = false
     private var magnifyingFactor: Int? = null
     private var orientationSensor: OrientationSensor? = null
@@ -87,10 +86,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is RequestManageTracksListener && context is RequestManageMarkerListener &&
-                context is LocationProviderHolder) {
-            requestManageTracksListener = context
-            requestManageMarkerListener = context
+        if (context is LocationProviderHolder) {
             locationProvider = context.locationProvider
         } else {
             throw RuntimeException("$context must implement RequestManageTracksListener, " +
@@ -162,7 +158,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* Create the marker layer */
         markerLayer = MarkerLayer(context)
-        markerLayer.setRequestManageMarkerListener(requestManageMarkerListener)
 
         /* Create the route layer */
         routeLayer = RouteLayer(lifecycleScope)
@@ -317,7 +312,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 return true
             }
             R.id.manage_tracks_id -> {
-                requestManageTracksListener?.onRequestManageTracks()
+                findNavController().navigate(R.id.action_mapViewFragment_to_tracksManageFragment)
                 return true
             }
             R.id.speedometer_id -> {
@@ -467,9 +462,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onDetach() {
         super.onDetach()
-
-        requestManageTracksListener = null
-        requestManageMarkerListener = null
         orientationSensor?.stop()
     }
 
@@ -616,23 +608,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     enum class SpeedUnit {
         KM_H, MPH
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     */
-    interface RequestManageTracksListener {
-        fun onRequestManageTracks()
-    }
-
-    /**
-     * Same as [RequestManageTracksListener].
-     */
-    interface RequestManageMarkerListener {
-        fun onRequestManageMarker(mapId: Int, marker: MarkerGson.Marker)
     }
 
     /**

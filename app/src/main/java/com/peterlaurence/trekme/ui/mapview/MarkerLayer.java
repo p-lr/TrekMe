@@ -5,6 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.view.View;
 
+import androidx.navigation.Navigation;
+
 import com.peterlaurence.mapview.MapView;
 import com.peterlaurence.mapview.core.CoordinateTranslater;
 import com.peterlaurence.mapview.markers.MarkerTapListener;
@@ -35,7 +37,6 @@ import static com.peterlaurence.mapview.api.MarkerApiKt.removeMarker;
 class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListener {
     List<MarkerGson.Marker> mMarkers;
     private Context mContext;
-    private MapViewFragment.RequestManageMarkerListener mRequestManageMarkerListener;
     private MapView mMapView;
     private Map mMap;
     private MovableMarker mCurrentMovableMarker;
@@ -46,10 +47,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
      */
     MarkerLayer(Context context) {
         mContext = context;
-    }
-
-    public void setRequestManageMarkerListener(MapViewFragment.RequestManageMarkerListener listener) {
-        mRequestManageMarkerListener = listener;
     }
 
     /**
@@ -104,7 +101,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
             markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
                     mMapView, mContext, mMap));
             markerCallout.setEditAction(new EditMarkerRunnable(mMap.getId(), movableMarker, MarkerLayer.this,
-                    markerCallout, mMapView, mRequestManageMarkerListener));
+                    markerCallout, mMapView));
             markerCallout.setDeleteAction(new DeleteMarkerRunnable(movableMarker, markerCallout,
                     mMapView, mMap));
             MarkerGson.Marker marker = movableMarker.getMarker();
@@ -345,18 +342,15 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         private WeakReference<MarkerLayer> mMarkerLayerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
         private MapView mMapView;
-        private WeakReference<MapViewFragment.RequestManageMarkerListener> mListenerWeakRef;
         private int mMapId;
 
         EditMarkerRunnable(int mapId, MovableMarker movableMarker, MarkerLayer markerLayer,
-                           MarkerCallout markerCallout, MapView mapView,
-                           MapViewFragment.RequestManageMarkerListener listener) {
+                           MarkerCallout markerCallout, MapView mapView) {
             mMapId = mapId;
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerLayerWeakReference = new WeakReference<>(markerLayer);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
             mMapView = mapView;
-            mListenerWeakRef = new WeakReference<>(listener);
         }
 
         @Override
@@ -364,17 +358,14 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
             MovableMarker movableMarker = mMovableMarkerWeakReference.get();
 
             if (movableMarker != null) {
-                if (mListenerWeakRef != null) {
-                    MapViewFragment.RequestManageMarkerListener listener = mListenerWeakRef.get();
-                    if (listener != null) {
                         MarkerLayer markerLayer = mMarkerLayerWeakReference.get();
                         if (markerLayer != null) {
                             markerLayer.setCurrentMarker(movableMarker);
                         }
 
-                        listener.onRequestManageMarker(mMapId, movableMarker.getMarker());
-                    }
-                }
+//                        listener.onRequestManageMarker(mMapId, movableMarker.getMarker());
+                        MapViewFragmentDirections.ActionMapViewFragmentToMarkerManageFragment action = MapViewFragmentDirections.actionMapViewFragmentToMarkerManageFragment(mMapId, movableMarker.getMarker());
+                        Navigation.findNavController(mMapView).navigate(action);
             }
 
             /* Remove the callout */

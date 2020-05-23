@@ -68,9 +68,6 @@ import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
 import com.peterlaurence.trekme.ui.mapview.MapViewFragment
-import com.peterlaurence.trekme.ui.mapview.MapViewFragment.RequestManageMarkerListener
-import com.peterlaurence.trekme.ui.mapview.MapViewFragment.RequestManageTracksListener
-import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment.Companion.newInstance
 import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment.MarkerManageFragmentInteractionListener
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.record.RecordFragment
@@ -90,8 +87,8 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
         OnMapListFragmentInteractionListener, OnMapArchiveFragmentInteractionListener,
-        RequestManageTracksListener, MapCalibrationRequestListener,
-        MarkerManageFragmentInteractionListener, RequestManageMarkerListener, LocationProviderHolder {
+        MapCalibrationRequestListener, MarkerManageFragmentInteractionListener,
+        LocationProviderHolder {
     private var backFragmentTag: String? = null
     private var fragmentManager: FragmentManager? = null
     private var snackBarExit: Snackbar? = null
@@ -410,26 +407,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return wmtsViewFragment
     }
 
-    override fun onRequestManageTracks() {
-        showTracksManageFragment()
-    }
-
-    override fun onRequestManageMarker(mapId: Int, marker: MarkerGson.Marker) {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments()
-        val fragment = newInstance(mapId, marker)
-        hideAllFragments()
-
-        val fragmentManager = fragmentManager ?: return
-        val transaction = fragmentManager.beginTransaction()
-        transaction.add(R.id.content_frame, fragment, MARKER_MANAGE_FRAGMENT_TAG)
-        transaction.show(fragment)
-
-        /* Manually manage the back action*/
-        backFragmentTag = MARKER_MANAGE_FRAGMENT_TAG
-        transaction.commit()
-    }
-
     val tracksManageFragment: TracksManageFragment?
         get() {
             val fragment = fragmentManager?.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG)
@@ -444,16 +421,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
         findNavController(R.id.nav_host_fragment).navigate(action)
-    }
-
-    private fun showTracksManageFragment() {
-        try {
-            showSingleUsageFragment(TRACKS_MANAGE_FRAGMENT_TAG, TracksManageFragment::class.java)
-        } catch (e: IllegalAccessException) {
-            Log.e(TAG, "Error while creating $TRACKS_MANAGE_FRAGMENT_TAG")
-        } catch (e: InstantiationException) {
-            Log.e(TAG, "Error while creating $TRACKS_MANAGE_FRAGMENT_TAG")
-        }
     }
 
     @Throws(IllegalAccessException::class, InstantiationException::class)
@@ -559,7 +526,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showSettingsFragment() {
-        showFragment(SETTINGS_FRAGMENT, MAP_LIST_FRAGMENT_TAG, SettingsFragment::class.java)
+        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_settingsFragment)
     }
 
     /**
