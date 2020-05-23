@@ -105,7 +105,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         super.onCreate(savedInstanceState)
         EventBus.getDefault().register(this)
         setHasOptionsMenu(true)
-        locationViewModel.setLocationProvider(locationProvider)
+
+        /* Create a local variable to avoid leaking this entire class */
+        val provider: LocationProvider = locationProvider
+        locationViewModel.setLocationProvider(provider)
         locationViewModel.getLocationLiveData().observe(this, Observer {
             it?.let {
                 onLocationReceived(it)

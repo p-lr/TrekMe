@@ -169,11 +169,6 @@ public class MapListFragment extends Fragment implements
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
-
-    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;

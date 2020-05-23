@@ -132,7 +132,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
         mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
                 ?: MapSource.OPEN_STREET_MAP
 
-        locationViewModel.setLocationProvider(locationProvider)
+        /* Create a local variable to avoid leaking this entire class */
+        val provider: LocationProvider = locationProvider
+        locationViewModel.setLocationProvider(provider)
         locationViewModel.getLocationLiveData().observe(this, Observer<Location> {
             it?.let {
                 onLocationReceived(it)

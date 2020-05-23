@@ -17,8 +17,10 @@ class LocationViewModel: ViewModel() {
     }
 
     fun startLocationUpdates() {
+        /* Create a local variable to avoid leaking this entire class */
+        val liveData = locationLiveData
         locationProvider?.start {
-            locationLiveData.postValue(it)
+            liveData.postValue(it)
         }
     }
 

@@ -50,7 +50,7 @@ import androidx.preference.PreferenceFragmentCompat;
  */
 public class MapSettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final String ARG_MAP_ID = "arg_map_id";
+    private static final String ARG_MAP_ID = "mapId";
     private static final int IMAGE_REQUEST_CODE = 1338;
     private Map mMap;
     private MapListViewModel mapListViewModel;
@@ -58,22 +58,6 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     private static final int MAP_SAVE_CODE = 3465;
 
     private MapCalibrationRequestListener mMapCalibrationRequestListener;
-
-    /**
-     * Factory method to create a new instance of this fragment. <br>
-     * Arguments supplied here will be retained across fragment destroy and
-     * creation.
-     *
-     * @param mapId the id of the {@link Map}
-     * @return A new instance of {@code MapSettingsFragment}
-     */
-    public static MapSettingsFragment newInstance(int mapId) {
-        MapSettingsFragment fragment = new MapSettingsFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_MAP_ID, mapId);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     /* Convenience method */
     private static void setListPreferenceSummaryAndValue(ListPreference preference, String value) {
@@ -98,12 +82,11 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         mapListViewModel = new ViewModelProvider(requireActivity()).get(MapListViewModel.class);
 
         Bundle args = getArguments();
+        // TODO: convert to Kotlin and use Safe Args https://developer.android.com/guide/navigation/navigation-pass-data
         if (args != null) {
             int mapId = args.getInt(ARG_MAP_ID);
             setMap(mapId);
         }
-
-
     }
 
     @Override

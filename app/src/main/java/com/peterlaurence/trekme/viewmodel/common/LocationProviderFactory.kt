@@ -10,23 +10,13 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 
 /**
- * Used by the MainActivity only, creates instances of [LocationProvider] based on how this class
- * is configured (configuration may change at runtime).
- * It needs a [Context] as some [LocationProvider] need one. This is also the reason why the
- * MainActivity is holding reference to [LocationProviderFactory], to avoid memory leak.
+ * Get a [LocationProvider] given the provided [LocationSource].
+ * @param context The application [Context] - *not* the activity itself. This is avoid memory leaks.
  */
-class LocationProviderFactory(val context: Context) {
-    private var source: LocationSource = LocationSource.GOOGLE_FUSE
-
-    fun configure(source: LocationSource) {
-        this.source = source
-    }
-
-    fun getLocationProvider(): LocationProvider {
-        return when(source) {
-            LocationSource.GOOGLE_FUSE -> GoogleLocationProvider(context)
-            LocationSource.NMEA -> TODO()
-        }
+fun getLocationProvider(source: LocationSource, context: Context): LocationProvider {
+    return when(source) {
+        LocationSource.GOOGLE_FUSE -> GoogleLocationProvider(context)
+        LocationSource.NMEA -> TODO()
     }
 }
 

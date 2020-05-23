@@ -32,6 +32,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -59,6 +60,7 @@ import com.peterlaurence.trekme.ui.mapimport.MapImportFragment
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment.OnMapArchiveFragmentInteractionListener
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
 import com.peterlaurence.trekme.ui.maplist.MapListFragment.OnMapListFragmentInteractionListener
+import com.peterlaurence.trekme.ui.maplist.MapListFragmentDirections
 import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment
 import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment.MapCalibrationRequestListener
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
@@ -78,7 +80,8 @@ import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
-import com.peterlaurence.trekme.viewmodel.common.LocationProviderFactory
+import com.peterlaurence.trekme.viewmodel.common.LocationSource
+import com.peterlaurence.trekme.viewmodel.common.getLocationProvider
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.EventBusException
@@ -94,7 +97,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var snackBarExit: Snackbar? = null
     private var navigationView: NavigationView? = null
     private var viewModel: MainActivityViewModel? = null
-    private var locationProviderFactory: LocationProviderFactory? = null
 
     /* Used for notifications */
     private var builder: Notification.Builder? = null
@@ -312,50 +314,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     /**
-     * The first time we create a retained fragment, we don't want it to be added to the back stack,
-     * because if the user uses the back button, the fragment manager will "forget" it and there is
-     * no way to retrieve with `FragmentManager.findFragmentByTag(string)`. <br></br>
-     * Even worse, that last method is used to decide whether a retained fragment should be created
-     * or not. So a "forgotten" retained fragment can be created several times. <br></br>
-     * Consequently, the first time a retained fragment is created and shown, it is not added to the
-     * back stack. In that particular case, to keep the back functionality, a `mBackFragmentTag`
-     * is used to store the tag of the fragment to go back to.
+     * If the side menu is opened, just close it.
+     * Otherwise, if the navigation component reports that there's no previous destination, display
+     * a confirmation snackbar to back once more before killing the app.
      */
     override fun onBackPressed() {
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
-        } else if (backFragmentTag != null) {
-            when (backFragmentTag) {
-                MAP_LIST_FRAGMENT_TAG -> {
-                    showMapListFragment()
-                    /* Clear the tag so that the back stack is popped the next time, unless a new retained
-                     * fragment is created in the meanwhile. */backFragmentTag = null
-                }
-                MAP_FRAGMENT_TAG -> showMapViewFragment()
-                MAP_SETTINGS_FRAGMENT_TAG -> {
-                    val map = getSettingsMap()
-                    if (map != null) {
-                        showMapSettingsFragment(map.id)
-                    } else {
-                        backFragmentTag = null
-                    }
-                    showMapViewFragment()
-                }
-                TRACKS_MANAGE_FRAGMENT_TAG -> showMapViewFragment()
-                MARKER_MANAGE_FRAGMENT_TAG -> showMapViewFragment()
-                IGN_CREDENTIALS_FRAGMENT_TAG -> {
-                    showMapCreateFragment()
-                    backFragmentTag = MAP_LIST_FRAGMENT_TAG
-                }
-                else -> {
-                    showMapListFragment()
-                    backFragmentTag = null
-                }
-            }
-        } else if (fragmentManager!!.backStackEntryCount > 0) {
-            fragmentManager!!.popBackStack()
-        } else {
+        } else if (findNavController(R.id.nav_host_fragment).previousBackStackEntry == null) {
             /* BACK button twice to exit */
             val snackBarExit = snackBarExit
             if (snackBarExit == null || snackBarExit.isShown) {
@@ -363,7 +330,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             } else {
                 snackBarExit.show()
             }
-        }
+        } else super.onBackPressed()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -393,13 +360,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun onShowMapListEvent(event: ShowMapListEvent?) {
         showMapListFragment()
         warnIfBadStorageState()
-        backFragmentTag = null
     }
 
     @Subscribe
     fun onShowMapViewEvent(event: ShowMapViewEvent?) {
         showMapViewFragment()
-        backFragmentTag = MAP_LIST_FRAGMENT_TAG
     }
 
     override fun onStop() {
@@ -427,18 +392,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         drawer?.closeDrawer(GravityCompat.START)
         return true
-    }
-
-    private fun createMapViewFragment(transaction: FragmentTransaction): Fragment {
-        val mapFragment: Fragment = MapViewFragment()
-        transaction.add(R.id.content_frame, mapFragment, MAP_FRAGMENT_TAG)
-        return mapFragment
-    }
-
-    private fun createMapSettingsFragment(transaction: FragmentTransaction, mapId: Int): Fragment {
-        val mapSettingsFragment: Fragment = MapSettingsFragment.newInstance(mapId)
-        transaction.add(R.id.content_frame, mapSettingsFragment, MAP_SETTINGS_FRAGMENT_TAG)
-        return mapSettingsFragment
     }
 
     /**
@@ -489,23 +442,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return
         }
 
-        /* Remove single-usage fragments */removeSingleUsageFragments()
-
-        /* Hide other fragments */
-        val fragmentManager = fragmentManager ?: return
-        val hideTransaction = fragmentManager.beginTransaction()
-        hideOtherFragments(hideTransaction, MAP_FRAGMENT_TAG)
-        hideTransaction.commit()
-        val transaction = fragmentManager.beginTransaction()
-        var mapFragment = fragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG)
-        if (mapFragment == null) {
-            mapFragment = createMapViewFragment(transaction)
-        }
-        transaction.show(mapFragment)
-
-        /* Manually manage the back action*/
-        backFragmentTag = MAP_LIST_FRAGMENT_TAG
-        transaction.commit()
+        val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
+        findNavController(R.id.nav_host_fragment).navigate(action)
     }
 
     private fun showTracksManageFragment() {
@@ -534,31 +472,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showMapListFragment() {
-        showFragment(MAP_LIST_FRAGMENT_TAG, null, MapListFragment::class.java)
+        // TODO: it's now "navigation-component"-managed. Is choosing between this and directly the
+        // last viewed map still working?
     }
 
     private fun showMapSettingsFragment(mapId: Int) {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments()
-
-        /* Hide other fragments */
-        val hideTransaction = fragmentManager!!.beginTransaction()
-        hideOtherFragments(hideTransaction, MAP_SETTINGS_FRAGMENT_TAG)
-        hideTransaction.commit()
-        val transaction = fragmentManager!!.beginTransaction()
-        var mapSettingsFragment = fragmentManager!!.findFragmentByTag(MAP_SETTINGS_FRAGMENT_TAG)
-
-        /* Show the map settings fragment if it exists */if (mapSettingsFragment == null) {
-            mapSettingsFragment = createMapSettingsFragment(transaction, mapId)
-        } else {
-            /* If it already exists, set the Map */
-            (mapSettingsFragment as MapSettingsFragment).setMap(mapId)
-        }
-        transaction.show(mapSettingsFragment)
-
-        /* Manually manage the back action*/
-        backFragmentTag = MAP_LIST_FRAGMENT_TAG
-        transaction.commit()
+        val action = MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(mapId)
+        findNavController(R.id.nav_host_fragment).navigate(action)
     }
 
     /**
@@ -806,13 +726,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         backFragmentTag = savedInstanceState.getString(KEY_BUNDLE_BACK)
     }
 
-    override val locationProvider: LocationProvider
-        get() {
-            if (locationProviderFactory == null) {
-                locationProviderFactory = LocationProviderFactory(applicationContext)
-            }
-            return locationProviderFactory!!.getLocationProvider()
-        }
+    override val locationProvider: LocationProvider by lazy {
+        val ctx: Context = applicationContext
+        getLocationProvider(LocationSource.GOOGLE_FUSE, ctx)
+    }
+//        get() {
+//            if (locationProviderFactory == null) {
+//                locationProviderFactory = LocationProviderFactory()
+//            }
+//            val ctx: Context = applicationContext
+//            return locationProviderFactory!!.getLocationProvider(ctx)
+//        }
 
     /**
      * A [Notification] is sent to the user showing the progression in percent. The

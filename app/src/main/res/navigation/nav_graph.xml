@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mapListFragment">
+
+    <fragment
+        android:id="@+id/mapListFragment"
+        android:name="com.peterlaurence.trekme.ui.maplist.MapListFragment"
+        android:label="fragment_map_list"
+        tools:layout="@layout/fragment_map_list" >
+        <action
+            android:id="@+id/action_mapListFragment_to_mapViewFragment"
+            app:destination="@id/mapViewFragment" />
+        <action
+            android:id="@+id/action_mapListFragment_to_mapSettingsFragment"
+            app:destination="@id/mapSettingsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mapViewFragment"
+        android:name="com.peterlaurence.trekme.ui.mapview.MapViewFragment"
+        android:label="MapViewFragment" />
+    <fragment
+        android:id="@+id/mapSettingsFragment"
+        android:name="com.peterlaurence.trekme.ui.maplist.MapSettingsFragment"
+        android:label="MapSettingsFragment" >
+        <argument
+            android:name="mapId"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.peterlaurence.trekme.ui.settings.SettingsFragment"
+        android:label="SettingsFragment" />
+</navigation>
