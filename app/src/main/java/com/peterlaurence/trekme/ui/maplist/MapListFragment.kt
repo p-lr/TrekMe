@@ -8,16 +8,15 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.MapDeletedListener
+import com.peterlaurence.trekme.databinding.FragmentMapListBinding
 import com.peterlaurence.trekme.model.map.MapModel.setSettingsMap
 import com.peterlaurence.trekme.ui.maplist.MapAdapter.*
 import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment.ConfirmDeleteFragment
@@ -32,12 +31,18 @@ import java.lang.ref.WeakReference
  * events.
  */
 class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, MapDeleteListener, MapDeletedListener {
-    private var rootView: FrameLayout? = null
+    private var _binding: FragmentMapListBinding? = null
+    private val binding get() = _binding!!
+
     private var llm: LinearLayoutManager? = null
+    private var llmState: Parcelable? = null
     private var recyclerView: RecyclerView? = null
     private var adapter: MapAdapter? = null
-    private var viewModel: MapListViewModel? = null
+    private val viewModel: MapListViewModel by activityViewModels()
     private var listener: OnMapListFragmentInteractionListener? = null
+    private var mapList: List<Map> = listOf()
+    private var isLeftFromNavigation = false
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         listener = if (context is OnMapListFragmentInteractionListener) {
@@ -51,8 +56,6 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        val viewModel = ViewModelProvider(requireActivity()).get(MapListViewModel::class.java)
-        this.viewModel = viewModel
         viewModel.maps.observe(this, Observer { maps: List<Map>? ->
             if (maps != null) {
                 /* Set data */
@@ -70,10 +73,13 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        if (rootView == null) {
-            rootView = inflater.inflate(R.layout.fragment_map_list, container, false) as FrameLayout
-        }
-        return rootView
+        _binding = FragmentMapListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onResume() {
@@ -82,14 +88,34 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         /* When modifications happened outside of the context of this fragment, e.g if a map image
          * was changed in the settings fragment, we need to refresh the view. */
         adapter?.notifyDataSetChanged()
+
+        /* When navigating back to this fragment, the saved state is non-null so let's use it */
+        if (llmState != null) {
+            llm?.onRestoreInstanceState(llmState)
+        }
+    }
+
+    /**
+     * When navigating out of this fragment, onPause is called.
+     * We save the state for eventually restore it later and also set the [isLeftFromNavigation]
+     * flag which is useful when the user navigates back to this fragment (we can then redraw the
+     * list of maps) */
+    override fun onPause() {
+        super.onPause()
+
+        isLeftFromNavigation = true
+        llmState = llm?.onSaveInstanceState()
     }
 
     override fun onStart() {
         super.onStart()
-        if (recyclerView != null) {
-            return
-        }
         generateMapList()
+
+        /* Only when navigating back to this fragment, redraw the list of maps. */
+        if (isLeftFromNavigation) {
+            onMapListUpdate(mapList)
+            isLeftFromNavigation = false
+        }
     }
 
     private fun generateMapList() {
@@ -106,12 +132,12 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
                     ctx.getColor(R.color.colorPrimaryTextBlack),
                     resources)
             recyclerView.adapter = adapter
-            rootView?.addView(recyclerView, 0)
+            (binding.root as ViewGroup).addView(recyclerView, 0)
         }
     }
 
     override fun onMapSelected(map: Map) {
-        viewModel?.setMap(map)
+        viewModel.setMap(map)
         listener?.onMapSelectedFragmentInteraction(map)
     }
 
@@ -119,23 +145,23 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
      * This fragment and its [MapAdapter] need to take action on map list update.
      */
     private fun onMapListUpdate(mapList: List<Map>) {
-        val rootView = rootView ?: return
+        this.mapList = mapList
         val adapter = adapter ?: return
-        rootView.findViewById<View>(R.id.loadingPanel).visibility = View.GONE
+        binding.loadingPanel.visibility = View.GONE
         adapter.onMapListUpdate(mapList)
 
         /* If no maps found, suggest to navigate to map creation */
         if (mapList.isEmpty()) {
-            rootView.findViewById<View>(R.id.emptyMapPanel).visibility = View.VISIBLE
-            val btn = rootView.findViewById<Button>(R.id.button_go_to_map_create)
+            binding.emptyMapPanel.visibility = View.VISIBLE
+            val btn = binding.buttonGoToMapCreate
             btn.setOnClickListener { listener?.onGoToMapCreation() }
 
             /* Specifically for Android 10, temporarily explain why the list of map is empty. */
             if (Build.VERSION.SDK_INT == VERSION_CODES.Q) {
-                rootView.findViewById<View>(R.id.android10_warning).visibility = View.VISIBLE
+                binding.android10Warning.visibility = View.VISIBLE
             }
         } else {
-            rootView.findViewById<View>(R.id.emptyMapPanel).visibility = View.GONE
+            binding.emptyMapPanel.visibility = View.GONE
         }
     }
 
@@ -146,9 +172,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
 
     override fun onMapSettings(map: Map) {
         setSettingsMap(map)
-        if (listener != null) {
-            listener!!.onMapSettingsFragmentInteraction(map)
-        }
+        listener?.onMapSettingsFragmentInteraction(map)
     }
 
     override fun onMapDelete(map: Map) {
