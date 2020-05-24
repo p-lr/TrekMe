@@ -59,4 +59,10 @@
             android:name="marker"
             app:argType="com.peterlaurence.trekme.core.map.gson.MarkerGson$Marker" />
     </fragment>
+    <fragment
+        android:id="@+id/mapCreateFragment"
+        android:name="com.peterlaurence.trekme.ui.mapcreate.MapCreateFragment"
+        android:label="MapCreateFragment" />
+    <action android:id="@+id/action_global_mapCreateFragment"
+        app:destination="@id/mapCreateFragment"/>
 </navigation>

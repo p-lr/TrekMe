@@ -15,7 +15,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -39,39 +38,30 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.core.TrekMeContext.checkAppDir
 import com.peterlaurence.trekme.core.TrekMeContext.init
 import com.peterlaurence.trekme.core.TrekMeContext.isAppDirReadOnly
-import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials.getIGNCredentials
 import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
-import com.peterlaurence.trekme.model.map.MapModel.getSettingsMap
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.Status
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment
-import com.peterlaurence.trekme.ui.mapcreate.MapCreateFragment
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
 import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
 import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment.Companion.newInstance
 import com.peterlaurence.trekme.ui.mapcreate.views.ign.IgnCredentialsFragment
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment.OnMapArchiveFragmentInteractionListener
-import com.peterlaurence.trekme.ui.maplist.MapListFragment
-import com.peterlaurence.trekme.ui.maplist.MapListFragment.OnMapListFragmentInteractionListener
 import com.peterlaurence.trekme.ui.maplist.MapListFragmentDirections
-import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment
 import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment.MapCalibrationRequestListener
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
-import com.peterlaurence.trekme.ui.mapview.MapViewFragment
 import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment.MarkerManageFragmentInteractionListener
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.record.RecordFragment
-import com.peterlaurence.trekme.ui.settings.SettingsFragment
 import com.peterlaurence.trekme.ui.wifip2p.WifiP2pFragment
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
@@ -86,9 +76,8 @@ import org.greenrobot.eventbus.Subscribe
 import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-        OnMapListFragmentInteractionListener, OnMapArchiveFragmentInteractionListener,
-        MapCalibrationRequestListener, MarkerManageFragmentInteractionListener,
-        LocationProviderHolder {
+        OnMapArchiveFragmentInteractionListener, MapCalibrationRequestListener,
+        MarkerManageFragmentInteractionListener, LocationProviderHolder {
     private var backFragmentTag: String? = null
     private var fragmentManager: FragmentManager? = null
     private var snackBarExit: Snackbar? = null
@@ -443,11 +432,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // last viewed map still working?
     }
 
-    private fun showMapSettingsFragment(mapId: Int) {
-        val action = MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(mapId)
-        findNavController(R.id.nav_host_fragment).navigate(action)
-    }
-
     /**
      * Generic way of showing a fragment.
      *
@@ -484,7 +468,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showMapCreateFragment() {
-        showFragment(MAP_CREATE_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, MapCreateFragment::class.java)
+        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_mapCreateFragment)
         if (!checkMapCreationPermission()) {
             requestMapCreationPermission()
         }
@@ -594,23 +578,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         dialog.show()
     }
 
-    /**
-     * A map has been selected from the [MapListFragment]. <br></br>
-     * Updates the current map reference and show the [MapViewFragment].
-     */
-    override fun onMapSelectedFragmentInteraction(map: Map) {
-        showMapViewFragment()
-    }
-
-    override fun onMapSettingsFragmentInteraction(map: Map) {
-        /* The setting button of a map has been clicked */
-        showMapSettingsFragment(map.id)
-    }
-
-    override fun onGoToMapCreation() {
-        showMapCreateFragment()
-    }
-
     override fun onMapCalibrationRequest() {
         /* A map has been selected from the MapSettingsFragment to be calibrated. */
         showMapCalibrationFragment()
@@ -697,13 +664,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val ctx: Context = applicationContext
         getLocationProvider(LocationSource.GOOGLE_FUSE, ctx)
     }
-//        get() {
-//            if (locationProviderFactory == null) {
-//                locationProviderFactory = LocationProviderFactory()
-//            }
-//            val ctx: Context = applicationContext
-//            return locationProviderFactory!!.getLocationProvider(ctx)
-//        }
 
     /**
      * A [Notification] is sent to the user showing the progression in percent. The

@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.ui.maplist
 
-import android.content.Context
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
@@ -11,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
@@ -26,9 +26,7 @@ import java.lang.ref.WeakReference
 /**
  * A [Fragment] that displays the list of available maps, using a [RecyclerView].
  *
- * Activities that contain this fragment must implement the
- * [MapListFragment.OnMapListFragmentInteractionListener] interface to handle interaction
- * events.
+ * @author P.Laurence on 24/05/2020
  */
 class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, MapDeleteListener, MapDeletedListener {
     private var _binding: FragmentMapListBinding? = null
@@ -39,19 +37,8 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     private var recyclerView: RecyclerView? = null
     private var adapter: MapAdapter? = null
     private val viewModel: MapListViewModel by activityViewModels()
-    private var listener: OnMapListFragmentInteractionListener? = null
     private var mapList: List<Map> = listOf()
     private var isLeftFromNavigation = false
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        listener = if (context is OnMapListFragmentInteractionListener) {
-            context
-        } else {
-            throw RuntimeException(context.toString()
-                    + " must implement OnMapListFragmentInteractionListener")
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +67,8 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        recyclerView = null
+        llm = null
     }
 
     override fun onResume() {
@@ -138,7 +127,10 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
 
     override fun onMapSelected(map: Map) {
         viewModel.setMap(map)
-        listener?.onMapSelectedFragmentInteraction(map)
+
+        /* Navigate to MapViewFragment */
+        val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
+        findNavController().navigate(action)
     }
 
     /**
@@ -154,7 +146,9 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         if (mapList.isEmpty()) {
             binding.emptyMapPanel.visibility = View.VISIBLE
             val btn = binding.buttonGoToMapCreate
-            btn.setOnClickListener { listener?.onGoToMapCreation() }
+            btn.setOnClickListener {
+                findNavController().navigate(R.id.action_global_mapCreateFragment)
+            }
 
             /* Specifically for Android 10, temporarily explain why the list of map is empty. */
             if (Build.VERSION.SDK_INT == VERSION_CODES.Q) {
@@ -165,14 +159,12 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         }
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
     override fun onMapSettings(map: Map) {
         setSettingsMap(map)
-        listener?.onMapSettingsFragmentInteraction(map)
+
+        /* Navigate to the MapSettingsFragment*/
+        val action = MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(map.id)
+        findNavController().navigate(action)
     }
 
     override fun onMapDelete(map: Map) {
@@ -192,18 +184,6 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         val llm = llm ?: return
         val llmState = llm.onSaveInstanceState()
         outState.putParcelable(llmStateKey, llmState)
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     */
-    interface OnMapListFragmentInteractionListener {
-        fun onMapSelectedFragmentInteraction(map: Map)
-        fun onMapSettingsFragmentInteraction(map: Map)
-        fun onGoToMapCreation()
     }
 
     companion object {
