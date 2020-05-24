@@ -23,7 +23,6 @@ import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.sensors.OrientationSensor
@@ -118,11 +117,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val context = context ?: return null
-        /* Create layout from scratch if it does not exist */
-        if (!::presenter.isInitialized) {
-            presenter = MapViewFragmentPresenter(layoutInflater, container, context)
-            presenter.setPositionTouchListener(this)
-        }
+
+        /* Create the presenter */
+        presenter = MapViewFragmentPresenter(layoutInflater, container, context)
+        presenter.setPositionTouchListener(this)
 
         /* Observe track statistics changes */
         statisticsViewModel.stats.observe(viewLifecycleOwner, Observer {

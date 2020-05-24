@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.children
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
@@ -61,6 +62,13 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
         /* The MapView should take all space available horizontally, and fill available space
          * vertically*/
         mapView.layoutParams = ViewGroup.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, 0)
+
+        /* This method should be invoked only once during the lifecycle of this presenter.
+         * But just in case, replace the existing MapView */
+        val previous = layout.children.firstOrNull() as? MapView
+        if (previous != null) {
+            layout.removeView(previous)
+        }
         layout.addView(mapView, 0)
 
         /* We ensure the the bottom of the MapView is connected to the top of the stats panel, so
