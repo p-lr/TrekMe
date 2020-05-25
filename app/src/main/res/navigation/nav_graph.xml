@@ -91,4 +91,20 @@
             android:id="@+id/action_ignCredentialsFragment_to_googleMapWmtsViewFragment"
             app:destination="@id/googleMapWmtsViewFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/recordFragment"
+        android:name="com.peterlaurence.trekme.ui.record.RecordFragment"
+        android:label="fragment_record"
+        tools:layout="@layout/fragment_record" />
+    <action android:id="@+id/action_global_recordFragment" app:destination="@id/recordFragment" />
+    <fragment
+        android:id="@+id/wifiP2pFragment"
+        android:name="com.peterlaurence.trekme.ui.wifip2p.WifiP2pFragment"
+        android:label="WifiP2pFragment" />
+    <action android:id="@+id/action_global_wifiP2pFragment" app:destination="@id/wifiP2pFragment" />
+    <fragment
+        android:id="@+id/mapImportFragment"
+        android:name="com.peterlaurence.trekme.ui.mapimport.MapImportFragment"
+        android:label="fragment_map_import"
+        tools:layout="@layout/fragment_map_import" /><action android:id="@+id/action_global_mapImportFragment" app:destination="@id/mapImportFragment"/>
 </navigation>

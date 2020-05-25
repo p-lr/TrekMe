@@ -68,6 +68,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         super.onDestroyView()
         _binding = null
         recyclerView = null
+        adapter = null
         llm = null
     }
 

@@ -333,12 +333,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         /* Start the view-model */
         viewModel?.onActivityStart()
+
+        warnIfBadStorageState()
     }
 
     @Subscribe
     fun onShowMapListEvent(event: ShowMapListEvent?) {
         showMapListFragment()
-        warnIfBadStorageState()
     }
 
     @Subscribe
@@ -400,8 +401,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showMapListFragment() {
-        // TODO: it's now "navigation-component"-managed. Is choosing between this and directly the
-        // last viewed map still working?
+        findNavController(R.id.nav_host_fragment).navigate(R.id.mapListFragment)
     }
 
     /**
@@ -448,15 +448,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showMapImportFragment() {
-        showFragment(MAP_IMPORT_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, MapImportFragment::class.java)
+        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_mapImportFragment)
     }
 
     private fun showWifiP2pFragment() {
-        showFragment(WIFI_P2P_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, WifiP2pFragment::class.java)
+        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_wifiP2pFragment)
     }
 
     private fun showRecordFragment() {
-        showFragment(RECORD_FRAGMENT_TAG, MAP_LIST_FRAGMENT_TAG, RecordFragment::class.java)
+        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_recordFragment)
     }
 
     private fun showSettingsFragment() {
