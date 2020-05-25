@@ -9,6 +9,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.documentfile.provider.DocumentFile;
+import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDirections;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
@@ -17,16 +28,6 @@ import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.documentfile.provider.DocumentFile;
-import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.preference.EditTextPreference;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 
 /**
  * Fragment that shows the settings for a given map. It provides the abilities to :
@@ -56,8 +57,6 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     private MapListViewModel mapListViewModel;
     private AlertDialog saveMapDialog;
     private static final int MAP_SAVE_CODE = 3465;
-
-    private MapCalibrationRequestListener mMapCalibrationRequestListener;
 
     /* Convenience method */
     private static void setListPreferenceSummaryAndValue(ListPreference preference, String value) {
@@ -154,7 +153,8 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         }
 
         calibrationButton.setOnPreferenceClickListener(preference -> {
-            mMapCalibrationRequestListener.onMapCalibrationRequest();
+            NavDirections direction = MapSettingsFragmentDirections.actionMapSettingsFragmentToMapCalibrationFragment();
+            NavHostFragment.findNavController(this).navigate(direction);
             return true;
         });
 
@@ -299,27 +299,6 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
 
             saveChanges();
         }
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof MapCalibrationRequestListener) {
-            mMapCalibrationRequestListener = (MapCalibrationRequestListener) context;
-        } else {
-            throw new RuntimeException(context.toString() +
-                    "must implement MapCalibrationRequestListener");
-        }
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     */
-    public interface MapCalibrationRequestListener {
-        void onMapCalibrationRequest();
     }
 
     /**

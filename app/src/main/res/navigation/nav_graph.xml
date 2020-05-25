@@ -35,6 +35,9 @@
         <argument
             android:name="mapId"
             app:argType="integer" />
+        <action
+            android:id="@+id/action_mapSettingsFragment_to_mapCalibrationFragment"
+            app:destination="@id/mapCalibrationFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -106,5 +109,10 @@
         android:id="@+id/mapImportFragment"
         android:name="com.peterlaurence.trekme.ui.mapimport.MapImportFragment"
         android:label="fragment_map_import"
-        tools:layout="@layout/fragment_map_import" /><action android:id="@+id/action_global_mapImportFragment" app:destination="@id/mapImportFragment"/>
+        tools:layout="@layout/fragment_map_import" />
+    <action android:id="@+id/action_global_mapImportFragment" app:destination="@id/mapImportFragment" />
+    <fragment
+        android:id="@+id/mapCalibrationFragment"
+        android:name="com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment"
+        android:label="MapCalibrationFragment" />
 </navigation>

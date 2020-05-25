@@ -26,13 +26,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
-import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.core.TrekMeContext.checkAppDir
@@ -43,19 +40,14 @@ import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.Status
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
-import com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment
-import com.peterlaurence.trekme.ui.mapimport.MapImportFragment
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment.OnMapArchiveFragmentInteractionListener
 import com.peterlaurence.trekme.ui.maplist.MapListFragmentDirections
-import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment.MapCalibrationRequestListener
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
 import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment.MarkerManageFragmentInteractionListener
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
-import com.peterlaurence.trekme.ui.record.RecordFragment
-import com.peterlaurence.trekme.ui.wifip2p.WifiP2pFragment
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
@@ -66,10 +58,9 @@ import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.EventBusException
 import org.greenrobot.eventbus.Subscribe
-import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-        OnMapArchiveFragmentInteractionListener, MapCalibrationRequestListener,
+        OnMapArchiveFragmentInteractionListener,
         MarkerManageFragmentInteractionListener, LocationProviderHolder {
     private var backFragmentTag: String? = null
     private var fragmentManager: FragmentManager? = null
@@ -82,39 +73,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var notifyMgr: NotificationManager? = null
 
     companion object {
-        private const val MAP_FRAGMENT_TAG = "mapFragment"
-        private const val MAP_LIST_FRAGMENT_TAG = "mapListFragment"
-        private const val MAP_SETTINGS_FRAGMENT_TAG = "mapSettingsFragment"
-        private const val MAP_CALIBRATION_FRAGMENT_TAG = "mapCalibrationFragment"
-        private const val MAP_IMPORT_FRAGMENT_TAG = "mapImportFragment"
-        private const val MAP_CREATE_FRAGMENT_TAG = "mapCreateFragment"
-        private const val IGN_CREDENTIALS_FRAGMENT_TAG = "ignCredentialsFragment"
-        private const val WMTS_VIEW_FRAGMENT_TAG = "wmtsViewFragment"
-        private const val RECORD_FRAGMENT_TAG = "gpxFragment"
-        private const val TRACK_VIEW_FRAGMENT_TAG = "trackViewFragment"
-        private const val SETTINGS_FRAGMENT = "settingsFragment"
         private const val TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment"
-        private const val MARKER_MANAGE_FRAGMENT_TAG = "markerManageFragment"
-        private const val WIFI_P2P_FRAGMENT_TAG = "wifiP2pFragment"
-        private val FRAGMENT_TAGS = Collections.unmodifiableList(
-                object : ArrayList<String?>() {
-                    init {
-                        add(MAP_FRAGMENT_TAG)
-                        add(MAP_LIST_FRAGMENT_TAG)
-                        add(MAP_SETTINGS_FRAGMENT_TAG)
-                        add(MAP_CALIBRATION_FRAGMENT_TAG)
-                        add(MAP_IMPORT_FRAGMENT_TAG)
-                        add(MAP_CREATE_FRAGMENT_TAG)
-                        add(IGN_CREDENTIALS_FRAGMENT_TAG)
-                        add(WMTS_VIEW_FRAGMENT_TAG)
-                        add(TRACKS_MANAGE_FRAGMENT_TAG)
-                        add(MARKER_MANAGE_FRAGMENT_TAG)
-                        add(RECORD_FRAGMENT_TAG)
-                        add(TRACK_VIEW_FRAGMENT_TAG)
-                        add(SETTINGS_FRAGMENT)
-                        add(WIFI_P2P_FRAGMENT_TAG)
-                    }
-                })
 
         /* Permission-group codes */
         private const val REQUEST_MINIMAL = 1
@@ -374,16 +333,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    /**
-     * Generic strategy to create a [Fragment].
-     */
-    @Throws(InstantiationException::class, IllegalAccessException::class)
-    private fun <T : Fragment> createFragment(transaction: FragmentTransaction, tag: String, fragmentType: Class<T>): Fragment {
-        val fragment: Fragment = fragmentType.newInstance()
-        transaction.add(R.id.content_frame, fragment, tag)
-        return fragment
-    }
-
     val tracksManageFragment: TracksManageFragment?
         get() {
             val fragment = fragmentManager?.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG)
@@ -402,41 +351,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun showMapListFragment() {
         findNavController(R.id.nav_host_fragment).navigate(R.id.mapListFragment)
-    }
-
-    /**
-     * Generic way of showing a fragment.
-     *
-     * @param tag             the tag of the [Fragment] to show
-     * @param backFragmentTag the tag of the [Fragment] the back press should lead to
-     * @param fragmentType    the class of the [Fragment] to instantiate (if needed)
-     */
-    private fun <T : Fragment> showFragment(tag: String, backFragmentTag: String?, fragmentType: Class<T>) {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments()
-
-        /* Hide other fragments */
-        val hideTransaction = fragmentManager!!.beginTransaction()
-        hideOtherFragments(hideTransaction, tag)
-        hideTransaction.commit()
-        val transaction = fragmentManager!!.beginTransaction()
-        val fragment: Fragment
-        try {
-            fragment = createFragment(transaction, tag, fragmentType)
-            transaction.show(fragment)
-
-            /* Manually manage the back action */
-            this.backFragmentTag = backFragmentTag
-            transaction.commit()
-        } catch (e: InstantiationException) {
-            e.printStackTrace()
-        } catch (e: IllegalAccessException) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun showMapCalibrationFragment() {
-        showFragment(MAP_CALIBRATION_FRAGMENT_TAG, MAP_SETTINGS_FRAGMENT_TAG, MapCalibrationFragment::class.java)
     }
 
     private fun showMapCreateFragment() {
@@ -463,41 +377,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_settingsFragment)
     }
 
-    /**
-     * Hides all fragments except the one which tag is `fragmentTag`.
-     * Oddly, with the exception of fragments extending [androidx.preference.PreferenceFragmentCompat],
-     * or it would cause an exception (hard to explain).
-     *
-     * @param transaction The [FragmentTransaction] object
-     * @param fragmentTag The tag of the fragment that should not be hidden
-     */
-    private fun hideOtherFragments(transaction: FragmentTransaction, fragmentTag: String) {
-        if (!FRAGMENT_TAGS.contains(fragmentTag)) {
-            return
-        }
-        for (tag in FRAGMENT_TAGS) {
-            if (tag == fragmentTag) continue
-            val otherFragment = fragmentManager!!.findFragmentByTag(tag)
-            if (otherFragment != null && otherFragment !is PreferenceFragmentCompat) {
-                transaction.hide(otherFragment)
-            }
-        }
-    }
-
-    /**
-     * Only remove fragments that are NOT retained.
-     */
-    private fun removeSingleUsageFragments() {
-        val transaction = fragmentManager!!.beginTransaction()
-        for (tag in FRAGMENT_TAGS) {
-            val fragment = fragmentManager!!.findFragmentByTag(tag)
-            if (fragment != null && !fragment.retainInstance) {
-                transaction.remove(fragment)
-            }
-        }
-        transaction.commit()
-    }
-
     private fun showMessageInSnackbar(message: String) {
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout) ?: return
         val snackbar = Snackbar.make(drawer, message, Snackbar.LENGTH_LONG)
@@ -512,11 +391,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         val dialog = builder.create()
         dialog.show()
-    }
-
-    override fun onMapCalibrationRequest() {
-        /* A map has been selected from the MapSettingsFragment to be calibrated. */
-        showMapCalibrationFragment()
     }
 
     override fun onMapArchiveFragmentInteraction() {
