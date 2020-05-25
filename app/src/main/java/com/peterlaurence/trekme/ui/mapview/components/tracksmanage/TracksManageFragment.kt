@@ -9,30 +9,31 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxUriToMapAsync
+import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
 import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import java.io.FileNotFoundException
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A [Fragment] subclass that shows the routes currently available for a given map, and
@@ -40,18 +41,13 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author peterLaurence on 01/03/17 -- Converted to Kotlin on 24/04/19
  */
-class TracksManageFragment : Fragment(),
-        TrackAdapter.TrackSelectionListener,
-        CoroutineScope {
-    private lateinit var rootView: FrameLayout
-    private lateinit var emptyRoutePanel: ConstraintLayout
+class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
+    private var _binding: FragmentTracksManageBinding? = null
+    private val binding get() = _binding!!
+
     private var map: Map? = null
     private var trackRenameMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
-    private lateinit var job: Job
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,13 +57,11 @@ class TracksManageFragment : Fragment(),
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        rootView = inflater.inflate(R.layout.fragment_tracks_manage, container, false) as FrameLayout
-        emptyRoutePanel = rootView.findViewById(R.id.emptyRoutePanel)
+        _binding = FragmentTracksManageBinding.inflate(inflater, container, false)
         map = MapModel.getCurrentMap()
         map?.let {
             generateTracks(it)
         }
-
 
         if (savedInstanceState != null) {
             val routeIndex = savedInstanceState.getInt(ROUTE_INDEX)
@@ -76,7 +70,18 @@ class TracksManageFragment : Fragment(),
             }
         }
 
-        return rootView
+        /* Register the event-bus */
+        EventBus.getDefault().register(this)
+
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        trackAdapter = null
+        trackRenameMenuItem = null
+        EventBus.getDefault().unregister(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -89,7 +94,6 @@ class TracksManageFragment : Fragment(),
 
     override fun onStart() {
         super.onStart()
-        job = Job()
 
         updateEmptyRoutePanelVisibility()
     }
@@ -106,10 +110,10 @@ class TracksManageFragment : Fragment(),
                 return true
             }
             R.id.track_rename_id -> {
-                val fragment = ChangeRouteNameFragment()
-                fragmentManager?.let {
-                    fragment.show(it, "rename route")
-                }
+                val map = map ?: return true
+                val selectedRoute = trackAdapter?.selectedRoute ?: return true
+                val fragment = ChangeRouteNameFragment.newInstance(map.id, selectedRoute)
+                fragment.show(parentFragmentManager, "rename route")
                 return super.onOptionsItemSelected(item)
             }
             else -> return super.onOptionsItemSelected(item)
@@ -133,7 +137,7 @@ class TracksManageFragment : Fragment(),
 
             /* Import the file */
             map?.let {
-                launch {
+                lifecycleScope.launch {
                     try {
                         applyGpxUri(uri, it, ctx)
                     } catch (e: FileNotFoundException) {
@@ -144,6 +148,11 @@ class TracksManageFragment : Fragment(),
                 }
             }
         }
+    }
+
+    @Subscribe
+    fun onTrackNameChangedEvent(event: TrackNameChangedEvent) {
+        trackAdapter?.notifyDataSetChanged()
     }
 
     /**
@@ -195,15 +204,6 @@ class TracksManageFragment : Fragment(),
         saveChanges()
     }
 
-    /**
-     * The [job] is cancelled in [onDestroy] instead of in [onStop] because in this fragment the
-     * [applyGpxUri] coroutine is started **after** [onStop] and before [onStart].
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-        job.cancel()
-    }
-
     private fun generateTracks(map: Map) {
         val ctx = context ?: return
         val recyclerView = RecyclerView(ctx)
@@ -250,7 +250,7 @@ class TracksManageFragment : Fragment(),
         val itemTouchHelper = ItemTouchHelper(simpleCallback)
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
-        rootView.addView(recyclerView, 0)
+        (binding.root as ViewGroup).addView(recyclerView, 0)
     }
 
     private fun saveChanges() {
@@ -284,9 +284,9 @@ class TracksManageFragment : Fragment(),
     private fun updateEmptyRoutePanelVisibility() {
         val itemCount = trackAdapter?.itemCount ?: 0
         if (itemCount > 0) {
-            emptyRoutePanel.visibility = View.GONE
+            binding.emptyRoutePanel.visibility = View.GONE
         } else {
-            emptyRoutePanel.visibility = View.VISIBLE
+            binding.emptyRoutePanel.visibility = View.VISIBLE
         }
     }
 
@@ -306,59 +306,46 @@ class TracksManageFragment : Fragment(),
     }
 
     class ChangeRouteNameFragment : DialogFragment() {
-        private var tracksManageFragment: TracksManageFragment? = null
-        private var text: String? = null
-        private lateinit var mainActivity: MainActivity
 
-        /**
-         * The first time this fragment is created, the activity exists and so does the
-         * [TracksManageFragment]. But, upon configuration change, the
-         * [TracksManageFragment] is not yet attached to the fragment manager when
-         * [.onAttach] is called. <br></br>
-         * So, we get a reference to it later in [.onActivityCreated].
-         * In the meanwhile, we don't have to retrieve the route's name because the framework
-         * automatically saves the [EditText] state upon configuration change.
-         */
-        override fun onAttach(context: Context) {
-            super.onAttach(context)
+        companion object {
+            const val ROUTE_KEY = "route"
+            const val MAP_ID = "mapId"
 
-            try {
-                mainActivity = activity as MainActivity? ?: return
-                tracksManageFragment = mainActivity.tracksManageFragment
-
-                val route = tracksManageFragment?.trackAdapter?.selectedRoute ?: return
-                text = route.name
-            } catch (e: NullPointerException) {
-                /* The fragment is being recreated upon configuration change */
+            fun newInstance(mapId: Int, route: RouteGson.Route): ChangeRouteNameFragment {
+                val bundle = Bundle()
+                bundle.putInt(MAP_ID, mapId)
+                bundle.putSerializable(ROUTE_KEY, route)
+                val fragment = ChangeRouteNameFragment()
+                fragment.arguments = bundle
+                return fragment
             }
-
-        }
-
-        override fun onActivityCreated(savedInstanceState: Bundle?) {
-            super.onActivityCreated(savedInstanceState)
-
-            tracksManageFragment = mainActivity.tracksManageFragment
         }
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val builder = AlertDialog.Builder(mainActivity)
+            val builder = AlertDialog.Builder(requireContext())
             val view = View.inflate(context, R.layout.change_trackname_fragment, null)
+            val editText = view.findViewById<View>(R.id.track_name_edittext) as EditText
 
-            if (text != null) {
-                val editText = view.findViewById<View>(R.id.track_name_edittext) as EditText
-                editText.setText(text)
+            val route = arguments?.get(ROUTE_KEY) as? RouteGson.Route
+            val mapId = arguments?.get(MAP_ID) as? Int
+
+            if (route != null) {
+                editText.setText(route.name)
             }
 
             builder.setView(view)
             builder.setMessage(R.string.track_name_change)
                     .setPositiveButton(R.string.ok_dialog) { _, _ ->
-                        val tracksManageFragment = tracksManageFragment ?: return@setPositiveButton
-                        val route = tracksManageFragment.trackAdapter?.selectedRoute
-                        val editText = view.findViewById<View>(R.id.track_name_edittext) as EditText
-                        if (route != null) {
-                            route.name = editText.text.toString()
-                            tracksManageFragment.trackAdapter?.notifyDataSetChanged()
-                            tracksManageFragment.saveChanges()
+                        if (mapId != null && route != null) {
+                            // TODO: this should be done inside a view-model
+                            /* Effectively change the route name */
+                            val newName = editText.text.toString()
+                            val map = MapLoader.getMap(mapId) ?: return@setPositiveButton
+                            route.name = newName
+                            MapLoader.saveRoutes(map)
+
+                            /* Notify the outer fragment that it should update its view */
+                            EventBus.getDefault().post(TrackNameChangedEvent())
                         }
                     }
                     .setNegativeButton(R.string.cancel_dialog_string) { _, _ ->
@@ -374,3 +361,5 @@ class TracksManageFragment : Fragment(),
         private const val ROUTE_INDEX = "routeIndex"
     }
 }
+
+class TrackNameChangedEvent

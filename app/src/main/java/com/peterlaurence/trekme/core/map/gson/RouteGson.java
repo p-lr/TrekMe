@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.map.gson;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class RouteGson {
         routes = new ArrayList<>();
     }
 
-    public static class Route {
+    public static class Route implements Serializable {
         public String name;
         public boolean visible = true;
         public List<MarkerGson.Marker> route_markers;

@@ -47,7 +47,6 @@ import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
 import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment.MarkerManageFragmentInteractionListener
-import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
@@ -73,8 +72,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var notifyMgr: NotificationManager? = null
 
     companion object {
-        private const val TRACKS_MANAGE_FRAGMENT_TAG = "tracksManageFragment"
-
         /* Permission-group codes */
         private const val REQUEST_MINIMAL = 1
         private const val REQUEST_MAP_CREATION = 2
@@ -332,12 +329,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer?.closeDrawer(GravityCompat.START)
         return true
     }
-
-    val tracksManageFragment: TracksManageFragment?
-        get() {
-            val fragment = fragmentManager?.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG)
-            return if (fragment != null) fragment as TracksManageFragment? else null
-        }
 
     private fun showMapViewFragment() {
         /* Don't show the fragment if no map has been selected yet */
