@@ -98,7 +98,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        EventBus.getDefault().register(this)
         setHasOptionsMenu(true)
 
         /* Create a local variable to avoid leaking this entire class */
@@ -117,6 +116,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val context = context ?: return null
+        EventBus.getDefault().register(this)
 
         /* Create the presenter */
         presenter = MapViewFragmentPresenter(layoutInflater, container, context)
@@ -589,7 +589,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         super.onSaveInstanceState(outState)
 
         outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
-        outState.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
+        if (::distanceLayer.isInitialized) {
+            outState.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
+        }
     }
 
     private fun setMapViewBounds(mapView: MapView, map: Map) {

@@ -62,7 +62,33 @@
     <fragment
         android:id="@+id/mapCreateFragment"
         android:name="com.peterlaurence.trekme.ui.mapcreate.MapCreateFragment"
-        android:label="MapCreateFragment" />
+        android:label="MapCreateFragment" >
+        <action
+            android:id="@+id/action_mapCreateFragment_to_googleMapWmtsViewFragment"
+            app:destination="@id/googleMapWmtsViewFragment" />
+        <action
+            android:id="@+id/action_mapCreateFragment_to_ignCredentialsFragment"
+            app:destination="@id/ignCredentialsFragment" />
+    </fragment>
     <action android:id="@+id/action_global_mapCreateFragment"
         app:destination="@id/mapCreateFragment"/>
+    <fragment
+        android:id="@+id/googleMapWmtsViewFragment"
+        android:name="com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment"
+        android:label="GoogleMapWmtsViewFragment" >
+        <argument
+            android:name="mapSource"
+            app:argType="com.peterlaurence.trekme.core.mapsource.MapSourceBundle" />
+        <action
+            android:id="@+id/action_googleMapWmtsViewFragment_to_ignCredentialsFragment"
+            app:destination="@id/ignCredentialsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/ignCredentialsFragment"
+        android:name="com.peterlaurence.trekme.ui.mapcreate.views.ign.IgnCredentialsFragment"
+        android:label="IgnCredentialsFragment" >
+        <action
+            android:id="@+id/action_ignCredentialsFragment_to_googleMapWmtsViewFragment"
+            app:destination="@id/googleMapWmtsViewFragment" />
+    </fragment>
 </navigation>

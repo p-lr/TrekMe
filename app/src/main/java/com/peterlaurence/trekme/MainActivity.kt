@@ -38,19 +38,12 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.core.TrekMeContext.checkAppDir
 import com.peterlaurence.trekme.core.TrekMeContext.init
 import com.peterlaurence.trekme.core.TrekMeContext.isAppDirReadOnly
-import com.peterlaurence.trekme.core.mapsource.MapSource
-import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
-import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials.getIGNCredentials
 import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.Status
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment
-import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
-import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
-import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment.Companion.newInstance
-import com.peterlaurence.trekme.ui.mapcreate.views.ign.IgnCredentialsFragment
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment.OnMapArchiveFragmentInteractionListener
 import com.peterlaurence.trekme.ui.maplist.MapListFragmentDirections
@@ -390,12 +383,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return fragment
     }
 
-    private fun createWmtsViewFragment(transaction: FragmentTransaction, mapSource: MapSource): Fragment {
-        val wmtsViewFragment: Fragment = newInstance(MapSourceBundle(mapSource))
-        transaction.add(R.id.content_frame, wmtsViewFragment, WMTS_VIEW_FRAGMENT_TAG)
-        return wmtsViewFragment
-    }
-
     val tracksManageFragment: TracksManageFragment?
         get() {
             val fragment = fragmentManager?.findFragmentByTag(TRACKS_MANAGE_FRAGMENT_TAG)
@@ -410,21 +397,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
         findNavController(R.id.nav_host_fragment).navigate(action)
-    }
-
-    @Throws(IllegalAccessException::class, InstantiationException::class)
-    private fun <T : Fragment> showSingleUsageFragment(tag: String, fragmentType: Class<T>) {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments()
-        val fragment = fragmentType.newInstance()
-        hideAllFragments()
-        val transaction = fragmentManager!!.beginTransaction()
-        transaction.add(R.id.content_frame, fragment, tag)
-        transaction.show(fragment)
-
-        /* Manually manage the back action*/
-        backFragmentTag = tag
-        transaction.commit()
     }
 
     private fun showMapListFragment() {
@@ -472,28 +444,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (!checkMapCreationPermission()) {
             requestMapCreationPermission()
         }
-        warnIfNotInternet()
-    }
-
-    private fun showIgnCredentialsFragment() {
-        showFragment(IGN_CREDENTIALS_FRAGMENT_TAG, IGN_CREDENTIALS_FRAGMENT_TAG, IgnCredentialsFragment::class.java)
-        warnIfNotInternet()
-    }
-
-    private fun showWmtsViewFragment(mapSource: MapSource) {
-        /* Remove single-usage fragments */
-        removeSingleUsageFragments()
-
-        /* Hide other fragments */
-        val hideTransaction = fragmentManager!!.beginTransaction()
-        hideOtherFragments(hideTransaction, WMTS_VIEW_FRAGMENT_TAG)
-        hideTransaction.commit()
-        val transaction = fragmentManager!!.beginTransaction()
-        val wmtsViewFragment = createWmtsViewFragment(transaction, mapSource)
-        transaction.show(wmtsViewFragment)
-
-        /* Manually manage the back action*/backFragmentTag = WMTS_VIEW_FRAGMENT_TAG
-        transaction.commit()
         warnIfNotInternet()
     }
 
@@ -548,20 +498,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         transaction.commit()
     }
 
-    /**
-     * Hides all fragments which have a TAG.
-     */
-    private fun hideAllFragments() {
-        val hideTransaction = fragmentManager!!.beginTransaction()
-        for (tag in FRAGMENT_TAGS) {
-            val fragment = fragmentManager!!.findFragmentByTag(tag)
-            if (fragment != null) {
-                hideTransaction.hide(fragment)
-            }
-        }
-        hideTransaction.commit()
-    }
-
     private fun showMessageInSnackbar(message: String) {
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout) ?: return
         val snackbar = Snackbar.make(drawer, message, Snackbar.LENGTH_LONG)
@@ -609,33 +545,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun showCurrentMap() {
         showMapViewFragment()
-    }
-
-    @Subscribe
-    fun onMapSourceSelected(event: MapSourceSelectedEvent) {
-        when (val mapSource = event.mapSource) {
-            MapSource.IGN -> {
-                /* Check whether credentials are already set or not */
-                val ignCredentials = getIGNCredentials()
-                if (ignCredentials == null) {
-                    showIgnCredentialsFragment()
-                } else {
-                    showWmtsViewFragment(mapSource)
-                }
-            }
-            else -> showWmtsViewFragment(mapSource)
-        }
-    }
-
-    @Subscribe
-    fun onMapSourceSettings(event: MapSourceSettingsEvent) {
-        when (event.mapSource) {
-            MapSource.IGN -> showIgnCredentialsFragment()
-            MapSource.OPEN_STREET_MAP -> {
-            }
-            else -> {
-            }
-        }
     }
 
     @Subscribe

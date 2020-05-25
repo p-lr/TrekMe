@@ -6,21 +6,21 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.IGNCredentials
 import com.peterlaurence.trekme.core.mapsource.MapSource
+import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.core.providers.layers.IgnClassic
 import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
-import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSelectedEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
 
 /**
  * This fragment is for filling IGN France credentials:
@@ -109,7 +109,9 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
             view?.let {
                 val snackBar = Snackbar.make(it, R.string.ign_snackbar_continue, Snackbar.LENGTH_LONG)
                 snackBar.setAction(R.string.ok_dialog) {
-                    EventBus.getDefault().post(MapSourceSelectedEvent(MapSource.IGN))
+                    val bundle = MapSourceBundle(MapSource.IGN)
+                    val action = IgnCredentialsFragmentDirections.actionIgnCredentialsFragmentToGoogleMapWmtsViewFragment(bundle)
+                    findNavController().navigate(action)
                 }
                 snackBar.show()
             }

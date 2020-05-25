@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
@@ -32,7 +33,6 @@ import com.peterlaurence.trekme.ui.dialogs.SelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
-import com.peterlaurence.trekme.ui.mapcreate.events.MapSourceSettingsEvent
 import com.peterlaurence.trekme.ui.mapcreate.views.components.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
@@ -95,7 +95,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     /* Size of level 18 */
     private val mapSize = 67108864
-    private val highestLevel = 18
 
     private val tileSize = 256
     private val x0 = -20037508.3427892476320267
@@ -135,7 +134,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* Create a local variable to avoid leaking this entire class */
         val provider: LocationProvider = locationProvider
         locationViewModel.setLocationProvider(provider)
-        locationViewModel.getLocationLiveData().observe(this, Observer<Location> {
+        locationViewModel.getLocationLiveData().observe(this, Observer {
             it?.let {
                 onLocationReceived(it)
             }
@@ -172,7 +171,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
          */
         navigateToIgnCredentialsBtn = view.findViewById(R.id.fragmentWmtsNagivateToIgnCredentials)
         navigateToIgnCredentialsBtn.setOnClickListener {
-            EventBus.getDefault().post(MapSourceSettingsEvent(MapSource.IGN))
+            val action = GoogleMapWmtsViewFragmentDirections.actionGoogleMapWmtsViewFragmentToIgnCredentialsFragment()
+            findNavController().navigate(action)
         }
 
         configure()
