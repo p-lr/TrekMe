@@ -54,7 +54,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var mapView: MapView? = null
     private var mMap: Map? = null
     private lateinit var positionMarker: PositionOrientationMarker
-    private lateinit var compassView: CompassView
+    private var compassView: CompassView? = null
     private var lockView = false
     private var rotationMode: RotationMode = RotationMode.NONE
     private var shouldCenterOnFirstLocation = false
@@ -76,11 +76,13 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
     private val statisticsViewModel: StatisticsViewModel by viewModels()
 
+    private var state: Bundle? = null
+
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
             if (::positionMarker.isInitialized) positionMarker.referentialData = value
-            if (::compassView.isInitialized) compassView.referentialData = value
+            compassView?.referentialData = value
         }
 
     override fun onAttach(context: Context) {
@@ -116,6 +118,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val context = context ?: return null
+
+        /* The navigation framework seems to not save the state before re-creating the view.. so
+         * we do this by hand. */
+        val mergedState = savedInstanceState ?: state
         EventBus.getDefault().register(this)
 
         /* Create the presenter */
@@ -137,7 +143,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         positionMarker = presenter.view.positionMarker
         compassView = presenter.view.compassView
 
-        compassView.setOnClickListener {
+        compassView?.setOnClickListener {
             if (rotationMode == RotationMode.FREE) {
                 animateMapViewToNorth()
             }
@@ -146,8 +152,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* Create the instance of the OrientationSensor */
         orientationSensor = OrientationSensor(requireActivity())
 
-        if (savedInstanceState != null) {
-            val shouldDisplayOrientation = savedInstanceState.getBoolean(WAS_DISPLAYING_ORIENTATION)
+        if (mergedState != null) {
+            val shouldDisplayOrientation = mergedState.getBoolean(WAS_DISPLAYING_ORIENTATION)
             if (shouldDisplayOrientation) {
                 orientationSensor?.start()
                 onOrientationSensorChanged()
@@ -189,7 +195,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         /* Eventually restore the distance layer if it was visible before device rotation */
-        val distanceLayerState = savedInstanceState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
+        val distanceLayerState = mergedState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
         if (distanceLayerState != null && distanceLayerState.visible) {
             presenter.view.distanceIndicator.showDistance()
             distanceLayer.show(distanceLayerState)
@@ -197,7 +203,24 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* In free-rotating mode, show the compass right from the start */
         if (rotationMode == RotationMode.FREE) {
-            compassView.visibility = View.VISIBLE
+            compassView?.visibility = View.VISIBLE
+        } else {
+            compassView?.visibility = View.GONE
+        }
+
+        /**
+         * Using the navigation framework, the state of the MapView is automatically restored when
+         * we navigate back to this fragment. However, the rotation mode might change from e.g
+         * [RotationMode.FREE] to [RotationMode.NONE]. In this case, the MapView sees its previous
+         * angle restored even if the new rotation mode doesn't permit it. As a workaround, we
+         * enforce an angle of 0 after the fragment is started (if we attempt to do this earlier in
+         * the life-cycle, it's overridden by the angle restore mechanism of MapView). */
+        if (mergedState != null) {
+            if (mergedState.getBoolean(WAS_ROTATED) && rotationMode == RotationMode.NONE) {
+                lifecycleScope.launchWhenStarted {
+                    mapView?.disableRotation(0f)
+                }
+            }
         }
 
         /* Now that everything is set-up, update with latest location */
@@ -208,6 +231,19 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         return presenter.androidView
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        state = saveState()
+
+        orientationSensor?.stop()
+        orientationJob?.cancel()
+
+        EventBus.getDefault().unregister(this)
+        MapLoader.clearMapMarkerUpdateListener()
+        destroyLayers()
+        compassView = null
+    }
+
     /**
      * When the [OrientationSensor] is started or stopped, this function should be called.
      */
@@ -215,7 +251,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         if (orientationSensor!!.isStarted) {
             positionMarker.onOrientationEnable()
             if (rotationMode != RotationMode.NONE) {
-                compassView.visibility = View.VISIBLE
+                compassView?.visibility = View.VISIBLE
             }
 
             orientationJob = lifecycleScope.launch {
@@ -233,7 +269,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             orientationJob?.invokeOnCompletion {
                 if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
                     animateMapViewToNorth()
-                    compassView.visibility = View.GONE
+                    compassView?.visibility = View.GONE
                 }
             }
         }
@@ -450,17 +486,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         landmarkLayer.destroy()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-
-        orientationSensor?.stop()
-        orientationJob?.cancel()
-
-        EventBus.getDefault().unregister(this)
-        MapLoader.clearMapMarkerUpdateListener()
-        destroyLayers()
-    }
-
     override fun onDetach() {
         super.onDetach()
         orientationSensor?.stop()
@@ -591,10 +616,25 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
-        if (::distanceLayer.isInitialized) {
-            outState.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
+//        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
+//        if (::distanceLayer.isInitialized) {
+//            outState.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
+//        }
+
+        if (state == null) {
+            state = saveState()
         }
+        outState.putAll(state)
+    }
+
+    private fun saveState(): Bundle {
+        val bundle = Bundle()
+        bundle.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
+        if (::distanceLayer.isInitialized) {
+            bundle.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
+        }
+        bundle.putBoolean(WAS_ROTATED, rotationMode != RotationMode.NONE)
+        return bundle
     }
 
     private fun setMapViewBounds(mapView: MapView, map: Map) {
@@ -633,6 +673,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         const val TAG = "MapViewFragment"
         private const val WAS_DISPLAYING_ORIENTATION = "wasDisplayingOrientation"
         private const val DISTANCE_LAYER_STATE = "distanceLayerState"
+        private const val WAS_ROTATED = "wasRotated"
     }
 }
 
