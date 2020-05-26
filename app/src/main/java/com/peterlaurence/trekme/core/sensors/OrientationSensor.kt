@@ -10,8 +10,10 @@ import android.view.Surface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlin.math.abs
 
 class OrientationSensor(val activity: Activity) : SensorEventListener {
     private val sensorManager: SensorManager = activity.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -24,7 +26,7 @@ class OrientationSensor(val activity: Activity) : SensorEventListener {
         private set
 
     fun getAzimuthFlow(): Flow<Float> = flow {
-        while (true) {
+        while (isStarted) {
             delay(1)
             updateOrientation()
             val screenRotation: Int = activity.windowManager.defaultDisplay.rotation
@@ -40,7 +42,7 @@ class OrientationSensor(val activity: Activity) : SensorEventListener {
 
             emit(azimuth)
         }
-    }.flowOn(Dispatchers.Default)
+    }.distinctUntilChanged { old, new -> abs(old - new) < 0.1 }.flowOn(Dispatchers.Default)
 
     fun start() {
         sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.also { sensor ->

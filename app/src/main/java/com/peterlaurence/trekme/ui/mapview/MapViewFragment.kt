@@ -119,7 +119,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         EventBus.getDefault().register(this)
 
         /* Create the presenter */
-        presenter = MapViewFragmentPresenter(layoutInflater, container, context)
+        presenter = MapViewFragmentPresenter(inflater, container, context)
         presenter.setPositionTouchListener(this)
 
         /* Observe track statistics changes */
@@ -452,6 +452,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onDestroyView() {
         super.onDestroyView()
+
+        orientationSensor?.stop()
+        orientationJob?.cancel()
 
         EventBus.getDefault().unregister(this)
         MapLoader.clearMapMarkerUpdateListener()
