@@ -20,7 +20,8 @@ import com.peterlaurence.mapview.paths.addPathView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
+import com.peterlaurence.trekme.core.map.getRelativeX
+import com.peterlaurence.trekme.core.map.getRelativeY
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
 import com.peterlaurence.trekme.core.map.route.Barycenter
@@ -184,7 +185,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
                 })
             }
 
-            distanceOnRouteController.setRoutes(processedStaticRoutes)
+            distanceOnRouteController.setRoutes(processedStaticRoutes, map)
         }
     }
 
@@ -241,16 +242,6 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
         return lines
     }
-
-    private fun MarkerGson.Marker.getRelativeX(map: Map): Double {
-        val mapUsesProjection = map.projection != null
-        return if (mapUsesProjection) proj_x else lon
-    }
-
-    private fun MarkerGson.Marker.getRelativeY(map: Map): Double {
-        val mapUsesProjection = map.projection != null
-        return if (mapUsesProjection) proj_y else lat
-    }
 }
 
 /**
@@ -263,6 +254,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 private class DistanceOnRouteController(private val pathView: PathView,
                                         private val mapView: MapView,
                                         private val scope: CoroutineScope) : ReferentialOwner {
+    private var map: Map? = null
     private var routes: List<RouteGson.Route> = listOf()
     private var routeWithActiveDistance: RouteGson.Route? = null
     private var barycenterToRoute: kotlin.collections.Map<Barycenter, RouteGson.Route>? = null
@@ -342,24 +334,25 @@ private class DistanceOnRouteController(private val pathView: PathView,
      * Update the internal list of routes.
      * It immediately triggers an internal computation of each chunk's barycenter (off UI thread).
      */
-    fun setRoutes(routeList: List<RouteGson.Route>) {
+    fun setRoutes(routeList: List<RouteGson.Route>, map: Map) {
+        this.map = map
         routes = routeList
 
         scope.launch {
             barycenterToRoute = routeList.map { route ->
                 async(Dispatchers.Default) {
-                    Pair(computeBarycenter(route), route)
+                    Pair(computeBarycenter(route, map), route)
                 }
             }.awaitAll().toMap()
         }
     }
 
-    private fun computeBarycenter(route: RouteGson.Route): Barycenter {
+    private fun computeBarycenter(route: RouteGson.Route, map: Map): Barycenter {
         var sumX = 0.0
         var sumY = 0.0
         for (point in route.route_markers) {
-            sumX += point.proj_x
-            sumY += point.proj_y
+            sumX += point.getRelativeX(map)
+            sumY += point.getRelativeY(map)
         }
         val size = route.route_markers.size
         return Barycenter(sumX / size, sumY / size)
@@ -374,8 +367,9 @@ private class DistanceOnRouteController(private val pathView: PathView,
             computeDistance(x, y, it.key)
         }?.also {
             /* Only if this is a different route, position the markers on this route */
-            if (it.value != routeWithActiveDistance) {
-                setRouteWithActiveDistance(it.value)
+            val map = map
+            if (it.value != routeWithActiveDistance && map != null) {
+                setRouteWithActiveDistance(it.value, map)
                 render()
 
                 /* And trigger the first distance calculation */
@@ -384,7 +378,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }
     }
 
-    private fun setRouteWithActiveDistance(route: RouteGson.Route) {
+    private fun setRouteWithActiveDistance(route: RouteGson.Route, map: Map) {
         routeWithActiveDistance = route
 
         val info = infoForRoute[route]
@@ -393,13 +387,15 @@ private class DistanceOnRouteController(private val pathView: PathView,
         grab1.morphIn()
         grab2.morphIn()
 
-        val nearestMarkerCalculator = NearestMarkerCalculator(route)
+        val nearestMarkerCalculator = NearestMarkerCalculator(route, map)
         grab1.setOnTouchListener(TouchMoveListener(mapView,
                 TouchMoveListener.MarkerMoveAgent { mapView, view, x, y ->
                     scope.launch {
                         val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
                         if (markerIndexed != null && view != null) {
-                            mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
+                            mapView?.moveMarker(view,
+                                    markerIndexed.marker.getRelativeX(map),
+                                    markerIndexed.marker.getRelativeY(map))
                             infoForRoute[route]?.index1 = markerIndexed.index
                             distanceCalculateChannel.offer(Unit)
                             pathView.invalidate()
@@ -413,7 +409,9 @@ private class DistanceOnRouteController(private val pathView: PathView,
                     scope.launch {
                         val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
                         if (markerIndexed != null && view != null) {
-                            mapView?.moveMarker(view, markerIndexed.marker.proj_x, markerIndexed.marker.proj_y)
+                            mapView?.moveMarker(view,
+                                    markerIndexed.marker.getRelativeX(map),
+                                    markerIndexed.marker.getRelativeY(map))
                             infoForRoute[route]?.index2 = markerIndexed.index
                             distanceCalculateChannel.offer(Unit)
                             pathView.invalidate()
@@ -427,29 +425,33 @@ private class DistanceOnRouteController(private val pathView: PathView,
             val index1 = 0
             val index2 = route.route_markers.size / 4
             infoForRoute[route] = Info(index1, index2)
-            positionGrabMarkers(route, index1, index2)
+            positionGrabMarkers(map, route, index1, index2)
         } else {
             /* The user is "navigating back" to this route - use remembered positions */
-            positionGrabMarkers(route, info.index1, info.index2)
+            positionGrabMarkers(map, route, info.index1, info.index2)
         }
     }
 
-    private fun positionGrabMarkers(route: RouteGson.Route, index1: Int, index2: Int) {
+    private fun positionGrabMarkers(map: Map, route: RouteGson.Route, index1: Int, index2: Int) {
         val firstMarker = route.route_markers[index1]
         if (firstMarker != null) {
+            val relX = firstMarker.getRelativeX(map)
+            val relY = firstMarker.getRelativeY(map)
             if (grab1.parent == null) {
-                mapView.addMarker(grab1, firstMarker.proj_x, firstMarker.proj_y, -0.5f, -0.5f)
+                mapView.addMarker(grab1, relX, relY, -0.5f, -0.5f)
             } else {
-                mapView.moveMarker(grab1, firstMarker.proj_x, firstMarker.proj_y)
+                mapView.moveMarker(grab1, relX, relY)
             }
         }
 
         val secondMarker = route.route_markers[index2]
         if (secondMarker != null) {
+            val relX = secondMarker.getRelativeX(map)
+            val relY = secondMarker.getRelativeY(map)
             if (grab2.parent == null) {
-                mapView.addMarker(grab2, secondMarker.proj_x, secondMarker.proj_y, -0.5f, -0.5f)
+                mapView.addMarker(grab2, relX, relY, -0.5f, -0.5f)
             } else {
-                mapView.moveMarker(grab2, secondMarker.proj_x, secondMarker.proj_y)
+                mapView.moveMarker(grab2, relX, relY)
             }
         }
     }
@@ -519,6 +521,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private suspend fun updateDistance() {
         val activeRoute = routeWithActiveDistance ?: return
         val info = infoForRoute[activeRoute] ?: return
+        val map = map ?: return
 
         val distance = computeDistance(activeRoute, info)
         distMarker.text = formatDistance(distance)
@@ -526,8 +529,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
 
         val firstMarker = activeRoute.route_markers[info.index1]
         val secondMarker = activeRoute.route_markers[info.index2]
-        val x = (firstMarker.proj_x + secondMarker.proj_x) / 2
-        val y = (firstMarker.proj_y + secondMarker.proj_y) / 2
+        val x = (firstMarker.getRelativeX(map) + secondMarker.getRelativeX(map)) / 2
+        val y = (firstMarker.getRelativeY(map) + secondMarker.getRelativeY(map)) / 2
 
         mapView.moveMarker(distMarker, x, y)
     }

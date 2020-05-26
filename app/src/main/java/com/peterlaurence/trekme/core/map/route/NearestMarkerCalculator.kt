@@ -1,5 +1,8 @@
 package com.peterlaurence.trekme.core.map.route
 
+import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.getRelativeX
+import com.peterlaurence.trekme.core.map.getRelativeY
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import kotlinx.coroutines.Dispatchers
@@ -8,7 +11,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 
-class NearestMarkerCalculator(val route: RouteGson.Route) {
+class NearestMarkerCalculator(val route: RouteGson.Route, val map: Map) {
 
     private val chunkSize = sqrt(route.route_markers.size / 3.0).toInt()
     private var chunker: Chunker? = null
@@ -26,7 +29,7 @@ class NearestMarkerCalculator(val route: RouteGson.Route) {
         var nearestMarker: MarkerGson.Marker? = null
         for (markerList in markers) {
             for (marker in markerList) {
-                val d = computeDistSquared(x, y, marker.proj_x, marker.proj_y)
+                val d = computeDistSquared(x, y, marker.getRelativeX(map), marker.getRelativeY(map))
                 if (d < distMin) {
                     distMin = d
                     nearestMarker = marker
@@ -39,7 +42,7 @@ class NearestMarkerCalculator(val route: RouteGson.Route) {
 
     private fun getOrMakeChunker(): Chunker {
         if (chunker != null) return chunker!!
-        return Chunker(route.route_markers, chunkSize)
+        return Chunker(map, route.route_markers, chunkSize)
     }
 
     private fun computeDistSquared(x1: Double, y1: Double, x2: Double, y2: Double): Double {
@@ -47,8 +50,8 @@ class NearestMarkerCalculator(val route: RouteGson.Route) {
     }
 }
 
-private class Chunker(val points: List<MarkerGson.Marker>, chunkSize: Int) {
-    private val chunksByBarycenter: Map<Barycenter, List<MarkerGson.Marker>>
+private class Chunker(val map: Map, val points: List<MarkerGson.Marker>, chunkSize: Int) {
+    private val chunksByBarycenter: kotlin.collections.Map<Barycenter, List<MarkerGson.Marker>>
     private val barycenters: List<Barycenter>
 
     init {
@@ -78,8 +81,8 @@ private class Chunker(val points: List<MarkerGson.Marker>, chunkSize: Int) {
         var sumX = 0.0
         var sumY = 0.0
         for (point in points) {
-            sumX += point.proj_x
-            sumY += point.proj_y
+            sumX += point.getRelativeX(map)
+            sumY += point.getRelativeY(map)
         }
         return Barycenter(sumX / points.size, sumY / points.size)
     }
