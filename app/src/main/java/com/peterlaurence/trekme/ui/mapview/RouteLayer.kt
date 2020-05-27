@@ -263,6 +263,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private val infoForRoute: MutableMap<RouteGson.Route, Info> = mutableMapOf()
     private val grab1 = MarkerGrab(mapView.context, 50.px)
     private val grab2 = MarkerGrab(mapView.context, 50.px)
+    private var firstTouchMoveListener: TouchMoveListener? = null
+    private var secondTouchMoveListener: TouchMoveListener? = null
     private var activeRouteLookupJob: Job? = null
     private var distanceCalculationJob: Job? = null
     private val distancePathWidth: Float
@@ -280,6 +282,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
+            firstTouchMoveListener?.referentialData = value
+            secondTouchMoveListener?.referentialData = value
             scrollUpdateChannel.offer(Unit)
         }
 
@@ -388,7 +392,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         grab2.morphIn()
 
         val nearestMarkerCalculator = NearestMarkerCalculator(route, map)
-        grab1.setOnTouchListener(TouchMoveListener(mapView,
+        firstTouchMoveListener = TouchMoveListener(mapView,
                 TouchMoveListener.MarkerMoveAgent { mapView, view, x, y ->
                     scope.launch {
                         val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
@@ -402,9 +406,9 @@ private class DistanceOnRouteController(private val pathView: PathView,
                         }
                     }
                 })
-        )
+        grab1.setOnTouchListener(firstTouchMoveListener)
 
-        grab2.setOnTouchListener(TouchMoveListener(mapView,
+        secondTouchMoveListener = TouchMoveListener(mapView,
                 TouchMoveListener.MarkerMoveAgent { mapView, view, x, y ->
                     scope.launch {
                         val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
@@ -418,7 +422,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                         }
                     }
                 })
-        )
+        grab2.setOnTouchListener(secondTouchMoveListener)
 
         if (info == null) {
             /* This is the first time we are positioning markers - use default position */
