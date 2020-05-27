@@ -40,8 +40,6 @@ class MapListViewModel : ViewModel() {
 
     init {
         EventBus.getDefault().register(this)
-
-        updateMapListInFragment()
     }
 
     fun setMap(map: Map) {
