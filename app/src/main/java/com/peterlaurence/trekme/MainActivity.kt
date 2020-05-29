@@ -27,6 +27,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
@@ -35,6 +36,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.core.TrekMeContext.checkAppDir
 import com.peterlaurence.trekme.core.TrekMeContext.init
 import com.peterlaurence.trekme.core.TrekMeContext.isAppDirReadOnly
+import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.Status
@@ -62,8 +64,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         OnMapArchiveFragmentInteractionListener,
         MarkerManageFragmentInteractionListener, LocationProviderHolder {
     private var fragmentManager: FragmentManager? = null
-    private var snackBarExit: Snackbar? = null
-    private var navigationView: NavigationView? = null
+    private lateinit var binding: ActivityMainBinding
+    private val snackBarExit: Snackbar by lazy {
+        Snackbar.make(binding.drawerLayout, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
+    }
     private var viewModel: MainActivityViewModel? = null
 
     /* Used for notifications */
@@ -216,10 +220,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
         fragmentManager = this.supportFragmentManager
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+        val drawer = binding.drawerLayout
         val toggle: ActionBarDrawerToggle = object : ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             override fun onDrawerClosed(drawerView: View) {
@@ -227,22 +232,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 EventBus.getDefault().post(DrawerClosedEvent())
             }
         }
-        drawer?.addDrawerListener(toggle)
+        drawer.addDrawerListener(toggle)
         toggle.syncState()
-        navigationView = findViewById(R.id.nav_view)
-        if (navigationView != null) {
-            navigationView!!.setNavigationItemSelectedListener(this)
-            val headerView = navigationView!!.getHeaderView(0)
-            val versionTextView = headerView.findViewById<TextView>(R.id.app_version)
-            try {
-                val version = "v." + packageManager.getPackageInfo(packageName, 0).versionName
-                versionTextView.text = version
-            } catch (e: PackageManager.NameNotFoundException) {
-                e.printStackTrace()
-            }
-        }
-        if (drawer != null) {
-            snackBarExit = Snackbar.make(drawer, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
+
+        binding.navView.setNavigationItemSelectedListener(this)
+        val headerView = binding.navView.getHeaderView(0)
+        val versionTextView = headerView.findViewById<TextView>(R.id.app_version)
+        try {
+            val version = "v." + packageManager.getPackageInfo(packageName, 0).versionName
+            versionTextView.text = version
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
         }
     }
 
@@ -257,8 +257,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             drawer.closeDrawer(GravityCompat.START)
         } else if (findNavController(R.id.nav_host_fragment).previousBackStackEntry == null) {
             /* BACK button twice to exit */
-            val snackBarExit = snackBarExit
-            if (snackBarExit == null || snackBarExit.isShown) {
+            if (snackBarExit.isShown) {
                 super.onBackPressed()
             } else {
                 snackBarExit.show()
@@ -466,15 +465,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun onZipFinishedEvent(event: ZipFinishedEvent) {
+        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
+
         val archiveOkMsg = getString(R.string.archive_snackbar_finished)
         val builder = builder ?: return
         /* When the loop is finished, updates the notification */
         builder.setContentText(archiveOkMsg) // Removes the progress bar
                 .setProgress(0, 0, false)
         notifyMgr?.notify(event.mapId, builder.build())
-        if (navigationView != null) {
-            val snackbar = Snackbar.make(navigationView!!, archiveOkMsg, Snackbar.LENGTH_SHORT)
-            snackbar.show()
-        }
+        val snackbar = Snackbar.make(binding.navView, archiveOkMsg, Snackbar.LENGTH_SHORT)
+        snackbar.show()
     }
 }
