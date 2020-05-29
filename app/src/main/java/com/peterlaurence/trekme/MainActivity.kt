@@ -61,7 +61,6 @@ import org.greenrobot.eventbus.Subscribe
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
         OnMapArchiveFragmentInteractionListener,
         MarkerManageFragmentInteractionListener, LocationProviderHolder {
-    private var backFragmentTag: String? = null
     private var fragmentManager: FragmentManager? = null
     private var snackBarExit: Snackbar? = null
     private var navigationView: NavigationView? = null
@@ -87,7 +86,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Manifest.permission.INTERNET
         )
         private const val TAG = "MainActivity"
-        private const val KEY_BUNDLE_BACK = "keyBackFragmentTag"
 
         /**
          * Checks whether the app has permission to access fine location and to write to device storage.
@@ -424,16 +422,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 // notifications with the progression.
             }
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(KEY_BUNDLE_BACK, backFragmentTag)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        backFragmentTag = savedInstanceState.getString(KEY_BUNDLE_BACK)
     }
 
     override val locationProvider: LocationProvider by lazy {
