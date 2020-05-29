@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/mapListFragment"
         android:name="com.peterlaurence.trekme.ui.maplist.MapListFragment"
-        android:label="fragment_map_list"
+        android:label="@string/fragment_map_list"
         tools:layout="@layout/fragment_map_list" >
         <action
             android:id="@+id/action_mapListFragment_to_mapViewFragment"

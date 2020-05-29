@@ -341,7 +341,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showMapListFragment() {
-        findNavController(R.id.nav_host_fragment).navigate(R.id.mapListFragment)
+        if (getString(R.string.fragment_map_list) != findNavController(R.id.nav_host_fragment).currentDestination?.label) {
+            findNavController(R.id.nav_host_fragment).navigate(R.id.mapListFragment)
+        }
     }
 
     private fun showMapCreateFragment() {
