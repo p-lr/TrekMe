@@ -41,7 +41,7 @@ object TrekMeContext {
         }
     }
 
-    val recordingsDir: File?  by lazy {
+    val recordingsDir: File? by lazy {
         defaultAppDir?.let {
             File(it, "recordings")
         }
@@ -75,9 +75,10 @@ object TrekMeContext {
     /**
      * Create necessary folders and files, and identify folder in which the maps will be searched
      * into.
+     * @param applicationContext The context that *should not* be an Activity context. It should be
+     * obtained from [Context.getApplicationContext].
      */
-    fun init(context: Context) {
-        val applicationContext = context.applicationContext
+    fun init(applicationContext: Context) {
         try {
             resolveDirs(applicationContext)
             createAppDirs()
@@ -174,7 +175,7 @@ object TrekMeContext {
     private fun renameLegacyDir() {
         if (android.os.Build.VERSION.SDK_INT < Q) {
             val legacyAppDir = File(Environment.getExternalStorageDirectory(),
-                appFolderNameLegacy)
+                    appFolderNameLegacy)
             if (legacyAppDir.exists()) {
                 val defaultAppDir = defaultAppDir
                 if (defaultAppDir != null) {

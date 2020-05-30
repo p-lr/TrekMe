@@ -30,11 +30,12 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContext.checkAppDir
-import com.peterlaurence.trekme.core.TrekMeContext.init
 import com.peterlaurence.trekme.core.TrekMeContext.isAppDirReadOnly
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
@@ -56,9 +57,13 @@ import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationSource
 import com.peterlaurence.trekme.viewmodel.common.getLocationProvider
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.EventBusException
 import org.greenrobot.eventbus.Subscribe
+import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
         OnMapArchiveFragmentInteractionListener,
@@ -276,18 +281,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         requestMinimalPermissions(this)
 
         /* This must be done before activity's onStart */
-        if (checkStoragePermissions(this)) {
-            init(this)
+        val shouldInit = checkStoragePermissions(this)
+        val appContext = applicationContext
+        lifecycleScope.launch {
+            /* Perform IO on background thread */
+            withContext(Dispatchers.Default) {
+                if (shouldInit) {
+                    TrekMeContext.init(appContext)
+                }
+            }
+
+            /* Start the view-model */
+            viewModel?.onActivityStart()
+
+            warnIfBadStorageState()
         }
-        super.onStart()
 
         /* Register event-bus */
         EventBus.getDefault().register(this)
 
-        /* Start the view-model */
-        viewModel?.onActivityStart()
-
-        warnIfBadStorageState()
+        super.onStart()
     }
 
     @Subscribe
