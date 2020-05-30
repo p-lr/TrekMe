@@ -97,6 +97,17 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         llmState = llm?.onSaveInstanceState()
     }
 
+    /**
+     * As the list of maps is generated in [onStart], we have to remove it in [onStop].
+     */
+    override fun onStop() {
+        super.onStop()
+
+        recyclerView?.also {
+            (binding.root as ViewGroup).removeView(it)
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         generateMapList()
