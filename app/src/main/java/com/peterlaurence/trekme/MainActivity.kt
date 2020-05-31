@@ -63,7 +63,6 @@ import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.EventBusException
 import org.greenrobot.eventbus.Subscribe
-import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
         OnMapArchiveFragmentInteractionListener,
@@ -277,6 +276,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
+    /**
+     * When the activity reaches this lifecycle, fragments aren't created yet.
+     * After checking permissions, we asynchronously prepare minimal context initializations before
+     * notifying the view-model that everything is ready.
+     */
     public override fun onStart() {
         requestMinimalPermissions(this)
 
@@ -291,7 +295,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
 
-            /* Start the view-model */
+            /* Notify the view-model */
             viewModel?.onActivityStart()
 
             warnIfBadStorageState()
