@@ -19,6 +19,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -72,7 +73,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val snackBarExit: Snackbar by lazy {
         Snackbar.make(binding.drawerLayout, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
     }
-    private var viewModel: MainActivityViewModel? = null
+    private val viewModel: MainActivityViewModel by viewModels()
 
     /* Used for notifications */
     private var builder: Notification.Builder? = null
@@ -139,11 +140,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return true
         }
 
-        init {
-            /* Setup default eventbus to use an index instead of reflection, which is recommended for
+        /* Setup default eventbus to use an index instead of reflection, which is recommended for
          * Android for best performance.
-         * See http://greenrobot.org/eventbus/documentation/subscriber-index
-         */
+         * See http://greenrobot.org/eventbus/documentation/subscriber-index */
+        init {
             try {
                 EventBus.builder().addIndex(MyEventBusIndex()).installDefaultEventBus()
             } catch (e: EventBusException) {
@@ -210,7 +210,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
         val mapListViewModel = ViewModelProvider(this).get(MapListViewModel::class.java)
         mapListViewModel.zipEvents.observe(this, Observer { event: ZipEvent? ->
             when (event) {
@@ -296,7 +295,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             /* Notify the view-model */
-            viewModel?.onActivityStart()
+            viewModel.onActivityStart()
 
             warnIfBadStorageState()
         }
