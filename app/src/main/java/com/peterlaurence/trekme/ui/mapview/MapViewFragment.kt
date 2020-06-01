@@ -163,8 +163,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* Create the marker layer */
         markerLayer = MarkerLayer(context)
 
-        /* Create the route layer */
-        routeLayer = RouteLayer(lifecycleScope)
+        /* Create the route layer, restoring the previous state (if any) */
+        val routeLayerState = mergedState?.getParcelable<RouteLayerState>(ROUTE_LAYER_STATE)
+        routeLayer = RouteLayer(lifecycleScope, routeLayerState)
 
         /* Create the distance layer */
         distanceLayer = DistanceLayer(context, distanceListener)
@@ -616,11 +617,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-//        outState.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
-//        if (::distanceLayer.isInitialized) {
-//            outState.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
-//        }
-
         if (state == null) {
             state = saveState()
         }
@@ -632,6 +628,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         bundle.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
         if (::distanceLayer.isInitialized) {
             bundle.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
+        }
+        if (::routeLayer.isInitialized) {
+            bundle.putParcelable(ROUTE_LAYER_STATE, routeLayer.getState())
         }
         bundle.putBoolean(WAS_ROTATED, rotationMode != RotationMode.NONE)
         return bundle
@@ -673,6 +672,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         const val TAG = "MapViewFragment"
         private const val WAS_DISPLAYING_ORIENTATION = "wasDisplayingOrientation"
         private const val DISTANCE_LAYER_STATE = "distanceLayerState"
+        private const val ROUTE_LAYER_STATE = "routeLayerState"
         private const val WAS_ROTATED = "wasRotated"
     }
 }

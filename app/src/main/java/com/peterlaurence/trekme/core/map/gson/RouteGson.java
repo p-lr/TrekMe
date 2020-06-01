@@ -47,9 +47,13 @@ public class RouteGson {
             visible = !visible;
         }
 
+        public int getId() {
+            return name.hashCode() + 31 * route_markers.size();
+        }
+
         @Override
         public boolean equals(Object o) {
-            return o instanceof Route && ((Route) o).name.equals(this.name);
+            return o instanceof Route && ((Route) o).getId() == getId();
         }
 
         @Override

@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Parcelable
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
@@ -31,6 +32,7 @@ import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageF
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import com.peterlaurence.trekme.util.formatDistance
 import com.peterlaurence.trekme.util.px
+import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
@@ -42,12 +44,13 @@ import kotlin.math.pow
 /**
  * All [RouteGson.Route] are managed here.
  * This object is intended to be used exclusively by the [MapViewFragment].
- *
  * After being created, the method [init] has to be called.
+ *
+ * @param state The [RouteLayerState] to restore. If null, nothing is restored.
  *
  * @author peterLaurence on 13/05/17 -- Converted to Kotlin on 16/02/2019
  */
-class RouteLayer(private val coroutineScope: CoroutineScope) :
+class RouteLayer(private val coroutineScope: CoroutineScope, private val state: RouteLayerState? = null) :
         TracksManageFragment.TrackChangeListener,
         CoroutineScope by coroutineScope {
     private lateinit var mapView: MapView
@@ -66,7 +69,16 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
     }
 
     var isDistanceOnTrackActive: Boolean = false
+        /* Report to be active if is either effectively active or is going to be */
+        get() = distanceOnRouteController.isActive || state?.wasDistanceOnTrackActive ?: false
         private set
+
+    /**
+     * Returns the state of this [RouteLayer] at the time of this method invocation.
+     */
+    fun getState(): RouteLayerState {
+        return RouteLayerState(distanceOnRouteController.getState(), distanceOnRouteController.isActive)
+    }
 
     /**
      * When a track file has been parsed, this method is called. At this stage, the new
@@ -97,15 +109,16 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 
         if (this.map.areRoutesDefined()) {
             drawStaticRoutes()
-            if (isDistanceOnTrackActive) activateDistanceOnTrack()
         } else {
             acquireThenDrawRoutes(this.map)
         }
     }
 
     fun activateDistanceOnTrack() {
-        mapView.addReferentialOwner(distanceOnRouteController)
-        distanceOnRouteController.enable()
+        if (!distanceOnRouteController.isActive) {
+            mapView.addReferentialOwner(distanceOnRouteController)
+            distanceOnRouteController.enable()
+        }
     }
 
     fun disableDistanceOnTrack() {
@@ -185,7 +198,13 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
                 })
             }
 
-            distanceOnRouteController.setRoutes(processedStaticRoutes, map)
+            /* Static routes are also used inside the DistanceOnRouteController.
+             * To ensure proper rendering, we also restore the previous state (if any). */
+            distanceOnRouteController.setRoutes(processedStaticRoutes, map, state?.distOnRouteState)
+            if (state != null && state.wasDistanceOnTrackActive && !distanceOnRouteController.isActive) {
+                mapView.addReferentialOwner(distanceOnRouteController)
+                distanceOnRouteController.enable()
+            }
         }
     }
 
@@ -254,6 +273,8 @@ class RouteLayer(private val coroutineScope: CoroutineScope) :
 private class DistanceOnRouteController(private val pathView: PathView,
                                         private val mapView: MapView,
                                         private val scope: CoroutineScope) : ReferentialOwner {
+    var isActive: Boolean = false
+        private set
     private var map: Map? = null
     private var routes: List<RouteGson.Route> = listOf()
     private var routeWithActiveDistance: RouteGson.Route? = null
@@ -279,6 +300,16 @@ private class DistanceOnRouteController(private val pathView: PathView,
         setPadding(10, 0, 10, 0)
     }
 
+    /**
+     * The state is only the correspondence between each [RouteGson.Route]'s ids and the indexes of
+     * the two [MarkerGrab]s.
+     */
+    fun getState(): DistOnRouteState {
+        return infoForRoute.map {
+            it.key.id to Pair(it.value.index1, it.value.index2)
+        }.toMap()
+    }
+
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
@@ -288,6 +319,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }
 
     fun enable() {
+        isActive = true
         activeRouteLookupJob = scope.launch {
             scrollUpdateChannel.asFlow().sample(32).collect {
                 updateActiveRoute()
@@ -305,6 +337,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
     }
 
     fun disable() {
+        isActive = false
         /* Cancel any ongoing operation */
         activeRouteLookupJob?.cancel()
         distanceCalculationJob?.cancel()
@@ -335,19 +368,28 @@ private class DistanceOnRouteController(private val pathView: PathView,
     }
 
     /**
-     * Update the internal list of routes.
+     * Update the internal list of routes along the former state, if any.
      * It immediately triggers an internal computation of each chunk's barycenter (off UI thread).
+     * If the provided state is non-null, it restores relevant structures.
      */
-    fun setRoutes(routeList: List<RouteGson.Route>, map: Map) {
+    suspend fun setRoutes(routeList: List<RouteGson.Route>, map: Map, state: DistOnRouteState?) {
         this.map = map
         routes = routeList
 
-        scope.launch {
-            barycenterToRoute = routeList.map { route ->
-                async(Dispatchers.Default) {
-                    Pair(computeBarycenter(route, map), route)
-                }
-            }.awaitAll().toMap()
+        barycenterToRoute = routeList.map { route ->
+            scope.async(Dispatchers.Default) {
+                Pair(computeBarycenter(route, map), route)
+            }
+        }.awaitAll().toMap()
+
+        /* Restore from the former state */
+        state?.forEach { (id, pair) ->
+            val route = routes.firstOrNull {
+                it.id == id
+            }
+            if (route != null) {
+                infoForRoute[route] = Info(pair.first, pair.second)
+            }
         }
     }
 
@@ -562,5 +604,11 @@ private class DistanceOnRouteController(private val pathView: PathView,
 
     private data class Info(var index1: Int, var index2: Int)
 }
+
+@Parcelize
+class RouteLayerState(val distOnRouteState: DistOnRouteState,
+                      val wasDistanceOnTrackActive: Boolean) : Parcelable
+
+typealias DistOnRouteState = kotlin.collections.Map<Int, Pair<Int, Int>>
 
 private const val TAG = "RouteLayer"
