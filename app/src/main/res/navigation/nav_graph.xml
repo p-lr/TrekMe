@@ -115,4 +115,7 @@
         android:id="@+id/mapCalibrationFragment"
         android:name="com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment"
         android:label="MapCalibrationFragment" />
+    <action
+        android:id="@+id/action_global_mapViewFragment"
+        app:destination="@id/mapViewFragment" />
 </navigation>

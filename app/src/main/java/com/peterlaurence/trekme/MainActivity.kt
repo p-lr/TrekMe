@@ -45,7 +45,6 @@ import com.peterlaurence.trekme.service.event.Status
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment.OnMapArchiveFragmentInteractionListener
-import com.peterlaurence.trekme.ui.maplist.MapListFragmentDirections
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
@@ -349,8 +348,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return
         }
 
-        val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
-        findNavController(R.id.nav_host_fragment).navigate(action)
+        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_mapViewFragment)
     }
 
     private fun showMapListFragment() {

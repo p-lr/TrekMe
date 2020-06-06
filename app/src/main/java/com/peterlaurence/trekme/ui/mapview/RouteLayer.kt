@@ -213,14 +213,14 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
      */
     private fun getRouteFlow(routeList: List<RouteGson.Route>,
                              action: (RouteGson.Route, FloatArray) -> RouteGson.Route): Flow<RouteGson.Route> {
-        return routeList.map { route ->
+        return routeList.asFlow().map { route ->
             flow {
                 val path = route.toPath(mapView)
                 if (path != null) {
                     emit(action(route, path))
                 }
             }.flowOn(Dispatchers.Default)
-        }.merge()
+        }.flattenMerge(4)
     }
 
     private fun setMapView(mapView: MapView) {
