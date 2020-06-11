@@ -29,6 +29,7 @@ import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_record.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -40,6 +41,7 @@ import java.io.File
  *
  * @author peterLaurence -- converted to Kotlin on 01/11/18
  */
+@AndroidEntryPoint
 class RecordFragment : Fragment() {
     private var _binding: FragmentRecordBinding? = null
     private val binding get() = _binding!!

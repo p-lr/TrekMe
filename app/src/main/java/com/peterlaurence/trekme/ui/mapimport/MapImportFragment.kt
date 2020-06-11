@@ -23,6 +23,7 @@ import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel
 import com.peterlaurence.trekme.viewmodel.mapimport.UnzipMapImportedEvent
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,6 +37,7 @@ import kotlinx.coroutines.withContext
  *
  * @author peterLaurence on 08/06/16 -- Converted to Kotlin on 18/01/19
  */
+@AndroidEntryPoint
 class MapImportFragment : Fragment() {
     /* View binding boilerplate */
     private var _binding: FragmentMapImportBinding? = null // backing field
