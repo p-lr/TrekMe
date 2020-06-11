@@ -42,6 +42,7 @@ class MainActivityViewModel @ViewModelInject constructor(
             attemptedAtLeastOnce = true // remember that we tried once
 
             MapLoader.clearMaps()
+            println("hji $trekMeContext ${trekMeContext.mapsDirList}")
             trekMeContext.mapsDirList?.also { dirList ->
                 MapLoader.updateMaps(dirList)
             }

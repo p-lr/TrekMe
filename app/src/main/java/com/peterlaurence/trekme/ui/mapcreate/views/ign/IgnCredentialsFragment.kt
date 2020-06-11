@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.core.providers.layers.IgnClassic
 import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,6 +34,7 @@ import javax.inject.Inject
  *
  * @author peterLaurence on 14/04/18
  */
+@AndroidEntryPoint
 class IgnCredentialsFragment : PreferenceFragmentCompat() {
     private var ignUser: String = ""
     private var ignPwd: String = ""

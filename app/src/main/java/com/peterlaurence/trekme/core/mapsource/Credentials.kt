@@ -10,8 +10,9 @@ import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@Singleton
 class MapSourceCredentials @Inject constructor(trekMeContext: TrekMeContext) {
     val supportedMapSource = MapSource.values()
     val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()

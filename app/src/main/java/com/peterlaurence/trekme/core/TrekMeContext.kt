@@ -7,26 +7,9 @@ import android.util.Log
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
-import dagger.hilt.android.components.ServiceComponent
-
+import dagger.hilt.android.components.ApplicationComponent
 import java.io.File
 import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
-
-interface TrekMeContext {
-    var defaultAppDir: File?
-    val defaultMapsDownloadDir: File?
-    val importedDir: File?
-    val recordingsDir: File?
-    var mapsDirList: List<File>?
-    val credentialsDir: File
-    val isAppDirReadOnly: Boolean
-    fun init(applicationContext: Context)
-    fun getSettingsFile(): File?
-    fun checkAppDir(): Boolean
-}
 
 /**
  * General context attributes of the application.
@@ -42,8 +25,20 @@ interface TrekMeContext {
  *
  * @author peterLaurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
-@Singleton
-class TrekMeContextAndroid @Inject constructor(): TrekMeContext {
+interface TrekMeContext {
+    var defaultAppDir: File?
+    val defaultMapsDownloadDir: File?
+    val importedDir: File?
+    val recordingsDir: File?
+    var mapsDirList: List<File>?
+    val credentialsDir: File
+    val isAppDirReadOnly: Boolean
+    fun init(applicationContext: Context)
+    fun getSettingsFile(): File?
+    fun checkAppDir(): Boolean
+}
+
+class TrekMeContextAndroid : TrekMeContext {
     override var defaultAppDir: File? = null
 
     override val defaultMapsDownloadDir: File? by lazy {
@@ -235,15 +230,12 @@ private const val appFolderNameLegacy = "trekadvisor"
 const val appName = "TrekMe"
 
 @Module
-@InstallIn(ActivityComponent::class)
-object TrekMeContextActivityModule {
-    @Provides
-    fun bindTrekMeContext(): TrekMeContext = TrekMeContextAndroid()
-}
+@InstallIn(ApplicationComponent::class)
+object TrekMeContextModule {
+    private val trekMeContextAndroid: TrekMeContext by lazy {
+        TrekMeContextAndroid()
+    }
 
-@Module
-@InstallIn(ServiceComponent::class)
-object TrekMeContextServiceModule {
     @Provides
-    fun bindTrekMeContext(): TrekMeContext = TrekMeContextAndroid()
+    fun bindTrekMeContext(): TrekMeContext = trekMeContextAndroid
 }

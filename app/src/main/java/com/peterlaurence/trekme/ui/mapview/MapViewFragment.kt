@@ -38,6 +38,7 @@ import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import org.greenrobot.eventbus.EventBus
@@ -48,6 +49,7 @@ import org.greenrobot.eventbus.Subscribe
  *
  * @author peterLaurence on 10/02/2019
  */
+@AndroidEntryPoint
 class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener,
         ReferentialOwner {
     private lateinit var presenter: MapViewFragmentContract.Presenter

@@ -291,6 +291,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             /* Perform IO on background thread */
             withContext(Dispatchers.Default) {
                 if (shouldInit) {
+                    println("hji init $trekMeContext")
                     trekMeContext.init(appContext)
                 }
             }
