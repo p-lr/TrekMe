@@ -9,12 +9,14 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Global app settings are managed here.
  *
  * @author peterLaurence on 05/05/19
  */
+@AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by viewModels()
 

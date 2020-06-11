@@ -4,13 +4,8 @@ import android.content.Context
 import android.os.Build.VERSION_CODES.Q
 import android.os.Environment
 import android.util.Log
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
 import java.io.File
 import java.io.IOException
-import javax.inject.Singleton
 
 /**
  * General context attributes of the application.
@@ -26,7 +21,6 @@ import javax.inject.Singleton
  *
  * @author peterLaurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
-@Singleton
 interface TrekMeContext {
     var defaultAppDir: File?
     val defaultMapsDownloadDir: File?
@@ -230,14 +224,3 @@ class TrekMeContextAndroid : TrekMeContext {
 private const val appFolderName = "trekme"
 private const val appFolderNameLegacy = "trekadvisor"
 const val appName = "TrekMe"
-
-@Module
-@InstallIn(ApplicationComponent::class)
-object TrekMeContextModule {
-    private val trekMeContextAndroid: TrekMeContext by lazy {
-        TrekMeContextAndroid()
-    }
-
-    @Provides
-    fun bindTrekMeContext(): TrekMeContext = trekMeContextAndroid
-}

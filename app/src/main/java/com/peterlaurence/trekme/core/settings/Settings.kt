@@ -2,11 +2,6 @@ package com.peterlaurence.trekme.core.settings
 
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.util.FileUtils
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ServiceComponent
-import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
@@ -27,9 +22,11 @@ import javax.inject.Singleton
  * This class is thread safe (as its internal [FileSettingsHandler] is specifically designed
  * to have no shared mutable state).
  */
-@ActivityScoped
+@Singleton
 class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
-    private val settingsHandler = FileSettingsHandler(trekMeContext)
+    private val settingsHandler: FileSettingsHandler by lazy {
+        FileSettingsHandler(trekMeContext)
+    }
 
     /**
      * Get the current application directory as [File].
