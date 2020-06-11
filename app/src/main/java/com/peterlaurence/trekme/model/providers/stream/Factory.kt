@@ -9,10 +9,10 @@ import com.peterlaurence.trekme.core.providers.urltilebuilder.*
  * This is the unique place of the app (excluding tests), where we create a [TileStreamProvider]
  * from a [MapSource].
  */
-fun createTileStreamProvider(mapSource: MapSource, layer: String): TileStreamProvider {
+fun createTileStreamProvider(mapSource: MapSource, layer: String, mapSourceCredentials: MapSourceCredentials): TileStreamProvider {
     return when (mapSource) {
         MapSource.IGN -> {
-            val ignCredentials = MapSourceCredentials.getIGNCredentials() ?: throw Exception("Missing IGN credentials")
+            val ignCredentials = mapSourceCredentials.getIGNCredentials() ?: throw Exception("Missing IGN credentials")
             val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", layer)
             if (layer.isNotEmpty()) {
                 TileStreamProviderIgn(ignCredentials, layer, urlTileBuilder)

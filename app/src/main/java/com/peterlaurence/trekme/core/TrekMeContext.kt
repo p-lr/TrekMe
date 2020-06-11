@@ -4,9 +4,29 @@ import android.content.Context
 import android.os.Build.VERSION_CODES.Q
 import android.os.Environment
 import android.util.Log
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ActivityComponent
+import dagger.hilt.android.components.ServiceComponent
 
 import java.io.File
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
+
+interface TrekMeContext {
+    var defaultAppDir: File?
+    val defaultMapsDownloadDir: File?
+    val importedDir: File?
+    val recordingsDir: File?
+    var mapsDirList: List<File>?
+    val credentialsDir: File
+    val isAppDirReadOnly: Boolean
+    fun init(applicationContext: Context)
+    fun getSettingsFile(): File?
+    fun checkAppDir(): Boolean
+}
 
 /**
  * General context attributes of the application.
@@ -22,33 +42,31 @@ import java.io.IOException
  *
  * @author peterLaurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
-object TrekMeContext {
-    private const val appFolderName = "trekme"
-    private const val appFolderNameLegacy = "trekadvisor"
+@Singleton
+class TrekMeContextAndroid @Inject constructor(): TrekMeContext {
+    override var defaultAppDir: File? = null
 
-    var defaultAppDir: File? = null
-
-    val defaultMapsDownloadDir: File? by lazy {
+    override val defaultMapsDownloadDir: File? by lazy {
         defaultAppDir?.let {
             File(it, "downloaded")
         }
     }
 
     /* Where zip archives are extracted */
-    val importedDir: File? by lazy {
+    override val importedDir: File? by lazy {
         defaultAppDir?.let {
             File(it, "imported")
         }
     }
 
-    val recordingsDir: File? by lazy {
+    override val recordingsDir: File? by lazy {
         defaultAppDir?.let {
             File(it, "recordings")
         }
     }
 
     /* Where maps are searched */
-    var mapsDirList: List<File>? = null
+    override var mapsDirList: List<File>? = null
 
     /* Where maps can be downloaded */
     val downloadDirList: List<File>? by lazy {
@@ -59,9 +77,9 @@ object TrekMeContext {
 
     private var settingsFile: File? = null
 
-    private const val TAG = "TrekMeContext"
+    private val TAG = "TrekMeContextAndroid"
 
-    val credentialsDir: File by lazy {
+    override val credentialsDir: File by lazy {
         File(defaultAppDir, "credentials")
     }
 
@@ -69,7 +87,7 @@ object TrekMeContext {
      * Check whether the app root dir is in read-only state or not. This is usually used only if the
      * [checkAppDir] call returned `false`
      */
-    val isAppDirReadOnly: Boolean
+    override val isAppDirReadOnly: Boolean
         get() = Environment.getExternalStorageState(defaultAppDir) == Environment.MEDIA_MOUNTED_READ_ONLY
 
     /**
@@ -78,7 +96,7 @@ object TrekMeContext {
      * @param applicationContext The context that *should not* be an Activity context. It should be
      * obtained from [Context.getApplicationContext].
      */
-    fun init(applicationContext: Context) {
+    override fun init(applicationContext: Context) {
         try {
             resolveDirs(applicationContext)
             createAppDirs()
@@ -95,7 +113,7 @@ object TrekMeContext {
      * Get the settings [File], or null if for some reason it could not be created or this method
      * is called before its creation.
      */
-    fun getSettingsFile(): File? {
+    override fun getSettingsFile(): File? {
         return if (settingsFile?.exists() != null) {
             settingsFile
         } else {
@@ -146,7 +164,7 @@ object TrekMeContext {
     /**
      * To function properly, the app needs to have read + write access to its root directory
      */
-    fun checkAppDir(): Boolean {
+    override fun checkAppDir(): Boolean {
         return Environment.getExternalStorageState(defaultAppDir) == Environment.MEDIA_MOUNTED
     }
 
@@ -212,4 +230,20 @@ object TrekMeContext {
     }
 }
 
+private const val appFolderName = "trekme"
+private const val appFolderNameLegacy = "trekadvisor"
 const val appName = "TrekMe"
+
+@Module
+@InstallIn(ActivityComponent::class)
+object TrekMeContextActivityModule {
+    @Provides
+    fun bindTrekMeContext(): TrekMeContext = TrekMeContextAndroid()
+}
+
+@Module
+@InstallIn(ServiceComponent::class)
+object TrekMeContextServiceModule {
+    @Provides
+    fun bindTrekMeContext(): TrekMeContext = TrekMeContextAndroid()
+}

@@ -33,12 +33,14 @@ import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import com.peterlaurence.trekme.service.event.Status
 import com.peterlaurence.trekme.util.stackTraceToString
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 
 /**
@@ -50,7 +52,8 @@ import java.util.*
  * So when there is a map download, the user can always see it with the icon on the upper left
  * corner of the device.
  */
-class DownloadService : Service() {
+@AndroidEntryPoint
+class DownloadService @Inject constructor(private val settings: Settings): Service() {
     private val notificationChannelId = "peterlaurence.DownloadService"
     private val downloadServiceNofificationId = 128565
     private val threadCount = 8
@@ -207,7 +210,7 @@ class DownloadService : Service() {
         val date = Date()
         val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(date)
-        val destFolder = File(Settings.getAppDir(), folderName)
+        val destFolder = File(settings.getAppDir(), folderName)
 
         if (destFolder.mkdirs()) {
             destFolder

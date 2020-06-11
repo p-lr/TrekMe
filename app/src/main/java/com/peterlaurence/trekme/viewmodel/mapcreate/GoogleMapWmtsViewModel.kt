@@ -1,9 +1,11 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.MapSource
+import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
 import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
@@ -24,7 +26,9 @@ import org.greenrobot.eventbus.EventBus
  *
  * @author peterLaurence on 09/11/19
  */
-class GoogleMapWmtsViewModel : ViewModel() {
+class GoogleMapWmtsViewModel @ViewModelInject constructor(
+        private val mapSourceCredentials: MapSourceCredentials
+): ViewModel() {
     private val scaleAndScrollInitConfig = mapOf (
             MapSource.SWISS_TOPO to ScaleAndScrollInitConfig(0.0006149545f, 21064, 13788),
             MapSource.IGN_SPAIN to ScaleAndScrollInitConfig(0.0003546317f, 11127, 8123)
@@ -35,7 +39,7 @@ class GoogleMapWmtsViewModel : ViewModel() {
     private suspend fun initIgnLayer(): IgnLayer = withContext(Dispatchers.IO) {
         /* Test the Scan Express Standard layer. If it's not working, return the classic layer */
         val tileStreamProvider = try {
-            createTileStreamProvider(MapSource.IGN, ScanExpressStandard.realName)
+            createTileStreamProvider(MapSource.IGN, ScanExpressStandard.realName, mapSourceCredentials)
         } catch (e: Exception) {
             return@withContext IgnClassic
         }
@@ -69,7 +73,7 @@ class GoogleMapWmtsViewModel : ViewModel() {
     suspend fun createTileStreamProvider(mapSource: MapSource): TileStreamProvider? {
         val layer = activeLayerForSource[mapSource] ?: initIgnLayer()
         return try {
-            createTileStreamProvider(mapSource, layer.realName)
+            createTileStreamProvider(mapSource, layer.realName, mapSourceCredentials)
         } catch (e: Exception) {
             null
         }

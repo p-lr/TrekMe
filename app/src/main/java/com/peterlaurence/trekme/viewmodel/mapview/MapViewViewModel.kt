@@ -1,11 +1,13 @@
 package com.peterlaurence.trekme.viewmodel.mapview
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.billing.ign.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.map.MapModel
+import dagger.hilt.android.AndroidEntryPoint
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -13,9 +15,10 @@ import org.greenrobot.eventbus.EventBus
  *
  * @author peterLaurence on 24/08/2019
  */
-class MapViewViewModel : ViewModel() {
-    private val persistenceStrategy = PersistenceStrategy()
-
+class MapViewViewModel @ViewModelInject constructor(
+        private val persistenceStrategy: PersistenceStrategy,
+        private val settings: Settings
+): ViewModel() {
     private val eventBus = EventBus.getDefault()
 
     /**
@@ -31,9 +34,9 @@ class MapViewViewModel : ViewModel() {
         return null
     }
 
-    suspend fun getMagnifyingFactor(): Int = Settings.getMagnifyingFactor()
+    suspend fun getMagnifyingFactor(): Int = settings.getMagnifyingFactor()
 
-    suspend fun getRotationMode(): RotationMode = Settings.getRotationMode()
+    suspend fun getRotationMode(): RotationMode = settings.getRotationMode()
 
     private suspend fun checkForIgnLicense(map: Map, billing: Billing?): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true

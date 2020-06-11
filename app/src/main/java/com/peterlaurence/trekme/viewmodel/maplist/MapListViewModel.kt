@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.maplist
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -31,7 +32,9 @@ import java.io.OutputStream
  * user can change of [Map].
  * So, all necessary model actions are taken in this view-model.
  */
-class MapListViewModel : ViewModel() {
+class MapListViewModel @ViewModelInject constructor(
+        private val settings: Settings
+): ViewModel() {
     private val _maps = MutableLiveData<List<Map>>()
     val maps: LiveData<List<Map>> = _maps
 
@@ -48,7 +51,7 @@ class MapListViewModel : ViewModel() {
 
         // 2- Remember this map in the case use wants to open TrekMe directly on this map
         viewModelScope.launch {
-            Settings.setLastMapId(map.id)
+            settings.setLastMapId(map.id)
         }
     }
 

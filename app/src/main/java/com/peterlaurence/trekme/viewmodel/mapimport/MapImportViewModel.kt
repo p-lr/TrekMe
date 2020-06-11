@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.viewmodel.mapimport
 
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maparchiver.unarchive
@@ -18,7 +19,9 @@ import java.io.InputStream
  * This view-model manages [ItemData]s, which are wrappers around [DocumentFile]s.
  * The view supplies the list of [DocumentFile]s when the user selects a directory.
  */
-class MapImportViewModel : ViewModel() {
+class MapImportViewModel @ViewModelInject constructor(
+        private val settings: Settings
+): ViewModel() {
     private val _itemLiveData = MutableLiveData<List<ItemData>>()
     val itemLiveData: LiveData<List<ItemData>> = _itemLiveData
 
@@ -53,7 +56,7 @@ class MapImportViewModel : ViewModel() {
      */
     fun unarchiveAsync(inputStream: InputStream, item: ItemData) {
         viewModelScope.launch {
-            val rootFolder = Settings.getAppDir() ?: return@launch
+            val rootFolder = settings.getAppDir() ?: return@launch
             val outputFolder = File(rootFolder, "imported")
 
             /* If the document has no name, give it one */

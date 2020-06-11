@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.core.map.maploader
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.TileStreamProvider
@@ -95,17 +94,12 @@ object MapLoader : MapImporter.MapImportListener {
      * [Map] : [mMapList].
      * It is intended to be the only public method of updating the [Map] list.
      *
-     * @param dirs The directories in which to search for maps. If not specified, a default value is
-     * taken.
+     * @param dirs The directories in which to search for maps.
      */
-    suspend fun updateMaps(dirs: List<File> = listOf()): List<Map> {
-        val realDirs = if (dirs.isEmpty()) {
-            TrekMeContext.mapsDirList
-        } else {
-            dirs
-        } ?: return emptyList()
+    suspend fun updateMaps(dirs: List<File>): List<Map> {
+        if (dirs.isEmpty()) return emptyList()
 
-        val maps = findMaps(realDirs)
+        val maps = findMaps(dirs)
 
         /* Add the map only if it's indeed a new one */
         maps.forEach {

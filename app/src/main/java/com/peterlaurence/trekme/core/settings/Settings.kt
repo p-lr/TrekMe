@@ -2,6 +2,11 @@ package com.peterlaurence.trekme.core.settings
 
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.util.FileUtils
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ServiceComponent
+import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
@@ -13,6 +18,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
 
 
 /**
@@ -20,8 +27,9 @@ import java.io.File
  * This class is thread safe (as its internal [FileSettingsHandler] is specifically designed
  * to have no shared mutable state).
  */
-object Settings {
-    private val settingsHandler = FileSettingsHandler()
+@ActivityScoped
+class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
+    private val settingsHandler = FileSettingsHandler(trekMeContext)
 
     /**
      * Get the current application directory as [File].
@@ -35,7 +43,7 @@ object Settings {
             if (checkAppPath(it)) {
                 File(it)
             } else {
-                TrekMeContext.defaultAppDir
+                trekMeContext.defaultAppDir
             }
         }
     }
@@ -53,7 +61,7 @@ object Settings {
     }
 
     private fun checkAppPath(path: String): Boolean {
-        return TrekMeContext.mapsDirList?.map {
+        return trekMeContext.mapsDirList?.map {
             it.absolutePath
         }?.contains(path) ?: false
     }
@@ -126,8 +134,8 @@ private interface SettingsHandler {
     suspend fun getLastSetting(): SettingsData
 }
 
-private class FileSettingsHandler : SettingsHandler {
-    private val settingsFile = TrekMeContext.getSettingsFile()
+private class FileSettingsHandler(private val trekMeContext: TrekMeContext) : SettingsHandler {
+    private val settingsFile = trekMeContext.getSettingsFile()
 
     /* Channels */
     private val settingsToWrite = Channel<SettingsData>()
@@ -189,7 +197,7 @@ private class FileSettingsHandler : SettingsHandler {
         } catch (e: Exception) {
             e.printStackTrace()
             /* In case of any error, return default settings */
-            SettingsData(TrekMeContext.defaultAppDir?.absolutePath ?: "error")
+            SettingsData(trekMeContext.defaultAppDir?.absolutePath ?: "error")
         }
     }
 
@@ -217,3 +225,10 @@ private class FileSettingsHandler : SettingsHandler {
         }
     }
 }
+//
+//@Module
+//@InstallIn(ServiceComponent::class)
+//abstract class SettingsModule {
+//    @Binds
+//    abstract fun bindSettings(settings: Settings): Settings
+//}

@@ -18,13 +18,17 @@ import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
 import com.peterlaurence.trekme.ui.mapcreate.MapSourceAdapter.MapSourceSelectionListener
 import com.peterlaurence.trekme.util.isEnglish
 import com.peterlaurence.trekme.util.isFrench
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * This fragment is used for displaying available WMTS map sources.
  *
  * @author peterLaurence on 08/04/18
  */
+@AndroidEntryPoint
 class MapCreateFragment : Fragment(), MapSourceSelectionListener {
+    @Inject lateinit var mapSourceCredentials: MapSourceCredentials
     private lateinit var mapSourceSet: Array<MapSource>
 
     private var _binding: FragmentMapCreateBinding? = null
@@ -39,7 +43,7 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
          * When the app is in english, put [MapSource.USGS] in front.
          * When in french, put [MapSource.IGN] in front.
          */
-        mapSourceSet = MapSourceCredentials.supportedMapSource.sortedBy {
+        mapSourceSet = mapSourceCredentials.supportedMapSource.sortedBy {
             if (isEnglish(context) && it == MapSource.USGS) {
                 -1
             } else if (isFrench(context) && it == MapSource.IGN) {
@@ -72,7 +76,7 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
             when (mapSource) {
                 MapSource.IGN -> {
                     /* Check whether credentials are already set or not */
-                    val ignCredentials = MapSourceCredentials.getIGNCredentials()
+                    val ignCredentials = mapSourceCredentials.getIGNCredentials()
                     if (ignCredentials == null) {
                         showIgnCredentialsFragment()
                     } else {

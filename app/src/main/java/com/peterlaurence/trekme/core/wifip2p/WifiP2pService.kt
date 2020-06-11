@@ -27,6 +27,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -38,10 +39,13 @@ import java.io.File
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+@AndroidEntryPoint
 class WifiP2pService : Service() {
+    @Inject lateinit var trekMeContext: TrekMeContext
     private val notificationChannelId = "trekme.WifiP2pService"
     private val wifiP2pServiceNotificationId = 659531
     private val intentFilter = IntentFilter()
@@ -469,7 +473,7 @@ class WifiP2pService : Service() {
 
         /* The uncompressed size is expected to come second */
         val sizeUncompressed = inputStream.readLong()
-        val dir = File(TrekMeContext.importedDir, mapName).unique()
+        val dir = File(trekMeContext.importedDir, mapName).unique()
         dir.mkdir()
 
         /* Finally comes the compressed stream */

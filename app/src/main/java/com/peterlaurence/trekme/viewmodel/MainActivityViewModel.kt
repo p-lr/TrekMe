@@ -1,8 +1,10 @@
 package com.peterlaurence.trekme.viewmodel
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.MainActivity
+import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
@@ -23,7 +25,10 @@ import org.greenrobot.eventbus.EventBus
  *
  * @author peterLaurence on 07/10/2019
  */
-class MainActivityViewModel : ViewModel() {
+class MainActivityViewModel @ViewModelInject constructor(
+        private val trekMeContext: TrekMeContext,
+        private val settings: Settings
+): ViewModel() {
     private var attemptedAtLeastOnce = false
 
     /**
@@ -37,12 +42,14 @@ class MainActivityViewModel : ViewModel() {
             attemptedAtLeastOnce = true // remember that we tried once
 
             MapLoader.clearMaps()
-            MapLoader.updateMaps()
+            trekMeContext.mapsDirList?.also { dirList ->
+                MapLoader.updateMaps(dirList)
+            }
 
-            when (Settings.getStartOnPolicy()) {
+            when (settings.getStartOnPolicy()) {
                 StartOnPolicy.MAP_LIST -> EventBus.getDefault().post(ShowMapListEvent())
                 StartOnPolicy.LAST_MAP -> {
-                    val id = Settings.getLastMapId()
+                    val id = settings.getLastMapId()
                     val found = id?.let {
                         val map = MapLoader.getMap(id)
                         map?.let {

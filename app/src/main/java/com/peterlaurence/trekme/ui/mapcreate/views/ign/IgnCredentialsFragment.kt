@@ -21,6 +21,7 @@ import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * This fragment is for filling IGN France credentials:
@@ -36,12 +37,13 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
     private var ignUser: String = ""
     private var ignPwd: String = ""
     private var ignApiKey: String = ""
+    @Inject lateinit var mapSourceCredentials: MapSourceCredentials
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.ign_credentials_settings)
 
         /* Init values from the credentials */
-        val ignCredentials = MapSourceCredentials.getIGNCredentials()
+        val ignCredentials = mapSourceCredentials.getIGNCredentials()
         ignUser = ignCredentials?.user ?: ""
         ignPwd = ignCredentials?.pwd ?: ""
         ignApiKey = ignCredentials?.api ?: ""
@@ -78,7 +80,7 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
 
     private suspend fun saveCredentials() {
         val ignCredentials = IGNCredentials(ignUser, ignPwd, ignApiKey)
-        MapSourceCredentials.saveIGNCredentials(ignCredentials).let { success ->
+        mapSourceCredentials.saveIGNCredentials(ignCredentials).let { success ->
             if (!success && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 /* Warn the user that we don't have storage rights */
                 showWarningDialog(getString(R.string.ign_warning_storage_rights))
@@ -96,7 +98,7 @@ class IgnCredentialsFragment : PreferenceFragmentCompat() {
         /* Test IGN credentials */
         val isOk = withContext(Dispatchers.IO) {
             val tileStreamProvider = try {
-                createTileStreamProvider(MapSource.IGN, IgnClassic.realName)
+                createTileStreamProvider(MapSource.IGN, IgnClassic.realName, mapSourceCredentials)
             } catch (e: Exception) {
                 return@withContext false
             }

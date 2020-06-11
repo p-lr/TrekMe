@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.track
 
 import android.content.ContentResolver
 import android.net.Uri
-import com.peterlaurence.trekme.core.TrekMeContext.recordingsDir
+import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
@@ -21,6 +21,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
+import javax.inject.Inject
 
 /**
  * Utility toolbox to :
@@ -31,15 +32,15 @@ import java.io.InputStream
  *
  * @author peterLaurence on 03/03/17 -- converted to Kotlin on 16/09/18
  */
-object TrackImporter {
-    const val TAG = "TrackImporter"
+class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext) {
+    private val TAG = "TrackImporter"
     /**
      * Get the list of [File] which extension is in the list of supported extension for track
      * file. Files are searched into the
      * [com.peterlaurence.trekme.core.TrekMeContext.recordingsDir].
      */
     val recordings: Array<File>?
-        get() = recordingsDir?.listFiles(SUPPORTED_FILE_FILTER)
+        get() = trekMeContext.recordingsDir?.listFiles(SUPPORTED_FILE_FILTER)
 
     private val supportedTrackFilesExtensions = arrayOf("gpx", "xml")
 
@@ -59,34 +60,6 @@ object TrackImporter {
         if ("" == extension) return false
 
         return supportedTrackFilesExtensions.any { it == extension }
-    }
-
-    /**
-     * A [TrackPoint] is a raw point that we make right after a location api callback.
-     * To be drawn relatively to a [Map], it must be converted to a [MarkerGson.Marker].
-     * This should be called off UI thread.
-     */
-    fun TrackPoint.toMarker(map: Map): MarkerGson.Marker {
-        val marker = MarkerGson.Marker()
-
-        /* If the map uses a projection, store projected values */
-        val projectedValues: DoubleArray?
-        val projection = map.projection
-        if (projection != null) {
-            projectedValues = projection.doProjection(latitude, longitude)
-            if (projectedValues != null) {
-                marker.proj_x = projectedValues[0]
-                marker.proj_y = projectedValues[1]
-            }
-        }
-
-        /* In any case, we store the wgs84 coordinates */
-        marker.lat = latitude
-        marker.lon = longitude
-
-        /* If we have elevation information, store it */
-        marker.elevation = elevation
-        return marker
     }
 
     /**
@@ -204,4 +177,32 @@ object TrackImporter {
 
         return marker
     }
+}
+
+/**
+ * A [TrackPoint] is a raw point that we make right after a location api callback.
+ * To be drawn relatively to a [Map], it must be converted to a [MarkerGson.Marker].
+ * This should be called off UI thread.
+ */
+fun TrackPoint.toMarker(map: Map): MarkerGson.Marker {
+    val marker = MarkerGson.Marker()
+
+    /* If the map uses a projection, store projected values */
+    val projectedValues: DoubleArray?
+    val projection = map.projection
+    if (projection != null) {
+        projectedValues = projection.doProjection(latitude, longitude)
+        if (projectedValues != null) {
+            marker.proj_x = projectedValues[0]
+            marker.proj_y = projectedValues[1]
+        }
+    }
+
+    /* In any case, we store the wgs84 coordinates */
+    marker.lat = latitude
+    marker.lon = longitude
+
+    /* If we have elevation information, store it */
+    marker.elevation = elevation
+    return marker
 }

@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.record
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -16,7 +17,9 @@ import java.io.File
  *
  * @author P.Laurence on 16/04/20
  */
-class RecordViewModel : ViewModel() {
+class RecordViewModel @ViewModelInject constructor(
+        private val trackImporter: TrackImporter
+): ViewModel() {
     private var recordingsSelected = listOf<File>()
 
     init {
@@ -37,7 +40,7 @@ class RecordViewModel : ViewModel() {
         val recording = recordingsSelected.firstOrNull() ?: return
 
         viewModelScope.launch {
-            TrackImporter.applyGpxFileToMapAsync(recording, map).let {
+            trackImporter.applyGpxFileToMapAsync(recording, map).let {
                 /* Once done, all we want is to post an event */
                 EventBus.getDefault().post(it)
             }

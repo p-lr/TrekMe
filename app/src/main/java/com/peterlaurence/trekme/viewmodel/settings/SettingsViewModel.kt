@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.settings
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,7 +12,10 @@ import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import kotlinx.coroutines.launch
 import java.io.File
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel @ViewModelInject constructor(
+        private val trekMeContext: TrekMeContext,
+        private val settings: Settings
+): ViewModel() {
     private val _appDirListLiveData = MutableLiveData<List<String>>()
     val appDirListLiveData: LiveData<List<String>> = _appDirListLiveData
     private val _appDirLiveData = MutableLiveData<String>()
@@ -35,57 +39,57 @@ class SettingsViewModel : ViewModel() {
     fun setDownloadDirPath(newPath: String) {
         _appDirLiveData.postValue(newPath)
         viewModelScope.launch {
-            Settings.setAppDir(File(newPath))
+            settings.setAppDir(File(newPath))
         }
     }
 
     fun setStartOnPolicy(policy: StartOnPolicy) {
         _startOnPolicyLiveData.postValue(policy)
         viewModelScope.launch {
-            Settings.setStartOnPolicy(policy)
+            settings.setStartOnPolicy(policy)
         }
     }
 
     fun setMagnifyingFactor(factor: Int) {
         _magnifyingFactorLiveData.postValue(factor)
         viewModelScope.launch {
-            Settings.setMagnifyingFactor(factor)
+            settings.setMagnifyingFactor(factor)
         }
     }
 
     fun setRotationMode(mode: RotationMode) {
         _rotationModeLiveData.postValue(mode)
         viewModelScope.launch {
-            Settings.setRotationMode(mode)
+            settings.setRotationMode(mode)
         }
     }
 
     private fun updateAppDirList() {
-        _appDirListLiveData.postValue(TrekMeContext.mapsDirList?.map { it.absolutePath }
+        _appDirListLiveData.postValue(trekMeContext.mapsDirList?.map { it.absolutePath }
                 ?: emptyList())
     }
 
     private fun updateAppDir() {
         viewModelScope.launch {
-            _appDirLiveData.postValue(Settings.getAppDir()?.absolutePath ?: "error")
+            _appDirLiveData.postValue(settings.getAppDir()?.absolutePath ?: "error")
         }
     }
 
     private fun updateStartOnPolicy() {
         viewModelScope.launch {
-            _startOnPolicyLiveData.postValue(Settings.getStartOnPolicy())
+            _startOnPolicyLiveData.postValue(settings.getStartOnPolicy())
         }
     }
 
     private fun updateMagnifyingFactor() {
         viewModelScope.launch {
-            _magnifyingFactorLiveData.postValue(Settings.getMagnifyingFactor())
+            _magnifyingFactorLiveData.postValue(settings.getMagnifyingFactor())
         }
     }
 
     private fun updateRotateWithOrientation() {
         viewModelScope.launch {
-            _rotationModeLiveData.value = Settings.getRotationMode()
+            _rotationModeLiveData.value = settings.getRotationMode()
         }
     }
 }

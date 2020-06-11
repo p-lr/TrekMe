@@ -7,6 +7,7 @@ import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.encrypt.decrypt
 import com.peterlaurence.trekme.util.encrypt.encrypt
 import java.io.File
+import javax.inject.Inject
 
 /**
  * This persistence strategy takes a [LicenseInfo], converts it to json, encrypts it, and writes it
@@ -14,9 +15,9 @@ import java.io.File
  * The reverse operation reads the string from the file, decrypts it, then converts the json string
  * to a [LicenseInfo] instance.
  */
-class PersistenceStrategy {
+class PersistenceStrategy @Inject constructor(trekMeContext: TrekMeContext) {
     private val gson = Gson()
-    private val keyStoreFile = File(TrekMeContext.credentialsDir, "keystore")
+    private val keyStoreFile = File(trekMeContext.credentialsDir, "keystore")
 
     fun persist(licenseInfo: LicenseInfo) {
         try {

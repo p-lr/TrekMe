@@ -9,12 +9,14 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
+import javax.inject.Inject
 
-object MapSourceCredentials {
+
+class MapSourceCredentials @Inject constructor(trekMeContext: TrekMeContext) {
     val supportedMapSource = MapSource.values()
     val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
     private val TAG = javaClass.toString()
-    private val configFile = File(TrekMeContext.credentialsDir, "ign.json")
+    private val configFile = File(trekMeContext.credentialsDir, "ign.json")
 
     lateinit var credentials: Credentials
 

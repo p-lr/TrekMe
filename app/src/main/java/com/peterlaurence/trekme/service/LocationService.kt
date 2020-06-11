@@ -32,6 +32,7 @@ import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.greenrobot.eventbus.EventBus
@@ -41,6 +42,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -58,7 +60,9 @@ import kotlin.coroutines.suspendCoroutine
  *
  * @author peterLaurence on 17/12/17 -- converted to Kotlin on 20/04/19
  */
+@AndroidEntryPoint
 class LocationService : Service() {
+    @Inject lateinit var trekMeContext: TrekMeContext
     private lateinit var serviceLooper: Looper
     private lateinit var serviceHandler: Handler
     private lateinit var locationManager: LocationManager
@@ -160,7 +164,7 @@ class LocationService : Service() {
             val gpx = Gpx(trkList, wayPoints, appName, GPX_VERSION)
             try {
                 val gpxFileName = "$trackName.gpx"
-                val gpxFile = File(TrekMeContext.recordingsDir, gpxFileName)
+                val gpxFile = File(trekMeContext.recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 GPXWriter.write(gpx, fos)
             } catch (e: Exception) {

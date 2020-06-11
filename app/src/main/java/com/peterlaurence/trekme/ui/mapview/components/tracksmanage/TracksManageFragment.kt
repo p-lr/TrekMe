@@ -24,16 +24,17 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.core.track.TrackImporter.applyGpxUriToMapAsync
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
 import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.FileNotFoundException
+import javax.inject.Inject
 
 /**
  * A [Fragment] subclass that shows the routes currently available for a given map, and
@@ -41,10 +42,12 @@ import java.io.FileNotFoundException
  *
  * @author peterLaurence on 01/03/17 -- Converted to Kotlin on 24/04/19
  */
+@AndroidEntryPoint
 class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     private var _binding: FragmentTracksManageBinding? = null
     private val binding get() = _binding!!
 
+    @Inject lateinit var trackImporter: TrackImporter
     private var map: Map? = null
     private var trackRenameMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
@@ -126,7 +129,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             val ctx = context ?: return
             val uri = resultData?.data ?: return
 
-            if (!TrackImporter.isFileSupported(uri, ctx.contentResolver)) {
+            if (!trackImporter.isFileSupported(uri, ctx.contentResolver)) {
                 val builder = AlertDialog.Builder(ctx)
                 builder.setView(View.inflate(context, R.layout.track_warning, null))
                 builder.setCancelable(false)
@@ -166,7 +169,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
      * @throws TrackImporter.GpxParseException
      */
     private suspend fun applyGpxUri(uri: Uri, map: Map, ctx: Context) = coroutineScope {
-        applyGpxUriToMapAsync(uri, ctx.contentResolver, map).let {
+        trackImporter.applyGpxUriToMapAsync(uri, ctx.contentResolver, map).let {
             onGpxParseResult(it)
 
             /* Notify the rest of the app */

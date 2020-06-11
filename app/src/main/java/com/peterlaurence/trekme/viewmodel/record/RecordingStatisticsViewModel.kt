@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.viewmodel.record
 
 import android.util.Log
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -37,7 +38,9 @@ import java.util.concurrent.ConcurrentHashMap
  * It also responds to some events coming from UI components, such as [GpxFileWriteEvent] and
  * [RecordingNameChangeEvent] to trigger proper update of [recordings].
  */
-class RecordingStatisticsViewModel : ViewModel() {
+class RecordingStatisticsViewModel @ViewModelInject constructor(
+        private val trackImporter: TrackImporter
+): ViewModel() {
 
     private val recordingData: MutableLiveData<List<RecordingData>> by lazy {
         MutableLiveData<List<RecordingData>>().apply {
@@ -52,7 +55,7 @@ class RecordingStatisticsViewModel : ViewModel() {
     }
 
     private val recordings: List<File>
-        get() = TrackImporter.recordings?.toMutableList() ?: listOf()
+        get() = trackImporter.recordings?.toMutableList() ?: listOf()
 
     private val recordingsToGpx: MutableMap<File, Gpx> = ConcurrentHashMap()
 

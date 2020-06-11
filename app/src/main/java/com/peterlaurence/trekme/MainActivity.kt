@@ -36,8 +36,6 @@ import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.TrekMeContext.checkAppDir
-import com.peterlaurence.trekme.core.TrekMeContext.isAppDirReadOnly
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
@@ -57,18 +55,22 @@ import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationSource
 import com.peterlaurence.trekme.viewmodel.common.getLocationProvider
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.EventBusException
 import org.greenrobot.eventbus.Subscribe
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
         OnMapArchiveFragmentInteractionListener,
         MarkerManageFragmentInteractionListener, LocationProviderHolder {
     private var fragmentManager: FragmentManager? = null
     private lateinit var binding: ActivityMainBinding
+    @Inject lateinit var trekMeContext: TrekMeContext
     private val snackBarExit: Snackbar by lazy {
         Snackbar.make(binding.drawerLayout, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
     }
@@ -186,9 +188,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun warnIfBadStorageState() {
         /* If something is wrong.. */
-        if (!checkAppDir()) {
+        if (!trekMeContext.checkAppDir()) {
             val warningTitle = getString(R.string.warning_title)
-            if (isAppDirReadOnly) {
+            if (trekMeContext.isAppDirReadOnly) {
                 /* If its read only for sure, be explicit */
                 showWarningDialog(getString(R.string.storage_read_only), warningTitle, null)
             } else {
@@ -289,7 +291,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             /* Perform IO on background thread */
             withContext(Dispatchers.Default) {
                 if (shouldInit) {
-                    TrekMeContext.init(appContext)
+                    trekMeContext.init(appContext)
                 }
             }
 
