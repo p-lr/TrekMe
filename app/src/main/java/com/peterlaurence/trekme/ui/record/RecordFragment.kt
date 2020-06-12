@@ -145,8 +145,7 @@ class RecordFragment : Fragment() {
 
     @Subscribe
     fun onRequestStartEvent(event: RequestStartEvent) {
-        val app = requireActivity().application
-        viewModel.startRecording(app)
+        viewModel.startRecording()
     }
 
     @Subscribe

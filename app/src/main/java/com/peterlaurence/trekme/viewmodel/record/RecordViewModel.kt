@@ -23,7 +23,8 @@ import java.io.File
  */
 class RecordViewModel @ViewModelInject constructor(
         private val trekMeContext: TrekMeContext,
-        private val trackImporter: TrackImporter
+        private val trackImporter: TrackImporter,
+        private val app: Application
 ) : ViewModel() {
     private var recordingsSelected = listOf<File>()
 
@@ -52,7 +53,7 @@ class RecordViewModel @ViewModelInject constructor(
         }
     }
 
-    fun startRecording(app: Application) {
+    fun startRecording() {
         val recordingsPath = trekMeContext.recordingsDir?.absolutePath ?: return
         val intent = Intent(app, LocationService::class.java)
         intent.putExtra(LocationService.RECORDINGS_PATH_ARG, recordingsPath)
