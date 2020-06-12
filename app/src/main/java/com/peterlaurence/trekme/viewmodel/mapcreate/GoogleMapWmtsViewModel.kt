@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
+import android.app.Application
+import android.content.Intent
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +13,10 @@ import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.core.providers.layers.*
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
+import com.peterlaurence.trekme.service.APP_DIR_ARG
+import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,9 +32,10 @@ import org.greenrobot.eventbus.EventBus
  * @author peterLaurence on 09/11/19
  */
 class GoogleMapWmtsViewModel @ViewModelInject constructor(
+        private val settings: Settings,
         private val mapSourceCredentials: MapSourceCredentials
-): ViewModel() {
-    private val scaleAndScrollInitConfig = mapOf (
+) : ViewModel() {
+    private val scaleAndScrollInitConfig = mapOf(
             MapSource.SWISS_TOPO to ScaleAndScrollInitConfig(0.0006149545f, 21064, 13788),
             MapSource.IGN_SPAIN to ScaleAndScrollInitConfig(0.0003546317f, 11127, 8123)
     )
@@ -80,11 +86,16 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     }
 
     /**
-     * When the user confirms a map download, prepare here the the necessary inputs for the service
-     * which will take care of the download. BTW, this service is launched from the view, not this
-     * view-model, we shall not have any reference to Activity context.
+     * We start the download with the [DownloadService]. A sticky event is posted right before
+     * the service is started, which the service will read when it's started.
+     *
+     * WmtsLevelsDialog                            DownloadService
+     *                                sticky
+     *      RequestDownloadMapEvent   ----->          (event available)
+     *      Intent                    ----->          (service start, then process event)
      */
-    fun onDownloadFormConfirmed(mapSource: MapSource, p1: Point, p2: Point, minLevel: Int, maxLevel: Int) {
+    fun onDownloadFormConfirmed(application: Application, mapSource: MapSource,
+                                p1: Point, p2: Point, minLevel: Int, maxLevel: Int) {
         val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2)
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         viewModelScope.launch {
@@ -93,6 +104,11 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
             if (tileStreamProvider != null) {
                 EventBus.getDefault().postSticky(RequestDownloadMapEvent(mapSource, mapSpec, tileCount, tileStreamProvider))
             }
+
+            val appDir = settings.getAppDir() ?: error("App dir must exist")
+            val intent = Intent(application, DownloadService::class.java)
+            intent.putExtra(APP_DIR_ARG, appDir.absolutePath)
+            application.startService(intent)
         }
     }
 }

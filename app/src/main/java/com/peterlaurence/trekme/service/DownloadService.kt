@@ -27,20 +27,16 @@ import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProviderRetry
-import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import com.peterlaurence.trekme.service.event.Status
 import com.peterlaurence.trekme.util.stackTraceToString
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import javax.inject.Inject
 
 
 /**
@@ -52,13 +48,13 @@ import javax.inject.Inject
  * So when there is a map download, the user can always see it with the icon on the upper left
  * corner of the device.
  */
-@AndroidEntryPoint
-class DownloadService @Inject constructor(private val settings: Settings): Service() {
+class DownloadService: Service() {
     private val notificationChannelId = "peterlaurence.DownloadService"
     private val downloadServiceNofificationId = 128565
     private val threadCount = 8
     private val stopAction = "stop"
 
+    private lateinit var appDir: File
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
     private lateinit var icon: Bitmap
@@ -110,6 +106,10 @@ class DownloadService @Inject constructor(private val settings: Settings): Servi
             stopSelf()
             return START_NOT_STICKY
         }
+
+        appDir = intent.getStringExtra(APP_DIR_ARG)?.let {
+            File(it)
+        } ?: error(Log.e(TAG, "Application dir must be supplied"))
 
         /* From here, we know that the service is being created by the activity */
         notificationBuilder = NotificationCompat.Builder(applicationContext, notificationChannelId)
@@ -205,14 +205,14 @@ class DownloadService @Inject constructor(private val settings: Settings): Servi
         launchDownloadTask(effectiveThreadCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
     }
 
-    private fun createDestDir(): File? = runBlocking {
+    private fun createDestDir(): File? {
         /* Create a new folder */
         val date = Date()
         val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(date)
-        val destFolder = File(settings.getAppDir(), folderName)
+        val destFolder = File(appDir, folderName)
 
-        if (destFolder.mkdirs()) {
+        return if (destFolder.mkdirs()) {
             destFolder
         } else {
             null
@@ -337,4 +337,5 @@ private abstract class TileWriter(val destDir: File) {
     abstract fun write(tile: Tile, bitmap: Bitmap)
 }
 
-const val TAG = "DownloadService.kt"
+const val APP_DIR_ARG = "downloadDir"
+private const val TAG = "DownloadService.kt"

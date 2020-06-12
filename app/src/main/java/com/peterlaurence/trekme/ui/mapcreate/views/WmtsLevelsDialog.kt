@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
 import android.app.Dialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +18,6 @@ import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
 import com.peterlaurence.trekme.core.mapsource.wmts.toTransactionsNumber
-import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
 import java.text.NumberFormat
@@ -67,7 +65,7 @@ open class WmtsLevelsDialog : DialogFragment() {
 
         configureComponents(view)
 
-        return AlertDialog.Builder(context!!)
+        return AlertDialog.Builder(requireContext())
                 .setTitle(R.string.wmts_settings_dialog)
                 .setView(view)
                 .setPositiveButton(R.string.download
@@ -185,25 +183,13 @@ open class WmtsLevelsDialog : DialogFragment() {
     }
 
     /**
-     * We will start the download with the [DownloadService]. A sticky event is posted right before
-     * the service is started.
-     *
-     * WmtsLevelsDialog                            DownloadService
-     *                                sticky
-     *      RequestDownloadMapEvent   ----->          (event available)
-     *      Intent                    ----->          (service start, then process event)
-     *
-     * Such communication is necessary because the service isn't started synchronously.
+     * Provide the view-model all necessary information to start the download.
      */
     private fun onDownloadFormConfirmed() {
         val (p1, p2) = getPointsOfArea()
-        mapSource?.let {
-            viewModel.onDownloadFormConfirmed(it, p1, p2, currentMinLevel, currentMaxLevel)
-        }
-
-        activity?.apply {
-            val intent = Intent(baseContext, DownloadService::class.java)
-            startService(intent)
+        val application = requireActivity().application
+        mapSource?.let { mapSource ->
+            viewModel.onDownloadFormConfirmed(application, mapSource, p1, p2, currentMinLevel, currentMaxLevel)
         }
     }
 
