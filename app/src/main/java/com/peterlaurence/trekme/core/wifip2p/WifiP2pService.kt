@@ -22,12 +22,10 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.*
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -39,13 +37,11 @@ import java.io.File
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
-import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-@AndroidEntryPoint
 class WifiP2pService : Service() {
-    @Inject lateinit var trekMeContext: TrekMeContext
+    private var importedDir: File? = null
     private val notificationChannelId = "trekme.WifiP2pService"
     private val wifiP2pServiceNotificationId = 659531
     private val intentFilter = IntentFilter()
@@ -72,6 +68,8 @@ class WifiP2pService : Service() {
         }
 
     companion object {
+        const val IMPORTED_PATH_ARG = "importedPath"
+        const val MAP_ID_ARG = "mapId"
         private val stateChannel = ConflatedBroadcastChannel<WifiP2pState>()
         val stateFlow: Flow<WifiP2pState> = stateChannel.asFlow()
     }
@@ -241,9 +239,10 @@ class WifiP2pService : Service() {
 
         if (intent.action == StartRcv::class.java.name) {
             mode = StartRcv
+            importedDir = intent.getStringExtra(IMPORTED_PATH_ARG)?.let { File(it) }
         }
         if (intent.action == StartSend::class.java.name) {
-            val mapId = intent.getIntExtra("mapId", -1)
+            val mapId = intent.getIntExtra(MAP_ID_ARG, -1)
             val map = MapLoader.getMap(mapId)
             if (map != null) {
                 mode = StartSend(map)
@@ -473,7 +472,7 @@ class WifiP2pService : Service() {
 
         /* The uncompressed size is expected to come second */
         val sizeUncompressed = inputStream.readLong()
-        val dir = File(trekMeContext.importedDir, mapName).unique()
+        val dir = File(importedDir, mapName).unique()
         dir.mkdir()
 
         /* Finally comes the compressed stream */
@@ -494,7 +493,8 @@ class WifiP2pService : Service() {
                     }
                     when (result.status) {
                         MapImporter.MapParserStatus.NEW_MAP,
-                        MapImporter.MapParserStatus.EXISTING_MAP -> exitWithReason(MapSuccessfullyLoaded(result.map?.name ?: ""))
+                        MapImporter.MapParserStatus.EXISTING_MAP -> exitWithReason(MapSuccessfullyLoaded(result.map?.name
+                                ?: ""))
                         else -> exitWithReason(WithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR))
                     }
                 }
@@ -619,9 +619,9 @@ data class Stopped(val stopReason: StopReason? = null) : WifiP2pState() {
 }
 
 sealed class StopReason
-object ByUser: StopReason()
-data class WithError(val error: WifiP2pServiceErrors): StopReason()
-data class MapSuccessfullyLoaded(val name: String): StopReason()
+object ByUser : StopReason()
+data class WithError(val error: WifiP2pServiceErrors) : StopReason()
+data class MapSuccessfullyLoaded(val name: String) : StopReason()
 
 enum class WifiP2pServiceErrors {
     UNZIP_ERROR, MAP_IMPORT_ERROR, WIFIP2P_UNSUPPORTED
