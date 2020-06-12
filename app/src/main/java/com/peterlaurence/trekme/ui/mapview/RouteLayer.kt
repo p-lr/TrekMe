@@ -53,6 +53,7 @@ import kotlin.math.pow
 class RouteLayer(private val coroutineScope: CoroutineScope, private val state: RouteLayerState? = null) :
         TracksManageFragment.TrackChangeListener,
         CoroutineScope by coroutineScope {
+    private var isInitialized = false
     private lateinit var mapView: MapView
     private lateinit var map: Map
     private lateinit var pathView: PathView
@@ -70,13 +71,14 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
 
     var isDistanceOnTrackActive: Boolean = false
         /* Report to be active if is either effectively active or is going to be */
-        get() = distanceOnRouteController.isActive || state?.wasDistanceOnTrackActive ?: false
+        get() = isInitialized && (distanceOnRouteController.isActive || state?.wasDistanceOnTrackActive ?: false)
         private set
 
     /**
      * Returns the state of this [RouteLayer] at the time of this method invocation.
      */
-    fun getState(): RouteLayerState {
+    fun getState(): RouteLayerState? {
+        if (!isInitialized) return null
         return RouteLayerState(distanceOnRouteController.getState(), distanceOnRouteController.isActive)
     }
 
@@ -106,6 +108,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
         this.map = map
         setMapView(mapView)
         createPathView()
+        isInitialized = true
 
         if (this.map.areRoutesDefined()) {
             drawStaticRoutes()
@@ -115,13 +118,14 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
     }
 
     fun activateDistanceOnTrack() {
-        if (!distanceOnRouteController.isActive) {
+        if (isInitialized && !distanceOnRouteController.isActive) {
             mapView.addReferentialOwner(distanceOnRouteController)
             distanceOnRouteController.enable()
         }
     }
 
     fun disableDistanceOnTrack() {
+        if (!isInitialized) return
         mapView.removeReferentialOwner(distanceOnRouteController)
         distanceOnRouteController.disable()
     }
