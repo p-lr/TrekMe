@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,10 +11,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
-import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
 import com.peterlaurence.trekme.viewmodel.mapcreate.LicenseStatus
 
@@ -27,7 +24,6 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.LicenseStatus
  * license, if needed.
  */
 class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
-    private lateinit var billing: Billing
     private val viewModel: IgnLicenseViewModel by activityViewModels()
     private lateinit var ignLicensePrice: String
 
@@ -50,29 +46,25 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        billing = Billing(context, requireActivity())
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.getIgnLicenseStatus().observe(this, Observer<LicenseStatus> {
+        viewModel.init(requireActivity().application)
+        viewModel.getIgnLicenseStatus().observe(this, Observer {
             it?.also {
                 when (it) {
                     LicenseStatus.PURCHASED -> {
                         hidePriceIGN()
                         setDownloadEnabled(true)
                     }
-                    LicenseStatus.NOT_PURCHASED -> viewModel.getIgnLicenseInfo(billing)
+                    LicenseStatus.NOT_PURCHASED -> viewModel.getIgnLicenseInfo()
                     LicenseStatus.PENDING -> showPending()
+                    LicenseStatus.UNKNOWN -> showUnknown()
                 }
             }
         })
 
-        viewModel.getIgnLicenseDetails().observe(this, Observer<IgnLicenseDetails> {
+        viewModel.getIgnLicenseDetails().observe(this, Observer {
             it?.also {
                 ignLicensePrice = it.price
                 showPriceIGN()
@@ -87,7 +79,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         setDownloadEnabled(false)
 
         /* Then check the license status */
-        viewModel.getIgnLicensePurchaseStatus(billing)
+        viewModel.getIgnLicensePurchaseStatus()
     }
 
     /**
@@ -105,7 +97,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         buyBtn = view.findViewById(R.id.purchase_btn)
         buyBtn.text = getString(R.string.buy_btn)
         buyBtn.setOnClickListener {
-            viewModel.buyLicense(billing)
+            viewModel.buyLicense()
         }
 
         helpBtn = view.findViewById(R.id.help_license_info)
@@ -134,7 +126,14 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     }
 
     private fun showPending() {
+        priceInformation.visibility = View.VISIBLE
         priceInformation.text = getString(R.string.ign_buy_license_pending)
+        buyBtn.visibility = View.GONE
+    }
+
+    private fun showUnknown() {
+        priceInformation.visibility = View.VISIBLE
+        priceInformation.text = getString(R.string.ign_buy_license_unknown)
         buyBtn.visibility = View.GONE
     }
 

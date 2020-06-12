@@ -95,9 +95,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             throw RuntimeException("$context must implement RequestManageTracksListener, " +
                     "RequestManageMarkerListener and LocationProviderHolder")
         }
-        activity?.let {
-            billing = Billing(context, it)
-        }
+        billing = Billing(requireActivity().application)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

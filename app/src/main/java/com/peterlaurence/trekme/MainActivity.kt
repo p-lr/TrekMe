@@ -35,6 +35,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.peterlaurence.trekme.billing.ign.BillingFlowEvent
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
@@ -70,7 +71,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MarkerManageFragmentInteractionListener, LocationProviderHolder {
     private var fragmentManager: FragmentManager? = null
     private lateinit var binding: ActivityMainBinding
-    @Inject lateinit var trekMeContext: TrekMeContext
+    @Inject
+    lateinit var trekMeContext: TrekMeContext
     private val snackBarExit: Snackbar by lazy {
         Snackbar.make(binding.drawerLayout, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
     }
@@ -491,5 +493,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         notifyMgr?.notify(event.mapId, builder.build())
         val snackbar = Snackbar.make(binding.navView, archiveOkMsg, Snackbar.LENGTH_SHORT)
         snackbar.show()
+    }
+
+    @Subscribe
+    fun onBillingFlowEvent(event: BillingFlowEvent) {
+        event.billingClient.launchBillingFlow(this, event.flowParams)
     }
 }

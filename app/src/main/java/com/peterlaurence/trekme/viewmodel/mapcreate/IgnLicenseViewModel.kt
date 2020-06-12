@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
+import android.app.Application
 import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
@@ -15,11 +16,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-class IgnLicenseViewModel @ViewModelInject constructor(private val trekMeContext: TrekMeContext): ViewModel() {
+class IgnLicenseViewModel @ViewModelInject constructor(private val trekMeContext: TrekMeContext) : ViewModel() {
     private val ignLicenseStatus = MutableLiveData<LicenseStatus>()
     private val ignLicenseDetails = MutableLiveData<IgnLicenseDetails>()
+    private var application: Application? = null
+    private val billing: Billing by lazy {
+        Billing(application!!)
+    }
 
-    fun getIgnLicensePurchaseStatus(billing: Billing) {
+    fun init(application: Application) {
+        this.application = application
+    }
+
+    fun getIgnLicensePurchaseStatus() {
         viewModelScope.launch {
             /* First, check if we just need to acknowledge the purchase */
             val ackDone = billing.acknowledgeIgnLicense(this@IgnLicenseViewModel::onPurchaseAcknowledged)
@@ -33,25 +42,25 @@ class IgnLicenseViewModel @ViewModelInject constructor(private val trekMeContext
         }
     }
 
-    fun getIgnLicenseInfo(billing: Billing) {
+    fun getIgnLicenseInfo() {
         viewModelScope.launch {
             try {
                 val licenseDetails = billing.getIgnLicenseDetails()
                 ignLicenseDetails.postValue(licenseDetails)
             } catch (e: ProductNotFoundException) {
-                // something wrong on our side
+                // Something wrong on our side
                 ignLicenseStatus.postValue(LicenseStatus.PURCHASED)
             } catch (e: IllegalStateException) {
-                // can't check license info, so assume it's not valid by not posting a value to the
-                // LiveData.
+                // Can't check license info
                 Log.e(TAG, e.message ?: Log.getStackTraceString(e))
+                ignLicenseStatus.postValue(LicenseStatus.UNKNOWN)
             } catch (e: NotSupportedException) {
                 // TODO: alert the user that it can't buy the license and should ask for refund
             }
         }
     }
 
-    fun buyLicense(billing: Billing) {
+    fun buyLicense() {
         val ignLicenseDetails = ignLicenseDetails.value
         if (ignLicenseDetails != null) {
             billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchaseAcknowledged, this::onPurchasePending)
@@ -96,7 +105,7 @@ class IgnLicenseViewModel @ViewModelInject constructor(private val trekMeContext
 }
 
 enum class LicenseStatus {
-    PURCHASED, NOT_PURCHASED, PENDING
+    PURCHASED, NOT_PURCHASED, PENDING, UNKNOWN
 }
 
 data class IgnLicenseDetails(val skuDetails: SkuDetails) {

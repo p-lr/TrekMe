@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.billing.ign
 
-import android.app.Activity
-import android.content.Context
+import android.app.Application
 import android.util.Log
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode.*
@@ -9,6 +8,7 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.delay
+import org.greenrobot.eventbus.EventBus
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -16,9 +16,9 @@ const val IGN_LICENSE_SKU = "ign_license"
 typealias PurchaseAcknowledgedCallback = () -> Unit
 typealias PurchasePendingCallback = () -> Unit
 
-class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
+class Billing(val application: Application) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
 
-    private val billingClient = BillingClient.newBuilder(context).setListener(this).enablePendingPurchases().build()
+    private val billingClient = BillingClient.newBuilder(application).setListener(this).enablePendingPurchases().build()
 
     private lateinit var purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback
     private lateinit var purchasePendingCallback: PurchasePendingCallback
@@ -193,9 +193,11 @@ class Billing(val context: Context, val activity: Activity) : PurchasesUpdatedLi
                 .build()
         this.purchaseAcknowledgedCallback = purchaseAcknowledgedCb
         this.purchasePendingCallback = purchasePendingCb
-        billingClient.launchBillingFlow(activity, flowParams)
+        EventBus.getDefault().post(BillingFlowEvent(billingClient, flowParams))
     }
 }
+
+data class BillingFlowEvent(val billingClient: BillingClient, val flowParams: BillingFlowParams)
 
 const val TAG = "ign.Billing.kt"
 
