@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.ui.record
 
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -146,8 +145,8 @@ class RecordFragment : Fragment() {
 
     @Subscribe
     fun onRequestStartEvent(event: RequestStartEvent) {
-        val intent = Intent(requireActivity().baseContext, LocationService::class.java)
-        requireActivity().startService(intent)
+        val app = requireActivity().application
+        viewModel.startRecording(app)
     }
 
     @Subscribe
