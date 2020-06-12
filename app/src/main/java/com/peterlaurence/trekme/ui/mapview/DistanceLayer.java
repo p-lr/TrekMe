@@ -81,6 +81,7 @@ public class DistanceLayer implements ReferentialOwner {
 
     public void destroy() {
         if (mMapView != null) mMapView.removeReferentialOwner(this);
+        if (mDistanceThread != null) mDistanceThread.quit();
     }
 
     public void toggle() {
