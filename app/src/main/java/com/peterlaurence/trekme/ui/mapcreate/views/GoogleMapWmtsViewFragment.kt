@@ -5,16 +5,12 @@ import android.content.Context
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
@@ -27,6 +23,7 @@ import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.ignLayers
+import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog
@@ -76,16 +73,13 @@ import org.greenrobot.eventbus.Subscribe
  * @author peterLaurence on 11/05/18
  */
 class GoogleMapWmtsViewFragment : Fragment() {
+    private var _binding: FragmentWmtsViewBinding? = null
+    private val binding get() = _binding!!
     private lateinit var mapSource: MapSource
-    private lateinit var rootView: ConstraintLayout
-    private lateinit var mapView: MapView
-    private lateinit var areaLayer: AreaLayer
-    private lateinit var locationProvider: LocationProvider
-    private lateinit var positionMarker: PositionMarker
-    private lateinit var wmtsWarning: TextView
-    private lateinit var wmtsWarningLink: TextView
-    private lateinit var navigateToIgnCredentialsBtn: Button
-    private lateinit var fabSave: FloatingActionButton
+    private var mapView: MapView? = null
+    private var areaLayer: AreaLayer? = null
+    private var locationProvider: LocationProvider? = null
+    private var positionMarker: PositionMarker? = null
     private val projection = MercatorProjection()
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
@@ -132,7 +126,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 ?: MapSource.OPEN_STREET_MAP
 
         /* Create a local variable to avoid leaking this entire class */
-        val provider: LocationProvider = locationProvider
+        val provider: LocationProvider = locationProvider ?: return
         locationViewModel.setLocationProvider(provider)
         locationViewModel.getLocationLiveData().observe(this, Observer {
             it?.let {
@@ -143,34 +137,35 @@ class GoogleMapWmtsViewFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        mapView = null
+        areaLayer = null
+        locationProvider = null
+        positionMarker = null
+    }
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View {
-        rootView =
-                inflater.inflate(R.layout.fragment_wmts_view, container, false) as ConstraintLayout
-
-        return rootView
+        _binding = FragmentWmtsViewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        wmtsWarning = view.findViewById(R.id.fragmentWmtWarning)
-
-        fabSave = view.findViewById(R.id.fabSave)
-        fabSave.setOnClickListener { validateArea() }
-
-        wmtsWarningLink = view.findViewById(R.id.fragmentWmtWarningLink)
-        wmtsWarningLink.movementMethod = LinkMovementMethod.getInstance()
+        binding.fabSave.setOnClickListener { validateArea() }
+        binding.fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
         /**
          * If there is something wrong with IGN credentials, a special button helps to go directly
          * to the credentials editing fragment.
          */
-        navigateToIgnCredentialsBtn = view.findViewById(R.id.fragmentWmtsNagivateToIgnCredentials)
-        navigateToIgnCredentialsBtn.setOnClickListener {
+        binding.fragmentWmtsNagivateToIgnCredentials.setOnClickListener {
             val action = GoogleMapWmtsViewFragmentDirections.actionGoogleMapWmtsViewFragmentToIgnCredentialsFragment()
             findNavController().navigate(action)
         }
@@ -203,11 +198,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.map_area_widget_id -> {
-                if (this::areaLayer.isInitialized) {
-                    areaLayer.detach()
-                }
+                areaLayer?.detach()
                 addAreaLayer()
-                fabSave.visibility = View.VISIBLE
+                binding.fabSave.visibility = View.VISIBLE
             }
             R.id.map_layer_menu_id -> {
                 val event = LayerSelectEvent(arrayListOf())
@@ -306,9 +299,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* 3- Scroll to the init position if there is one pre-configured */
         viewModel.getScaleAndScrollInitConfig(mapSource)?.also {
             /* At this point the mapView should be initialized, but we never know.. */
-            if (::mapView.isInitialized) {
-                mapView.scale = it.scale
-                mapView.scrollTo(it.scrollX, it.scrollY)
+            mapView?.apply {
+                scale = it.scale
+                scrollTo(it.scrollX, it.scrollY)
             }
         }
     }
@@ -333,21 +326,21 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun showWarningMessage() {
-        wmtsWarning.visibility = View.VISIBLE
-        wmtsWarningLink.visibility = View.VISIBLE
+        binding.fragmentWmtWarning.visibility = View.VISIBLE
+        binding.fragmentWmtWarningLink.visibility = View.VISIBLE
 
         if (mapSource == MapSource.IGN) {
-            navigateToIgnCredentialsBtn.visibility = View.VISIBLE
-            wmtsWarning.text = getText(R.string.mapcreate_warning_ign)
+            binding.fragmentWmtsNagivateToIgnCredentials.visibility = View.VISIBLE
+            binding.fragmentWmtWarning.text = getText(R.string.mapcreate_warning_ign)
         } else {
-            wmtsWarning.text = getText(R.string.mapcreate_warning_others)
+            binding.fragmentWmtWarning.text = getText(R.string.mapcreate_warning_others)
         }
     }
 
     private fun hideWarningMessage() {
-        wmtsWarning.visibility = View.GONE
-        navigateToIgnCredentialsBtn.visibility = View.GONE
-        wmtsWarningLink.visibility = View.GONE
+        binding.fragmentWmtWarning.visibility = View.GONE
+        binding.fragmentWmtsNagivateToIgnCredentials.visibility = View.GONE
+        binding.fragmentWmtWarningLink.visibility = View.GONE
     }
 
     private fun addMapView(tileStreamProvider: TileStreamProvider) {
@@ -371,7 +364,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         /* Position marker */
         positionMarker = PositionMarker(context)
-        mapView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
+        mapView.addMarker(positionMarker!!, 0.0, 0.0, -0.5f, -0.5f)
 
         /* Add the view */
         setMapView(mapView)
@@ -379,20 +372,23 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     private fun setMapView(mapView: MapView) {
         this.mapView = mapView
-        this.mapView.id = R.id.tileview_ign_id
-        this.mapView.isSaveEnabled = true
+        this.mapView?.apply {
+            id = R.id.tileview_ign_id
+            isSaveEnabled = true
+        }
+
         val params = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
-        rootView.addView(mapView, 0, params)
+        binding.root.addView(mapView, 0, params)
     }
 
     private fun removeMapView() {
-        rootView.removeViewAt(0)
+        binding.root.removeViewAt(0)
     }
 
     private fun addAreaLayer() {
-        if (!::mapView.isInitialized) return
+        val mapView = mapView ?: return
         view?.post {
             areaLayer = AreaLayer(requireContext(), object : AreaListener {
                 override fun areaChanged(area: Area) {
@@ -403,7 +399,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 }
 
             })
-            areaLayer.attachTo(mapView)
+            areaLayer?.attachTo(mapView)
         }
     }
 
@@ -428,9 +424,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     private fun onLocationReceived(location: Location) {
         /* If there is no MapView, no need to go further */
-        if (!::mapView.isInitialized) {
-            return
-        }
+        if (mapView == null) return
 
         /* A Projection is always defined in this case */
         lifecycleScope.launch {
@@ -450,8 +444,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
      * @param y the projected Y coordinate
      */
     private fun updatePosition(x: Double, y: Double) {
-        if (::positionMarker.isInitialized) {
-            mapView.moveMarker(positionMarker, x, y)
+        positionMarker?.also {
+            mapView?.moveMarker(it, x, y)
         }
     }
 }
