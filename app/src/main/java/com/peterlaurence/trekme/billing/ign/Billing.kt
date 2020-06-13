@@ -50,7 +50,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         })
     }
 
-    override fun onPurchasesUpdated(billingResult: BillingResult?, purchases: MutableList<Purchase>?) {
+    override fun onPurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
         fun acknowledge() {
             purchases?.forEach {
                 if (it.sku == IGN_LICENSE_SKU) {
@@ -65,7 +65,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
             }
         }
 
-        if (billingResult != null && purchases != null) {
+        if (purchases != null) {
             if (billingResult.responseCode == OK) {
                 acknowledge()
             }
@@ -88,14 +88,12 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
      * This is the callback of the [BillingClient.acknowledgePurchase] call.
      * The [purchaseAcknowledgedCallback] is called only if the purchase is successfully acknowledged.
      */
-    override fun onAcknowledgePurchaseResponse(billingResult: BillingResult?) {
+    override fun onAcknowledgePurchaseResponse(billingResult: BillingResult) {
         /* Then notify registered PurchaseListener that it completed normally */
-        billingResult?.also {
-            if (it.responseCode == OK && this::purchaseAcknowledgedCallback.isInitialized) {
-                purchaseAcknowledgedCallback()
-            } else {
-                Log.e(TAG, "Payment couldn't be acknowledged (code ${it.responseCode}): ${it.debugMessage}")
-            }
+        if (billingResult.responseCode == OK && this::purchaseAcknowledgedCallback.isInitialized) {
+            purchaseAcknowledgedCallback()
+        } else {
+            Log.e(TAG, "Payment couldn't be acknowledged (code ${billingResult.responseCode}): ${billingResult.debugMessage}")
         }
     }
 
@@ -124,7 +122,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         runCatching { connectWithRetry() }.onFailure { return null }
         val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
 
-        return purchases.purchasesList.getValidIgnLicense()?.let {
+        return purchases.purchasesList?.getValidIgnLicense()?.let {
             if (checkTime(it.purchaseTime) !is AccessGranted) {
                 it.consumeIgnLicense()
                 null
@@ -181,7 +179,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         val params = SkuDetailsParams.newBuilder()
         params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP)
         billingClient.querySkuDetailsAsync(params.build()) { billingResult, skuDetailsList ->
-            it.resume(SkuQueryResult(billingResult, skuDetailsList))
+            it.resume(SkuQueryResult(billingResult, skuDetailsList ?: listOf()))
         }
     }
 
