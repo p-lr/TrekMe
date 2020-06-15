@@ -212,9 +212,11 @@
     <string name="swiss_topo_source" translatable="false">Swiss Topo</string>
     <string name="swiss_topo_source_description">Federal Office of Topography</string>
 
+    <!-- MapCreateFragment -->
     <string name="mapcreate_define_area">Choose area</string>
     <string name="mapcreate_define_layer">Choose layer</string>
     <string name="wmts_settings_dialog">Map configuration</string>
+    <string name="google_map_wmts_label" translatable="false">GoogleMapWmtsViewFragment</string>
     <string name="min_zoom">Minimum zoom</string>
     <string name="max_zoom">Maximun zoom</string>
     <string name="total_transactions">Total transactions</string>

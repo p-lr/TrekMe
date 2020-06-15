@@ -67,6 +67,8 @@ class MainActivityViewModel @ViewModelInject constructor(
             }
         }
     }
+
+    fun getMapIndex(mapId: Int): Int = MapLoader.maps.indexOfFirst { it.id == mapId }
 }
 
 /**

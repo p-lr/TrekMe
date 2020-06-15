@@ -27,10 +27,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProviderRetry
-import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
-import com.peterlaurence.trekme.service.event.MapDownloadEvent
-import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
-import com.peterlaurence.trekme.service.event.Status
+import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.stackTraceToString
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -65,7 +62,7 @@ class DownloadService: Service() {
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var destDir: File
 
-    private val progressEvent = MapDownloadEvent(Status.PENDING, 0.0)
+    private val progressEvent = MapDownloadPendingEvent(0.0)
 
     companion object {
         @JvmStatic
@@ -176,7 +173,7 @@ class DownloadService: Service() {
             destDir = destDirRes
         } else {
             /* Storage issue, warn and stop the service */
-            EventBus.getDefault().post(MapDownloadEvent(Status.STORAGE_ERROR))
+            EventBus.getDefault().post(MapDownloadStorageErrorEvent)
             stopSelf()
             return
         }
@@ -261,7 +258,7 @@ class DownloadService: Service() {
             /* Notify that the download is finished correctly.
              * Don't attempt to send more notifications, they will be dismissed anyway since the
              * service is about to stop. */
-            EventBus.getDefault().post(MapDownloadEvent(Status.FINISHED))
+            EventBus.getDefault().post(MapDownloadFinishedEvent(map.id))
 
             /* Finally, stop the service */
             stopSelf()

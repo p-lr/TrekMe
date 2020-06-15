@@ -40,7 +40,9 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
-import com.peterlaurence.trekme.service.event.Status
+import com.peterlaurence.trekme.service.event.MapDownloadFinishedEvent
+import com.peterlaurence.trekme.service.event.MapDownloadPendingEvent
+import com.peterlaurence.trekme.service.event.MapDownloadStorageErrorEvent
 import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment.OnMapArchiveFragmentInteractionListener
@@ -71,6 +73,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MarkerManageFragmentInteractionListener, LocationProviderHolder {
     private var fragmentManager: FragmentManager? = null
     private lateinit var binding: ActivityMainBinding
+
     @Inject
     lateinit var trekMeContext: TrekMeContext
     private val snackBarExit: Snackbar by lazy {
@@ -355,9 +358,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_mapViewFragment)
     }
 
-    private fun showMapListFragment() {
+    /**
+     * Navigate to the map-list fragment, optionally providing the id of the map the map-list fragment
+     * should immediately scroll to.
+     */
+    private fun showMapListFragment(mapId: Int? = null) {
         if (getString(R.string.fragment_map_list) != findNavController(R.id.nav_host_fragment).currentDestination?.label) {
-            findNavController(R.id.nav_host_fragment).navigate(R.id.mapListFragment)
+            val action = NavGraphDirections.actionGlobalMapListFragment().apply {
+                if (mapId != null) {
+                    val index = viewModel.getMapIndex(mapId)
+                    if (index != -1) {
+                        scrollToPosition = index
+                    }
+                }
+            }
+            findNavController(R.id.nav_host_fragment).navigate(action)
         }
     }
 
@@ -431,10 +446,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Subscribe
     fun onMapDownloadEvent(event: MapDownloadEvent) {
-        when (event.status) {
-            Status.FINISHED -> showMessageInSnackbar(getString(R.string.service_download_finished))
-            Status.STORAGE_ERROR -> showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title), null)
-            Status.PENDING -> {
+        when (event) {
+            is MapDownloadFinishedEvent -> {
+                /* Only if the user is still on the GoogleMapWmtsFragment, navigate to the map list */
+                if (getString(R.string.google_map_wmts_label) == findNavController(R.id.nav_host_fragment).currentDestination?.label) {
+                    showMapListFragment(event.mapId)
+                }
+                showMessageInSnackbar(getString(R.string.service_download_finished))
+            }
+            is MapDownloadStorageErrorEvent -> showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title), null)
+            is MapDownloadPendingEvent -> {
                 // Nothing particular to do, the service which fire those events already sends
                 // notifications with the progression.
             }

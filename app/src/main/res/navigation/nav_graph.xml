@@ -16,6 +16,10 @@
         <action
             android:id="@+id/action_mapListFragment_to_mapSettingsFragment"
             app:destination="@id/mapSettingsFragment" />
+        <argument
+            android:name="scrollToPosition"
+            app:argType="integer"
+            android:defaultValue="-1" />
     </fragment>
     <fragment
         android:id="@+id/mapViewFragment"
@@ -78,7 +82,7 @@
     <fragment
         android:id="@+id/googleMapWmtsViewFragment"
         android:name="com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment"
-        android:label="GoogleMapWmtsViewFragment" >
+        android:label="@string/google_map_wmts_label">
         <argument
             android:name="mapSource"
             app:argType="com.peterlaurence.trekme.core.mapsource.MapSourceBundle" />
@@ -118,4 +122,5 @@
     <action
         android:id="@+id/action_global_mapViewFragment"
         app:destination="@id/mapViewFragment" />
+    <action android:id="@+id/action_global_mapListFragment" app:destination="@id/mapListFragment" />
 </navigation>

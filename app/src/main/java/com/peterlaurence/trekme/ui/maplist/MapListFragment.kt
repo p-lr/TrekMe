@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
@@ -31,6 +32,7 @@ import java.lang.ref.WeakReference
 class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, MapDeleteListener, MapDeletedListener {
     private var _binding: FragmentMapListBinding? = null
     private val binding get() = _binding!!
+    private val args: MapListFragmentArgs by navArgs()
 
     private var llm: LinearLayoutManager? = null
     private var llmState: Parcelable? = null
@@ -79,9 +81,16 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
          * was changed in the settings fragment, we need to refresh the view. */
         adapter?.notifyDataSetChanged()
 
-        /* When navigating back to this fragment, the saved state is non-null so let's use it */
-        if (llmState != null) {
-            llm?.onRestoreInstanceState(llmState)
+        /* This fragment might be instructed to scroll to a position (by index int he dataset).
+         * In case of no instruction, the value of the index is the default -1 value. In this case,
+         * we try to restore the previous state. */
+        if (args.scrollToPosition != -1) {
+            llm?.scrollToPositionWithOffset(args.scrollToPosition, 0)
+        } else {
+            /* When navigating back to this fragment, the saved state is non-null so let's use it */
+            if (llmState != null) {
+                llm?.onRestoreInstanceState(llmState)
+            }
         }
     }
 
