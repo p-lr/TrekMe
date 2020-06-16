@@ -28,6 +28,7 @@ import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.util.gpx.GPXWriter
 import com.peterlaurence.trekme.util.gpx.model.Gpx
+import com.peterlaurence.trekme.util.gpx.model.Metadata
 import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
@@ -149,6 +150,9 @@ class LocationService : Service() {
             val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH'h'mm-ss's'", Locale.ENGLISH)
             val trackName = "track-" + dateFormat.format(date)
 
+            /* Make the metadata */
+            val metadata = Metadata(trackName, date.time)
+
             val track = Track(trkSegList, trackName)
             track.statistics = trackStatCalculator.getStatistics()
 
@@ -157,7 +161,7 @@ class LocationService : Service() {
 
             val wayPoints = ArrayList<TrackPoint>()
 
-            val gpx = Gpx(trkList, wayPoints, appName, GPX_VERSION)
+            val gpx = Gpx(metadata, trkList, wayPoints, appName, GPX_VERSION)
             try {
                 val gpxFileName = "$trackName.gpx"
                 val gpxFile = File(recordingsDir, gpxFileName)

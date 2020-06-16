@@ -9,15 +9,22 @@ package com.peterlaurence.trekme.util.gpx.model
 /* Root tag */
 const val TAG_GPX = "gpx"
 
-/* Gpx attributes and nodes nodes */
+/* Gpx attributes */
 const val ATTR_VERSION = "version"
 const val ATTR_CREATOR = "creator"
+const val TAG_METADATA = "metadata"
 const val TAG_TRACK = "trk"
 const val TAG_ROUTE = "rte"
 const val TAG_WAYPOINT = "wpt"
 
-/* Track nodes */
+/* Common nodes */
 const val TAG_NAME = "name"
+const val TAG_TIME = "time"
+
+/* Metadata nodes */
+const val TAG_BOUNDS = "bounds"
+
+/* Track nodes */
 const val TAG_SEGMENT = "trkseg"
 const val TAG_EXTENSIONS = "extensions"
 
@@ -31,7 +38,6 @@ const val TAG_RTE_POINT = "rtept"
 const val ATTR_LAT = "lat"
 const val ATTR_LON = "lon"
 const val TAG_ELEVATION = "ele"
-const val TAG_TIME = "time"
 
 /* Track custom extensions nodes and attributes */
 const val TAG_TRACK_STATISTICS = "statistics"

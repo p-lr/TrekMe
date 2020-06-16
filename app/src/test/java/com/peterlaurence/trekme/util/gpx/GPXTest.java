@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.util.gpx;
 
 import com.peterlaurence.trekme.util.gpx.model.Gpx;
+import com.peterlaurence.trekme.util.gpx.model.Metadata;
 import com.peterlaurence.trekme.util.gpx.model.Track;
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint;
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment;
@@ -58,6 +59,16 @@ public class GPXTest {
             if (gpxFile.exists()) {
                 try {
                     Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(gpxFile));
+
+                    /* Metadata check */
+                    Metadata metadata = gpx.getMetadata();
+                    assertNotNull(metadata);
+                    assertEquals("Example gpx", metadata.getName());
+                    Calendar cal = readTime(metadata.getTime());
+                    assertEquals(2018, cal.get(Calendar.YEAR));
+                    assertEquals(8, cal.get(Calendar.MONTH));
+                    assertEquals(9, cal.get(Calendar.DAY_OF_MONTH));
+                    assertEquals(47, cal.get(Calendar.SECOND));
 
                     List<Track> trackList = gpx.getTracks();
                     assertEquals(2, trackList.size());  // 1 track, 1 route
@@ -144,6 +155,17 @@ public class GPXTest {
 
             /* Now read it back */
             Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(testFile));
+
+            /* Metadata check */
+            Metadata metadata = gpx.getMetadata();
+            assertNotNull(metadata);
+            assertEquals("Example gpx", metadata.getName());
+            Calendar cal = readTime(metadata.getTime());
+            assertEquals(2018, cal.get(Calendar.YEAR));
+            assertEquals(8, cal.get(Calendar.MONTH));
+            assertEquals(9, cal.get(Calendar.DAY_OF_MONTH));
+            assertEquals(47, cal.get(Calendar.SECOND));
+
             List<Track> trackList = gpx.getTracks();
             assertEquals(2, trackList.size());
 
@@ -192,5 +214,12 @@ public class GPXTest {
         } catch (ParseException e) {
             fail();
         }
+    }
+
+    private Calendar readTime(Long time) {
+        Date date = new Date(time);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
     }
 }

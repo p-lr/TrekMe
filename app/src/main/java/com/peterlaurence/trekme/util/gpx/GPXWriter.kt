@@ -14,6 +14,8 @@ import javax.xml.transform.TransformerException
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /**
  * A writer compliant with the [GPX 1.1 schema](https://www.topografix.com/gpx/1/1/). <br></br>
@@ -42,6 +44,11 @@ object GPXWriter {
         creatorNode.nodeValue = gpx.creator
         attrs.setNamedItem(creatorNode)
 
+        /* Metadata */
+        if (gpx.metadata != null) {
+            gpxNode.addMetadata(gpx.metadata, doc)
+        }
+
         /* Tracks */
         for (track in gpx.tracks) {
             addTrackToNode(track, gpxNode, doc)
@@ -57,6 +64,24 @@ object GPXWriter {
         val source = DOMSource(doc)
         val result = StreamResult(out)
         transformer.transform(source, result)
+    }
+
+    private fun Node.addMetadata(metadata: Metadata, doc: Document) {
+        val metadataNode = doc.createElement(TAG_METADATA)
+
+        /* Name */
+        if (metadata.name != null) {
+            val node = doc.createElement(TAG_NAME)
+            node.appendChild(doc.createTextNode(metadata.name))
+            metadataNode.appendChild(node)
+        }
+
+        if (metadata.time != null) {
+            val node = doc.createElement(TAG_TIME)
+            node.appendChild(doc.createTextNode(DATE_FORMATTER.format(metadata.time)))
+            metadataNode.appendChild(node)
+        }
+        appendChild(metadataNode)
     }
 
     private fun addTrackToNode(trk: Track, n: Node, doc: Document) {

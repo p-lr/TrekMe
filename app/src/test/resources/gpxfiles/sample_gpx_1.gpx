@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.0">
-    <name>Example gpx</name>
+    <metadata>
+        <name>Example gpx</name>
+        <time>2018-09-09T10:49:47Z</time>
+    </metadata>
     <wpt lat="54.9328621088893" lon="9.860624216140083">
         <ele>127.1</ele>
         <name>Waypoint 1</name>

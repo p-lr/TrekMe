@@ -21,6 +21,8 @@ import kotlin.collections.ArrayList
 object GPXParser {
     private val ns: String? = null
 
+    /* We don't add the trailing 'Z', because sometimes it's missing and we don't care about a
+     * better precision than the second. */
     private val DATE_PARSER = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
 
     /**
@@ -49,6 +51,7 @@ object GPXParser {
 
     @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
     private fun readGpx(parser: XmlPullParser): Gpx {
+        var metadata: Metadata? = null
         val tracks = ArrayList<Track>()
         val wayPoints = ArrayList<TrackPoint>()
         parser.require(XmlPullParser.START_TAG, ns, TAG_GPX)
@@ -58,6 +61,7 @@ object GPXParser {
             }
             // Starts by looking for the entry tag
             when (parser.name) {
+                TAG_METADATA -> metadata = readMetadata(parser)
                 TAG_TRACK -> tracks.add(readTrack(parser))
                 TAG_WAYPOINT -> wayPoints.add(readPoint(parser, tag = TAG_WAYPOINT))
                 TAG_ROUTE -> tracks.add(readRoute(parser))
@@ -65,7 +69,23 @@ object GPXParser {
             }
         }
         parser.require(XmlPullParser.END_TAG, ns, TAG_GPX)
-        return Gpx(tracks = tracks, wayPoints = wayPoints)
+        return Gpx(tracks = tracks, wayPoints = wayPoints, metadata = metadata)
+    }
+
+    private fun readMetadata(parser: XmlPullParser): Metadata {
+        var name: String? = null
+        var time: Long? = null
+        parser.require(XmlPullParser.START_TAG, ns, TAG_METADATA)
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) {
+                continue
+            }
+            when (parser.name) {
+                TAG_NAME -> name = readName(parser)
+                TAG_TIME -> time = readTime(parser)
+            }
+        }
+        return Metadata(name, time)
     }
 
     /**
