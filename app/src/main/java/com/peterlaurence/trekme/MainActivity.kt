@@ -43,7 +43,6 @@ import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.MapDownloadFinishedEvent
 import com.peterlaurence.trekme.service.event.MapDownloadPendingEvent
 import com.peterlaurence.trekme.service.event.MapDownloadStorageErrorEvent
-import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.mapimport.MapImportFragment.OnMapArchiveFragmentInteractionListener
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
@@ -54,9 +53,6 @@ import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageF
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
-import com.peterlaurence.trekme.viewmodel.common.LocationProvider
-import com.peterlaurence.trekme.viewmodel.common.LocationSource
-import com.peterlaurence.trekme.viewmodel.common.getLocationProvider
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -70,7 +66,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
         OnMapArchiveFragmentInteractionListener,
-        MarkerManageFragmentInteractionListener, LocationProviderHolder {
+        MarkerManageFragmentInteractionListener {
     private var fragmentManager: FragmentManager? = null
     private lateinit var binding: ActivityMainBinding
 
@@ -460,11 +456,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 // notifications with the progression.
             }
         }
-    }
-
-    override val locationProvider: LocationProvider by lazy {
-        val ctx: Context = applicationContext
-        getLocationProvider(LocationSource.GOOGLE_FUSE, ctx)
     }
 
     /**

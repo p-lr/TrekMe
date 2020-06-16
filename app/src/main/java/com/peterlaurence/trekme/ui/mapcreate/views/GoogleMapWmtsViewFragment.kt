@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
@@ -25,7 +24,6 @@ import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.ignLayers
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
 import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
-import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
@@ -37,11 +35,13 @@ import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import javax.inject.Inject
 
 /**
  * Displays Google Maps - compatible tile matrix sets.
@@ -72,13 +72,16 @@ import org.greenrobot.eventbus.Subscribe
  *
  * @author peterLaurence on 11/05/18
  */
+@AndroidEntryPoint
 class GoogleMapWmtsViewFragment : Fragment() {
     private var _binding: FragmentWmtsViewBinding? = null
     private val binding get() = _binding!!
+    @Inject
+    lateinit var locationProvider: LocationProvider
+
     private lateinit var mapSource: MapSource
     private var mapView: MapView? = null
     private var areaLayer: AreaLayer? = null
-    private var locationProvider: LocationProvider? = null
     private var positionMarker: PositionMarker? = null
     private val projection = MercatorProjection()
 
@@ -109,16 +112,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        if (context is LocationProviderHolder) {
-            locationProvider = context.locationProvider
-        } else {
-            throw RuntimeException("$context must implement LocationProviderHolder")
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -142,7 +135,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         _binding = null
         mapView = null
         areaLayer = null
-        locationProvider = null
         positionMarker = null
     }
 

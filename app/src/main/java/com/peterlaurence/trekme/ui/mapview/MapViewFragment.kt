@@ -29,7 +29,6 @@ import com.peterlaurence.trekme.core.sensors.OrientationSensor
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackStatistics
-import com.peterlaurence.trekme.ui.LocationProviderHolder
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
@@ -43,6 +42,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import javax.inject.Inject
 
 /**
  * This fragment displays a [Map], using [MapView].
@@ -52,6 +52,9 @@ import org.greenrobot.eventbus.Subscribe
 @AndroidEntryPoint
 class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener,
         ReferentialOwner {
+
+    @Inject
+    lateinit var locationProvider: LocationProvider
     private lateinit var presenter: MapViewFragmentContract.Presenter
     private var mapView: MapView? = null
     private var mMap: Map? = null
@@ -68,7 +71,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private lateinit var landmarkLayer: LandmarkLayer
     private lateinit var speedListener: SpeedListener
     private lateinit var distanceListener: DistanceLayer.DistanceListener
-    private lateinit var locationProvider: LocationProvider
     private var orientationJob: Job? = null
 
     private var billing: Billing? = null
@@ -89,12 +91,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is LocationProviderHolder) {
-            locationProvider = context.locationProvider
-        } else {
-            throw RuntimeException("$context must implement RequestManageTracksListener, " +
-                    "RequestManageMarkerListener and LocationProviderHolder")
-        }
         billing = Billing(requireActivity().application)
     }
 
