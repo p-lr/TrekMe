@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.view.*
 import android.view.View.GONE
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -15,11 +13,11 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputEditText
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.databinding.FragmentMarkerManageBinding
 import com.peterlaurence.trekme.viewmodel.markermanage.GeographicCoords
 import com.peterlaurence.trekme.viewmodel.markermanage.MakerManageViewModel
 import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
@@ -41,20 +39,14 @@ import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
  * @author peterLaurence on 23/04/2017 -- Converted to Kotlin on 24/09/2019
  */
 class MarkerManageFragment : Fragment() {
-    private lateinit var rootView: View
+    private var _binding: FragmentMarkerManageBinding? = null
+    private val binding get() = _binding!!
+
     private val viewModel: MakerManageViewModel by viewModels()
     private val args: MarkerManageFragmentArgs by navArgs()
 
     private var map: Map? = null
     private var marker: MarkerGson.Marker? = null
-
-    private var nameEditText: TextInputEditText? = null
-    private var latEditText: TextInputEditText? = null
-    private var lonEditText: TextInputEditText? = null
-    private var projectionLabel: TextView? = null
-    private var projectionX: TextInputEditText? = null
-    private var projectionY: TextInputEditText? = null
-    private var comment: EditText? = null
 
     /*
      * Be VERY careful not to break the logic of those flags, since their purpose is to prevent
@@ -69,16 +61,16 @@ class MarkerManageFragment : Fragment() {
 
         viewModel.getGeographicLiveData().observe(this, Observer<GeographicCoords> {
             it?.let {
-                lonEditText?.setText("${it.lon}")
-                latEditText?.setText("${it.lat}")
+                binding.markerLonId.setText("${it.lon}")
+                binding.markerLatId.setText("${it.lat}")
             }
             infiniteLoopGuardGeo = false
         })
 
         viewModel.getProjectedLiveData().observe(this, Observer<ProjectedCoords> {
             it?.let {
-                projectionX?.setText("${it.X}")
-                projectionY?.setText("${it.Y}")
+                binding.markerProjXId.setText("${it.X}")
+                binding.markerProjYId.setText("${it.Y}")
             }
             infiniteLoopGuardProj = false
         })
@@ -87,23 +79,14 @@ class MarkerManageFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        rootView = inflater.inflate(R.layout.fragment_marker_manage, container, false)
-
-        /* The view fields */
-        nameEditText = rootView.findViewById(R.id.marker_name_id)
-        latEditText = rootView.findViewById(R.id.marker_lat_id)
-        lonEditText = rootView.findViewById(R.id.marker_lon_id)
-        projectionLabel = rootView.findViewById(R.id.marker_proj_label_id)
-        projectionX = rootView.findViewById(R.id.marker_proj_x_id)
-        projectionY = rootView.findViewById(R.id.marker_proj_y_id)
-        comment = rootView.findViewById(R.id.marker_comment_id)
+        _binding = FragmentMarkerManageBinding.inflate(inflater, container, false)
 
         map = MapLoader.getMap(args.mapId)
         map?.markers?.firstOrNull { it == args.marker }?.let {
             this.marker = it
         }
 
-        latEditText?.addTextChangedListener(
+        binding.markerLatId.addTextChangedListener(
                 onTextChanged = { _, _, _, _ ->
                     if (!infiniteLoopGuardGeo) {
                         onGeographicCoordsChanged()
@@ -111,7 +94,7 @@ class MarkerManageFragment : Fragment() {
                 }
         )
 
-        lonEditText?.addTextChangedListener(
+        binding.markerLonId.addTextChangedListener(
                 onTextChanged = { _, _, _, _ ->
                     if (!infiniteLoopGuardGeo) {
                         onGeographicCoordsChanged()
@@ -119,7 +102,7 @@ class MarkerManageFragment : Fragment() {
                 }
         )
 
-        projectionX?.addTextChangedListener(
+        binding.markerProjXId.addTextChangedListener(
                 onTextChanged = { _, _, _, _ ->
                     if (!infiniteLoopGuardProj) {
                         onProjectedCoordsChanged()
@@ -127,7 +110,7 @@ class MarkerManageFragment : Fragment() {
                 }
         )
 
-        projectionY?.addTextChangedListener(
+        binding.markerProjYId.addTextChangedListener(
                 onTextChanged = { _, _, _, _ ->
                     if (!infiniteLoopGuardProj) {
                         onProjectedCoordsChanged()
@@ -136,7 +119,12 @@ class MarkerManageFragment : Fragment() {
         )
 
         updateView()
-        return rootView
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -174,8 +162,8 @@ class MarkerManageFragment : Fragment() {
             var lat: Double? = null
             var lon: Double? = null
             try {
-                lat = latEditText?.text?.toString()?.toDouble()
-                lon = lonEditText?.text?.toString()?.toDouble()
+                lat = binding.markerLatId.text?.toString()?.toDouble()
+                lon = binding.markerLonId.text?.toString()?.toDouble()
             } catch (e: Exception) {
             }
 
@@ -194,8 +182,8 @@ class MarkerManageFragment : Fragment() {
             var X: Double? = null
             var Y: Double? = null
             try {
-                X = projectionX?.text?.toString()?.toDouble()
-                Y = projectionY?.text?.toString()?.toDouble()
+                X = binding.markerProjXId.text?.toString()?.toDouble()
+                Y = binding.markerProjYId.text?.toString()?.toDouble()
             } catch (e: Exception) {
             }
 
@@ -208,36 +196,36 @@ class MarkerManageFragment : Fragment() {
 
     private fun updateView() {
         val marker = this.marker ?: return
-        nameEditText?.setText(marker.name)
-        latEditText?.setText(marker.lat.toString())
-        lonEditText?.setText(marker.lon.toString())
-        comment?.setText(marker.comment)
+        binding.markerNameId.setText(marker.name)
+        binding.markerLatId.setText(marker.lat.toString())
+        binding.markerLonId.setText(marker.lon.toString())
+        binding.markerCommentId.setText(marker.comment)
 
         /* Check whether projected coordinates fields should be shown or not */
         if (map?.projection == null) {
-            projectionLabel?.visibility = GONE
-            projectionX?.visibility = GONE
-            projectionY?.visibility = GONE
+            binding.markerProjLabelId.visibility = GONE
+            binding.markerProjXId.visibility = GONE
+            binding.markerProjYId.visibility = GONE
             return
         }
 
-        projectionX?.setText(marker.proj_x.toString())
-        projectionY?.setText(marker.proj_y.toString())
+        binding.markerProjXId.setText(marker.proj_x.toString())
+        binding.markerProjYId.setText(marker.proj_y.toString())
     }
 
     private fun saveChanges() {
         val marker = this.marker ?: return
         try {
-            marker.lat = java.lang.Double.valueOf(latEditText!!.text.toString())
-            marker.lon = java.lang.Double.valueOf(lonEditText!!.text.toString())
-            marker.proj_x = java.lang.Double.valueOf(projectionX!!.text.toString())
-            marker.proj_y = java.lang.Double.valueOf(projectionY!!.text.toString())
+            marker.lat = java.lang.Double.valueOf(binding.markerLatId.text.toString())
+            marker.lon = java.lang.Double.valueOf(binding.markerLonId.text.toString())
+            marker.proj_x = java.lang.Double.valueOf(binding.markerProjXId.text.toString())
+            marker.proj_y = java.lang.Double.valueOf(binding.markerProjYId.text.toString())
         } catch (e: Exception) {
             //don't care
         }
 
-        marker.name = nameEditText?.text.toString()
-        marker.comment = comment?.text.toString()
+        marker.name = binding.markerNameId.text.toString()
+        marker.comment = binding.markerCommentId.text.toString()
 
         /* Save the changes on the markers.json file */
         map?.let { MapLoader.saveMarkers(it) }
@@ -245,7 +233,7 @@ class MarkerManageFragment : Fragment() {
         hideSoftKeyboard()
 
         /* Show a snackbar to confirm the changes and offer to show the map */
-        val snackbar = Snackbar.make(rootView, R.string.marker_changes_saved, Snackbar.LENGTH_SHORT)
+        val snackbar = Snackbar.make(binding.root, R.string.marker_changes_saved, Snackbar.LENGTH_SHORT)
         snackbar.setAction(R.string.show_map_action) {
             findNavController().navigate(R.id.mapViewFragment)
         }
