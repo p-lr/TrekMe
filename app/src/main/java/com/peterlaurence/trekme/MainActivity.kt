@@ -44,7 +44,6 @@ import com.peterlaurence.trekme.service.event.MapDownloadFinishedEvent
 import com.peterlaurence.trekme.service.event.MapDownloadPendingEvent
 import com.peterlaurence.trekme.service.event.MapDownloadStorageErrorEvent
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
-import com.peterlaurence.trekme.ui.mapimport.MapImportFragment.OnMapArchiveFragmentInteractionListener
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
@@ -65,7 +64,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-        OnMapArchiveFragmentInteractionListener,
         MarkerManageFragmentInteractionListener {
     private var fragmentManager: FragmentManager? = null
     private lateinit var binding: ActivityMainBinding
@@ -410,10 +408,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         val dialog = builder.create()
         dialog.show()
-    }
-
-    override fun onMapArchiveFragmentInteraction() {
-        showMapListFragment()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,

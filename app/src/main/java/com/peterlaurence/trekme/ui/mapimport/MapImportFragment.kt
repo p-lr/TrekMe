@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.ui.mapimport
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -14,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -44,21 +44,10 @@ class MapImportFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var mapArchiveAdapter: MapArchiveAdapter? = null
-    private var listener: OnMapArchiveFragmentInteractionListener? = null
     private var fabEnabled = false
     private lateinit var data: List<MapImportViewModel.ItemData>
     private var itemSelected: MapImportViewModel.ItemData? = null
     private val viewModel: MapImportViewModel by viewModels()
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        if (context is OnMapArchiveFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement OnMapArchiveFragmentInteractionListener")
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -205,7 +194,9 @@ class MapImportFragment : Fragment() {
     private fun onMapImported() {
         val view = view ?: return
         val snackbar = Snackbar.make(view, R.string.snack_msg_show_map_list, Snackbar.LENGTH_LONG)
-        snackbar.setAction(R.string.ok_dialog) { listener!!.onMapArchiveFragmentInteraction() }
+        snackbar.setAction(R.string.ok_dialog) {
+            findNavController().navigate(R.id.mapListFragment)
+        }
         snackbar.show()
     }
 
@@ -217,10 +208,6 @@ class MapImportFragment : Fragment() {
         super.onSaveInstanceState(outState)
 
         outState.putBoolean(CREATE_FROM_SCREEN_ROTATE, true)
-    }
-
-    interface OnMapArchiveFragmentInteractionListener {
-        fun onMapArchiveFragmentInteraction()
     }
 
     companion object {
