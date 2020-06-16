@@ -48,7 +48,6 @@ import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
-import com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment.MarkerManageFragmentInteractionListener
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
@@ -63,8 +62,7 @@ import org.greenrobot.eventbus.Subscribe
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-        MarkerManageFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var fragmentManager: FragmentManager? = null
     private lateinit var binding: ActivityMainBinding
 
@@ -428,10 +426,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
         }
-    }
-
-    override fun showCurrentMap() {
-        showMapViewFragment()
     }
 
     @Subscribe

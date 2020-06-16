@@ -12,6 +12,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -42,7 +43,6 @@ import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
 class MarkerManageFragment : Fragment() {
     private lateinit var rootView: View
     private val viewModel: MakerManageViewModel by viewModels()
-    private var markerManageFragmentInteractionListener: MarkerManageFragmentInteractionListener? = null
     private val args: MarkerManageFragmentArgs by navArgs()
 
     private var map: Map? = null
@@ -62,19 +62,6 @@ class MarkerManageFragment : Fragment() {
      */
     private var infiniteLoopGuardGeo = false
     private var infiniteLoopGuardProj = false
-
-    interface MarkerManageFragmentInteractionListener {
-        fun showCurrentMap()
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is MarkerManageFragmentInteractionListener) {
-            markerManageFragmentInteractionListener = context
-        } else {
-            throw RuntimeException("$context must implement MarkerManageFragmentInteractionListener")
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -259,7 +246,9 @@ class MarkerManageFragment : Fragment() {
 
         /* Show a snackbar to confirm the changes and offer to show the map */
         val snackbar = Snackbar.make(rootView, R.string.marker_changes_saved, Snackbar.LENGTH_SHORT)
-        snackbar.setAction(R.string.show_map_action) { markerManageFragmentInteractionListener!!.showCurrentMap() }
+        snackbar.setAction(R.string.show_map_action) {
+            findNavController().navigate(R.id.mapViewFragment)
+        }
         snackbar.show()
     }
 
