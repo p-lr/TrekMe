@@ -28,6 +28,7 @@ import javax.xml.transform.TransformerException;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.fail;
 
 /**
@@ -51,14 +52,15 @@ public class GPXTest {
     @Rule
     public TemporaryFolder mTestFolder = new TemporaryFolder();
 
-    private final File gpxFile = new File(mGpxFilesDirectory, "sample_gpx_1.gpx");
+    private final File gpxSample = new File(mGpxFilesDirectory, "sample_gpx_1.gpx");
+    private final File gpxRealRoute = new File(mGpxFilesDirectory, "chauvigny_choucas.gpx");
 
     @Test
     public void simpleFileTest() {
         if (mGpxFilesDirectory != null) {
-            if (gpxFile.exists()) {
+            if (gpxSample.exists()) {
                 try {
-                    Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(gpxFile));
+                    Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(gpxSample));
 
                     /* Metadata check */
                     Metadata metadata = gpx.getMetadata();
@@ -142,7 +144,7 @@ public class GPXTest {
             /* First read an existing gpx file */
             Gpx gpxInput = null;
             try {
-                gpxInput = GPXParser.INSTANCE.parse(new FileInputStream(gpxFile));
+                gpxInput = GPXParser.INSTANCE.parse(new FileInputStream(gpxSample));
             } catch (Exception e) {
                 e.printStackTrace();
                 fail();
@@ -191,6 +193,22 @@ public class GPXTest {
             assertNotNull(track.getStatistics());
             assertEquals(track.getStatistics().getDistance(), 102.0);
         } catch (IOException | ParserConfigurationException | TransformerException | ParseException | XmlPullParserException e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void readGpxWithRoute() {
+        try {
+            Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(gpxRealRoute));
+            Metadata metadata = gpx.getMetadata();
+            assertNotNull(metadata);
+            assertNull(metadata.getName());
+            List<Track> tracks = gpx.getTracks();
+            assertEquals(1, tracks.size());
+            assertEquals("Sentier Les Choucas- La Barre", tracks.get(0).getName());
+        } catch (Exception e) {
             e.printStackTrace();
             fail();
         }

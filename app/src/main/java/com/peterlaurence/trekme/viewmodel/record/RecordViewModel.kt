@@ -16,8 +16,7 @@ import org.greenrobot.eventbus.Subscribe
 import java.io.File
 
 /**
- * When the user imports a recording (gpx file) into a map, the business logic is done in this
- * view-model.
+ * The business logic for importing a recording (gpx file) into a map.
  *
  * @author P.Laurence on 16/04/20
  */

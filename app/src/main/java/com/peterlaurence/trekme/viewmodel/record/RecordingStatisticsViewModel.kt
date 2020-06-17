@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.util.gpx.GPXParser
 import com.peterlaurence.trekme.util.gpx.GPXWriter
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
+import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,6 +102,8 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
             computeStatistics()
         }.map {
             RecordingData(it.key, it.value)
+        }.sortedByDescending {
+            it.gpx?.metadata?.time ?: -1
         }
 
         recordingData.postValue(data)
@@ -165,7 +168,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
                     val gpx = GPXParser.parse(FileInputStream(it))
                     recordingsToGpx[it] = gpx
                 } catch (e: Exception) {
-                    Log.e(TAG, "The file ${it.name} was parsed with an error")
+                    Log.e(TAG, "The file ${it.name} was parsed with error ${stackTraceToString(e)}")
                 }
             }
         } else {

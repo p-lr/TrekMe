@@ -83,8 +83,10 @@ object GPXParser {
             when (parser.name) {
                 TAG_NAME -> name = readName(parser)
                 TAG_TIME -> time = readTime(parser)
+                else -> skip(parser)
             }
         }
+        parser.require(XmlPullParser.END_TAG, ns, TAG_METADATA)
         return Metadata(name, time)
     }
 

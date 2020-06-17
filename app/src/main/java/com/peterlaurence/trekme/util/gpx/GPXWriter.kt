@@ -14,8 +14,6 @@ import javax.xml.transform.TransformerException
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 /**
  * A writer compliant with the [GPX 1.1 schema](https://www.topografix.com/gpx/1/1/). <br></br>
