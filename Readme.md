@@ -89,9 +89,9 @@ provider and continue.
 </p>
 
 From there, you can zoom into the area in the world you want to capture. Then, press the area button
-so an erea of selection appears on the screen. This area can be resized. Beware that USGS only provides
-detailed levels for USA, the same way that IGN details France and its territories. OpenStreetMap covers
-the entire world.
+in the top-bar so an area of selection appears. This area can be resized. Beware that USGS only provides
+detailed levels for USA. Actually, other providers only cover their relevant country, except for
+OpenStreetMap which covers the entire world.
 
 When you're done, press the download button, at the bottom right. A configuration menu pops up:
 
