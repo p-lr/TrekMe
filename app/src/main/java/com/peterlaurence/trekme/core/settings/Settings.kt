@@ -222,10 +222,3 @@ private class FileSettingsHandler(private val trekMeContext: TrekMeContext) : Se
         }
     }
 }
-//
-//@Module
-//@InstallIn(ServiceComponent::class)
-//abstract class SettingsModule {
-//    @Binds
-//    abstract fun bindSettings(settings: Settings): Settings
-//}

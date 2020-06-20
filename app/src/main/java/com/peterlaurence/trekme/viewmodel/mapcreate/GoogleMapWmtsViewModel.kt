@@ -15,7 +15,6 @@ import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
-import com.peterlaurence.trekme.service.APP_DIR_ARG
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import kotlinx.coroutines.Dispatchers
@@ -105,9 +104,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
                 EventBus.getDefault().postSticky(RequestDownloadMapEvent(mapSource, mapSpec, tileCount, tileStreamProvider))
             }
 
-            val appDir = settings.getAppDir() ?: error("App dir must exist")
             val intent = Intent(application, DownloadService::class.java)
-            intent.putExtra(APP_DIR_ARG, appDir.absolutePath)
             application.startService(intent)
         }
     }
