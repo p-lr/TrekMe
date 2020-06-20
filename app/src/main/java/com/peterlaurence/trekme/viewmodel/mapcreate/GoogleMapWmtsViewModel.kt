@@ -13,10 +13,10 @@ import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.providers.bitmap.checkIgnProvider
 import com.peterlaurence.trekme.core.providers.layers.*
-import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
+import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,7 +31,6 @@ import org.greenrobot.eventbus.EventBus
  * @author peterLaurence on 09/11/19
  */
 class GoogleMapWmtsViewModel @ViewModelInject constructor(
-        private val settings: Settings,
         private val mapSourceCredentials: MapSourceCredentials
 ) : ViewModel() {
     private val scaleAndScrollInitConfig = mapOf(

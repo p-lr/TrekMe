@@ -22,6 +22,7 @@ import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Utility toolbox to :
@@ -32,12 +33,12 @@ import javax.inject.Inject
  *
  * @author peterLaurence on 03/03/17 -- converted to Kotlin on 16/09/18
  */
+@Singleton
 class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext) {
     private val TAG = "TrackImporter"
     /**
      * Get the list of [File] which extension is in the list of supported extension for track
-     * file. Files are searched into the
-     * [com.peterlaurence.trekme.core.TrekMeContext.recordingsDir].
+     * file. Files are searched into the [TrekMeContext.recordingsDir].
      */
     val recordings: Array<File>?
         get() = trekMeContext.recordingsDir?.listFiles(SUPPORTED_FILE_FILTER)
