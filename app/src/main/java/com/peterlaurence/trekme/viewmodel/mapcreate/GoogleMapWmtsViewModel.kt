@@ -31,7 +31,8 @@ import org.greenrobot.eventbus.EventBus
  * @author peterLaurence on 09/11/19
  */
 class GoogleMapWmtsViewModel @ViewModelInject constructor(
-        private val mapSourceCredentials: MapSourceCredentials
+        private val mapSourceCredentials: MapSourceCredentials,
+        private val app: Application
 ) : ViewModel() {
     private val scaleAndScrollInitConfig = mapOf(
             MapSource.SWISS_TOPO to ScaleAndScrollInitConfig(0.0006149545f, 21064, 13788),
@@ -92,7 +93,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
      *      RequestDownloadMapEvent   ----->          (event available)
      *      Intent                    ----->          (service start, then process event)
      */
-    fun onDownloadFormConfirmed(application: Application, mapSource: MapSource,
+    fun onDownloadFormConfirmed(mapSource: MapSource,
                                 p1: Point, p2: Point, minLevel: Int, maxLevel: Int) {
         val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2)
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
@@ -103,8 +104,8 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
                 EventBus.getDefault().postSticky(RequestDownloadMapEvent(mapSource, mapSpec, tileCount, tileStreamProvider))
             }
 
-            val intent = Intent(application, DownloadService::class.java)
-            application.startService(intent)
+            val intent = Intent(app, DownloadService::class.java)
+            app.startService(intent)
         }
     }
 }

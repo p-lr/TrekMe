@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackStatistics
@@ -27,11 +28,8 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.service.event.LocationServiceStatus
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.util.gpx.GPXWriter
-import com.peterlaurence.trekme.util.gpx.model.Gpx
-import com.peterlaurence.trekme.util.gpx.model.Metadata
-import com.peterlaurence.trekme.util.gpx.model.Track
-import com.peterlaurence.trekme.util.gpx.model.TrackPoint
-import com.peterlaurence.trekme.util.gpx.model.TrackSegment
+import com.peterlaurence.trekme.util.gpx.model.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.greenrobot.eventbus.EventBus
@@ -41,6 +39,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -58,12 +57,16 @@ import kotlin.coroutines.suspendCoroutine
  *
  * @author peterLaurence on 17/12/17 -- converted to Kotlin on 20/04/19
  */
+@AndroidEntryPoint
 class LocationService : Service() {
+
+    @Inject
+    lateinit var trekMeContext: TrekMeContext
+
     private lateinit var serviceLooper: Looper
     private lateinit var serviceHandler: Handler
     private lateinit var locationManager: LocationManager
     private lateinit var locationListener: LocationListener
-    private lateinit var recordingsDir: File
     private var locationCounter: Long = 0
 
     private var trackPoints = mutableListOf<TrackPoint>()
@@ -79,6 +82,8 @@ class LocationService : Service() {
     private var mStarted = false
 
     override fun onCreate() {
+        super.onCreate()
+
         EventBus.getDefault().register(this)
 
         /* Start up the thread running the service.  Note that we create a separate thread because
@@ -164,6 +169,7 @@ class LocationService : Service() {
             val gpx = Gpx(metadata, trkList, wayPoints, appName, GPX_VERSION)
             try {
                 val gpxFileName = "$trackName.gpx"
+                val recordingsDir = trekMeContext.recordingsDir ?: error("Recordings dir is mandatory")
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 GPXWriter.write(gpx, fos)
@@ -180,10 +186,6 @@ class LocationService : Service() {
      * Called when the service is started.
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        recordingsDir = intent.getStringExtra(RECORDINGS_PATH_ARG)?.let {
-            File(it)
-        } ?: error("Recordings dir is mandatory")
-
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
@@ -322,7 +324,6 @@ class LocationService : Service() {
     }
 
     companion object {
-        const val RECORDINGS_PATH_ARG = "recordingsPath"
         private const val GPX_VERSION = "1.1"
         private const val NOTIFICATION_ID = "peterlaurence.LocationService"
         private const val SERVICE_ID = 126585

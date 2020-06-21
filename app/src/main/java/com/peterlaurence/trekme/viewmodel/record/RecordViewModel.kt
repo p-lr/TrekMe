@@ -5,7 +5,6 @@ import android.content.Intent
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.service.LocationService
@@ -21,7 +20,6 @@ import java.io.File
  * @author P.Laurence on 16/04/20
  */
 class RecordViewModel @ViewModelInject constructor(
-        private val trekMeContext: TrekMeContext,
         private val trackImporter: TrackImporter,
         private val app: Application
 ) : ViewModel() {
@@ -53,9 +51,7 @@ class RecordViewModel @ViewModelInject constructor(
     }
 
     fun startRecording() {
-        val recordingsPath = trekMeContext.recordingsDir?.absolutePath ?: return
         val intent = Intent(app, LocationService::class.java)
-        intent.putExtra(LocationService.RECORDINGS_PATH_ARG, recordingsPath)
         app.startService(intent)
     }
 

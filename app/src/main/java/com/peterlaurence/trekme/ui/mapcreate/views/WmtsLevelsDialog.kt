@@ -187,9 +187,8 @@ open class WmtsLevelsDialog : DialogFragment() {
      */
     private fun onDownloadFormConfirmed() {
         val (p1, p2) = getPointsOfArea()
-        val application = requireActivity().application
         mapSource?.let { mapSource ->
-            viewModel.onDownloadFormConfirmed(application, mapSource, p1, p2, currentMinLevel, currentMaxLevel)
+            viewModel.onDownloadFormConfirmed(mapSource, p1, p2, currentMinLevel, currentMaxLevel)
         }
     }
 
