@@ -12,3 +12,4 @@ build
 /captures
 /app/release
 /mapview-debug/*
+install-release.sh
