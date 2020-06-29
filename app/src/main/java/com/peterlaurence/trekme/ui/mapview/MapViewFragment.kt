@@ -384,7 +384,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     override fun onPositionTouch() {
-        mapView?.scale = 1f
         centerOnPosition()
     }
 
@@ -607,7 +606,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     private fun centerOnPosition() {
-        mapView?.moveToMarker(positionMarker, true)
+        mapView?.moveToMarker(positionMarker, 1f, true)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
