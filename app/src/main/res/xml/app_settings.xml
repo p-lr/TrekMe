@@ -29,5 +29,9 @@
             android:title="@string/preference_rotation_mode"
             android:entries="@array/rotation_modes"
             android:entryValues="@array/rotation_modes"/>
+
+        <SeekBarPreference
+            android:key="@string/preference_scale_at_center_key"
+            android:title="@string/preference_scale_at_center" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -88,6 +88,15 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
         settingsHandler.writeSetting(new)
     }
 
+    suspend fun setScaleCentered(scaleCentered: Float) {
+        val new = settingsHandler.getLastSetting().copy(scaleCentered = scaleCentered)
+        settingsHandler.writeSetting(new)
+    }
+
+    suspend fun getScaleCentered(): Float {
+        return settingsHandler.getLastSetting().scaleCentered
+    }
+
     /**
      * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
      * empty.
@@ -110,12 +119,18 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
     }
 }
 
+/**
+ * @param appDir The current application directory
+ * @param startOnPolicy Whether TrekMe should boot on the map list or on the last map
+ * @param scaleCentered The scale at which the MapView is set when centering on the current position
+ */
 @Serializable
 private data class SettingsData(val appDir: String,
                                 val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
                                 val lastMapId: Int = -1,
                                 val magnifyingFactor: Int = 0,
-                                val rotationMode: RotationMode = RotationMode.NONE)
+                                val rotationMode: RotationMode = RotationMode.NONE,
+                                val scaleCentered: Float = 1f)
 
 enum class StartOnPolicy {
     MAP_LIST, LAST_MAP

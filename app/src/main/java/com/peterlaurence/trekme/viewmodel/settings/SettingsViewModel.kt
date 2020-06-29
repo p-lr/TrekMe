@@ -26,14 +26,31 @@ class SettingsViewModel @ViewModelInject constructor(
     val magnifyingFactorLiveData: LiveData<Int> = _magnifyingFactorLiveData
     private val _rotationModeLiveData = MutableLiveData<RotationMode>()
     val rotationModeLiveData = _rotationModeLiveData
+    private val _scaleFactor = MutableLiveData<Float>()
+    val scaleCentered: LiveData<Float> = _scaleFactor
 
     init {
         /* For instance the need is only to fetch this once */
-        updateAppDirList()
-        updateAppDir()
-        updateStartOnPolicy()
-        updateMagnifyingFactor()
-        updateRotateWithOrientation()
+        viewModelScope.launch {
+            /* App dir list */
+            _appDirListLiveData.postValue(trekMeContext.mapsDirList?.map { it.absolutePath }
+                    ?: emptyList())
+
+            /* App dir active */
+            _appDirLiveData.postValue(settings.getAppDir()?.absolutePath ?: "error")
+
+            /* StartOn policy */
+            _startOnPolicyLiveData.postValue(settings.getStartOnPolicy())
+
+            /* Magnifying factor */
+            _magnifyingFactorLiveData.postValue(settings.getMagnifyingFactor())
+
+            /* Rotation mode */
+            _rotationModeLiveData.value = settings.getRotationMode()
+
+            /* Scale centered */
+            _scaleFactor.value = settings.getScaleCentered()
+        }
     }
 
     fun setDownloadDirPath(newPath: String) {
@@ -64,32 +81,14 @@ class SettingsViewModel @ViewModelInject constructor(
         }
     }
 
-    private fun updateAppDirList() {
-        _appDirListLiveData.postValue(trekMeContext.mapsDirList?.map { it.absolutePath }
-                ?: emptyList())
-    }
-
-    private fun updateAppDir() {
+    /**
+     * Define the scale of the MapView should be set when centering on the current position.
+     * It should be between 0f and 2f.
+     */
+    fun setScaleCentered(scaleCentered: Float) {
+        require(scaleCentered in 0f..2f)
         viewModelScope.launch {
-            _appDirLiveData.postValue(settings.getAppDir()?.absolutePath ?: "error")
-        }
-    }
-
-    private fun updateStartOnPolicy() {
-        viewModelScope.launch {
-            _startOnPolicyLiveData.postValue(settings.getStartOnPolicy())
-        }
-    }
-
-    private fun updateMagnifyingFactor() {
-        viewModelScope.launch {
-            _magnifyingFactorLiveData.postValue(settings.getMagnifyingFactor())
-        }
-    }
-
-    private fun updateRotateWithOrientation() {
-        viewModelScope.launch {
-            _rotationModeLiveData.value = settings.getRotationMode()
+            settings.setScaleCentered(scaleCentered)
         }
     }
 }

@@ -38,6 +38,8 @@ class MapViewViewModel @ViewModelInject constructor(
 
     suspend fun getRotationMode(): RotationMode = settings.getRotationMode()
 
+    suspend fun getScaleCentered(): Float = settings.getScaleCentered()
+
     private suspend fun checkForIgnLicense(map: Map, billing: Billing?): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
 

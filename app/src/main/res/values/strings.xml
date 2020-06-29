@@ -253,6 +253,8 @@
     <string name="preference_rotate_with_orientation">Rotate only when showing orientation</string>
     <string name="preference_rotate_none">None</string>
     <string name="preference_rotate_free">Free</string>
+    <string name="preference_scale_at_center_key" translatable="false">pref_scale_at_center</string>
+    <string name="preference_scale_at_center">Scale when center on position</string>
 
     <!-- WifiP2pFragment -->
     <string name="wifip2p_stop_btn">Stop</string>
