@@ -197,5 +197,6 @@
     <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#partage-de-carte</string>
     <string name="mapview_measure_distance_on_track">Distance sur trace</string>
     <string name="ign_buy_license_unknown">Imposible de vérifier la license</string>
-    <string name="preference_scale_at_center">Zoom quand centré sur la position</string>
+    <string name="preference_scale_at_center">Echelle quand centré</string>
+    <string name="preference_change_scale_when_centering">Définir échelle quand centré</string>
 </resources>

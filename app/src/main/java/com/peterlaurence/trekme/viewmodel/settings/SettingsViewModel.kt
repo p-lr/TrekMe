@@ -26,8 +26,10 @@ class SettingsViewModel @ViewModelInject constructor(
     val magnifyingFactorLiveData: LiveData<Int> = _magnifyingFactorLiveData
     private val _rotationModeLiveData = MutableLiveData<RotationMode>()
     val rotationModeLiveData = _rotationModeLiveData
-    private val _scaleFactor = MutableLiveData<Float>()
-    val scaleCentered: LiveData<Float> = _scaleFactor
+    private val _defineScaleCentered = MutableLiveData<Boolean>()
+    val defineScaleCentered: LiveData<Boolean> = _defineScaleCentered
+    private val _scaleCentered = MutableLiveData<Float>()
+    val scaleCentered: LiveData<Float> = _scaleCentered
 
     init {
         /* For instance the need is only to fetch this once */
@@ -48,8 +50,11 @@ class SettingsViewModel @ViewModelInject constructor(
             /* Rotation mode */
             _rotationModeLiveData.value = settings.getRotationMode()
 
+            /* Define scale centered */
+            _defineScaleCentered.value = settings.getDefineScaleCentered()
+
             /* Scale centered */
-            _scaleFactor.value = settings.getScaleCentered()
+            _scaleCentered.value = settings.getScaleCentered()
         }
     }
 
@@ -78,6 +83,12 @@ class SettingsViewModel @ViewModelInject constructor(
         _rotationModeLiveData.postValue(mode)
         viewModelScope.launch {
             settings.setRotationMode(mode)
+        }
+    }
+
+    fun setDefineScaleCentered(defined: Boolean) {
+        viewModelScope.launch {
+            settings.setDefineScaleCentered(defined)
         }
     }
 

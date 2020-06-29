@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.ui.settings
 import android.os.Bundle
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SeekBarPreference
@@ -25,6 +26,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var rootFolderPref: ListPreference? = null
     private var magnifyingPref: ListPreference? = null
     private var rotationModePref: ListPreference? = null
+    private var defineScaleCenteredPref: CheckBoxPreference? = null
     private var scaleCenteredPref: SeekBarPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -60,6 +62,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         viewModel.rotationModeLiveData.observe(this, Observer {
             it?.let {
                 updateRotationMode(it)
+            }
+        })
+
+        viewModel.defineScaleCentered.observe(this, Observer {
+            it?.let {
+                updateDefineScaleCentered(it)
             }
         })
 
@@ -102,6 +110,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         rotationModePref?.setSummaryAndValue(txt)
     }
 
+    private fun updateDefineScaleCentered(defined: Boolean) {
+        defineScaleCenteredPref?.isChecked = defined
+        scaleCenteredPref?.isVisible = defined
+    }
+
     private fun updateScaleCentered(scaleCentered: Float) {
         scaleCenteredPref?.value = (scaleCentered * 50).toInt()
     }
@@ -111,6 +124,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         rootFolderPref = preferenceManager.findPreference(getString(R.string.preference_root_location_key))
         magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
         rotationModePref = preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
+        defineScaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_change_scale_when_centering_key))
         scaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_scale_at_center_key))
 
         rootFolderPref?.setOnPreferenceChangeListener { _, newValue ->
@@ -148,6 +162,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 else -> RotationMode.NONE
             }
             viewModel.setRotationMode(rotationMode)
+            true
+        }
+
+        defineScaleCenteredPref?.isChecked = true
+        defineScaleCenteredPref?.setOnPreferenceChangeListener { _, v ->
+            val checked = v as Boolean
+            viewModel.setDefineScaleCentered(checked)
+            scaleCenteredPref?.isVisible = checked
             true
         }
 

@@ -62,6 +62,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var compassView: CompassView? = null
     private var lockView = false
     private var rotationMode: RotationMode = RotationMode.NONE
+    private var defineScaleCentered = true
     private var scaleCentered = 1f
     private var shouldCenterOnFirstLocation = false
     private var magnifyingFactor: Int? = null
@@ -296,6 +297,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private suspend fun getMapSettings() {
         magnifyingFactor = mapViewViewModel.getMagnifyingFactor()
         rotationMode = mapViewViewModel.getRotationMode()
+        defineScaleCentered = mapViewViewModel.getDefineScaleCentered()
         scaleCentered = mapViewViewModel.getScaleCentered()
     }
 
@@ -608,7 +610,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     private fun centerOnPosition() {
-        mapView?.moveToMarker(positionMarker, scaleCentered, true)
+        if (defineScaleCentered) {
+            mapView?.moveToMarker(positionMarker, scaleCentered, true)
+        } else {
+            mapView?.moveToMarker(positionMarker, true)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

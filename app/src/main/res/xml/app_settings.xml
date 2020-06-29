@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory android:title="@string/general_category">
         <ListPreference
             android:key="@string/preference_starton_key"
@@ -30,8 +31,13 @@
             android:entries="@array/rotation_modes"
             android:entryValues="@array/rotation_modes"/>
 
+        <CheckBoxPreference
+            android:key="@string/preference_change_scale_when_centering_key"
+            android:title="@string/preference_change_scale_when_centering" />
+
         <SeekBarPreference
             android:key="@string/preference_scale_at_center_key"
-            android:title="@string/preference_scale_at_center" />
+            android:title="@string/preference_scale_at_center"
+            app:isPreferenceVisible="false"/>
     </PreferenceCategory>
 </PreferenceScreen>

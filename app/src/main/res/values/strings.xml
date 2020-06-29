@@ -253,6 +253,8 @@
     <string name="preference_rotate_with_orientation">Rotate only when showing orientation</string>
     <string name="preference_rotate_none">None</string>
     <string name="preference_rotate_free">Free</string>
+    <string name="preference_change_scale_when_centering_key" translatable="false">pref_change_scale_when_centering</string>
+    <string name="preference_change_scale_when_centering">Define scale when centering on position</string>
     <string name="preference_scale_at_center_key" translatable="false">pref_scale_at_center</string>
     <string name="preference_scale_at_center">Scale when center on position</string>
 
