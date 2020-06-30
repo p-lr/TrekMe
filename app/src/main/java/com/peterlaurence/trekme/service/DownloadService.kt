@@ -242,7 +242,7 @@ class DownloadService : Service() {
         /* Calibrate */
         fun calibrate(map: Map) {
             map.projection = MercatorProjection()
-            map.mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name
+            map.mapGson.calibration.calibration_method = MapLoader.CalibrationMethod.SIMPLE_2_POINTS.name
             map.mapGson.calibration.calibration_points = calibrationPoints.toList()
             map.calibrate()
             MapLoader.addMap(map)

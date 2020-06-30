@@ -204,7 +204,7 @@ object MapImporter {
             mapGson.name = parentFolder.name
 
             /* Set default calibration */
-            mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name
+            mapGson.calibration.calibration_method = MapLoader.CalibrationMethod.SIMPLE_2_POINTS.name
 
             /* The json file */
             val jsonFile = File(parentFolder, MapLoader.MAP_FILE_NAME)

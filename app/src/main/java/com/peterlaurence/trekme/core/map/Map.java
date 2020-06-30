@@ -323,12 +323,12 @@ public class Map {
         return mMapGson.levels;
     }
 
-    public MapLoader.CALIBRATION_METHOD getCalibrationMethod() {
-        return MapLoader.CALIBRATION_METHOD.Companion.fromCalibrationName(
+    public MapLoader.CalibrationMethod getCalibrationMethod() {
+        return MapLoader.CalibrationMethod.Companion.fromCalibrationName(
                 mMapGson.calibration.calibration_method);
     }
 
-    public void setCalibrationMethod(MapLoader.CALIBRATION_METHOD method) {
+    public void setCalibrationMethod(MapLoader.CalibrationMethod method) {
         mMapGson.calibration.calibration_method = method.name();
     }
 

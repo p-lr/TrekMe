@@ -53,15 +53,15 @@ object MapLoader : MapImporter.MapImportListener {
     }
     private const val TAG = "MapLoader"
 
-    private val mGson: Gson
-    private val mMapList: MutableList<Map> = mutableListOf()
-    private var mMapMarkerUpdateListener: MapMarkerUpdateListener? = null
+    private val gson: Gson
+    private val mapList: MutableList<Map> = mutableListOf()
+    private var mapMarkerUpdateListener: MapMarkerUpdateListener? = null
 
     /**
      * Get a read-only list of [Map]s
      */
     val maps: List<Map>
-        get() = mMapList.toList()
+        get() = mapList.toList()
 
     /**
      * Create once for all the [Gson] object, that is used to serialize/deserialize json content.
@@ -73,25 +73,25 @@ object MapLoader : MapImporter.MapImportListener {
         for ((key, value) in PROJECTION_HASH_MAP) {
             factory.registerSubtype(value, key)
         }
-        mGson = GsonBuilder().serializeNulls().setPrettyPrinting().registerTypeAdapterFactory(factory).create()
+        gson = GsonBuilder().serializeNulls().setPrettyPrinting().registerTypeAdapterFactory(factory).create()
     }
 
     /**
-     * Clears the internal list of [Map] : [mMapList].
+     * Clears the internal list of [Map] : [mapList].
      */
     fun clearMaps() {
-        mMapList.clear()
+        mapList.clear()
     }
 
     private fun Map.addIfNew() {
-        if (this !in mMapList) {
-            mMapList.add(this)
+        if (this !in mapList) {
+            mapList.add(this)
         }
     }
 
     /**
      * Parses all [Map]s inside the provided list of directories, then updates the internal list of
-     * [Map] : [mMapList].
+     * [Map] : [mapList].
      * It is intended to be the only public method of updating the [Map] list.
      *
      * @param dirs The directories in which to search for maps.
@@ -116,15 +116,15 @@ object MapLoader : MapImporter.MapImportListener {
      * @param dirs The directories in which to search for new maps.
      */
     private suspend fun findMaps(dirs: List<File>) = withContext(Dispatchers.Default) {
-        mapCreationTask(mGson, *dirs.toTypedArray())
+        mapCreationTask(gson, *dirs.toTypedArray())
     }
 
     /**
      * Launch a [MapMarkerImportTask] which reads the markers.json file.
      */
     fun getMarkersForMap(map: Map) {
-        val mapMarkerImportTask = MapMarkerImportTask(mMapMarkerUpdateListener,
-                map, mGson)
+        val mapMarkerImportTask = MapMarkerImportTask(mapMarkerUpdateListener,
+                map, gson)
         mapMarkerImportTask.execute()
     }
 
@@ -136,7 +136,7 @@ object MapLoader : MapImporter.MapImportListener {
      */
     suspend fun getRoutesForMap(map: Map) =
             withContext(Dispatchers.Default) {
-                mapRouteImportTask(map, mGson)
+                mapRouteImportTask(map, gson)
             }?.let { routeGson ->
                 map.routeGson = routeGson
             }
@@ -149,7 +149,7 @@ object MapLoader : MapImporter.MapImportListener {
      */
     suspend fun getLandmarksForMap(map: Map) =
             withContext(Dispatchers.Default) {
-                mapLandmarkImportTask(map, mGson)
+                mapLandmarkImportTask(map, gson)
             }?.let { landmarkGson ->
                 map.landmarkGson = landmarkGson
             }
@@ -161,6 +161,7 @@ object MapLoader : MapImporter.MapImportListener {
      *
      * TODO: Remove this along with MapArchiveSearchTask class. This logic isn't used anymore.
      */
+    @Suppress("unused")
     suspend fun getMapArchiveList(dirs: List<File>): List<MapArchive> = suspendCancellableCoroutine { cont ->
         val task = MapArchiveSearchTask(dirs, object : MapArchiveListUpdateListener {
             override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
@@ -176,11 +177,11 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     fun setMapMarkerUpdateListener(listener: MapMarkerUpdateListener) {
-        mMapMarkerUpdateListener = listener
+        mapMarkerUpdateListener = listener
     }
 
     fun clearMapMarkerUpdateListener() {
-        mMapMarkerUpdateListener = null
+        mapMarkerUpdateListener = null
     }
 
     /**
@@ -223,20 +224,17 @@ object MapLoader : MapImporter.MapImportListener {
      * @return the [Map] or `null` if the given id is unknown.
      */
     fun getMap(mapId: Int): Map? {
-        return mMapList.firstOrNull { it.id == mapId }
+        return mapList.firstOrNull { it.id == mapId }
     }
 
     /**
      * Save the content of a [Map], so the changes persist upon application restart. <br></br>
      * Here, it writes to the corresponding json file.
      *
-     *
-     * Then, call all registered [MapListUpdateListener].
-     *
      * @param map The [Map] to save.
      */
     fun saveMap(map: Map) {
-        val jsonString = mGson.toJson(map.mapGson)
+        val jsonString = gson.toJson(map.mapGson)
         val configFile = map.configFile
 
         writeToFile(jsonString, configFile) {
@@ -253,9 +251,9 @@ object MapLoader : MapImporter.MapImportListener {
      * @param map The [Map] to save.
      */
     fun saveMarkers(map: Map) {
-        val jsonString = mGson.toJson(map.markerGson)
+        val jsonString = gson.toJson(map.markerGson)
 
-        val markerFile = File(map.directory, MapLoader.MAP_MARKER_FILE_NAME)
+        val markerFile = File(map.directory, MAP_MARKER_FILE_NAME)
         writeToFile(jsonString, markerFile) {
             Log.e(TAG, "Error while saving the markers")
         }
@@ -266,8 +264,8 @@ object MapLoader : MapImporter.MapImportListener {
      * @param map the [Map] to save.
      */
     fun saveLandmarks(map: Map) {
-        val jsonString = mGson.toJson(map.landmarkGson)
-        val landmarkFile = File(map.directory, MapLoader.MAP_LANDMARK_FILE_NAME)
+        val jsonString = gson.toJson(map.landmarkGson)
+        val landmarkFile = File(map.directory, MAP_LANDMARK_FILE_NAME)
 
         writeToFile(jsonString, landmarkFile) {
             Log.e(TAG, "Error while saving the landmarks")
@@ -281,8 +279,8 @@ object MapLoader : MapImporter.MapImportListener {
      * @param map The [Map] to save.
      */
     fun saveRoutes(map: Map) {
-        val jsonString = mGson.toJson(map.routeGson)
-        val routeFile = File(map.directory, MapLoader.MAP_ROUTE_FILE_NAME)
+        val jsonString = gson.toJson(map.routeGson)
+        val routeFile = File(map.directory, MAP_ROUTE_FILE_NAME)
 
         writeToFile(jsonString, routeFile) {
             Log.e(TAG, "Error while saving the routes")
@@ -296,7 +294,7 @@ object MapLoader : MapImporter.MapImportListener {
      */
     fun deleteMap(map: Map, listener: MapDeletedListener?) {
         val mapDirectory = map.directory
-        mMapList.remove(map)
+        mapList.remove(map)
 
         /* Notify for view update */
         notifyMapListUpdateListeners()
@@ -351,17 +349,16 @@ object MapLoader : MapImporter.MapImportListener {
         EventBus.getDefault().post(MapListUpdateEvent(maps.isNotEmpty()))
     }
 
-    enum class CALIBRATION_METHOD {
+    enum class CalibrationMethod {
         SIMPLE_2_POINTS,
         CALIBRATION_3_POINTS,
         CALIBRATION_4_POINTS,
         UNKNOWN;
 
         companion object {
-
-            fun fromCalibrationName(name: String?): CALIBRATION_METHOD {
+            fun fromCalibrationName(name: String?): CalibrationMethod {
                 if (name != null) {
-                    for (method in CALIBRATION_METHOD.values()) {
+                    for (method in values()) {
                         if (name.equals(method.toString(), ignoreCase = true)) {
                             return method
                         }
@@ -370,10 +367,6 @@ object MapLoader : MapImporter.MapImportListener {
                 return UNKNOWN
             }
         }
-    }
-
-    interface MapListUpdateListener {
-        fun onMapListUpdate(mapsFound: Boolean)
     }
 
     /**

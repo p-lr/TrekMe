@@ -162,16 +162,16 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
             if (mMap != null) {
                 switch ((String) newValue) {
                     case "2":
-                        mMap.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
+                        mMap.setCalibrationMethod(MapLoader.CalibrationMethod.SIMPLE_2_POINTS);
                         break;
                     case "3":
-                        mMap.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_3_POINTS);
+                        mMap.setCalibrationMethod(MapLoader.CalibrationMethod.CALIBRATION_3_POINTS);
                         break;
                     case "4":
-                        mMap.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.CALIBRATION_4_POINTS);
+                        mMap.setCalibrationMethod(MapLoader.CalibrationMethod.CALIBRATION_4_POINTS);
                         break;
                     default:
-                        mMap.setCalibrationMethod(MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS);
+                        mMap.setCalibrationMethod(MapLoader.CalibrationMethod.SIMPLE_2_POINTS);
                 }
                 return true;
             }

@@ -31,7 +31,7 @@ fun buildFromMapSpec(mapSpec: MapSpec, mapOrigin: Map.MapOrigin, folder: File, i
 
     mapGson.name = folder.name
 
-    mapGson.calibration.calibration_method = MapLoader.CALIBRATION_METHOD.SIMPLE_2_POINTS.name
+    mapGson.calibration.calibration_method = MapLoader.CalibrationMethod.SIMPLE_2_POINTS.name
 
     val jsonFile = File(folder, MapLoader.MAP_FILE_NAME)
 
