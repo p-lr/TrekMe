@@ -478,7 +478,6 @@ class WifiP2pService : Service() {
         /* Finally comes the compressed stream */
         unzipTask(inputStream, dir, sizeUncompressed, false, object : UnzipProgressionListener {
             override fun onProgress(p: Int) {
-                println(p)
                 wifiP2pState = Loading(p)
             }
 
