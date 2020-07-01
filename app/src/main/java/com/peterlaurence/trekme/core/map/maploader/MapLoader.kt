@@ -41,6 +41,7 @@ object MapLoader : MapImporter.MapImportListener {
     const val MAP_MARKER_FILE_NAME = "markers.json"
     const val MAP_ROUTE_FILE_NAME = "routes.json"
     const val MAP_LANDMARK_FILE_NAME = "landmarks.json"
+
     /**
      * All [Projection]s are registered here.
      */
@@ -292,7 +293,7 @@ object MapLoader : MapImporter.MapImportListener {
      *
      * @param map The [Map] to delete.
      */
-    fun deleteMap(map: Map, listener: MapDeletedListener?) {
+    fun deleteMap(map: Map) {
         val mapDirectory = map.directory
         mapList.remove(map)
 
@@ -302,8 +303,6 @@ object MapLoader : MapImporter.MapImportListener {
         /* Delete the map directory in a separate thread */
         val mapDeleteTask = MapDeleteTask(mapDirectory)
         mapDeleteTask.execute()
-
-        listener?.onMapDeleted()
     }
 
     /**
@@ -378,10 +377,6 @@ object MapLoader : MapImporter.MapImportListener {
 
     interface MapArchiveListUpdateListener {
         fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>)
-    }
-
-    interface MapDeletedListener {
-        fun onMapDeleted()
     }
 
     /**

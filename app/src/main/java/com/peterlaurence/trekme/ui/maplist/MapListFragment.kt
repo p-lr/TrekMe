@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.maploader.MapLoader.MapDeletedListener
 import com.peterlaurence.trekme.databinding.FragmentMapListBinding
 import com.peterlaurence.trekme.model.map.MapModel.setSettingsMap
 import com.peterlaurence.trekme.ui.maplist.MapAdapter.*
@@ -30,7 +29,7 @@ import java.lang.ref.WeakReference
  * @author P.Laurence on 24/05/2020
  */
 class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, MapDeleteListener,
-        MapDeletedListener, MapFavoriteListener {
+        MapFavoriteListener {
     private var _binding: FragmentMapListBinding? = null
     private val binding get() = _binding!!
     private val args: MapListFragmentArgs by navArgs()
@@ -49,7 +48,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         viewModel.maps.observe(this, Observer { maps: List<Map>? ->
             if (maps != null) {
                 /* Set data */
-                onMapListUpdate(maps)
+                onMapListUpdate(maps.sortByFavorites())
 
                 /* Restore the recyclerView state if the device was rotated */
                 val llmState: Parcelable?
@@ -163,7 +162,8 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         this.mapList = mapList
         val adapter = adapter ?: return
         binding.loadingPanel.visibility = View.GONE
-        adapter.onMapListUpdate(mapList)
+        adapter.setMapList(mapList)
+        adapter.notifyDataSetChanged()
 
         /* If no maps found, suggest to navigate to map creation */
         if (mapList.isEmpty()) {
@@ -193,17 +193,26 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     override fun onMapDelete(map: Map) {
         val f = ConfirmDeleteFragment()
         f.setMapWeakRef(WeakReference(map))
-        f.setDeleteMapListener(this)
         val fragmentManager = parentFragmentManager
         f.show(fragmentManager, "delete")
     }
 
-    override fun onMapFavorite(map: Map) {
+    override fun onMapFavorite(map: Map, formerPosition: Int) {
         viewModel.toggleFavorite(map)
+        val mapList = viewModel.maps.value ?: return
+        val newOrderedList = mapList.sortByFavorites()
+        val newPosition = newOrderedList.indexOf(map)
+
+        adapter?.setMapList(newOrderedList)
+        adapter?.notifyItemMoved(formerPosition, newPosition)
     }
 
-    override fun onMapDeleted() {
-        adapter?.notifyDataSetChanged()
+    private fun List<Map>.sortByFavorites(): List<Map> {
+
+        /* Order map list with favorites first */
+        return sortedByDescending {
+            it.isFavorite
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -61,9 +61,8 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         mResources = resources;
     }
 
-    void onMapListUpdate(List<Map> mapList) {
+    void setMapList(List<Map> mapList) {
         maps = mapList;
-        notifyDataSetChanged();
     }
 
     /**
@@ -83,7 +82,8 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     }
 
     @Override
-    public MapViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @NonNull
+    public MapViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context ctx = parent.getContext();
         View v = LayoutInflater.from(ctx).inflate(R.layout.map_row, parent, false);
 
@@ -145,9 +145,14 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
                     } else {
                         holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_24);
                     }
-                    mMapFavoriteListener.onMapFavorite(map);
+                    mMapFavoriteListener.onMapFavorite(map, position);
                 }
         );
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return (long) maps.get(position).getId();
     }
 
     @Override
@@ -184,7 +189,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
      * corresponding {@link Map}.
      */
     public interface MapFavoriteListener {
-        void onMapFavorite(@NonNull Map map);
+        void onMapFavorite(@NonNull Map map, int formerPosition);
     }
 
     /**

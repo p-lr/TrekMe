@@ -315,7 +315,6 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
      */
     public static class ConfirmDeleteFragment extends DialogFragment {
         private WeakReference<Map> mMapWeakReference;
-        private MapLoader.MapDeletedListener mDeleteMapListener;
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -327,7 +326,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
                         if (mMapWeakReference != null) {
                             Map map = mMapWeakReference.get();
                             if (map != null) {
-                                MapLoader.INSTANCE.deleteMap(map, mDeleteMapListener);
+                                MapLoader.INSTANCE.deleteMap(map);
                             }
                         }
                     })
@@ -340,10 +339,6 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
 
         public void setMapWeakRef(WeakReference<Map> mapWr) {
             mMapWeakReference = mapWr;
-        }
-
-        public void setDeleteMapListener(MapLoader.MapDeletedListener listener) {
-            mDeleteMapListener = listener;
         }
     }
 }

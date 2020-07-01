@@ -58,8 +58,8 @@ class MapListViewModel @ViewModelInject constructor(
     fun toggleFavorite(map: Map) {
         /* Toggle, then trigger a view refresh */
         map.isFavorite = !map.isFavorite
-        val ids = _maps.value?.filter { it.isFavorite }?.map { it.id } ?: return
-        updateMapListInFragment(ids)
+        val maps = MapLoader.maps
+        val ids = maps.filter { it.isFavorite }.map { it.id }
 
         /* Remember this setting */
         viewModelScope.launch {
@@ -76,19 +76,17 @@ class MapListViewModel @ViewModelInject constructor(
     }
 
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
-        val mapList = MapLoader.maps
+        /* Mark favorites maps */
+        val mapList = markFavoriteMaps(favoriteMapIds)
 
-        /* Order map list with favorites first */
-        val mapListSorted = if (favoriteMapIds.isNotEmpty()) {
-            mapList.sortedByDescending { map ->
-                if (favoriteMapIds.contains(map.id)) {
-                    map.isFavorite = true
-                    1
-                } else -1
-            }
-        } else mapList
+        _maps.postValue(mapList)
+    }
 
-        _maps.postValue(mapListSorted)
+    private fun markFavoriteMaps(favoriteMapIds: List<Int>): List<Map> {
+        return MapLoader.maps.map { map ->
+            if (favoriteMapIds.contains(map.id)) map.isFavorite = true
+            map
+        }
     }
 
     /**
