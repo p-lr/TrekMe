@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -130,9 +129,15 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         }
 
         /* Set click listeners */
-        holder.itemView.setOnClickListener(new MapViewHolderClickListener(holder, this));
-        holder.editButton.setOnClickListener(new SettingsButtonClickListener(holder, this));
-        holder.deleteButton.setOnClickListener(new DeleteButtonClickListener(holder, this));
+        holder.itemView.setOnClickListener(v -> {
+            // Toggle background color
+            updateSelectionColor(position);
+
+            // Call the listener for Map selection
+            mMapSelectionListener.onMapSelected(map);
+        });
+        holder.editButton.setOnClickListener(v -> mMapSettingsListener.onMapSettings(map));
+        holder.deleteButton.setOnClickListener(v -> mMapDeleteListener.onMapDelete(map));
         holder.favoriteButton.setOnClickListener(v -> {
                     /* Toggle icon */
                     if (map.isFavorite()) {
@@ -203,99 +208,6 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
             editButton = itemView.findViewById(R.id.map_manage_btn);
             deleteButton = itemView.findViewById(R.id.map_delete_btn);
             favoriteButton = itemView.findViewById(R.id.map_favorite_btn);
-        }
-    }
-
-    /**
-     * The generic click listener for a button of a {@link MapViewHolder}. <br>
-     * It has a reference to the {@link MapAdapter} as it needs to access the {@link Map} container.
-     * <p>
-     */
-    private static abstract class ButtonClickListener implements View.OnClickListener {
-        WeakReference<MapViewHolder> mMapViewHolderWeakReference;
-        WeakReference<MapAdapter> mMapAdapterWeakReference;
-
-        ButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
-            mMapViewHolderWeakReference = new WeakReference<>(mapViewHolder);
-            mMapAdapterWeakReference = new WeakReference<>(mapAdapter);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (mMapAdapterWeakReference != null && mMapViewHolderWeakReference != null) {
-                MapAdapter mapAdapter = mMapAdapterWeakReference.get();
-                MapViewHolder mapViewHolder = mMapViewHolderWeakReference.get();
-
-                if (mapViewHolder != null && mapAdapter != null) {
-                    Map map = mapAdapter.maps.get(mapViewHolder.getAdapterPosition());
-                    if (mapAdapter.mMapSettingsListener != null) {
-                        clickAction(mapAdapter, map);
-                    }
-                }
-            }
-        }
-
-        public abstract void clickAction(MapAdapter mapAdapter, Map map);
-    }
-
-    /**
-     * The click listener for the settings button of a {@link MapViewHolder}
-     */
-    private static class SettingsButtonClickListener extends ButtonClickListener {
-        SettingsButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
-            super(mapViewHolder, mapAdapter);
-        }
-
-        @Override
-        public void clickAction(MapAdapter mapAdapter, Map map) {
-            mapAdapter.mMapSettingsListener.onMapSettings(map);
-        }
-    }
-
-    /**
-     * The click listener for the delete button of a {@link MapViewHolder}
-     */
-    private static class DeleteButtonClickListener extends ButtonClickListener {
-        DeleteButtonClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
-            super(mapViewHolder, mapAdapter);
-        }
-
-        @Override
-        public void clickAction(MapAdapter mapAdapter, Map map) {
-            mapAdapter.mMapDeleteListener.onMapDelete(map);
-        }
-    }
-
-    /**
-     * The click listener for a {@link MapViewHolder}.
-     * It has a reference to the {@link MapAdapter} as it needs to access the {@link Map} container
-     * and call some methods.
-     */
-    private static class MapViewHolderClickListener implements View.OnClickListener {
-        WeakReference<MapViewHolder> mMapViewHolderWeakReference;
-        WeakReference<MapAdapter> mMapAdapterWeakReference;
-
-        MapViewHolderClickListener(MapViewHolder mapViewHolder, MapAdapter mapAdapter) {
-            mMapViewHolderWeakReference = new WeakReference<>(mapViewHolder);
-            mMapAdapterWeakReference = new WeakReference<>(mapAdapter);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (mMapAdapterWeakReference != null && mMapViewHolderWeakReference != null) {
-                MapAdapter mapAdapter = mMapAdapterWeakReference.get();
-                MapViewHolder mapViewHolder = mMapViewHolderWeakReference.get();
-                if (mapViewHolder != null && mapAdapter != null) {
-                    int position = mapViewHolder.getAdapterPosition();
-
-                    // Toggle background color
-                    mapAdapter.updateSelectionColor(position);
-
-                    // Call the listener for Map selection
-                    Map map = mapAdapter.maps.get(position);
-                    mapAdapter.mMapSelectionListener.onMapSelected(map);
-                }
-            }
         }
     }
 }
