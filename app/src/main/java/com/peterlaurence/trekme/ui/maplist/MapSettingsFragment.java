@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.ui.maplist;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,7 +10,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.fragment.NavHostFragment;
@@ -27,7 +25,6 @@ import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
 
 /**
  * Fragment that shows the settings for a given map. It provides the abilities to :
@@ -307,38 +304,6 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     private void saveChanges() {
         if (mMap != null) {
             MapLoader.INSTANCE.saveMap(mMap);
-        }
-    }
-
-    /**
-     * The dialog that shows up when the user press the delete button
-     */
-    public static class ConfirmDeleteFragment extends DialogFragment {
-        private WeakReference<Map> mMapWeakReference;
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.map_delete_question)
-                    .setPositiveButton(R.string.delete_dialog, (dialog, id) -> {
-                        /* Delete the map */
-                        // TODO: refactor (this is really not the responsibility of a view to do this)
-                        if (mMapWeakReference != null) {
-                            Map map = mMapWeakReference.get();
-                            if (map != null) {
-                                MapLoader.INSTANCE.deleteMap(map);
-                            }
-                        }
-                    })
-                    .setNegativeButton(R.string.cancel_dialog_string, (dialog, id) -> {
-                        // Do nothing. This empty listener is used just to create the Cancel button.
-                    });
-
-            return builder.create();
-        }
-
-        public void setMapWeakRef(WeakReference<Map> mapWr) {
-            mMapWeakReference = mapWr;
         }
     }
 }

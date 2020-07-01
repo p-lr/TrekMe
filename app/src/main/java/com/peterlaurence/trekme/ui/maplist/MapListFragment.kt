@@ -19,9 +19,8 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.databinding.FragmentMapListBinding
 import com.peterlaurence.trekme.model.map.MapModel.setSettingsMap
 import com.peterlaurence.trekme.ui.maplist.MapAdapter.*
-import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment.ConfirmDeleteFragment
+import com.peterlaurence.trekme.ui.maplist.dialogs.ConfirmDeleteDialog
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
-import java.lang.ref.WeakReference
 
 /**
  * A [Fragment] that displays the list of available maps, using a [RecyclerView].
@@ -191,8 +190,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     }
 
     override fun onMapDelete(map: Map) {
-        val f = ConfirmDeleteFragment()
-        f.setMapWeakRef(WeakReference(map))
+        val f = ConfirmDeleteDialog.newInstance(map.id)
         val fragmentManager = parentFragmentManager
         f.show(fragmentManager, "delete")
     }

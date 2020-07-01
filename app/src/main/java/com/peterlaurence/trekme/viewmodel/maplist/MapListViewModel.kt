@@ -67,6 +67,11 @@ class MapListViewModel @ViewModelInject constructor(
         }
     }
 
+    fun deleteMap(mapId: Int) {
+        val map = MapLoader.getMap(mapId)
+        if (map != null) MapLoader.deleteMap(map)
+    }
+
     @Subscribe
     fun onMapListUpdateEvent(event: MapListUpdateEvent) {
         viewModelScope.launch {
