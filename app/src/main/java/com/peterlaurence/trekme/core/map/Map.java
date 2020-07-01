@@ -54,6 +54,7 @@ public class Map {
     private Bitmap mImage;
     private TileStreamProvider mTileStreamProvider;  // this should be considered nullable (e.g, it can be never set)
     private MapBounds mMapBounds;
+    private boolean isFavorite = false;
     /* The Java Object corresponding to the json configuration file */
     private MapGson mMapGson;
     /* The Java Object corresponding to the json file of markers */
@@ -451,6 +452,14 @@ public class Map {
 
     public final File getConfigFile() {
         return mConfigFile;
+    }
+
+    public void setFavorite(boolean isFavorite) {
+        this.isFavorite = isFavorite;
+    }
+
+    public boolean isFavorite() {
+        return isFavorite;
     }
 
     /**

@@ -29,7 +29,8 @@ import java.lang.ref.WeakReference
  *
  * @author P.Laurence on 24/05/2020
  */
-class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, MapDeleteListener, MapDeletedListener {
+class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, MapDeleteListener,
+        MapDeletedListener, MapFavoriteListener {
     private var _binding: FragmentMapListBinding? = null
     private val binding get() = _binding!!
     private val args: MapListFragmentArgs by navArgs()
@@ -137,6 +138,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
             llm = LinearLayoutManager(ctx)
             recyclerView.layoutManager = llm
             adapter = MapAdapter(null, this, this, this,
+                    this,
                     ctx.getColor(R.color.colorAccent),
                     ctx.getColor(R.color.colorPrimaryTextWhite),
                     ctx.getColor(R.color.colorPrimaryTextBlack),
@@ -194,6 +196,10 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         f.setDeleteMapListener(this)
         val fragmentManager = parentFragmentManager
         f.show(fragmentManager, "delete")
+    }
+
+    override fun onMapFavorite(map: Map) {
+        viewModel.toggleFavorite(map)
     }
 
     override fun onMapDeleted() {

@@ -34,7 +34,7 @@ import java.io.OutputStream
  */
 class MapListViewModel @ViewModelInject constructor(
         private val settings: Settings
-): ViewModel() {
+) : ViewModel() {
     private val _maps = MutableLiveData<List<Map>>()
     val maps: LiveData<List<Map>> = _maps
 
@@ -55,14 +55,40 @@ class MapListViewModel @ViewModelInject constructor(
         }
     }
 
-    @Subscribe
-    fun onMapListUpdateEvent(event: MapListUpdateEvent) {
-        updateMapListInFragment()
+    fun toggleFavorite(map: Map) {
+        /* Toggle, then trigger a view refresh */
+        map.isFavorite = !map.isFavorite
+        val ids = _maps.value?.filter { it.isFavorite }?.map { it.id } ?: return
+        updateMapListInFragment(ids)
+
+        /* Remember this setting */
+        viewModelScope.launch {
+            settings.setFavoriteMapIds(ids)
+        }
     }
 
-    private fun updateMapListInFragment() {
+    @Subscribe
+    fun onMapListUpdateEvent(event: MapListUpdateEvent) {
+        viewModelScope.launch {
+            val favList = settings.getFavoriteMapIds()
+            updateMapListInFragment(favList)
+        }
+    }
+
+    private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
         val mapList = MapLoader.maps
-        _maps.postValue(mapList)
+
+        /* Order map list with favorites first */
+        val mapListSorted = if (favoriteMapIds.isNotEmpty()) {
+            mapList.sortedByDescending { map ->
+                if (favoriteMapIds.contains(map.id)) {
+                    map.isFavorite = true
+                    1
+                } else -1
+            }
+        } else mapList
+
+        _maps.postValue(mapListSorted)
     }
 
     /**

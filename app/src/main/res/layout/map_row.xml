@@ -72,6 +72,16 @@
             tools:layout_constraintLeft_creator="1" />
 
         <ImageButton
+            android:id="@+id/map_favorite_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintEnd_toStartOf="@+id/map_delete_btn"
+            card_view:layout_constraintTop_toTopOf="@+id/guideline" />
+
+        <ImageButton
             android:id="@+id/map_delete_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

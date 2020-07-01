@@ -3,11 +3,6 @@ package com.peterlaurence.trekme.ui.maplist;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
-import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
-import androidx.core.graphics.drawable.RoundedBitmapDrawable;
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +10,13 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
@@ -33,6 +35,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     private MapSelectionListener mMapSelectionListener;
     private MapSettingsListener mMapSettingsListener;
     private MapDeleteListener mMapDeleteListener;
+    private MapFavoriteListener mMapFavoriteListener;
 
     private int selectedMapIndex = -1;
     private int previousSelectedMapIndex = -1;
@@ -44,12 +47,14 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
 
     MapAdapter(@Nullable List<Map> maps, MapSelectionListener mapSelectionListener,
                MapSettingsListener mapSettingsListener, MapDeleteListener mapDeleteListener,
+               MapFavoriteListener mapFavoriteListener,
                int accentColor, int whiteTextColor,
                int blackTextColor, Resources resources) {
         this.maps = maps;
         mMapSelectionListener = mapSelectionListener;
         mMapSettingsListener = mapSettingsListener;
         mMapDeleteListener = mapDeleteListener;
+        mMapFavoriteListener = mapFavoriteListener;
 
         mColorAccent = accentColor;
         mColorWhiteText = whiteTextColor;
@@ -94,6 +99,11 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         holder.mapImage.setImageDrawable(dr);
         holder.mapName.setText(map.getName());
         holder.calibrationStatus.setText(map.getDescription());
+        if (map.isFavorite()) {
+            holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_24);
+        } else {
+            holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_border_24);
+        }
 
         if (holder.getLayoutPosition() == selectedMapIndex) {
             holder.cardView.setCardBackgroundColor(mColorAccent);
@@ -123,6 +133,16 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         holder.itemView.setOnClickListener(new MapViewHolderClickListener(holder, this));
         holder.editButton.setOnClickListener(new SettingsButtonClickListener(holder, this));
         holder.deleteButton.setOnClickListener(new DeleteButtonClickListener(holder, this));
+        holder.favoriteButton.setOnClickListener(v -> {
+                    /* Toggle icon */
+                    if (map.isFavorite()) {
+                        holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_border_24);
+                    } else {
+                        holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_24);
+                    }
+                    mMapFavoriteListener.onMapFavorite(map);
+                }
+        );
     }
 
     @Override
@@ -155,6 +175,14 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
     }
 
     /**
+     * When a {@link Map} is set (or unset) as favorite, this listener is invoked with the
+     * corresponding {@link Map}.
+     */
+    public interface MapFavoriteListener {
+        void onMapFavorite(@NonNull Map map);
+    }
+
+    /**
      * The view for each {@link Map}
      */
     public static class MapViewHolder extends RecyclerView.ViewHolder {
@@ -164,6 +192,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
         ImageView mapImage;
         Button editButton;
         ImageButton deleteButton;
+        ImageButton favoriteButton;
 
         public MapViewHolder(View itemView) {
             super(itemView);
@@ -173,6 +202,7 @@ public class MapAdapter extends RecyclerView.Adapter<MapAdapter.MapViewHolder> {
             mapImage = itemView.findViewById(R.id.map_preview_image);
             editButton = itemView.findViewById(R.id.map_manage_btn);
             deleteButton = itemView.findViewById(R.id.map_delete_btn);
+            favoriteButton = itemView.findViewById(R.id.map_favorite_btn);
         }
     }
 

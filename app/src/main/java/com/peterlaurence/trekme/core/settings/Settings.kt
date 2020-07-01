@@ -106,6 +106,15 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
         return settingsHandler.getLastSetting().scaleCentered
     }
 
+    suspend fun setFavoriteMapIds(ids: List<Int>) {
+        val new = settingsHandler.getLastSetting().copy(favoriteMaps = ids)
+        settingsHandler.writeSetting(new)
+    }
+
+    suspend fun getFavoriteMapIds(): List<Int> {
+        return settingsHandler.getLastSetting().favoriteMaps
+    }
+
     /**
      * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
      * empty.
@@ -134,6 +143,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
  * @param defineScaleWhenCenter If `true`, [scaleCentered] is accounted for. Otherwise,
  * [scaleCentered] is ignored.
  * @param scaleCentered The scale at which the MapView is set when centering on the current position
+ * @param favoriteMaps The ids of maps which are marked as favorites
  */
 @Serializable
 private data class SettingsData(val appDir: String,
@@ -142,7 +152,8 @@ private data class SettingsData(val appDir: String,
                                 val magnifyingFactor: Int = 0,
                                 val rotationMode: RotationMode = RotationMode.NONE,
                                 val defineScaleWhenCenter: Boolean = true,
-                                val scaleCentered: Float = 1f)
+                                val scaleCentered: Float = 1f,
+                                val favoriteMaps: List<Int> = listOf())
 
 enum class StartOnPolicy {
     MAP_LIST, LAST_MAP
