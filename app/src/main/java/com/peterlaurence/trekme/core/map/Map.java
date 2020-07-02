@@ -499,6 +499,18 @@ public class Map {
     /**
      * Two {@link Map} are considered identical if they have the same configuration file.
      */
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == null) return false;
+        if (obj instanceof Map) {
+            Map objMap = (Map) obj;
+            if (mConfigFile != null && objMap.getConfigFile() != null) {
+                return objMap.getConfigFile().equals(getConfigFile());
+            }
+        }
+        return false;
+    }
+
     public boolean equals(Map map) {
         if (map == null) return false;
         return mConfigFile.equals(map.getConfigFile());

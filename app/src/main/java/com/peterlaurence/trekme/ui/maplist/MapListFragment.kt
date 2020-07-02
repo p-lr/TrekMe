@@ -47,7 +47,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         viewModel.maps.observe(this, Observer { maps: List<Map>? ->
             if (maps != null) {
                 /* Set data */
-                onMapListUpdate(maps.sortByFavorites())
+                onMapListUpdate(maps)
 
                 /* Restore the recyclerView state if the device was rotated */
                 val llmState: Parcelable?
@@ -135,7 +135,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
             recyclerView.setHasFixedSize(false)
             llm = LinearLayoutManager(ctx)
             recyclerView.layoutManager = llm
-            adapter = MapAdapter(null, this, this, this,
+            adapter = MapAdapter(this, this, this,
                     this,
                     ctx.getColor(R.color.colorAccent),
                     ctx.getColor(R.color.colorPrimaryTextWhite),
@@ -162,7 +162,6 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         val adapter = adapter ?: return
         binding.loadingPanel.visibility = View.GONE
         adapter.setMapList(mapList)
-        adapter.notifyDataSetChanged()
 
         /* If no maps found, suggest to navigate to map creation */
         if (mapList.isEmpty()) {
@@ -197,20 +196,6 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
 
     override fun onMapFavorite(map: Map, formerPosition: Int) {
         viewModel.toggleFavorite(map)
-        val mapList = viewModel.maps.value ?: return
-        val newOrderedList = mapList.sortByFavorites()
-        val newPosition = newOrderedList.indexOf(map)
-
-        adapter?.setMapList(newOrderedList)
-        adapter?.notifyItemMoved(formerPosition, newPosition)
-    }
-
-    private fun List<Map>.sortByFavorites(): List<Map> {
-
-        /* Order map list with favorites first */
-        return sortedByDescending {
-            it.isFavorite
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

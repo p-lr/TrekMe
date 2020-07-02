@@ -11,6 +11,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
@@ -22,18 +24,30 @@ import com.peterlaurence.trekme.ui.maplist.MapAdapter.MapViewHolder
  *
  * @author peterLaurence on 26/12/15 - Converted to Kotlin on 02/07/2020
  */
-class MapAdapter internal constructor(private var maps: List<Map>?,
-                                      private val mapSelectionListener: MapSelectionListener,
-                                      private val mapSettingsListener: MapSettingsListener,
-                                      private val mapDeleteListener: MapDeleteListener,
-                                      private val mapFavoriteListener: MapFavoriteListener,
-                                      private val colorAccent: Int, private val colorWhiteText: Int,
-                                      private val colorBlackText: Int, private val resources: Resources) : RecyclerView.Adapter<MapViewHolder>() {
+class MapAdapter internal constructor(
+        private val mapSelectionListener: MapSelectionListener,
+        private val mapSettingsListener: MapSettingsListener,
+        private val mapDeleteListener: MapDeleteListener,
+        private val mapFavoriteListener: MapFavoriteListener,
+        private val colorAccent: Int, private val colorWhiteText: Int,
+        private val colorBlackText: Int, private val resources: Resources
+) : RecyclerView.Adapter<MapViewHolder>() {
     private var selectedMapIndex = -1
     private var previousSelectedMapIndex = -1
 
+    private val diffCallback = object : DiffUtil.ItemCallback<Map>() {
+        override fun areItemsTheSame(oldItem: Map, newItem: Map): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Map, newItem: Map): Boolean {
+            return oldItem == newItem
+        }
+    }
+    private val differ = AsyncListDiffer(this, diffCallback)
+
     fun setMapList(mapList: List<Map>?) {
-        maps = mapList
+        differ.submitList(mapList)
     }
 
     /**
@@ -59,62 +73,61 @@ class MapAdapter internal constructor(private var maps: List<Map>?,
     }
 
     override fun onBindViewHolder(holder: MapViewHolder, position: Int) {
-        val map = maps?.get(position) ?: return
+        val map = differ.currentList[position] ?: return
         val dr = RoundedBitmapDrawableFactory.create(resources, map.image)
         dr.cornerRadius = 16f
-        holder.mapImage.setImageDrawable(dr)
-        holder.mapName.text = map.name
-        holder.calibrationStatus.text = map.description
-        if (map.isFavorite) {
-            holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_24)
-        } else {
-            holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_border_24)
-        }
-        if (holder.layoutPosition == selectedMapIndex) {
-            holder.cardView.setCardBackgroundColor(colorAccent)
-            holder.mapName.setTextColor(colorWhiteText)
-            holder.editButton.setTextColor(colorWhiteText)
-            holder.deleteButton.setColorFilter(colorWhiteText)
-            holder.calibrationStatus.setTextColor(colorWhiteText)
-        } else {
-            holder.cardView.setCardBackgroundColor(Color.WHITE)
-            holder.mapName.setTextColor(colorBlackText)
-            holder.editButton.setTextColor(colorAccent)
-            holder.deleteButton.setColorFilter(colorAccent)
-        }
-        when (map.calibrationStatus) {
-            CalibrationStatus.OK -> holder.calibrationStatus.setText(R.string.calibration_status_ok)
-            CalibrationStatus.NONE, null -> holder.calibrationStatus.setText(R.string.calibration_status_none)
-            CalibrationStatus.ERROR -> holder.calibrationStatus.setText(R.string.calibration_status_error)
-        }
 
-        /* Set click listeners */
-        holder.itemView.setOnClickListener {
-            // Toggle background color
-            updateSelectionColor(position)
-
-            // Call the listener for Map selection
-            mapSelectionListener.onMapSelected(map)
-        }
-        holder.editButton.setOnClickListener { mapSettingsListener.onMapSettings(map) }
-        holder.deleteButton.setOnClickListener { mapDeleteListener.onMapDelete(map) }
-        holder.favoriteButton.setOnClickListener {
-            /* Toggle icon */
+        with(holder) {
+            mapImage.setImageDrawable(dr)
+            mapName.text = map.name
+            calibrationStatus.text = map.description
             if (map.isFavorite) {
-                holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_border_24)
+                favoriteButton.setImageResource(R.drawable.ic_baseline_star_24)
             } else {
-                holder.favoriteButton.setImageResource(R.drawable.ic_baseline_star_24)
+                favoriteButton.setImageResource(R.drawable.ic_baseline_star_border_24)
             }
-            mapFavoriteListener.onMapFavorite(map, position)
-        }
-    }
+            if (layoutPosition == selectedMapIndex) {
+                cardView.setCardBackgroundColor(colorAccent)
+                mapName.setTextColor(colorWhiteText)
+                editButton.setTextColor(colorWhiteText)
+                deleteButton.setColorFilter(colorWhiteText)
+                calibrationStatus.setTextColor(colorWhiteText)
+            } else {
+                cardView.setCardBackgroundColor(Color.WHITE)
+                mapName.setTextColor(colorBlackText)
+                editButton.setTextColor(colorAccent)
+                deleteButton.setColorFilter(colorAccent)
+            }
+            when (map.calibrationStatus) {
+                CalibrationStatus.OK -> calibrationStatus.setText(R.string.calibration_status_ok)
+                CalibrationStatus.NONE, null -> calibrationStatus.setText(R.string.calibration_status_none)
+                CalibrationStatus.ERROR -> calibrationStatus.setText(R.string.calibration_status_error)
+            }
 
-    override fun getItemId(position: Int): Long {
-        return maps?.get(position)?.id?.toLong() ?: -1
+            /* Set click listeners */
+            itemView.setOnClickListener {
+                // Toggle background color
+                updateSelectionColor(position)
+
+                // Call the listener for Map selection
+                mapSelectionListener.onMapSelected(map)
+            }
+            editButton.setOnClickListener { mapSettingsListener.onMapSettings(map) }
+            deleteButton.setOnClickListener { mapDeleteListener.onMapDelete(map) }
+            favoriteButton.setOnClickListener {
+                /* Toggle icon */
+                if (map.isFavorite) {
+                    favoriteButton.setImageResource(R.drawable.ic_baseline_star_border_24)
+                } else {
+                    favoriteButton.setImageResource(R.drawable.ic_baseline_star_24)
+                }
+                mapFavoriteListener.onMapFavorite(map, position)
+            }
+        }
     }
 
     override fun getItemCount(): Int {
-        return maps?.size ?: 0
+        return differ.currentList.size
     }
 
     /**

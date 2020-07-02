@@ -60,6 +60,7 @@ class MapListViewModel @ViewModelInject constructor(
         map.isFavorite = !map.isFavorite
         val maps = MapLoader.maps
         val ids = maps.filter { it.isFavorite }.map { it.id }
+        updateMapListInFragment(ids)
 
         /* Remember this setting */
         viewModelScope.launch {
@@ -81,17 +82,19 @@ class MapListViewModel @ViewModelInject constructor(
     }
 
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
-        /* Mark favorites maps */
-        val mapList = markFavoriteMaps(favoriteMapIds)
+        val mapList = MapLoader.maps
 
-        _maps.postValue(mapList)
-    }
+        /* Order map list with favorites first */
+        val mapListSorted = if (favoriteMapIds.isNotEmpty()) {
+            mapList.sortedByDescending { map ->
+                if (favoriteMapIds.contains(map.id)) {
+                    map.isFavorite = true
+                    1
+                } else -1
+            }
+        } else mapList
 
-    private fun markFavoriteMaps(favoriteMapIds: List<Int>): List<Map> {
-        return MapLoader.maps.map { map ->
-            if (favoriteMapIds.contains(map.id)) map.isFavorite = true
-            map
-        }
+        _maps.postValue(mapListSorted)
     }
 
     /**
