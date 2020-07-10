@@ -1,13 +1,15 @@
 package com.peterlaurence.trekme.viewmodel.mapview
 
+import android.app.Application
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.ign.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.map.MapModel
-import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -17,21 +19,25 @@ import org.greenrobot.eventbus.EventBus
  */
 class MapViewViewModel @ViewModelInject constructor(
         private val persistenceStrategy: PersistenceStrategy,
-        private val settings: Settings
-): ViewModel() {
+        private val settings: Settings,
+        private val application: Application
+) : ViewModel() {
     private val eventBus = EventBus.getDefault()
+    private val billing: Billing by lazy {
+        Billing(application)
+    }
 
     /**
      * @return a [Map] instance, or null if there is none or there's a license issue
      */
-    suspend fun getMap(billing: Billing?): Map? {
+    fun getMap(): Map? {
         val map = MapModel.getCurrentMap()
         if (map != null) {
-            if (checkForIgnLicense(map, billing)) {
-                return map
+            viewModelScope.launch {
+                checkForIgnLicense(map)
             }
         }
-        return null
+        return map
     }
 
     suspend fun getMagnifyingFactor(): Int = settings.getMagnifyingFactor()
@@ -42,7 +48,7 @@ class MapViewViewModel @ViewModelInject constructor(
 
     suspend fun getScaleCentered(): Float = settings.getScaleCentered()
 
-    private suspend fun checkForIgnLicense(map: Map, billing: Billing?): Boolean {
+    private suspend fun checkForIgnLicense(map: Map): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
 
         /**
@@ -52,7 +58,7 @@ class MapViewViewModel @ViewModelInject constructor(
          */
         suspend fun onFailureToReadFile(): Boolean {
             // missing license or something else wrong
-            return billing?.getIgnLicensePurchase()?.let {
+            return billing.getIgnLicensePurchase()?.let {
                 persistenceStrategy.persist(LicenseInfo(it.purchaseTime))
                 true
             } ?: {

@@ -16,16 +16,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-class IgnLicenseViewModel @ViewModelInject constructor(private val trekMeContext: TrekMeContext) : ViewModel() {
+class IgnLicenseViewModel @ViewModelInject constructor(
+        private val trekMeContext: TrekMeContext,
+        private val application: Application
+) : ViewModel() {
     private val ignLicenseStatus = MutableLiveData<LicenseStatus>()
     private val ignLicenseDetails = MutableLiveData<IgnLicenseDetails>()
-    private var application: Application? = null
     private val billing: Billing by lazy {
-        Billing(application!!)
-    }
-
-    fun init(application: Application) {
-        this.application = application
+        Billing(application)
     }
 
     fun getIgnLicensePurchaseStatus() {

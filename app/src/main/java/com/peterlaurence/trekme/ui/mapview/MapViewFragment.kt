@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.ui.mapview
 
 import android.animation.ObjectAnimator
-import android.content.Context
 import android.os.Bundle
 import android.view.*
 import android.view.animation.DecelerateInterpolator
@@ -21,7 +20,6 @@ import com.peterlaurence.mapview.ReferentialOwner
 import com.peterlaurence.mapview.api.*
 import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
@@ -75,8 +73,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private lateinit var distanceListener: DistanceLayer.DistanceListener
     private var orientationJob: Job? = null
 
-    private var billing: Billing? = null
-
     private val mapViewViewModel: MapViewViewModel by viewModels()
     private val locationViewModel: LocationViewModel by activityViewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
@@ -90,11 +86,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             if (::positionMarker.isInitialized) positionMarker.referentialData = value
             compassView?.referentialData = value
         }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        billing = Billing(requireActivity().application)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -301,8 +292,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         scaleCentered = mapViewViewModel.getScaleCentered()
     }
 
-    private suspend fun getAndApplyMap() {
-        mapViewViewModel.getMap(billing)?.let {
+    private fun getAndApplyMap() {
+        mapViewViewModel.getMap()?.let {
             try {
                 if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
                     applyMap(it)

@@ -49,7 +49,6 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.init(requireActivity().application)
         viewModel.getIgnLicenseStatus().observe(this, Observer {
             it?.also {
                 when (it) {
