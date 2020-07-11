@@ -146,12 +146,19 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         }
     }
 
+    /**
+     * Navigate to MapViewFragment.
+     * Some teasing user might click on several map cards at the same time. To avoid a navigation
+     * issue (IllegalArgumentException thrown because we're already at the desired destination),
+     * the first attempt wins.
+     */
     override fun onMapSelected(map: Map) {
-        viewModel.setMap(map)
-
-        /* Navigate to MapViewFragment */
-        val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
-        findNavController().navigate(action)
+        val navController = findNavController()
+        if (navController.currentDestination?.id == R.id.mapListFragment) {
+            viewModel.setMap(map)
+            val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
+            navController.navigate(action)
+        }
     }
 
     /**

@@ -50,7 +50,7 @@ class MapListViewModel @ViewModelInject constructor(
         MapModel.setCurrentMap(map)
 
         // 2- Remember this map in the case use wants to open TrekMe directly on this map
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             settings.setLastMapId(map.id)
         }
     }
