@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
-import android.app.Application
 import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
@@ -18,13 +17,10 @@ import java.util.*
 
 class IgnLicenseViewModel @ViewModelInject constructor(
         private val trekMeContext: TrekMeContext,
-        private val application: Application
+        private val billing: Billing
 ) : ViewModel() {
     private val ignLicenseStatus = MutableLiveData<LicenseStatus>()
     private val ignLicenseDetails = MutableLiveData<IgnLicenseDetails>()
-    private val billing: Billing by lazy {
-        Billing(application)
-    }
 
     fun getIgnLicensePurchaseStatus() {
         viewModelScope.launch {

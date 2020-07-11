@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.viewmodel.mapview
 
-import android.app.Application
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,12 +19,9 @@ import org.greenrobot.eventbus.EventBus
 class MapViewViewModel @ViewModelInject constructor(
         private val persistenceStrategy: PersistenceStrategy,
         private val settings: Settings,
-        private val application: Application
+        private val billing: Billing
 ) : ViewModel() {
     private val eventBus = EventBus.getDefault()
-    private val billing: Billing by lazy {
-        Billing(application)
-    }
 
     /**
      * @return a [Map] instance, or null if there is none or there's a license issue

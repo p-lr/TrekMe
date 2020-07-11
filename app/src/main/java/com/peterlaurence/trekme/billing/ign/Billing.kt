@@ -16,6 +16,11 @@ const val IGN_LICENSE_SKU = "ign_license"
 typealias PurchaseAcknowledgedCallback = () -> Unit
 typealias PurchasePendingCallback = () -> Unit
 
+/**
+ * Manages the licensing for IGN maps.
+ *
+ * @author P.Laurence on 06/08/2019
+ */
 class Billing(val application: Application) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
 
     private val billingClient = BillingClient.newBuilder(application).setListener(this).enablePendingPurchases().build()

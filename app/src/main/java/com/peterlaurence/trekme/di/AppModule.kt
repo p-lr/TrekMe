@@ -1,6 +1,8 @@
 package com.peterlaurence.trekme.di
 
+import android.app.Application
 import android.content.Context
+import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
@@ -30,5 +32,14 @@ object AppModule {
     @Provides
     fun bindLocationProvider(@ApplicationContext context: Context): LocationProvider {
         return getLocationProvider(LocationSource.GOOGLE_FUSE, context)
+    }
+
+    /**
+     * A single instance of [Billing] is used across the app. This object isn't expensive to create.
+     */
+    @Singleton
+    @Provides
+    fun bindBilling(application: Application): Billing {
+        return Billing(application)
     }
 }
