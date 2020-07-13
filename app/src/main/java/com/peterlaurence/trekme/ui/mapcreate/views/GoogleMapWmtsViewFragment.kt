@@ -344,11 +344,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 tileStreamProvider.toMapViewTileStreamProvider()
         ).setWorkerCount(16)
 
-        /* Particular case of OSM Maps, limit concurrency while fetching tiles to avoid being banned */
-        if (mapSource == MapSource.OPEN_STREET_MAP) {
-            config.setWorkerCount(2)
-        }
-
         mapView.configure(config)
 
         /* Map calibration */
