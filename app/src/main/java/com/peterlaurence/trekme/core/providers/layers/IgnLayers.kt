@@ -7,10 +7,9 @@ object ScanExpressStandard : IgnLayer(scanExpressStd, "GEOGRAPHICALGRIDSYSTEMS.M
 object IgnClassic : IgnLayer(ignClassic, "GEOGRAPHICALGRIDSYSTEMS.MAPS")
 object Satellite : IgnLayer(satellite, "ORTHOIMAGERY.ORTHOPHOTOS")
 
-
 private const val scanExpressStd = "Scan Express Standard"
-private const val ignClassic = "IGN Classic"
-private const val satellite = "Satellite photos"
+private const val ignClassic = "Cartes IGN"
+private const val satellite = "Photographies aériennes"
 
 /* Workaround because we can't call SealedClass.values() without reflection :( */
-val ignLayers = listOf(scanExpressStd, ignClassic, satellite)
+val ignLayers = listOf(ignClassic, satellite, scanExpressStd)

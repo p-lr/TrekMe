@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.core.providers.bitmap
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Base64
 import android.util.Log
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
@@ -41,10 +40,10 @@ class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder, private
 }
 
 /**
- * Same as [TileStreamProviderHttp], but using basic authentication.
+ * Same as [TileStreamProviderHttp], but using user-agent authentication.
  */
-class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, private val user: String,
-                                 private val pwd: String, private val requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
+class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, private val userAgent: String,
+                                 private val requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
         val url = URL(urlTileBuilder.build(zoomLvl, row, col))
         val tileStreamProviderHttp = TileStreamProviderHttp(urlTileBuilder, requestProperties)
@@ -64,9 +63,7 @@ class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, pri
     }
 
     private fun HttpURLConnection.setAuth() {
-        val authString = "$user:$pwd"
-        val authStringEnc = String(Base64.encode(authString.toByteArray(), Base64.NO_WRAP))
-        setRequestProperty("Authorization", "Basic $authStringEnc")
+        setRequestProperty("User-Agent", userAgent)
     }
 }
 

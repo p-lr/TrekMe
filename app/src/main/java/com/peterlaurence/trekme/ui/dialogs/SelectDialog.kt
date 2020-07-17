@@ -75,4 +75,4 @@ class SelectDialog : DialogFragment() {
  * It is sent when the user presses the "OK" button of the dialog.
  */
 @Parcelize
-open class SelectDialogEvent(val selection: ArrayList<String>) : Parcelable
+open class SelectDialogEvent(open val selection: ArrayList<String>) : Parcelable

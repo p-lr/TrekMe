@@ -1,8 +1,10 @@
 package com.peterlaurence.trekme.ui.mapcreate.views.events
 
 import com.peterlaurence.trekme.ui.dialogs.SelectDialogEvent
+import kotlinx.android.parcel.Parcelize
 
-class LayerSelectEvent(selection: ArrayList<String>) : SelectDialogEvent(selection) {
+@Parcelize
+class LayerSelectEvent(override val selection: ArrayList<String>) : SelectDialogEvent(selection) {
     fun getSelection(): String {
         return selection.first()
     }

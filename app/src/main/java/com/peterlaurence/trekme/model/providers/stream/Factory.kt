@@ -14,11 +14,7 @@ fun createTileStreamProvider(mapSource: MapSource, layer: String, mapSourceCrede
         MapSource.IGN -> {
             val ignCredentials = mapSourceCredentials.getIGNCredentials() ?: throw Exception("Missing IGN credentials")
             val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", layer)
-            if (layer.isNotEmpty()) {
-                TileStreamProviderIgn(ignCredentials, layer, urlTileBuilder)
-            } else {
-                TileStreamProviderIgn(ignCredentials, urlTileBuilder = urlTileBuilder)
-            }
+            TileStreamProviderIgn(urlTileBuilder)
         }
         MapSource.USGS -> {
             val urlTileBuilder = UrlTileBuilderUSGS()
