@@ -11,5 +11,5 @@ private const val scanExpressStd = "Scan Express Standard"
 private const val ignClassic = "Cartes IGN"
 private const val satellite = "Photographies aériennes"
 
-/* Workaround because we can't call SealedClass.values() without reflection :( */
-val ignLayers = listOf(ignClassic, satellite, scanExpressStd)
+/* All supported layers */
+val ignLayers: List<IgnLayer> = listOf(IgnClassic, Satellite)

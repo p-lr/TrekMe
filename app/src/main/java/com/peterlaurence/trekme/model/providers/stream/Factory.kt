@@ -1,19 +1,21 @@
 package com.peterlaurence.trekme.model.providers.stream
 
 import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.mapsource.IgnSourceData
 import com.peterlaurence.trekme.core.mapsource.MapSource
-import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
+import com.peterlaurence.trekme.core.mapsource.MapSourceData
 import com.peterlaurence.trekme.core.providers.urltilebuilder.*
 
 /**
  * This is the unique place of the app (excluding tests), where we create a [TileStreamProvider]
  * from a [MapSource].
  */
-fun createTileStreamProvider(mapSource: MapSource, layer: String, mapSourceCredentials: MapSourceCredentials): TileStreamProvider {
+fun createTileStreamProvider(mapSource: MapSource, mapSourceData: MapSourceData): TileStreamProvider {
     return when (mapSource) {
         MapSource.IGN -> {
-            val ignCredentials = mapSourceCredentials.getIGNCredentials() ?: throw Exception("Missing IGN credentials")
-            val urlTileBuilder = UrlTileBuilderIgn(ignCredentials.api ?: "", layer)
+            val ignSourceData = mapSourceData as? IgnSourceData
+                    ?: throw Exception("Missing data for IGN source")
+            val urlTileBuilder = UrlTileBuilderIgn(ignSourceData.api, ignSourceData.layer.realName)
             TileStreamProviderIgn(urlTileBuilder)
         }
         MapSource.USGS -> {

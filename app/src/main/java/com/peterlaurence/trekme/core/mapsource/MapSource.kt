@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.mapsource
 
 import android.os.Parcelable
+import com.peterlaurence.trekme.core.providers.layers.Layer
 import kotlinx.android.parcel.Parcelize
 
 
@@ -10,3 +11,7 @@ enum class MapSource {
 
 @Parcelize
 data class MapSourceBundle(val mapSource: MapSource) : Parcelable
+
+sealed class MapSourceData
+data class IgnSourceData(val api: String, val layer: Layer) : MapSourceData()
+object NoData : MapSourceData()

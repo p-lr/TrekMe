@@ -6,18 +6,25 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.mapsource.IgnSourceData
 import com.peterlaurence.trekme.core.mapsource.MapSource
-import com.peterlaurence.trekme.core.mapsource.MapSourceCredentials
+import com.peterlaurence.trekme.core.mapsource.NoData
 import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
-import com.peterlaurence.trekme.core.providers.layers.*
+import com.peterlaurence.trekme.core.providers.layers.IgnClassic
+import com.peterlaurence.trekme.core.providers.layers.IgnLayer
+import com.peterlaurence.trekme.core.providers.layers.Layer
+import com.peterlaurence.trekme.core.providers.layers.ignLayers
 import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
+import java.net.URL
 
 /**
  * View-model for [GoogleMapWmtsViewFragment]. It takes care of:
@@ -28,10 +35,11 @@ import org.greenrobot.eventbus.EventBus
  * @author peterLaurence on 09/11/19
  */
 class GoogleMapWmtsViewModel @ViewModelInject constructor(
-        private val mapSourceCredentials: MapSourceCredentials,
         private val app: Application
 ) : ViewModel() {
     private val defaultIgnLayer: IgnLayer = IgnClassic
+    private var ignApi: String? = null
+    private val ignApiUrl = "https://plrapps.ovh:8080/ign-api"
 
     private val scaleAndScrollInitConfig = mapOf(
             MapSource.SWISS_TOPO to ScaleAndScrollInitConfig(0.0006149545f, 21064, 13788),
@@ -53,7 +61,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     fun setLayerPublicNameForSource(mapSource: MapSource, layerName: String) {
         if (mapSource == MapSource.IGN) {
             try {
-                val layer = listOf(IgnClassic, Satellite, ScanExpressStandard).first { it.publicName == layerName }
+                val layer = ignLayers.first { it.publicName == layerName }
                 activeLayerForSource[mapSource] = layer
             } catch (e: Exception) {
                 /* Default value just in case */
@@ -62,11 +70,29 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         }
     }
 
-    fun createTileStreamProvider(mapSource: MapSource): TileStreamProvider? {
+    suspend fun createTileStreamProvider(mapSource: MapSource): TileStreamProvider? {
         val layer = activeLayerForSource[mapSource] ?: defaultIgnLayer
+        val mapSourceData = if (mapSource == MapSource.IGN) {
+            if (ignApi == null) {
+                ignApi = getIgnApi()
+            }
+            IgnSourceData(ignApi ?: "", layer)
+        } else NoData
         return try {
-            createTileStreamProvider(mapSource, layer.realName, mapSourceCredentials)
+            createTileStreamProvider(mapSource, mapSourceData)
         } catch (e: Exception) {
+            null
+        }
+    }
+
+    private suspend fun getIgnApi(): String? = withContext(Dispatchers.IO) {
+        val url = URL(ignApiUrl)
+        val connection = url.openConnection()
+        try {
+            connection.getInputStream().bufferedReader().use {
+                it.readText()
+            }
+        } catch (t: Throwable) {
             null
         }
     }

@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
@@ -76,6 +75,7 @@ import javax.inject.Inject
 class GoogleMapWmtsViewFragment : Fragment() {
     private var _binding: FragmentWmtsViewBinding? = null
     private val binding get() = _binding!!
+
     @Inject
     lateinit var locationProvider: LocationProvider
 
@@ -153,15 +153,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fabSave.setOnClickListener { validateArea() }
         binding.fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
-        /**
-         * If there is something wrong with IGN credentials, a special button helps to go directly
-         * to the credentials editing fragment.
-         */
-        binding.fragmentWmtsNagivateToIgnCredentials.setOnClickListener {
-            val action = GoogleMapWmtsViewFragmentDirections.actionGoogleMapWmtsViewFragmentToIgnCredentialsFragment()
-            findNavController().navigate(action)
-        }
-
         configure()
     }
 
@@ -197,7 +188,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             R.id.map_layer_menu_id -> {
                 val event = LayerSelectEvent(arrayListOf())
                 val title = getString(R.string.ign_select_layer_title)
-                val values = ignLayers
+                val values = ignLayers.map { it.publicName }
                 val layerPublicName = viewModel.getLayerPublicNameForSource(mapSource)
                 val layerSelectDialog =
                         SelectDialog.newInstance(title, values, layerPublicName, event)
@@ -322,7 +313,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fragmentWmtWarningLink.visibility = View.VISIBLE
 
         if (mapSource == MapSource.IGN) {
-            binding.fragmentWmtsNagivateToIgnCredentials.visibility = View.VISIBLE
             binding.fragmentWmtWarning.text = getText(R.string.mapcreate_warning_ign)
         } else {
             binding.fragmentWmtWarning.text = getText(R.string.mapcreate_warning_others)
@@ -331,7 +321,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     private fun hideWarningMessage() {
         binding.fragmentWmtWarning.visibility = View.GONE
-        binding.fragmentWmtsNagivateToIgnCredentials.visibility = View.GONE
         binding.fragmentWmtWarningLink.visibility = View.GONE
     }
 
