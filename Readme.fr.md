@@ -30,19 +30,27 @@
 
 ## <a name="TOC-Overview"></a>Introduction
 
-TrekMe est une application Android permettant de se localiser sur une carte topographique, sans nécessiter de connexion internet (sauf chez soi au moment de créer la carte). La différence principale avec les autres applications de la même catégorie est la source des cartes. Il est possible de télécharger des cartes IGN, USGS, et OpenStreetMap (d'autres sources seront ajoutées). Mais il est aussi possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser avec TrekMe.
-L'accent a été mis sur la faible consommation des ressources, pour maximiser l'autonomie lors d'une randonnée.
+TrekMe est une application Android permettant de se localiser sur une carte topographique, sans 
+nécessiter de connexion internet (sauf chez soi au moment de créer la carte). La différence principale
+ avec les autres applications de la même catégorie est la source des cartes. Il est possible de 
+ télécharger des cartes IGN, USGS, et OpenStreetMap (d'autres sources seront ajoutées). Mais il est 
+ aussi possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser
+  avec TrekMe.
+L'accent a été mis sur la faible consommation des ressources, pour maximiser l'autonomie lors d'une 
+randonnée.
 
 ## <a name="TOC-IGN-amps"></a>Cartes IGN
 
-Contrairement à certaines applications qui font payer à la carte, TrekMe vous coûtera environ 8€ par an.
-En effet, l'esprit de TrekMe est la consultation hors ligne des cartes IGN. Pour cela, le développeur de l’application doit s'acquitter d'une ["licence d'exploitation grand public numérique"](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf), qui coûte ~8€ par an par utilisateur à TrekMe. TrekMe vous invitera à la régler quand vous voudrez créer votre première carte IGN. Si au bout d'un an vous ne renouvelez pas votre licence, vous ne pourrez plus consulter en mode hors ligne les cartes IGN.
-Il vous faudra disposer d'identifiants et clé d'API IGN à mettre directement dans TrekMe. Vous serez guidé pour vous inscrire sur le site de l'IGN et obtenir vos propres identifiants et clé d'API. Ceci vous permettra d’accéder à un volume annuel de cartes qui est largement suffisant pour un usage normal. Il faut pour cela suivre scrupuleusement ce [tutoriel](https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN).
+TrekMe vous propose un abonnement annuel. Pourquoi n'est-ce pas gratuit? L'esprit de TrekMe est la 
+consultation hors ligne des cartes. Or, le stockage des cartes IGN n'est autorisé que dans le cadre 
+d'une [licence d'exploitation grand public numérique](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf). 
+Cette licence est payante. L'application vous invitera donc à la régler quand vous voudrez créer 
+votre première carte IGN. Vous êtes alors parti pour un an.
 
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
-    - France IGN (requiert une souscription **annuelle d'environ 8€** à l'IGN)
+    - France IGN (requiert une souscription **annuelle** à l'IGN)
     - Swiss Topo
 	- USA : USGS
  	- Espagne IGN 
@@ -66,29 +74,37 @@ La méthode la plus facile et recommandée est la première. Ci-dessous sont dé
 
 ### <a name="TOC-Select-area"></a>Sélectionner une zone
 
-Ici, on utilise une source de carte spécifique. Google map est un exemple de source très connu. Mais leurs cartes ne sont pas idéales pour la randonnée (on souhaite avoir des cartes plus adaptées).
+Ici, on utilise une source de carte spécifique. Google map est un exemple de source très connu. Mais
+ leurs cartes ne sont pas idéales pour la randonnée (on souhaite avoir des cartes plus adaptées).
 
-Les cartes IGN sont parfaites pour cela. Elles couvrent la France entière ainsi que les DOM-TOM (Guadeloupe, Martinique, Réunion, Tahiti, etc.). Pour les Etats-Unis, il y a l'USGS.
-Il est important de noter que tous les pays n'ont pas un service national équivalent de l'IGN. Donc parfois, il faut se contenter des cartes OpenStreetMap.
+Les cartes IGN sont parfaites pour cela. Elles couvrent la France entière ainsi que les DOM-TOM 
+(Guadeloupe, Martinique, Réunion, Tahiti, etc.). Pour les Etats-Unis, il y a l'USGS.
+Il est important de noter que tous les pays n'ont pas un service national équivalent de l'IGN. Donc 
+parfois, il faut se contenter des cartes OpenStreetMap.
 
 Certains fournisseurs de carte nécessitent une souscription, pour l'instant seulement l'IGN.
 
-Depuis le menu principal, choisissez "Créer une carte". Un menu vous donne alors le choix entre les sources suivantes : 
+Depuis le menu principal, choisissez "Créer une carte". Un menu vous donne alors le choix entre les 
+sources suivantes : 
 
 <p align="center">
 <img src="doc/tuto/wmts-providers.jpg" width="300">
 </p>
 
-A l'exception de l'IGN France, pour laquelle une souscription annuelle est nécessaire, vous pouvez directement sélectionner une source et continuer.
+Vous pouvez librement visionner les cartes d'IGN France. Mais pour sauvegarder des cartes IGN France,
+ l'abonnement annuel est nécessaire.
 
 <p align="center">
 <img src="doc/tuto/select-area.jpg" width="300">
 </p>
 
-Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse. Un bouton en haut à droite, ressemblant à un carré, vous permet de faire apparaître une zone modifiable (en bleu).
+Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse. Un bouton en haut à droite, 
+ressemblant à un carré, vous permet de faire apparaître une zone modifiable (en bleu).
 Quand vous êtes satisfait de votre sélection, utilisez le bouton de téléchargement en bas à droite.
 
-NB : la plupart des fournisseurs de cartes n'ont qu'une couverture partielle du globe. A l'exception d'OpenStreetMap, qui couvre le monde entier, l'USGS par ex ne couvre que les Etats-Unis, l'IGN Espagne que l'Espagne, etc.
+NB : la plupart des fournisseurs de cartes n'ont qu'une couverture partielle du globe. A l'exception 
+d'OpenStreetMap, qui couvre le monde entier, l'USGS par ex ne couvre que les Etats-Unis, l'IGN Espagne 
+que l'Espagne, etc.
 
 Un menu tel que celui-ci s'affiche :
 
@@ -96,20 +112,30 @@ Un menu tel que celui-ci s'affiche :
 <img src="doc/tuto/map-configuration.jpg" width="300">
 </p>
 
-Les fournisseurs de carte proposent différents niveaux de zoom, allant de 1 (niveau globe)  à 18 (carte très détaillée).
-Dans la plupart des cas, vous ne voulez pas des niveaux 1 à 10, et le niveau 18 n'est pas nécessaire. C'est la raison pour laquelle le réglage par défaut est de 12 pour le zoom minimum, et 16 pour le maximum.
+Les fournisseurs de carte proposent différents niveaux de zoom, allant de 1 (niveau globe)  à 18 
+(carte très détaillée).
+Dans la plupart des cas, vous ne voulez pas des niveaux 1 à 10, et le niveau 18 n'est pas nécessaire. 
+C'est la raison pour laquelle le réglage par défaut est de 12 pour le zoom minimum, et 16 pour le maximum.
 
-La quantité d'images qui devront être téléchargées dépend directement du choix des niveaux de zoom min et max. Plus le niveau de zoom min est petit et plus le niveau max est grand, plus la quantité à télécharger est importante.
-Ceci est indiqué par les nombre de transactions (ceux qui auront suivi le tutoriel d'inscription à l'IGN sauront de quoi il s'agit). Mais aussi plus simplement l'estimation de la taille de la carte en Mo est indiquée.
-Il est important de noter que télécharger plusieurs centaines de Mo peut prendre des heures... Il est donc fortement recommandé de ne sélectionner que la zone dont vous avez besoin.
+La quantité d'images qui devront être téléchargées dépend directement du choix des niveaux de zoom 
+min et max. Plus le niveau de zoom min est petit et plus le niveau max est grand, plus la quantité à
+ télécharger est importante.
+Ceci est indiqué par les nombre de transactions. Mais aussi plus simplement l'estimation de la taille
+ de la carte en Mo est indiquée.
+Il est important de noter que télécharger plusieurs centaines de Mo peut prendre des heures... Il est
+ donc fortement recommandé de ne sélectionner que la zone dont vous avez besoin.
 
-Quand tout est ok, utilisez le bouton "Telecharger". Un service est alors lancé, et une notification vous en informe. Depuis le gestionnaire de notifications de votre téléphone, vous pouvez :
+Quand tout est ok, utilisez le bouton "Telecharger". Un service est alors lancé, et une notification 
+vous en informe. Depuis le gestionnaire de notifications de votre téléphone, vous pouvez :
 
 * Voir la progressoin du téléchargement
 * Annuler le téléchargement
 
-Quand le service a fini le téléchargement, vous recevez une notification et une nouvelle carte est disponible dans la liste des cartes. Cette carte est déjà calibrée et prête à l'emploi.
-Vous pouvez la personnaliser en lui associant une image de présentation qui apparaîtra à côté de son nom dans la liste des cartes. Pour ce faire, utilisez le bouton d'édition en dessous du nom de la carte, sur la gauche.
+Quand le service a fini le téléchargement, vous recevez une notification et une nouvelle carte est 
+disponible dans la liste des cartes. Cette carte est déjà calibrée et prête à l'emploi.
+Vous pouvez la personnaliser en lui associant une image de présentation qui apparaîtra à côté de son
+ nom dans la liste des cartes. Pour ce faire, utilisez le bouton d'édition en dessous du nom de la 
+ carte, sur la gauche.
 Vous accédez alors à la configuration de la carte, où vous pouvez :
 
 * Changer l'image de présentation
@@ -121,7 +147,9 @@ Vous accédez alors à la configuration de la carte, où vous pouvez :
 
 ### <a name="TOC-Import-from-archive"></a>Depuis une archive
 
-Une carte peut aussi être créée en important une archive d'une carte existante. L'archive peut avoir été faite par vous même ou quelqu'un d'autre (voir plus bas pour créer une archive). Elle se présente sous la 
+Une carte peut aussi être créée en important une archive d'une carte existante. L'archive peut avoir 
+été faite par vous même ou quelqu'un d'autre (voir plus bas pour créer une archive). Elle se présente
+ sous la 
 forme d'un fichier zip.
 Pour importer une archive, utilisez le menu principal puis "Importer une carte". Appuyez alors sur le
 bouton "Importer depuis un dossier", au milieu de l'écran. Naviguez alors vers le dossier qui contient
@@ -134,8 +162,10 @@ Reportez-vous à la section [Partage de carte](#TOC-Share-maps).
 
 ### <a name="TOC-The-hard-way"></a>Création manuelle - le plus difficile
 
-C'est réservé aux experts. Cette méthode n'est en aucun cas nécessaire, mais grâce à cette fonctionnalité, on peut mettre n'importe quelle carte dans TrekMe.
-Il faut avoir des connaissances en géolocalisation, et il est recommandé d'être familiarisé avec les termes suivants :
+C'est réservé aux experts. Cette méthode n'est en aucun cas nécessaire, mais grâce à cette fonctionnalité, 
+on peut mettre n'importe quelle carte dans TrekMe.
+Il faut avoir des connaissances en géolocalisation, et il est recommandé d'être familiarisé avec les
+ termes suivants :
 
 [Map projection](https://en.wikipedia.org/wiki/Map_projection),
 [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS84),
@@ -191,14 +221,17 @@ Selon la taille de votre écran, un bouton peut rendre cette fonctionnalité dir
 
 ### <a name="TOC-Add-markers"></a>Ajout de marqueurs
 
-Utilisez le bouton d'ajout de marqueur, ce qui affiche un nouveau marqueur au centre de l'écran, comme celui-ci :
+Utilisez le bouton d'ajout de marqueur, ce qui affiche un nouveau marqueur au centre de l'écran, 
+comme celui-ci :
 
 <p align="center">
 <img src="doc/tuto/new-marker.jpg" width="300">
 </p>
 
-Avec ses flèches rouge qui tournent autour, il indique qu'il peut être déplacé. Pour cela appuyez avec un doigt dans la zone bleue et déplacez le marqueur à l'endroit désiré.
-Quand vous êtes satisfait de sa position, "appuyez" une fois sur le marqueur rouge. Il change alors de forme et la zone bleue disparaît. Cela indique que le marqueur est désormais fixé à son emplacement.
+Avec ses flèches rouge qui tournent autour, il indique qu'il peut être déplacé. Pour cela appuyez 
+avec un doigt dans la zone bleue et déplacez le marqueur à l'endroit désiré.
+Quand vous êtes satisfait de sa position, "appuyez" une fois sur le marqueur rouge. Il change alors 
+de forme et la zone bleue disparaît. Cela indique que le marqueur est désormais fixé à son emplacement.
 
 Si on appuie sur le marqueur, une bulle comme celle-ci s'affiche :
 
@@ -210,7 +243,8 @@ On peut alors :
 
 * Changer le nom ou le commentaire du marqueur 
 * Supprimer le marqueur
-* Déplacer le marqueur (il reprend sa forme avec les flèches qui tournent, indiquant qu'il peut être déplacé)
+* Déplacer le marqueur (il reprend sa forme avec les flèches qui tournent, indiquant qu'il peut être 
+déplacé)
 
 Voici un exemple de fiche d'un marqueur :
 
@@ -223,9 +257,12 @@ Rien n'est modifié tant que vous ne sauvegardez pas vos modifications (bouton "
 
 ### <a name="TOC-Add-landmarks"></a>Ajout de points de repère
 
-Un point de repère est un marqueur spécial. Une ligne de couleur violette se dessine entre votre position actuelle et le repère. De cette manière vous pouvez vous fixer un objectif éloigné et toujours voir à l'écran la direction vers ce repère.
+Un point de repère est un marqueur spécial. Une ligne de couleur violette se dessine entre votre 
+position actuelle et le repère. De cette manière vous pouvez vous fixer un objectif éloigné et 
+toujours voir à l'écran la direction vers ce repère.
 
-Pour ajouter un point de repère, c'est le même principe que pour les marqueurs mais on utilise l'icone de phare (comme un amer en navigation maritime).
+Pour ajouter un point de repère, c'est le même principe que pour les marqueurs mais on utilise 
+l'icone de phare (comme un amer en navigation maritime).
 
 <p align="center">
 <img src="doc/tuto/landmark-1.jpg" width="300">
@@ -239,18 +276,23 @@ En général, on affiche en même temps l'orientation. On peut aussi en ajouter 
 
 ### <a name="TOC-Lock-view"></a>Verrouiller la vue sur la position courante
 
-Parfois, on veut que la vue reste centrée sur notre position (on ne veut pas que le point bleu sorte de l'écran). Pour cela, il faut activer le verrouillage sur la position. Utilisez alors le menu comme ci-dessous :
+Parfois, on veut que la vue reste centrée sur notre position (on ne veut pas que le point bleu sorte 
+de l'écran). Pour cela, il faut activer le verrouillage sur la position. Utilisez alors le menu 
+comme ci-dessous :
 
 <p align="center">
 <img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
 </p>
 
-Puis sélectionnez "Verrouiller sur la position". Dans ce mode, à chaque fois que l'application reçoit votre position (environ toutes les secondes), la vue se déplace et le point bleu reste au centre.
+Puis sélectionnez "Verrouiller sur la position". Dans ce mode, à chaque fois que l'application reçoit
+ votre position (environ toutes les secondes), la vue se déplace et le point bleu reste au centre.
 
 ### <a name="TOC-Display-live-route"></a>Visualiser un enregistrement en temps réel
 
-Par défaut, lorsque vous lancez un enregistrement GPX (depuis le menu "Enregistrement du parcours"), l'enregistrement en cours s'affiche sur votre carte, sous forme de trace jaune.
-Cela ne fonctionne que pour les cartes qui couvrent la zone dans laquelle vous êtes au moment de l'enregistrement.
+Par défaut, lorsque vous lancez un enregistrement GPX (depuis le menu "Enregistrement du parcours"), 
+l'enregistrement en cours s'affiche sur votre carte, sous forme de trace jaune.
+Cela ne fonctionne que pour les cartes qui couvrent la zone dans laquelle vous êtes au moment de 
+l'enregistrement.
 
 Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre carte, tant que l'enregistrement est en cours.
 
@@ -266,7 +308,8 @@ Alors que vous visionnez une carte, utilisez le bouton suivant :
 <img src="doc/tuto/manage-tracks.jpg" width="300">
 </p>
 
-La liste des traces disponibles pour votre carte s'affiche alors (il est possible à ce stade qu'il y en ait aucune) :
+La liste des traces disponibles pour votre carte s'affiche alors (il est possible à ce stade qu'il y 
+en ait aucune) :
 
 <p align="center">
 <img src="doc/tuto/track-list.jpg" width="300">
@@ -280,16 +323,19 @@ Vous pouvez alors :
 
 ### <a name="TOC-GPX-recording"></a>Enregistrement GPX
 
-Il est possible d'enregistrer votre parcours au format GPX, pour ensuite l'importer dans une carte ou le partager.
+Il est possible d'enregistrer votre parcours au format GPX, pour ensuite l'importer dans une carte 
+ou le partager.
 
-Depuis le menu principal allez à "Enregistrement du parcours". Vous arrivez à une interface comme celle-ci :
+Depuis le menu principal allez à "Enregistrement du parcours". Vous arrivez à une interface comme
+ celle-ci :
 
 <p align="center">
 <img src="doc/tuto/gpx-recording.jpg" width="300">
 </p>
 
 Un enregistrement peut être démarré ou arrêté depuis le panneau "Commandes".
-Quand un enregistrement est en cours, un service spécifique est démarré, qui fonctionne même si TrekMe est arrêté. Ce service s'arrête dès que vous l'arrêtez depuis le panneau "Commandes".
+Quand un enregistrement est en cours, un service spécifique est démarré, qui fonctionne même si TrekMe 
+est arrêté. Ce service s'arrête dès que vous l'arrêtez depuis le panneau "Commandes".
 
 Un indicateur dans le panneau "Service de localisation" affiche le statut du service.
 
@@ -314,7 +360,9 @@ Que vous soyez en mode de sélection simple ou multiple, le bouton de partage es
 
 **Supprimer un enregistrement**
 
-Passez en mode de sélection multiple. Un bouton rouge en bas à droite apparaît. Attention, si vous pressez ce bouton rouge, tous les enregistrement sélectionnés (cad sur fond bleu) seront **définitivement**  supprimés. 
+Passez en mode de sélection multiple. Un bouton rouge en bas à droite apparaît. Attention, si vous 
+pressez ce bouton rouge, tous les enregistrement sélectionnés (cad sur fond bleu) seront **définitivement**
+  supprimés. 
 
 
 ## <a name="TOC-Settings"></a>Paramètres
@@ -323,7 +371,8 @@ Les paramètres de TrekMe sont accessibles depuis le menu principal > Paramètre
 
 ### <a name="TOC-Start-on-last-map"></a>Démarrer sur la dernière carte
 
-Par défaut, TrekMe démarre sur la liste des cartes. Mais vous pouvez aussi démarrer sur la dernière carte visitée. Dans la section "Général" > "Lancer TrekMe sur" :
+Par défaut, TrekMe démarre sur la liste des cartes. Mais vous pouvez aussi démarrer sur la dernière 
+carte visitée. Dans la section "Général" > "Lancer TrekMe sur" :
 
 <p align="center">
 <img src="doc/tuto/start_on_fr.jpg" width="300">
@@ -332,22 +381,31 @@ Par défaut, TrekMe démarre sur la liste des cartes. Mais vous pouvez aussi dé
 
 ### <a name="TOC-Download-dir"></a>Dossier de téléchargement
 
-Par défaut, TrekMe enregistre tout sur la mémoire interne. Mais si vous avez une carte SD, **et** que celle-ci est montée en tant que **stockage amovible**, alors vous pouvez l'utiliser pour stocker certaines de vos cartes.
+Par défaut, TrekMe enregistre tout sur la mémoire interne. Mais si vous avez une carte SD, **et** que
+ celle-ci est montée en tant que **stockage amovible**, alors vous pouvez l'utiliser pour stocker 
+ certaines de vos cartes.
 
 **Attention**
 
-Toutes les cartes stockées sur carte SD seront supprimées si TrekMe est désinstallée (c'est une contrainte du système Android). La seule manière de conserver de manière sûre vos cartes est d'utiliser la mémoire interne.
-Cependant, vous pouvez contourner cette limitation : faites une sauvegarde, puis déplacez l'archive zip créée quelque part sur votre carte SD (dans un autre dossier que le dossier Android).
+Toutes les cartes stockées sur carte SD seront supprimées si TrekMe est désinstallée (c'est une 
+contrainte du système Android). La seule manière de conserver de manière sûre vos cartes est d'utiliser
+ la mémoire interne.
+ 
+Cependant, vous pouvez contourner cette limitation : faites une sauvegarde, puis déplacez l'archive 
+zip créée quelque part sur votre carte SD (dans un autre dossier que le dossier Android).
 
-Dans la section Téléchargment > "Répertoire de téléchargement", vous avez le choix entre deux répertoires si vous avez une carte SD. Sinon, vous n'avez d'autre choix que d'utiliser la mémoire interne.
+Dans la section Téléchargment > "Répertoire de téléchargement", vous avez le choix entre deux répertoires
+ si vous avez une carte SD. Sinon, vous n'avez d'autre choix que d'utiliser la mémoire interne.
 
 <p align="center">
 <img src="doc/tuto/download_dir.jpg" width="300">
 </p>
 
-Le premier répertoire correspond toujours à la mémoire interne. Le second, s'il y en a un, à la carte SD. Ce dossier est `Android/data/com.peterlaurence.trekme/downloaded`.
+Le premier répertoire correspond toujours à la mémoire interne. Le second, s'il y en a un, à la carte 
+SD. Ce dossier est `Android/data/com.peterlaurence.trekme/downloaded`.
 
-Une fois le répertoire modifié, votre prochain téléchargement de carte utilisera ce dossier. Mais les cartes existantes ne sont pas déplacées.
+Une fois le répertoire modifié, votre prochain téléchargement de carte utilisera ce dossier. Mais 
+les cartes existantes ne sont pas déplacées.
 
 ### <a name="TOC-Rotation-mode"></a>Mode de rotation
 
@@ -412,6 +470,7 @@ recevoir une carte, et un autre pour envoyer. Lorsque vous choisissez de recevoi
 qu'elle est en attente de réception. Les deux appareils cherchent à établir un canal de communication.
 Cette phase peut durer plusieurs minutes ; il faut être patient(e).
 Pendant ce temps, votre ami(e) utilise le bouton d'envoi, et choisit alors la carte à envoyer.
+
 Quand la connexion est établie, le transfert commence et vous pouvez voir la progression en temps réel.
 Si tout se passe bien, le transfert va jusqu'au bout et une magnifique emoticon vous l'indique. Dans
 le cas contraire, et en particulier si le transfert s'est interrompu en cours de chargement, une nouvelle
