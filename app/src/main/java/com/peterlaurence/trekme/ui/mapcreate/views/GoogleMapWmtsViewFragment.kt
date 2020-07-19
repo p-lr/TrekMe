@@ -30,7 +30,6 @@ import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.views.components.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
-import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
@@ -40,7 +39,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import javax.inject.Inject
 
 /**
  * Displays Google Maps - compatible tile matrix sets.
@@ -75,9 +73,6 @@ import javax.inject.Inject
 class GoogleMapWmtsViewFragment : Fragment() {
     private var _binding: FragmentWmtsViewBinding? = null
     private val binding get() = _binding!!
-
-    @Inject
-    lateinit var locationProvider: LocationProvider
 
     private lateinit var mapSource: MapSource
     private var mapView: MapView? = null
@@ -117,15 +112,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
                 ?: MapSource.OPEN_STREET_MAP
-
-        /* Create a local variable to avoid leaking this entire class */
-        val provider: LocationProvider = locationProvider ?: return
-        locationViewModel.setLocationProvider(provider)
-        locationViewModel.getLocationLiveData().observe(this, Observer {
-            it?.let {
-                onLocationReceived(it)
-            }
-        })
 
         setHasOptionsMenu(true)
     }
@@ -287,6 +273,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 scrollTo(it.scrollX, it.scrollY)
             }
         }
+
+        /* 4- Finally, update the current position */
+        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner, Observer {
+            it?.let {
+                onLocationReceived(it)
+            }
+        })
     }
 
     /**

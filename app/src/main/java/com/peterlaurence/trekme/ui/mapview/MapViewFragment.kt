@@ -31,7 +31,6 @@ import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
-import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
@@ -40,7 +39,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import javax.inject.Inject
 
 /**
  * This fragment displays a [Map], using [MapView].
@@ -51,8 +49,6 @@ import javax.inject.Inject
 class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener,
         ReferentialOwner {
 
-    @Inject
-    lateinit var locationProvider: LocationProvider
     private lateinit var presenter: MapViewFragmentContract.Presenter
     private var mapView: MapView? = null
     private var mMap: Map? = null
@@ -91,9 +87,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
-        /* Create a local variable to avoid leaking this entire class */
-        val provider: LocationProvider = locationProvider
-        locationViewModel.setLocationProvider(provider)
         locationViewModel.getLocationLiveData().observe(this, Observer {
             it?.let {
                 onLocationReceived(it)

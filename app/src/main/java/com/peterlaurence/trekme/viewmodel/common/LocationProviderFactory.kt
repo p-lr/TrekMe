@@ -14,7 +14,7 @@ import com.google.android.gms.location.LocationServices
  * @param context The application [Context] - *not* the activity itself. This is avoid memory leaks.
  */
 fun getLocationProvider(source: LocationSource, context: Context): LocationProvider {
-    return when(source) {
+    return when (source) {
         LocationSource.GOOGLE_FUSE -> GoogleLocationProvider(context)
         LocationSource.NMEA -> TODO()
     }
@@ -39,7 +39,7 @@ data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val
  * Use the Google api to receive location.
  * It's set to receive a new location at most every second.
  */
-private class GoogleLocationProvider(val context: Context): LocationProvider() {
+private class GoogleLocationProvider(val context: Context) : LocationProvider() {
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     val locationRequest = LocationRequest()
     lateinit var googleLocationCallback: com.google.android.gms.location.LocationCallback
