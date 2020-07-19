@@ -225,6 +225,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         MapLoader.clearMapMarkerUpdateListener()
         destroyLayers()
         compassView = null
+        
+        mapView?.destroy()
+        mapView = null
     }
 
     /**

@@ -119,6 +119,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        mapView?.destroy()
         mapView = null
         areaLayer = null
         positionMarker = null
