@@ -7,9 +7,9 @@ object ScanExpressStandard : IgnLayer(scanExpressStd, "GEOGRAPHICALGRIDSYSTEMS.M
 object IgnClassic : IgnLayer(ignClassic, "GEOGRAPHICALGRIDSYSTEMS.MAPS")
 object Satellite : IgnLayer(satellite, "ORTHOIMAGERY.ORTHOPHOTOS")
 
-private const val scanExpressStd = "Scan Express Standard"
-private const val ignClassic = "Cartes IGN"
-private const val satellite = "Photographies aériennes"
+const val scanExpressStd = "Scan Express Standard"
+const val ignClassic = "Cartes IGN"
+const val satellite = "Photographies aériennes"
 
 /* All supported layers */
 val ignLayers: List<IgnLayer> = listOf(IgnClassic, Satellite)

@@ -16,7 +16,7 @@ fun createTileStreamProvider(mapSource: MapSource, mapSourceData: MapSourceData)
             val ignSourceData = mapSourceData as? IgnSourceData
                     ?: throw Exception("Missing data for IGN source")
             val urlTileBuilder = UrlTileBuilderIgn(ignSourceData.api, ignSourceData.layer.realName)
-            TileStreamProviderIgn(urlTileBuilder)
+            TileStreamProviderIgn(urlTileBuilder, ignSourceData.layer)
         }
         MapSource.USGS -> {
             val urlTileBuilder = UrlTileBuilderUSGS()

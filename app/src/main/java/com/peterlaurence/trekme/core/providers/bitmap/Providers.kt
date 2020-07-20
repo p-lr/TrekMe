@@ -67,6 +67,19 @@ class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, pri
     }
 }
 
+class TileStreamProviderRetry(private val tileStreamProvider: TileStreamProvider,
+                              private val retryCount: Int = 10) : TileStreamProvider {
+    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+        var retryCnt = 0
+        var result: InputStream? = null
+        do {
+            result = tileStreamProvider.getTileStream(row, col, zoomLvl)
+            retryCnt++
+        } while (result == null && retryCnt <= retryCount)
+        return result
+    }
+}
+
 /**
  * From a [TileStreamProvider], and eventually bitmap options, get [Bitmap] from tile coordinates.
  */

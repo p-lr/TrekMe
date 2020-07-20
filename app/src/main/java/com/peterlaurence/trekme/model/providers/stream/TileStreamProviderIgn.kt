@@ -2,6 +2,9 @@ package com.peterlaurence.trekme.model.providers.stream
 
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
+import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderRetry
+import com.peterlaurence.trekme.core.providers.layers.Layer
+import com.peterlaurence.trekme.core.providers.layers.ignClassic
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 import java.io.InputStream
 
@@ -15,17 +18,21 @@ import java.io.InputStream
  *
  * @author peterLaurence on 20/06/19
  */
-class TileStreamProviderIgn(urlTileBuilder: UrlTileBuilder) : TileStreamProvider {
+class TileStreamProviderIgn(urlTileBuilder: UrlTileBuilder, val layer: Layer) : TileStreamProvider {
     private val base: TileStreamProvider
 
     init {
-        base = TileStreamProviderHttpAuth(urlTileBuilder, "TrekMe")
+        base = TileStreamProviderRetry(TileStreamProviderHttpAuth(urlTileBuilder, "TrekMe"))
     }
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
         /* Filter-out inaccessible tiles at lower levels */
         when (zoomLvl) {
-            3 -> if (row > 7 || col > 7) return null
+            3 -> if (layer.publicName == ignClassic) {
+                if (row >= 6 || col > 7) return null
+            } else {
+                if (row > 7 || col > 7) return null
+            }
         }
         /* Safeguard */
         if (zoomLvl > 17) return null
