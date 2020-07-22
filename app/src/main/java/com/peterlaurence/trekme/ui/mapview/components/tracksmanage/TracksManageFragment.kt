@@ -280,7 +280,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(ROUTE_INDEX, trackAdapter!!.selectedRouteIndex)
+        outState.putInt(ROUTE_INDEX, trackAdapter?.selectedRouteIndex ?: -1)
     }
 
     /* Show or hide the panel indicating that there is no routes */
