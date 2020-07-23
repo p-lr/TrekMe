@@ -90,6 +90,7 @@ class MapImportFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        mapArchiveAdapter = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -182,10 +183,7 @@ class MapImportFragment : Fragment() {
 
             fab.setOnClickListener {
                 itemSelected?.let { item ->
-                    val inputStream = context.contentResolver.openInputStream(item.uri)
-                    if (inputStream != null) {
-                        viewModel.unarchiveAsync(inputStream, item)
-                    }
+                    viewModel.unarchiveAsync(item)
                 }
             }
         }

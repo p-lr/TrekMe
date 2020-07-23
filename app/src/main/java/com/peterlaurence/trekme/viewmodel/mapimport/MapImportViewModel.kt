@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.mapimport
 
+import android.app.Application
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.lifecycle.ViewModelInject
@@ -10,17 +11,18 @@ import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel.ItemData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.InputStream
 
 /**
  * This view-model manages [ItemData]s, which are wrappers around [DocumentFile]s.
  * The view supplies the list of [DocumentFile]s when the user selects a directory.
  */
 class MapImportViewModel @ViewModelInject constructor(
-        private val settings: Settings
+        private val settings: Settings,
+        private val app: Application
 ) : ViewModel() {
     private val _itemLiveData = MutableLiveData<List<ItemData>>()
     val itemLiveData: LiveData<List<ItemData>> = _itemLiveData
@@ -54,8 +56,9 @@ class MapImportViewModel @ViewModelInject constructor(
     /**
      * Launch the unzip of an archive.
      */
-    fun unarchiveAsync(inputStream: InputStream, item: ItemData) {
-        viewModelScope.launch {
+    fun unarchiveAsync(item: ItemData) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val inputStream = app.contentResolver.openInputStream(item.uri) ?: return@launch
             val rootFolder = settings.getAppDir() ?: return@launch
             val outputFolder = File(rootFolder, "imported")
 
