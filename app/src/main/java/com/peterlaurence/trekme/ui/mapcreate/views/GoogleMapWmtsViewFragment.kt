@@ -242,7 +242,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun configure() = lifecycleScope.launch {
-        /* 0- TODO: Show an infinite scrollbar to the user until all operations below are done */
+        /* 0- Show infinite progressbar to the user until we're done testing the tile provider */
+        binding.progressBarWaiting.visibility = View.VISIBLE
 
         /* 1- Create the TileStreamProvider */
         val streamProvider = viewModel.createTileStreamProvider(mapSource)
@@ -266,7 +267,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
              * resilient and discard this error */
         }
 
-        /* 3- Scroll to the init position if there is one pre-configured */
+        /* 3- Hide the progressbar, whatever the outcome */
+        binding.progressBarWaiting.visibility = View.GONE
+
+        /* 4- Scroll to the init position if there is one pre-configured */
         viewModel.getScaleAndScrollInitConfig(mapSource)?.also {
             /* At this point the mapView should be initialized, but we never know.. */
             mapView?.apply {
@@ -275,7 +279,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             }
         }
 
-        /* 4- Finally, update the current position */
+        /* 5- Finally, update the current position */
         locationViewModel.getLocationLiveData().observe(viewLifecycleOwner, Observer {
             it?.let {
                 onLocationReceived(it)
