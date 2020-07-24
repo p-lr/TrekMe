@@ -12,4 +12,4 @@ const val ignClassic = "Cartes IGN"
 const val satellite = "Photographies aériennes"
 
 /* All supported layers */
-val ignLayers: List<IgnLayer> = listOf(IgnClassic, Satellite)
+val ignLayers: List<IgnLayer> = listOf(IgnClassic, Satellite, ScanExpressStandard)
