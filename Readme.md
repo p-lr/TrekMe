@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<img src="doc/tuto/map-list.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/tuto/trekme-example.jpg" width="200">
+<img src="doc/tuto/map-list-en.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/tuto/trekme-example.jpg" width="200">
 </p>
 
 1. [Overview](#TOC-Overview)
