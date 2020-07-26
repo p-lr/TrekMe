@@ -49,10 +49,10 @@ import org.greenrobot.eventbus.Subscribe
 class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener,
         ReferentialOwner {
 
-    private lateinit var presenter: MapViewFragmentContract.Presenter
+    private var presenter: MapViewFragmentContract.Presenter? = null
     private var mapView: MapView? = null
     private var mMap: Map? = null
-    private lateinit var positionMarker: PositionOrientationMarker
+    private var positionMarker: PositionOrientationMarker? = null
     private var compassView: CompassView? = null
     private var lockView = false
     private var rotationMode: RotationMode = RotationMode.NONE
@@ -61,12 +61,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var shouldCenterOnFirstLocation = false
     private var magnifyingFactor: Int? = null
     private var orientationSensor: OrientationSensor? = null
-    private lateinit var markerLayer: MarkerLayer
-    private lateinit var routeLayer: RouteLayer
-    private lateinit var distanceLayer: DistanceLayer
-    private lateinit var landmarkLayer: LandmarkLayer
-    private lateinit var speedListener: SpeedListener
-    private lateinit var distanceListener: DistanceLayer.DistanceListener
+    private var markerLayer: MarkerLayer? = null
+    private var routeLayer: RouteLayer? = null
+    private var distanceLayer: DistanceLayer? = null
+    private var landmarkLayer: LandmarkLayer? = null
+    private var speedListener: SpeedListener? = null
+    private var distanceListener: DistanceLayer.DistanceListener? = null
     private var orientationJob: Job? = null
 
     private val mapViewViewModel: MapViewViewModel by viewModels()
@@ -79,19 +79,13 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
-            if (::positionMarker.isInitialized) positionMarker.referentialData = value
+            positionMarker?.referentialData = value
             compassView?.referentialData = value
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-
-        locationViewModel.getLocationLiveData().observe(this, Observer {
-            it?.let {
-                onLocationReceived(it)
-            }
-        })
 
         /* When the fragment is created for the first time, center on first location */
         shouldCenterOnFirstLocation = savedInstanceState == null
@@ -108,7 +102,15 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* Create the presenter */
         presenter = MapViewFragmentPresenter(inflater, container, context)
+        val presenter = presenter ?: return null
         presenter.setPositionTouchListener(this)
+
+        /* Observe location changes */
+        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner, Observer {
+            it?.let {
+                onLocationReceived(it)
+            }
+        })
 
         /* Observe track statistics changes */
         statisticsViewModel.stats.observe(viewLifecycleOwner, Observer {
@@ -181,7 +183,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         val distanceLayerState = mergedState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
         if (distanceLayerState != null && distanceLayerState.visible) {
             presenter.view.distanceIndicator.showDistance()
-            distanceLayer.show(distanceLayerState)
+            distanceLayer?.show(distanceLayerState)
         }
 
         /* In free-rotating mode, show the compass right from the start */
@@ -224,8 +226,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         EventBus.getDefault().unregister(this)
         MapLoader.clearMapMarkerUpdateListener()
         destroyLayers()
+        positionMarker = null
         compassView = null
-        
+        distanceListener = null
+        speedListener = null
+        presenter = null
+
         mapView?.destroy()
         mapView = null
     }
@@ -234,22 +240,23 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      * When the [OrientationSensor] is started or stopped, this function should be called.
      */
     private fun onOrientationSensorChanged() {
-        if (orientationSensor!!.isStarted) {
-            positionMarker.onOrientationEnable()
+        val orientationSensor = orientationSensor ?: return
+        if (orientationSensor.isStarted) {
+            positionMarker?.onOrientationEnable()
             if (rotationMode != RotationMode.NONE) {
                 compassView?.visibility = View.VISIBLE
             }
 
             orientationJob = lifecycleScope.launch {
-                orientationSensor?.getAzimuthFlow()?.collect { azimuth ->
-                    positionMarker.onOrientation(azimuth)
+                orientationSensor.getAzimuthFlow().collect { azimuth ->
+                    positionMarker?.onOrientation(azimuth)
                     if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
                         mapView?.setAngle(-azimuth)
                     }
                 }
             }
         } else {
-            positionMarker.onOrientationDisable()
+            positionMarker?.onOrientationDisable()
             orientationJob?.cancel()
             /* Set the MapView like it was before: North-oriented */
             orientationJob?.invokeOnCompletion {
@@ -313,10 +320,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* .. and restore some checkable state */
         val item = menu.findItem(R.id.distancemeter_id)
-        item.isChecked = distanceLayer.isVisible
+        item.isChecked = distanceLayer?.isVisible ?: false
 
         val itemDistanceTrack = menu.findItem(R.id.distance_on_track_id)
-        itemDistanceTrack.isChecked = routeLayer.isDistanceOnTrackActive
+        itemDistanceTrack.isChecked = routeLayer?.isDistanceOnTrackActive ?: false
 
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
         itemOrientation.isChecked = orientationSensor?.isStarted ?: false
@@ -330,7 +337,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.add_marker_id -> {
-                markerLayer.addNewMarker()
+                markerLayer?.addNewMarker()
                 return true
             }
             R.id.manage_tracks_id -> {
@@ -338,21 +345,21 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 return true
             }
             R.id.speedometer_id -> {
-                speedListener.toggleSpeedVisibility()
+                speedListener?.toggleSpeedVisibility()
                 return true
             }
             R.id.distancemeter_id -> {
-                distanceListener.toggleDistanceVisibility()
+                distanceListener?.toggleDistanceVisibility()
                 item.isChecked = !item.isChecked
-                distanceLayer.toggle()
+                distanceLayer?.toggle()
                 return true
             }
             R.id.distance_on_track_id -> {
                 item.isChecked = !item.isChecked
                 if (item.isChecked) {
-                    routeLayer.activateDistanceOnTrack()
+                    routeLayer?.activateDistanceOnTrack()
                 } else {
-                    routeLayer.disableDistanceOnTrack()
+                    routeLayer?.disableDistanceOnTrack()
                 }
                 return true
             }
@@ -362,7 +369,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 return true
             }
             R.id.landmark_id -> {
-                landmarkLayer.addNewLandmark()
+                landmarkLayer?.addNewLandmark()
                 return true
             }
             R.id.lock_on_position_id -> {
@@ -393,14 +400,14 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     @Subscribe
     fun onTrackVisibilityChangedEvent(event: TrackVisibilityChangedEvent) {
-        routeLayer.onTrackVisibilityChanged()
+        routeLayer?.onTrackVisibilityChanged()
     }
 
     @Subscribe
     fun onTrackChangedEvent(event: TrackImporter.GpxParseResult) {
-        routeLayer.onTrackChanged(event.map, event.routes)
+        routeLayer?.onTrackChanged(event.map, event.routes)
         if (event.newMarkersCount > 0) {
-            markerLayer.onMapMarkerUpdate()
+            markerLayer?.onMapMarkerUpdate()
         }
     }
 
@@ -408,14 +415,14 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     fun onOutdatedIgnLicense(event: OutdatedIgnLicenseEvent) {
         val context = context ?: return
         clearMap()
-        presenter.showMessage(context.getString(R.string.expired_ign_license))
+        presenter?.showMessage(context.getString(R.string.expired_ign_license))
     }
 
     @Subscribe
     fun onErrorIgnLicense(event: ErrorIgnLicenseEvent) {
         val context = context ?: return
         clearMap()
-        presenter.showMessage(context.getString(R.string.missing_ign_license))
+        presenter?.showMessage(context.getString(R.string.missing_ign_license))
     }
 
     @Subscribe
@@ -445,7 +452,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         inMapRecordingViewModel.getLiveRoute().observe(
                 viewLifecycleOwner, Observer {
             it?.let { liveRoute ->
-                routeLayer.drawLiveRoute(liveRoute)
+                routeLayer?.drawLiveRoute(liveRoute)
             }
         })
     }
@@ -455,22 +462,26 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             val mapView = mapView ?: return
 
             /* Update the marker layer */
-            markerLayer.init(map, mapView)
+            markerLayer?.init(map, mapView)
 
             /* Update the route layer */
-            routeLayer.init(map, mapView)
+            routeLayer?.init(map, mapView)
 
             /* Update the distance layer */
-            distanceLayer.init(map, mapView)
+            distanceLayer?.init(map, mapView)
 
             /* Update the landmark layer */
-            landmarkLayer.init(map, mapView)
+            landmarkLayer?.init(map, mapView)
         }
     }
 
     private fun destroyLayers() {
-        distanceLayer.destroy()
-        landmarkLayer.destroy()
+        distanceLayer?.destroy()
+        distanceLayer = null
+        landmarkLayer?.destroy()
+        landmarkLayer = null
+        markerLayer = null
+        routeLayer = null
     }
 
     override fun onDetach() {
@@ -502,9 +513,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         /* If the user wants to see the speed */
-        if (::speedListener.isInitialized) {
-            speedListener.onSpeed(location.speed, SpeedUnit.KM_H)
-        }
+        speedListener?.onSpeed(location.speed, SpeedUnit.KM_H)
     }
 
     /**
@@ -518,8 +527,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      * @param y the projected Y coordinate, or latitude if there is no [Projection]
      */
     private fun updatePosition(x: Double, y: Double) {
-        mapView?.moveMarker(positionMarker, x, y)
-        landmarkLayer.onPositionUpdate(x, y)
+        positionMarker?.also {
+            mapView?.moveMarker(it, x, y)
+        }
+        landmarkLayer?.onPositionUpdate(x, y)
 
         if (lockView || shouldCenterOnFirstLocation) {
             shouldCenterOnFirstLocation = false
@@ -531,7 +542,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private fun removeCurrentMapView() {
         mapView?.destroy()
-        presenter.removeMapView(mapView)
+        presenter?.removeMapView(mapView)
     }
 
     /**
@@ -568,21 +579,23 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* The position + orientation reticule */
         try {
-            val parent = positionMarker.parent as ViewGroup
+            val parent = positionMarker?.parent as ViewGroup
             parent.removeView(positionMarker)
         } catch (e: Exception) {
             // don't care
         }
 
-        mapView.addMarker(positionMarker, 0.0, 0.0, -0.5f, -0.5f)
+        positionMarker?.also {
+            mapView.addMarker(it, 0.0, 0.0, -0.5f, -0.5f)
+        }
 
         /* The MapView can have only one MarkerTapListener.
          * It dispatches the tap event to child layers.
          */
         mapView.setMarkerTapListener(object : MarkerTapListener {
             override fun onMarkerTap(view: View, x: Int, y: Int) {
-                markerLayer.onMarkerTap(view, x, y)
-                landmarkLayer.onMarkerTap(view, x, y)
+                markerLayer?.onMarkerTap(view, x, y)
+                landmarkLayer?.onMarkerTap(view, x, y)
             }
         })
 
@@ -597,6 +610,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     private fun centerOnPosition() {
+        val positionMarker = positionMarker ?: return
         if (defineScaleCentered) {
             mapView?.moveToMarker(positionMarker, scaleCentered, true)
         } else {
@@ -616,11 +630,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private fun saveState(): Bundle {
         val bundle = Bundle()
         bundle.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
-        if (::distanceLayer.isInitialized) {
-            bundle.putParcelable(DISTANCE_LAYER_STATE, distanceLayer.state)
+        distanceLayer?.also {
+            bundle.putParcelable(DISTANCE_LAYER_STATE, it.state)
         }
-        if (::routeLayer.isInitialized) {
-            bundle.putParcelable(ROUTE_LAYER_STATE, routeLayer.getState())
+        routeLayer?.also {
+            bundle.putParcelable(ROUTE_LAYER_STATE, it.getState())
         }
         bundle.putBoolean(WAS_ROTATED, rotationMode != RotationMode.NONE)
         return bundle
