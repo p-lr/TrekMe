@@ -34,11 +34,14 @@
 
 ## <a name="TOC-Overview"></a>Overview
 
-TrekMe is an Android app to get live position on a map and other useful information, without
+TrekMe is an Android trekking app to get live position on a map and other useful information, without
 ever needing an internet connection (except when creating a map).
 It differs from other similar apps in the source of maps as it isn't limited to OpenStreetMap.
-TrekMe is designed to work with any WMTS source such as USGS in USA, IGN France, Swiss topo, and so on. You will be able to download an area of your choice so the cached tiles will be available for offline usage during your trek.
-But it's not limited to that. If you own a paper map, just scan it, then prepare it to use inside TrekMe (see below). It also works if you have a huge single image (several Gb), as TrekMe is designed to work with arbitrary map size.
+TrekMe is designed to work with any WMTS source such as USGS in USA, IGN France, Swiss topo, and so on. 
+You can download an area of your choice so the cached tiles are available for offline usage.
+But it's not limited to that. If you own a paper map, just scan it, then prepare it to use inside 
+TrekMe (see below). It also works if you have a huge single image (several Gb), as TrekMe is designed
+ to work with arbitrary map size.
 The only limitation is the memory available on your device (smartphone, tablet).
 Finally, TrekMe is designed to consume very few CPU resources, to preserve the device's battery. 
 
@@ -46,7 +49,7 @@ Finally, TrekMe is designed to consume very few CPU resources, to preserve the d
 
 * Support in-app map creation from:
 	- United States's USGS
-	- France IGN (requires a ** annual subscription of 8€ **)
+	- France IGN (requires an **annual subscription**)
  	- Spain IGN 
  	- Swiss Topo
  	- OpenStreetMap
@@ -87,8 +90,7 @@ From the "Create map" option menu, you get to choose between available providers
 <img src="doc/tuto/wmts-providers.jpg" width="300">
 </p>
 
-Except for France's IGN, for which an annual subscription is required, you can directly select the
-provider and continue.
+When you've made your choice, the map appears shortly.
 
 <p align="center">
 <img src="doc/tuto/select-area.jpg" width="300">
@@ -99,7 +101,8 @@ in the top-bar so an area of selection appears. This area can be resized. Beware
 detailed levels for USA. Actually, other providers only cover their relevant country, except for
 OpenStreetMap which covers the entire world.
 
-When you're done, press the download button, at the bottom right. A configuration menu pops up:
+When you're done, press the download button, at the bottom right. Except for France's IGN, for which
+ an annual subscription is required, you'll see this configuration menu:
 
 <p align="center">
 <img src="doc/tuto/map-configuration.jpg" width="300">
