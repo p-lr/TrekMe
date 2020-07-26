@@ -191,4 +191,10 @@ class WifiP2pFragment : Fragment() {
             }
         }
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        _binding = null
+    }
 }

@@ -37,8 +37,11 @@ import java.io.FileNotFoundException
 import javax.inject.Inject
 
 /**
- * A [Fragment] subclass that shows the routes currently available for a given map, and
- * provides the ability to import new routes.
+ * A fragment that shows the routes currently available for a given map, and
+ * provides the ability to:
+ *
+ * * Rename existing tracks,
+ * * Import new tracks from existing GPX files.
  *
  * @author peterLaurence on 01/03/17 -- Converted to Kotlin on 24/04/19
  */
@@ -47,7 +50,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     private var _binding: FragmentTracksManageBinding? = null
     private val binding get() = _binding!!
 
-    @Inject lateinit var trackImporter: TrackImporter
+    @Inject
+    lateinit var trackImporter: TrackImporter
     private var map: Map? = null
     private var trackRenameMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
@@ -76,12 +80,17 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         /* Register the event-bus */
         EventBus.getDefault().register(this)
 
+        binding.floatingActionButton.setOnClickListener {
+            onCreateTrack()
+        }
+
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
 
+        _binding = null
         trackAdapter = null
         trackRenameMenuItem = null
         EventBus.getDefault().unregister(this)
@@ -103,15 +112,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.import_tracks_id -> {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-
-                /* Search for all documents available via installed storage providers */
-                intent.type = "*/*"
-                startActivityForResult(intent, TRACK_REQUEST_CODE)
-                return true
-            }
             R.id.track_rename_id -> {
                 val map = map ?: return true
                 val selectedRoute = trackAdapter?.selectedRoute ?: return true
@@ -291,6 +291,15 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         } else {
             binding.emptyRoutePanel.visibility = View.VISIBLE
         }
+    }
+
+    private fun onCreateTrack() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+        /* Search for all documents available via installed storage providers */
+        intent.type = "*/*"
+        startActivityForResult(intent, TRACK_REQUEST_CODE)
     }
 
     interface TrackChangeListener {

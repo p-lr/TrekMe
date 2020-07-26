@@ -32,6 +32,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -65,6 +66,10 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var fragmentManager: FragmentManager? = null
     private lateinit var binding: ActivityMainBinding
+
+    private val navController: NavController by lazy {
+        findNavController(R.id.nav_host_fragment)
+    }
 
     @Inject
     lateinit var trekMeContext: TrekMeContext
@@ -256,7 +261,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
-        } else if (findNavController(R.id.nav_host_fragment).previousBackStackEntry == null) {
+        } else if (navController.previousBackStackEntry == null) {
             /* BACK button twice to exit */
             if (snackBarExit.isShown) {
                 super.onBackPressed()
@@ -347,7 +352,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return
         }
 
-        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_mapViewFragment)
+        navController.navigate(R.id.action_global_mapViewFragment)
     }
 
     /**
@@ -355,7 +360,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      * should immediately scroll to.
      */
     private fun showMapListFragment(mapId: Int? = null) {
-        if (getString(R.string.fragment_map_list) != findNavController(R.id.nav_host_fragment).currentDestination?.label) {
+        if (getString(R.string.fragment_map_list) != navController.currentDestination?.label) {
             val action = NavGraphDirections.actionGlobalMapListFragment().apply {
                 if (mapId != null) {
                     val index = viewModel.getMapIndex(mapId)
@@ -364,12 +369,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                 }
             }
-            findNavController(R.id.nav_host_fragment).navigate(action)
+            navController.navigate(action)
         }
     }
 
     private fun showMapCreateFragment() {
-        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_mapCreateFragment)
+        navController.navigate(R.id.action_global_mapCreateFragment)
         if (!checkMapCreationPermission()) {
             requestMapCreationPermission()
         }
@@ -377,19 +382,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showMapImportFragment() {
-        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_mapImportFragment)
+        navController.navigate(R.id.action_global_mapImportFragment)
     }
 
     private fun showWifiP2pFragment() {
-        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_wifiP2pFragment)
+        navController.navigate(R.id.action_global_wifiP2pFragment)
     }
 
     private fun showRecordFragment() {
-        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_recordFragment)
+        navController.navigate(R.id.action_global_recordFragment)
     }
 
     private fun showSettingsFragment() {
-        findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_settingsFragment)
+        navController.navigate(R.id.action_global_settingsFragment)
     }
 
     private fun showMessageInSnackbar(message: String) {
@@ -433,7 +438,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (event) {
             is MapDownloadFinishedEvent -> {
                 /* Only if the user is still on the GoogleMapWmtsFragment, navigate to the map list */
-                if (getString(R.string.google_map_wmts_label) == findNavController(R.id.nav_host_fragment).currentDestination?.label) {
+                if (getString(R.string.google_map_wmts_label) == navController.currentDestination?.label) {
                     showMapListFragment(event.mapId)
                 }
                 showMessageInSnackbar(getString(R.string.service_download_finished))

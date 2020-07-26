@@ -31,7 +31,7 @@
     <string name="map_delete_question">Confirmer la suppression de la carte</string>
     <string name="cancel_dialog_string">Annuler</string>
     <string name="manage_tracks_menu">Gérer les traces</string>
-    <string name="import_tracks_menu">Nouvelle trace</string>
+    <string name="import_tracks_menu_title">Traces</string>
     <string name="import_tracks_warning">Le fichier sélectionné a un format inconnu. Les extensions connues sont :</string>
     <string name="mapview_add_marker">Ajouter un repère</string>
     <string name="move_marker">Déplacer</string>
@@ -117,7 +117,7 @@
     <string name="track_file_name_change">Nom du fichier</string>
     <string name="choose_a_map">Choisissez une carte</string>
     <string name="track_is_being_added">La trace est en cours d\'import dans la carte</string>
-    <string name="no_track_message">Vous n\'avez pas encore importé de trace. Vous pouvez créer votre propre trace en enregistrant votre parcours, depuis le menu. Ou bien vous pouvez télécharger des traces au format gpx sur un site internet de randonnée, et l\'importer avec le bouton "NOUVELLE TRACE" ci-dessus.</string>
+    <string name="no_track_message">Vous n\'avez pas encore importé de trace. Vous pouvez créer votre propre trace en enregistrant votre parcours, depuis le menu. Ou bien vous pouvez télécharger des traces au format gpx sur un site internet de randonnée, et l\'importer avec le bouton ci-dessus.</string>
     <string name="track_stats_menu_title">Statistiques enregistrement en cours</string>
     <string name="no_internet">Vous devez être connecté à internet pour créer une carte</string>
     <string name="distance">Distance</string>
@@ -199,4 +199,5 @@
     <string name="ign_buy_license_unknown">Imposible de vérifier la license</string>
     <string name="preference_scale_at_center">Echelle quand centré</string>
     <string name="preference_change_scale_when_centering">Définir échelle quand centré</string>
+    <string name="import_title">Importer</string>
 </resources>

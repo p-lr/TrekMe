@@ -109,6 +109,7 @@
     <string name="projected_y_short">N</string>
 
     <!-- MapImport fragment -->
+    <string name="import_title">Import</string>
     <string name="import_from_folder_btn">Import from folder</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Map creation</string>
@@ -122,7 +123,7 @@
     <string name="manage_tracks_menu">Manage tracks</string>
 
     <!-- Tracks manager fragment -->
-    <string name="import_tracks_menu">Import tracks</string>
+    <string name="import_tracks_menu_title">Tracks</string>
     <string name="import_tracks_action_settings">Settings</string>
     <string name="import_tracks_warning">The file you chose is not in a supported format. Supported extensions are :</string>
     <string name="import_tracks_format_gpx" translatable="false">GPX (tracks, routes, waypoints)</string>
@@ -152,8 +153,7 @@
     <string name="m">m</string>
     <string name="mile">ml</string>
     <string name="no_track_message">You haven\'t created nor imported any track yet.
-        You can import a gpx track downloaded from a website using the import button above, or you can import
-    a recording of your own using the recording menu.</string>
+        You can import a gpx track downloaded from a website (or a recording of your own) using the import button below.</string>
     <string name="expired_ign_license">"Your IGN license has expired :(\n\nTo buy it for this year, go to map creation and create an IGN map."</string>
     <string name="missing_ign_license">"Your IGN license is missing.\n\nTo retrieve it, go to map creation and create an IGN map."</string>
     <string name="grace_period_ign_license">"You IGN license has expired. You have %1$d days to buy it for this year."</string>

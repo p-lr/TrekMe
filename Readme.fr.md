@@ -94,11 +94,10 @@ Depuis le menu principal, choisissez "Créer une carte". Un menu vous donne alor
 sources suivantes : 
 
 <p align="center">
-<img src="doc/tuto/wmts-providers.jpg" width="300">
+<img src="doc/tuto/wmts-providers-fr.jpg" width="300">
 </p>
 
-Vous pouvez librement visionner les cartes d'IGN France. Mais pour sauvegarder des cartes IGN France,
- l'abonnement annuel est nécessaire.
+Quand vous avez fait votre choix, la carte s'affiche après un délai de quelques secondes.
 
 <p align="center">
 <img src="doc/tuto/select-area.jpg" width="300">
@@ -112,7 +111,7 @@ NB : la plupart des fournisseurs de cartes n'ont qu'une couverture partielle du 
 d'OpenStreetMap, qui couvre le monde entier, l'USGS par ex ne couvre que les Etats-Unis, l'IGN Espagne 
 que l'Espagne, etc.
 
-Un menu tel que celui-ci s'affiche :
+A l'exception de l'IGN France, qui nécessite un abonnement annuel, le menu suivant s'affiche :
 
 <p align="center">
 <img src="doc/tuto/map-configuration.jpg" width="300">
@@ -318,7 +317,7 @@ La liste des traces disponibles pour votre carte s'affiche alors (il est possibl
 en ait aucune) :
 
 <p align="center">
-<img src="doc/tuto/track-list.jpg" width="300">
+<img src="doc/tuto/track-list-fr.jpg" width="300">
 </p>
 
 Vous pouvez alors :
