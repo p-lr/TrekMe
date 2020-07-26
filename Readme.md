@@ -6,6 +6,8 @@
 <img src="doc/tuto/map-list-en.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/tuto/trekme-example.jpg" width="200">
 </p>
 
+## <a name="TOC-Summary"></a>Summary
+
 1. [Overview](#TOC-Overview)
 2. [Features summary](#TOC-Features-sum)
 3. [Create a map](#TOC-Create-a-map)

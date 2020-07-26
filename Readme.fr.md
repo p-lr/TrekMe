@@ -6,6 +6,8 @@
 <img src="doc/tuto/map-list.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/tuto/trekme-example.jpg" width="200">
 </p>
 
+## <a name="TOC-Summary"></a>Sommaire
+
 1. [Introduction](#TOC-Overview)
 2. [Cartes IGN](#TOC-IGN-maps)
 3. [Résumé des fonctionnalités](#TOC-Features-sum)

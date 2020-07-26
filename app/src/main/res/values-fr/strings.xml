@@ -129,7 +129,7 @@
     <string name="waypoints_label">"Nombre de marqueurs : "</string>
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
     <string name="help">Aide</string>
-    <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md</string>
+    <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#sommaire</string>
     <string name="ign_warning_storage_rights">TrekMe ne peut pas tenir compte de vos identifiants, parce que l\'application ne dispose pas l\'autorisation de <b>stockage</b>. Dans vos paramètres Android, pour Applications, veuillez vérifier les autorisations de TrekMe.</string>
     <string name="ign_warning_credentials">Au moins un de vos identifiants (nom, mot de passe, clé d\'API) est incorrect. Vous ne pourrez pas créer de carte IGN tant que vous n\'aurez pas entré d\'identifiants corrects.</string>
     <string name="ign_snackbar_continue">Continuer pour créer une carte ?</string>
