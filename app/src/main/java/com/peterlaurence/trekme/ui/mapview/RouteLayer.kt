@@ -117,6 +117,10 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
         }
     }
 
+    fun destroy() {
+        distanceOnRouteController.destroy()
+    }
+
     fun activateDistanceOnTrack() {
         if (isInitialized && !distanceOnRouteController.isActive) {
             mapView.addReferentialOwner(distanceOnRouteController)
@@ -202,6 +206,8 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
                 })
             }
 
+            // TODO: The distanceOnRouteController is eagerly initialized here. It should instead be
+            // created only when needed (although requires careful state management).
             /* Static routes are also used inside the DistanceOnRouteController.
              * To ensure proper rendering, we also restore the previous state (if any). */
             distanceOnRouteController.setRoutes(processedStaticRoutes, map, state?.distOnRouteState)
@@ -369,6 +375,14 @@ private class DistanceOnRouteController(private val pathView: PathView,
             it.data as PathView.DrawablePath
         }
         pathView.updatePaths(originalPaths)
+    }
+
+    fun destroy() {
+        activeRouteLookupJob?.cancel()
+        distanceCalculationJob?.cancel()
+        /* Also cancel underlying channels although not doing it doesn't leak anything */
+        scrollUpdateChannel.cancel()
+        distanceCalculateChannel.cancel()
     }
 
     /**

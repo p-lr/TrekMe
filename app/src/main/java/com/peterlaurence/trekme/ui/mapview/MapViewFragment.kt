@@ -481,6 +481,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         landmarkLayer?.destroy()
         landmarkLayer = null
         markerLayer = null
+        routeLayer?.destroy()
         routeLayer = null
     }
 
