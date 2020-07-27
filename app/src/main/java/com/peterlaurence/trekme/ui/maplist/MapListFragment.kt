@@ -1,7 +1,5 @@
 package com.peterlaurence.trekme.ui.maplist
 
-import android.os.Build
-import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -176,11 +174,6 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
             val btn = binding.buttonGoToMapCreate
             btn.setOnClickListener {
                 findNavController().navigate(R.id.action_global_mapCreateFragment)
-            }
-
-            /* Specifically for Android 10, temporarily explain why the list of map is empty. */
-            if (Build.VERSION.SDK_INT == VERSION_CODES.Q) {
-                binding.android10Warning.visibility = View.VISIBLE
             }
         } else {
             binding.emptyMapPanel.visibility = View.GONE
