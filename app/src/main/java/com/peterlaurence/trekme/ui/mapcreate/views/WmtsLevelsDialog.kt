@@ -29,8 +29,8 @@ import java.text.NumberFormat
  */
 open class WmtsLevelsDialog : DialogFragment() {
     /* Level thresholds */
-    private val minLevel = 1
-    private val maxLevel = 18
+    private var minLevel = 1
+    private var maxLevel = 18
 
     /* Start values */
     private val startMinLevel = 12
@@ -41,7 +41,9 @@ open class WmtsLevelsDialog : DialogFragment() {
 
     private lateinit var transactionsTextView: TextView
     private lateinit var mapSizeTextView: TextView
-    private var mapSource: MapSource? = null
+    private var mapSourceBundle: MapSourceBundle? = null
+    private val mapSource: MapSource?
+        get() = mapSourceBundle?.mapSource
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
 
     companion object {
@@ -61,7 +63,11 @@ open class WmtsLevelsDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.dialog_wmts, null)
-        mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
+        mapSourceBundle = arguments?.getParcelable(ARG_MAP_SOURCE)
+        mapSourceBundle?.also {
+            minLevel = it.levelMin
+            maxLevel = it.levelMax
+        }
 
         configureComponents(view)
 

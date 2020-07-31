@@ -395,10 +395,16 @@ class GoogleMapWmtsViewFragment : Fragment() {
             val fm = activity?.supportFragmentManager
             if (fm != null) {
                 mapSource.let {
-                    val wmtsLevelsDialog = if (it == MapSource.IGN) {
-                        WmtsLevelsDialogIgn.newInstance(area, MapSourceBundle(it))
+                    val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
+                    val mapSourceBundle = if (mapConfiguration != null) {
+                        MapSourceBundle(it, mapConfiguration.levelMin, mapConfiguration.levelMax)
                     } else {
-                        WmtsLevelsDialog.newInstance(area, MapSourceBundle(it))
+                        MapSourceBundle(it)
+                    }
+                    val wmtsLevelsDialog = if (it == MapSource.IGN) {
+                        WmtsLevelsDialogIgn.newInstance(area, mapSourceBundle)
+                    } else {
+                        WmtsLevelsDialog.newInstance(area, mapSourceBundle)
                     }
                     wmtsLevelsDialog.show(fm, "fragment")
                 }

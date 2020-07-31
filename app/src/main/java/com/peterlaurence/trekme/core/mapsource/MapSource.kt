@@ -10,7 +10,7 @@ enum class MapSource {
 }
 
 @Parcelize
-data class MapSourceBundle(val mapSource: MapSource) : Parcelable
+data class MapSourceBundle(val mapSource: MapSource, val levelMin: Int = 1, val levelMax: Int = 18) : Parcelable
 
 sealed class MapSourceData
 data class IgnSourceData(val api: String, val layer: Layer) : MapSourceData()

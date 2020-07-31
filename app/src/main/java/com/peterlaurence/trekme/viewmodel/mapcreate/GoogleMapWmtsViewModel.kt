@@ -46,8 +46,8 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
 
     private val scaleAndScrollInitConfig = mapOf(
             MapSource.SWISS_TOPO to ScaleAndScrollConfig(0.0006149545f, 21064, 13788, 0.0006149545f),
-            MapSource.IGN_SPAIN to ScaleAndScrollConfig(0.0003546317f, 11127, 8123, 0003546317f),
-            MapSource.ORDNANCE_SURVEY to ScaleAndScrollConfig(0.000830759f, 27011, 17261, 0.000830759f)
+            MapSource.IGN_SPAIN to ScaleAndScrollConfig(0.0003546317f, 11127, 8123, 0.0003546317f),
+            MapSource.ORDNANCE_SURVEY to ScaleAndScrollConfig(0.000830759f, 27011, 17261, 0.000830759f, 7, 16)
     )
 
     private val activeLayerForSource: MutableMap<MapSource, Layer> = mutableMapOf(
@@ -137,4 +137,5 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
 }
 
 data class ScaleAndScrollConfig(val scale: Float, val scrollX: Int, val scrollY: Int,
-                                val minScale: Float? = null)
+                                val minScale: Float? = null, val levelMin: Int = 1,
+                                val levelMax: Int = 18)
