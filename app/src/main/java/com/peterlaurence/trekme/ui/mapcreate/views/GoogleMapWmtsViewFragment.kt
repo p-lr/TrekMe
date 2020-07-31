@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
+import com.peterlaurence.mapview.api.MinimumScaleMode
 import com.peterlaurence.mapview.api.addMarker
 import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.trekme.R
@@ -33,6 +34,7 @@ import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
+import com.peterlaurence.trekme.viewmodel.mapcreate.ScaleAndScrollConfig
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -253,13 +255,14 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
 
         /* 2- Configure the mapView only if the test succeeds */
+        val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
         val checkResult = checkTileAccessibility(streamProvider)
         try {
             if (!checkResult) {
                 showWarningMessage()
                 return@launch
             } else {
-                addMapView(streamProvider)
+                addMapView(streamProvider, mapConfiguration)
                 hideWarningMessage()
             }
         } catch (e: IllegalStateException) {
@@ -271,7 +274,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.progressBarWaiting.visibility = View.GONE
 
         /* 4- Scroll to the init position if there is one pre-configured */
-        viewModel.getScaleAndScrollInitConfig(mapSource)?.also {
+        mapConfiguration?.also {
             /* At this point the mapView should be initialized, but we never know.. */
             mapView?.apply {
                 scale = it.scale
@@ -303,6 +306,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             MapSource.USGS -> checkUSGSProvider(tileStreamProvider)
             MapSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
             MapSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
+            MapSource.ORDNANCE_SURVEY -> checkOrdnanceSurveyProvider(tileStreamProvider)
         }
     }
 
@@ -322,14 +326,20 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fragmentWmtWarningLink.visibility = View.GONE
     }
 
-    private fun addMapView(tileStreamProvider: TileStreamProvider) {
+    private fun addMapView(tileStreamProvider: TileStreamProvider, scaleAndScrollConfig: ScaleAndScrollConfig? = null) {
         val context = this.context ?: return
         val mapView = MapView(context)
 
         val config = MapViewConfiguration(
                 19, mapSize, mapSize, tileSize,
                 tileStreamProvider.toMapViewTileStreamProvider()
-        ).setWorkerCount(16)
+        ).setWorkerCount(16).apply {
+            /* If we're provided a map config, apply it */
+            scaleAndScrollConfig?.minScale?.also { minScale ->
+                setMinimumScaleMode(MinimumScaleMode.NONE)
+                setMinScale(minScale)
+            }
+        }
 
         mapView.configure(config)
 

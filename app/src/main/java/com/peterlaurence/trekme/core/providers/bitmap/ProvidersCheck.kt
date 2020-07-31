@@ -30,3 +30,8 @@ fun checkSwissTopoProvider(tileStreamProvider: TileStreamProvider): Boolean {
     val bitmapProvider = BitmapProvider(tileStreamProvider)
     return bitmapProvider.getBitmap(180, 266, 9) != null
 }
+
+fun checkOrdnanceSurveyProvider(tileStreamProvider: TileStreamProvider): Boolean {
+    val bitmapProvider = BitmapProvider(tileStreamProvider)
+    return bitmapProvider.getBitmap(40, 61, 7) != null
+}

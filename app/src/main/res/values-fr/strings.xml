@@ -194,4 +194,5 @@
     <string name="preference_scale_at_center">Echelle quand centré</string>
     <string name="preference_change_scale_when_centering">Définir échelle quand centré</string>
     <string name="import_title">Importer</string>
+    <string name="ordnance_survey_source_description">Carte de Grande-Bretagne</string>
 </resources>

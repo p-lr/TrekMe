@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.IgnSourceData
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.NoData
+import com.peterlaurence.trekme.core.mapsource.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
@@ -39,18 +40,21 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
 ) : ViewModel() {
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private var ignApi: String? = null
+    private var ordnanceSurveyApi: String? = null
     private val ignApiUrl = "https://plrapps.ovh:8080/ign-api"
+    private val ordnanceSurveyApiUrl = "https://plrapps.ovh:8080/ordnance-survey-api"
 
     private val scaleAndScrollInitConfig = mapOf(
-            MapSource.SWISS_TOPO to ScaleAndScrollInitConfig(0.0006149545f, 21064, 13788),
-            MapSource.IGN_SPAIN to ScaleAndScrollInitConfig(0.0003546317f, 11127, 8123)
+            MapSource.SWISS_TOPO to ScaleAndScrollConfig(0.0006149545f, 21064, 13788, 0.0006149545f),
+            MapSource.IGN_SPAIN to ScaleAndScrollConfig(0.0003546317f, 11127, 8123, 0003546317f),
+            MapSource.ORDNANCE_SURVEY to ScaleAndScrollConfig(0.000830759f, 27011, 17261, 0.000830759f)
     )
 
     private val activeLayerForSource: MutableMap<MapSource, Layer> = mutableMapOf(
             MapSource.IGN to defaultIgnLayer
     )
 
-    fun getScaleAndScrollInitConfig(mapSource: MapSource): ScaleAndScrollInitConfig? {
+    fun getScaleAndScrollConfig(mapSource: MapSource): ScaleAndScrollConfig? {
         return scaleAndScrollInitConfig[mapSource]
     }
 
@@ -71,13 +75,22 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     }
 
     suspend fun createTileStreamProvider(mapSource: MapSource): TileStreamProvider? {
-        val layer = activeLayerForSource[mapSource] ?: defaultIgnLayer
-        val mapSourceData = if (mapSource == MapSource.IGN) {
-            if (ignApi == null) {
-                ignApi = getIgnApi()
+        val mapSourceData = when (mapSource) {
+            MapSource.IGN -> {
+                val layer = activeLayerForSource[mapSource] ?: defaultIgnLayer
+                if (ignApi == null) {
+                    ignApi = getApi(ignApiUrl)
+                }
+                IgnSourceData(ignApi ?: "", layer)
             }
-            IgnSourceData(ignApi ?: "", layer)
-        } else NoData
+            MapSource.ORDNANCE_SURVEY -> {
+                if (ordnanceSurveyApi == null) {
+                    ordnanceSurveyApi = getApi(ordnanceSurveyApiUrl)
+                }
+                OrdnanceSurveyData(ordnanceSurveyApi ?: "")
+            }
+            else -> NoData
+        }
         return try {
             createTileStreamProvider(mapSource, mapSourceData)
         } catch (e: Exception) {
@@ -85,8 +98,8 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         }
     }
 
-    private suspend fun getIgnApi(): String? = withContext(Dispatchers.IO) {
-        val url = URL(ignApiUrl)
+    private suspend fun getApi(urlStr: String): String? = withContext(Dispatchers.IO) {
+        val url = URL(urlStr)
         val connection = url.openConnection()
         try {
             connection.getInputStream().bufferedReader().use {
@@ -123,4 +136,5 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     }
 }
 
-data class ScaleAndScrollInitConfig(val scale: Float, val scrollX: Int, val scrollY: Int)
+data class ScaleAndScrollConfig(val scale: Float, val scrollX: Int, val scrollY: Int,
+                                val minScale: Float? = null)
