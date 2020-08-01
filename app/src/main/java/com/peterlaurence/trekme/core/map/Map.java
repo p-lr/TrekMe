@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.NonNull;
@@ -18,7 +17,6 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.gson.RouteGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
-import com.peterlaurence.trekme.core.projection.ProjectionTask;
 import com.peterlaurence.trekme.util.ZipProgressionListener;
 import com.peterlaurence.trekme.util.ZipTaskKt;
 
@@ -47,7 +45,6 @@ import java.util.Locale;
  * @author peterLaurence
  */
 public class Map {
-    private static final String TAG = "Map";
     private static final int THUMBNAIL_SIZE = 256;
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
@@ -82,28 +79,12 @@ public class Map {
         mImage = getBitmapFromFile(thumbnail);
     }
 
-    protected Map(Parcel in) {
-        mConfigFile = new File(in.readString());
-        mImage = in.readParcelable(Bitmap.class.getClassLoader());
-    }
-
     private static
     @Nullable
     Bitmap getBitmapFromFile(File file) {
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         if (file != null) {
             return BitmapFactory.decodeFile(file.getAbsolutePath(), bmOptions);
-        }
-        return null;
-    }
-
-    public Bitmap getDownSample() {
-        // TODO : parametrize that
-        File imageFile = new File(mConfigFile.getParentFile(), "down_sample.jpg");
-        try {
-            return BitmapFactory.decodeFile(imageFile.getPath());
-        } catch (OutOfMemoryError | Exception e) {
-            // maybe log here
         }
         return null;
     }
@@ -131,6 +112,7 @@ public class Map {
         mMapGson.calibration.projection = projection;
     }
 
+    @SuppressWarnings("unused")
     public void clearCalibrationPoints() {
         mMapGson.calibration.calibration_points.clear();
     }
@@ -205,28 +187,6 @@ public class Map {
             mCalibrationStatus = CalibrationStatus.OK;
         } else {
             mCalibrationStatus = CalibrationStatus.NONE;
-        }
-    }
-
-    /**
-     * Get the projected values for a geographical position. <br>
-     * This utility method is a blocking call. It can also be done asynchronously from java by
-     * getting the {@link Projection} with {@link Map#getProjection()}, create a
-     * {@link com.peterlaurence.trekme.core.projection.ProjectionTask} and implement a
-     * {@link ProjectionTask.ProjectionUpdateLister}.
-     * From Kotlin, simply use a coroutine dispatched on anything bu main thread.
-     *
-     * @param latitude  the geodetic latitude
-     * @param longitude the geodetic longitude
-     * @return the [X ; Y] values, or null if this map
-     */
-    @Nullable
-    public double[] getProjectedValues(double latitude, double longitude) {
-        Projection projection = getProjection();
-        if (projection == null) {
-            return null;
-        } else {
-            return projection.doProjection(latitude, longitude);
         }
     }
 
@@ -359,13 +319,6 @@ public class Map {
      */
     public List<MapGson.Calibration.CalibrationPoint> getCalibrationPoints() {
         return new ArrayList<>(mMapGson.calibration.calibration_points);
-    }
-
-    /**
-     * Set the calibration points.
-     */
-    public void setCalibrationPoints(List<MapGson.Calibration.CalibrationPoint> calibrationPoints) {
-        mMapGson.calibration.calibration_points = calibrationPoints;
     }
 
     public void addCalibrationPoint(MapGson.Calibration.CalibrationPoint point) {
@@ -532,11 +485,7 @@ public class Map {
             if (Double.compare(d1, d2) == 0) {
                 return true;
             }
-            if ((Math.abs(d1 - d2) <= delta)) {
-                return true;
-            }
-
-            return false;
+            return (Math.abs(d1 - d2) <= delta);
         }
 
         public boolean compareTo(double x0, double y0, double x1, double y1) {
