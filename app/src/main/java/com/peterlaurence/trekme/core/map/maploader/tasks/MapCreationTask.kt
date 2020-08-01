@@ -76,9 +76,6 @@ fun mapCreationTask(mGson: Gson, vararg dirs: File): List<Map> {
             /* Calibration */
             map.calibrate()
 
-            /* Set TileStreamProvider */
-            MapLoader.applyTileStreamProviderTo(map)
-
             mapList.add(map)
         } catch (e: JsonSyntaxException) {
             Log.e(TAG, e.message, e)

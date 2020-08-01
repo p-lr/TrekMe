@@ -32,7 +32,7 @@ import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeTileStreamProvider
+import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -567,7 +567,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         val factor = this.magnifyingFactor ?: 1
 
         val config = MapViewConfiguration(
-                map.levelList.size, map.widthPx, map.heightPx, tileSize, makeTileStreamProvider(map))
+                map.levelList.size, map.widthPx, map.heightPx, tileSize, makeMapViewTileStreamProvider(map))
                 .setMaxScale(2f)
                 .setMagnifyingFactor(factor)
                 .setPadding(tileSize * 2)

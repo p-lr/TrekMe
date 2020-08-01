@@ -27,7 +27,7 @@ import java.util.List;
 import static com.peterlaurence.mapview.api.MarkerApiKt.addMarker;
 import static com.peterlaurence.mapview.api.MarkerApiKt.moveMarker;
 import static com.peterlaurence.mapview.api.MarkerApiKt.moveToMarker;
-import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.CompatibityUtilsKt.makeTileStreamProvider;
+import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.CompatibityUtilsKt.makeMapViewTileStreamProvider;
 
 
 /**
@@ -122,7 +122,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         } else return;
 
         MapViewConfiguration config = new MapViewConfiguration(lvlCnt, map.getWidthPx(), map.getHeightPx(), tileSize,
-                makeTileStreamProvider(map)).setMaxScale(2f);
+                makeMapViewTileStreamProvider(map)).setMaxScale(2f);
 
         mapView.configure(config);
 

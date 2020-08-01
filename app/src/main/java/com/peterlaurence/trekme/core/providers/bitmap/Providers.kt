@@ -2,7 +2,9 @@ package com.peterlaurence.trekme.core.providers.bitmap
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
+import com.peterlaurence.trekme.core.map.OutOfBounds
+import com.peterlaurence.trekme.core.map.TileResult
+import com.peterlaurence.trekme.core.map.TileStream
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 import java.io.BufferedInputStream
@@ -16,16 +18,16 @@ import java.net.URL
  * The caller is responsible for closing the stream.
  */
 class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder, private val requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
-    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         val url = URL(urlTileBuilder.build(zoomLvl, row, col))
         val connection = createConnection(url)
 
         return try {
             connection.connect()
-            BufferedInputStream(connection.inputStream)
+            TileStream(BufferedInputStream(connection.inputStream))
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            TileStream(null)
         }
     }
 
@@ -44,7 +46,7 @@ class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder, private
  */
 class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, private val userAgent: String,
                                  private val requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
-    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         val url = URL(urlTileBuilder.build(zoomLvl, row, col))
         val tileStreamProviderHttp = TileStreamProviderHttp(urlTileBuilder, requestProperties)
         val connection = tileStreamProviderHttp.createConnection(url)
@@ -54,11 +56,11 @@ class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, pri
 
         return try {
             connection.connect()
-            BufferedInputStream(connection.inputStream)
+            TileStream(BufferedInputStream(connection.inputStream))
         } catch (e: Exception) {
             connection.disconnect()
             e.printStackTrace()
-            null
+            TileStream(null)
         }
     }
 
@@ -69,13 +71,13 @@ class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, pri
 
 class TileStreamProviderRetry(private val tileStreamProvider: TileStreamProvider,
                               private val retryCount: Int = 10) : TileStreamProvider {
-    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
+    override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         var retryCnt = 0
-        var result: InputStream? = null
+        var result: TileResult
         do {
             result = tileStreamProvider.getTileStream(row, col, zoomLvl)
             retryCnt++
-        } while (result == null && retryCnt <= retryCount)
+        } while (result !is OutOfBounds && ((result as? TileStream)?.tileStream == null) && retryCnt <= retryCount)
         return result
     }
 }
@@ -83,18 +85,18 @@ class TileStreamProviderRetry(private val tileStreamProvider: TileStreamProvider
 /**
  * From a [TileStreamProvider], and eventually bitmap options, get [Bitmap] from tile coordinates.
  */
-open class BitmapProvider(private val tileStreamProvider: TileStreamProvider, options: BitmapFactory.Options? = null) {
+class BitmapProvider(private val tileStreamProvider: TileStreamProvider, options: BitmapFactory.Options? = null) {
     private var bitmapLoadingOptions = options ?: BitmapFactory.Options()
 
     init {
         bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
     }
 
-    open fun getBitmap(row: Int, col: Int, zoomLvl: Int): Bitmap? {
+    fun getBitmap(row: Int, col: Int, zoomLvl: Int): Bitmap? {
         return try {
-            val inputStream = tileStreamProvider.getTileStream(row, col, zoomLvl)
-            inputStream.use {
-                BitmapFactory.decodeStream(inputStream, null, bitmapLoadingOptions)
+            val tileResult = tileStreamProvider.getTileStream(row, col, zoomLvl)
+            (tileResult as? TileStream)?.tileStream.use {
+                BitmapFactory.decodeStream(it, null, bitmapLoadingOptions)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -104,37 +106,6 @@ open class BitmapProvider(private val tileStreamProvider: TileStreamProvider, op
 
     fun setBitmapOptions(options: BitmapFactory.Options) {
         bitmapLoadingOptions = options
-    }
-}
-
-/**
- * Adds retry behavior on a [BitmapProvider].
- */
-class BitmapProviderRetry(private val retryCount: Int, private val delayMs: Long,
-                          tileStreamProvider: TileStreamProvider,
-                          options: BitmapFactory.Options? = null) : BitmapProvider(tileStreamProvider, options) {
-    override fun getBitmap(row: Int, col: Int, zoomLvl: Int): Bitmap? {
-        var retry = 0
-        var bitmap = super.getBitmap(row, col, zoomLvl)
-        while (retry < retryCount && bitmap == null) {
-            try {
-                Thread.sleep(delayMs)
-            } catch (e: Exception) {
-                // don't care
-            }
-
-            bitmap = super.getBitmap(row, col, zoomLvl)
-
-            retry++
-            if (bitmap != null) {
-                Log.d("BitmapProviderRetry", "Got bitmap (row col level) $row $col $zoomLvl after $retry retries")
-                break
-            }
-        }
-        if (bitmap == null) {
-            Log.e("BitmapProviderRetry", "Couldn't get bitmap (row col level) $row $col $zoomLvl after $retry retries")
-        }
-        return bitmap
     }
 }
 

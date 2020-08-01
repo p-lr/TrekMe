@@ -26,7 +26,6 @@ import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
-import com.peterlaurence.trekme.core.providers.bitmap.BitmapProviderRetry
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.stackTraceToString
@@ -276,7 +275,7 @@ class DownloadService : Service() {
 private fun launchDownloadTask(threadCount: Int, tileIterator: ThreadSafeTileIterator,
                                tileWriter: TileWriter, tileStreamProvider: TileStreamProvider) {
     for (i in 0 until threadCount) {
-        val bitmapProvider = BitmapProviderRetry(20, 1000, tileStreamProvider)
+        val bitmapProvider = BitmapProvider(tileStreamProvider)
         val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
         downloadThread.start()
     }

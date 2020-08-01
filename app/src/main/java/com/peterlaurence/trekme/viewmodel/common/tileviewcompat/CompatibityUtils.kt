@@ -1,10 +1,13 @@
 package com.peterlaurence.trekme.viewmodel.common.tileviewcompat
 
+import android.util.Log
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.TileStream
 import com.peterlaurence.trekme.core.map.TileStreamProvider
-import com.peterlaurence.mapview.core.TileStreamProvider as MapViewTileStreamProvider
-import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderDefault
+import java.io.File
+import java.io.FileInputStream
 import java.io.InputStream
+import com.peterlaurence.mapview.core.TileStreamProvider as MapViewTileStreamProvider
 
 
 /**
@@ -12,22 +15,33 @@ import java.io.InputStream
  * the view that fragments use to display tiles.
  * For instance, fragments use MapView, so the returned type is [MapViewTileStreamProvider].
  */
-fun makeTileStreamProvider(map: Map): MapViewTileStreamProvider {
-    return when (val x = map.tileStreamProvider) {
-        is TileStreamProviderDefault -> object : MapViewTileStreamProvider {
+fun makeMapViewTileStreamProvider(map: Map): MapViewTileStreamProvider {
+    return when (map.origin) {
+        Map.MapOrigin.VIPS, Map.MapOrigin.IGN_LICENSED -> object : MapViewTileStreamProvider {
             override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
-                return x.getTileStream(row, col, zoomLvl)
+                val relativePathString = "$zoomLvl${File.separator}$row${File.separator}$col${map.imageExtension}"
+
+                return try {
+                    FileInputStream(File(map.directory, relativePathString))
+                } catch (e: Exception) {
+                    null
+                }
             }
         }
-
-        else -> throw NotImplementedError()
+        Map.MapOrigin.UNDEFINED -> {
+            Log.e(TAG, "Unknown map origin ${map.origin}")
+            throw NotImplementedError()
+        }
     }
 }
 
 fun TileStreamProvider.toMapViewTileStreamProvider(): MapViewTileStreamProvider {
     return object : MapViewTileStreamProvider {
         override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
-            return this@toMapViewTileStreamProvider.getTileStream(row, col, zoomLvl)
+            val tileResult = this@toMapViewTileStreamProvider.getTileStream(row, col, zoomLvl)
+            return (tileResult as? TileStream)?.tileStream
         }
     }
 }
+
+const val TAG = "CompatibilityUtils.kt"

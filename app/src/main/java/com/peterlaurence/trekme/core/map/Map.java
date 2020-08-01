@@ -52,7 +52,6 @@ public class Map {
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
     private Bitmap mImage;
-    private TileStreamProvider mTileStreamProvider;  // this should be considered nullable (e.g, it can be never set)
     private MapBounds mMapBounds;
     private boolean isFavorite = false;
     /* The Java Object corresponding to the json configuration file */
@@ -130,15 +129,6 @@ public class Map {
 
     public void setProjection(Projection projection) {
         mMapGson.calibration.projection = projection;
-    }
-
-    @Nullable
-    public TileStreamProvider getTileStreamProvider() {
-        return mTileStreamProvider;
-    }
-
-    public void setTileStreamProvider(TileStreamProvider tileStreamProvider) {
-        mTileStreamProvider = tileStreamProvider;
     }
 
     public void clearCalibrationPoints() {

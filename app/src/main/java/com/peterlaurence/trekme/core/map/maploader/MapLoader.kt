@@ -5,7 +5,6 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
-import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.gson.*
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
@@ -13,7 +12,6 @@ import com.peterlaurence.trekme.core.map.maploader.tasks.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
-import com.peterlaurence.trekme.model.providers.stream.TileStreamProviderDefault
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -189,9 +187,6 @@ object MapLoader : MapImporter.MapImportListener {
      * Add a [Map] to the internal list and generate the json file.
      */
     fun addMap(map: Map) {
-        /* Set TileStreamProvider */
-        applyTileStreamProviderTo(map)
-
         /* Add the map */
         map.addIfNew()
 
@@ -377,18 +372,6 @@ object MapLoader : MapImporter.MapImportListener {
 
     interface MapArchiveListUpdateListener {
         fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>)
-    }
-
-    /**
-     * Assign a [TileStreamProvider] to a [Map], if the origin of the [Map] is known.
-     */
-    fun applyTileStreamProviderTo(map: Map) {
-        when (map.origin) {
-            Map.MapOrigin.VIPS, Map.MapOrigin.IGN_LICENSED -> map.tileStreamProvider = TileStreamProviderDefault(map.directory, map.imageExtension)
-            Map.MapOrigin.UNDEFINED -> {
-                Log.e(TAG, "Unknown map origin ${map.origin}")
-            }
-        }
     }
 
     /**
