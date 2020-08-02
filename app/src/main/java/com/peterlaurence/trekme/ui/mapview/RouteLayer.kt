@@ -56,7 +56,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
     private var isInitialized = false
     private lateinit var mapView: MapView
     private lateinit var map: Map
-    private lateinit var pathView: PathView
+    private var pathView: PathView? = null
     private val liveRouteView: PathView by lazy {
         val context = mapView.context
         val view = PathView(context)
@@ -65,21 +65,45 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
     }
     private val processedStaticRoutes = mutableListOf<RouteGson.Route>()
     private val processedLiveRoute = mutableListOf<RouteGson.Route>()
-    private val distanceOnRouteController by lazy {
-        DistanceOnRouteController(pathView, mapView, coroutineScope)
-    }
+
+    /**
+     * This object can, in some circumstances, be accessed before the [init] method is invoked.
+     * It happens when the application process is killed when the app is in the background in stopped
+     * state, and Android reclaims memory. If the last destination was e.g the MapViewFragment, then
+     * Android sometimes restores this "state" by immediately navigating to this fragment after the
+     * main activity is re-created. However, if TrekMe is parametrized to display the map list upon
+     * activity first start (the default), then the navigation framework is instructed to navigate
+     * to the map list fragment shortly after. At that moment, the MapViewFragment (which has just
+     * been created), might not be fully constructed and in particular this [RouteLayer] isn't
+     * initialized yet. Navigating to the map list fragment while the current destination is the map
+     * view fragment causes the latter fragment to be destroyed. Upon map view fragment destruction,
+     * this layer is "destroyed" and [distanceOnRouteController] is accessed (see [destroy] method).
+     *
+     * This is the reason why accessing this object contains a fool-proof logic - [pathView] is only
+     * initialized during [init].
+     * P.S: A nice workaround to directly navigate back to the map view even when the process was
+     * killed is to set the last map as the default destination (in the settings of TrekMe).
+     */
+    private var distanceOnRouteController: DistanceOnRouteController? = null
+        get() {
+            return field ?: pathView?.let { pathView ->
+                field = DistanceOnRouteController(pathView, mapView, coroutineScope)
+                field
+            }
+        }
 
     var isDistanceOnTrackActive: Boolean = false
         /* Report to be active if is either effectively active or is going to be */
-        get() = isInitialized && (distanceOnRouteController.isActive || state?.wasDistanceOnTrackActive ?: false)
+        get() = isInitialized && (distanceOnRouteController?.isActive ?: false || state?.wasDistanceOnTrackActive ?: false)
         private set
 
     /**
      * Returns the state of this [RouteLayer] at the time of this method invocation.
      */
     fun getState(): RouteLayerState? {
+        val controller = distanceOnRouteController ?: return null
         if (!isInitialized) return null
-        return RouteLayerState(distanceOnRouteController.getState(), distanceOnRouteController.isActive)
+        return RouteLayerState(controller.getState(), controller.isActive)
     }
 
     /**
@@ -96,9 +120,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
     }
 
     override fun onTrackVisibilityChanged() {
-        if (::pathView.isInitialized) {
-            pathView.invalidate()
-        }
+        pathView?.invalidate()
     }
 
     /**
@@ -118,25 +140,28 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
     }
 
     fun destroy() {
-        distanceOnRouteController.destroy()
+        distanceOnRouteController?.destroy()
     }
 
     fun activateDistanceOnTrack() {
-        if (isInitialized && !distanceOnRouteController.isActive) {
-            mapView.addReferentialOwner(distanceOnRouteController)
-            distanceOnRouteController.enable()
+        val controller = distanceOnRouteController ?: return
+        if (isInitialized && !controller.isActive) {
+            mapView.addReferentialOwner(controller)
+            controller.enable()
         }
     }
 
     fun disableDistanceOnTrack() {
+        val controller = distanceOnRouteController ?: return
         if (!isInitialized) return
-        mapView.removeReferentialOwner(distanceOnRouteController)
-        distanceOnRouteController.disable()
+        mapView.removeReferentialOwner(controller)
+        controller.disable()
     }
 
     private fun createPathView() {
-        pathView = PathView(mapView.context)
-        mapView.addPathView(pathView)
+        val view = PathView(mapView.context)
+        mapView.addPathView(view)
+        pathView = view
     }
 
     /**
@@ -201,7 +226,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
         coroutineScope.launch {
             staticRouteFlow.collect {
                 processedStaticRoutes.add(it)
-                pathView.updatePaths(processedStaticRoutes.map { route ->
+                pathView?.updatePaths(processedStaticRoutes.map { route ->
                     route.data as PathView.DrawablePath
                 })
             }
@@ -210,10 +235,11 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
             // created only when needed (although requires careful state management).
             /* Static routes are also used inside the DistanceOnRouteController.
              * To ensure proper rendering, we also restore the previous state (if any). */
-            distanceOnRouteController.setRoutes(processedStaticRoutes, map, state?.distOnRouteState)
-            if (state != null && state.wasDistanceOnTrackActive && !distanceOnRouteController.isActive) {
-                mapView.addReferentialOwner(distanceOnRouteController)
-                distanceOnRouteController.enable()
+            val controller = distanceOnRouteController ?: return@launch
+            controller.setRoutes(processedStaticRoutes, map, state?.distOnRouteState)
+            if (state != null && state.wasDistanceOnTrackActive && !controller.isActive) {
+                mapView.addReferentialOwner(controller)
+                controller.enable()
             }
         }
     }
