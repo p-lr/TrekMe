@@ -100,8 +100,14 @@ public class MapArchiveViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void onMapImported(MapImporter.MapParserStatus status) {
-        if (status == MapImporter.MapParserStatus.EXISTING_MAP) {
-            mapCreationLabel.setText(R.string.imported_untouched);
+        switch (status) {
+            case EXISTING_MAP:
+                mapCreationLabel.setText(R.string.imported_untouched);
+                break;
+            case UNKNOWN_MAP_ORIGIN:
+            case NO_MAP:
+                mapCreationLabel.setText(R.string.map_import_error);
+                break;
         }
         progressBarIndMapCreation.setVisibility(View.GONE);
         iconMapCreated.setVisibility(View.VISIBLE);

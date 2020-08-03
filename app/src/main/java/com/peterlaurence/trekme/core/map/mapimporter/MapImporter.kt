@@ -12,6 +12,8 @@ import kotlinx.coroutines.withContext
 
 import java.io.File
 import java.io.FilenameFilter
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * The [MapImporter] exposes a single method : [.importFromFile].
@@ -22,8 +24,8 @@ import java.io.FilenameFilter
  * @author peterLaurence on 23/06/16 -- Converted to Kotlin on 27/10/19
  */
 object MapImporter {
-    private val mProviderToParserMap = mapOf<Map.MapOrigin, MapParser> (
-        Map.MapOrigin.VIPS to LibvipsMapParser()
+    private val mProviderToParserMap = mapOf<Map.MapOrigin, MapParser>(
+            Map.MapOrigin.VIPS to LibvipsMapParser()
     )
     private const val THUMBNAIL_ACCEPT_SIZE = 256
     private val IMAGE_EXTENSIONS = arrayOf("jpg", "gif", "png", "bmp", "webp")
@@ -60,12 +62,16 @@ object MapImporter {
 
     private val DIR_FILTER = FilenameFilter { dir, filename -> File(dir, filename).isDirectory }
 
-    @Throws(MapParseException::class)
     suspend fun importFromFile(dir: File, origin: Map.MapOrigin): MapImportResult {
         val parser = mProviderToParserMap[origin]
 
         return if (parser != null) {
-            parseMap(parser, dir)
+            try {
+                parseMap(parser, dir)
+            } catch (e: MapParseException) {
+                Log.e(TAG, "Error parsing $dir (${e.issue})")
+                MapImportResult(null, MapParserStatus.NO_MAP)
+            }
         } else {
             MapImportResult(null, MapParserStatus.UNKNOWN_MAP_ORIGIN)
         }
@@ -77,6 +83,7 @@ object MapImporter {
     private interface MapParser {
 
         val status: MapParserStatus
+
         @Throws(MapParseException::class)
         suspend fun parse(file: File): Map?
     }
@@ -84,9 +91,8 @@ object MapImporter {
     enum class MapParserStatus {
         NO_MAP, // no map could be created
         NEW_MAP, // a new map was successfully created
-        EXISTING_MAP,
+        EXISTING_MAP, // a map.json file was found
         UNKNOWN_MAP_ORIGIN
-        // a map.json file was found
     }
 
     /**
@@ -104,18 +110,16 @@ object MapImporter {
     /**
      * An Exception thrown when an error occurred in a [MapParser].
      */
-    class MapParseException internal constructor(private val mIssue: Issue) : Exception() {
-
+    class MapParseException internal constructor(internal val issue: Issue) : Exception() {
         internal enum class Issue {
             NOT_A_DIRECTORY,
             NO_PARENT_FOLDER_FOUND,
             NO_LEVEL_FOUND,
-            UNKNOWN_IMAGE_EXT,
             MAP_SIZE_INCORRECT
         }
     }
 
-    private suspend fun parseMap(mapParser: MapParser, mDir: File): MapImportResult = withContext(Dispatchers.Default){
+    private suspend fun parseMap(mapParser: MapParser, mDir: File): MapImportResult = withContext(Dispatchers.Default) {
         val map = mapParser.parse(mDir)
         MapImportResult(map, mapParser.status)
     }
@@ -262,7 +266,7 @@ object MapImporter {
         private fun getMaxLevel(mapDir: File): Int {
             var maxLevel = 0
             var level: Int
-            for (f in mapDir.listFiles()) {
+            for (f in mapDir.listFiles() ?: arrayOf()) {
                 if (f.isDirectory) {
                     try {
                         level = Integer.parseInt(f.name)
@@ -279,7 +283,7 @@ object MapImporter {
         /* We assume that the tile size is constant at a given zoom level */
         private fun getTileSize(levelDir: File): MapGson.Level.TileSize? {
             val lineDirList = levelDir.listFiles(DIR_FILTER)
-            if (lineDirList.isEmpty()) {
+            if (lineDirList.isNullOrEmpty()) {
                 return null
             }
 
@@ -311,10 +315,11 @@ object MapImporter {
         }
 
         private fun getThumbnail(mapDir: File): File? {
-            for (imageFile in mapDir.listFiles(THUMBNAIL_FILTER)) {
+            for (imageFile in mapDir.listFiles(THUMBNAIL_FILTER) ?: arrayOf()) {
                 BitmapFactory.decodeFile(imageFile.path, options)
                 if (options.outWidth == THUMBNAIL_ACCEPT_SIZE && options.outHeight == THUMBNAIL_ACCEPT_SIZE) {
-                    if (!imageFile.name.toLowerCase().contains(THUMBNAIL_EXCLUDE_NAME.toLowerCase())) {
+                    val locale = Locale.getDefault()
+                    if (!imageFile.name.toLowerCase(locale).contains(THUMBNAIL_EXCLUDE_NAME.toLowerCase(locale))) {
                         return imageFile
                     }
                 }
@@ -330,10 +335,7 @@ object MapImporter {
             /* Only look into the first line */
             val rowCount = lineDirList.size
             val imageFiles = lineDirList[0].listFiles(IMAGE_FILTER)
-            val columnCount = imageFiles.size
-            if (columnCount == 0) {
-                return null
-            }
+            val columnCount = imageFiles?.size ?: return null
 
             val mapSize = MapGson.MapSize()
             mapSize.x = columnCount * lastLevelTileSize.x
@@ -342,7 +344,7 @@ object MapImporter {
         }
 
         companion object {
-            private val THUMBNAIL_EXCLUDE_NAME = "blank"
+            private const val THUMBNAIL_EXCLUDE_NAME = "blank"
         }
     }
 }
