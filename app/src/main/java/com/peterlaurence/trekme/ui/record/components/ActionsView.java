@@ -13,7 +13,7 @@ import com.peterlaurence.trekme.ui.record.components.widgets.DelayedButton;
 import org.greenrobot.eventbus.EventBus;
 
 /**
- * A set of controls (start & stop) over the {@link com.peterlaurence.trekme.service.LocationService}.
+ * A set of controls (start & stop) over the {@link com.peterlaurence.trekme.service.GpxRecordService}.
  *
  * @author peterLaurence on 23/12/17.
  */

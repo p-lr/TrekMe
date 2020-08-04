@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.service.LocationService
+import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
@@ -51,7 +51,7 @@ class RecordViewModel @ViewModelInject constructor(
     }
 
     fun startRecording() {
-        val intent = Intent(app, LocationService::class.java)
+        val intent = Intent(app, GpxRecordService::class.java)
         app.startService(intent)
     }
 

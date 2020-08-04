@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.service.event.LocationServiceStatus
+import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.util.gpx.GPXWriter
 import com.peterlaurence.trekme.util.gpx.model.*
@@ -58,7 +58,7 @@ import kotlin.coroutines.suspendCoroutine
  * @author peterLaurence on 17/12/17 -- converted to Kotlin on 20/04/19
  */
 @AndroidEntryPoint
-class LocationService : Service() {
+class GpxRecordService : Service() {
 
     @Inject
     lateinit var trekMeContext: TrekMeContext
@@ -75,7 +75,8 @@ class LocationService : Service() {
     /**
      * A [Channel] to be used for external communication, instead of sharing raw collections across
      * threads (shared mutable state).
-     * All operations related to this channel in this class are thread-confined to LocationServiceThread.
+     * All operations related to this channel in this class are thread-confined to the [THREAD_NAME]
+     * thread.
      */
     private var channel: Channel<TrackPoint>? = null
 
@@ -86,11 +87,12 @@ class LocationService : Service() {
 
         EventBus.getDefault().register(this)
 
-        /* Start up the thread running the service.  Note that we create a separate thread because
-         * the service normally runs in the process's main thread, which we don't want to block.
+        /* Start up the thread for background execution of tasks withing the service.  Note that we
+         * create a separate thread because the service normally runs in the process's main thread,
+         * which we don't want to block.
          * We also make it background priority so CPU-intensive work will not disrupt our UI.
          */
-        val thread = HandlerThread("LocationServiceThread",
+        val thread = HandlerThread(THREAD_NAME,
                 Thread.MIN_PRIORITY)
         thread.start()
 
@@ -143,7 +145,7 @@ class LocationService : Service() {
      * When we stop recording the location events, create a [Gpx] object for further
      * serialization. <br></br>
      * Whatever the outcome of this process, a [GpxFileWriteEvent] is emitted in the
-     * LocationServiceThread.
+     * [THREAD_NAME] thread.
      */
     private fun createGpx() {
         serviceHandler.post {
@@ -194,7 +196,7 @@ class LocationService : Service() {
 
         val notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
                 .setContentTitle(getText(R.string.app_name))
-                .setContentText(getText(R.string.service_location_action))
+                .setContentText(getText(R.string.service_gpx_record_action))
                 .setSmallIcon(R.drawable.ic_my_location_black_24dp)
                 .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
                 .setContentIntent(pendingIntent)
@@ -203,7 +205,7 @@ class LocationService : Service() {
         if (Build.VERSION.SDK_INT >= 26) {
             /* This is only needed on Devices on Android O and above */
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val mChannel = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_location_name), NotificationManager.IMPORTANCE_DEFAULT)
+            val mChannel = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_gpx_record_name), NotificationManager.IMPORTANCE_DEFAULT)
             mChannel.enableLights(true)
             mChannel.lightColor = Color.MAGENTA
             notificationManager.createNotificationChannel(mChannel)
@@ -272,12 +274,12 @@ class LocationService : Service() {
      * Called from main thread.
      */
     private fun sendStatus() {
-        EventBus.getDefault().postSticky(LocationServiceStatus(mStarted))
+        EventBus.getDefault().postSticky(GpxRecordServiceStatus(mStarted))
     }
 
     /**
      * Send updated track statistics.
-     * Called from LocationServiceThread.
+     * Called from [THREAD_NAME] thread.
      */
     private fun sendTrackStatistics(stats: TrackStatistics) {
         EventBus.getDefault().postSticky(stats)
@@ -285,7 +287,7 @@ class LocationService : Service() {
 
     /**
      * Add a new [TrackPoint] into the channel.
-     * Called from LocationServiceThread.
+     * Called from [THREAD_NAME] thread.
      */
     private fun sendTrackPoint(trackPoint: TrackPoint) {
         channel?.offer(trackPoint)
@@ -306,7 +308,7 @@ class LocationService : Service() {
 
     /**
      * Creates a new [Channel], filling it with all previously acquired [TrackPoint].
-     * This is done in the LocationServiceThread, to ensure thread-safety.
+     * This is done in the [THREAD_NAME] thread, to ensure thread-safety.
      */
     private suspend fun newChannel(): Channel<TrackPoint>? = suspendCoroutine { cont ->
         serviceHandler.post {
@@ -325,13 +327,15 @@ class LocationService : Service() {
 
     companion object {
         private const val GPX_VERSION = "1.1"
-        private const val NOTIFICATION_ID = "peterlaurence.LocationService"
+        private const val NOTIFICATION_ID = "peterlaurence.GpxRecordService"
         private const val SERVICE_ID = 126585
 
         val isStarted: Boolean
             get() {
-                val event = EventBus.getDefault().getStickyEvent(LocationServiceStatus::class.java)
+                val event = EventBus.getDefault().getStickyEvent(GpxRecordServiceStatus::class.java)
                 return event?.started ?: false
             }
     }
 }
+
+private const val THREAD_NAME = "GpxRecordServiceThread"

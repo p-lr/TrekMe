@@ -15,7 +15,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
-import com.peterlaurence.trekme.service.LocationService
+import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
@@ -24,7 +24,7 @@ import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeE
 import com.peterlaurence.trekme.ui.record.components.events.RequestStartEvent
 import com.peterlaurence.trekme.ui.record.components.events.RequestStopEvent
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.viewmodel.LocationServiceViewModel
+import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
@@ -35,7 +35,7 @@ import org.greenrobot.eventbus.Subscribe
 import java.io.File
 
 /**
- * Holds controls and displays information about the [LocationService].
+ * Holds controls and displays information about the [GpxRecordService].
  * Displays the list of records (gpx files) along their statistics.
  *
  * @author peterLaurence -- converted to Kotlin on 01/11/18
@@ -71,13 +71,13 @@ class RecordFragment : Fragment() {
         })
 
         /**
-         * Observe the changes in the Location service status, and update child views accordingly.
+         * Observe the changes in the [GpxRecordService] status, and update child views accordingly.
          */
-        val locationServiceViewModel: LocationServiceViewModel by activityViewModels()
-        locationServiceViewModel.getStatus().observe(
+        val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
+        gpxRecordServiceViewModel.getStatus().observe(
                 viewLifecycleOwner, Observer {
             it?.let { isActive ->
-                dispatchLocationServiceStatus(isActive)
+                dispatchGpxRecordServiceStatus(isActive)
             }
         })
 
@@ -163,7 +163,7 @@ class RecordFragment : Fragment() {
         binding.recordListView.setRecordingData(data)
     }
 
-    private fun dispatchLocationServiceStatus(isActive: Boolean) {
+    private fun dispatchGpxRecordServiceStatus(isActive: Boolean) {
         if (isActive) {
             binding.statusView.onServiceStarted()
             binding.actionsView.onServiceStarted()

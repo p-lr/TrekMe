@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.toMarker
 import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
-import com.peterlaurence.trekme.service.event.LocationServiceStatus
+import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -34,10 +34,10 @@ import org.greenrobot.eventbus.ThreadMode
  *
  * **Implementation**
  *
- * A producer-consumer pattern is employed here. The producer is the LocationService, the consumer
- * is a coroutine inside this view-model: [processNewTrackPoints]. Between the two, a [Channel]
- * serves as pipe and guaranties that no synchronisation issue will occur (despite the fact that
- * producer and the consumer work in two different threads).
+ * A producer-consumer pattern is employed here. The producer is the gpx recording service, the
+ * consumer is a coroutine inside this view-model: [processNewTrackPoints]. Between the two, a
+ * [Channel] serves as pipe and guaranties that no synchronisation issue will occur (despite the
+ * fact that producer and the consumer work in two different threads).
  *
  * When this view-model first starts or upon request from the fragment (when the map changes), it
  * uses the event-bus to request the channel from the producer.
@@ -57,7 +57,7 @@ class InMapRecordingViewModel : ViewModel() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onLocationServiceEvent(event: LocationServiceStatus) {
+    fun onGpxRecordServiceEvent(event: GpxRecordServiceStatus) {
         if (event.started) {
             requestTrackPointChannel()
         }

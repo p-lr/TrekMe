@@ -23,9 +23,9 @@
     <string name="bad_storage_status">There is something wrong with your SD card: we can\'t write to it.\nThis has nothing to do with TrekMe, and it won\'t be able to download maps or save changes.</string>
     <string name="storage_read_only">Your SD card is only accessible as read-only. This means we can\'t write to it and TrekMe won\'t be able to download maps or save changes.</string>
 
-    <!-- LocationService -->
-    <string name="service_location_name">Location service</string>
-    <string name="service_location_action">GPX recording</string>
+    <!-- GpxRecordService -->
+    <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>
+    <string name="service_gpx_record_action">GPX recording</string>
 
     <!-- DownloadService -->
     <string name="service_download_name">Download service</string>
@@ -35,7 +35,7 @@
     <string name="service_download_bad_storage">TrekMe can\'t write to your internal storage or your SD card. It can be a permission issue. Please check that all permissions of TrekMe are granted, and reboot your phone, if necessary.</string>
 
     <!-- WifiP2pService -->
-    <string name="service_wifip2p_name">WifiP2p service</string>
+    <string name="service_wifip2p_name" translatable="false">WifiP2p service</string>
     <string name="service_wifip2p_action">Map send and receive</string>
 
     <!-- MapDownloadDialog -->

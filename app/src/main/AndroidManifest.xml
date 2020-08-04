@@ -33,7 +33,7 @@
         </activity>
 
         <service
-            android:name="com.peterlaurence.trekme.service.LocationService"
+            android:name="com.peterlaurence.trekme.service.GpxRecordService"
             android:enabled="true"
             android:exported="false" />
         <service

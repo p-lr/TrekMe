@@ -219,7 +219,7 @@ class WifiP2pService : Service() {
 
         val notificationBuilder = NotificationCompat.Builder(applicationContext, notificationChannelId)
                 .setContentTitle(getText(R.string.app_name))
-                .setContentText(getText(R.string.service_location_action))
+                .setContentText(getText(R.string.service_wifip2p_action))
                 .setSmallIcon(R.drawable.ic_share_black_24dp)
                 .setOngoing(true)
 

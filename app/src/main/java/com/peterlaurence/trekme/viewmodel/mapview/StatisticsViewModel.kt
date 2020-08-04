@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.track.TrackStatistics
-import com.peterlaurence.trekme.service.LocationService
+import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -27,7 +27,7 @@ class StatisticsViewModel : ViewModel() {
     }
 
     /**
-     * When the [LocationService] emits a [GpxFileWriteEvent] (which means that it stopped recording
+     * When the [GpxRecordService] emits a [GpxFileWriteEvent] (which means that it stopped recording
      * and has now written data to a gpx file), this view-model might or might not still be registered
      * as listener. If it's still registered, then we publish a null value. If not, then it means
      * that the next time the user navigates to the map view, a new instance of this view-model will
@@ -41,7 +41,7 @@ class StatisticsViewModel : ViewModel() {
     init {
         EventBus.getDefault().register(this)
 
-        if (!LocationService.isStarted) {
+        if (!GpxRecordService.isStarted) {
             _stats.value = null
         }
     }
