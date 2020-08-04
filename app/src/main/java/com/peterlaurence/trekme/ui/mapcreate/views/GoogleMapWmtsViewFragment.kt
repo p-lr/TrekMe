@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
-import com.peterlaurence.mapview.api.MinimumScaleMode
 import com.peterlaurence.mapview.api.addMarker
 import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.trekme.R
@@ -336,7 +335,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         ).setWorkerCount(16).apply {
             /* If we're provided a map config, apply it */
             scaleAndScrollConfig?.minScale?.also { minScale ->
-                setMinimumScaleMode(MinimumScaleMode.NONE)
                 setMinScale(minScale)
             }
         }
