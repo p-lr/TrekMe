@@ -113,7 +113,7 @@ class InMapRecordingViewModel : ViewModel() {
 
         fun add(point: TrackPoint) {
             val marker = point.toMarker(map)
-            liveRoute.route_markers.add(marker)
+            liveRoute.addMarker(marker)
         }
     }
 }

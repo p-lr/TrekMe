@@ -238,6 +238,7 @@ class GpxRecordService : Service() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
         mStarted = false
+        channel?.cancel()
         sendStatus()
         stopSelf()
     }

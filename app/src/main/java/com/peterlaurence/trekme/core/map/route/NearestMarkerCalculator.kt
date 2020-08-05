@@ -13,7 +13,7 @@ import kotlin.math.sqrt
 
 class NearestMarkerCalculator(val route: RouteGson.Route, val map: Map) {
 
-    private val chunkSize = sqrt(route.route_markers.size / 3.0).toInt()
+    private val chunkSize = sqrt(route.routeMarkers.size / 3.0).toInt()
     private var chunker: Chunker? = null
 
 
@@ -36,13 +36,13 @@ class NearestMarkerCalculator(val route: RouteGson.Route, val map: Map) {
                 }
             }
         }
-        val index = route.route_markers.indexOf(nearestMarker)
+        val index = route.routeMarkers.indexOf(nearestMarker)
         return if (nearestMarker != null) MarkerIndexed(nearestMarker, index) else null
     }
 
     private fun getOrMakeChunker(): Chunker {
         if (chunker != null) return chunker!!
-        return Chunker(map, route.route_markers, chunkSize)
+        return Chunker(map, route.routeMarkers, chunkSize)
     }
 
     private fun computeDistSquared(x1: Double, y1: Double, x2: Double, y2: Double): Double {

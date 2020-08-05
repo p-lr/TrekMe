@@ -161,7 +161,7 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
             val trackPointList = trackSegment.trackPoints
             for (trackPoint in trackPointList) {
                 val marker = trackPoint.toMarker(map)
-                route.route_markers.add(marker)
+                route.routeMarkers.add(marker)
             }
         }
         return route
