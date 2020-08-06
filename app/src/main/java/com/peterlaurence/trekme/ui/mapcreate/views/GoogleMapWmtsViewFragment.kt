@@ -72,8 +72,9 @@ import org.greenrobot.eventbus.Subscribe
  */
 @AndroidEntryPoint
 class GoogleMapWmtsViewFragment : Fragment() {
+    /* We don't provide a non-null equivalent because we use suspend functions which can access this
+     * property when it's null */
     private var _binding: FragmentWmtsViewBinding? = null
-    private val binding get() = _binding!!
 
     private lateinit var mapSource: MapSource
     private var mapView: MapView? = null
@@ -132,12 +133,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View {
         _binding = FragmentWmtsViewBinding.inflate(inflater, container, false)
-        return binding.root
+        return _binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val binding = _binding ?: return
         binding.fabSave.setOnClickListener { validateArea() }
         binding.fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
@@ -171,7 +173,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             R.id.map_area_widget_id -> {
                 areaLayer?.detach()
                 addAreaLayer()
-                binding.fabSave.visibility = View.VISIBLE
+                _binding?.fabSave?.visibility = View.VISIBLE
             }
             R.id.map_layer_menu_id -> {
                 val event = LayerSelectEvent(arrayListOf())
@@ -244,7 +246,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     private fun configure() = lifecycleScope.launch {
         /* 0- Show infinite progressbar to the user until we're done testing the tile provider */
-        binding.progressBarWaiting.visibility = View.VISIBLE
+        _binding?.progressBarWaiting?.visibility = View.VISIBLE
 
         /* 1- Create the TileStreamProvider */
         val streamProvider = viewModel.createTileStreamProvider(mapSource)
@@ -270,6 +272,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
 
         /* 3- Hide the progressbar, whatever the outcome */
+        val binding = _binding ?: return@launch
         binding.progressBarWaiting.visibility = View.GONE
 
         /* 4- Scroll to the init position if there is one pre-configured */
@@ -310,6 +313,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun showWarningMessage() {
+        val binding = _binding ?: return
         binding.fragmentWmtWarning.visibility = View.VISIBLE
         binding.fragmentWmtWarningLink.visibility = View.VISIBLE
 
@@ -321,11 +325,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun hideWarningMessage() {
+        val binding = _binding ?: return
         binding.fragmentWmtWarning.visibility = View.GONE
         binding.fragmentWmtWarningLink.visibility = View.GONE
     }
 
     private fun addMapView(tileStreamProvider: TileStreamProvider, scaleAndScrollConfig: ScaleAndScrollConfig? = null) {
+        if (_binding == null) return
         val context = this.context ?: return
         val mapView = MapView(context)
 
@@ -362,11 +368,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val params = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
-        binding.root.addView(mapView, 0, params)
+        _binding?.root?.addView(mapView, 0, params)
     }
 
     private fun removeMapView() {
-        binding.root.removeViewAt(0)
+        _binding?.root?.removeViewAt(0)
     }
 
     private fun addAreaLayer() {
