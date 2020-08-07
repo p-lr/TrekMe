@@ -16,5 +16,4 @@
 #   public *;
 #}
 
--keep class kotlinx.coroutines.android.** {*;}
 -keep class com.peterlaurence.trekme.** { *; }
