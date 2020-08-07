@@ -9,14 +9,13 @@
 ## <a name="TOC-Summary"></a>Sommaire
 
 1. [Introduction](#TOC-Overview)
-2. [Cartes IGN](#TOC-IGN-maps)
-3. [Résumé des fonctionnalités](#TOC-Features-sum)
-4. [Créer une carte](#TOC-Create-a-map)
+2. [Résumé des fonctionnalités](#TOC-Features-sum)
+3. [Créer une carte](#TOC-Create-a-map)
   * [Sélectionner une zone](#TOC-Select-area)
   * [Depuis une archive](#TOC-Import-from-archive)
   * [Recevoir une carte](#TOC-Share-maps)
   * [Création manuelle](#TOC-The-hard-way)
-5. [Fonctionnalités](#TOC-Features)
+4. [Fonctionnalités](#TOC-Features)
   * [Mesurer une distance](#TOC-Measure-distance)
   * [Afficher la vitesse](#TOC-Show-speed)
   * [Ajouter un marqueur](#TOC-Add-markers)
@@ -25,38 +24,28 @@
   * [Visualiser un enregistrement en temps réel](#TOC-Display-live-route)
   * [Importer une trace GPX](#TOC-GPX-track-import)
   * [S'enregistrer au format GPX](#TOC-GPX-recording)
-6. [Paramètres](#TOC-Settings)
+5. [Paramètres](#TOC-Settings)
   * [Démarrer sur la dernière carte](#TOC-Start-on-last-map)
   * [Dossier de téléchargement](#TOC-Download-dir)
   * [Mode de rotation](#TOC-Rotation-mode)
-7. [Sauvegardez vos cartes](#TOC-Save-maps)
-8. [Partage de carte](#TOC-Share-maps)
+6. [Sauvegardez vos cartes](#TOC-Save-maps)
+7. [Partage de carte](#TOC-Share-maps)
+8. [Cartes IGN](#TOC-IGN-maps)
 9. [Que faire si...](doc/troubleshoot/troubleshoot.fr.md)
 
 
 ## <a name="TOC-Overview"></a>Introduction
 
 TrekMe est une application Android permettant de se localiser sur une carte topographique, sans 
-nécessiter de connexion internet (sauf chez soi au moment de créer la carte). La différence principale
- avec les autres applications de la même catégorie est la source des cartes. Il est possible de 
- télécharger des cartes IGN, USGS, et OpenStreetMap (d'autres sources seront ajoutées). Mais il est 
- aussi possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser
-  avec TrekMe.
+nécessiter de connexion internet (sauf chez soi au moment de créer la carte). Il est possible de 
+ télécharger des cartes IGN, USGS, SwissTopo, et OpenStreetMap (d'autres sources seront ajoutées). 
 L'accent a été mis sur la faible consommation des ressources, pour maximiser l'autonomie lors d'une 
-randonnée.
-
-## <a name="TOC-IGN-amps"></a>Cartes IGN
-
-TrekMe vous propose un abonnement annuel. Pourquoi n'est-ce pas gratuit? L'esprit de TrekMe est la 
-consultation hors ligne des cartes. Or, le stockage des cartes IGN n'est autorisé que dans le cadre 
-d'une [licence d'exploitation grand public numérique](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf). 
-Cette licence est payante. L'application vous invitera donc à la régler quand vous voudrez créer 
-votre première carte IGN. Vous êtes alors parti pour un an.
+randonnée. L'application est aussi très fluide de manière générale.
 
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
-    - France IGN (requiert une souscription **annuelle** à l'IGN)
+    - France IGN (requiert une [souscription annuelle](#TOC-IGN-maps) à l'IGN)
     - Swiss Topo
 	- USA : USGS
  	- Espagne IGN 
@@ -76,7 +65,8 @@ Il y a quatre manières de créer une carte :
 3. Recevoir une carte d'un autre utilisateur de TrekMe (à proximité, en Wifi)
 4. La faire soi-même (pour les utilisateurs avancés)
 
-La méthode la plus facile et recommandée est la première. Ci-dessous sont décrites ces trois méthodes.
+La méthode la plus facile et recommandée est la première. Ci-dessous sont décrites chacune de ces
+ méthodes.
 
 ### <a name="TOC-Select-area"></a>Sélectionner une zone
 
@@ -104,10 +94,11 @@ Quand vous avez fait votre choix, la carte s'affiche après un délai de quelque
 </p>
 
 Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse. Un bouton en haut à droite, 
-ressemblant à un carré, vous permet de faire apparaître une zone modifiable (en bleu).
+ressemblant à un carré, vous permet de faire apparaître une zone modifiable en déplaçant les deux
+ronds bleus.
 Quand vous êtes satisfait de votre sélection, utilisez le bouton de téléchargement en bas à droite.
 
-NB : la plupart des fournisseurs de cartes n'ont qu'une couverture partielle du globe. A l'exception 
+NB : La plupart des fournisseurs de cartes n'ont qu'une couverture partielle du globe. A l'exception 
 d'OpenStreetMap, qui couvre le monde entier, l'USGS par ex ne couvre que les Etats-Unis, l'IGN Espagne 
 que l'Espagne, etc.
 
@@ -117,7 +108,7 @@ A l'exception de l'IGN France, qui nécessite un abonnement annuel, le menu suiv
 <img src="doc/tuto/map-configuration.jpg" width="300">
 </p>
 
-Les fournisseurs de carte proposent différents niveaux de zoom, allant de 1 (niveau globe)  à 18 
+Les fournisseurs de carte proposent différents niveaux de zoom, allant de 1 (niveau globe) à 18 
 (carte très détaillée).
 Dans la plupart des cas, vous ne voulez pas des niveaux 1 à 10, et le niveau 18 n'est pas nécessaire. 
 C'est la raison pour laquelle le réglage par défaut est de 12 pour le zoom minimum, et 16 pour le maximum.
@@ -147,15 +138,17 @@ Vous accédez alors à la configuration de la carte, où vous pouvez :
 * Changer la projection de la carte (seulement si vous savez ce que vous faites)
 * Changer les points de calibration (seulement si vous savez ce que vous faites)
 * Changer le nom de la carte
-* Supprimer la carte
+* Sauvegarder la carte
 
+Attention, il ne faut pas changer la projection ni les points de calibration d'une carte que vous 
+avez téléchargé. Il s'agit d'options pour les utilisateurs avertis. Une erreur à ce niveau 
+introduirait un biais dans votre positionnement sur la carte.
 
 ### <a name="TOC-Import-from-archive"></a>Depuis une archive
 
 Une carte peut aussi être créée en important une archive d'une carte existante. L'archive peut avoir 
 été faite par vous même ou quelqu'un d'autre (voir plus bas pour créer une archive). Elle se présente
- sous la 
-forme d'un fichier zip.
+ sous la forme d'un fichier zip.
 Pour importer une archive, utilisez le menu principal puis "Importer une carte". Appuyez alors sur le
 bouton "Importer depuis un dossier", au milieu de l'écran. Naviguez alors vers le dossier qui contient
 la ou les archives et sélectionnez-le. TrekMe liste alors les archives reconnues, que vous pouvez 
@@ -167,6 +160,8 @@ Reportez-vous à la section [Partage de carte](#TOC-Share-maps).
 
 ### <a name="TOC-The-hard-way"></a>Création manuelle - le plus difficile
 
+Il est possible d'utiliser votre propre carte si vous la scannez et suivez le tutoriel pour l'utiliser
+avec TrekMe.
 C'est réservé aux experts. Cette méthode n'est en aucun cas nécessaire, mais grâce à cette fonctionnalité, 
 on peut mettre n'importe quelle carte dans TrekMe.
 Il faut avoir des connaissances en géolocalisation, et il est recommandé d'être familiarisé avec les
@@ -483,3 +478,11 @@ tentative peut réussir (ce sont les aléas de la Wifi).
 
 Si les deux appareils mettent vraiment trop de temps à se connecter et à débuter le transfert, essayez 
 de redémarrer les deux apprareils puis re-tentez la procédure.
+
+## <a name="TOC-IGN-maps"></a>Cartes IGN
+
+TrekMe vous propose un abonnement annuel. Pourquoi n'est-ce pas gratuit? L'esprit de TrekMe est la 
+consultation hors ligne des cartes. Or, le stockage des cartes IGN n'est autorisé que dans le cadre 
+d'une [licence d'exploitation grand public numérique](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf). 
+Cette licence est payante. L'application vous invitera donc à la régler quand vous voudrez créer 
+votre première carte IGN. Vous êtes alors parti pour un an.

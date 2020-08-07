@@ -36,13 +36,9 @@
 
 TrekMe is an Android trekking app to get live position on a map and other useful information, without
 ever needing an internet connection (except when creating a map).
-It differs from other similar apps in the source of maps as it isn't limited to OpenStreetMap.
-TrekMe is designed to work with any WMTS source such as USGS in USA, IGN France, Swiss topo, and so on. 
+TrekMe is designed to work with any WMTS source such as USGS in USA, IGN France, Swiss topo, 
+OpenStreetMap and so on. 
 You can download an area of your choice so the cached tiles are available for offline usage.
-But it's not limited to that. If you own a paper map, just scan it, then prepare it to use inside 
-TrekMe (see below). It also works if you have a huge single image (several Gb), as TrekMe is designed
- to work with arbitrary map size.
-The only limitation is the memory available on your device (smartphone, tablet).
 Finally, TrekMe is designed to consume very few CPU resources, to preserve the device's battery. 
 
 ## <a name="TOC-Features-sum"></a>Features summary
@@ -69,7 +65,7 @@ There are four ways to create a map:
 3. Receive a map from a nearby TrekMe user (over Wifi)
 4. Make it yourself (the hard way)
 
-The preferred and easiest way is the first one. Below are detailed each methods.
+The preferred and easiest way is the first one. Below are detailed each of these methods.
 
 ### <a name="TOC-Select-area"></a>Select an area
 
@@ -97,9 +93,11 @@ When you've made your choice, the map appears shortly.
 </p>
 
 From there, you can zoom into the area in the world you want to capture. Then, press the area button
-in the top-bar so an area of selection appears. This area can be resized. Beware that USGS only provides
-detailed levels for USA. Actually, other providers only cover their relevant country, except for
-OpenStreetMap which covers the entire world.
+in the top-bar (which looks like a square) so an area of selection appears. This area can be resized
+ by moving the two blue rounds. 
+ 
+ Beware that USGS only provides detailed levels for USA. Actually, other providers only cover their 
+ relevant country, except for OpenStreetMap which covers the entire world.
 
 When you're done, press the download button, at the bottom right. Except for France's IGN, for which
  an annual subscription is required, you'll see this configuration menu:
@@ -134,7 +132,7 @@ From the map configuration view, you can:
 * Change the projection (only if you know what you're doing)
 * Change the calibration points (only if you know what you're doing)
 * Change the name
-* Delete the map
+* Save the map
 
 ### <a name="TOC-Import-from-archive"></a>Import from an archive
 
@@ -151,8 +149,12 @@ See [Map Sharing](#TOC-Share-maps).
 
 ### <a name="TOC-The-hard-way"></a>Manual map creation - the hard way
 
-In this mode, basic understanding of localisation on a map is required. However, efforts are made to make this app as easy
-to use as possible.
+If you own a paper map, just scan it, then prepare it to use inside TrekMe (see below). It also works
+ if you have a huge single image (several Gb), as TrekMe is designed to work with arbitrary map size.
+The only limitation is the memory available on your device (smartphone, tablet).
+
+However, it's definitely not easy to create a map using this method, as basic understanding of 
+localisation on a map is required. If you can, prefer the first method (area selection).
 
 It is advised to be familiar with the following terms:
 [Map projection](https://en.wikipedia.org/wiki/Map_projection),
