@@ -218,7 +218,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onDestroyView() {
         super.onDestroyView()
-        state = saveState()
 
         orientationSensor?.stop()
         orientationJob?.cancel()
@@ -396,6 +395,33 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* Save battery */
         locationViewModel.stopLocationUpdates()
+    }
+
+    /**
+     * Save the state in [onStop].
+     * There are two different scenarios where we need to save the state:
+     *
+     * 1. Device is rotated. In this case, the fragment will be **destroyed**, so all variables like
+     * [state] will be null inside [onCreateView]. However, before the fragment is destroyed,
+     * [onStop] then [onSaveInstanceState] are invoked. [onSaveInstanceState] is our only chance to
+     * save some state which will be passed as bundle inside the next [onCreateView]. Since [onStop]
+     * is invoked before [onSaveInstanceState], it's ok to save the state there and take it into
+     * account in [onSaveInstanceState].
+     *
+     * 2. User navigates away from this fragment using e.g the main menu > Settings. In this case,
+     * the fragment is **not destroyed**, which is why [onSaveInstanceState] is **not** invoked.
+     * However, [onStop] is invoked (before [onDestroyView]). So saving the state here enables us
+     * to access it in the next [onCreateView], because [state] is then non-null while the bundle
+     * passed as argument of [onCreateView] is null (the fragment wasn't destroyed).
+     *
+     * In other words, for future reference (it's easy to forget), [onSaveInstanceState] is only
+     * involved when the fragment is about to be destroyed, **but** it's not the only scenario where
+     * we need to save the state. Sometimes, only the view of fragment is destroyed, not the fragment
+     * itself.
+     */
+    override fun onStop() {
+        super.onStop()
+        state = saveState()
     }
 
     @Subscribe
@@ -622,10 +648,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        if (state == null) {
-            state = saveState()
+        if (state != null) {
+            outState.putAll(state)
         }
-        outState.putAll(state)
     }
 
     private fun saveState(): Bundle {
