@@ -80,8 +80,6 @@ class GpxRecordService : Service() {
      */
     private var channel: Channel<TrackPoint>? = null
 
-    private var mStarted = false
-
     override fun onCreate() {
         super.onCreate()
 
@@ -171,7 +169,8 @@ class GpxRecordService : Service() {
             val gpx = Gpx(metadata, trkList, wayPoints, appName, GPX_VERSION)
             try {
                 val gpxFileName = "$trackName.gpx"
-                val recordingsDir = trekMeContext.recordingsDir ?: error("Recordings dir is mandatory")
+                val recordingsDir = trekMeContext.recordingsDir
+                        ?: error("Recordings dir is mandatory")
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 GPXWriter.write(gpx, fos)
@@ -215,8 +214,7 @@ class GpxRecordService : Service() {
 
         startForeground(SERVICE_ID, notification)
 
-        mStarted = true
-        sendStatus()
+        isStarted = true
 
         return START_NOT_STICKY
     }
@@ -237,9 +235,8 @@ class GpxRecordService : Service() {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
-        mStarted = false
+        isStarted = false
         channel?.cancel()
-        sendStatus()
         stopSelf()
     }
 
@@ -268,14 +265,6 @@ class GpxRecordService : Service() {
 
     private fun stopLocationUpdates() {
         locationManager.removeUpdates(locationListener)
-    }
-
-    /**
-     * Send the started/stopped boolean status of the service.
-     * Called from main thread.
-     */
-    private fun sendStatus() {
-        EventBus.getDefault().postSticky(GpxRecordServiceStatus(mStarted))
     }
 
     /**
@@ -331,10 +320,14 @@ class GpxRecordService : Service() {
         private const val NOTIFICATION_ID = "peterlaurence.GpxRecordService"
         private const val SERVICE_ID = 126585
 
-        val isStarted: Boolean
-            get() {
-                val event = EventBus.getDefault().getStickyEvent(GpxRecordServiceStatus::class.java)
-                return event?.started ?: false
+        /**
+         * The status stated / stopped is statically accessible from anywhere in the app.
+         * Anytime the state changes, notify listeners.
+         */
+        var isStarted: Boolean = false
+            private set(value) {
+                EventBus.getDefault().post(GpxRecordServiceStatus(value))
+                field = value
             }
     }
 }
