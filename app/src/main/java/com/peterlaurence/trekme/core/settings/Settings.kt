@@ -29,16 +29,17 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val defineScaleWhenCentered = "defineScaleWhenCentered"
     private val scaleCentered = "scaleCentered"
 
+    /**
+     * This is temporary migration code from the old settings mechanism to the new one which is
+     * based on shared preferences. Was introduced in 2.2.8
+     * TODO: Remove this once most users upgraded.
+     */
     init {
-        println("dsxc start restore old settings")
         try {
             val file = trekMeContext.getSettingsFile(app.applicationContext)
-            println("dsxc reading old settings file ${file.absolutePath}")
             if (file.exists()) {
                 val json = FileUtils.getStringFromFile(file)
-                /* This may throw Exceptions */
                 val oldSettings = Json.parse(SettingsData.serializer(), json)
-                println("dsxc oldsettings $oldSettings")
                 with(oldSettings) {
                     setAppDir(File(appDir))
                     setStartOnPolicy(startOnPolicy)
@@ -50,9 +51,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
                     setRotationMode(rotationMode)
                 }
 
-                println("dsxc removing old settings")
                 file.delete()
-                println("dsxc removed")
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -73,9 +72,8 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     }
 
     /**
-     * Set the application directory.
-     * This implementation first reads the current settings, creates a new instance of
-     * [SettingsData], then then gives it to the [SettingsHandler] for write.
+     * Set the application directory - the folder in which new maps are downloaded and also the
+     * folder walked on app startup to fetch the list of maps.
      */
     fun setAppDir(file: File) {
         if (checkAppPath(file.absolutePath)) {
@@ -91,6 +89,9 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }?.contains(path) ?: false
     }
 
+    /**
+     * The [StartOnPolicy] defines whether TrekMe should boot on the map list or on the last map.
+     */
     fun getStartOnPolicy(): StartOnPolicy {
         return sharedPref.getString(startOnPolicy, null)?.let {
             StartOnPolicy.valueOf(it)
@@ -111,6 +112,9 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
 
     fun getMagnifyingFactor(): Int = sharedPref.getInt(magnifyingFactor, 0)
 
+    /**
+     * Get the rotation behavior when viewing a map.
+     */
     fun getRotationMode(): RotationMode {
         return sharedPref.getString(rotationMode, null)?.let {
             RotationMode.valueOf(it)
@@ -129,6 +133,9 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 
+    /**
+     * If `true`, [scaleCentered] is accounted for. Otherwise, [scaleCentered] is ignored.
+     */
     fun getDefineScaleCentered(): Boolean {
         return sharedPref.getBoolean(defineScaleWhenCentered, true)
     }
@@ -139,6 +146,9 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 
+    /**
+     * The scale at which the MapView is set when centering on the current position
+     */
     fun getScaleCentered(): Float {
         return sharedPref.getFloat(scaleCentered, 1f)
     }
@@ -149,6 +159,9 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 
+    /**
+     * The ids of maps which are marked as favorites.
+     */
     fun getFavoriteMapIds(): List<Int> {
         return sharedPref.getStringSet(favoriteMaps, null)?.let {
             it.map { id -> id.toInt() }
