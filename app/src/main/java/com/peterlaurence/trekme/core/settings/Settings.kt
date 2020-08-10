@@ -1,16 +1,12 @@
 package com.peterlaurence.trekme.core.settings
 
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.util.FileUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.selects.select
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import java.io.File
 import javax.inject.Inject
@@ -19,13 +15,47 @@ import javax.inject.Singleton
 
 /**
  * Holds global settings of TrekMe and exposes public methods to read/update those settings.
- * This class is thread safe (as its internal [FileSettingsHandler] is specifically designed
- * to have no shared mutable state).
+ * This class internally uses [SharedPreferences].
  */
 @Singleton
-class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
-    private val settingsHandler: FileSettingsHandler by lazy {
-        FileSettingsHandler(trekMeContext)
+class Settings @Inject constructor(private val trekMeContext: TrekMeContext, private val app: Application) {
+    private val sharedPref: SharedPreferences = app.applicationContext.getSharedPreferences(settingsFile, Context.MODE_PRIVATE)
+    private val appDirKey = "appDir"
+    private val startOnPolicy = "startOnPolicy"
+    private val favoriteMaps = "favoriteMaps"
+    private val rotationMode = "rotationMode"
+    private val magnifyingFactor = "magnifyingFactor"
+    private val lastMapId = "lastMapId"
+    private val defineScaleWhenCentered = "defineScaleWhenCentered"
+    private val scaleCentered = "scaleCentered"
+
+    /**
+     * This is temporary migration code from the old settings mechanism to the new one which is
+     * based on shared preferences. Was introduced in 2.2.8
+     * TODO: Remove this once most users upgraded.
+     */
+    init {
+        try {
+            val file = trekMeContext.getSettingsFile(app.applicationContext)
+            if (file.exists()) {
+                val json = FileUtils.getStringFromFile(file)
+                val oldSettings = Json.parse(SettingsData.serializer(), json)
+                with(oldSettings) {
+                    setAppDir(File(appDir))
+                    setStartOnPolicy(startOnPolicy)
+                    setDefineScaleCentered(defineScaleWhenCenter)
+                    setScaleCentered(scaleCentered)
+                    setFavoriteMapIds(favoriteMaps)
+                    setLastMapId(lastMapId)
+                    setMagnifyingFactor(magnifyingFactor)
+                    setRotationMode(rotationMode)
+                }
+
+                file.delete()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     /**
@@ -35,25 +65,21 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
      * if the path isn't among the list of possible paths.
      * It's also a security in the case the application directories change across versions.
      */
-    suspend fun getAppDir(): File? {
-        return settingsHandler.getLastSetting().appDir.let {
-            if (checkAppPath(it)) {
-                File(it)
-            } else {
-                trekMeContext.defaultAppDir
-            }
-        }
+    fun getAppDir(): File? {
+        return sharedPref.getString(appDirKey, null)?.let {
+            if (checkAppPath(it)) File(it) else null
+        } ?: trekMeContext.defaultAppDir
     }
 
     /**
-     * Set the application directory.
-     * This implementation first reads the current settings, creates a new instance of
-     * [SettingsData], then then gives it to the [SettingsHandler] for write.
+     * Set the application directory - the folder in which new maps are downloaded and also the
+     * folder walked on app startup to fetch the list of maps.
      */
-    suspend fun setAppDir(file: File) {
+    fun setAppDir(file: File) {
         if (checkAppPath(file.absolutePath)) {
-            val new = settingsHandler.getLastSetting().copy(appDir = file.absolutePath)
-            settingsHandler.writeSetting(new)
+            sharedPref.edit {
+                putString(appDirKey, file.absolutePath)
+            }
         }
     }
 
@@ -63,81 +89,108 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext) {
         }?.contains(path) ?: false
     }
 
-    suspend fun getStartOnPolicy(): StartOnPolicy {
-        return settingsHandler.getLastSetting().startOnPolicy
+    /**
+     * The [StartOnPolicy] defines whether TrekMe should boot on the map list or on the last map.
+     */
+    fun getStartOnPolicy(): StartOnPolicy {
+        return sharedPref.getString(startOnPolicy, null)?.let {
+            StartOnPolicy.valueOf(it)
+        } ?: StartOnPolicy.MAP_LIST
     }
 
-    suspend fun setStartOnPolicy(policy: StartOnPolicy) {
-        val new = settingsHandler.getLastSetting().copy(startOnPolicy = policy)
-        settingsHandler.writeSetting(new)
+    fun setStartOnPolicy(policy: StartOnPolicy) {
+        sharedPref.edit {
+            putString(startOnPolicy, policy.name)
+        }
     }
 
-    suspend fun setMagnifyingFactor(factor: Int) {
-        val new = settingsHandler.getLastSetting().copy(magnifyingFactor = factor)
-        settingsHandler.writeSetting(new)
+    fun setMagnifyingFactor(factor: Int) {
+        sharedPref.edit {
+            putInt(magnifyingFactor, factor)
+        }
     }
 
-    suspend fun getMagnifyingFactor(): Int = settingsHandler.getLastSetting().magnifyingFactor
+    fun getMagnifyingFactor(): Int = sharedPref.getInt(magnifyingFactor, 0)
 
-    suspend fun getRotationMode(): RotationMode {
-        return settingsHandler.getLastSetting().rotationMode
+    /**
+     * Get the rotation behavior when viewing a map.
+     */
+    fun getRotationMode(): RotationMode {
+        return sharedPref.getString(rotationMode, null)?.let {
+            RotationMode.valueOf(it)
+        } ?: RotationMode.NONE
     }
 
-    suspend fun setRotationMode(mode: RotationMode) {
-        val new = settingsHandler.getLastSetting().copy(rotationMode = mode)
-        settingsHandler.writeSetting(new)
+    fun setRotationMode(mode: RotationMode) {
+        sharedPref.edit {
+            putString(rotationMode, mode.name)
+        }
     }
 
-    suspend fun setDefineScaleCentered(defined: Boolean) {
-        val new = settingsHandler.getLastSetting().copy(defineScaleWhenCenter = defined)
-        settingsHandler.writeSetting(new)
+    fun setDefineScaleCentered(defined: Boolean) {
+        sharedPref.edit {
+            putBoolean(defineScaleWhenCentered, defined)
+        }
     }
 
-    suspend fun getDefineScaleCentered(): Boolean {
-        return settingsHandler.getLastSetting().defineScaleWhenCenter
+    /**
+     * If `true`, [scaleCentered] is accounted for. Otherwise, [scaleCentered] is ignored.
+     */
+    fun getDefineScaleCentered(): Boolean {
+        return sharedPref.getBoolean(defineScaleWhenCentered, true)
     }
 
-    suspend fun setScaleCentered(scaleCentered: Float) {
-        val new = settingsHandler.getLastSetting().copy(scaleCentered = scaleCentered)
-        settingsHandler.writeSetting(new)
+    fun setScaleCentered(scale: Float) {
+        sharedPref.edit {
+            putFloat(scaleCentered, scale)
+        }
     }
 
-    suspend fun getScaleCentered(): Float {
-        return settingsHandler.getLastSetting().scaleCentered
+    /**
+     * The scale at which the MapView is set when centering on the current position
+     */
+    fun getScaleCentered(): Float {
+        return sharedPref.getFloat(scaleCentered, 1f)
     }
 
-    suspend fun setFavoriteMapIds(ids: List<Int>) {
-        val new = settingsHandler.getLastSetting().copy(favoriteMaps = ids)
-        settingsHandler.writeSetting(new)
+    fun setFavoriteMapIds(ids: List<Int>) {
+        sharedPref.edit {
+            putStringSet(favoriteMaps, ids.map { id -> id.toString() }.toSet())
+        }
     }
 
-    suspend fun getFavoriteMapIds(): List<Int> {
-        return settingsHandler.getLastSetting().favoriteMaps
+    /**
+     * The ids of maps which are marked as favorites.
+     */
+    fun getFavoriteMapIds(): List<Int> {
+        return sharedPref.getStringSet(favoriteMaps, null)?.let {
+            it.map { id -> id.toInt() }
+        } ?: listOf()
     }
 
     /**
      * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
      * empty.
      */
-    suspend fun getLastMapId(): Int? {
-        val id = settingsHandler.getLastSetting().lastMapId
-        return if (id != -1) {
-            id
-        } else {
-            null
+    fun getLastMapId(): Int? {
+        return sharedPref.getInt(lastMapId, -1).let { id ->
+            if (id != -1) id else null
         }
     }
 
     /**
      * Set and saves the last map id, for further use.
      */
-    suspend fun setLastMapId(id: Int) {
-        val new = settingsHandler.getLastSetting().copy(lastMapId = id)
-        settingsHandler.writeSetting(new)
+    fun setLastMapId(id: Int) {
+        sharedPref.edit {
+            putInt(lastMapId, id)
+        }
     }
 }
 
 /**
+ * TODO: Remove this class after migrating settings to shared prefs is done
+ *
  * @param appDir The current application directory
  * @param startOnPolicy Whether TrekMe should boot on the map list or on the last map
  * @param defineScaleWhenCenter If `true`, [scaleCentered] is accounted for. Otherwise,
@@ -163,100 +216,4 @@ enum class RotationMode {
     NONE, FOLLOW_ORIENTATION, FREE
 }
 
-
-private interface SettingsHandler {
-    suspend fun writeSetting(settingsData: SettingsData)
-    suspend fun getLastSetting(): SettingsData
-}
-
-private class FileSettingsHandler(private val trekMeContext: TrekMeContext) : SettingsHandler {
-    private val settingsFile = trekMeContext.getSettingsFile()
-
-    /* Channels */
-    private val settingsToWrite = Channel<SettingsData>()
-    private val requests = Channel<Unit>(capacity = 1)
-    private val lastSettings = Channel<SettingsData>()
-
-    init {
-        GlobalScope.actor(settingsToWrite, requests, lastSettings)
-    }
-
-    override suspend fun writeSetting(settingsData: SettingsData) {
-        settingsToWrite.send(settingsData)
-    }
-
-    /**
-     * The internal [requests] channel having a capacity of 1, the order in which this method
-     * returns a [SettingsData] instance is preserved. For example, if two consumers call
-     * [getLastSetting] at approximately the same time, the first one which adds an element to
-     * [requests] is guaranteed to receive a [SettingsData] instance before the other consumer which
-     * is then suspended trying to send an element to [requests].
-     */
-    override suspend fun getLastSetting(): SettingsData {
-        requests.send(Unit)
-        return lastSettings.receive()
-    }
-
-    /**
-     * The core coroutine that enables concurrent read/write of [SettingsData].
-     * * [settingsToWrite] is the receive channel that is consumed to write into the config file
-     * * [requests] is the receive channel that is consumed to update the last value of the
-     * [lastSettings] channel.
-     *
-     * This way, the last value of [SettingsData] is stored in a thread-safe way.
-     */
-    private fun CoroutineScope.actor(settingsToWrite: ReceiveChannel<SettingsData>,
-                                     requests: ReceiveChannel<Unit>,
-                                     lastSettings: SendChannel<SettingsData>) {
-        launch {
-            var lastSetting = readSettingsOrDefault()
-            lastSettings.send(lastSetting)
-
-            while (true) {
-                select<Unit> {
-                    settingsToWrite.onReceive {
-                        lastSetting = it
-                        it.save()
-                    }
-                    requests.onReceive {
-                        lastSettings.send(lastSetting)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun readSettingsOrDefault(): SettingsData {
-        return try {
-            readSettings()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            /* In case of any error, return default settings */
-            SettingsData(trekMeContext.defaultAppDir?.absolutePath ?: "error")
-        }
-    }
-
-    @UnstableDefault
-    private fun readSettings(): SettingsData {
-        // 1- get the settings file from TrekMeContext
-        val file = settingsFile ?: throw Exception("No settings file")
-        // 2- if it exists, read it
-        if (file.exists()) {
-            val json = FileUtils.getStringFromFile(file)
-            /* This may throw Exceptions */
-            return Json.parse(SettingsData.serializer(), json)
-        }
-        throw Exception("Settings file path is wrong")
-    }
-
-    @UnstableDefault
-    private fun SettingsData.save(): Boolean {
-        return try {
-            val st = Json.stringify(SettingsData.serializer(), this)
-            FileUtils.writeToFile(st, settingsFile)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-}
+private const val settingsFile = "trekmeSettings"

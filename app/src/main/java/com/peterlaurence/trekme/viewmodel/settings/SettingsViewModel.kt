@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class SettingsViewModel @ViewModelInject constructor(
-        private val trekMeContext: TrekMeContext,
+        trekMeContext: TrekMeContext,
         private val settings: Settings
-): ViewModel() {
+) : ViewModel() {
     private val _appDirListLiveData = MutableLiveData<List<String>>()
     val appDirListLiveData: LiveData<List<String>> = _appDirListLiveData
     private val _appDirLiveData = MutableLiveData<String>()
@@ -31,45 +31,39 @@ class SettingsViewModel @ViewModelInject constructor(
     private val _scaleCentered = MutableLiveData<Float>()
     val scaleCentered: LiveData<Float> = _scaleCentered
 
+    /* For instance the need is only to fetch settings once */
     init {
-        /* For instance the need is only to fetch this once */
-        viewModelScope.launch {
-            /* App dir list */
-            _appDirListLiveData.postValue(trekMeContext.mapsDirList?.map { it.absolutePath }
-                    ?: emptyList())
+        /* App dir list */
+        _appDirListLiveData.value = trekMeContext.mapsDirList?.map { it.absolutePath }
+                ?: emptyList()
 
-            /* App dir active */
-            _appDirLiveData.postValue(settings.getAppDir()?.absolutePath ?: "error")
+        /* App dir active */
+        _appDirLiveData.value = settings.getAppDir()?.absolutePath ?: "error"
 
-            /* StartOn policy */
-            _startOnPolicyLiveData.postValue(settings.getStartOnPolicy())
+        /* StartOn policy */
+        _startOnPolicyLiveData.value = settings.getStartOnPolicy()
 
-            /* Magnifying factor */
-            _magnifyingFactorLiveData.postValue(settings.getMagnifyingFactor())
+        /* Magnifying factor */
+        _magnifyingFactorLiveData.value = settings.getMagnifyingFactor()
 
-            /* Rotation mode */
-            _rotationModeLiveData.value = settings.getRotationMode()
+        /* Rotation mode */
+        _rotationModeLiveData.value = settings.getRotationMode()
 
-            /* Define scale centered */
-            _defineScaleCentered.value = settings.getDefineScaleCentered()
+        /* Define scale centered */
+        _defineScaleCentered.value = settings.getDefineScaleCentered()
 
-            /* Scale centered */
-            _scaleCentered.value = settings.getScaleCentered()
-        }
+        /* Scale centered */
+        _scaleCentered.value = settings.getScaleCentered()
     }
 
     fun setDownloadDirPath(newPath: String) {
         _appDirLiveData.postValue(newPath)
-        viewModelScope.launch {
-            settings.setAppDir(File(newPath))
-        }
+        settings.setAppDir(File(newPath))
     }
 
     fun setStartOnPolicy(policy: StartOnPolicy) {
         _startOnPolicyLiveData.postValue(policy)
-        viewModelScope.launch {
-            settings.setStartOnPolicy(policy)
-        }
+        settings.setStartOnPolicy(policy)
     }
 
     fun setMagnifyingFactor(factor: Int) {
@@ -81,15 +75,11 @@ class SettingsViewModel @ViewModelInject constructor(
 
     fun setRotationMode(mode: RotationMode) {
         _rotationModeLiveData.postValue(mode)
-        viewModelScope.launch {
-            settings.setRotationMode(mode)
-        }
+        settings.setRotationMode(mode)
     }
 
     fun setDefineScaleCentered(defined: Boolean) {
-        viewModelScope.launch {
-            settings.setDefineScaleCentered(defined)
-        }
+        settings.setDefineScaleCentered(defined)
     }
 
     /**
@@ -98,8 +88,6 @@ class SettingsViewModel @ViewModelInject constructor(
      */
     fun setScaleCentered(scaleCentered: Float) {
         require(scaleCentered in 0f..2f)
-        viewModelScope.launch {
-            settings.setScaleCentered(scaleCentered)
-        }
+        settings.setScaleCentered(scaleCentered)
     }
 }

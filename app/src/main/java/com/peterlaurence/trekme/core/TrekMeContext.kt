@@ -30,7 +30,8 @@ interface TrekMeContext {
     val credentialsDir: File
     val isAppDirReadOnly: Boolean
     fun init(applicationContext: Context)
-    fun getSettingsFile(): File?
+    @Deprecated("Will be removed after migrating settings to shared prefs is done")
+    fun getSettingsFile(applicationContext: Context): File
     fun checkAppDir(): Boolean
 }
 
@@ -66,8 +67,6 @@ class TrekMeContextAndroid : TrekMeContext {
         }
     }
 
-    private var settingsFile: File? = null
-
     private val TAG = "TrekMeContextAndroid"
 
     override val credentialsDir: File by lazy {
@@ -92,7 +91,6 @@ class TrekMeContextAndroid : TrekMeContext {
             resolveDirs(applicationContext)
             createAppDirs()
             createNomediaFile()
-            createSettingsFile(applicationContext)
         } catch (e: SecurityException) {
             Log.e(TAG, "We don't have right access to create application folder")
         } catch (e: IOException) {
@@ -101,15 +99,12 @@ class TrekMeContextAndroid : TrekMeContext {
     }
 
     /**
-     * Get the settings [File], or null if for some reason it could not be created or this method
-     * is called before its creation.
+     * The settings file is stored in a private folder of the app, and this folder will be deleted
+     * if the app is uninstalled. This is intended, not to persist those settings.
+     * TODO: Remove this method after migrating settings to shared prefs is done
      */
-    override fun getSettingsFile(): File? {
-        return if (settingsFile?.exists() != null) {
-            settingsFile
-        } else {
-            null
-        }
+    override fun getSettingsFile(applicationContext: Context): File {
+        return File(applicationContext.filesDir, "settings.json")
     }
 
     /**
@@ -139,18 +134,6 @@ class TrekMeContextAndroid : TrekMeContext {
         }
     }
 
-    /**
-     * The settings file is stored in a private folder of the app, and this folder will be deleted
-     * if the app is uninstalled. This is intended, not to persist those settings.
-     */
-    private fun createSettingsFile(applicationContext: Context) {
-        settingsFile = File(applicationContext.filesDir, "settings.json")
-        settingsFile?.also {
-            if (!it.exists()) {
-                it.createNewFile()
-            }
-        }
-    }
 
     /**
      * To function properly, the app needs to have read + write access to its root directory

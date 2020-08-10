@@ -169,15 +169,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter.setMapView(it)
         }
 
-        /* Then, load the map (even if they are suspend functions, we want to invoke them
-         * synchronously in this context */
-        runBlocking {
-            /* First, the settings */
-            getMapSettings()
-
-            /* Then, apply the Map to the current MapView */
-            getAndApplyMap()
-        }
+        /* Get the settings, then apply the Map to the current MapView */
+        getMapSettings()
+        getAndApplyMap()
 
         /* Eventually restore the distance layer if it was visible before device rotation */
         val distanceLayerState = mergedState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
@@ -287,7 +281,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    private suspend fun getMapSettings() {
+    private fun getMapSettings() {
         magnifyingFactor = mapViewViewModel.getMagnifyingFactor()
         rotationMode = mapViewViewModel.getRotationMode()
         defineScaleCentered = mapViewViewModel.getDefineScaleCentered()

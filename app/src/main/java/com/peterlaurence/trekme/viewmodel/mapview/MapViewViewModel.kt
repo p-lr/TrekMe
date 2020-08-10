@@ -36,13 +36,13 @@ class MapViewViewModel @ViewModelInject constructor(
         return map
     }
 
-    suspend fun getMagnifyingFactor(): Int = settings.getMagnifyingFactor()
+    fun getMagnifyingFactor(): Int = settings.getMagnifyingFactor()
 
-    suspend fun getRotationMode(): RotationMode = settings.getRotationMode()
+    fun getRotationMode(): RotationMode = settings.getRotationMode()
 
-    suspend fun getDefineScaleCentered(): Boolean = settings.getDefineScaleCentered()
+    fun getDefineScaleCentered(): Boolean = settings.getDefineScaleCentered()
 
-    suspend fun getScaleCentered(): Float = settings.getScaleCentered()
+    fun getScaleCentered(): Float = settings.getScaleCentered()
 
     private suspend fun checkForIgnLicense(map: Map): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
