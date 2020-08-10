@@ -22,6 +22,7 @@
     <string name="warning_title">Warning</string>
     <string name="bad_storage_status">There is something wrong with your SD card: we can\'t write to it.\nThis has nothing to do with TrekMe, and it won\'t be able to download maps or save changes.</string>
     <string name="storage_read_only">Your SD card is only accessible as read-only. This means we can\'t write to it and TrekMe won\'t be able to download maps or save changes.</string>
+    <string name="storage_perm_denied">Please enable storage permission from settings</string>
 
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>

@@ -42,7 +42,7 @@ data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val
 private class GoogleLocationProvider(val context: Context) : LocationProvider() {
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     val locationRequest = LocationRequest()
-    lateinit var googleLocationCallback: com.google.android.gms.location.LocationCallback
+    var googleLocationCallback: com.google.android.gms.location.LocationCallback? = null
 
     init {
         locationRequest.interval = 1000
@@ -62,7 +62,7 @@ private class GoogleLocationProvider(val context: Context) : LocationProvider() 
          */
         googleLocationCallback = object : com.google.android.gms.location.LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
-                for (loc in locationResult!!.locations) {
+                for (loc in locationResult?.locations ?: listOf()) {
                     locationCb(Location(loc.latitude, loc.longitude, loc.speed))
                 }
             }
@@ -73,7 +73,9 @@ private class GoogleLocationProvider(val context: Context) : LocationProvider() 
     }
 
     override fun stop() {
-        fusedLocationClient.removeLocationUpdates(googleLocationCallback)
+        if (googleLocationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(googleLocationCallback)
+        }
     }
 }
 

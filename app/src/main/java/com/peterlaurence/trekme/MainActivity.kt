@@ -15,6 +15,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
+import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -84,14 +85,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     companion object {
         /* Permission-group codes */
-        private const val REQUEST_MINIMAL = 1
+        private const val REQUEST_LOCATION = 1
         private const val REQUEST_MAP_CREATION = 2
-        private val PERMISSIONS_BELOW_ANDROID_10 = arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
+        private const val REQUEST_STORAGE = 3
+        private val PERMISSION_STORAGE = arrayOf(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
-        private val PERMISSIONS_ANDROID_10_AND_ABOVE = arrayOf(
+
+        private val PERMISSIONS_LOCATION = arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION
         )
         private val PERMISSIONS_MAP_CREATION = arrayOf(
@@ -100,31 +102,35 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private const val TAG = "MainActivity"
 
         /**
-         * Checks whether the app has permission to access fine location and to write to device storage.
+         * Checks whether the app has permission to access fine location and (for Android < 10) to
+         * write to device storage.
          * If the app does not have the requested permissions then the user will be prompted.
          */
-        fun requestMinimalPermissions(activity: Activity?) {
-            val permissionLocation = ActivityCompat.checkSelfPermission(activity!!, Manifest.permission.ACCESS_FINE_LOCATION)
-            val permissionWrite = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (permissionLocation != PackageManager.PERMISSION_GRANTED || permissionWrite != PackageManager.PERMISSION_GRANTED) {
-                // We don't have the required permissions, so we prompt the user
-                if (Build.VERSION.SDK_INT < VERSION_CODES.Q) {
+        fun requestMinimalPermissions(activity: Activity) {
+            if (Build.VERSION.SDK_INT < VERSION_CODES.Q) {
+                /* We absolutely need storage perm under Android 10 */
+                val permissionWrite = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                if (permissionWrite != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(
                             activity,
-                            PERMISSIONS_BELOW_ANDROID_10,
-                            REQUEST_MINIMAL
-                    )
-                } else {
-                    ActivityCompat.requestPermissions(
-                            activity,
-                            PERMISSIONS_ANDROID_10_AND_ABOVE,
-                            REQUEST_MINIMAL
+                            PERMISSION_STORAGE,
+                            REQUEST_STORAGE
                     )
                 }
             }
+
+            /* Always ask for location perm - even for Android 10 */
+            val permissionLocation = ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
+            if (permissionLocation != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        activity,
+                        PERMISSIONS_LOCATION,
+                        REQUEST_LOCATION
+                )
+            }
         }
 
-        private fun checkStoragePermissions(activity: Activity): Boolean {
+        private fun shouldInit(activity: Activity): Boolean {
             if (Build.VERSION.SDK_INT < VERSION_CODES.Q) {
                 val permissionWrite = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 return permissionWrite == PackageManager.PERMISSION_GRANTED
@@ -205,7 +211,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun warnNoStoragePerm() {
         showWarningDialog(getString(R.string.no_storage_perm), getString(R.string.warning_title),
                 DialogInterface.OnDismissListener {
-                    if (!checkStoragePermissions(this)) {
+                    if (!shouldInit(this)) {
                         finish()
                     }
                 })
@@ -287,7 +293,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         requestMinimalPermissions(this)
 
         /* This must be done before activity's onStart */
-        val shouldInit = checkStoragePermissions(this)
+        val shouldInit = shouldInit(this)
         val appContext = applicationContext
         lifecycleScope.launch {
             /* Perform IO on background thread */
@@ -415,19 +421,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
-        /* If Android >= 10 we don't need to restart the activity as we don't request write permission */
-        if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) return
+        /* In the case of storage perm, we should restart the app (only applicable for Android < 10) */
+        if (requestCode == REQUEST_STORAGE) {
+            /* If Android >= 10 we don't need to restart the activity as we don't request write permission */
+            if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) return
 
-        /* Else, we want to restart the activity */
-        if (requestCode == REQUEST_MINIMAL) {
-            if (grantResults.size >= 2) {
-                /* Storage read perm is at index 1 */
-                if (grantResults[1] != PackageManager.PERMISSION_GRANTED) {
-                    warnNoStoragePerm()
-                } else {
+            if (grantResults.size == 2) {
+                /* Storage read perm is at index 0 */
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     /* Restart the activity to ensure that every component can access local storage */
                     finish()
                     startActivity(intent)
+                } else if (shouldShowRequestPermissionRationale(permissions[0])) {
+                    /* User has deny from permission dialog */
+                    warnNoStoragePerm()
+                } else {
+                    /* User has deny permission and checked never show permission dialog so we redirect to Application settings page */
+                    Snackbar.make(binding.root, resources.getString(R.string.storage_perm_denied), Snackbar.LENGTH_INDEFINITE)
+                            .setAction(resources.getString(R.string.ok_dialog)) {
+                                val intent = Intent()
+                                intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
+                                val uri = Uri.fromParts("package", this@MainActivity.packageName, null)
+                                intent.data = uri
+                                startActivity(intent)
+                            }
+                            .show()
                 }
             }
         }
