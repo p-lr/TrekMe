@@ -50,9 +50,7 @@ class MapListViewModel @ViewModelInject constructor(
         MapModel.setCurrentMap(map)
 
         // 2- Remember this map in the case use wants to open TrekMe directly on this map
-        viewModelScope.launch(Dispatchers.IO) {
-            settings.setLastMapId(map.id)
-        }
+        settings.setLastMapId(map.id)
     }
 
     fun toggleFavorite(map: Map) {
@@ -63,9 +61,7 @@ class MapListViewModel @ViewModelInject constructor(
         updateMapListInFragment(ids)
 
         /* Remember this setting */
-        viewModelScope.launch {
-            settings.setFavoriteMapIds(ids)
-        }
+        settings.setFavoriteMapIds(ids)
     }
 
     fun deleteMap(mapId: Int) {
@@ -75,10 +71,8 @@ class MapListViewModel @ViewModelInject constructor(
 
     @Subscribe
     fun onMapListUpdateEvent(event: MapListUpdateEvent) {
-        viewModelScope.launch {
-            val favList = settings.getFavoriteMapIds()
-            updateMapListInFragment(favList)
-        }
+        val favList = settings.getFavoriteMapIds()
+        updateMapListInFragment(favList)
     }
 
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {

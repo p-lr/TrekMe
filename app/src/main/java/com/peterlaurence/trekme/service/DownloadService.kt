@@ -30,7 +30,6 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.stackTraceToString
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.FileOutputStream
@@ -203,7 +202,7 @@ class DownloadService : Service() {
         launchDownloadTask(effectiveThreadCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
     }
 
-    private fun createDestDir(): File? = runBlocking {
+    private fun createDestDir(): File? {
         /* Create a new folder */
         val date = Date()
         val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
@@ -211,7 +210,7 @@ class DownloadService : Service() {
         val appDir = settings.getAppDir() ?: error("App dir should be defined")
         val destFolder = File(appDir, folderName)
 
-        if (destFolder.mkdirs()) {
+        return if (destFolder.mkdirs()) {
             destFolder
         } else {
             null
