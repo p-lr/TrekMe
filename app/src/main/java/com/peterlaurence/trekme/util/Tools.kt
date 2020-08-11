@@ -11,3 +11,9 @@ fun stackTraceToString(t: Throwable): String {
     t.printStackTrace(PrintWriter(errors))
     return errors.toString()
 }
+
+fun Throwable.stackTraceAsString(): String {
+    val sw = StringWriter()
+    printStackTrace(PrintWriter(sw))
+    return sw.toString()
+}

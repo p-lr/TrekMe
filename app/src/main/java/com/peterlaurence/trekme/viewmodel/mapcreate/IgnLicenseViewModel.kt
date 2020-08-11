@@ -10,14 +10,13 @@ import com.android.billingclient.api.SkuDetails
 import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.billing.ign.LicenseInfo
 import com.peterlaurence.trekme.billing.ign.PersistenceStrategy
-import com.peterlaurence.trekme.core.TrekMeContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
 class IgnLicenseViewModel @ViewModelInject constructor(
-        private val trekMeContext: TrekMeContext,
-        private val billing: Billing
+        private val billing: Billing,
+        private val persistenceStrategy: PersistenceStrategy
 ) : ViewModel() {
     private val ignLicenseStatus = MutableLiveData<LicenseStatus>()
     private val ignLicenseDetails = MutableLiveData<IgnLicenseDetails>()
@@ -92,7 +91,6 @@ class IgnLicenseViewModel @ViewModelInject constructor(
      * date permits an alternate way of checking. */
     private fun persistLicense(licenseInfo: LicenseInfo) {
         viewModelScope.launch(Dispatchers.IO) {
-            val persistenceStrategy = PersistenceStrategy(trekMeContext)
             persistenceStrategy.persist(licenseInfo)
         }
     }

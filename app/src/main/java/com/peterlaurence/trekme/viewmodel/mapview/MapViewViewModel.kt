@@ -8,7 +8,9 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.model.map.MapModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -63,19 +65,21 @@ class MapViewViewModel @ViewModelInject constructor(
             }()
         }
 
-        return persistenceStrategy.getLicenseInfo()?.let {
-            when (val accessState = checkTime(it.purchaseTimeMillis)) {
-                is AccessGranted -> true
-                is GracePeriod -> {
-                    eventBus.post(GracePeriodIgnEvent(map, accessState.remainingDays))
-                    true
+        return withContext(Dispatchers.IO) {
+            persistenceStrategy.getLicenseInfo()?.let {
+                when (val accessState = checkTime(it.purchaseTimeMillis)) {
+                    is AccessGranted -> true
+                    is GracePeriod -> {
+                        eventBus.post(GracePeriodIgnEvent(map, accessState.remainingDays))
+                        true
+                    }
+                    is AccessDeniedLicenseOutdated -> {
+                        eventBus.post(OutdatedIgnLicenseEvent(map))
+                        false
+                    }
                 }
-                is AccessDeniedLicenseOutdated -> {
-                    eventBus.post(OutdatedIgnLicenseEvent(map))
-                    false
-                }
-            }
-        } ?: onFailureToReadFile()
+            } ?: onFailureToReadFile()
+        }
     }
 }
 

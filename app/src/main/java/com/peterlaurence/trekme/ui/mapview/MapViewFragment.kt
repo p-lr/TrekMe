@@ -39,6 +39,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /**
  * This fragment displays a [Map], using [MapView].
@@ -431,26 +432,26 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOutdatedIgnLicense(event: OutdatedIgnLicenseEvent) {
         val context = context ?: return
         clearMap()
         presenter?.showMessage(context.getString(R.string.expired_ign_license))
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onErrorIgnLicense(event: ErrorIgnLicenseEvent) {
         val context = context ?: return
         clearMap()
         presenter?.showMessage(context.getString(R.string.missing_ign_license))
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGracePeriodIgnLicense(event: GracePeriodIgnEvent) {
         val view = view ?: return
         val context = context ?: return
         val msg = context.getString(R.string.grace_period_ign_license).format(event.remainingDays)
-        val snackBar = Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+        val snackBar = Snackbar.make(view, msg, Snackbar.LENGTH_INDEFINITE)
         snackBar.show()
     }
 

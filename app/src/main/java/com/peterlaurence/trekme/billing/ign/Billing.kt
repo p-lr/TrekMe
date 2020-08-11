@@ -7,7 +7,9 @@ import com.android.billingclient.api.BillingClient.BillingResponseCode.*
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -28,31 +30,32 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
     private lateinit var purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback
     private lateinit var purchasePendingCallback: PurchasePendingCallback
 
-    /**
-     * This function returns when we're connected to the billing service.
-     */
-    private suspend fun connectClient() = suspendCoroutine<Boolean> {
-        if (billingClient.isReady) {
-            it.resume(true)
-            return@suspendCoroutine
+    private var connected = false
+    private val connectionStateListener = object : BillingClientStateListener {
+        override fun onBillingSetupFinished(billingResult: BillingResult) {
+            connected = billingResult.responseCode == OK
         }
 
-        billingClient.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(billingResult: BillingResult) {
-                /* It already happened that this continuation was called twice, resulting in IllegalStateException */
-                try {
-                    if (billingResult.responseCode == OK) {
-                        it.resume(true)
-                    } else {
-                        it.resume(false)
-                    }
-                } catch (e: Exception) {
-                }
-            }
+        override fun onBillingServiceDisconnected() {
+            connected = false
+        }
+    }
 
-            override fun onBillingServiceDisconnected() {
-            }
-        })
+    /**
+     * Attempts to connect the billing service. This function immediately returns.
+     * See also [connectWithRetry], which suspends at most 10s.
+     * Don't try to make this a suspend function - the [billingClient] keeps a reference on the
+     * [BillingClientStateListener] so it would keep a reference on a continuation (leading to
+     * insidious memory leaks, depending on who invokes that suspending function).
+     * Done this way, we're sure that the [billingClient] only has a reference on this [Billing]
+     * instance.
+     */
+    private fun connectClient() {
+        if (billingClient.isReady) {
+            connected = true
+            return
+        }
+        billingClient.startConnection(connectionStateListener)
     }
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
@@ -169,12 +172,22 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         }
     }
 
-    private suspend fun connectWithRetry() {
-        var retryCnt = 0
-        while (!connectClient()) {
-            retryCnt++
-            delay(1000)
-            if (retryCnt > 5) error("Couldn't connect to billing client")
+    /**
+     * Suspends at most 10s (waits for billing client to connect).
+     * Since the [BillingClient] can only notify its state through the [connectionStateListener], we
+     * poll the [connected] status. Ideally, we would collect a state flow..
+     */
+    private suspend fun connectWithRetry() = coroutineScope {
+        connectClient()
+        launch {
+            var awaited = 0
+            /* We wait at most 10 seconds */
+            while (awaited < 10000) {
+                if (connected) break else {
+                    delay(10)
+                    awaited += 10
+                }
+            }
         }
     }
 
@@ -202,5 +215,5 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
 
 data class BillingFlowEvent(val billingClient: BillingClient, val flowParams: BillingFlowParams)
 
-const val TAG = "ign.Billing.kt"
+private const val TAG = "ign.Billing.kt"
 
