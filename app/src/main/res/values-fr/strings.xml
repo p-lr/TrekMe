@@ -26,7 +26,7 @@
     <string name="import_from_folder_btn">Importer depuis un dossier</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Création de la carte</string>
-    <string name="map_manage_btn_string">Gérer</string>
+    <string name="map_manage_btn_string">Modifier</string>
     <string name="map_save_string">Sauvegarder</string>
     <string name="map_delete_question">Confirmer la suppression de la carte</string>
     <string name="cancel_dialog_string">Annuler</string>
@@ -76,7 +76,7 @@
     <string name="recording_status_description">Statut démarré/arrêté</string>
     <string name="wgs84_instead_of_projected">Vous avez mis des coordonnées WGS84 au lieu de coordonnées de projection</string>
     <string name="projected_instead_of_wgs84">Vous avez mis des coordonnées de projection au lieu de coordonnées WGS84 lat/lon</string>
-    <string name="create_menu_title">Créer une carte</string>
+    <string name="create_menu_title">Créer une nouvelle carte</string>
     <string name="ign_user_catergory">Identification IGN</string>
     <string name="ign_user">Utilisateur IGN</string>
     <string name="ign_pwd">Mot de passe</string>

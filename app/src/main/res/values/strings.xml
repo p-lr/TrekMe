@@ -50,7 +50,7 @@
     <string name="go_to_map_creation_btn">Create a map</string>
     <string name="ok_dialog">OK</string>
     <string name="delete_dialog">Delete</string>
-    <string name="map_manage_btn_string">Manage</string>
+    <string name="map_manage_btn_string">Edit</string>
     <string name="download_map_dialog_title">Map download</string>
     <string name="download_map_dialog_msg">Downloading %s…</string>
     <string name="menu_sample_map">Download sample map</string>

@@ -332,7 +332,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.nav_map -> showMapViewFragment()
             R.id.nav_select_map -> showMapListFragment()
             R.id.nav_create -> showMapCreateFragment()
             R.id.nav_record -> showRecordFragment()
