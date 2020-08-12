@@ -49,4 +49,9 @@ class AreaMarker(context: Context) : View(context) {
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         setMeasuredDimension(mMeasureDimension, mMeasureDimension)
     }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
+    }
 }

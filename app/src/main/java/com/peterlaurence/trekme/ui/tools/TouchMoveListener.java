@@ -7,6 +7,7 @@ import android.view.View;
 import com.peterlaurence.mapview.MapView;
 import com.peterlaurence.mapview.ReferentialData;
 import com.peterlaurence.mapview.ReferentialOwner;
+import com.peterlaurence.mapview.api.LayoutApiKt;
 import com.peterlaurence.mapview.core.CoordinateTranslater;
 
 import org.jetbrains.annotations.NotNull;
@@ -39,11 +40,6 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     private MarkerMoveAgent mMarkerMarkerMoveAgent;
     private ClickCallback mMarkerClickCallback;
 
-    private double mLeftBound;
-    private double mRightBound;
-    private double mTopBound;
-    private double mBottomBound;
-
     private ReferentialData referentialData;
 
     @NotNull
@@ -69,10 +65,6 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
         mMarkerClickCallback = markerClickCallback;
 
         mCoordinateTranslater = mapView.getCoordinateTranslater();
-        mLeftBound = mCoordinateTranslater.getLeft();
-        mRightBound = mCoordinateTranslater.getRight();
-        mTopBound = mCoordinateTranslater.getTop();
-        mBottomBound = mCoordinateTranslater.getBottom();
     }
 
     @Override
@@ -138,37 +130,11 @@ public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener i
     }
 
     private double getConstrainedX(double x) {
-        if (mLeftBound < mRightBound) {
-            if (x <= mLeftBound) {
-                return mLeftBound;
-            } else if (x >= mRightBound) {
-                return mRightBound;
-            }
-        } else {
-            if (x >= mLeftBound) {
-                return mLeftBound;
-            } else if (x <= mRightBound) {
-                return mRightBound;
-            }
-        }
-        return x;
+        return LayoutApiKt.getConstrainedX(mMapView, x);
     }
 
     private double getConstrainedY(double y) {
-        if (mBottomBound < mTopBound) {
-            if (y <= mBottomBound) {
-                return mBottomBound;
-            } else if (y >= mTopBound) {
-                return mTopBound;
-            }
-        } else {
-            if (y >= mBottomBound) {
-                return mBottomBound;
-            } else if (y <= mTopBound) {
-                return mTopBound;
-            }
-        }
-        return y;
+        return LayoutApiKt.getConstrainedY(mMapView, y);
     }
 
     /**
