@@ -195,4 +195,6 @@
     <string name="ordnance_survey_source_description">Carte de Grande-Bretagne</string>
     <string name="map_import_error">Erreur: le format de la carte n\'est pas reconnu.</string>
     <string name="storage_perm_denied">Veuillez activer la permission de stockage</string>
+    <string name="map_image_import_ok">Image changée</string>
+    <string name="map_image_import_error">Erreur lors du changement d\'image :(</string>
 </resources>

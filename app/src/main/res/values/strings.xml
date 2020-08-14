@@ -55,6 +55,10 @@
     <string name="download_map_dialog_msg">Downloading %s…</string>
     <string name="menu_sample_map">Download sample map</string>
 
+    <!-- Map Settings fragment -->
+    <string name="map_image_import_ok">Image set successfully</string>
+    <string name="map_image_import_error">Error while changing the image :(</string>
+
     <!-- Save map dialog fragment -->
     <string name="archive_dialog_title">Save map</string>
     <string name="archive_dialog_description">Saving a map will create an archive from it. You\'ll choose

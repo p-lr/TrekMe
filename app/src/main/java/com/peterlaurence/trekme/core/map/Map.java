@@ -1,11 +1,7 @@
 package com.peterlaurence.trekme.core.map;
 
-import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
-import android.net.Uri;
-import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,8 +17,7 @@ import com.peterlaurence.trekme.util.ZipProgressionListener;
 import com.peterlaurence.trekme.util.ZipTaskKt;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
@@ -42,10 +37,14 @@ import java.util.Locale;
  * ...
  * </ul>
  *
+ * <b>Warning</b>: This class isn't thread-safe. It's advised to thread-confine the use of this
+ * class to the main thread.
+ *
  * @author peterLaurence
  */
 public class Map {
     private static final int THUMBNAIL_SIZE = 256;
+    private static final String THUMBNAIL_NAME = "image.jpg";
     /* The configuration file of the map, named map.json */
     private final File mConfigFile;
     private Bitmap mImage;
@@ -247,27 +246,22 @@ public class Map {
         return mImage;
     }
 
-    public void setImage(Uri imageUri, ContentResolver resolver) {
+    public int getThumbnailSize() {
+        return THUMBNAIL_SIZE;
+    }
+
+    public OutputStream getImageOutputStream() {
+        File targetFile = new File(getDirectory(), THUMBNAIL_NAME);
         try {
-            ParcelFileDescriptor parcelFileDescriptor = resolver.openFileDescriptor(imageUri, "r");
-            if (parcelFileDescriptor == null) {
-                return;
-            }
-            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-            FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
-
-            Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeStream(fileInputStream),
-                    THUMBNAIL_SIZE, THUMBNAIL_SIZE);
-
-            File targetFile = new File(getDirectory(), "image.jpg");
-            OutputStream outStream = new FileOutputStream(targetFile);
-            thumbnail.compress(Bitmap.CompressFormat.JPEG, 80, outStream);
-
-            mImage = thumbnail;
-            mMapGson.thumbnail = targetFile.getName();
-        } catch (Exception e) {
-            //TODO: alert the user that the new image could not be set
+            return new FileOutputStream(targetFile);
+        } catch (FileNotFoundException e) {
+            return null;
         }
+    }
+
+    public void setImage(Bitmap thumbnail) {
+        mImage = thumbnail;
+        mMapGson.thumbnail = THUMBNAIL_NAME;
     }
 
     public List<MapGson.Level> getLevelList() {

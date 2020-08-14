@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -18,10 +19,15 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel;
+import com.peterlaurence.trekme.ui.maplist.events.MapImageImportResult;
+import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,11 +44,8 @@ import java.io.OutputStream;
  * <li>Change map properties</li>
  * <ul>
  * <li>Change the map name</li>
- * <li>Delete the map</li>
+ * <li>Save the map</li>
  * </ul>
- * </ul>
- * The activity that holds this fragment must implement {@code MapCalibrationRequestListener}
- * interface, to respond to a calibration request for a given {@link Map}.
  *
  * @author peterLaurence on 16/04/16.
  */
@@ -51,7 +54,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     private static final String ARG_MAP_ID = "mapId";
     private static final int IMAGE_REQUEST_CODE = 1338;
     private Map mMap;
-    private MapListViewModel mapListViewModel;
+    private MapSettingsViewModel viewModel;
     private AlertDialog saveMapDialog;
     private static final int MAP_SAVE_CODE = 3465;
 
@@ -75,7 +78,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mapListViewModel = new ViewModelProvider(requireActivity()).get(MapListViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(MapSettingsViewModel.class);
 
         Bundle args = getArguments();
         // TODO: convert to Kotlin and use Safe Args https://developer.android.com/guide/navigation/navigation-pass-data
@@ -89,6 +92,18 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         /* The Preferences layout */
         addPreferencesFromResource(R.xml.calibration_settings);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
     }
 
     /**
@@ -214,7 +229,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
                     .setMessage(R.string.archive_dialog_description)
                     .setPositiveButton(R.string.ok_dialog,
                             (dialog, whichButton) -> {
-                                if (mapListViewModel != null) {
+                                if (viewModel != null) {
                                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                                     startActivityForResult(intent, MAP_SAVE_CODE);
                                 }
@@ -252,12 +267,8 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
         if (requestCode == IMAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             if (data != null) {
                 Uri uri = data.getData();
-
-                try {
-                    mMap.setImage(uri, getContext().getContentResolver());
-                    saveChanges();
-                } catch (Exception e) {
-                    // no-op
+                if (uri != null) {
+                    viewModel.setMapImage(mMap, uri);
                 }
             }
         }
@@ -280,11 +291,26 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
                 Uri uriZip = newFile.getUri();
                 try {
                     OutputStream out = context.getContentResolver().openOutputStream(uriZip);
-                    mapListViewModel.startZipTask(mMap.getId(), out);
+                    viewModel.startZipTask(mMap.getId(), out);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    @Subscribe
+    public void onMapImageImportResult(MapImageImportResult result) {
+        int msg;
+        if (result.component1()) {
+            msg = R.string.map_image_import_ok;
+        } else {
+            msg = R.string.map_image_import_error;
+        }
+        View v = getView();
+        if (v != null) {
+            Snackbar snackbar = Snackbar.make(v, getText(msg), Snackbar.LENGTH_SHORT);
+            snackbar.show();
         }
     }
 

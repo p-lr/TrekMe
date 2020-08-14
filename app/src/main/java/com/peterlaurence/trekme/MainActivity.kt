@@ -53,7 +53,7 @@ import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
-import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
+import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -219,8 +219,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val mapListViewModel = ViewModelProvider(this).get(MapListViewModel::class.java)
-        mapListViewModel.zipEvents.observe(this, Observer { event: ZipEvent? ->
+        val mapSettingsViewModel = ViewModelProvider(this).get(MapSettingsViewModel::class.java)
+        mapSettingsViewModel.zipEvents.observe(this, Observer { event: ZipEvent? ->
             when (event) {
                 is ZipProgressEvent -> onZipProgressEvent(event)
                 is ZipFinishedEvent -> onZipFinishedEvent(event)
