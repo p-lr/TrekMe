@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.viewmodel.mapsettings
 import android.app.Application
 import android.net.Uri
 import android.util.Log
+import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.greenrobot.eventbus.EventBus
+import java.io.IOException
 import java.io.OutputStream
 
 /**
@@ -31,7 +33,7 @@ import java.io.OutputStream
  */
 class MapSettingsViewModel @ViewModelInject constructor(
         val app: Application
-): ViewModel() {
+) : ViewModel() {
 
     private val _zipEvents = MutableLiveData<ZipEvent>()
     val zipEvents: LiveData<ZipEvent> = _zipEvents
@@ -40,7 +42,7 @@ class MapSettingsViewModel @ViewModelInject constructor(
      * Changes the thumbnail of a [Map].
      * Compression of the file defined by the [uri] is done off UI-thread.
      */
-    fun setMapImage(map: Map, uri: Uri)  = viewModelScope.launch {
+    fun setMapImage(map: Map, uri: Uri) = viewModelScope.launch {
         try {
             val thumbnail = withContext(Dispatchers.Default) {
                 val outputStream = map.imageOutputStream
@@ -62,13 +64,29 @@ class MapSettingsViewModel @ViewModelInject constructor(
     }
 
     /**
-     * Start zipping a map and write into the provided [outputStream].
-     * The underlying task which writes into the stream is responsible for closing this stream.
-     * Internally uses a [Flow] which only emits distinct events.
+     * Start zipping a map and write the zip archive to the directory defined by the provided [uri].
+     * Internally uses a [Flow] which only emits distinct events. Those events are listened by the
+     * main activity, and not the [MapSettingsFragment], because the user might leave this view ;
+     * we want to reliably inform the user when this task is finished.
      */
-    fun startZipTask(mapId: Int, outputStream: OutputStream) = viewModelScope.launch {
-        zipProgressFlow(mapId, outputStream).distinctUntilChanged().collect {
-            _zipEvents.value = it
+    fun saveMap(map: Map, uri: Uri) = viewModelScope.launch {
+        val docFile = DocumentFile.fromTreeUri(app.applicationContext, uri)
+        if (docFile != null && docFile.isDirectory) {
+            val newFileName: String = map.generateNewNameWithDate() + ".zip"
+            val newFile = docFile.createFile("application/zip", newFileName)
+            if (newFile != null) {
+                val uriZip = newFile.uri
+                try {
+                    val out: OutputStream = app.contentResolver.openOutputStream(uriZip)
+                            ?: return@launch
+                    /* The underlying task which writes into the stream is responsible for closing this stream. */
+                    zipProgressFlow(map.id, out).distinctUntilChanged().collect {
+                        _zipEvents.value = it
+                    }
+                } catch (e: IOException) {
+                    Log.e(TAG, e.stackTraceAsString())
+                }
+            }
         }
     }
 

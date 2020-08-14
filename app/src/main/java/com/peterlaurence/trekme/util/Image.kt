@@ -9,10 +9,11 @@ import java.io.FileInputStream
 import java.io.OutputStream
 
 /**
- * Copies over the file defined by the [imageUri] to the given [outputStream]. This is a _blocking_
- * call in the sense of it does IO in the calling thread.
+ * Creates a thumbnail from the file defined by the [imageUri] and writes the resulting thumbnail to
+ * the given [outputStream]. This is a _blocking_ call in the sense of it does IO in the calling
+ * thread.
  *
- * @return A compressed [Bitmap], or null if any error occurred.
+ * @return A compressed [Bitmap] (thumbnail), or null if any error occurred.
  */
 fun makeThumbnail(imageUri: Uri, resolver: ContentResolver, thumbnailSize: Int, outputStream: OutputStream): Bitmap? {
     try {

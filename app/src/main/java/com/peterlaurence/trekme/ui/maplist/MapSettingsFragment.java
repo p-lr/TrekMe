@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.fragment.NavHostFragment;
@@ -28,9 +27,6 @@ import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * Fragment that shows the settings for a given map. It provides the abilities to :
@@ -279,23 +275,7 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
             if (data == null) return;
             Uri uri = data.getData();
             if (uri == null) return;
-            Context context = getContext();
-            if (context == null) return;
-            DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);
-            if (docFile == null) return;
-            if (docFile.isDirectory()) {
-                if (mMap == null) return;
-                String newFileName = mMap.generateNewNameWithDate() + ".zip";
-                DocumentFile newFile = docFile.createFile("application/zip", newFileName);
-                if (newFile == null) return;
-                Uri uriZip = newFile.getUri();
-                try {
-                    OutputStream out = context.getContentResolver().openOutputStream(uriZip);
-                    viewModel.startZipTask(mMap.getId(), out);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            viewModel.saveMap(mMap, uri);
         }
     }
 
