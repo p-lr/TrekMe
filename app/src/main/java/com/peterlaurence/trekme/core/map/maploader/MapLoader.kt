@@ -325,14 +325,16 @@ object MapLoader : MapImporter.MapImportListener {
      * @return true on success, false if something went wrong.
      */
     fun mutateMapProjection(map: Map, projectionName: String): Boolean {
-        val projectionType = PROJECTION_HASH_MAP[projectionName]
+        val projectionType = PROJECTION_HASH_MAP[projectionName] ?: return false
         try {
-            val projection = projectionType!!.newInstance()
+            val projection = projectionType.newInstance()
             map.projection = projection
         } catch (e: InstantiationException) {
             // wrong projection name
             return false
         } catch (e: IllegalAccessException) {
+            return false
+        } catch (e: ExceptionInInitializerError) {
             return false
         }
 

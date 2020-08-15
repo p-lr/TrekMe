@@ -74,6 +74,7 @@
     <string name="calibration_status_error">Calibration error</string>
     <string name="calibration_point_saved">Calibration point saved</string>
     <string name="calibration_projection_saved_ok">Projection successfully changed</string>
+    <string name="calibration_projection_error">Couldn\'t set projection :(</string>
 
     <string name="image_preferences_category">Thumbnail image</string>
     <string name="image_change_btn_txt">Change thumbnail image</string>

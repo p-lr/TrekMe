@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
@@ -31,14 +30,13 @@ import org.greenrobot.eventbus.Subscribe;
 /**
  * Fragment that shows the settings for a given map. It provides the abilities to :
  * <ul>
- * <li>Calibrate the map</li>
+ * <li>Change map thumbnail image</li>
+ * <li>Map calibration</li>
  * <ul>
  * <li>Choose the projection</li>
  * <li>Define the number of calibration point</li>
  * <li>Define the calibration points</li>
  * </ul>
- * <li>Change map properties</li>
- * <ul>
  * <li>Change the map name</li>
  * <li>Save the map</li>
  * </ul>
@@ -203,13 +201,13 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
                     return true;
                 }
 
+                String saveMsg;
                 if (MapLoader.INSTANCE.mutateMapProjection(mMap, (String) projectionName)) {
-                    String saveOkMsg = getString(R.string.calibration_projection_saved_ok);
-                    Toast toast = Toast.makeText(getContext(), saveOkMsg, Toast.LENGTH_SHORT);
-                    toast.show();
+                    saveMsg = getString(R.string.calibration_projection_saved_ok);
                 } else {
-                    // TODO : show some warning ("Wrong Projection name").
+                    saveMsg = getString(R.string.calibration_projection_error);
                 }
+                showMessage(saveMsg);
                 return true;
             } catch (Exception e) {
                 return false;
@@ -281,15 +279,19 @@ public class MapSettingsFragment extends PreferenceFragmentCompat implements Sha
 
     @Subscribe
     public void onMapImageImportResult(MapImageImportResult result) {
-        int msg;
+        int msgId;
         if (result.component1()) {
-            msg = R.string.map_image_import_ok;
+            msgId = R.string.map_image_import_ok;
         } else {
-            msg = R.string.map_image_import_error;
+            msgId = R.string.map_image_import_error;
         }
+        showMessage(getString(msgId));
+    }
+
+    private void showMessage(String msg) {
         View v = getView();
         if (v != null) {
-            Snackbar snackbar = Snackbar.make(v, getText(msg), Snackbar.LENGTH_SHORT);
+            Snackbar snackbar = Snackbar.make(v, msg, Snackbar.LENGTH_SHORT);
             snackbar.show();
         }
     }
