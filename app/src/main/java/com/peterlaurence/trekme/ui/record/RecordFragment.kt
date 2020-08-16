@@ -20,7 +20,9 @@ import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.ui.record.components.RecordListView
+import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
+import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import com.peterlaurence.trekme.ui.record.components.events.RequestStartEvent
 import com.peterlaurence.trekme.ui.record.components.events.RequestStopEvent
 import com.peterlaurence.trekme.util.FileUtils
@@ -157,6 +159,11 @@ class RecordFragment : Fragment() {
     fun onGpxImported(event: TrackImporter.GpxParseResult) {
         /* Tell the user that the track will be shortly available in the map */
         Snackbar.make(binding.root, R.string.track_is_being_added, Snackbar.LENGTH_LONG).show()
+    }
+
+    @Subscribe
+    fun onRequestDisableBatteryOpt(event: RequestDisableBatteryOpt) {
+        BatteryOptWarningDialog().show(parentFragmentManager, null)
     }
 
     private fun updateRecordingData(data: List<RecordingData>) {

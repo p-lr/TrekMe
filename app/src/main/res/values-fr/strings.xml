@@ -137,7 +137,6 @@
     <string name="storage_read_only">Votre carte SD est en lecture seule. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="warning_title">Attention</string>
     <string name="service_download_bad_storage">TrekMe ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekMe dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
-    <string name="ign_warning_help"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#TOC-ign-incorrect">Besoin d\'aide ?</a></string>
     <string name="mapcreate_warning_ign">Il semble y a voir un souci avec les serveurs de l\'IGN, ou bien avec votre connection internet :(</string>
     <string name="mapcreate_warning_others">Veuillez vérifier votre connexion internet. Une autre cause est l\'indisponibilité temporaire du fournisseur, car surchargé.</string>
     <string name="general_help_link"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#que-faire-si">Besoin d\'aide ?</a></string>
@@ -198,4 +197,16 @@
     <string name="map_image_import_ok">Image changée</string>
     <string name="map_image_import_error">Erreur lors du changement d\'image :(</string>
     <string name="calibration_projection_error">Erreur lors du changement de projection :(</string>
+    <string name="battery_warn_message">L\'enregistrement GPX sera probablement interrompu, car l\'optimisation de la batterie est activée
+        pour TrekMe.\nUn enregistrement GPX est lancé sous forme de service Android, qui tourne en tâche de fond.
+        Mais certains téléphones sont réglés de manière à limiter ces services, pour économiser la
+        batterie.
+        Dans le cas d\'un enregistrement GPX, il est normal de consommer un peu de batterie. Mais Android ne
+        fait pas de distinction, et peut arrêter brutalement le service (et TrekMe avec).</string>
+    <string name="battery_warn_solution_btn_txt">Voir la solution</string>
+    <string name="battery_warn_solution_title">Solution</string>
+    <string name="battery_warn_solution_msg">Allez dans les réglages du téléphone, dans \"Batterie\". Ensuite, il
+        faut y trouver un menu \"Optimisation de la batterie\" ou similaire. Là, on peut définir pour chaque application la limite
+        ou non de son activité en arrière plan et/ou l\'optimisation de la batterie.\nDonc pour Trekme, il faut autoriser son
+        execution en arrière plan et désactiver l\'optimisation.</string>
 </resources>

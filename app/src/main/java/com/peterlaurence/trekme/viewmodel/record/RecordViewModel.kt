@@ -1,7 +1,9 @@
 package com.peterlaurence.trekme.viewmodel.record
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
+import android.os.PowerManager
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +11,7 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
+import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -51,8 +54,23 @@ class RecordViewModel @ViewModelInject constructor(
     }
 
     fun startRecording() {
+        /* Check battery optimization, and inform the user if needed */
+        if (isBatteryOptimized()) {
+            EventBus.getDefault().post(RequestDisableBatteryOpt())
+        }
+
+        /* Start the service */
         val intent = Intent(app, GpxRecordService::class.java)
         app.startService(intent)
+    }
+
+    /**
+     * Check the battery optimization.
+     */
+    private fun isBatteryOptimized(): Boolean {
+        val pm = app.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val name = app.applicationContext.packageName
+        return !pm.isIgnoringBatteryOptimizations(name)
     }
 
     override fun onCleared() {

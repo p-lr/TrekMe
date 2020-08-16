@@ -177,6 +177,16 @@
     <string name="recording_status_description">Started/stopped status</string>
     <string name="choose_a_map">Choose a map</string>
     <string name="track_is_being_added">The track is being imported into the map</string>
+    <string name="battery_warn_message">The GPX recording will probably be interrupted, because battery optimization is
+        enabled for TrekMe.\nA GPX recording is actually an Android service which runs in the background.
+        However, some devices put a hard limit on the number of background services allowed to run.\nIt\'s not uncommon
+        for Android to abruptly stop a service, if it considers that stopping it would extend battery life. In the case
+        of a GPX recording, it\'s reasonable to consume a bit of power while you\'re aware of it.</string>
+    <string name="battery_warn_solution_btn_txt">See solution</string>
+    <string name="battery_warn_solution_title">Solution</string>
+    <string name="battery_warn_solution_msg">Go to your device settings -> \"Battery\". Then, you should see a menu
+        \"Battery optimization\" or similar. You should see a list of applications. Scroll down to find TrekMe
+        and disable the battery optimization.</string>
 
     <!-- MapCreate fragment -->
     <string name="next_button">Next</string>
