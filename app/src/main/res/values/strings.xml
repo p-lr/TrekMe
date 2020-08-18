@@ -234,7 +234,10 @@
     <string name="max_zoom">Maximun zoom</string>
     <string name="total_transactions">Total transactions</string>
     <string name="map_size">Map size</string>
-    <string name="ign_buy_license_banner">You have to buy the IGN license, valid for one year</string>
+    <string name="ign_buy_license_banner">IGN license, for one year, 7d free trial</string>
+    <string name="ign_license_explanation">You have a 7 days of free trial. You can cancel your subscription anytime in the
+        Google Play > Subscriptions > TrekMe > Cancel.\nThe IGN license is valid for one year. It allows you to create maps
+        without any restrictions.</string>
     <string name="ign_buy_license_pending">Please wait a few minutes, payment is pending</string>
     <string name="ign_buy_license_unknown">Unable to check your license</string>
     <string name="buy_btn">Purchase</string>

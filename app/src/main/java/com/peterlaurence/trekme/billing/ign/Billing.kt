@@ -14,7 +14,8 @@ import org.greenrobot.eventbus.EventBus
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-const val IGN_LICENSE_SKU = "ign_license"
+const val IGN_LICENSE_ONETIME_SKU = "ign_license"
+const val IGN_LICENSE_SUBSCRIPTION_SKU = "ign_license_sub"
 typealias PurchaseAcknowledgedCallback = () -> Unit
 typealias PurchasePendingCallback = () -> Unit
 
@@ -61,7 +62,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
         fun acknowledge() {
             purchases?.forEach {
-                if (it.sku == IGN_LICENSE_SKU) {
+                if (it.sku == IGN_LICENSE_ONETIME_SKU || it.sku == IGN_LICENSE_SUBSCRIPTION_SKU) {
                     if (it.purchaseState == Purchase.PurchaseState.PURCHASED && !it.isAcknowledged) {
                         acknowledgeIgnLicense(it)
                     } else if (it.purchaseState == Purchase.PurchaseState.PENDING) {
@@ -89,7 +90,8 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
     }
 
     private fun shouldAcknowledgeIgnLicense(purchase: Purchase): Boolean {
-        return purchase.sku == IGN_LICENSE_SKU && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
+        return (purchase.sku == IGN_LICENSE_SUBSCRIPTION_SKU || purchase.sku == IGN_LICENSE_ONETIME_SKU)
+                && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
     }
 
     /**
@@ -115,39 +117,65 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
      */
     suspend fun acknowledgeIgnLicense(purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback): Boolean {
         runCatching { connectWithRetry() }.onFailure { return false }
-        val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
 
-        return purchases.purchasesList?.getIgnLicense()?.let {
+        val inAppPurchases = billingClient.queryPurchases(BillingClient.SkuType.SUBS)
+        val oneTimeAck = inAppPurchases.purchasesList?.getIgnLicenseOneTime()?.let {
             this.purchaseAcknowledgedCallback = purchaseAcknowledgedCallback
             if (shouldAcknowledgeIgnLicense(it)) {
                 acknowledgeIgnLicense(it)
                 true
             } else false
         } ?: false
+
+        val subs = billingClient.queryPurchases(BillingClient.SkuType.SUBS)
+        val subAck = subs.purchasesList?.getIgnLicenseSub()?.let {
+            if (shouldAcknowledgeIgnLicense(it)) {
+                acknowledgeIgnLicense(it)
+                true
+            } else false
+        } ?: false
+
+        return oneTimeAck || subAck
     }
 
     suspend fun getIgnLicensePurchase(): Purchase? {
         runCatching { connectWithRetry() }.onFailure { return null }
-        val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
 
-        return purchases.purchasesList?.getValidIgnLicense()?.let {
+        val inAppPurchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
+        val oneTimeLicense = inAppPurchases.purchasesList?.getValidIgnLicenseOneTime()?.let {
             if (checkTime(it.purchaseTime) !is AccessGranted) {
                 it.consumeIgnLicense()
                 null
             } else it
         }
+
+        if (oneTimeLicense == null) {
+            val subs = billingClient.queryPurchases(BillingClient.SkuType.SUBS)
+            /* The user might have cancelled the subscription. However, he still has the license
+             * until the end of the year (plus the grace period). */
+            return subs.purchasesList?.getValidIgnLicenseSub()
+        }
+        return oneTimeLicense
     }
 
-    private fun List<Purchase>.getIgnLicense(): Purchase? {
-        return firstOrNull { it.sku == IGN_LICENSE_SKU }
+    private fun List<Purchase>.getIgnLicenseOneTime(): Purchase? {
+        return firstOrNull { it.sku == IGN_LICENSE_ONETIME_SKU }
     }
 
-    private fun List<Purchase>.getValidIgnLicense(): Purchase? {
-        return firstOrNull { it.sku == IGN_LICENSE_SKU && it.isAcknowledged }
+    private fun List<Purchase>.getIgnLicenseSub(): Purchase? {
+        return firstOrNull { it.sku == IGN_LICENSE_SUBSCRIPTION_SKU }
+    }
+
+    private fun List<Purchase>.getValidIgnLicenseOneTime(): Purchase? {
+        return firstOrNull { it.sku == IGN_LICENSE_ONETIME_SKU && it.isAcknowledged }
+    }
+
+    private fun List<Purchase>.getValidIgnLicenseSub(): Purchase? {
+        return firstOrNull { it.sku == IGN_LICENSE_SUBSCRIPTION_SKU && it.isAcknowledged }
     }
 
     private fun Purchase.consumeIgnLicense() {
-        if (sku == IGN_LICENSE_SKU) {
+        if (sku == IGN_LICENSE_ONETIME_SKU || sku == IGN_LICENSE_SUBSCRIPTION_SKU) {
             consume(purchaseToken)
         }
     }
@@ -159,11 +187,14 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         }
     }
 
+    /**
+     * Get the details of the IGN annual subscription.
+     */
     suspend fun getIgnLicenseDetails(): IgnLicenseDetails {
         connectWithRetry()
-        val (billingResult, skuDetailsList) = queryIgnLicenseSku()
+        val (billingResult, skuDetailsList) = queryIgnLicenseDetails()
         return when (billingResult.responseCode) {
-            OK -> skuDetailsList.find { it.sku == IGN_LICENSE_SKU }?.let {
+            OK -> skuDetailsList.find { it.sku == IGN_LICENSE_SUBSCRIPTION_SKU }?.let {
                 IgnLicenseDetails(it)
             } ?: throw ProductNotFoundException()
             FEATURE_NOT_SUPPORTED -> throw NotSupportedException()
@@ -191,11 +222,11 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         }
     }
 
-    private suspend fun queryIgnLicenseSku() = suspendCoroutine<SkuQueryResult> {
+    private suspend fun queryIgnLicenseDetails(): SkuQueryResult = suspendCoroutine<SkuQueryResult> {
         val skuList = ArrayList<String>()
-        skuList.add(IGN_LICENSE_SKU)
+        skuList.add(IGN_LICENSE_SUBSCRIPTION_SKU)
         val params = SkuDetailsParams.newBuilder()
-        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP)
+        params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS)
         billingClient.querySkuDetailsAsync(params.build()) { billingResult, skuDetailsList ->
             it.resume(SkuQueryResult(billingResult, skuDetailsList ?: listOf()))
         }

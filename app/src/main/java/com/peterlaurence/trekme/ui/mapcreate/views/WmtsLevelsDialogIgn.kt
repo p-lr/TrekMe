@@ -101,10 +101,9 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
 
         helpBtn = view.findViewById(R.id.help_license_info)
         helpBtn.setOnClickListener {
-            val url = "https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#cartes-ign"
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse(url)
-            startActivity(intent)
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setMessage(R.string.ign_license_explanation)
+            builder.show()
         }
     }
 

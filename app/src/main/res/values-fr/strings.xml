@@ -151,7 +151,11 @@
     <string name="preference_starton_lastmap">la dernière carte ouverte</string>
     <string name="preference_root_location_title">Répertoire sélectionné</string>
     <string name="mapview_lock_on_position">Verrouiller la position</string>
-    <string name="ign_buy_license_banner">Vous devez acheter la licence IGN, valable un an</string>
+    <string name="ign_buy_license_banner">Licence IGN, valable un an, 7j d\'essai gratuit</string>
+    <string name="ign_license_explanation">Vous avez <b>7 jours d\'essai gratuits</b>. Vous pouvez annuler l\'abonnement à tout moment dans
+        Google Play > Abonnements > TrekMe > Annuler.\nPendant la période d\'essai, cela ne donne lieu à aucun frais. Hors de la période d\'essai,
+        cela ne donne lieu à aucun remboursement, bien que la licence reste active pour un an. La licence IGN vous donne un accès illimité aux
+        cartes IGN pendant un an.</string>
     <string name="buy_btn">Acheter</string>
     <string name="expired_ign_license">Votre licence IGN a expiré :(\n\nL\'achat de la licence se fait au moment de créer une nouvelle carte IGN.\nLa license est valable un an.</string>
     <string name="missing_ign_license">Votre licence IGN est introuvable.\n\nSi vous l\'avez déjà achetée il y a moins d\'un an, vous pouvez la récupérer en créant une nouvelle carte IGN.</string>
