@@ -39,7 +39,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
             val file = trekMeContext.getSettingsFile(app.applicationContext)
             if (file.exists()) {
                 val json = FileUtils.getStringFromFile(file)
-                val oldSettings = Json.parse(SettingsData.serializer(), json)
+                val oldSettings = Json.decodeFromString(SettingsData.serializer(), json)
                 with(oldSettings) {
                     setAppDir(File(appDir))
                     setStartOnPolicy(startOnPolicy)
