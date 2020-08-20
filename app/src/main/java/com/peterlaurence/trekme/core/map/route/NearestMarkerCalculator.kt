@@ -88,7 +88,7 @@ private class Chunker(val map: Map, val points: List<MarkerGson.Marker>, chunkSi
     }
 
     private fun getNearestBarycenter(x: Double, y: Double): Barycenter {
-        return barycenters.minBy {
+        return barycenters.minByOrNull {
             computeNorm(x, y, it)
         } ?: barycenters.first()
     }

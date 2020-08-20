@@ -52,11 +52,11 @@ class LandmarkCallout(context: Context) : RelativeLayout(context) {
     }
 
     fun setMoveAction(moveAction: () -> Unit) {
-        moveButton.setOnClickListener { v -> moveAction() }
+        moveButton.setOnClickListener { moveAction() }
     }
 
     fun setDeleteAction(deleteAction: () -> Unit) {
-        deleteButton.setOnClickListener { v -> deleteAction() }
+        deleteButton.setOnClickListener { deleteAction() }
     }
 
     private fun setSubTitle(subtitle: String) {

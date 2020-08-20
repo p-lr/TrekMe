@@ -461,7 +461,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val x = mapView.coordinateTranslater.translateAbsoluteToRelativeX((referentialData.centerX * mapView.coordinateTranslater.baseWidth).toInt())
         val y = mapView.coordinateTranslater.translateAbsoluteToRelativeY((referentialData.centerY * mapView.coordinateTranslater.baseHeight).toInt())
 
-        barycenterToRoute?.filter { it.value.visible }?.minBy {
+        barycenterToRoute?.filter { it.value.visible }?.minByOrNull {
             computeDistance(x, y, it.key)
         }?.also {
             /* Only if this is a different route, position the markers on this route */

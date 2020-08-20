@@ -483,13 +483,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             if (Build.VERSION.SDK_INT >= 26) {
                 //This only needs to be run on Devices on Android O and above
-                val mChannel = NotificationChannel(notificationChannelId,
+                val channel = NotificationChannel(notificationChannelId,
                         getText(R.string.archive_dialog_title), NotificationManager.IMPORTANCE_LOW)
-                mChannel.enableLights(true)
-                mChannel.lightColor = Color.YELLOW
-                if (notifyMgr != null) {
-                    notifyMgr!!.createNotificationChannel(mChannel)
-                }
+                channel.enableLights(true)
+                channel.lightColor = Color.YELLOW
+                notifyMgr?.createNotificationChannel(channel)
                 builder = Notification.Builder(this, notificationChannelId)
             } else {
                 builder = Notification.Builder(this)
