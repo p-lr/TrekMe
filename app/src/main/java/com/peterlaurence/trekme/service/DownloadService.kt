@@ -9,9 +9,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -29,7 +27,12 @@ import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.stackTraceToString
+import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.FileOutputStream
@@ -63,7 +66,7 @@ class DownloadService : Service() {
     private lateinit var notificationBuilder: NotificationCompat.Builder
     private lateinit var notificationManager: NotificationManagerCompat
 
-    private val handler = Handler(Looper.getMainLooper())
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var destDir: File
 
     private val progressEvent = MapDownloadPendingEvent(0.0)
@@ -137,7 +140,7 @@ class DownloadService : Service() {
         /* Get ready for download and request download spec */
         progressEvent.progress = 0.0
 
-        handler.post {
+        scope.launch {
             processRequestDownloadMapEvent()
         }
 
@@ -151,9 +154,13 @@ class DownloadService : Service() {
         val tileSequence = event.mapSpec.tileSequence
         val tileStreamProvider = event.tileStreamProvider
 
+        /* Throttle progress notification to every seconds */
+        val throttledTask = scope.throttle(1000) { p: Double ->
+            (this::onDownloadProgress)(p)
+        }
         val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles) { p ->
             if (started) {
-                handler.post { (this::onDownloadProgress)(p) }
+                throttledTask.offer(p)
 
                 /* Post-process if download reaches 100% */
                 if (p == 100.0) {
@@ -251,7 +258,7 @@ class DownloadService : Service() {
         }
         val map = buildFromMapSpec(mapSpec, mapOrigin, destDir, ".jpg")
 
-        handler.post {
+        scope.launch {
             calibrate(map)
 
             /* Notify that the download is finished correctly.
