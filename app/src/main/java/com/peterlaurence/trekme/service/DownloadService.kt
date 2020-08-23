@@ -59,7 +59,6 @@ class DownloadService : Service() {
 
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
-    private lateinit var icon: Bitmap
 
     private lateinit var notificationBuilder: NotificationCompat.Builder
     private lateinit var notificationManager: NotificationManagerCompat
@@ -86,9 +85,6 @@ class DownloadService : Service() {
         onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
 
         notificationManager = NotificationManagerCompat.from(this)
-
-        icon = BitmapFactory.decodeResource(resources,
-                R.mipmap.ic_launcher)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -108,12 +104,14 @@ class DownloadService : Service() {
             return START_NOT_STICKY
         }
 
+        val icon: Bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
+
         /* From here, we know that the service is being created by the activity */
         notificationBuilder = NotificationCompat.Builder(applicationContext, notificationChannelId)
                 .setContentTitle(getText(R.string.app_name))
                 .setContentText(getText(R.string.service_download_action))
                 .setSmallIcon(R.drawable.ic_file_download_24dp)
-                .setLargeIcon(icon)
+                .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
                 .setContentIntent(onTapPendingIntent)
                 .setColor(getColor(R.color.colorAccent))
                 .addAction(R.drawable.ic_stop_black_24dp, getString(R.string.service_download_stop), onStopPendingIntent)
