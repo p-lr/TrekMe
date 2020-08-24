@@ -19,7 +19,7 @@ import kotlin.math.abs
 class TrackStatCalculator {
     private val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0, 0)
 
-    private lateinit var lastTrackPoint: TrackPoint
+    private var lastTrackPoint: TrackPoint? = null
 
     /* Duration statistic */
     private var firstPointTime: Long? = null
@@ -28,8 +28,8 @@ class TrackStatCalculator {
     private var firstElevationReceived = false
     private var firstElevation: Double? = null
     private var lastKnownElevation: Double? = null
-    private lateinit var lowestPoint: TrackPoint
-    private lateinit var highestPoint: TrackPoint
+    private var lowestPoint: TrackPoint? = null
+    private var highestPoint: TrackPoint? = null
 
     fun getStatistics(): TrackStatistics {
         return trackStatistics
@@ -50,9 +50,7 @@ class TrackStatCalculator {
      * rough (but fast) formulas.
      */
     private fun updateDistance(trkPt: TrackPoint) {
-        if (::lastTrackPoint.isInitialized) {
-            val p = lastTrackPoint
-
+        lastTrackPoint?.also { p ->
             /* If we have elevation information for both points, use it */
             trackStatistics.distance += if (p.elevation != null && trkPt.elevation != null) {
                 deltaTwoPoints(p.latitude, p.longitude, p.elevation!!, trkPt.latitude,
@@ -67,60 +65,56 @@ class TrackStatCalculator {
     }
 
     private fun updateElevationStatistics(trkPt: TrackPoint) {
-        if (trkPt.elevation != null) {
-            val ele = trkPt.elevation!!
+        val ele = trkPt.elevation ?: return
 
-            /* Filter out the first point with elevation information -- not trusted */
-            if (!firstElevationReceived || ele == firstElevation) {
-                firstElevation = ele
-                firstElevationReceived = true
-                return
-            }
-
-            /* Lowest point update */
-            if (::lowestPoint.isInitialized) {
-                if (ele <= lowestPoint.elevation!!) {
-                    this.lowestPoint = trkPt
-                }
-            } else {
-                this.lowestPoint = trkPt
-            }
-
-            /* Highest point update */
-            if (::highestPoint.isInitialized) {
-                if (ele >= highestPoint.elevation!!) {
-                    this.highestPoint = trkPt
-                }
-            } else {
-                this.highestPoint = trkPt
-            }
-
-            /* .. then we can update the elevation maximum difference*/
-            trackStatistics.elevationDifferenceMax = highestPoint.elevation!! - lowestPoint.elevation!!
-
-            /* Elevation stack update */
-            if (lastKnownElevation != null) {
-                val diff = abs(ele - lastKnownElevation!!)
-                if (ele > lastKnownElevation!!) {
-                    trackStatistics.elevationUpStack += diff
-                } else if (ele < lastKnownElevation!!) {
-                    trackStatistics.elevationDownStack += diff
-                }
-            }
-            lastKnownElevation = trkPt.elevation!!
+        /* Filter out the first point with elevation information -- not trusted */
+        if (!firstElevationReceived || ele == firstElevation) {
+            firstElevation = ele
+            firstElevationReceived = true
+            return
         }
+
+        /* Lowest point update */
+        lowestPoint?.elevation?.also { eleLowest ->
+            if (ele <= eleLowest) {
+                lowestPoint = trkPt
+            }
+        } ?: { this.lowestPoint = trkPt }()
+
+        /* Highest point update */
+        highestPoint?.elevation?.also { eleHighest ->
+            if (ele >= eleHighest) {
+                highestPoint = trkPt
+            }
+        } ?: { highestPoint = trkPt }()
+
+        /* .. then we can update the elevation maximum difference*/
+        highestPoint?.elevation?.also { eleHighest ->
+            lowestPoint?.elevation?.also { eleLowest ->
+                trackStatistics.elevationDifferenceMax = eleHighest - eleLowest
+            }
+        }
+
+        /* Elevation stack update */
+        lastKnownElevation?.also { elePrevious ->
+            val diff = abs(ele - elePrevious)
+            if (ele > elePrevious) {
+                trackStatistics.elevationUpStack += diff
+            } else if (ele < elePrevious) {
+                trackStatistics.elevationDownStack += diff
+            }
+        }
+        lastKnownElevation = ele
     }
 
     /**
      * Remember the [Date] of the first track point, and use it as reference to get the duration.
      */
-    private fun updateDuration(trktPt: TrackPoint) {
-        trktPt.time?.let {
-            if (firstPointTime == null) {
-                firstPointTime = trktPt.time
-            } else {
-                trackStatistics.durationInSecond = (it - firstPointTime!!) / 1000
-            }
+    private fun updateDuration(trkPt: TrackPoint) {
+        trkPt.time?.also { time ->
+            firstPointTime?.also { origin ->
+                trackStatistics.durationInSecond = (time - origin) / 1000
+            } ?: { firstPointTime = time }()
         }
     }
 }

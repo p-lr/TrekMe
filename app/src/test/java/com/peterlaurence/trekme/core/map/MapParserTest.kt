@@ -18,8 +18,8 @@ import java.io.File
 class MapParserTest {
     @Test
     fun mapTracksParse() = runBlocking {
-        if (mJsonFilesDirectory != null) {
-            val dirs = listOf(mJsonFilesDirectory)
+        if (jsonFilesDirectory != null) {
+            val dirs = listOf(jsonFilesDirectory)
             val mapLoader = MapLoader
             mapLoader.clearMaps()
             val mapList = mapLoader.updateMaps(dirs.filterNotNull())
@@ -34,7 +34,7 @@ class MapParserTest {
             val route = map.routes!![0]
             assertEquals("A test route 1", route.name)
             assertTrue(route.visible)
-            val markers = route.route_markers
+            val markers = route.routeMarkers
             assertEquals(2, markers.size.toLong())
 
             val marker1 = markers[0]
@@ -48,12 +48,12 @@ class MapParserTest {
     }
 
     companion object {
-        private var mJsonFilesDirectory: File? = null
+        private var jsonFilesDirectory: File? = null
 
         init {
             try {
                 val mapDirURL = MapImporterTest::class.java.classLoader!!.getResource("mapjson-example")
-                mJsonFilesDirectory = File(mapDirURL.toURI())
+                jsonFilesDirectory = File(mapDirURL.toURI())
             } catch (e: Exception) {
                 println("No json directory found.")
             }
