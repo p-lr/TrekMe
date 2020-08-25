@@ -55,7 +55,7 @@ class MapImporterTest {
                         assertEquals("mapname", map.name)
 
                         assertEquals(4, map.mapGson.levels.size.toLong())
-                        assertEquals(100, map.mapGson.levels[0].tile_size.x.toLong())
+                        assertEquals(256, map.mapGson.levels[0].tile_size.x.toLong())
                         assertEquals(".jpg", map.imageExtension)
                         assertNull(map.image)
                     } catch (e: MapImporter.MapParseException) {

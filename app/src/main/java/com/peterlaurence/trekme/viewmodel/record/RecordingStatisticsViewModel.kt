@@ -14,10 +14,10 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.components.events.RecordingDeletionFailed
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.util.gpx.GPXParser
-import com.peterlaurence.trekme.util.gpx.GPXWriter
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
+import com.peterlaurence.trekme.util.gpx.parseGpx
+import com.peterlaurence.trekme.util.gpx.writeGpx
 import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class RecordingStatisticsViewModel @ViewModelInject constructor(
         private val trackImporter: TrackImporter
-): ViewModel() {
+) : ViewModel() {
 
     private val recordingData: MutableLiveData<List<RecordingData>> by lazy {
         MutableLiveData<List<RecordingData>>().apply {
@@ -141,7 +141,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
                     track.statistics = updatedStatistics
                     val fos = FileOutputStream(it.key)
                     try {
-                        GPXWriter.write(it.value, fos)
+                        writeGpx(it.value, fos)
                     } catch (e: Exception) {
                         // couldn't update the statistics
                     }
@@ -165,7 +165,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
         if (recordingsToGpx.isEmpty()) {
             recordings.forEach {
                 try {
-                    val gpx = GPXParser.parse(FileInputStream(it))
+                    val gpx = parseGpx(FileInputStream(it))
                     recordingsToGpx[it] = gpx
                 } catch (e: Exception) {
                     Log.e(TAG, "The file ${it.name} was parsed with error ${stackTraceToString(e)}")
@@ -174,7 +174,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
         } else {
             recordings.filter { !recordingsToGpx.keys.contains(it) }.forEach {
                 try {
-                    val gpx = GPXParser.parse(FileInputStream(it))
+                    val gpx = parseGpx(FileInputStream(it))
                     recordingsToGpx[it] = gpx
                 } catch (e: Exception) {
                     Log.e(TAG, "The file ${it.name} was parsed with an error")

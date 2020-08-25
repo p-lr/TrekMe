@@ -27,8 +27,8 @@ import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
-import com.peterlaurence.trekme.util.gpx.GPXWriter
 import com.peterlaurence.trekme.util.gpx.model.*
+import com.peterlaurence.trekme.util.gpx.writeGpx
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -173,7 +173,7 @@ class GpxRecordService : Service() {
                         ?: error("Recordings dir is mandatory")
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
-                GPXWriter.write(gpx, fos)
+                writeGpx(gpx, fos)
             } catch (e: Exception) {
                 // for instance, don't care : we want to stop the service anyway
                 // TODO : warn the user that the gpx file could not be saved

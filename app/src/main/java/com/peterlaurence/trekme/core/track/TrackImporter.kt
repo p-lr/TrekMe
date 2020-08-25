@@ -8,11 +8,11 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.util.gpx.GPXParser
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
+import com.peterlaurence.trekme.util.gpx.parseGpxSafely
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +36,7 @@ import javax.inject.Singleton
 @Singleton
 class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext) {
     private val TAG = "TrackImporter"
+
     /**
      * Get the list of [File] which extension is in the list of supported extension for track
      * file. Files are searched into the [TrekMeContext.recordingsDir].
@@ -93,7 +94,7 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
      * Parses the GPX content provided as [InputStream], off UI thread.
      */
     private suspend fun readGpxInputStreamAsync(input: InputStream, map: Map, defaultName: String) = withContext(Dispatchers.Default) {
-        GPXParser.parseSafely(input)?.let { gpx ->
+        parseGpxSafely(input)?.let { gpx ->
             val routes = gpx.tracks.mapIndexed { index, track ->
                 gpxTrackToRoute(map, track, index, defaultName)
             }

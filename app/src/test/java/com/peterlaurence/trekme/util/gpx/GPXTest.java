@@ -26,6 +26,9 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import static com.peterlaurence.trekme.util.gpx.GPXParserKt.getGpxDateParser;
+import static com.peterlaurence.trekme.util.gpx.GPXParserKt.parseGpx;
+import static com.peterlaurence.trekme.util.gpx.GPXWriterKt.writeGpx;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
@@ -60,7 +63,7 @@ public class GPXTest {
         if (mGpxFilesDirectory != null) {
             if (gpxSample.exists()) {
                 try {
-                    Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(gpxSample));
+                    Gpx gpx = parseGpx(new FileInputStream(gpxSample));
 
                     /* Metadata check */
                     Metadata metadata = gpx.getMetadata();
@@ -91,8 +94,7 @@ public class GPXTest {
                     assertEquals(8.89241667, lon);
                     assertEquals(2376.0, elevation);
 
-                    assertEquals(GPXParser.INSTANCE.getDateParser().
-                                    parse("2007-10-14T10:09:57Z").getTime(),
+                    assertEquals(getGpxDateParser().parse("2007-10-14T10:09:57Z").getTime(),
                             firstTrackPoint.getTime(), 0.0);
 
                     /* Check that the track has statistics */
@@ -144,7 +146,7 @@ public class GPXTest {
             /* First read an existing gpx file */
             Gpx gpxInput = null;
             try {
-                gpxInput = GPXParser.INSTANCE.parse(new FileInputStream(gpxSample));
+                gpxInput = parseGpx(new FileInputStream(gpxSample));
             } catch (Exception e) {
                 e.printStackTrace();
                 fail();
@@ -153,10 +155,10 @@ public class GPXTest {
             /* Write it in a temporary folder */
             File testFile = mTestFolder.newFile();
             FileOutputStream fos = new FileOutputStream(testFile);
-            GPXWriter.INSTANCE.write(gpxInput, fos);
+            writeGpx(gpxInput, fos);
 
             /* Now read it back */
-            Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(testFile));
+            Gpx gpx = parseGpx(new FileInputStream(testFile));
 
             /* Metadata check */
             Metadata metadata = gpx.getMetadata();
@@ -187,8 +189,8 @@ public class GPXTest {
             assertEquals(8.89241667, lon);
             assertEquals(2376.0, elevation);
 
-            assertEquals(GPXParser.INSTANCE.getDateParser().
-                            parse("2007-10-14T10:09:57Z").getTime(), firstTrackPoint.getTime(), 0.0);
+            assertEquals(getGpxDateParser().
+                    parse("2007-10-14T10:09:57Z").getTime(), firstTrackPoint.getTime(), 0.0);
 
             assertNotNull(track.getStatistics());
             assertEquals(track.getStatistics().getDistance(), 102.0);
@@ -201,7 +203,7 @@ public class GPXTest {
     @Test
     public void readGpxWithRoute() {
         try {
-            Gpx gpx = GPXParser.INSTANCE.parse(new FileInputStream(gpxRealRoute));
+            Gpx gpx = parseGpx(new FileInputStream(gpxRealRoute));
             Metadata metadata = gpx.getMetadata();
             assertNotNull(metadata);
             assertNull(metadata.getName());
@@ -218,7 +220,7 @@ public class GPXTest {
     public void dateParse() {
         String aDate = "2017-09-26T08:38:12+02:00";
         try {
-            Date date = GPXParser.INSTANCE.getDateParser().parse(aDate);
+            Date date = getGpxDateParser().parse(aDate);
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
             int year = cal.get(Calendar.YEAR);
