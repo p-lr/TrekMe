@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 /**
  * Limit the rate at which a [block] is called.
  * The [block] is invoked using the last element of type [T] sent to the returned channel.
- * This invocation is performed every [wait] ms.
+ * This invocation is performed at most every [wait] ms.
  *
  * @param wait The time in ms between each [block] call.
  * @param block The actual block of code to execute.

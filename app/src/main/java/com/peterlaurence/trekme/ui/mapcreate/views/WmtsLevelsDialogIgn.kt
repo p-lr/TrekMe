@@ -1,7 +1,5 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -9,7 +7,6 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
@@ -49,7 +46,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.getIgnLicenseStatus().observe(this, Observer {
+        viewModel.getIgnLicenseStatus().observe(this) {
             it?.also {
                 when (it) {
                     LicenseStatus.PURCHASED -> {
@@ -61,14 +58,14 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
                     LicenseStatus.UNKNOWN -> showUnknown()
                 }
             }
-        })
+        }
 
-        viewModel.getIgnLicenseDetails().observe(this, Observer {
+        viewModel.getIgnLicenseDetails().observe(this) {
             it?.also {
                 ignLicensePrice = it.price
                 showPriceIGN()
             }
-        })
+        }
     }
 
     override fun onStart() {

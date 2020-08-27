@@ -7,13 +7,13 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.api.addMarker
 import com.peterlaurence.mapview.api.moveMarker
+import com.peterlaurence.mapview.api.moveToMarker
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.MapSource
@@ -95,19 +95,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private val y0 = -x0
     private val x1 = -x0
     private val y1 = x0
-
-    companion object {
-        private const val ARG_MAP_SOURCE = "mapSource"
-
-        @JvmStatic
-        fun newInstance(mapSource: MapSourceBundle): GoogleMapWmtsViewFragment {
-            val fragment = GoogleMapWmtsViewFragment()
-            val args = Bundle()
-            args.putParcelable(ARG_MAP_SOURCE, mapSource)
-            fragment.arguments = args
-            return fragment
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -285,11 +272,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
 
         /* 5- Finally, update the current position */
-        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner, Observer {
-            it?.let {
-                onLocationReceived(it)
+        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner) { loc ->
+            loc?.let {
+                onLocationReceived(loc)
             }
-        })
+        }
     }
 
     /**
@@ -420,7 +407,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* If there is no MapView, no need to go further */
         if (mapView == null) return
 
-        /* A Projection is always defined in this case */
+        /* Project lat/lon off UI thread and update the position */
         lifecycleScope.launch {
             val projectedValues = withContext(Dispatchers.Default) {
                 projection.doProjection(location.latitude, location.longitude)
@@ -429,6 +416,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 updatePosition(projectedValues[0], projectedValues[1])
             }
         }
+    }
+
+    private fun centerOnPosition() {
+        val positionMarker = positionMarker ?: return
+        mapView?.moveToMarker(positionMarker, 1f, true)
     }
 
     /**
@@ -443,3 +435,5 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
     }
 }
+
+private const val ARG_MAP_SOURCE = "mapSource"

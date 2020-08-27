@@ -47,6 +47,9 @@ open class WmtsLevelsDialog : DialogFragment() {
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
 
     companion object {
+        const val ARG_MAP_SOURCE = "WmtsLevelsDialog_mapSource"
+        const val ARG_AREA = "WmtsLevelsDialog_area"
+
         fun newInstance(area: Area, mapSourceBundle: MapSourceBundle): WmtsLevelsDialog {
             val f = WmtsLevelsDialog()
 
@@ -205,6 +208,3 @@ open class WmtsLevelsDialog : DialogFragment() {
         return Pair(p1, p2)
     }
 }
-
-const val ARG_AREA = "WmtsLevelsDialog_area"
-const val ARG_MAP_SOURCE = "WmtsLevelsDialog_mapSource"
