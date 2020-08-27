@@ -32,8 +32,7 @@ import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
-import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
-import com.peterlaurence.trekme.viewmodel.mapcreate.ScaleAndScrollConfig
+import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -81,6 +80,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private var areaLayer: AreaLayer? = null
     private var positionMarker: PositionMarker? = null
     private val projection = MercatorProjection()
+    private var shouldZoomOnPosition = true
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
     private val locationViewModel: LocationViewModel by activityViewModels()
@@ -227,6 +227,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
         viewModel.setLayerPublicNameForSource(mapSource, e.getSelection())
 
         /* Then re-create the MapView */
+        shouldZoomOnPosition = true
+        positionMarker = null
         removeMapView()
         configure()
     }
@@ -263,11 +265,15 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.progressBarWaiting.visibility = View.GONE
 
         /* 4- Scroll to the init position if there is one pre-configured */
-        mapConfiguration?.also {
+        mapConfiguration?.also { config ->
             /* At this point the mapView should be initialized, but we never know.. */
             mapView?.apply {
-                scale = it.scale
-                scrollTo(it.scrollX, it.scrollY)
+                config.forEach {
+                    if (it is InitScaleAndScrollConfig) {
+                        scale = it.scale
+                        scrollTo(it.scrollX, it.scrollY)
+                    }
+                }
             }
         }
 
@@ -317,7 +323,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fragmentWmtWarningLink.visibility = View.GONE
     }
 
-    private fun addMapView(tileStreamProvider: TileStreamProvider, scaleAndScrollConfig: ScaleAndScrollConfig? = null) {
+    private fun addMapView(tileStreamProvider: TileStreamProvider, mapConfig: List<Config>? = null) {
         if (_binding == null) return
         val context = this.context ?: return
         val mapView = MapView(context)
@@ -326,9 +332,12 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 19, mapSize, mapSize, tileSize,
                 tileStreamProvider.toMapViewTileStreamProvider()
         ).setWorkerCount(16).apply {
-            /* If we're provided a map config, apply it */
-            scaleAndScrollConfig?.minScale?.also { minScale ->
-                setMinScale(minScale)
+            /* If we're provided a config, apply it */
+            mapConfig?.also {
+                it.filterIsInstance<ScaleLimitsConfig>().firstOrNull().also { conf ->
+                    conf?.minScale?.also { minScale -> setMinScale(minScale) }
+                    conf?.maxScale?.also { maxScale -> setMaxScale(maxScale) }
+                }
             }
         }
 
@@ -336,10 +345,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         /* Map calibration */
         mapView.defineBounds(x0, y0, x1, y1)
-
-        /* Position marker */
-        positionMarker = PositionMarker(context)
-        mapView.addMarker(positionMarker!!, 0.0, 0.0, -0.5f, -0.5f)
 
         /* Add the view */
         setMapView(mapView)
@@ -387,8 +392,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
             if (fm != null) {
                 mapSource.let {
                     val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
-                    val mapSourceBundle = if (mapConfiguration != null) {
-                        MapSourceBundle(it, mapConfiguration.levelMin, mapConfiguration.levelMax)
+                    val levelConf = mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
+                    val mapSourceBundle = if (levelConf != null) {
+                        MapSourceBundle(it, levelConf.levelMin, levelConf.levelMax)
                     } else {
                         MapSourceBundle(it)
                     }
@@ -414,24 +420,45 @@ class GoogleMapWmtsViewFragment : Fragment() {
             }
             if (projectedValues != null) {
                 updatePosition(projectedValues[0], projectedValues[1])
+                if (shouldZoomOnPosition) {
+                    val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
+                    val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
+                    boundaryConf?.boundingBoxList?.also { boxes ->
+                        if (boxes.contains(location.latitude, location.longitude)) {
+                            centerOnPosition()
+                        }
+                    }
+
+                    shouldZoomOnPosition = false
+                }
             }
         }
     }
 
     private fun centerOnPosition() {
         val positionMarker = positionMarker ?: return
-        mapView?.moveToMarker(positionMarker, 1f, true)
+        val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
+        val scaleConf = mapConfiguration?.filterIsInstance<ScaleForZoomOnPositionConfig>()?.firstOrNull()
+        mapView?.moveToMarker(positionMarker, scaleConf?.scale ?: 1f, true)
     }
 
     /**
-     * Update the position on the map.
+     * Update the position on the map. The first time we update the position, we create the
+     * [positionMarker].
      *
      * @param x the projected X coordinate
      * @param y the projected Y coordinate
      */
     private fun updatePosition(x: Double, y: Double) {
-        positionMarker?.also {
-            mapView?.moveMarker(it, x, y)
+        val context = context ?: return
+        if (positionMarker == null) {
+            positionMarker = PositionMarker(context).also {
+                mapView?.addMarker(it, x, y, -0.5f, -0.5f)
+            }
+        } else {
+            positionMarker?.also {
+                mapView?.moveMarker(it, x, y)
+            }
         }
     }
 }

@@ -45,16 +45,29 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     private val ordnanceSurveyApiUrl = "https://plrapps.ovh:8080/ordnance-survey-api"
 
     private val scaleAndScrollInitConfig = mapOf(
-            MapSource.SWISS_TOPO to ScaleAndScrollConfig(0.0006149545f, 21064, 13788, 0.0006149545f),
-            MapSource.IGN_SPAIN to ScaleAndScrollConfig(0.0003546317f, 11127, 8123, 0.0003546317f),
-            MapSource.ORDNANCE_SURVEY to ScaleAndScrollConfig(0.000830759f, 27011, 17261, 0.000830759f, 7, 16)
+            MapSource.IGN to listOf(
+                    ScaleLimitsConfig(maxScale = 0.5f),
+                    ScaleForZoomOnPositionConfig(scale = 0.125f),
+                    BoundariesConfig(listOf(
+                            BoundingBox(41.21, 51.05, -4.92, 8.37),     // France
+                            BoundingBox(-21.39, -20.86, 55.20, 55.84)   // La Réunion
+                    ))),
+            MapSource.SWISS_TOPO to listOf(
+                    InitScaleAndScrollConfig(0.0006149545f, 21064, 13788),
+                    ScaleLimitsConfig(minScale = 0.0006149545f)),
+            MapSource.IGN_SPAIN to listOf(
+                    InitScaleAndScrollConfig(0.0003546317f, 11127, 8123),
+                    ScaleLimitsConfig(minScale = 0.0003546317f)),
+            MapSource.ORDNANCE_SURVEY to listOf(InitScaleAndScrollConfig(0.000830759f, 27011, 17261),
+                    ScaleLimitsConfig(minScale = 0.000830759f),
+                    LevelLimitsConfig(7, 16))
     )
 
     private val activeLayerForSource: MutableMap<MapSource, Layer> = mutableMapOf(
             MapSource.IGN to defaultIgnLayer
     )
 
-    fun getScaleAndScrollConfig(mapSource: MapSource): ScaleAndScrollConfig? {
+    fun getScaleAndScrollConfig(mapSource: MapSource): List<Config>? {
         return scaleAndScrollInitConfig[mapSource]
     }
 
@@ -136,6 +149,21 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     }
 }
 
-data class ScaleAndScrollConfig(val scale: Float, val scrollX: Int, val scrollY: Int,
-                                val minScale: Float? = null, val levelMin: Int = 1,
-                                val levelMax: Int = 18)
+sealed class Config
+data class InitScaleAndScrollConfig(val scale: Float, val scrollX: Int, val scrollY: Int) : Config()
+data class ScaleForZoomOnPositionConfig(val scale: Float) : Config()
+data class ScaleLimitsConfig(val minScale: Float? = null, val maxScale: Float? = null) : Config()
+data class LevelLimitsConfig(val levelMin: Int = 1, val levelMax: Int = 18) : Config()
+data class BoundariesConfig(val boundingBoxList: List<BoundingBox>) : Config()
+
+
+data class BoundingBox(val latitudeMin: Double = 0.0, val latitudeMax: Double = 0.0,
+                       val longitudeMin: Double = 0.0, val longitudeMax: Double = 0.0)
+
+fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
+    return any { it.contains(latitude, longitude) }
+}
+
+fun BoundingBox.contains(latitude: Double, longitude: Double): Boolean {
+    return latitude in latitudeMin..latitudeMax && longitude in longitudeMin..longitudeMax
+}
