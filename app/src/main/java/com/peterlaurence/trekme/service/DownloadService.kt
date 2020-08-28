@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.service
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -222,10 +223,17 @@ class DownloadService : Service() {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     private fun onDownloadProgress(progress: Double) {
-        /* Update the notification */
-        notificationBuilder.setProgress(100, progress.toInt(), false)
-        notificationBuilder.setOngoing(false)
+        if (progress == 100.0) {
+            notificationBuilder.setOngoing(false)
+            notificationBuilder.setProgress(0, 0, false)
+            notificationBuilder.setContentText(getText(R.string.service_download_finished))
+            // TODO: Remove this when the library supports removing actions
+            notificationBuilder.mActions.clear()
+        } else {
+            notificationBuilder.setProgress(100, progress.toInt(), false)
+        }
         try {
             notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
         } catch (e: RuntimeException) {
