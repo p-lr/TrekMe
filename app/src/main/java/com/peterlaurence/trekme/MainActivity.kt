@@ -93,9 +93,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
 
-        private val PERMISSIONS_LOCATION = arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION
-        )
+        private val PERMISSIONS_LOCATION = if (Build.VERSION.SDK_INT >= 29) {
+            arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            )
+        } else {
+            arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+            )
+        }
         private val PERMISSIONS_MAP_CREATION = arrayOf(
                 Manifest.permission.INTERNET
         )
