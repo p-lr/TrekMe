@@ -69,6 +69,7 @@ class GpxRecordService : Service() {
     private lateinit var locationListener: LocationListener
     private var locationCounter: Long = 0
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var trackPoints = mutableListOf<TrackPoint>()
     private lateinit var trackStatCalculator: TrackStatCalculator
 
@@ -248,6 +249,7 @@ class GpxRecordService : Service() {
     override fun onDestroy() {
         stopLocationUpdates()
         serviceLooper.quitSafely()
+        scope.cancel()
         EventBus.getDefault().unregister(this)
     }
 
@@ -285,10 +287,8 @@ class GpxRecordService : Service() {
 
     @Subscribe
     fun onChannelRequest(event: ChannelTrackPointRequest) = runBlocking {
-        GlobalScope.launch {
-            val channel = withContext(Dispatchers.Default) {
-                newChannel()
-            }
+        scope.launch(Dispatchers.Default) {
+            val channel = newChannel()
 
             if (channel != null && isStarted) {
                 EventBus.getDefault().post(channel)
@@ -321,9 +321,11 @@ class GpxRecordService : Service() {
         private const val SERVICE_ID = 126585
 
         /**
-         * The status stated / stopped is statically accessible from anywhere in the app.
+         * The status stated / stopped is statically accessible from anywhere in the app, and from
+         * any thread.
          * Anytime the state changes, notify listeners.
          */
+        @Volatile
         var isStarted: Boolean = false
             private set(value) {
                 EventBus.getDefault().post(GpxRecordServiceStatus(value))
