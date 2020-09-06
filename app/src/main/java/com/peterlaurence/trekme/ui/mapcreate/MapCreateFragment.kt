@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -78,7 +79,7 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
                 context,
                 DividerItemDecoration.VERTICAL
         )
-        val divider = this.context?.getDrawable(R.drawable.divider)
+        val divider = context?.let { getDrawable(it, R.drawable.divider) }
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider)
         }
@@ -92,9 +93,12 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     }
 
     private fun showWmtsViewFragment(mapSource: MapSource) {
-        val bundle = MapSourceBundle(mapSource)
-        val action = MapCreateFragmentDirections.actionMapCreateFragmentToGoogleMapWmtsViewFragment(bundle)
-        findNavController().navigate(action)
+        val navController = findNavController()
+        if (navController.currentDestination?.id == R.id.mapCreateFragment) {
+            val bundle = MapSourceBundle(mapSource)
+            val action = MapCreateFragmentDirections.actionMapCreateFragmentToGoogleMapWmtsViewFragment(bundle)
+            navController.navigate(action)
+        }
     }
 
     override fun onMapSourceSelected(m: MapSource) {
