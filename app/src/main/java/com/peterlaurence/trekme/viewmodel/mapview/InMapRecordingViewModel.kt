@@ -107,14 +107,14 @@ class InMapRecordingViewModel : ViewModel() {
 
         EventBus.getDefault().unregister(this)
     }
+}
 
-    class RouteBuilder(val map: Map) {
-        val liveRoute = LiveRoute()
+private class RouteBuilder(val map: Map) {
+    val liveRoute = LiveRoute()
 
-        fun add(point: TrackPoint) {
-            val marker = point.toMarker(map)
-            liveRoute.addMarker(marker)
-        }
+    fun add(point: TrackPoint) {
+        val marker = point.toMarker(map)
+        liveRoute.addMarker(marker)
     }
 }
 

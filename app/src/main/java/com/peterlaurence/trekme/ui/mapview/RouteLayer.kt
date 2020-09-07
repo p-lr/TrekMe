@@ -64,8 +64,6 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
         mapView.addPathView(view)
         view
     }
-    private val processedStaticRoutes = mutableListOf<RouteGson.Route>()
-    private val processedLiveRoute = mutableListOf<RouteGson.Route>()
 
     /**
      * This object can, in some circumstances, be accessed before the [init] method is invoked.
@@ -186,13 +184,10 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
             route
         }
 
-        processedLiveRoute.clear()
         coroutineScope.launch {
-            liveRouteFlow.collect {
-                processedLiveRoute.add(it)
-                liveRouteView.updatePaths(processedLiveRoute.map { route ->
-                    route.data as PathView.DrawablePath
-                })
+            liveRouteFlow.collect { liveRoute ->
+                val paths = listOf(liveRoute.data as PathView.DrawablePath)
+                liveRouteView.updatePaths(paths)
             }
         }
     }
@@ -223,8 +218,8 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
             route
         }
 
-        processedStaticRoutes.clear()
         coroutineScope.launch {
+            val processedStaticRoutes = mutableListOf<RouteGson.Route>()
             staticRouteFlow.collect {
                 processedStaticRoutes.add(it)
                 pathView?.updatePaths(processedStaticRoutes.map { route ->
