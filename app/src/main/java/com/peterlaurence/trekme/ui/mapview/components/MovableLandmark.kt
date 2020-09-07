@@ -5,6 +5,7 @@ import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.content.ContextCompat.getDrawable
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.gson.Landmark
 
@@ -21,16 +22,16 @@ class MovableLandmark
 @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : AppCompatImageView(context, attrs, defStyleAttr) {
 
-    private val rounded = context.getDrawable(R.drawable.avd_landmark_rounded) as AnimatedVectorDrawable
-    private val static = context.getDrawable(R.drawable.vd_landmark_location_rounded) as Drawable
-    private val staticToDynamic = context.getDrawable(R.drawable.avd_landmark_location_rounded) as AnimatedVectorDrawable
-    private val dynamicToStatic = context.getDrawable(R.drawable.avd_landmark_rounded_location) as AnimatedVectorDrawable
-    private lateinit var landmark: Landmark
-    private lateinit var lineView: LineView
+    private val rounded = getDrawable(context, R.drawable.avd_landmark_rounded) as AnimatedVectorDrawable
+    private val static = getDrawable(context, R.drawable.vd_landmark_location_rounded) as Drawable
+    private val staticToDynamic = getDrawable(context, R.drawable.avd_landmark_location_rounded) as AnimatedVectorDrawable
+    private val dynamicToStatic = getDrawable(context, R.drawable.avd_landmark_rounded_location) as AnimatedVectorDrawable
+    private var landmark: Landmark? = null
+    private var lineView: LineView? = null
     private var isStatic = false
 
     /* The relative coordinates are kept here. Although this shouldn't be a concern of this object,
-     * the TileView don't offer the possibility to retrieve the relative coordinates of a marker.
+     * the MapView don't offer the possibility to retrieve the relative coordinates of a marker.
      * Saving them in the landmark's view is one of the possible workarounds.
      */
     var relativeX: Double? = null
@@ -92,14 +93,14 @@ class MovableLandmark
     /**
      * Get the reference on the [Landmark] this [MovableLandmark] refers to.
      */
-    fun getLandmark(): Landmark {
+    fun getLandmark(): Landmark? {
         return landmark
     }
 
     /**
      * Get the reference on the [LineView] this [MovableLandmark] refers to.
      */
-    fun getLineView(): LineView {
+    fun getLineView(): LineView? {
         return lineView
     }
 }

@@ -35,7 +35,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             field = value
 
             movableLandmarkList.forEach {
-                it.getLineView().referentialData = value
+                it.getLineView()?.referentialData = value
                 touchMoveListener?.referentialData = value
             }
         }
@@ -145,7 +145,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             /* The view has been moved, update the associated model object */
             val landmark = movableLandmark.getLandmark()
             if (movableLandmark.relativeX != null && movableLandmark.relativeY != null) {
-                landmark.newCoords(movableLandmark.relativeX!!, movableLandmark.relativeY!!, map)
+                landmark?.newCoords(movableLandmark.relativeX!!, movableLandmark.relativeY!!, map)
             }
 
             /* Save the changes on the markers.json file */
@@ -196,10 +196,13 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
                 view.deleteLine()
 
                 val landmark = view.getLandmark()
-                MapLoader.deleteLandmark(map, landmark)
+                if (landmark != null) {
+                    MapLoader.deleteLandmark(map, landmark)
+                }
             }
-            val landmark = view.getLandmark()
-            landmarkCallout.setSubTitle(landmark.lat, landmark.lon)
+            view.getLandmark()?.also {
+                landmarkCallout.setSubTitle(it.lat, it.lon)
+            }
 
             mapView.addCallout(landmarkCallout, view.relativeX!!, view.relativeY!!, -0.5f, -1.2f)
 
@@ -238,7 +241,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
 
     private fun MovableLandmark.updateLine() {
         val lineView = getLineView()
-        if (relativeX != null && relativeY != null) {
+        if (relativeX != null && relativeY != null && lineView != null) {
             val coordinateTranslater = mapView?.coordinateTranslater ?: return
 
             lineView.updateLine(
