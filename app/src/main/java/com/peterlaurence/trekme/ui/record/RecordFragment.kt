@@ -9,7 +9,6 @@ import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
@@ -66,22 +65,21 @@ class RecordFragment : Fragment() {
 
         val statViewModel: RecordingStatisticsViewModel by activityViewModels()
         recordingData = statViewModel.getRecordingData()
-        recordingData.observe(viewLifecycleOwner, Observer {
+        recordingData.observe(viewLifecycleOwner) {
             it?.let { data ->
                 updateRecordingData(data)
             }
-        })
+        }
 
         /**
          * Observe the changes in the [GpxRecordService] status, and update child views accordingly.
          */
         val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
-        gpxRecordServiceViewModel.getStatus().observe(
-                viewLifecycleOwner, Observer {
+        gpxRecordServiceViewModel.getStatus().observe(viewLifecycleOwner) {
             it?.let { isActive ->
                 dispatchGpxRecordServiceStatus(isActive)
             }
-        })
+        }
 
         recordListView.setListener(object : RecordListView.RecordListViewListener {
             override fun onRequestShareRecording(recordings: List<File>) {
@@ -156,9 +154,15 @@ class RecordFragment : Fragment() {
     }
 
     @Subscribe
-    fun onGpxImported(event: TrackImporter.GpxParseResult) {
+    fun onGpxImported(event: TrackImporter.GpxParseResult.GpxParseResultOk) {
         /* Tell the user that the track will be shortly available in the map */
         Snackbar.make(binding.root, R.string.track_is_being_added, Snackbar.LENGTH_LONG).show()
+    }
+
+    @Subscribe
+    fun onGpxImported(event: TrackImporter.GpxParseResult.GpxParseError) {
+        /* Tell the user that an error occurred */
+        Snackbar.make(binding.root, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
     }
 
     @Subscribe

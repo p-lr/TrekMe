@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
@@ -35,8 +34,11 @@ import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -107,20 +109,20 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         presenter.setPositionTouchListener(this)
 
         /* Observe location changes */
-        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner, Observer {
+        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner) {
             it?.let {
                 onLocationReceived(it)
             }
-        })
+        }
 
         /* Observe track statistics changes */
-        statisticsViewModel.stats.observe(viewLifecycleOwner, Observer {
+        statisticsViewModel.stats.observe(viewLifecycleOwner) {
             if (it != null) {
                 presenter.showStatistics(it)
             } else {
                 presenter.hideStatistics()
             }
-        })
+        }
 
         /* Get the speed, distance and orientation indicators from the view */
         speedListener = presenter.view.speedIndicator
@@ -425,7 +427,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     @Subscribe
-    fun onTrackChangedEvent(event: TrackImporter.GpxParseResult) {
+    fun onTrackChangedEvent(event: TrackImporter.GpxParseResult.GpxParseResultOk) {
         routeLayer?.onTrackChanged(event.map, event.routes)
         if (event.newMarkersCount > 0) {
             markerLayer?.onMapMarkerUpdate()
@@ -470,12 +472,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
          * Listen to changes on the live route.
          * It's called only now because the [RouteLayer] must be first initialized.
          */
-        inMapRecordingViewModel.getLiveRoute().observe(
-                viewLifecycleOwner, Observer {
+        inMapRecordingViewModel.getLiveRoute().observe(viewLifecycleOwner) {
             it?.let { liveRoute ->
                 routeLayer?.drawLiveRoute(liveRoute)
             }
-        })
+        }
     }
 
     private fun initLayers() {

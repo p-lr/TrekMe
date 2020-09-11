@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.core.track
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.util.Log
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
@@ -19,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileNotFoundException
 import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,18 +35,16 @@ import javax.inject.Singleton
  */
 @Singleton
 class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext) {
-    private val TAG = "TrackImporter"
-
     /**
      * Get the list of [File] which extension is in the list of supported extension for track
      * file. Files are searched into the [TrekMeContext.recordingsDir].
      */
     val recordings: Array<File>?
-        get() = trekMeContext.recordingsDir?.listFiles(SUPPORTED_FILE_FILTER)
+        get() = trekMeContext.recordingsDir?.listFiles(supportedFileFilter)
 
     private val supportedTrackFilesExtensions = arrayOf("gpx", "xml")
 
-    private val SUPPORTED_FILE_FILTER = filter@{ dir: File, filename: String ->
+    private val supportedFileFilter = filter@{ dir: File, filename: String ->
         /* We only look at files */
         if (File(dir, filename).isDirectory) {
             return@filter false
@@ -68,27 +66,41 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
     suspend fun applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): GpxParseResult {
-        val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-        return parcelFileDescriptor?.let {
-            val fileDescriptor = parcelFileDescriptor.fileDescriptor
-            val fileInputStream = FileInputStream(fileDescriptor)
-            val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri) ?: "A track"
-            applyGpxInputStreamToMapAsync(fileInputStream, map, fileName) {
-                it.close()
+        return try {
+            val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
+            parcelFileDescriptor?.let {
+                val fileDescriptor = parcelFileDescriptor.fileDescriptor
+                val fileInputStream = FileInputStream(fileDescriptor)
+                val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
+                        ?: "A track"
+                applyGpxInputStreamToMapAsync(fileInputStream, map, fileName) {
+                    it.close()
+                }
             }
-        } ?: throw FileNotFoundException("File with uri $uri doesn't exists")
+        } catch (e: Exception) {
+            Log.e(TAG, "File with uri $uri doesn't exists")
+            null
+        } ?: GpxParseResult.GpxParseError
     }
 
     /**
      * Applies the GPX content given as a [File] to the provided [Map].
      */
     suspend fun applyGpxFileToMapAsync(file: File, map: Map): GpxParseResult {
-        val fileInputStream = FileInputStream(file)
-        return applyGpxInputStreamToMapAsync(fileInputStream, map, file.name)
+        return try {
+            val fileInputStream = FileInputStream(file)
+            applyGpxInputStreamToMapAsync(fileInputStream, map, file.name)
+        } catch (e: Exception) {
+            GpxParseResult.GpxParseError
+        }
     }
 
-    data class GpxParseResult(val map: Map, val routes: List<RouteGson.Route>, val wayPoints: List<MarkerGson.Marker>,
-                              val newRouteCount: Int, val newMarkersCount: Int)
+    sealed class GpxParseResult {
+        data class GpxParseResultOk(val map: Map, val routes: List<RouteGson.Route>, val wayPoints: List<MarkerGson.Marker>,
+                                    val newRouteCount: Int, val newMarkersCount: Int) : GpxParseResult()
+
+        object GpxParseError : GpxParseResult()
+    }
 
     /**
      * Parses the GPX content provided as [InputStream], off UI thread.
@@ -119,22 +131,25 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
          */
         afterParseCallback?.let { it() }
 
-        if (pair != null) {
+        return if (pair != null) {
             return applyGpxParseResultToMap(map, pair.first, pair.second)
         } else {
-            throw GpxParseException()
+            GpxParseResult.GpxParseError
         }
     }
 
     class GpxParseException : Exception()
 
     private fun applyGpxParseResultToMap(map: Map, routes: List<RouteGson.Route>, wayPoints: List<MarkerGson.Marker>): GpxParseResult {
-        val newRouteCount = TrackTools.updateRouteList(map, routes)
-        val newMarkersCount = TrackTools.updateMarkerList(map, wayPoints)
-        MapLoader.saveRoutes(map)
-        MapLoader.saveMarkers(map)
-
-        return GpxParseResult(map, routes, wayPoints, newRouteCount, newMarkersCount)
+        return try {
+            val newRouteCount = TrackTools.updateRouteList(map, routes)
+            val newMarkersCount = TrackTools.updateMarkerList(map, wayPoints)
+            MapLoader.saveRoutes(map)
+            MapLoader.saveMarkers(map)
+            GpxParseResult.GpxParseResultOk(map, routes, wayPoints, newRouteCount, newMarkersCount)
+        } catch (e: Exception) {
+            GpxParseResult.GpxParseError
+        }
     }
 
     /**
@@ -208,3 +223,5 @@ fun TrackPoint.toMarker(map: Map): MarkerGson.Marker {
     marker.elevation = elevation
     return marker
 }
+
+private const val TAG = "TrackImporter"

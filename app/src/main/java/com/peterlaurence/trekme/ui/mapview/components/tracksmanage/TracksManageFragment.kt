@@ -11,6 +11,7 @@ import android.view.*
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -170,17 +171,19 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
      */
     private suspend fun applyGpxUri(uri: Uri, map: Map, ctx: Context) = coroutineScope {
         trackImporter.applyGpxUriToMapAsync(uri, ctx.contentResolver, map).let {
-            onGpxParseResult(it)
+            if (it is TrackImporter.GpxParseResult.GpxParseResultOk) {
+                onGpxParseResult(it)
+            }
 
             /* Notify the rest of the app */
             EventBus.getDefault().post(it)
         }
     }
 
-    private fun onGpxParseResult(event: TrackImporter.GpxParseResult) {
+    private fun onGpxParseResult(event: TrackImporter.GpxParseResult.GpxParseResultOk) {
+        val trackAdapter = trackAdapter ?: return
         /* We want to append new routes, so the index to add new routes is equal to current length
          * of the data set. */
-        val trackAdapter = trackAdapter ?: return
         val positionStart = trackAdapter.itemCount
         trackAdapter.notifyItemRangeInserted(positionStart, event.newRouteCount)
 
@@ -219,7 +222,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         /* Apply item decoration (add an horizontal divider) */
         val dividerItemDecoration = DividerItemDecoration(ctx,
                 DividerItemDecoration.VERTICAL)
-        val divider = ctx.getDrawable(R.drawable.divider)
+        val divider = getDrawable(ctx, R.drawable.divider)
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider)
         }

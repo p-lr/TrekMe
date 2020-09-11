@@ -213,4 +213,5 @@
         faut y trouver un menu \"Optimisation de la batterie\" ou similaire. Là, on peut définir pour chaque application la limite
         ou non de son activité en arrière plan et/ou l\'optimisation de la batterie.\nDonc pour Trekme, il faut autoriser son
         execution en arrière plan et désactiver l\'optimisation.</string>
+    <string name="track_add_error">Une erreur est survenue lors de l\'import de la trace</string>
 </resources>
