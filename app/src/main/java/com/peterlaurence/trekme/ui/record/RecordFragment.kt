@@ -154,13 +154,13 @@ class RecordFragment : Fragment() {
     }
 
     @Subscribe
-    fun onGpxImported(event: TrackImporter.GpxParseResult.GpxParseResultOk) {
+    fun onGpxImported(event: TrackImporter.GpxImportResult.GpxImportOk) {
         /* Tell the user that the track will be shortly available in the map */
         Snackbar.make(binding.root, R.string.track_is_being_added, Snackbar.LENGTH_LONG).show()
     }
 
     @Subscribe
-    fun onGpxImported(event: TrackImporter.GpxParseResult.GpxParseError) {
+    fun onGpxImported(event: TrackImporter.GpxImportResult.GpxImportError) {
         /* Tell the user that an error occurred */
         Snackbar.make(binding.root, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
     }

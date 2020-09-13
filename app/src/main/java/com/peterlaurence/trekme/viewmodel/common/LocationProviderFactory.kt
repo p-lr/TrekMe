@@ -30,7 +30,7 @@ sealed class LocationProvider {
 }
 
 /**
- * [latitude] and [longitude] are in degrees
+ * [latitude] and [longitude] are in decimal degrees.
  * [speed] is in meters per second
  */
 data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float = 0f)

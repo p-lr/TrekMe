@@ -2,16 +2,20 @@ package com.peterlaurence.trekme.core.track
 
 import android.os.Parcelable
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
+import com.peterlaurence.trekme.util.gpx.model.Bounds
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import kotlinx.android.parcel.Parcelize
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Calculates statistics for a track:
  * * distance
  * * elevation difference (max and stack)
  * * duration
+ * * bounds
  * * TODO: mean speed
  *
  * @author peterLaurence on 09/09/18
@@ -31,8 +35,19 @@ class TrackStatCalculator {
     private var lowestPoint: TrackPoint? = null
     private var highestPoint: TrackPoint? = null
 
+    /* Bounds */
+    private var minLat: Double? = null
+    private var minLon: Double? = null
+    private var maxLat: Double? = null
+    private var maxLon: Double? = null
+
     fun getStatistics(): TrackStatistics {
         return trackStatistics
+    }
+
+    fun getBounds(): Bounds? {
+        return Bounds(minLat ?: return null, minLon ?: return null,
+                maxLat ?: return null, maxLon ?: return null)
     }
 
     fun addTrackPointList(trkPtList: List<TrackPoint>) {
@@ -43,6 +58,7 @@ class TrackStatCalculator {
         updateDistance(trkPt)
         updateElevationStatistics(trkPt)
         updateDuration(trkPt)
+        updateBounds(trkPt)
     }
 
     /**
@@ -116,6 +132,13 @@ class TrackStatCalculator {
                 trackStatistics.durationInSecond = (time - origin) / 1000
             } ?: { firstPointTime = time }()
         }
+    }
+
+    private fun updateBounds(trkPt: TrackPoint) {
+        minLat = min(trkPt.latitude, minLat ?: Double.MAX_VALUE)
+        minLon = min(trkPt.longitude, minLon ?: Double.MAX_VALUE)
+        maxLat = max(trkPt.latitude, maxLat ?: Double.MIN_VALUE)
+        maxLon = max(trkPt.longitude, maxLon ?: Double.MIN_VALUE)
     }
 }
 

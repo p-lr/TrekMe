@@ -65,90 +65,98 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
     /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
-    suspend fun applyGpxUriToMapAsync(uri: Uri, contentResolver: ContentResolver, map: Map): GpxParseResult {
+    suspend fun applyGpxUriToMap(uri: Uri, contentResolver: ContentResolver, map: Map): GpxImportResult {
         return try {
             val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-            parcelFileDescriptor?.let {
+            parcelFileDescriptor?.use {
                 val fileDescriptor = parcelFileDescriptor.fileDescriptor
-                val fileInputStream = FileInputStream(fileDescriptor)
-                val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-                        ?: "A track"
-                applyGpxInputStreamToMapAsync(fileInputStream, map, fileName) {
-                    it.close()
+                FileInputStream(fileDescriptor).use { fileInputStream ->
+                    val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
+                            ?: "A track"
+                    applyGpxInputStreamToMap(fileInputStream, map, fileName)
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "File with uri $uri doesn't exists")
             null
-        } ?: GpxParseResult.GpxParseError
+        } ?: GpxImportResult.GpxImportError
     }
 
     /**
      * Applies the GPX content given as a [File] to the provided [Map].
      */
-    suspend fun applyGpxFileToMapAsync(file: File, map: Map): GpxParseResult {
+    suspend fun applyGpxFileToMap(file: File, map: Map): GpxImportResult {
         return try {
             val fileInputStream = FileInputStream(file)
-            applyGpxInputStreamToMapAsync(fileInputStream, map, file.name)
+            applyGpxInputStreamToMap(fileInputStream, map, file.name)
         } catch (e: Exception) {
-            GpxParseResult.GpxParseError
+            GpxImportResult.GpxImportError
         }
     }
 
-    sealed class GpxParseResult {
-        data class GpxParseResultOk(val map: Map, val routes: List<RouteGson.Route>, val wayPoints: List<MarkerGson.Marker>,
-                                    val newRouteCount: Int, val newMarkersCount: Int) : GpxParseResult()
+    /**
+     * Applies the GPX content given directly as a [Gpx] instance to the provided [Map].
+     */
+    suspend fun applyGpxToMap(gpx: Gpx, map: Map): GpxImportResult {
+        val data = convertGpx(gpx, map)
+        return applyGpxParseResultToMap(map, data.first, data.second)
+    }
 
-        object GpxParseError : GpxParseResult()
+    sealed class GpxImportResult {
+        data class GpxImportOk(val map: Map, val routes: List<RouteGson.Route>, val wayPoints: List<MarkerGson.Marker>,
+                               val newRouteCount: Int, val newMarkersCount: Int) : GpxImportResult()
+
+        object GpxImportError : GpxImportResult()
     }
 
     /**
      * Parses the GPX content provided as [InputStream], off UI thread.
      */
-    private suspend fun readGpxInputStreamAsync(input: InputStream, map: Map, defaultName: String) = withContext(Dispatchers.Default) {
+    private suspend fun readGpxInputStream(input: InputStream, map: Map, defaultName: String) = withContext(Dispatchers.Default) {
         parseGpxSafely(input)?.let { gpx ->
-            val routes = gpx.tracks.mapIndexed { index, track ->
-                gpxTrackToRoute(map, track, index, defaultName)
-            }
-            val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
-                gpxWaypointsToMarker(map, wpt, index, defaultName)
-            }
-            Pair(routes, waypoints)
+            convertGpx(gpx, map, defaultName)
         }
+    }
+
+    /**
+     * Converts a [Gpx] instance into view-specific types.
+     */
+    private suspend fun convertGpx(gpx: Gpx, map: Map, defaultName: String = "track"): Pair<List<RouteGson.Route>, List<MarkerGson.Marker>> = withContext(Dispatchers.Default) {
+        val routes = gpx.tracks.mapIndexed { index, track ->
+            gpxTrackToRoute(map, track, index, defaultName)
+        }
+        val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
+            gpxWaypointsToMarker(map, wpt, index, defaultName)
+        }
+        Pair(routes, waypoints)
     }
 
     /**
      * Launches a GPX parse. Then, on the calling [CoroutineScope] (which [CoroutineDispatcher] should
      * be [Dispatchers.Main]), applies the result on the provided [Map].
      */
-    private suspend fun applyGpxInputStreamToMapAsync(input: InputStream, map: Map,
-                                                      defaultName: String,
-                                                      afterParseCallback: (() -> Unit)? = null): GpxParseResult {
-        val pair = readGpxInputStreamAsync(input, map, defaultName)
-
-        /* Whatever the caller will do with the parse result, we want to apply it to the map and add
-         * additional info
-         */
-        afterParseCallback?.let { it() }
+    private suspend fun applyGpxInputStreamToMap(input: InputStream, map: Map,
+                                                 defaultName: String): GpxImportResult {
+        val pair = readGpxInputStream(input, map, defaultName)
 
         return if (pair != null) {
             return applyGpxParseResultToMap(map, pair.first, pair.second)
         } else {
-            GpxParseResult.GpxParseError
+            GpxImportResult.GpxImportError
         }
     }
 
     class GpxParseException : Exception()
 
-    private fun applyGpxParseResultToMap(map: Map, routes: List<RouteGson.Route>, wayPoints: List<MarkerGson.Marker>): GpxParseResult {
+    private fun applyGpxParseResultToMap(map: Map, routes: List<RouteGson.Route>, wayPoints: List<MarkerGson.Marker>): GpxImportResult {
         return try {
             val newRouteCount = TrackTools.updateRouteList(map, routes)
             val newMarkersCount = TrackTools.updateMarkerList(map, wayPoints)
             MapLoader.saveRoutes(map)
             MapLoader.saveMarkers(map)
-            GpxParseResult.GpxParseResultOk(map, routes, wayPoints, newRouteCount, newMarkersCount)
+            GpxImportResult.GpxImportOk(map, routes, wayPoints, newRouteCount, newMarkersCount)
         } catch (e: Exception) {
-            GpxParseResult.GpxParseError
+            GpxImportResult.GpxImportError
         }
     }
 

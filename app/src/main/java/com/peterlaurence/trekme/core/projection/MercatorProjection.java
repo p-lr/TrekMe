@@ -42,7 +42,7 @@ public class MercatorProjection implements Projection {
      * @param mercatorX mercator x in meters
      * @param mercatorY mercator y in meters
      * @return a {@code double[]} of size 2. First element is the longitude, the second is the
-     * latitude. Values are expressed in radians.
+     * latitude. Values are expressed in decimal degrees.
      */
     @Override
     public double[] undoProjection(double mercatorX, double mercatorY) {

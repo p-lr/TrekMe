@@ -5,7 +5,9 @@ import android.content.Intent
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.map.contains
 import com.peterlaurence.trekme.core.mapsource.IgnSourceData
 import com.peterlaurence.trekme.core.mapsource.MapSource
 import com.peterlaurence.trekme.core.mapsource.NoData
@@ -193,14 +195,6 @@ data class ScaleLimitsConfig(val minScale: Float? = null, val maxScale: Float? =
 data class LevelLimitsConfig(val levelMin: Int = 1, val levelMax: Int = 18) : Config()
 data class BoundariesConfig(val boundingBoxList: List<BoundingBox>) : Config()
 
-
-data class BoundingBox(val latitudeMin: Double = 0.0, val latitudeMax: Double = 0.0,
-                       val longitudeMin: Double = 0.0, val longitudeMax: Double = 0.0)
-
 fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
     return any { it.contains(latitude, longitude) }
-}
-
-fun BoundingBox.contains(latitude: Double, longitude: Double): Boolean {
-    return latitude in latitudeMin..latitudeMax && longitude in longitudeMin..longitudeMax
 }

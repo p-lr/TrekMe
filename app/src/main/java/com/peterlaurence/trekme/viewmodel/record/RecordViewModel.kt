@@ -7,14 +7,18 @@ import android.os.PowerManager
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.map.BoundingBox
+import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.service.GpxRecordService
+import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
 import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 
 /**
@@ -32,6 +36,28 @@ class RecordViewModel @ViewModelInject constructor(
         EventBus.getDefault().register(this)
     }
 
+    /**
+     * Whenever a [GpxFileWriteEvent] is emitted, import the gpx track in all maps which intersects
+     * the [BoundingBox] of the gpx track.
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
+        val gpx = event.gpx
+
+        val boundingBox = gpx.metadata?.bounds?.let {
+            BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
+        } ?: return
+
+        MapLoader.maps.forEach { map ->
+            viewModelScope.launch {
+                if (map.intersects(boundingBox) == true) {
+                    val result = trackImporter.applyGpxToMap(gpx, map)
+                    // TODO: show recap to user
+                }
+            }
+        }
+    }
+
     fun setSelectedRecordings(recordings: List<File>) {
         recordingsSelected = recordings
     }
@@ -46,7 +72,7 @@ class RecordViewModel @ViewModelInject constructor(
         val recording = recordingsSelected.firstOrNull() ?: return
 
         viewModelScope.launch {
-            trackImporter.applyGpxFileToMapAsync(recording, map).let {
+            trackImporter.applyGpxFileToMap(recording, map).let {
                 /* Once done, all we want is to post an event */
                 EventBus.getDefault().post(it)
             }

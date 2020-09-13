@@ -142,7 +142,7 @@ class GpxRecordService : Service() {
 
     /**
      * When we stop recording the location events, create a [Gpx] object for further
-     * serialization. <br></br>
+     * serialization.
      * Whatever the outcome of this process, a [GpxFileWriteEvent] is emitted in the
      * [THREAD_NAME] thread.
      */
@@ -156,11 +156,11 @@ class GpxRecordService : Service() {
             val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH'h'mm-ss's'", Locale.ENGLISH)
             val trackName = "track-" + dateFormat.format(date)
 
-            /* Make the metadata */
-            val metadata = Metadata(trackName, date.time)
-
             val track = Track(trkSegList, trackName)
             track.statistics = trackStatCalculator.getStatistics()
+
+            /* Make the metadata */
+            val metadata = Metadata(trackName, date.time, trackStatCalculator.getBounds())
 
             val trkList = ArrayList<Track>()
             trkList.add(track)
@@ -179,7 +179,7 @@ class GpxRecordService : Service() {
                 // for instance, don't care : we want to stop the service anyway
                 // TODO : warn the user that the gpx file could not be saved
             } finally {
-                EventBus.getDefault().post(GpxFileWriteEvent())
+                EventBus.getDefault().post(GpxFileWriteEvent(gpx))
             }
         }
     }
@@ -231,7 +231,7 @@ class GpxRecordService : Service() {
     }
 
     /**
-     * Self-respond to a {link GpxFileWriteEvent} emitted by the service.
+     * Self-respond to a [GpxFileWriteEvent] emitted by the service.
      * When a GPX file has just been written, stop the service and send the status.
      */
     @Subscribe(threadMode = ThreadMode.MAIN)

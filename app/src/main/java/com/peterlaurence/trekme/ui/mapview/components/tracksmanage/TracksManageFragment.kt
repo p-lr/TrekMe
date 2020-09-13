@@ -170,8 +170,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
      * @throws TrackImporter.GpxParseException
      */
     private suspend fun applyGpxUri(uri: Uri, map: Map, ctx: Context) = coroutineScope {
-        trackImporter.applyGpxUriToMapAsync(uri, ctx.contentResolver, map).let {
-            if (it is TrackImporter.GpxParseResult.GpxParseResultOk) {
+        trackImporter.applyGpxUriToMap(uri, ctx.contentResolver, map).let {
+            if (it is TrackImporter.GpxImportResult.GpxImportOk) {
                 onGpxParseResult(it)
             }
 
@@ -180,7 +180,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         }
     }
 
-    private fun onGpxParseResult(event: TrackImporter.GpxParseResult.GpxParseResultOk) {
+    private fun onGpxParseResult(event: TrackImporter.GpxImportResult.GpxImportOk) {
         val trackAdapter = trackAdapter ?: return
         /* We want to append new routes, so the index to add new routes is equal to current length
          * of the data set. */

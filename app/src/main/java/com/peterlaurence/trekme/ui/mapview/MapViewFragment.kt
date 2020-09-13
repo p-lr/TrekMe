@@ -427,7 +427,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     @Subscribe
-    fun onTrackChangedEvent(event: TrackImporter.GpxParseResult.GpxParseResultOk) {
+    fun onTrackChangedEvent(event: TrackImporter.GpxImportResult.GpxImportOk) {
         routeLayer?.onTrackChanged(event.map, event.routes)
         if (event.newMarkersCount > 0) {
             markerLayer?.onMapMarkerUpdate()
