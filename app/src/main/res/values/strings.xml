@@ -188,6 +188,7 @@
     <string name="battery_warn_solution_msg">Go to your device settings -> \"Battery\". Then, you should see a menu
         \"Battery optimization\" or similar. You should see a list of applications. Scroll down to find TrekMe
         and disable the battery optimization.</string>
+    <string name="automatic_import_feedback">Track imported in %1$d maps</string>
 
     <!-- MapCreate fragment -->
     <string name="next_button">Next</string>

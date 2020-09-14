@@ -30,7 +30,6 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -39,6 +38,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.billing.ign.BillingFlowEvent
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
@@ -216,18 +216,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun warnNoStoragePerm() {
-        showWarningDialog(getString(R.string.no_storage_perm), getString(R.string.warning_title),
-                DialogInterface.OnDismissListener {
-                    if (!shouldInit(this)) {
-                        finish()
-                    }
-                })
+        showWarningDialog(getString(R.string.no_storage_perm), getString(R.string.warning_title)) {
+            if (!shouldInit(this)) {
+                finish()
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val mapSettingsViewModel = ViewModelProvider(this).get(MapSettingsViewModel::class.java)
-        mapSettingsViewModel.zipEvents.observe(this, Observer { event: ZipEvent? ->
+        mapSettingsViewModel.zipEvents.observe(this) { event: ZipEvent? ->
             when (event) {
                 is ZipProgressEvent -> onZipProgressEvent(event)
                 is ZipFinishedEvent -> onZipFinishedEvent(event)
@@ -237,7 +236,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     // ZipCloseEvent on which we do nothing.
                 }
             }
-        })
+        }
         fragmentManager = this.supportFragmentManager
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -518,12 +517,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         builder.setContentText(archiveOkMsg) // Removes the progress bar
                 .setProgress(0, 0, false)
         notifyMgr?.notify(event.mapId, builder.build())
-        val snackbar = Snackbar.make(binding.navView, archiveOkMsg, Snackbar.LENGTH_SHORT)
-        snackbar.show()
+        Snackbar.make(binding.navView, archiveOkMsg, Snackbar.LENGTH_SHORT).show()
     }
 
     @Subscribe
     fun onBillingFlowEvent(event: BillingFlowEvent) {
         event.billingClient.launchBillingFlow(this, event.flowParams)
+    }
+
+    @Subscribe
+    fun onGenericMessage(event: GenericMessage) {
+        Snackbar.make(binding.navView, event.msg, Snackbar.LENGTH_SHORT).show()
     }
 }

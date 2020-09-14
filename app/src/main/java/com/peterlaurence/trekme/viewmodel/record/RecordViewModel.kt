@@ -7,6 +7,8 @@ import android.os.PowerManager
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -16,6 +18,7 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
 import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -41,20 +44,29 @@ class RecordViewModel @ViewModelInject constructor(
      * the [BoundingBox] of the gpx track.
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
+    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) = viewModelScope.launch {
         val gpx = event.gpx
 
         val boundingBox = gpx.metadata?.bounds?.let {
             BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
-        } ?: return
+        } ?: return@launch
 
-        MapLoader.maps.forEach { map ->
-            viewModelScope.launch {
-                if (map.intersects(boundingBox) == true) {
-                    val result = trackImporter.applyGpxToMap(gpx, map)
-                    // TODO: show recap to user
+        var importCount = 0
+        supervisorScope {
+            MapLoader.maps.forEach { map ->
+                launch {
+                    if (map.intersects(boundingBox) == true) {
+                        val result = trackImporter.applyGpxToMap(gpx, map)
+                        if (result is TrackImporter.GpxImportResult.GpxImportOk && result.newRouteCount >= 1) {
+                            importCount++
+                        }
+                    }
                 }
             }
+        }
+        if (importCount > 0) {
+            val msg = app.applicationContext.getString(R.string.automatic_import_feedback, importCount)
+            EventBus.getDefault().post(GenericMessage(msg))
         }
     }
 
