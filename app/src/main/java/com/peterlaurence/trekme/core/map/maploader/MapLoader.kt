@@ -60,7 +60,7 @@ object MapLoader : MapImporter.MapImportListener {
      * Get a read-only list of [Map]s
      */
     val maps: List<Map>
-        get() = mapList.toList()
+        get() = mapList
 
     /**
      * Create once for all the [Gson] object, that is used to serialize/deserialize json content.
