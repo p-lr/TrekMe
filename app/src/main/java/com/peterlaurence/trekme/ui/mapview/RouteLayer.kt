@@ -24,7 +24,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.getRelativeX
 import com.peterlaurence.trekme.core.map.getRelativeY
 import com.peterlaurence.trekme.core.map.gson.RouteGson
-import com.peterlaurence.trekme.core.map.maploader.MapLoader.getRoutesForMap
+import com.peterlaurence.trekme.core.map.maploader.MapLoader.importRoutesForMap
 import com.peterlaurence.trekme.core.map.route.Barycenter
 import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
@@ -194,7 +194,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
 
     private fun CoroutineScope.acquireThenDrawRoutes(map: Map) = launch {
         /* Fetch and set routes to the map */
-        getRoutesForMap(map)
+        importRoutesForMap(map)
 
         /* Then draw them */
         drawStaticRoutes()

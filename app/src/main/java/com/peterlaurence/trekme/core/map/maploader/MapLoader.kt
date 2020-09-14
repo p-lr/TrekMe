@@ -133,12 +133,11 @@ object MapLoader : MapImporter.MapImportListener {
      * should be the UI thread), the result (a nullable instance of [RouteGson]) is set on the [Map]
      * given as parameter.
      */
-    suspend fun getRoutesForMap(map: Map) =
-            withContext(Dispatchers.Default) {
-                mapRouteImportTask(map, gson)
-            }?.let { routeGson ->
-                map.routeGson = routeGson
-            }
+    suspend fun importRoutesForMap(map: Map) = withContext(Dispatchers.Default) {
+        mapRouteImportTask(map, gson)
+    }?.let { routeGson ->
+        map.routeGson = routeGson
+    }
 
     /**
      * Launch a task which reads the landmarks.json file.

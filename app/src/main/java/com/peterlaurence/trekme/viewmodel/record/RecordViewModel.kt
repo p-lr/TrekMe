@@ -56,10 +56,6 @@ class RecordViewModel @ViewModelInject constructor(
             MapLoader.maps.forEach { map ->
                 launch {
                     if (map.intersects(boundingBox) == true) {
-                        /* At that point, routes for that map might not have been imported. Routes
-                         * are lazily imported when viewing a map. So (re?)import routes now. */
-                        MapLoader.getRoutesForMap(map)
-
                         /* Import the new route */
                         val result = trackImporter.applyGpxToMap(gpx, map)
                         if (result is TrackImporter.GpxImportResult.GpxImportOk && result.newRouteCount >= 1) {

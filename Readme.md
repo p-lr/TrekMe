@@ -39,7 +39,8 @@ ever needing an internet connection (except when creating a map).
 TrekMe is designed to work with any WMTS source such as USGS in USA, IGN France, Swiss topo, 
 OpenStreetMap and so on. 
 You can download an area of your choice so the cached tiles are available for offline usage.
-Finally, TrekMe is designed to consume very few CPU resources, to preserve the device's battery. 
+
+Perhaps most importantly, TrekMe is _designed_ to consume few CPU resources, to preserve the device's battery. 
 
 ## <a name="TOC-Features-sum"></a>Features summary
 

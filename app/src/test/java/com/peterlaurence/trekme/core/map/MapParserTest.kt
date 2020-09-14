@@ -28,7 +28,7 @@ class MapParserTest {
             assertEquals(1, mapList.size.toLong())
             val map = mapList[0]
 
-            MapLoader.getRoutesForMap(map)
+            MapLoader.importRoutesForMap(map)
             assertEquals(2, map.routes!!.size.toLong())
 
             val route = map.routes!![0]

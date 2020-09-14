@@ -99,7 +99,7 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
      */
     suspend fun applyGpxToMap(gpx: Gpx, map: Map): GpxImportResult {
         val data = convertGpx(gpx, map)
-        return applyGpxParseResultToMap(map, data.first, data.second)
+        return setRoutesAndMarkersToMap(map, data.first, data.second)
     }
 
     sealed class GpxImportResult {
@@ -140,7 +140,7 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
         val pair = readGpxInputStream(input, map, defaultName)
 
         return if (pair != null) {
-            return applyGpxParseResultToMap(map, pair.first, pair.second)
+            return setRoutesAndMarkersToMap(map, pair.first, pair.second)
         } else {
             GpxImportResult.GpxImportError
         }
@@ -148,8 +148,13 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
 
     class GpxParseException : Exception()
 
-    private fun applyGpxParseResultToMap(map: Map, routes: List<RouteGson.Route>, wayPoints: List<MarkerGson.Marker>): GpxImportResult {
+    private suspend fun setRoutesAndMarkersToMap(map: Map, routes: List<RouteGson.Route>, wayPoints: List<MarkerGson.Marker>): GpxImportResult {
         return try {
+            /* At that point, routes for that map might not have been imported.
+             * Routes are lazily imported when viewing a map. So (re?)import routes now. */
+            MapLoader.importRoutesForMap(map)
+
+            /* Now, add the new routes and markers, and save the modifications */
             val newRouteCount = TrackTools.updateRouteList(map, routes)
             val newMarkersCount = TrackTools.updateMarkerList(map, wayPoints)
             MapLoader.saveRoutes(map)

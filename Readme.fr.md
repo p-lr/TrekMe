@@ -39,7 +39,8 @@
 TrekMe est une application Android permettant de se localiser sur une carte topographique, sans 
 nécessiter de connexion internet (sauf chez soi au moment de créer la carte). Il est possible de 
  télécharger des cartes IGN, USGS, SwissTopo, et OpenStreetMap (d'autres sources seront ajoutées). 
-L'accent a été mis sur la faible consommation des ressources, pour maximiser l'autonomie lors d'une 
+ 
+L'accent a été mis sur la faible consommation des ressources, pour *maximiser l'autonomie* lors d'une 
 randonnée. L'application est aussi très fluide de manière générale.
 
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
