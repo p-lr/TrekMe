@@ -2,6 +2,7 @@
     <string name="app_name" translatable="false">TrekMe</string>
     <string name="app_author" translatable="false">View on GitHub</string>
     <string name="general_help_link"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#que-faire-si">Need help?</a></string>
+    <string name="email_support" translatable="false">plr.devs@gmail.com</string>
 
     <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
     <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
@@ -292,5 +293,7 @@
     <string name="user_manual_title">User manual</string>
     <string name="user_manual_desc">There\'s a complete user manual where you\'ll find everything you should know about TrekMe.</string>
     <string name="user_manual_btn">See manual</string>
-
+    <string name="feedback_title">Do you like the application?</string>
+    <string name="feedback_desc">Contribute to making TrekMe more popular, and encourage me to add more features.</string>
+    <string name="feedback_negative_msg">Tell me about your issue and I\'ll do my best to help you.</string>
 </resources>

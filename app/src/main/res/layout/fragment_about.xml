@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -41,6 +40,80 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/userManualDesc" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/feedback_title"
+        android:textColor="@color/colorAccent"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userManualBtn" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/feedback_desc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.65"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.35" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/thumbUpButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/colorAccent"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_baseline_thumb_up_alt_24"
+        app:borderWidth="0dp"
+        app:elevation="0dp"
+        app:fabSize="mini"
+        app:layout_constraintEnd_toStartOf="@+id/guideline6"
+        app:layout_constraintStart_toStartOf="@+id/guideline6"
+        app:layout_constraintTop_toBottomOf="@+id/textView6" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/thumbDownButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/colorLightGrey"
+        android:clickable="true"
+        android:elevation="0dp"
+        android:focusable="true"
+        android:src="@drawable/ic_baseline_thumb_down_alt_24"
+        app:borderWidth="0dp"
+        app:elevation="0dp"
+        app:fabSize="mini"
+        app:layout_constraintEnd_toStartOf="@+id/guideline7"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toBottomOf="@+id/textView6" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
