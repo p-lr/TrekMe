@@ -127,7 +127,7 @@
     <string name="tracks_label">"Nombre de traces : "</string>
     <string name="waypoints_label">"Nombre de marqueurs : "</string>
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
-    <string name="help">Aide</string>
+    <string name="about">À propos</string>
     <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#sommaire</string>
     <string name="ign_warning_storage_rights">TrekMe ne peut pas tenir compte de vos identifiants, parce que l\'application ne dispose pas l\'autorisation de <b>stockage</b>. Dans vos paramètres Android, pour Applications, veuillez vérifier les autorisations de TrekMe.</string>
     <string name="ign_warning_credentials">Au moins un de vos identifiants (nom, mot de passe, clé d\'API) est incorrect. Vous ne pourrez pas créer de carte IGN tant que vous n\'aurez pas entré d\'identifiants corrects.</string>
@@ -215,4 +215,8 @@
         execution en arrière plan et désactiver l\'optimisation.</string>
     <string name="track_add_error">Une erreur est survenue lors de l\'import de la trace</string>
     <string name="automatic_import_feedback">Trace importée dans %1$d carte(s)</string>
+    <string name="user_manual_title">Manuel utilisateur</string>
+    <string name="user_manual_desc">Tout ce que vous devez savoir est expliqué dans le manuel utilisateur. Par exemple,
+        est expliqué comment importer une trace GPX, partager une carte en wifi, etc.</string>
+    <string name="user_manual_btn">Voir manuel</string>
 </resources>

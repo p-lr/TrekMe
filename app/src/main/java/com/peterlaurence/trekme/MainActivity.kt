@@ -344,11 +344,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_import -> showMapImportFragment()
             R.id.nav_share -> showWifiP2pFragment()
             R.id.nav_settings -> showSettingsFragment()
-            R.id.nav_help -> {
-                val url = getString(R.string.help_url)
-                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                startActivity(browserIntent)
-            }
+            R.id.nav_about -> navController.navigate(R.id.action_global_aboutFragment)
             else -> {
             }
         }

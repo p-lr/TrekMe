@@ -14,7 +14,7 @@
     <string name="import_menu_title">Import a map</string>
     <string name="share_menu_title">Receive or send</string>
     <string name="settings_menu_title">Settings</string>
-    <string name="help">Help</string>
+    <string name="about">About</string>
     <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.md#summary</string>
     <string name="confirm_exit">Click BACK again to exit</string>
     <string name="no_internet">You must be connected to internet to create a map</string>
@@ -252,7 +252,6 @@
     <!-- TrackViewFragment -->
     <string name="distance">Distance</string>
     <string name="current_recording">Current recording</string>
-    <string name="ign_warning_help"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#TOC-ign-incorrect">Need help?</a></string>
 
     <!-- SettingsFragment -->
     <string name="general_category">General</string>
@@ -288,5 +287,10 @@
     <string name="wifip2p_successful_load">Successfully loaded %1$s</string>
     <string name="wifip2p_warning_wifi">You need to enable Wifi on your device to use this feature, even if there is no network or Hotspot.</string>
     <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.md#map-sharing</string>
+
+    <!-- AboutFragment -->
+    <string name="user_manual_title">User manual</string>
+    <string name="user_manual_desc">There\'s a complete user manual where you\'ll find everything you should know about TrekMe.</string>
+    <string name="user_manual_btn">See manual</string>
 
 </resources>

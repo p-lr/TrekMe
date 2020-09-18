@@ -4,6 +4,6 @@
     <item
         android:id="@+id/help_wifip2p_id"
         android:icon="@drawable/help_circle_outline_white"
-        android:title="@string/help"
+        android:title="@string/about"
         app:showAsAction="always" />
 </menu>
