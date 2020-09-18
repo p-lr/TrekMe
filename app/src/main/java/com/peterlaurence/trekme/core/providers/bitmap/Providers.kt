@@ -70,7 +70,7 @@ class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, pri
 }
 
 class TileStreamProviderRetry(private val tileStreamProvider: TileStreamProvider,
-                              private val retryCount: Int = 10) : TileStreamProvider {
+                              private val retryCount: Int = 30) : TileStreamProvider {
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         var retryCnt = 0
         var result: TileResult
