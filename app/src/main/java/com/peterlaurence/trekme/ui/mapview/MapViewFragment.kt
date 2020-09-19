@@ -588,8 +588,13 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* The magnifying factor - default to 1 */
         val factor = this.magnifyingFactor ?: 1
 
+        val tileStreamProvider = makeMapViewTileStreamProvider(map)
+        if (tileStreamProvider == null) {
+            presenter?.showMessage(requireContext().getString(R.string.unknown_map_source))
+            return
+        }
         val config = MapViewConfiguration(
-                map.levelList.size, map.widthPx, map.heightPx, tileSize, makeMapViewTileStreamProvider(map))
+                map.levelList.size, map.widthPx, map.heightPx, tileSize, tileStreamProvider)
                 .setMaxScale(2f)
                 .setMagnifyingFactor(factor)
                 .setPadding(tileSize * 2)

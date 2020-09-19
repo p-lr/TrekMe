@@ -12,7 +12,7 @@ data class MapSpec(val levelMin: Int, val levelMax: Int, val mapWidthPx: Int, va
                    val tileSize: Int)
 
 /**
- * At level 0, an WMTS map (which use WebMercator projection) is contained in a single tile of
+ * At level 0, a WMTS map (which use WebMercator projection) is contained in a single tile of
  * 256x256px.
  * Each level has twice more tiles than the precedent.
  * Boundaries of the map are WebMercator values of the top left and bottom right corners :
@@ -31,18 +31,18 @@ data class MapSpec(val levelMin: Int, val levelMax: Int, val mapWidthPx: Int, va
  *    --------------------------
  *                             X1 = -X0
  *                             Y1 = X0
- * This function builds the map as an [Sequence] of [Tile] which contain the area defined by the two
- * supplied points. The build method is:
+ * This function builds the map as a [Sequence] of [Tile] which contains the area defined by the two
+ * supplied points. This is done in two steps:
  *
  * * Start by finding the tiles at min level that overlap the area.
  * * Find the tiles at higher levels that match exactly the the area underneath the tiles at min level
  *
- * This build method has the advantage of producing a map whose levels cover the same area. But it
+ * This algorithm has the advantage of producing a map whose levels cover the same area. But it
  * has a drawback. If the min level is too small, the tile size in meters at this level is high and
  * potentially a large unwanted area will be covered by this level and hence all higher levels. This
  * can lead to downloading a lot of unwanted tiles.
  *
- * A rule of thumb is to set the min level to 12 or higher, and max level no more than 18.
+ * A rule of thumb is to set the min level to 12 or higher, and max level no more than 17.
  *
  * Calibration points are set on top-left and bottom-right corners. They are computed with the tiles
  * of the min level since this is the level used for getting the boundaries of the map.
