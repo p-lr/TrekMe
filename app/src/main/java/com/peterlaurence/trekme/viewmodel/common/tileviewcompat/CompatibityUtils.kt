@@ -16,8 +16,8 @@ import com.peterlaurence.mapview.core.TileStreamProvider as MapViewTileStreamPro
  * For instance, fragments use MapView, so the returned type is [MapViewTileStreamProvider].
  */
 fun makeMapViewTileStreamProvider(map: Map): MapViewTileStreamProvider? {
-    return when (map.origin) {
-        Map.MapOrigin.VIPS, Map.MapOrigin.IGN_LICENSED -> object : MapViewTileStreamProvider {
+    return if (map.origin != null) {
+        object : MapViewTileStreamProvider {
             override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
                 val relativePathString = "$zoomLvl${File.separator}$row${File.separator}$col${map.imageExtension}"
 
@@ -28,10 +28,9 @@ fun makeMapViewTileStreamProvider(map: Map): MapViewTileStreamProvider? {
                 }
             }
         }
-        Map.MapOrigin.UNDEFINED -> {
-            Log.e(TAG, "Unknown map origin ${map.origin}")
-            null
-        }
+    } else {
+        Log.e(TAG, "Unknown map origin ${map.origin}")
+        null
     }
 }
 

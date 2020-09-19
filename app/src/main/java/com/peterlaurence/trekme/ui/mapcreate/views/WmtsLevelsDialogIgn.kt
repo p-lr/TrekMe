@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
+import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
 import com.peterlaurence.trekme.viewmodel.mapcreate.LicenseStatus
@@ -30,13 +30,13 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     private lateinit var helpBtn: ImageButton
 
     companion object {
-        fun newInstance(area: Area, mapSourceBundle: MapSourceBundle): WmtsLevelsDialogIgn {
+        fun newInstance(area: Area, wmtsSourceBundle: WmtsSourceBundle): WmtsLevelsDialogIgn {
             val f = WmtsLevelsDialogIgn()
 
             // Supply num input as an argument.
             val args = Bundle()
             args.putParcelable(ARG_AREA, area)
-            args.putParcelable(ARG_MAP_SOURCE, mapSourceBundle)
+            args.putParcelable(ARG_WMTS_SOURCE, wmtsSourceBundle)
             f.arguments = args
 
             return f

@@ -12,8 +12,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.mapsource.MapSource
-import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
 import com.peterlaurence.trekme.ui.mapcreate.MapSourceAdapter.MapSourceSelectionListener
 import com.peterlaurence.trekme.util.isEnglish
@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.util.isFrench
  * @author peterLaurence on 08/04/18
  */
 class MapCreateFragment : Fragment(), MapSourceSelectionListener {
-    private lateinit var mapSourceSet: Array<MapSource>
+    private lateinit var wmtsSourceSet: Array<WmtsSource>
 
     private var _binding: FragmentMapCreateBinding? = null
     private val binding get() = _binding!!
@@ -34,13 +34,13 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         super.onAttach(context)
 
         /**
-         * When the app is in english, put [MapSource.USGS] in front.
-         * When in french, put [MapSource.IGN] in front.
+         * When the app is in english, put [WmtsSource.USGS] in front.
+         * When in french, put [WmtsSource.IGN] in front.
          */
-        mapSourceSet = MapSource.values().sortedBy {
-            if (isEnglish(context) && it == MapSource.USGS) {
+        wmtsSourceSet = WmtsSource.values().sortedBy {
+            if (isEnglish(context) && it == WmtsSource.USGS) {
                 -1
-            } else if (isFrench(context) && it == MapSource.IGN) {
+            } else if (isFrench(context) && it == WmtsSource.IGN) {
                 -1
             } else {
                 0
@@ -67,7 +67,7 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
 
         val viewManager = LinearLayoutManager(context)
         val viewAdapter = MapSourceAdapter(
-                mapSourceSet, this, context?.getColor(R.color.colorAccent)
+                wmtsSourceSet, this, context?.getColor(R.color.colorAccent)
                 ?: Color.BLUE,
                 context?.getColor(R.color.colorPrimaryTextWhite)
                         ?: Color.WHITE, context?.getColor(R.color.colorPrimaryTextBlack)
@@ -92,16 +92,16 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         }
     }
 
-    private fun showWmtsViewFragment(mapSource: MapSource) {
+    private fun showWmtsViewFragment(wmtsSource: WmtsSource) {
         val navController = findNavController()
         if (navController.currentDestination?.id == R.id.mapCreateFragment) {
-            val bundle = MapSourceBundle(mapSource)
+            val bundle = WmtsSourceBundle(wmtsSource)
             val action = MapCreateFragmentDirections.actionMapCreateFragmentToGoogleMapWmtsViewFragment(bundle)
             navController.navigate(action)
         }
     }
 
-    override fun onMapSourceSelected(m: MapSource) {
+    override fun onMapSourceSelected(m: WmtsSource) {
         showWmtsViewFragment(m)
     }
 }

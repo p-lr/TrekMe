@@ -20,7 +20,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.mapbuilder.buildFromMapSpec
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.mapsource.MapSource
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
@@ -204,7 +204,7 @@ class DownloadService : Service() {
         }
 
         /* Specific to OSM, don't use more than 2 threads */
-        val effectiveThreadCount = if (source == MapSource.OPEN_STREET_MAP) 2 else threadCount
+        val effectiveThreadCount = if (source == WmtsSource.OPEN_STREET_MAP) 2 else threadCount
         launchDownloadTask(effectiveThreadCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
     }
 
@@ -247,7 +247,7 @@ class DownloadService : Service() {
         EventBus.getDefault().post(progressEvent)
     }
 
-    private fun postProcess(mapSpec: MapSpec, source: MapSource) {
+    private fun postProcess(mapSpec: MapSpec, source: WmtsSource) {
         val calibrationPoints = mapSpec.calibrationPoints
 
         /* Calibrate */
@@ -259,10 +259,13 @@ class DownloadService : Service() {
             MapLoader.addMap(map)
         }
 
-        val mapOrigin = if (source == MapSource.IGN) {
-            Map.MapOrigin.IGN_LICENSED
-        } else {
-            Map.MapOrigin.VIPS
+        val mapOrigin = when (source) {
+            WmtsSource.IGN -> Map.MapOrigin.IGN_LICENSED
+            WmtsSource.USGS -> Map.MapOrigin.USGS
+            WmtsSource.OPEN_STREET_MAP -> Map.MapOrigin.OPEN_STREET_MAP
+            WmtsSource.ORDNANCE_SURVEY -> Map.MapOrigin.ORDNANCE_SURVEY
+            WmtsSource.IGN_SPAIN -> Map.MapOrigin.IGN_SPAIN
+            WmtsSource.SWISS_TOPO -> Map.MapOrigin.SWISS_TOPO
         }
         val map = buildFromMapSpec(mapSpec, mapOrigin, destDir, ".jpg")
 

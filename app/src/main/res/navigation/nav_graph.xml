@@ -81,8 +81,8 @@
         android:name="com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment"
         android:label="@string/google_map_wmts_label">
         <argument
-            android:name="mapSource"
-            app:argType="com.peterlaurence.trekme.core.mapsource.MapSourceBundle" />
+            android:name="wmtsSource"
+            app:argType="com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle" />
     </fragment>
     <fragment
         android:id="@+id/recordFragment"

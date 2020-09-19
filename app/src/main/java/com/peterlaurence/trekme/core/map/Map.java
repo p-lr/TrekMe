@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.core.map;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.peterlaurence.trekme.core.map.gson.Landmark;
@@ -277,17 +276,22 @@ public class Map {
         mMapGson.calibration.calibration_method = method.name();
     }
 
-    @NonNull
+    @Nullable
     public MapOrigin getOrigin() {
         try {
             return mMapGson.provider.generated_by;
         } catch (NullPointerException e) {
-            return MapOrigin.UNDEFINED;
+            return null;
         }
     }
 
+    /**
+     * A map can have several origins. Like it can come from a WMTS source, or produced using libvips.
+     */
     public enum MapOrigin {
-        VIPS, IGN_LICENSED, UNDEFINED
+        IGN, IGN_LICENSED,  // IGN WMTS source
+        SWISS_TOPO, OPEN_STREET_MAP, USGS, IGN_SPAIN, ORDNANCE_SURVEY,  // other WMTS sources
+        VIPS,   // Custom map
     }
 
     /**

@@ -16,8 +16,8 @@ import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.api.moveToMarker
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.TileStreamProvider
-import com.peterlaurence.trekme.core.mapsource.MapSource
-import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.ignLayers
@@ -75,7 +75,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
      * property when it's null */
     private var _binding: FragmentWmtsViewBinding? = null
 
-    private lateinit var mapSource: MapSource
+    private var wmtsSource: WmtsSource? = null
     private var mapView: MapView? = null
     private var areaLayer: AreaLayer? = null
     private var positionMarker: PositionMarker? = null
@@ -99,8 +99,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mapSource = arguments?.getParcelable<MapSourceBundle>(ARG_MAP_SOURCE)?.mapSource
-                ?: MapSource.OPEN_STREET_MAP
+        wmtsSource = arguments?.getParcelable<WmtsSourceBundle>(ARG_WMTS_SOURCE)?.wmtsSource
 
         setHasOptionsMenu(true)
     }
@@ -146,8 +145,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         /* Only show the layer menu for IGN France for instance */
         val layerMenu = menu.findItem(R.id.map_layer_menu_id)
-        layerMenu.isVisible = when (mapSource) {
-            MapSource.IGN -> true
+        layerMenu.isVisible = when (wmtsSource) {
+            WmtsSource.IGN -> true
             else -> false
         }
 
@@ -163,16 +162,18 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 _binding?.fabSave?.visibility = View.VISIBLE
             }
             R.id.map_layer_menu_id -> {
-                val event = LayerSelectEvent(arrayListOf())
-                val title = getString(R.string.ign_select_layer_title)
-                val values = ignLayers.map { it.publicName }
-                val layerPublicName = viewModel.getLayerPublicNameForSource(mapSource)
-                val layerSelectDialog =
-                        SelectDialog.newInstance(title, values, layerPublicName, event)
-                layerSelectDialog.show(
-                        requireActivity().supportFragmentManager,
-                        "SelectDialog-${event.javaClass.canonicalName}"
-                )
+                wmtsSource?.also { wmtsSource->
+                    val event = LayerSelectEvent(arrayListOf())
+                    val title = getString(R.string.ign_select_layer_title)
+                    val values = ignLayers.map { it.publicName }
+                    val layerPublicName = viewModel.getLayerPublicNameForSource(wmtsSource)
+                    val layerSelectDialog =
+                            SelectDialog.newInstance(title, values, layerPublicName, event)
+                    layerSelectDialog.show(
+                            requireActivity().supportFragmentManager,
+                            "SelectDialog-${event.javaClass.canonicalName}"
+                    )
+                }
             }
         }
         return super.onOptionsItemSelected(item)
@@ -223,8 +224,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     @Subscribe
     fun onLayerDefined(e: LayerSelectEvent) {
+        val wmtsSource = wmtsSource ?: return
+
         /* Update the layer preference */
-        viewModel.setLayerPublicNameForSource(mapSource, e.getSelection())
+        viewModel.setLayerPublicNameForSource(wmtsSource, e.getSelection())
 
         /* Then re-create the MapView */
         shouldZoomOnPosition = true
@@ -234,18 +237,20 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun configure() = lifecycleScope.launch {
+        val wmtsSource = wmtsSource ?: return@launch
+
         /* 0- Show infinite progressbar to the user until we're done testing the tile provider */
         _binding?.progressBarWaiting?.visibility = View.VISIBLE
 
         /* 1- Create the TileStreamProvider */
-        val streamProvider = viewModel.createTileStreamProvider(mapSource)
+        val streamProvider = viewModel.createTileStreamProvider(wmtsSource)
         if (streamProvider == null) {
             showWarningMessage()
             return@launch
         }
 
         /* 2- Configure the mapView only if the test succeeds */
-        val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
+        val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
         val checkResult = checkTileAccessibility(streamProvider)
         try {
             if (!checkResult) {
@@ -289,19 +294,20 @@ class GoogleMapWmtsViewFragment : Fragment() {
      * Simple check whether we are able to download tiles or not.
      */
     private suspend fun checkTileAccessibility(tileStreamProvider: TileStreamProvider): Boolean = withContext(Dispatchers.IO) {
-        when (mapSource) {
-            MapSource.IGN -> {
+        when (wmtsSource) {
+            WmtsSource.IGN -> {
                 try {
                     checkIgnProvider(tileStreamProvider)
                 } catch (e: Exception) {
                     false
                 }
             }
-            MapSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
-            MapSource.USGS -> checkUSGSProvider(tileStreamProvider)
-            MapSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
-            MapSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
-            MapSource.ORDNANCE_SURVEY -> checkOrdnanceSurveyProvider(tileStreamProvider)
+            WmtsSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
+            WmtsSource.USGS -> checkUSGSProvider(tileStreamProvider)
+            WmtsSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
+            WmtsSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
+            WmtsSource.ORDNANCE_SURVEY -> checkOrdnanceSurveyProvider(tileStreamProvider)
+            null -> false
         }
     }
 
@@ -310,7 +316,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fragmentWmtWarning.visibility = View.VISIBLE
         binding.fragmentWmtWarningLink.visibility = View.VISIBLE
 
-        if (mapSource == MapSource.IGN) {
+        if (wmtsSource == WmtsSource.IGN) {
             binding.fragmentWmtWarning.text = getText(R.string.mapcreate_warning_ign)
         } else {
             binding.fragmentWmtWarning.text = getText(R.string.mapcreate_warning_others)
@@ -390,15 +396,15 @@ class GoogleMapWmtsViewFragment : Fragment() {
         if (this::area.isInitialized) {
             val fm = activity?.supportFragmentManager
             if (fm != null) {
-                mapSource.let {
-                    val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
+                wmtsSource?.let {
+                    val mapConfiguration = viewModel.getScaleAndScrollConfig(it)
                     val levelConf = mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
                     val mapSourceBundle = if (levelConf != null) {
-                        MapSourceBundle(it, levelConf.levelMin, levelConf.levelMax)
+                        WmtsSourceBundle(it, levelConf.levelMin, levelConf.levelMax)
                     } else {
-                        MapSourceBundle(it)
+                        WmtsSourceBundle(it)
                     }
-                    val wmtsLevelsDialog = if (it == MapSource.IGN) {
+                    val wmtsLevelsDialog = if (it == WmtsSource.IGN) {
                         WmtsLevelsDialogIgn.newInstance(area, mapSourceBundle)
                     } else {
                         WmtsLevelsDialog.newInstance(area, mapSourceBundle)
@@ -413,6 +419,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* If there is no MapView, no need to go further */
         if (mapView == null) return
 
+        val wmtsSource = wmtsSource ?: return
+
         /* Project lat/lon off UI thread and update the position */
         lifecycleScope.launch {
             val projectedValues = withContext(Dispatchers.Default) {
@@ -421,7 +429,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             if (projectedValues != null) {
                 updatePosition(projectedValues[0], projectedValues[1])
                 if (shouldZoomOnPosition) {
-                    val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
+                    val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
                     val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
                     boundaryConf?.boundingBoxList?.also { boxes ->
                         if (boxes.contains(location.latitude, location.longitude)) {
@@ -436,8 +444,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun centerOnPosition() {
+        val wmtsSource = wmtsSource ?: return
         val positionMarker = positionMarker ?: return
-        val mapConfiguration = viewModel.getScaleAndScrollConfig(mapSource)
+        val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
         val scaleConf = mapConfiguration?.filterIsInstance<ScaleForZoomOnPositionConfig>()?.firstOrNull()
         mapView?.moveToMarker(positionMarker, scaleConf?.scale ?: 1f, true)
     }
@@ -463,4 +472,4 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 }
 
-private const val ARG_MAP_SOURCE = "mapSource"
+private const val ARG_WMTS_SOURCE = "wmtsSource"

@@ -12,8 +12,8 @@ import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.mapsource.MapSource
-import com.peterlaurence.trekme.core.mapsource.MapSourceBundle
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
@@ -41,22 +41,22 @@ open class WmtsLevelsDialog : DialogFragment() {
 
     private lateinit var transactionsTextView: TextView
     private lateinit var mapSizeTextView: TextView
-    private var mapSourceBundle: MapSourceBundle? = null
-    private val mapSource: MapSource?
-        get() = mapSourceBundle?.mapSource
+    private var wmtsSourceBundle: WmtsSourceBundle? = null
+    private val wmtsSource: WmtsSource?
+        get() = wmtsSourceBundle?.wmtsSource
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
 
     companion object {
-        const val ARG_MAP_SOURCE = "WmtsLevelsDialog_mapSource"
+        const val ARG_WMTS_SOURCE = "WmtsLevelsDialog_wmtsSource"
         const val ARG_AREA = "WmtsLevelsDialog_area"
 
-        fun newInstance(area: Area, mapSourceBundle: MapSourceBundle): WmtsLevelsDialog {
+        fun newInstance(area: Area, wmtsSourceBundle: WmtsSourceBundle): WmtsLevelsDialog {
             val f = WmtsLevelsDialog()
 
             // Supply num input as an argument.
             val args = Bundle()
             args.putParcelable(ARG_AREA, area)
-            args.putParcelable(ARG_MAP_SOURCE, mapSourceBundle)
+            args.putParcelable(ARG_WMTS_SOURCE, wmtsSourceBundle)
             f.arguments = args
 
             return f
@@ -66,8 +66,8 @@ open class WmtsLevelsDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.dialog_wmts, null)
-        mapSourceBundle = arguments?.getParcelable(ARG_MAP_SOURCE)
-        mapSourceBundle?.also {
+        wmtsSourceBundle = arguments?.getParcelable(ARG_WMTS_SOURCE)
+        wmtsSourceBundle?.also {
             minLevel = it.levelMin
             maxLevel = it.levelMax
         }
@@ -196,7 +196,7 @@ open class WmtsLevelsDialog : DialogFragment() {
      */
     private fun onDownloadFormConfirmed() {
         val (p1, p2) = getPointsOfArea()
-        mapSource?.let { mapSource ->
+        wmtsSource?.let { mapSource ->
             viewModel.onDownloadFormConfirmed(mapSource, p1, p2, currentMinLevel, currentMaxLevel)
         }
     }

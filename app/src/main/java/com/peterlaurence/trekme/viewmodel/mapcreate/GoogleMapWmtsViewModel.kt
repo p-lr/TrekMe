@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
 import com.peterlaurence.trekme.core.mapsource.IgnSourceData
-import com.peterlaurence.trekme.core.mapsource.MapSource
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.NoData
 import com.peterlaurence.trekme.core.mapsource.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.mapsource.wmts.Point
@@ -31,8 +31,8 @@ import java.net.URL
 
 /**
  * View-model for [GoogleMapWmtsViewFragment]. It takes care of:
- * * storing the predefined init scale and position for each [MapSource]
- * * keeping track of the layer (as to each [MapSource] may correspond multiple layers)
+ * * storing the predefined init scale and position for each [WmtsSource]
+ * * keeping track of the layer (as to each [WmtsSource] may correspond multiple layers)
  * * providing a [TileStreamProvider] for the fragment
  *
  * @author peterLaurence on 09/11/19
@@ -47,7 +47,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     private val ordnanceSurveyApiUrl = "https://plrapps.ovh:8080/ordnance-survey-api"
 
     private val scaleAndScrollInitConfig = mapOf(
-            MapSource.IGN to listOf(
+            WmtsSource.IGN to listOf(
                     ScaleLimitsConfig(maxScale = 0.5f),
                     ScaleForZoomOnPositionConfig(scale = 0.125f),
                     LevelLimitsConfig(levelMax = 17),
@@ -61,12 +61,12 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
                             BoundingBox(14.35, 14.93, -61.31, -60.75),     // Martinique
                             BoundingBox(-17.945, -17.46, -149.97, -149.1), // Tahiti
                     ))),
-            MapSource.OPEN_STREET_MAP to listOf(
+            WmtsSource.OPEN_STREET_MAP to listOf(
                     BoundariesConfig(listOf(
                             BoundingBox(-80.0, 83.0, -180.0, 180.0)        // World
                     ))
             ),
-            MapSource.USGS to listOf(
+            WmtsSource.USGS to listOf(
                     ScaleLimitsConfig(maxScale = 0.25f),
                     ScaleForZoomOnPositionConfig(scale = 0.125f),
                     LevelLimitsConfig(levelMax = 16),
@@ -74,7 +74,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
                             BoundingBox(24.69, 49.44, -124.68, -66.5)
                     ))
             ),
-            MapSource.SWISS_TOPO to listOf(
+            WmtsSource.SWISS_TOPO to listOf(
                     InitScaleAndScrollConfig(0.0006149545f, 21064, 13788),
                     ScaleLimitsConfig(minScale = 0.0006149545f, maxScale = 0.5f),
                     ScaleForZoomOnPositionConfig(scale = 0.125f),
@@ -83,7 +83,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
                             BoundingBox(45.78, 47.838, 5.98, 10.61)
                     ))
             ),
-            MapSource.IGN_SPAIN to listOf(
+            WmtsSource.IGN_SPAIN to listOf(
                     InitScaleAndScrollConfig(0.0003546317f, 11127, 8123),
                     ScaleLimitsConfig(minScale = 0.0003546317f, maxScale = 0.5f),
                     ScaleForZoomOnPositionConfig(scale = 0.125f),
@@ -92,7 +92,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
                             BoundingBox(35.78, 43.81, -9.55, 3.32)
                     ))
             ),
-            MapSource.ORDNANCE_SURVEY to listOf(InitScaleAndScrollConfig(0.000830759f, 27011, 17261),
+            WmtsSource.ORDNANCE_SURVEY to listOf(InitScaleAndScrollConfig(0.000830759f, 27011, 17261),
                     ScaleLimitsConfig(minScale = 0.000830759f, maxScale = 0.25f),
                     LevelLimitsConfig(7, 16),
                     ScaleForZoomOnPositionConfig(scale = 0.125f),
@@ -102,23 +102,23 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
             )
     )
 
-    private val activeLayerForSource: MutableMap<MapSource, Layer> = mutableMapOf(
-            MapSource.IGN to defaultIgnLayer
+    private val activeLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
+            WmtsSource.IGN to defaultIgnLayer
     )
 
-    fun getScaleAndScrollConfig(mapSource: MapSource): List<Config>? {
-        return scaleAndScrollInitConfig[mapSource]
+    fun getScaleAndScrollConfig(wmtsSource: WmtsSource): List<Config>? {
+        return scaleAndScrollInitConfig[wmtsSource]
     }
 
-    fun getLayerPublicNameForSource(mapSource: MapSource): String {
-        return activeLayerForSource[mapSource]?.publicName ?: ""
+    fun getLayerPublicNameForSource(wmtsSource: WmtsSource): String {
+        return activeLayerForSource[wmtsSource]?.publicName ?: ""
     }
 
-    fun setLayerPublicNameForSource(mapSource: MapSource, layerName: String) {
-        if (mapSource == MapSource.IGN) {
+    fun setLayerPublicNameForSource(wmtsSource: WmtsSource, layerName: String) {
+        if (wmtsSource == WmtsSource.IGN) {
             try {
                 val layer = ignLayers.first { it.publicName == layerName }
-                activeLayerForSource[mapSource] = layer
+                activeLayerForSource[wmtsSource] = layer
             } catch (e: Exception) {
                 /* Default value just in case */
                 defaultIgnLayer
@@ -126,16 +126,16 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         }
     }
 
-    suspend fun createTileStreamProvider(mapSource: MapSource): TileStreamProvider? {
-        val mapSourceData = when (mapSource) {
-            MapSource.IGN -> {
-                val layer = activeLayerForSource[mapSource] ?: defaultIgnLayer
+    suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider? {
+        val mapSourceData = when (wmtsSource) {
+            WmtsSource.IGN -> {
+                val layer = activeLayerForSource[wmtsSource] ?: defaultIgnLayer
                 if (ignApi == null) {
                     ignApi = getApi(ignApiUrl)
                 }
                 IgnSourceData(ignApi ?: "", layer)
             }
-            MapSource.ORDNANCE_SURVEY -> {
+            WmtsSource.ORDNANCE_SURVEY -> {
                 if (ordnanceSurveyApi == null) {
                     ordnanceSurveyApi = getApi(ordnanceSurveyApiUrl)
                 }
@@ -144,7 +144,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
             else -> NoData
         }
         return try {
-            createTileStreamProvider(mapSource, mapSourceData)
+            createTileStreamProvider(wmtsSource, mapSourceData)
         } catch (e: Exception) {
             null
         }
@@ -171,15 +171,15 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
      *      RequestDownloadMapEvent   ----->          (event available)
      *      Intent                    ----->          (service start, then process event)
      */
-    fun onDownloadFormConfirmed(mapSource: MapSource,
+    fun onDownloadFormConfirmed(wmtsSource: WmtsSource,
                                 p1: Point, p2: Point, minLevel: Int, maxLevel: Int) {
         val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2)
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         viewModelScope.launch {
-            val tileStreamProvider = createTileStreamProvider(mapSource)
+            val tileStreamProvider = createTileStreamProvider(wmtsSource)
 
             if (tileStreamProvider != null) {
-                EventBus.getDefault().postSticky(RequestDownloadMapEvent(mapSource, mapSpec, tileCount, tileStreamProvider))
+                EventBus.getDefault().postSticky(RequestDownloadMapEvent(wmtsSource, mapSpec, tileCount, tileStreamProvider))
             }
 
             val intent = Intent(app, DownloadService::class.java)

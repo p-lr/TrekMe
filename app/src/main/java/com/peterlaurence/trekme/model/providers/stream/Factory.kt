@@ -2,40 +2,40 @@ package com.peterlaurence.trekme.model.providers.stream
 
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.IgnSourceData
-import com.peterlaurence.trekme.core.mapsource.MapSource
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.MapSourceData
 import com.peterlaurence.trekme.core.mapsource.OrdnanceSurveyData
 import com.peterlaurence.trekme.core.providers.urltilebuilder.*
 
 /**
  * This is the unique place of the app (excluding tests), where we create a [TileStreamProvider]
- * from a [MapSource].
+ * from a [WmtsSource].
  */
-fun createTileStreamProvider(mapSource: MapSource, mapSourceData: MapSourceData): TileStreamProvider {
-    return when (mapSource) {
-        MapSource.IGN -> {
+fun createTileStreamProvider(wmtsSource: WmtsSource, mapSourceData: MapSourceData): TileStreamProvider {
+    return when (wmtsSource) {
+        WmtsSource.IGN -> {
             val ignSourceData = mapSourceData as? IgnSourceData
                     ?: throw Exception("Missing API for IGN source")
             val urlTileBuilder = UrlTileBuilderIgn(ignSourceData.api, ignSourceData.layer.realName)
             TileStreamProviderIgn(urlTileBuilder, ignSourceData.layer)
         }
-        MapSource.USGS -> {
+        WmtsSource.USGS -> {
             val urlTileBuilder = UrlTileBuilderUSGS()
             TileStreamProviderUSGS(urlTileBuilder)
         }
-        MapSource.OPEN_STREET_MAP -> {
+        WmtsSource.OPEN_STREET_MAP -> {
             val urlTileBuilder = UrlTileBuilderOSM()
             TileStreamProviderOSM(urlTileBuilder)
         }
-        MapSource.IGN_SPAIN -> {
+        WmtsSource.IGN_SPAIN -> {
             val urlTileBuilder = UrlTileBuilderIgnSpain()
             TileStreamProviderIgnSpain(urlTileBuilder)
         }
-        MapSource.SWISS_TOPO -> {
+        WmtsSource.SWISS_TOPO -> {
             val urlTileBuilder = UrlTileBuilderSwiss()
             TileStreamProviderSwiss(urlTileBuilder)
         }
-        MapSource.ORDNANCE_SURVEY -> {
+        WmtsSource.ORDNANCE_SURVEY -> {
             val ordnanceSurveyData = mapSourceData as? OrdnanceSurveyData
                     ?: throw Exception("Missing API for Ordnance Survey source")
             val urlTileBuilder = UrlTileBuilderOrdnanceSurvey(ordnanceSurveyData.api)

@@ -13,10 +13,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.mapsource.MapSource
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import java.lang.ref.WeakReference
 
-class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val mapSourceSelectionListener: MapSourceSelectionListener,
+class MapSourceAdapter(private val wmtsSourceSet: Array<WmtsSource>, private val mapSourceSelectionListener: MapSourceSelectionListener,
                        private val accentColor: Int, private val whiteTextColor: Int, private val blackTextColor: Int) :
         RecyclerView.Adapter<MapSourceAdapter.MapSourceViewHolder>() {
     lateinit var parentView: ViewGroup
@@ -31,12 +31,12 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
     }
 
     override fun getItemCount(): Int {
-        return mapSourceSet.size
+        return wmtsSourceSet.size
     }
 
     override fun onBindViewHolder(holder: MapSourceViewHolder, position: Int) {
-        when (mapSourceSet[position]) {
-            MapSource.IGN -> {
+        when (wmtsSourceSet[position]) {
+            WmtsSource.IGN -> {
                 holder.title.text = parentView.resources.getText(R.string.ign_source)
                 holder.description.text = parentView.resources.getText(R.string.ign_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_logo, null))
@@ -46,33 +46,33 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
                     typeface = Typeface.DEFAULT
                 }
             }
-            MapSource.OPEN_STREET_MAP -> {
+            WmtsSource.OPEN_STREET_MAP -> {
                 holder.title.text = parentView.resources.getText(R.string.open_street_map_source)
                 holder.description.text = parentView.resources.getText(
                         R.string.open_street_map_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.openstreetmap_logo, null))
                 holder.ignLegalMention.visibility = View.GONE
             }
-            MapSource.USGS -> {
+            WmtsSource.USGS -> {
                 holder.title.text = parentView.resources.getText(R.string.usgs_map_source)
                 holder.description.text = parentView.resources.getText(
                         R.string.usgs_map_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.usgs_logo, null))
                 holder.ignLegalMention.visibility = View.GONE
             }
-            MapSource.IGN_SPAIN -> {
+            WmtsSource.IGN_SPAIN -> {
                 holder.title.text = parentView.resources.getText(R.string.ign_spain_source)
                 holder.description.text = parentView.resources.getText(R.string.ign_spain_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ign_spain_logo, null))
                 holder.ignLegalMention.visibility = View.GONE
             }
-            MapSource.SWISS_TOPO -> {
+            WmtsSource.SWISS_TOPO -> {
                 holder.title.text = parentView.resources.getText(R.string.swiss_topo_source)
                 holder.description.text = parentView.resources.getText(R.string.swiss_topo_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ic_swiss_topo_logo, null))
                 holder.ignLegalMention.visibility = View.GONE
             }
-            MapSource.ORDNANCE_SURVEY -> {
+            WmtsSource.ORDNANCE_SURVEY -> {
                 holder.title.text = parentView.resources.getText(R.string.ordnance_survey_source)
                 holder.description.text = parentView.resources.getText(R.string.ordnance_survey_source_description)
                 holder.image.setImageDrawable(parentView.resources.getDrawable(R.drawable.ordnance_survey_logo, null))
@@ -143,13 +143,13 @@ class MapSourceAdapter(private val mapSourceSet: Array<MapSource>, private val m
                 mapAdapter.updateSelectionIndex(position)
 
                 /* Call the listener for MapSource selection */
-                val mapSource = mapAdapter.mapSourceSet[position]
+                val mapSource = mapAdapter.wmtsSourceSet[position]
                 mapAdapter.mapSourceSelectionListener.onMapSourceSelected(mapSource)
             }
         }
     }
 
     interface MapSourceSelectionListener {
-        fun onMapSourceSelected(m: MapSource)
+        fun onMapSourceSelected(m: WmtsSource)
     }
 }
