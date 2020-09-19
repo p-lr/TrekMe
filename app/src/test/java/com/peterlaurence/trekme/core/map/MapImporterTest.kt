@@ -43,7 +43,7 @@ class MapImporterTest {
 
                 runBlocking {
                     try {
-                        val res = MapImporter.importFromFile(libVipsMapDir, Map.MapOrigin.VIPS)
+                        val res = MapImporter.importFromFile(libVipsMapDir)
                         val map = assertNotNull(res.map)
 
                         /* A subfolder under "libvips" subdirectory has been voluntarily created, to test
@@ -73,7 +73,7 @@ class MapImporterTest {
             if (libVipsMapDir.exists()) {
                 runBlocking {
                     try {
-                        val res = MapImporter.importFromFile(libVipsMapDir, Map.MapOrigin.VIPS)
+                        val res = MapImporter.importFromFile(libVipsMapDir)
                         val map = assertNotNull(res.map)
                         assertEquals("La Réunion - Est", map.name)
                         assertEquals(3, map.mapGson.levels.size.toLong())

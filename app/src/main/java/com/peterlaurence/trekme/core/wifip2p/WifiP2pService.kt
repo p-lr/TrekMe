@@ -486,7 +486,7 @@ class WifiP2pService : Service() {
 
                 /* Import the map */
                 scope.launch(Dispatchers.IO) {
-                    val result = MapImporter.importFromFile(dir, Map.MapOrigin.VIPS)
+                    val result = MapImporter.importFromFile(dir)
                     result.map?.also { map ->
                         MapLoader.addMap(map)
                     }

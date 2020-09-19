@@ -2,14 +2,13 @@ package com.peterlaurence.trekme.core.map.mapimporter
 
 import android.graphics.BitmapFactory
 import android.util.Log
-
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.gson.MapGson
+import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.LibvipsMapParser
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
 import java.io.File
 import java.io.FilenameFilter
 import java.util.*
@@ -17,16 +16,14 @@ import kotlin.collections.ArrayList
 
 /**
  * The [MapImporter] exposes a single method : [.importFromFile].
- * To use the appropriate parser, the [Map.MapOrigin] enum type must be given. But for instance,
- * only [Map.MapOrigin.VIPS] is supported. <br></br>
+ * For instance, [LibvipsMapParser] is the only parser used, because TrekMe only supports one kind
+ * of file-based maps.
  * This is typically used after a [MapArchive] has been extracted.
  *
  * @author peterLaurence on 23/06/16 -- Converted to Kotlin on 27/10/19
  */
 object MapImporter {
-    private val mProviderToParserMap = mapOf<Map.MapOrigin, MapParser>(
-            Map.MapOrigin.VIPS to LibvipsMapParser()
-    )
+    private val parser: MapParser by lazy { LibvipsMapParser() }
     private const val THUMBNAIL_ACCEPT_SIZE = 256
     private val IMAGE_EXTENSIONS = arrayOf("jpg", "gif", "png", "bmp", "webp")
 
@@ -62,18 +59,12 @@ object MapImporter {
 
     private val DIR_FILTER = FilenameFilter { dir, filename -> File(dir, filename).isDirectory }
 
-    suspend fun importFromFile(dir: File, origin: Map.MapOrigin): MapImportResult {
-        val parser = mProviderToParserMap[origin]
-
-        return if (parser != null) {
-            try {
-                parseMap(parser, dir)
-            } catch (e: MapParseException) {
-                Log.e(TAG, "Error parsing $dir (${e.issue})")
-                MapImportResult(null, MapParserStatus.NO_MAP)
-            }
-        } else {
-            MapImportResult(null, MapParserStatus.UNKNOWN_MAP_ORIGIN)
+    suspend fun importFromFile(dir: File): MapImportResult {
+        return try {
+            parseMap(parser, dir)
+        } catch (e: MapParseException) {
+            Log.e(TAG, "Error parsing $dir (${e.issue})")
+            MapImportResult(null, MapParserStatus.NO_MAP)
         }
     }
 
@@ -125,10 +116,9 @@ object MapImporter {
     }
 
     /**
-     * This [MapParser] expects a directory [File] being the first parent of all files
-     * produced by libvips.
+     * This [MapParser] expects a folder structure corresponding to libvips's `dzsave` output.
      */
-    private class LibvipsMapParser internal constructor() : MapParser {
+    private class LibvipsMapParser : MapParser {
         private val options = BitmapFactory.Options()
         override var status = MapParserStatus.NO_MAP
             private set

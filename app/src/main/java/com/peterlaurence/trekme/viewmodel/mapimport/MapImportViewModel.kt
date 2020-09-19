@@ -68,13 +68,10 @@ class MapImportViewModel @ViewModelInject constructor(
                             _unzipEvents.postValue(UnzipProgressEvent(item.id, p))
                         }
 
-                        /**
-                         * Import the extracted map.
-                         * For instance, only support extraction of [Map.MapOrigin.VIPS] maps.
-                         */
+                        /* Import the extracted map */
                         override fun onUnzipFinished(outputDirectory: File) {
                             viewModelScope.launch {
-                                val res = MapImporter.importFromFile(outputDirectory, Map.MapOrigin.VIPS)
+                                val res = MapImporter.importFromFile(outputDirectory)
                                 _unzipEvents.postValue(UnzipMapImportedEvent(item.id, res.map, res.status))
                             }
 
