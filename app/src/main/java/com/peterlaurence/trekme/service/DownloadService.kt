@@ -18,13 +18,14 @@ import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
-import com.peterlaurence.trekme.core.map.mapbuilder.buildFromMapSpec
+import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
+import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.stackTraceToString
@@ -165,7 +166,7 @@ class DownloadService : Service() {
 
                 /* Post-process if download reaches 100% */
                 if (p == 100.0) {
-                    postProcess(event.mapSpec, source)
+                    postProcess(event.mapSpec, source, event.layer)
                 }
             }
         }
@@ -247,7 +248,7 @@ class DownloadService : Service() {
         EventBus.getDefault().post(progressEvent)
     }
 
-    private fun postProcess(mapSpec: MapSpec, source: WmtsSource) {
+    private fun postProcess(mapSpec: MapSpec, source: WmtsSource, layer: Layer?) {
         val calibrationPoints = mapSpec.calibrationPoints
 
         /* Calibrate */
@@ -259,15 +260,13 @@ class DownloadService : Service() {
             MapLoader.addMap(map)
         }
 
-        val mapOrigin = when (source) {
-            WmtsSource.IGN -> Map.MapOrigin.IGN_LICENSED
-            WmtsSource.USGS -> Map.MapOrigin.USGS
-            WmtsSource.OPEN_STREET_MAP -> Map.MapOrigin.OPEN_STREET_MAP
-            WmtsSource.ORDNANCE_SURVEY -> Map.MapOrigin.ORDNANCE_SURVEY
-            WmtsSource.IGN_SPAIN -> Map.MapOrigin.IGN_SPAIN
-            WmtsSource.SWISS_TOPO -> Map.MapOrigin.SWISS_TOPO
+        val mapOrigin = if (source == WmtsSource.IGN) {
+            Map.MapOrigin.IGN_LICENSED
+        } else {
+            Map.MapOrigin.WMTS
         }
-        val map = buildFromMapSpec(mapSpec, mapOrigin, destDir, ".jpg")
+
+        val map = buildMap(mapSpec, layer, mapOrigin, source, destDir)
 
         scope.launch {
             calibrate(map)

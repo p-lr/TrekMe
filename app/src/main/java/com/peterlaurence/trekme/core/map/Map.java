@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.gson.MarkerGson;
 import com.peterlaurence.trekme.core.map.gson.RouteGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
+import com.peterlaurence.trekme.core.mapsource.WmtsSource;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.util.ZipProgressionListener;
 import com.peterlaurence.trekme.util.ZipTaskKt;
@@ -289,9 +290,30 @@ public class Map {
      * A map can have several origins. Like it can come from a WMTS source, or produced using libvips.
      */
     public enum MapOrigin {
-        IGN, IGN_LICENSED,  // IGN WMTS source
-        SWISS_TOPO, OPEN_STREET_MAP, USGS, IGN_SPAIN, ORDNANCE_SURVEY,  // other WMTS sources
+        IGN_LICENSED,  // special IGN WMTS source
+        WMTS,
         VIPS,   // Custom map
+    }
+
+    @Nullable
+    public WmtsSource getWmtsSource() {
+        try {
+            return mMapGson.provider.wmts_source;
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the real name of the layer
+     */
+    @Nullable
+    public String getLayer() {
+        try {
+            return mMapGson.provider.layer_real_name;
+        } catch (NullPointerException e) {
+            return null;
+        }
     }
 
     /**

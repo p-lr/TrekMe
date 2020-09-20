@@ -227,7 +227,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val wmtsSource = wmtsSource ?: return
 
         /* Update the layer preference */
-        viewModel.setLayerPublicNameForSource(wmtsSource, e.getSelection())
+        viewModel.setLayerForSourceFromPublicName(wmtsSource, e.getSelection())
 
         /* Then re-create the MapView */
         shouldZoomOnPosition = true

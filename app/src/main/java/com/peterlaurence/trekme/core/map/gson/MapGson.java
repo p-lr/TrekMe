@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.map.gson;
 
 import com.peterlaurence.trekme.core.map.Map;
+import com.peterlaurence.trekme.core.mapsource.WmtsSource;
 import com.peterlaurence.trekme.core.projection.Projection;
 
 import java.util.ArrayList;
@@ -82,6 +83,8 @@ public class MapGson {
 
     public static class Provider {
         public Map.MapOrigin generated_by;
+        public WmtsSource wmts_source;
+        public String layer_real_name;
         public String image_extension;
     }
 }

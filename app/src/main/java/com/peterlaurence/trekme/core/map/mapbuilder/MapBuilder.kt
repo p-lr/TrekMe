@@ -3,10 +3,12 @@ package com.peterlaurence.trekme.core.map.mapbuilder
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MapGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
+import com.peterlaurence.trekme.core.providers.layers.Layer
 import java.io.File
 
-fun buildFromMapSpec(mapSpec: MapSpec, mapOrigin: Map.MapOrigin, folder: File, imageExtension: String = ".jpg"): Map {
+fun buildMap(mapSpec: MapSpec, layer: Layer?, mapOrigin: Map.MapOrigin, source: WmtsSource, folder: File, imageExtension: String = ".jpg"): Map {
     val mapGson = MapGson()
 
     mapGson.levels = (mapSpec.levelMin .. mapSpec.levelMax).map {
@@ -21,6 +23,8 @@ fun buildFromMapSpec(mapSpec: MapSpec, mapOrigin: Map.MapOrigin, folder: File, i
 
     mapGson.provider = MapGson.Provider().apply {
         generated_by = mapOrigin
+        wmts_source = source
+        layer_real_name = layer?.realName
         image_extension = imageExtension
     }
 
