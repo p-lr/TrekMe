@@ -420,6 +420,8 @@ class WifiP2pService : Service() {
                 wifiP2pState = SocketConnected
                 val outputStream = DataOutputStream(client.getOutputStream())
                 send(map, outputStream)
+                /* Wait before closing the socket */
+                delay(5000)
             }
         }
         Log.d(TAG, "Server is done sending")
@@ -431,15 +433,17 @@ class WifiP2pService : Service() {
 
         runCatching {
             val socket = Socket()
+            socket.soTimeout = 0
             socket.bind(null)
             socket.connect(socketAddress)
-            socket.soTimeout = 0
 
             wifiP2pState = SocketConnected
 
             socket.use {
                 val outputStream = DataOutputStream(socket.getOutputStream())
                 send(map, outputStream)
+                /* Wait before closing the socket */
+                delay(5000)
             }
         }
 
@@ -451,9 +455,9 @@ class WifiP2pService : Service() {
 
         runCatching {
             val socket = Socket()
+            socket.soTimeout = 0
             socket.bind(null)
             socket.connect(socketAddress)
-            socket.soTimeout = 0
             wifiP2pState = SocketConnected
 
             socket.use {
@@ -485,16 +489,19 @@ class WifiP2pService : Service() {
                 wifiP2pState = Loading(100)
 
                 /* Import the map */
-                scope.launch(Dispatchers.IO) {
-                    val result = MapImporter.importFromFile(dir)
+                scope.launch {
+                    val result = withContext(Dispatchers.IO) {
+                        MapImporter.importFromFile(dir)
+                    }
                     result.map?.also { map ->
                         MapLoader.addMap(map)
                     }
+                    /* The receiver resets the WifiP2P connection */
                     when (result.status) {
                         MapImporter.MapParserStatus.NEW_MAP,
                         MapImporter.MapParserStatus.EXISTING_MAP -> exitWithReason(MapSuccessfullyLoaded(result.map?.name
-                                ?: ""))
-                        else -> exitWithReason(WithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR))
+                                ?: ""), true)
+                        else -> exitWithReason(WithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR), true)
                     }
                 }
             }
@@ -505,9 +512,6 @@ class WifiP2pService : Service() {
                 }
             }
         })
-        runCatching {
-            inputStream.close()
-        }
     }
 
     private fun send(map: Map, outputStream: DataOutputStream) {
@@ -531,19 +535,19 @@ class WifiP2pService : Service() {
             override fun onZipFinished() {
                 wifiP2pState = Loading(100)
                 scope.launch {
-                    exitWithReason(MapSuccessfullyLoaded(map.name))
+                    /* The sender doesn't reset the WifiP2P connection on normal conditions (the
+                     * receiver does) */
+                    exitWithReason(MapSuccessfullyLoaded(map.name), false)
                 }
             }
 
             override fun onZipError() {
                 scope.launch {
-                    exitWithReason(WithError(WifiP2pServiceErrors.UNZIP_ERROR))
+                    /* The sender resets the connection on error */
+                    exitWithReason(WithError(WifiP2pServiceErrors.UNZIP_ERROR), true)
                 }
             }
         })
-        runCatching {
-            outputStream.close()
-        }
     }
 
     private suspend fun resetWifiP2p() {
@@ -560,8 +564,8 @@ class WifiP2pService : Service() {
         peerListChannel.poll()
     }
 
-    private suspend fun exitWithReason(reason: StopReason) {
-        resetWifiP2p()
+    private suspend fun exitWithReason(reason: StopReason, resetConnection: Boolean = false) {
+        if (resetConnection) resetWifiP2p()
         wifiP2pState = Stopped(reason)
         stopSelf()
     }
