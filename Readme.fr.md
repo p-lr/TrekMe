@@ -327,7 +327,7 @@ Vous pouvez alors :
 Il est possible d'enregistrer votre parcours au format GPX, pour ensuite l'importer dans une carte 
 ou le partager.
 
-Depuis le menu principal allez à "Enregistrement du parcours". Vous arrivez à une interface comme
+Depuis le menu principal allez à "Enregistrement GPX". Vous arrivez à une interface comme
  celle-ci :
 
 <p align="center">
@@ -364,6 +364,13 @@ Que vous soyez en mode de sélection simple ou multiple, le bouton de partage es
 Passez en mode de sélection multiple. Un bouton rouge en bas à droite apparaît. Attention, si vous 
 pressez ce bouton rouge, tous les enregistrement sélectionnés (cad sur fond bleu) seront **définitivement**
   supprimés. 
+  
+**Import automatique d'une trace**
+
+Lorsque vous arrêtez un enregistrement, le fichier GPX correspondant s'ajoute dans la liste des
+enregistrements _et_ la trace est automatiquement importée dans toutes les cartes qui peuvent
+l'afficher. Il est donc très facile de vous enregistrer et d'afficher vos traces sur vos cartes
+favorites.
 
 
 ## <a name="TOC-Settings"></a>Paramètres

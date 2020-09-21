@@ -61,9 +61,10 @@ Perhaps most importantly, TrekMe is _designed_ to consume few CPU resources, to 
 ## <a name="TOC-Create-a-map"></a>Create a map
 
 There are four ways to create a map:
-1. Select an area from an official source provider like IGN or USGS
-2. Import from an archive
-3. Receive a map from a nearby TrekMe user (over Wifi)
+
+1. Select an area from an official source provider like IGN or USGS,
+2. Import from an archive,
+3. Receive a map from a nearby TrekMe user (over Wifi),
 4. Make it yourself (the hard way)
 
 The preferred and easiest way is the first one. Below are detailed each of these methods.
@@ -119,7 +120,7 @@ so choose carefully your area and levels to only download the tiles you actually
 Finally, press the download button. A download service is launched and you get a notification. From
 the notification center of your Android device, you can either:
 
-* See the download progression
+* See the download progression,
 * Cancel the download
 
 When the service finishes the download, you get a notification and a new map is available in the map
@@ -129,10 +130,10 @@ card (in the map list menu).
 
 From the map configuration view, you can:
 
-* Change the thumbnail image
-* Change the projection (only if you know what you're doing)
-* Change the calibration points (only if you know what you're doing)
-* Change the name
+* Change the thumbnail image,
+* Change the projection (only if you know what you're doing),
+* Change the calibration points (only if you know what you're doing),
+* Change the name,
 * Save the map
 
 ### <a name="TOC-Import-from-archive"></a>Import from an archive
@@ -222,8 +223,8 @@ Tapping a marker displays a popup:
 
 From here you can:
 
-* Edit the marker (change its name and set a comment, see below)
-* Delete it
+* Edit the marker (change its name and set a comment, see below),
+* Delete it,
 * Move it
 
 Here is the marker edition view:
@@ -287,8 +288,8 @@ Then, a list of currently available tracks opens up:
 
 Here you can:
 
-* Import a new gpx files using the import button
-* Manage track visibility
+* Import a new gpx files using the import button,
+* Manage track visibility,
 * Remove tracks by swiping them left or right
 
 ### <a name="TOC-GPX-recording"></a>GPX recording
@@ -308,8 +309,8 @@ An indicator reports back the status of the location service. A panel shows the 
 
 From there, when selecting a track, there are three buttons at the bottom which enable you to :
 
-* rename it
-* import it into an existing map (press the import button at the bottom of the list, then choose the map)
+* rename it,
+* import it into an existing map (press the import button at the bottom of the list, then choose the map),
 * share it
 
 
@@ -328,6 +329,12 @@ Whatever the selection mode, the share button below is available:
 **Delete a recording**
 
 To delete a recording, activate the multiple-selection mode. A remove button appears at the bottom right.
+
+**Automatic import of a track**
+
+After you stop a recording, a new GPX file is added to the recordings list _and_ the corresponding
+track is automatically imported into all relevant maps.
+This way, it's super easy to record yourself and see your tracks on your favorite maps.
 
 ## <a name="TOC-Settings"></a>Settings
 
