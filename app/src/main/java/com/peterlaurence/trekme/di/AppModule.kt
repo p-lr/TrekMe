@@ -5,6 +5,7 @@ import android.content.Context
 import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
+import com.peterlaurence.trekme.model.map.MapRepository
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
 import com.peterlaurence.trekme.viewmodel.common.LocationSource
 import com.peterlaurence.trekme.viewmodel.common.getLocationProvider
@@ -42,4 +43,8 @@ object AppModule {
     fun bindBilling(application: Application): Billing {
         return Billing(application)
     }
+
+    @Singleton
+    @Provides
+    fun bindMapRepository(): MapRepository = MapRepository()
 }

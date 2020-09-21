@@ -40,7 +40,7 @@ import com.peterlaurence.trekme.billing.ign.BillingFlowEvent
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
-import com.peterlaurence.trekme.model.map.MapModel.getCurrentMap
+import com.peterlaurence.trekme.model.map.MapRepository
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.MapDownloadFinishedEvent
 import com.peterlaurence.trekme.service.event.MapDownloadPendingEvent
@@ -74,6 +74,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Inject
     lateinit var trekMeContext: TrekMeContext
+    @Inject
+    lateinit var mapRepository: MapRepository
     private val snackBarExit: Snackbar by lazy {
         Snackbar.make(binding.drawerLayout, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
     }
@@ -355,7 +357,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun showMapViewFragment() {
         /* Don't show the fragment if no map has been selected yet */
-        if (getCurrentMap() == null) {
+        if (mapRepository.getCurrentMap() == null) {
             return
         }
 

@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.mapview
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,13 +8,15 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.toMarker
-import com.peterlaurence.trekme.model.map.MapModel
+import com.peterlaurence.trekme.model.map.MapRepository
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
 import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -42,9 +45,11 @@ import org.greenrobot.eventbus.ThreadMode
  * When this view-model first starts or upon request from the fragment (when the map changes), it
  * uses the event-bus to request the channel from the producer.
  * Upon reception of the channel, it launches its consumer coroutine ([processNewTrackPoints]).
- * The [MapModel] is used to fetch the current map.
+ * The [MapRepository] is used to fetch the current map.
  */
-class InMapRecordingViewModel : ViewModel() {
+class InMapRecordingViewModel @ViewModelInject constructor(
+        private val mapRepository: MapRepository
+) : ViewModel() {
     private val route = MutableLiveData<LiveRoute>()
 
     init {
@@ -69,7 +74,7 @@ class InMapRecordingViewModel : ViewModel() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onTrackPointChannelReceive(channel: Channel<TrackPoint>) {
-        val map = MapModel.getCurrentMap()
+        val map = mapRepository.getCurrentMap()
         if (map != null) {
             viewModelScope.processNewTrackPoints(channel, map)
         }
@@ -81,7 +86,7 @@ class InMapRecordingViewModel : ViewModel() {
      */
     private fun CoroutineScope.processNewTrackPoints(trackPoints: ReceiveChannel<TrackPoint>, map: Map) =
             launch(Dispatchers.Default) {
-                val routeBuilder =  RouteBuilder(map)
+                val routeBuilder = RouteBuilder(map)
                 for (point in trackPoints) {
                     processSinglePoint(point, routeBuilder)
                 }

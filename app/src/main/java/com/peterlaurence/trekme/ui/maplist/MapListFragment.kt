@@ -15,21 +15,27 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.databinding.FragmentMapListBinding
-import com.peterlaurence.trekme.model.map.MapModel.setSettingsMap
+import com.peterlaurence.trekme.model.map.MapRepository
 import com.peterlaurence.trekme.ui.maplist.MapAdapter.*
 import com.peterlaurence.trekme.ui.maplist.dialogs.ConfirmDeleteDialog
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * A [Fragment] that displays the list of available maps, using a [RecyclerView].
  *
  * @author P.Laurence on 24/05/2020
  */
+@AndroidEntryPoint
 class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, MapDeleteListener,
         MapFavoriteListener {
     private var _binding: FragmentMapListBinding? = null
     private val binding get() = _binding!!
     private val args: MapListFragmentArgs by navArgs()
+
+    @Inject
+    lateinit var mapRepository: MapRepository
 
     private var llm: LinearLayoutManager? = null
     private var llmState: Parcelable? = null
@@ -133,7 +139,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
             recyclerView.setHasFixedSize(false)
             llm = LinearLayoutManager(ctx)
             recyclerView.layoutManager = llm
-            adapter = MapAdapter(this, this, this,
+            adapter = MapAdapter(mapRepository, this, this, this,
                     this,
                     ctx.getColor(R.color.colorAccent),
                     ctx.getColor(R.color.colorPrimaryTextWhite),
@@ -181,7 +187,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     }
 
     override fun onMapSettings(map: Map) {
-        setSettingsMap(map)
+        mapRepository.setSettingsMap(map)
 
         /* Navigate to the MapSettingsFragment*/
         val action = MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(map.id)

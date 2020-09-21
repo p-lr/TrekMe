@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
-import com.peterlaurence.trekme.model.map.MapModel
+import com.peterlaurence.trekme.model.map.MapRepository
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 
@@ -27,7 +27,8 @@ import org.greenrobot.eventbus.EventBus
  */
 class MainActivityViewModel @ViewModelInject constructor(
         private val trekMeContext: TrekMeContext,
-        private val settings: Settings
+        private val settings: Settings,
+        private val mapRepository: MapRepository
 ): ViewModel() {
     private var attemptedAtLeastOnce = false
 
@@ -53,7 +54,7 @@ class MainActivityViewModel @ViewModelInject constructor(
                     val found = id?.let {
                         val map = MapLoader.getMap(id)
                         map?.let {
-                            MapModel.setCurrentMap(map)
+                            mapRepository.setCurrentMap(map)
                             EventBus.getDefault().post(ShowMapViewEvent(map))
                             true
                         } ?: false

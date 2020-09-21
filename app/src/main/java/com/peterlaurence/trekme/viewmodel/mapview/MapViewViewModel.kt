@@ -7,7 +7,7 @@ import com.peterlaurence.trekme.billing.ign.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.model.map.MapModel
+import com.peterlaurence.trekme.model.map.MapRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,7 +21,8 @@ import org.greenrobot.eventbus.EventBus
 class MapViewViewModel @ViewModelInject constructor(
         private val persistenceStrategy: PersistenceStrategy,
         private val settings: Settings,
-        private val billing: Billing
+        private val billing: Billing,
+        private val mapRepository: MapRepository
 ) : ViewModel() {
     private val eventBus = EventBus.getDefault()
 
@@ -29,7 +30,7 @@ class MapViewViewModel @ViewModelInject constructor(
      * @return a [Map] instance, or null if there is none or there's a license issue
      */
     fun getMap(): Map? {
-        val map = MapModel.getCurrentMap()
+        val map = mapRepository.getCurrentMap()
         if (map != null) {
             viewModelScope.launch {
                 checkForIgnLicense(map)

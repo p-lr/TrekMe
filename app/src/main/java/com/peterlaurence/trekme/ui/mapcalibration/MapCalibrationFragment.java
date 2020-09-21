@@ -17,12 +17,16 @@ import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
-import com.peterlaurence.trekme.model.map.MapModel;
+import com.peterlaurence.trekme.model.map.MapRepository;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 
 import static com.peterlaurence.mapview.api.MarkerApiKt.addMarker;
 import static com.peterlaurence.mapview.api.MarkerApiKt.moveMarker;
@@ -39,6 +43,7 @@ import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.Compatibi
  *
  * @author peterLaurence on 30/04/16.
  */
+@AndroidEntryPoint
 public class MapCalibrationFragment extends Fragment implements CalibrationModel {
     /* To restore the state upon configuration change */
     private static final String CALIBRATION_MARKER_X = "calibration_marker_x";
@@ -49,6 +54,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     private CalibrationMarker mCalibrationMarker;
     private int mCurrentCalibrationPoint;
     private View mView;
+    @Inject
+    MapRepository mMapRepository;
 
     /**
      * Before telling the {@link MapView} to move a marker, we save its relative coordinates so we
@@ -69,7 +76,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         rootView.setCalibrationModel(this);
 
         /* Set the map to calibrate */
-        Map map = MapModel.INSTANCE.getSettingsMap();
+        Map map = mMapRepository.getSettingsMap();
         setMap(map);
 
         /* If the fragment is created for the first time (e.g not re-created after a configuration

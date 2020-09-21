@@ -26,7 +26,7 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
-import com.peterlaurence.trekme.model.map.MapModel
+import com.peterlaurence.trekme.model.map.MapRepository
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -53,6 +53,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     @Inject
     lateinit var trackImporter: TrackImporter
+    @Inject
+    lateinit var mapRepository: MapRepository
     private var map: Map? = null
     private var trackRenameMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
@@ -66,7 +68,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
                               savedInstanceState: Bundle?): View? {
 
         _binding = FragmentTracksManageBinding.inflate(inflater, container, false)
-        map = MapModel.getCurrentMap()
+        map = mapRepository.getCurrentMap()
         map?.let {
             generateTracks(it)
         }

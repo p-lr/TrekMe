@@ -8,7 +8,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.model.map.MapModel
+import com.peterlaurence.trekme.model.map.MapRepository
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -19,7 +19,8 @@ import org.greenrobot.eventbus.Subscribe
  * So, all necessary model actions are taken in this view-model.
  */
 class MapListViewModel @ViewModelInject constructor(
-        private val settings: Settings
+        private val settings: Settings,
+        private val mapRepository: MapRepository
 ) : ViewModel() {
     private val _maps = MutableLiveData<List<Map>>()
     val maps: LiveData<List<Map>> = _maps
@@ -30,7 +31,7 @@ class MapListViewModel @ViewModelInject constructor(
 
     fun setMap(map: Map) {
         // 1- Sets the map to the main entity responsible for this
-        MapModel.setCurrentMap(map)
+        mapRepository.setCurrentMap(map)
 
         // 2- Remember this map in the case use wants to open TrekMe directly on this map
         settings.setLastMapId(map.id)

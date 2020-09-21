@@ -5,20 +5,19 @@ import com.peterlaurence.trekme.ui.mapview.MapViewFragment
 import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment
 
 /**
- * This singleton holds the references on:
+ * This repository holds references on:
  *
  * * the [Map] that should be used when navigating to the [MapViewFragment]
  * * the [Map] that should be displayed when navigating to the [MapSettingsFragment]
- * TODO: Refactor-rename as MapRepository and inject using Hilt
  */
-object MapModel {
+class MapRepository {
     private var map: Map? = null
     private var settingsMap: Map? = null
 
     fun getCurrentMap(): Map? = map
 
     fun setCurrentMap(map: Map) {
-        MapModel.map = map
+        this.map = map
     }
 
     fun getSettingsMap() = settingsMap

@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.Map.CalibrationStatus
-import com.peterlaurence.trekme.model.map.MapModel
+import com.peterlaurence.trekme.model.map.MapRepository
 import com.peterlaurence.trekme.ui.maplist.MapAdapter.MapViewHolder
 
 /**
@@ -26,6 +26,7 @@ import com.peterlaurence.trekme.ui.maplist.MapAdapter.MapViewHolder
  * @author peterLaurence on 26/12/15 - Converted to Kotlin on 02/07/2020
  */
 class MapAdapter internal constructor(
+        private val mapRepository: MapRepository,
         private val mapSelectionListener: MapSelectionListener,
         private val mapSettingsListener: MapSettingsListener,
         private val mapDeleteListener: MapDeleteListener,
@@ -68,7 +69,7 @@ class MapAdapter internal constructor(
             } else {
                 favoriteButton.setImageResource(R.drawable.ic_baseline_star_border_24)
             }
-            if (map == MapModel.getCurrentMap()) {
+            if (map == mapRepository.getCurrentMap()) {
                 cardView.setCardBackgroundColor(colorAccent)
                 mapName.setTextColor(colorWhiteText)
                 editButton.setTextColor(colorWhiteText)
