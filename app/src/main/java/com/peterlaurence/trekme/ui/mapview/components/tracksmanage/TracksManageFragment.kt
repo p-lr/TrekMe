@@ -262,18 +262,19 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     }
 
     private fun saveChanges() {
-        MapLoader.saveRoutes(map!!)
+        map?.also {
+            MapLoader.saveRoutes(it)
+        }
     }
 
     private fun onError(message: String) {
         val view = view ?: return
-        val snackbar = Snackbar.make(view, R.string.gpx_import_error_msg, Snackbar.LENGTH_LONG)
-        snackbar.show()
+        Snackbar.make(view, R.string.gpx_import_error_msg, Snackbar.LENGTH_LONG).show()
         Log.e(TAG, message)
     }
 
     override fun onTrackSelected() {
-        trackRenameMenuItem!!.isVisible = true
+        trackRenameMenuItem?.isVisible = true
     }
 
     override fun onVisibilityToggle(route: RouteGson.Route) {
