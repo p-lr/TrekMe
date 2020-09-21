@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment
  *
  * * the [Map] that should be used when navigating to the [MapViewFragment]
  * * the [Map] that should be displayed when navigating to the [MapSettingsFragment]
+ * TODO: Refactor-rename as MapRepository and inject using Hilt
  */
 object MapModel {
     private var map: Map? = null

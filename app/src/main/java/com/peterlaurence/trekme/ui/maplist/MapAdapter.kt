@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.Map.CalibrationStatus
+import com.peterlaurence.trekme.model.map.MapModel
 import com.peterlaurence.trekme.ui.maplist.MapAdapter.MapViewHolder
 
 /**
@@ -32,9 +33,6 @@ class MapAdapter internal constructor(
         private val colorAccent: Int, private val colorWhiteText: Int,
         private val colorBlackText: Int, private val resources: Resources
 ) : RecyclerView.Adapter<MapViewHolder>() {
-    private var selectedMapIndex = -1
-    private var previousSelectedMapIndex = -1
-
     private val diffCallback = object : DiffUtil.ItemCallback<Map>() {
         override fun areItemsTheSame(oldItem: Map, newItem: Map): Boolean {
             return oldItem.id == newItem.id
@@ -48,22 +46,6 @@ class MapAdapter internal constructor(
 
     fun setMapList(mapList: List<Map>?) {
         differ.submitList(mapList)
-    }
-
-    /**
-     * Simple implementation of a toggle selection. When an item is clicked, we change its
-     * background and we remember his index. When another item is clicked, the background of the
-     * first item is set to its original state.
-     *
-     * @param position index of the selected view
-     */
-    private fun updateSelectionColor(position: Int) {
-        selectedMapIndex = position
-        notifyItemChanged(position)
-        if (previousSelectedMapIndex != -1) {
-            notifyItemChanged(previousSelectedMapIndex)
-        }
-        previousSelectedMapIndex = position
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MapViewHolder {
@@ -86,12 +68,13 @@ class MapAdapter internal constructor(
             } else {
                 favoriteButton.setImageResource(R.drawable.ic_baseline_star_border_24)
             }
-            if (layoutPosition == selectedMapIndex) {
+            if (map == MapModel.getCurrentMap()) {
                 cardView.setCardBackgroundColor(colorAccent)
                 mapName.setTextColor(colorWhiteText)
                 editButton.setTextColor(colorWhiteText)
                 deleteButton.setColorFilter(colorWhiteText)
                 calibrationStatus.setTextColor(colorWhiteText)
+                favoriteButton.setColorFilter(colorWhiteText)
             } else {
                 cardView.setCardBackgroundColor(Color.WHITE)
                 mapName.setTextColor(colorBlackText)
@@ -106,9 +89,6 @@ class MapAdapter internal constructor(
 
             /* Set click listeners */
             itemView.setOnClickListener {
-                // Toggle background color
-                updateSelectionColor(position)
-
                 // Call the listener for Map selection
                 mapSelectionListener.onMapSelected(map)
             }
