@@ -22,7 +22,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
@@ -279,7 +278,9 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         fun onTrackVisibilityChanged()
     }
 
+    @AndroidEntryPoint
     class ChangeRouteNameFragment : DialogFragment() {
+        private val viewModel: TracksManageViewModel by viewModels()
 
         companion object {
             const val ROUTE_KEY = "route"
@@ -311,15 +312,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             builder.setMessage(R.string.track_name_change)
                     .setPositiveButton(R.string.ok_dialog) { _, _ ->
                         if (mapId != null && route != null) {
-                            // TODO: this should be done inside a view-model
-                            /* Effectively change the route name */
                             val newName = editText.text.toString()
-                            val map = MapLoader.getMap(mapId) ?: return@setPositiveButton
-                            route.name = newName
-                            MapLoader.saveRoutes(map)
-
-                            /* Notify the outer fragment that it should update its view */
-                            EventBus.getDefault().post(TrackNameChangedEvent())
+                            viewModel.renameRoute(route, newName)
                         }
                     }
                     .setNegativeButton(R.string.cancel_dialog_string) { _, _ ->

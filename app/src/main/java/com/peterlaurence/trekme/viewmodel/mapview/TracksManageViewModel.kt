@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.model.map.MapRepository
+import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TrackNameChangedEvent
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
@@ -76,6 +77,14 @@ class TracksManageViewModel @ViewModelInject constructor(
 
     fun isFileSupported(uri: Uri): Boolean {
         return trackImporter.isFileSupported(uri, app.applicationContext.contentResolver)
+    }
+
+    fun renameRoute(route: RouteGson.Route, newName: String) {
+        route.name = newName
+        saveChanges()
+
+        /* Notify the view */
+        EventBus.getDefault().post(TrackNameChangedEvent())
     }
 
     fun saveChanges() {
