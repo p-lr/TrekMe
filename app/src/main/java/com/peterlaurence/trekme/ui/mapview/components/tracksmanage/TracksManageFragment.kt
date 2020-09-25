@@ -2,9 +2,7 @@ package com.peterlaurence.trekme.ui.mapview.components.tracksmanage
 
 import android.app.Activity
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -14,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -26,16 +25,13 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
-import com.peterlaurence.trekme.model.map.MapRepository
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
+import com.peterlaurence.trekme.viewmodel.mapview.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.FileNotFoundException
-import javax.inject.Inject
 
 /**
  * A fragment that shows the routes currently available for a given map, and
@@ -51,13 +47,9 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     private var _binding: FragmentTracksManageBinding? = null
     private val binding get() = _binding!!
 
-    @Inject
-    lateinit var trackImporter: TrackImporter
-    @Inject
-    lateinit var mapRepository: MapRepository
-    private var map: Map? = null
     private var trackRenameMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
+    private val viewModel: TracksManageViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,9 +60,17 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
                               savedInstanceState: Bundle?): View? {
 
         _binding = FragmentTracksManageBinding.inflate(inflater, container, false)
-        map = mapRepository.getCurrentMap()
-        map?.let {
-            generateTracks(it)
+
+        initViews()
+
+        viewModel.tracks.observe(viewLifecycleOwner) {
+            it?.also { routes ->
+                /* Be careful always to provide a copy of the route list, otherwise modifications
+                 * on the route list (like when removing a route) would directly affect the
+                 * adapter's AsyncListDiffer internals and cause inconsistencies and crash. */
+                trackAdapter?.setRouteList(routes.toList())
+                updateEmptyRoutePanelVisibility()
+            }
         }
 
         if (savedInstanceState != null) {
@@ -107,16 +107,10 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        updateEmptyRoutePanelVisibility()
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.track_rename_id -> {
-                val map = map ?: return true
+                val map = viewModel.map ?: return true
                 val selectedRoute = trackAdapter?.selectedRoute ?: return true
                 val fragment = ChangeRouteNameFragment.newInstance(map.id, selectedRoute)
                 fragment.show(parentFragmentManager, "rename route")
@@ -132,7 +126,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             val ctx = context ?: return
             val uri = resultData?.data ?: return
 
-            if (!trackImporter.isFileSupported(uri, ctx.contentResolver)) {
+            if (!viewModel.isFileSupported(uri)) {
                 val builder = AlertDialog.Builder(ctx)
                 builder.setView(View.inflate(context, R.layout.track_warning, null))
                 builder.setCancelable(false)
@@ -142,15 +136,16 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             }
 
             /* Import the file */
-            map?.let {
-                lifecycleScope.launch {
-                    try {
-                        applyGpxUri(uri, it, ctx)
-                    } catch (e: FileNotFoundException) {
-                        onError(e.message ?: "")
-                    } catch (e: TrackImporter.GpxParseException) {
-                        onError("Error with GPX file with uri $uri")
+            lifecycleScope.launch {
+                try {
+                    val result = viewModel.applyGpxUri(uri)
+                    if (result is TrackImporter.GpxImportResult.GpxImportOk) {
+                        onGpxParseResult(result)
                     }
+                } catch (e: FileNotFoundException) {
+                    onError(e.message ?: "")
+                } catch (e: TrackImporter.GpxParseException) {
+                    onError("Error with GPX file with uri $uri")
                 }
             }
         }
@@ -161,34 +156,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         trackAdapter?.notifyDataSetChanged()
     }
 
-    /**
-     * The business logic of parsing a GPX file (given as an [Uri]).
-     * It is wrapped in a child [CoroutineScope] because we use an `async` call, which by default
-     * defers Exception handling to the calling code. If an unhandled Exception is thrown, it leads
-     * to a failure of the parent scope **even if those Exceptions are caught**. We don't want the
-     * whole scope of this fragment to fail, hence the child [CoroutineScope].
-     *
-     * @throws FileNotFoundException
-     * @throws TrackImporter.GpxParseException
-     */
-    private suspend fun applyGpxUri(uri: Uri, map: Map, ctx: Context) = coroutineScope {
-        trackImporter.applyGpxUriToMap(uri, ctx.contentResolver, map).let {
-            if (it is TrackImporter.GpxImportResult.GpxImportOk) {
-                onGpxParseResult(it)
-            }
-
-            /* Notify the rest of the app */
-            EventBus.getDefault().post(it)
-        }
-    }
-
     private fun onGpxParseResult(event: TrackImporter.GpxImportResult.GpxImportOk) {
-        val trackAdapter = trackAdapter ?: return
-        /* We want to append new routes, so the index to add new routes is equal to current length
-         * of the data set. */
-        val positionStart = trackAdapter.itemCount
-        trackAdapter.notifyItemRangeInserted(positionStart, event.newRouteCount)
-
         /* Display to the user a recap of how many tracks and waypoints were imported */
         val activity = activity
         if (activity != null) {
@@ -209,12 +177,12 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         updateEmptyRoutePanelVisibility()
 
         /* Save */
-        saveChanges()
+        viewModel.saveChanges()
     }
 
-    private fun generateTracks(map: Map) {
+    private fun initViews() {
         val ctx = context ?: return
-        val recyclerView = RecyclerView(ctx)
+        val recyclerView = binding.recyclerView
         recyclerView.setHasFixedSize(false)
 
         /* All cards are laid out vertically */
@@ -230,7 +198,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         }
         recyclerView.addItemDecoration(dividerItemDecoration)
 
-        trackAdapter = TrackAdapter(map, this, ctx.getColor(R.color.colorAccent),
+        trackAdapter = TrackAdapter(this, ctx.getColor(R.color.colorAccent),
                 ctx.getColor(R.color.colorPrimaryTextWhite),
                 ctx.getColor(R.color.colorPrimaryTextBlack))
         recyclerView.adapter = trackAdapter
@@ -245,26 +213,14 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 /* Remove the track from the list and from the map */
-                trackAdapter!!.removeItem(viewHolder.adapterPosition)
-
-                /* Update the view */
-                EventBus.getDefault().post(TrackVisibilityChangedEvent())
-
-                /* Save */
-                saveChanges()
+                trackAdapter?.getRouteAt(viewHolder.adapterPosition)?.also {
+                    viewModel.removeRoute(it)
+                }
             }
         }
 
         val itemTouchHelper = ItemTouchHelper(simpleCallback)
         itemTouchHelper.attachToRecyclerView(recyclerView)
-
-        (binding.root as ViewGroup).addView(recyclerView, 0)
-    }
-
-    private fun saveChanges() {
-        map?.also {
-            MapLoader.saveRoutes(it)
-        }
     }
 
     private fun onError(message: String) {
@@ -281,7 +237,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         EventBus.getDefault().post(TrackVisibilityChangedEvent())
 
         /* Save */
-        saveChanges()
+        viewModel.saveChanges()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -291,7 +247,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     /* Show or hide the panel indicating that there is no routes */
     private fun updateEmptyRoutePanelVisibility() {
-        val itemCount = trackAdapter?.itemCount ?: 0
+        val itemCount = viewModel.tracks.value?.size ?: 0
         if (itemCount > 0) {
             binding.emptyRoutePanel.visibility = View.GONE
         } else {

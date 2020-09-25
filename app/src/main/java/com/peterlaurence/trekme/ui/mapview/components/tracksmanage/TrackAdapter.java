@@ -2,16 +2,19 @@ package com.peterlaurence.trekme.ui.mapview.components.tracksmanage;
 
 import android.content.Context;
 import android.graphics.Color;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.AsyncListDiffer;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.RouteGson;
 
 import java.lang.ref.WeakReference;
@@ -23,7 +26,6 @@ import java.util.List;
  * @author peterLaurence on 01/03/17.
  */
 public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHolder> {
-    private List<RouteGson.Route> mRouteList;
     private TrackSelectionListener mTrackSelectionListener;
 
     private int mSelectedRouteIndex = -1;
@@ -32,24 +34,42 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
     private int mColorAccent;
     private int mColorWhite;
     private int mColorBlack;
+    private DiffUtil.ItemCallback<RouteGson.Route> diffCallback = new DiffUtil.ItemCallback<RouteGson.Route>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull RouteGson.Route oldItem, @NonNull RouteGson.Route newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
 
-    TrackAdapter(Map map, TrackSelectionListener trackSelectionListener, int accentColor,
+        @Override
+        public boolean areContentsTheSame(@NonNull RouteGson.Route oldItem, @NonNull RouteGson.Route newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
+    private AsyncListDiffer<RouteGson.Route> differ = new AsyncListDiffer<>(this, diffCallback);
+
+    TrackAdapter(TrackSelectionListener trackSelectionListener, int accentColor,
                  int whiteTextColor, int blackTextColor) {
-        mRouteList = map.getRoutes();
         mTrackSelectionListener = trackSelectionListener;
         mColorAccent = accentColor;
         mColorWhite = whiteTextColor;
         mColorBlack = blackTextColor;
     }
 
-    public void removeItem(int position) {
-        mRouteList.remove(position);
-        notifyItemRemoved(position);
+    void setRouteList(List<RouteGson.Route> routeList) {
+        differ.submitList(routeList);
+    }
+
+    public RouteGson.Route getRouteAt(int position) {
+        try {
+            return differ.getCurrentList().get(position);
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     public RouteGson.Route getSelectedRoute() {
         try {
-            return mRouteList.get(mSelectedRouteIndex);
+            return differ.getCurrentList().get(mSelectedRouteIndex);
         } catch (ArrayIndexOutOfBoundsException e) {
             return null;
         }
@@ -80,6 +100,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
         mPreviousSelectedRouteIndex = position;
     }
 
+    @NonNull
     @Override
     public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context ctx = parent.getContext();
@@ -89,8 +110,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
     }
 
     @Override
-    public void onBindViewHolder(TrackViewHolder holder, int position) {
-        RouteGson.Route route = mRouteList.get(position);
+    public void onBindViewHolder(@NonNull TrackViewHolder holder, int position) {
+        RouteGson.Route route = differ.getCurrentList().get(position);
+        if (route == null) return;
         holder.trackName.setText(route.name);
         holder.setVisibleButtonIcon(route.visible);
         holder.visibleButton.setOnClickListener(new VisibilityButtonClickListener(holder, this));
@@ -110,11 +132,12 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
     @Override
     public int getItemCount() {
-        return mRouteList == null ? 0 : mRouteList.size();
+        return differ.getCurrentList().size();
     }
 
     interface TrackSelectionListener {
         void onTrackSelected();
+
         void onVisibilityToggle(RouteGson.Route route);
     }
 
@@ -125,9 +148,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
         TrackViewHolder(View itemView) {
             super(itemView);
-            cardView = (CardView) itemView.findViewById(R.id.cv_track);
-            trackName = (TextView) itemView.findViewById(R.id.track_name);
-            visibleButton = (ImageButton) itemView.findViewById(R.id.track_visible_btn);
+            cardView = itemView.findViewById(R.id.cv_track);
+            trackName = itemView.findViewById(R.id.track_name);
+            visibleButton = itemView.findViewById(R.id.track_visible_btn);
         }
 
         void setVisibleButtonIcon(boolean visible) {
@@ -152,7 +175,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
 
             if (trackViewHolder != null && trackAdapter != null) {
                 int position = trackViewHolder.getAdapterPosition();
-                RouteGson.Route route = trackAdapter.mRouteList.get(position);
+                RouteGson.Route route = trackAdapter.getRouteAt(position);
                 route.toggleVisibility();
                 trackViewHolder.setVisibleButtonIcon(route.visible);
 
