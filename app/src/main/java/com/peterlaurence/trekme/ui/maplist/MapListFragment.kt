@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -48,7 +47,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        viewModel.maps.observe(this, Observer { maps: List<Map>? ->
+        viewModel.maps.observe(this) { maps: List<Map>? ->
             if (maps != null) {
                 /* Set data */
                 onMapListUpdate(maps)
@@ -60,7 +59,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
                     llm?.onRestoreInstanceState(llmState)
                 }
             }
-        })
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,

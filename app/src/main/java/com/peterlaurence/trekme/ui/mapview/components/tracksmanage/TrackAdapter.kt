@@ -1,87 +1,67 @@
-package com.peterlaurence.trekme.ui.mapview.components.tracksmanage;
+package com.peterlaurence.trekme.ui.mapview.components.tracksmanage
 
-import android.content.Context;
-import android.graphics.Color;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.AsyncListDiffer;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.map.gson.RouteGson;
-
-import java.lang.ref.WeakReference;
-import java.util.List;
+import android.graphics.Color
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.TextView
+import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.gson.RouteGson.Route
+import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TrackAdapter.TrackViewHolder
 
 /**
- * Adapter to provide access to the data set (here a list of {@link RouteGson.Route}).
+ * Adapter to provide access to the data set (here a list of [RouteGson.Route]).
  *
- * @author peterLaurence on 01/03/17.
+ * @author P.Laurence on 01/03/17 -- Converted to Kotlin on 25/09/20
  */
-public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHolder> {
-    private TrackSelectionListener mTrackSelectionListener;
+class TrackAdapter(
+        private val trackSelectionListener: TrackSelectionListener,
+        private val colorAccent: Int,
+        private val colorWhite: Int,
+        private val colorBlack: Int
+) : RecyclerView.Adapter<TrackViewHolder>() {
 
-    private int mSelectedRouteIndex = -1;
-    private int mPreviousSelectedRouteIndex = -1;
-
-    private int mColorAccent;
-    private int mColorWhite;
-    private int mColorBlack;
-    private DiffUtil.ItemCallback<RouteGson.Route> diffCallback = new DiffUtil.ItemCallback<RouteGson.Route>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull RouteGson.Route oldItem, @NonNull RouteGson.Route newItem) {
-            return oldItem.getId() == newItem.getId();
+    var selectedRouteIndex = -1
+        private set
+    private var previousSelectedRouteIndex = -1
+    private val diffCallback: DiffUtil.ItemCallback<Route> = object : DiffUtil.ItemCallback<Route>() {
+        override fun areItemsTheSame(oldItem: Route, newItem: Route): Boolean {
+            return oldItem.id == newItem.id
         }
 
-        @Override
-        public boolean areContentsTheSame(@NonNull RouteGson.Route oldItem, @NonNull RouteGson.Route newItem) {
-            return oldItem.equals(newItem);
+        override fun areContentsTheSame(oldItem: Route, newItem: Route): Boolean {
+            return oldItem == newItem
         }
-    };
-    private AsyncListDiffer<RouteGson.Route> differ = new AsyncListDiffer<>(this, diffCallback);
+    }
+    private val differ = AsyncListDiffer(this, diffCallback)
 
-    TrackAdapter(TrackSelectionListener trackSelectionListener, int accentColor,
-                 int whiteTextColor, int blackTextColor) {
-        mTrackSelectionListener = trackSelectionListener;
-        mColorAccent = accentColor;
-        mColorWhite = whiteTextColor;
-        mColorBlack = blackTextColor;
+    fun setRouteList(routeList: List<Route>?) {
+        differ.submitList(routeList)
     }
 
-    void setRouteList(List<RouteGson.Route> routeList) {
-        differ.submitList(routeList);
-    }
-
-    public RouteGson.Route getRouteAt(int position) {
-        try {
-            return differ.getCurrentList().get(position);
-        } catch (IndexOutOfBoundsException e) {
-            return null;
+    fun getRouteAt(position: Int): Route? {
+        return try {
+            differ.currentList[position]
+        } catch (e: IndexOutOfBoundsException) {
+            null
         }
     }
 
-    public RouteGson.Route getSelectedRoute() {
-        try {
-            return differ.getCurrentList().get(mSelectedRouteIndex);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return null;
+    val selectedRoute: Route?
+        get() = try {
+            differ.currentList[selectedRouteIndex]
+        } catch (e: ArrayIndexOutOfBoundsException) {
+            null
         }
-    }
 
-    public void restoreSelectionIndex(int selectionIndex) {
-        mSelectedRouteIndex = selectionIndex;
-        updateSelectionColor(selectionIndex);
-    }
-
-    public int getSelectedRouteIndex() {
-        return mSelectedRouteIndex;
+    fun restoreSelectionIndex(selectionIndex: Int) {
+        selectedRouteIndex = selectionIndex
+        updateSelectionColor(selectionIndex)
     }
 
     /**
@@ -91,123 +71,64 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackViewHol
      *
      * @param position index of the selected view
      */
-    private void updateSelectionColor(int position) {
-        mSelectedRouteIndex = position;
-        notifyItemChanged(position);
-        if (mPreviousSelectedRouteIndex != -1) {
-            notifyItemChanged(mPreviousSelectedRouteIndex);
+    private fun updateSelectionColor(position: Int) {
+        selectedRouteIndex = position
+        notifyItemChanged(position)
+        if (previousSelectedRouteIndex != -1) {
+            notifyItemChanged(previousSelectedRouteIndex)
         }
-        mPreviousSelectedRouteIndex = position;
+        previousSelectedRouteIndex = position
     }
 
-    @NonNull
-    @Override
-    public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context ctx = parent.getContext();
-        View v = LayoutInflater.from(ctx).inflate(R.layout.track_card, parent, false);
-
-        return new TrackViewHolder(v);
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
+        val ctx = parent.context
+        val v = LayoutInflater.from(ctx).inflate(R.layout.track_card, parent, false)
+        return TrackViewHolder(v)
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull TrackViewHolder holder, int position) {
-        RouteGson.Route route = differ.getCurrentList().get(position);
-        if (route == null) return;
-        holder.trackName.setText(route.name);
-        holder.setVisibleButtonIcon(route.visible);
-        holder.visibleButton.setOnClickListener(new VisibilityButtonClickListener(holder, this));
-
-        if (holder.getLayoutPosition() == mSelectedRouteIndex) {
-            holder.cardView.setCardBackgroundColor(mColorAccent);
-            holder.trackName.setTextColor(mColorWhite);
-            holder.visibleButton.setColorFilter(mColorWhite);
+    override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
+        val route = differ.currentList[position] ?: return
+        holder.trackName.text = route.name
+        holder.setVisibleButtonIcon(route.visible)
+        holder.visibleButton.setOnClickListener {
+            route.toggleVisibility()
+            holder.setVisibleButtonIcon(route.visible)
+            trackSelectionListener.onVisibilityToggle(route)
+        }
+        if (holder.layoutPosition == selectedRouteIndex) {
+            holder.cardView.setCardBackgroundColor(colorAccent)
+            holder.trackName.setTextColor(colorWhite)
+            holder.visibleButton.setColorFilter(colorWhite)
         } else {
-            holder.cardView.setCardBackgroundColor(Color.WHITE);
-            holder.trackName.setTextColor(mColorBlack);
-            holder.visibleButton.setColorFilter(mColorBlack);
+            holder.cardView.setCardBackgroundColor(Color.WHITE)
+            holder.trackName.setTextColor(colorBlack)
+            holder.visibleButton.setColorFilter(colorBlack)
         }
+        holder.itemView.setOnClickListener {
+            /* Toggle background color */
+            updateSelectionColor(position)
 
-        holder.itemView.setOnClickListener(new TrackViewHolderClickListener(holder, this));
+            /* Call the listener for track selection */
+            trackSelectionListener.onTrackSelected()
+        }
     }
 
-    @Override
-    public int getItemCount() {
-        return differ.getCurrentList().size();
+    override fun getItemCount(): Int {
+        return differ.currentList.size
     }
 
     interface TrackSelectionListener {
-        void onTrackSelected();
-
-        void onVisibilityToggle(RouteGson.Route route);
+        fun onTrackSelected()
+        fun onVisibilityToggle(route: Route)
     }
 
-    static class TrackViewHolder extends RecyclerView.ViewHolder {
-        CardView cardView;
-        TextView trackName;
-        ImageButton visibleButton;
+    class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        var cardView: CardView = itemView.findViewById(R.id.cv_track)
+        var trackName: TextView = itemView.findViewById(R.id.track_name)
+        var visibleButton: ImageButton = itemView.findViewById(R.id.track_visible_btn)
 
-        TrackViewHolder(View itemView) {
-            super(itemView);
-            cardView = itemView.findViewById(R.id.cv_track);
-            trackName = itemView.findViewById(R.id.track_name);
-            visibleButton = itemView.findViewById(R.id.track_visible_btn);
-        }
-
-        void setVisibleButtonIcon(boolean visible) {
-            visibleButton.setImageResource(visible ? R.drawable.ic_visibility_black_24dp :
-                    R.drawable.ic_visibility_off_black_24dp);
-        }
-    }
-
-    private static class VisibilityButtonClickListener implements View.OnClickListener {
-        WeakReference<TrackViewHolder> mTrackViewHolderWeakReference;
-        WeakReference<TrackAdapter> mTrackAdapterWeakReference;
-
-        VisibilityButtonClickListener(TrackViewHolder trackViewHolder, TrackAdapter trackAdapter) {
-            mTrackViewHolderWeakReference = new WeakReference<>(trackViewHolder);
-            mTrackAdapterWeakReference = new WeakReference<>(trackAdapter);
-        }
-
-        @Override
-        public void onClick(View v) {
-            TrackViewHolder trackViewHolder = mTrackViewHolderWeakReference.get();
-            TrackAdapter trackAdapter = mTrackAdapterWeakReference.get();
-
-            if (trackViewHolder != null && trackAdapter != null) {
-                int position = trackViewHolder.getAdapterPosition();
-                RouteGson.Route route = trackAdapter.getRouteAt(position);
-                route.toggleVisibility();
-                trackViewHolder.setVisibleButtonIcon(route.visible);
-
-                trackAdapter.mTrackSelectionListener.onVisibilityToggle(route);
-            }
-        }
-    }
-
-    private static class TrackViewHolderClickListener implements View.OnClickListener {
-        WeakReference<TrackViewHolder> mTrackViewHolderWeakReference;
-        WeakReference<TrackAdapter> mTrackAdapterWeakReference;
-
-        TrackViewHolderClickListener(TrackViewHolder holder, TrackAdapter adapter) {
-            mTrackViewHolderWeakReference = new WeakReference<>(holder);
-            mTrackAdapterWeakReference = new WeakReference<>(adapter);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (mTrackAdapterWeakReference != null && mTrackViewHolderWeakReference != null) {
-                TrackViewHolder holder = mTrackViewHolderWeakReference.get();
-                TrackAdapter adapter = mTrackAdapterWeakReference.get();
-                if (adapter != null && holder != null) {
-                    int position = holder.getAdapterPosition();
-
-                    /* Toggle background color */
-                    adapter.updateSelectionColor(position);
-
-                    /* Call the listener for track selection */
-                    adapter.mTrackSelectionListener.onTrackSelected();
-                }
-            }
+        fun setVisibleButtonIcon(visible: Boolean) {
+            visibleButton.setImageResource(if (visible) R.drawable.ic_visibility_black_24dp else R.drawable.ic_visibility_off_black_24dp)
         }
     }
 }
