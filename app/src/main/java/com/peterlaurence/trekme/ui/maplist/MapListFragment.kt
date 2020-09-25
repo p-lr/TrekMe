@@ -172,7 +172,10 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         this.mapList = mapList
         val adapter = adapter ?: return
         binding.loadingPanel.visibility = View.GONE
-        adapter.setMapList(mapList)
+        /* Be careful always to provide a copy of the route list, otherwise modifications
+         * on the route list (like when removing a route) would directly affect the
+         * adapter's AsyncListDiffer internals and cause inconsistencies and crash. */
+        adapter.setMapList(mapList.toList())
 
         /* If no maps found, suggest to navigate to map creation */
         if (mapList.isEmpty()) {
