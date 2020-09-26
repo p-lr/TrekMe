@@ -415,6 +415,15 @@ device.
 
 An archive contains everything related to the map (calibration, routes, points of interest, etc.).
 
+Just like maps, archives are stored on a dedicated folder which you choose in the settings of the
+application. Beware that if you uninstall TrekMe, those folders and their content (including maps
+and archives) will be **permanently deleted**. There's an exception though. If you have Android 9 or
+lower, the folder on the internal storage won't be removed.
+
+In other cases, the only reliable way to keep your archives safe is to move them to a secure location.
+For example, it could be a folder named "TrekMe_backup" somewhere on your SD card or internal
+storage. That folder shouldn't be a subfolder of the folder(s) used by TrekMe. 
+
 ### <a name="TOC-Share-maps"></a>Map sharing
 
 A map is sometimes heavy and takes quite some time to download. When a friend also has TrekMe, it's

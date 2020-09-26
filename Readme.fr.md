@@ -215,7 +215,7 @@ C'est une option en haut à droite alors qu'une carte est affichée.
 La vitesse s'affiche en km/h au bout de quelques secondes.
 
 <p align="center">
-<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
+<img src="doc/tuto/speed.jpg" width="300">
 </p>
 
 Selon la taille de votre écran, un bouton peut rendre cette fonctionnalité directement accessible.
@@ -395,12 +395,10 @@ Par défaut, TrekMe enregistre tout sur la mémoire interne. Mais si vous avez u
 
 **Attention**
 
-Toutes les cartes stockées sur carte SD seront supprimées si TrekMe est désinstallée (c'est une 
-contrainte du système Android). La seule manière de conserver de manière sûre vos cartes est d'utiliser
- la mémoire interne.
- 
-Cependant, vous pouvez contourner cette limitation : faites une sauvegarde, puis déplacez l'archive 
-zip créée quelque part sur votre carte SD (dans un autre dossier que le dossier Android).
+Quelque soit la version d'Android, toutes les cartes stockées sur carte SD seront supprimées si TrekMe est 
+désinstallé (c'est une contrainte du système Android). 
+Reportez-vous à la section [Sauvegardez vos cartes](#TOC-Save-maps) pour voir comment contourner cette
+contrainte.
 
 Dans la section Téléchargment > "Répertoire de téléchargement", vous avez le choix entre deux répertoires
  si vous avez une carte SD. Sinon, vous n'avez d'autre choix que d'utiliser la mémoire interne.
@@ -449,7 +447,7 @@ A partir d'Android 10, toutes les cartes (qu'elles soient sur mémoire interne o
 si TrekMe est désinstallé. Il vous est donc fortement conseillé d'utiliser la fonctionnalité de sauvegarde
 intégrée à TrekMe. Cela vous permettra de restaurer vos cartes si vous changez de téléphone par exemple.
 
-Pour créer une archive, depuis la liste des cartes, utilisez le bouton "GERER", en bas à gauche :
+Pour créer une archive, depuis la liste des cartes, utilisez le bouton "MODIFIER", en bas à gauche :
 
 <p align="center">
 <img src="doc/tuto/bali-fr.jpg" width="300">
@@ -463,6 +461,17 @@ Si vous continuez la procédure, l'archive va être créée et vous pouvez suivr
 zone de notification du téléphone.
 
 Une archive contient tout ce qui est relatif à la carte (calibration, traces, points d'intérêt, etc).
+
+Les archives, tout comme les cartes, sont créées dans un dossier que le système Android alloue à
+TrekMe. Si vous avez une carte SD, vous avez même le choix entre deux dossiers différents. Mais ces
+dossiers seront supprimés en cas de désinstallation de l'application. Il y a cependant une exception :
+le dossier qu'utilise TrekMe sur la mémoire interne sous Android 9 et moins. Ce dossier-là n'est pas
+supprimé en cas de désinstallation.
+
+Pour tous les autres cas, la seule manière de conserver de manière sûre vos cartes est de faire des 
+sauvegardes, puis de les déplacer dans un dossier nommé (par exemple) "TrekMe_sauvegardes" 
+quelque-part sur votre carte SD ou dans la mémoire interne. 
+Ce dossier ne doit pas être un sous-dossier du répertoire utilisé par TrekMe.
 
 ### <a name="TOC-Share-maps"></a>Partage de carte
 
