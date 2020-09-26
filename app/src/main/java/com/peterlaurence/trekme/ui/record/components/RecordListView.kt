@@ -24,12 +24,15 @@ import java.util.*
  *
  * @author peterLaurence on 23/12/17 -- Converted to Kotlin on 30/09/18
  */
-class RecordListView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : CardView(context, attrs, defStyleAttr) {
+class RecordListView @JvmOverloads constructor(
+        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : CardView(context, attrs, defStyleAttr) {
     private var isMultiSelectMode = false
     var selectedRecordings = ArrayList<File>()
         private set
 
-    private lateinit var recordingAdapter: RecordingAdapter
+    private var recyclerView: RecyclerView? = null
+    private var recordingAdapter: RecordingAdapter? = null
     private val recordingDataList = arrayListOf<RecordingData>()
     private var listener: RecordListViewListener? = null
 
@@ -42,19 +45,26 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
     }
 
     fun setRecordingData(data: List<RecordingData>) {
+        /* If previous size is smaller than the new size, scroll to top */
+        val scrollToTop = recordingDataList.size < data.size
+
+        /* Remember the new list */
         recordingDataList.clear()
-        /* For instance, only fill the file attribute, the gpx data will be retrieved later */
         recordingDataList.addAll(data)
 
         /* Update the recycle view */
-        recordingAdapter.setRecordingsData(recordingDataList)
+        recordingAdapter?.setRecordingsData(recordingDataList) {
+            if (scrollToTop) {
+                recyclerView?.scrollToPosition(0)
+            }
+        }
     }
 
     private fun init(context: Context) {
         View.inflate(context, R.layout.record_list_layout, this)
 
         val ctx = getContext()
-        val recyclerView = findViewById<RecyclerView>(R.id.recordings_recycler_id)
+        recyclerView = findViewById(R.id.recordings_recycler_id)
         val editNameButton = findViewById<ImageButton>(R.id.edit_recording_button)
         val importButton = findViewById<ImageButton>(R.id.import_track_button)
         val shareButton = findViewById<ImageButton>(R.id.share_track_button)
@@ -80,21 +90,15 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
 
         deleteRecordingButton.setOnClickListener {
             EventBus.getDefault().post(listener?.onRequestDeleteRecordings(selectedRecordings))
-
-            /* Remove immediately the corresponding views (for better responsiveness) */
-            for (file in selectedRecordings) {
-                recordingDataList.removeAll { it.recording == file }
-            }
-            recordingAdapter.notifyDataSetChanged()
         }
 
         val llm = LinearLayoutManager(ctx)
-        recyclerView.layoutManager = llm
+        recyclerView?.layoutManager = llm
 
-        recordingAdapter = RecordingAdapter(recordingDataList, selectedRecordings)
-        recyclerView.adapter = recordingAdapter
+        recordingAdapter = RecordingAdapter(selectedRecordings)
+        recyclerView?.adapter = recordingAdapter
 
-        recyclerView.addOnItemTouchListener(RecyclerItemClickListener(this.context,
+        recyclerView?.addOnItemTouchListener(RecyclerItemClickListener(this.context,
                 recyclerView, object : RecyclerItemClickListener.OnItemClickListener {
             private fun updateShareAndDeleteButtons() {
                 if (selectedRecordings.isEmpty()) {
@@ -114,8 +118,8 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                 if (isMultiSelectMode) {
                     multiSelect(position)
 
-                    recordingAdapter.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter.notifyItemChanged(position)
+                    recordingAdapter?.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter?.notifyItemChanged(position)
                 } else {
                     singleSelect(position)
                     editNameButton.isEnabled = true
@@ -124,8 +128,8 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     importButton.isEnabled = true
                     importButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
 
-                    recordingAdapter.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter.notifyDataSetChanged()
+                    recordingAdapter?.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter?.notifyDataSetChanged()
                 }
 
                 updateShareAndDeleteButtons()
@@ -139,11 +143,11 @@ class RecordListView @JvmOverloads constructor(context: Context, attrs: Attribut
                     importButton.isEnabled = false
                     importButton.drawable.setTint(Color.GRAY)
                     multiSelect(position)
-                    recordingAdapter.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter.notifyDataSetChanged()
+                    recordingAdapter?.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter?.notifyDataSetChanged()
                 } else {
-                    recordingAdapter.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter.notifyDataSetChanged()
+                    recordingAdapter?.setSelectedRecordings(selectedRecordings)
+                    recordingAdapter?.notifyDataSetChanged()
                 }
                 isMultiSelectMode = !isMultiSelectMode
 

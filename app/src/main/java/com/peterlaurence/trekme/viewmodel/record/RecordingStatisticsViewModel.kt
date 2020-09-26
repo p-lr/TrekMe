@@ -51,7 +51,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
             })
 
             /* Immediately request that Gpx instances are created along with statistics */
-            updateRecordingData()
+            initDataSet()
         }
     }
 
@@ -66,41 +66,66 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
-        updateRecordingData()
+        addOneRecording(event.gpxFile, event.gpx)
     }
 
+    /**
+     * Remove the existing file matching by name, then add the new file keeping the existing
+     * [Gpx] instance.
+     */
     @Subscribe
     fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) {
-        for (recording in recordingsToGpx.keys) {
-            if (FileUtils.getFileNameWithoutExtention(recording) == event.initialValue) {
-                TrackTools.renameTrack(recording, event.newValue)
-                updateRecordingData()
-                break
+        with(recordingsToGpx.iterator()) {
+            forEach {
+                val gpxFile = it.key
+                if (FileUtils.getFileNameWithoutExtention(gpxFile) == event.initialValue) {
+                    val gpx = recordingsToGpx[gpxFile] ?: return
+                    val newFile = TrackTools.renameTrack(gpxFile, event.newValue)
+                    if (newFile != null) {
+                        remove()
+                        recordingsToGpx[newFile]= gpx
+                    }
+                    updateLiveData()
+                    return
+                }
             }
         }
     }
 
     fun onRequestDeleteRecordings(recordings: List<File>) {
         var success = true
-        recordings.forEach {
-            if (it.exists()) {
-                if (!it.delete()) {
-                    success = false
+        with(recordingsToGpx.iterator()) {
+            forEach {
+                val file = it.key
+                if (file in recordings) {
+                    if (file.exists()) {
+                        if (!file.delete()) success = false
+                    }
+                    remove()
                 }
             }
         }
 
+        updateLiveData()
+
         if (!success) {
             EventBus.getDefault().post(RecordingDeletionFailed())
         }
-
-        updateRecordingData()
     }
 
-    private fun updateRecordingData() = viewModelScope.launch {
-        val data = withContext(Dispatchers.Default) {
-            computeStatistics()
-        }.map {
+    private fun addOneRecording(gpxFile: File, gpx: Gpx) = viewModelScope.launch {
+        /* Add the file if not already present */
+        if (!recordingsToGpx.containsKey(gpxFile)) {
+            recordingsToGpx[gpxFile] = gpx
+        }
+
+        setTrackStatistics(gpxFile, gpx)
+        updateLiveData()
+    }
+
+    private fun updateLiveData() {
+        /* Transform a copy of the original Map */
+        val data = recordingsToGpx.toMap().map {
             RecordingData(it.key, it.value)
         }.sortedByDescending {
             it.gpx?.metadata?.time ?: -1
@@ -110,56 +135,70 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
     }
 
     /**
+     * Compute all [Gpx] and statistics, then notify views.
+     * It's invoked once, on first acquisition of the [LiveData].
+     */
+    private fun initDataSet() = viewModelScope.launch(Dispatchers.Default) {
+        computeGpxAndStatistics()
+        updateLiveData()
+    }
+
+    /**
      * The user may have imported a regular gpx file (so it doesn't have any statistics).
-     * In this call, we must have that each gpx file already been parsed, and the
-     * [recordingsToGpx] Map should be up to date.
-     * Hence, [updateRecordingsToGpxMap] is called first.
+     * In this method, we first ensure that all gpx files have been parsed, and that the
+     * [recordingsToGpx] Map is up to date.
+     * Therefore, [updateRecordingsToGpxMap] is called first.
      *
      * Then, we compute the statistics for the first track.
      * If the [GPXParser] read statistics for this track, we check is there is any difference
      * (because the statistics calculation is subjected to be adjusted frequently), we update the
      * gpx file.
      *
-     * @return a non modifiable Map<File, Gpx>. The statistics are bundled inside the [Gpx] objects.
+     * After this method invocation, the statistics are bundled inside the [Gpx] objects.
      */
-    private fun computeStatistics(): Map<File, Gpx> {
+    private suspend fun computeGpxAndStatistics() {
         /* Update internals */
         updateRecordingsToGpxMap()
 
         /* Then compute the statistics */
         recordingsToGpx.forEach {
-            val statCalculator = TrackStatCalculator()
-            it.value.tracks.firstOrNull()?.let { track ->
-                track.trackSegments.forEach { trackSegment ->
-                    trackSegment.hpFilter()
-                    statCalculator.addTrackPointList(trackSegment.trackPoints)
-                }
-
-                val updatedStatistics = statCalculator.getStatistics()
-                if (track.statistics != null && track.statistics != updatedStatistics) {
-                    /* Track statistics have changed, update the file */
-                    track.statistics = updatedStatistics
-                    val fos = FileOutputStream(it.key)
-                    try {
-                        writeGpx(it.value, fos)
-                    } catch (e: Exception) {
-                        // couldn't update the statistics
-                    }
-                }
-                track.statistics = updatedStatistics
-            }
+            setTrackStatistics(it.key, it.value)
         }
+    }
 
-        return recordingsToGpx.toMap()
+    private suspend fun setTrackStatistics(gpxFile: File, gpx: Gpx) = withContext(Dispatchers.Default) {
+        gpx.tracks.firstOrNull()?.let { track ->
+            val statCalculator = TrackStatCalculator()
+            track.trackSegments.forEach { trackSegment ->
+                trackSegment.hpFilter()
+                statCalculator.addTrackPointList(trackSegment.trackPoints)
+            }
+
+            val updatedStatistics = statCalculator.getStatistics()
+            if (track.statistics != null && track.statistics != updatedStatistics) {
+                /* Track statistics have changed, update the file */
+                track.statistics = updatedStatistics
+                try {
+                    withContext(Dispatchers.IO) {
+                        val fos = FileOutputStream(gpxFile)
+                        writeGpx(gpx, fos)
+                    }
+                } catch (e: Exception) {
+                    // couldn't update the statistics
+                }
+            }
+            track.statistics = updatedStatistics
+        }
     }
 
     /**
      * In the context of this call, new recordings have been added, or this is the first time
-     * this function is called in the lifecycle of the  app.
-     * The list of recordings, [recordings], is considered up to date. The map between each
-     * recording and its corresponding parsed object, [recordingsToGpx], needs to be updated.
+     * this function is called in the lifecycle of the app.
+     * The list of recordings, [recordings], is considered up to date. The correspondence between
+     * each recording and its corresponding [Gpx] instance, [recordingsToGpx], needs to be updated.
      * The first call parses all recordings. Subsequent calls only parse new files.
-     * This is a blocking call, so it should be called inside a coroutine.
+     * This is a blocking call, so it should be invoked from a coroutine dispatched to
+     * [Dispatchers.Default].
      */
     private fun updateRecordingsToGpxMap(): Map<File, Gpx> {
         if (recordingsToGpx.isEmpty()) {

@@ -175,11 +175,10 @@ class GpxRecordService : Service() {
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 writeGpx(gpx, fos)
+                EventBus.getDefault().post(GpxFileWriteEvent(gpxFile, gpx))
             } catch (e: Exception) {
                 // for instance, don't care : we want to stop the service anyway
                 // TODO : warn the user that the gpx file could not be saved
-            } finally {
-                EventBus.getDefault().post(GpxFileWriteEvent(gpx))
             }
         }
     }

@@ -47,7 +47,7 @@ class RecordFragment : Fragment() {
     private val binding get() = _binding!!
 
     val viewModel: RecordViewModel by activityViewModels()
-    private lateinit var recordingData: LiveData<List<RecordingData>>
+    private var recordingData: LiveData<List<RecordingData>>? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -65,7 +65,7 @@ class RecordFragment : Fragment() {
 
         val statViewModel: RecordingStatisticsViewModel by activityViewModels()
         recordingData = statViewModel.getRecordingData()
-        recordingData.observe(viewLifecycleOwner) {
+        recordingData?.observe(viewLifecycleOwner) {
             it?.let { data ->
                 updateRecordingData(data)
             }
@@ -132,7 +132,7 @@ class RecordFragment : Fragment() {
         EventBus.getDefault().register(this)
         EventBus.getDefault().register(binding.recordListView)
 
-        recordingData.value?.let {
+        recordingData?.value?.let {
             updateRecordingData(it)
         }
     }

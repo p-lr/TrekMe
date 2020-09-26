@@ -8,16 +8,19 @@ import java.io.File
 import java.util.HashMap
 
 object TrackTools {
-    fun renameTrack(record: File, newName: String): Boolean {
+    /**
+     * Rename a track.
+     *
+     * @return A [File] if success, or null in case of any error.
+     */
+    fun renameTrack(record: File, newName: String): File? {
         return try {
-            /* Rename the file */
-            record.renameTo(File(record.parent, newName + "." + FileUtils.getFileExtension(record)))
-
             //TODO if the file contains only one track, rename one with the same name
-
-            true
+            /* Rename the file */
+            val newFile = File(record.parent, newName + "." + FileUtils.getFileExtension(record))
+            if (record.renameTo(newFile)) newFile else null
         } catch (e: Exception) {
-            false
+            null
         }
     }
 

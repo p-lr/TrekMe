@@ -5,6 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
@@ -19,7 +21,23 @@ import java.util.*
  *
  * @author peterLaurence on 27/01/18 -- Converted to Kotlin on 01/10/18
  */
-class RecordingAdapter internal constructor(private var recordingDataList: ArrayList<RecordingData>, private var selectedRecordings: ArrayList<File>?) : RecyclerView.Adapter<RecordingAdapter.RecordingViewHolder>() {
+class RecordingAdapter(
+        private var selectedRecordings: ArrayList<File>
+) : RecyclerView.Adapter<RecordingAdapter.RecordingViewHolder>() {
+    private val diffCallback: DiffUtil.ItemCallback<RecordingData> = object : DiffUtil.ItemCallback<RecordingData>() {
+        override fun areItemsTheSame(oldItem: RecordingData, newItem: RecordingData): Boolean {
+            return oldItem.hashCode() == newItem.hashCode()
+        }
+
+        override fun areContentsTheSame(oldItem: RecordingData, newItem: RecordingData): Boolean {
+            return false // force re-render because of alternate color background
+        }
+    }
+    private val differ = AsyncListDiffer(this, diffCallback)
+
+    fun setRecordingsData(recordingDataList: List<RecordingData>, cb: (() -> Unit)? = null) {
+        differ.submitList(recordingDataList.toList()) { cb?.invoke() }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordingViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.record_item, parent, false)
@@ -27,15 +45,16 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
     }
 
     override fun onBindViewHolder(holder: RecordingViewHolder, position: Int) {
-        holder.recordingName.text = recordingDataList[position].recording.name
+        val data = differ.currentList[position] ?: return
+        holder.recordingName.text = data.recording.name
 
         /* If there is some statistics attached to the first track, show the corresponding view */
-        holder.statView.visibility = recordingDataList[position].gpx?.tracks?.firstOrNull()?.statistics?.let {
+        holder.statView.visibility = data.gpx?.tracks?.firstOrNull()?.statistics?.let {
             holder.statView.setStatistics(it)
             View.VISIBLE
         } ?: View.GONE
 
-        if (selectedRecordings!!.contains(recordingDataList.map { it.recording }[position])) {
+        if (selectedRecordings.contains(data.recording)) {
             holder.layout.setBackgroundColor(-0x77de690d)
         } else {
             if (position % 2 == 0) {
@@ -47,7 +66,7 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
     }
 
     override fun getItemCount(): Int {
-        return recordingDataList.size
+        return differ.currentList.size
     }
 
     class RecordingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -56,12 +75,7 @@ class RecordingAdapter internal constructor(private var recordingDataList: Array
         var statView: ConstraintLayout = itemView.findViewById(R.id.stats_view_holder)
     }
 
-    internal fun setRecordingsData(recordingDataList: ArrayList<RecordingData>) {
-        this.recordingDataList = recordingDataList
-        notifyDataSetChanged()
-    }
-
-    internal fun setSelectedRecordings(selectedRecordings: ArrayList<File>) {
+    fun setSelectedRecordings(selectedRecordings: ArrayList<File>) {
         this.selectedRecordings = selectedRecordings
     }
 
