@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.util.formatDistance
+import com.peterlaurence.trekme.util.formatDuration
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import java.io.File
 import java.util.*
@@ -88,5 +89,8 @@ class RecordingAdapter(
 
         val elevationDownStackText = findViewById<TextView>(R.id.record_item_down_stat)
         elevationDownStackText.text = "-".plus(formatDistance(stat.elevationDownStack))
+
+        val chronoStatText = findViewById<TextView>(R.id.record_item_chrono_stat)
+        chronoStatText.text = formatDuration(stat.durationInSecond)
     }
 }
