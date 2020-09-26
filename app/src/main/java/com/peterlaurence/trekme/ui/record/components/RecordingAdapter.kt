@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.constraintlayout.helper.widget.Flow
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -51,7 +52,7 @@ class RecordingAdapter(
 
         /* If there is some statistics attached to the first track, show the corresponding view */
         holder.statView.visibility = data.gpx?.tracks?.firstOrNull()?.statistics?.let {
-            holder.statView.setStatistics(it)
+            holder.layout.setStatistics(it)
             View.VISIBLE
         } ?: View.GONE
 
@@ -73,7 +74,7 @@ class RecordingAdapter(
     class RecordingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var layout: ConstraintLayout = itemView.findViewById(R.id.record_item_layout)
         var recordingName: TextView = itemView.findViewById(R.id.recording_name_id)
-        var statView: ConstraintLayout = itemView.findViewById(R.id.stats_view_holder)
+        var statView: Flow = itemView.findViewById(R.id.flow)
     }
 
     fun setSelectedRecordings(selectedRecordings: ArrayList<File>) {
