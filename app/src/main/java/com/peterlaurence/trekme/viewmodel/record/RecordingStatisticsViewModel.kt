@@ -74,19 +74,22 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
      * [Gpx] instance.
      */
     @Subscribe
-    fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) {
+    fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) = viewModelScope.launch {
         with(recordingsToGpx.iterator()) {
             forEach {
                 val gpxFile = it.key
                 if (FileUtils.getFileNameWithoutExtention(gpxFile) == event.initialValue) {
-                    val gpx = recordingsToGpx[gpxFile] ?: return
-                    val newFile = TrackTools.renameTrack(gpxFile, event.newValue)
-                    if (newFile != null) {
+                    val gpx = recordingsToGpx[gpxFile] ?: return@launch
+                    val newFile = File(gpxFile.parent, event.newValue + "." + FileUtils.getFileExtension(gpxFile))
+                    val success = withContext(Dispatchers.IO) {
+                        TrackTools.renameGpxFile(gpxFile, newFile)
+                    }
+                    if (success) {
                         remove()
                         recordingsToGpx[newFile]= gpx
                     }
                     updateLiveData()
-                    return
+                    return@launch
                 }
             }
         }

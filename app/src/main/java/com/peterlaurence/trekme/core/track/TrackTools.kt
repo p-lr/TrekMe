@@ -3,24 +3,18 @@ package com.peterlaurence.trekme.core.track
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
-import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
-import java.util.HashMap
+import java.util.*
 
 object TrackTools {
     /**
-     * Rename a track.
-     *
-     * @return A [File] if success, or null in case of any error.
+     * Rename a GPX file.
      */
-    fun renameTrack(record: File, newName: String): File? {
+    fun renameGpxFile(gpxFile: File, newFile: File): Boolean {
         return try {
-            //TODO if the file contains only one track, rename one with the same name
-            /* Rename the file */
-            val newFile = File(record.parent, newName + "." + FileUtils.getFileExtension(record))
-            if (record.renameTo(newFile)) newFile else null
+            gpxFile.renameTo(newFile)
         } catch (e: Exception) {
-            null
+            false
         }
     }
 

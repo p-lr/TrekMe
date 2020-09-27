@@ -331,7 +331,7 @@ Depuis le menu principal allez à "Enregistrement GPX". Vous arrivez à une inte
  celle-ci :
 
 <p align="center">
-<img src="doc/tuto/gpx-recording.jpg" width="300">
+<img src="doc/tuto/gpx-recordings.jpg" width="300">
 </p>
 
 Un enregistrement peut être démarré ou arrêté depuis le panneau "Commandes".

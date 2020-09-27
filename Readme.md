@@ -185,9 +185,14 @@ Adjust the distance by dragging two blue circles.
 
 *Along track distance*
 
-While following a track, it's sometimes handy to know the distance between two points on that track. For example, you can evaluate whether you have enough time to reach some point, then go around before nightfall.
+While following a track, it's sometimes handy to know the distance between two points on that track. 
+For example, you can evaluate whether you have enough time to reach some point, then go around before
+ nightfall.
 
-This is an option from the top-right menu while viewing a map: "Distance on track". It can be activated/disabled. When enabled, two blue circles appear on the nearest track from the center of the screen. The portion of the track between the two blue circles is highlighted in red, and its distance is shown.
+This is an option from the top-right menu while viewing a map: "Distance on track". It can be 
+activated/disabled. When enabled, two blue circles appear on the nearest track from the center of the
+screen. The portion of the track between the two blue circles is highlighted in red, and its 
+distance is shown.
 
 <p align="center">
 <img src="doc/tuto/dist-on-track.jpg" width="300">
@@ -197,10 +202,11 @@ The distance accounts for elevation *only if* the track contains elevation data 
 
 ### <a name="TOC-Show-speed"></a>Show the speed
 
-The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few seconds before the speed can be displayed.
+The speed indicator overlays the speed in km/h at the top of the screen. Note that it requires a few 
+seconds before the speed can be displayed.
 
 <p align="center">
-<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
+<img src="doc/tuto/speed.jpg" width="300">
 </p>
 Then choose "Show the speed". If your screen is large enough, there is an icon to directly access it.
 
@@ -213,7 +219,8 @@ Press the marker button to add a new marker at the center of the screen:
 </p>
 
 With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
-When you're satisfied with its position, tap on the red circle at the center. It then morphs to its static form.
+When you're satisfied with its position, tap on the red circle at the center. It then morphs to its 
+static form.
 
 Tapping a marker displays a popup:
 
@@ -300,7 +307,7 @@ with other people.
 From the "GPX Record" option menu, you get the following interface:
 
 <p align="center">
-<img src="doc/tuto/gpx-recording.jpg" width="300">
+<img src="doc/tuto/gpx-recordings.jpg" width="300">
 </p>
 
 The recording can be started or stopped from the control panel. When recording, the location service
