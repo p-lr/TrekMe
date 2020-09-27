@@ -307,7 +307,7 @@ with other people.
 From the "GPX Record" option menu, you get the following interface:
 
 <p align="center">
-<img src="doc/tuto/gpx-recordings.jpg" width="300">
+<img src="doc/tuto/gpx-recordings-en.jpg" width="300">
 </p>
 
 The recording can be started or stopped from the control panel. When recording, the location service

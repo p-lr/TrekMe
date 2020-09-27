@@ -21,6 +21,7 @@ import com.peterlaurence.trekme.util.gpx.writeGpx
 import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -86,7 +87,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
                     }
                     if (success) {
                         remove()
-                        recordingsToGpx[newFile]= gpx
+                        recordingsToGpx[newFile] = gpx
                     }
                     updateLiveData()
                     return@launch
@@ -95,22 +96,32 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
         }
     }
 
-    fun onRequestDeleteRecordings(recordings: List<File>) {
+    fun onRequestDeleteRecordings(recordings: List<File>) = viewModelScope.launch {
         var success = true
-        with(recordingsToGpx.iterator()) {
-            forEach {
-                val file = it.key
-                if (file in recordings) {
-                    if (file.exists()) {
-                        if (!file.delete()) success = false
+        supervisorScope {
+            with(recordingsToGpx.iterator()) {
+                forEach {
+                    val file = it.key
+                    if (file in recordings) {
+                        launch(Dispatchers.IO) {
+                            runCatching {
+                                if (file.exists()) {
+                                    if (!file.delete()) success = false
+                                }
+                            }.onFailure {
+                                success = false
+                            }
+                        }
+                        /* Immediately remove the element, even if the real removal is pending */
+                        remove()
                     }
-                    remove()
                 }
             }
+
+            updateLiveData()
         }
 
-        updateLiveData()
-
+        /* If only one removal failed, notify the user */
         if (!success) {
             EventBus.getDefault().post(RecordingDeletionFailed())
         }
