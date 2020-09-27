@@ -45,8 +45,11 @@ class MapAdapter internal constructor(
     }
     private val differ = AsyncListDiffer(this, diffCallback)
 
-    fun setMapList(mapList: List<Map>?) {
-        differ.submitList(mapList)
+    fun setMapList(mapList: List<Map>) {
+        /* Be careful always to provide a copy of the map list, otherwise modifications
+         * on the map list (like when removing a map) would directly affect the
+         * adapter's AsyncListDiffer internals and cause inconsistencies and crash. */
+        differ.submitList(mapList.toList())
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MapViewHolder {

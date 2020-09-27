@@ -64,10 +64,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
         viewModel.tracks.observe(viewLifecycleOwner) {
             it?.also { routes ->
-                /* Be careful always to provide a copy of the route list, otherwise modifications
-                 * on the route list (like when removing a route) would directly affect the
-                 * adapter's AsyncListDiffer internals and cause inconsistencies and crash. */
-                trackAdapter?.setRouteList(routes.toList())
+                trackAdapter?.setRouteList(routes)
                 updateEmptyRoutePanelVisibility()
             }
         }

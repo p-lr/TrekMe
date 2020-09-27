@@ -40,8 +40,11 @@ class TrackAdapter(
     }
     private val differ = AsyncListDiffer(this, diffCallback)
 
-    fun setRouteList(routeList: List<Route>?) {
-        differ.submitList(routeList)
+    fun setRouteList(routeList: List<Route>) {
+        /* Be careful always to provide a copy of the route list, otherwise modifications
+         * on the route list (like when removing a route) would directly affect the
+         * adapter's AsyncListDiffer internals and cause inconsistencies and crash. */
+        differ.submitList(routeList.toList())
     }
 
     fun getRouteAt(position: Int): Route? {

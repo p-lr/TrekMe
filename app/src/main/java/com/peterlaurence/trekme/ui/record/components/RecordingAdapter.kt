@@ -38,6 +38,9 @@ class RecordingAdapter(
     private val differ = AsyncListDiffer(this, diffCallback)
 
     fun setRecordingsData(recordingDataList: List<RecordingData>, cb: (() -> Unit)? = null) {
+        /* Be careful always to provide a copy of the data set, otherwise modifications
+         * on the data set (like when removing a gpx file) would directly affect the
+         * adapter's AsyncListDiffer internals and cause inconsistencies and crash. */
         differ.submitList(recordingDataList.toList()) { cb?.invoke() }
     }
 
