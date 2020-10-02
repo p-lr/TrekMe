@@ -17,3 +17,10 @@ fun formatDistance(dist: Double): String {
 fun formatDuration(durationInSec: Long): String {
     return DateUtils.formatElapsedTime(durationInSec)
 }
+
+/**
+ * Given the speed in meters per seconds, format in km/h
+ */
+fun formatSpeed(speed: Double): String {
+    return "%.1f km/h".format(speed * 3.6)
+}

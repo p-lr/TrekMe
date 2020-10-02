@@ -95,6 +95,26 @@
         app:layout_constraintTop_toTopOf="@+id/record_item_chrono_icon"
         tools:text="2 km" />
 
+    <ImageView
+        android:id="@+id/record_item_avg_speed_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/record_item_avg_speed_stat"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:srcCompat="@drawable/speedometer_medium_18dp"
+        app:tint="@color/colorAccent" />
+
+    <TextView
+        android:id="@+id/record_item_avg_speed_stat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/record_item_avg_speed_icon"
+        app:layout_constraintStart_toEndOf="@+id/record_item_avg_speed_icon"
+        app:layout_constraintTop_toTopOf="@+id/record_item_avg_speed_icon"
+        tools:text="7 km/s" />
+
     <androidx.constraintlayout.helper.widget.Flow
         android:id="@+id/flow"
         android:layout_width="0dp"
@@ -102,7 +122,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:padding="8dp"
-        app:constraint_referenced_ids="record_item_distance_icon,record_item_up_icon,record_item_down_stat,record_item_chrono_icon"
+        app:constraint_referenced_ids="record_item_distance_icon,record_item_up_icon,record_item_down_stat,record_item_chrono_icon, record_item_avg_speed_icon"
         app:flow_horizontalStyle="spread_inside"
         app:flow_maxElementsWrap="3"
         app:flow_verticalGap="8dp"

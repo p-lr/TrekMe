@@ -16,12 +16,12 @@ import kotlin.math.min
  * * elevation difference (max and stack)
  * * duration
  * * bounds
- * * TODO: mean speed
+ * * average speed
  *
- * @author peterLaurence on 09/09/18
+ * @author P.Laurence on 09/09/18
  */
 class TrackStatCalculator {
-    private val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0, 0)
+    private val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0)
 
     private var lastTrackPoint: TrackPoint? = null
 
@@ -59,6 +59,7 @@ class TrackStatCalculator {
         updateElevationStatistics(trkPt)
         updateDuration(trkPt)
         updateBounds(trkPt)
+        updateMeanSpeed()
     }
 
     /**
@@ -134,6 +135,14 @@ class TrackStatCalculator {
         }
     }
 
+    private fun updateMeanSpeed() {
+        trackStatistics.durationInSecond?.also { duration ->
+            if (duration != 0L) {
+                trackStatistics.avgSpeed = trackStatistics.distance / duration
+            }
+        }
+    }
+
     private fun updateBounds(trkPt: TrackPoint) {
         minLat = min(trkPt.latitude, minLat ?: Double.MAX_VALUE)
         minLon = min(trkPt.longitude, minLon ?: Double.MAX_VALUE)
@@ -150,8 +159,9 @@ class TrackStatCalculator {
  * @param elevationDownStack The cumulative elevation down in meters
  * @param elevationDifferenceMax The difference between the highest and lowest altitude
  * @param durationInSecond The total time in seconds
+ * @param avgSpeed The average speed in meters per seconds
  */
 @Parcelize
 data class TrackStatistics(var distance: Double, var elevationDifferenceMax: Double,
                            var elevationUpStack: Double, var elevationDownStack: Double,
-                           var durationInSecond: Long) : Parcelable
+                           var durationInSecond: Long? = null, var avgSpeed: Double? = null) : Parcelable

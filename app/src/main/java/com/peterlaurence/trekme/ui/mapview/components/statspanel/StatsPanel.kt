@@ -32,7 +32,7 @@ class StatsPanel @JvmOverloads constructor(context: Context, attrs: AttributeSet
         binding.statElevationDown.setText(formatDistance(elevationDown))
     }
 
-    fun setChrono(chrono: Long) {
-        binding.statChrono.setText(formatDuration(chrono))
+    fun setChrono(chrono: Long?) {
+        binding.statChrono.setText(if (chrono != null) formatDuration(chrono) else "-")
     }
 }
