@@ -12,7 +12,7 @@ import com.peterlaurence.trekme.ui.record.components.widgets.HeartBeatIndicator;
  * A View-Model that reports the status (started/stopped) of the
  * {@link com.peterlaurence.trekme.service.GpxRecordService}.
  *
- * @author peterLaurence on 23/12/17.
+ * @author P.Laurence on 23/12/17.
  */
 public class StatusView extends CardView {
     private HeartBeatIndicator mHeartBeatIndicator;

@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.R;
  * A request to change of state while the button is transitioning will be taken into account only
  * when the animation finishes.
  *
- * @author peterLaurence on 26/12/17.
+ * @author P.Laurence on 26/12/17.
  */
 public class DelayedButton extends AppCompatImageButton {
     private AnimatedVectorDrawable mStopToPLayDrawable;

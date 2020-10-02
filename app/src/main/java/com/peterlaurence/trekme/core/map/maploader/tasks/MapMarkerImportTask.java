@@ -17,7 +17,7 @@ import java.io.File;
  * A file named 'markers.json' is expected at the same level of the 'map.json' configuration file.
  * If there is no markers file, this means that the map has no markers.
  *
- * @author peterLaurence on 30/04/17.
+ * @author P.Laurence on 30/04/17.
  */
 public class MapMarkerImportTask extends AsyncTask<Void, Void, Void> {
     private MapLoader.MapMarkerUpdateListener mListener;

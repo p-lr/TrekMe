@@ -41,7 +41,7 @@ import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.Compatibi
  * on a configuration change.
  * </p>
  *
- * @author peterLaurence on 30/04/16.
+ * @author P.Laurence on 30/04/16.
  */
 @AndroidEntryPoint
 public class MapCalibrationFragment extends Fragment implements CalibrationModel {

@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 /**
  * A specific [TileStreamProvider] for OpenStreetMap.
  *
- * @author peterLaurence on 20/16/19
+ * @author P.Laurence on 20/16/19
  */
 class TileStreamProviderOSM(urlTileBuilder: UrlTileBuilder) : TileStreamProvider {
     private val base = TileStreamProviderRetry(TileStreamProviderHttp(urlTileBuilder))

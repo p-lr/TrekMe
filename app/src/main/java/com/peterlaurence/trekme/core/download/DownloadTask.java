@@ -22,7 +22,7 @@ import java.net.URLConnection;
  * The {@link UrlDownloadListener#onDownloadProgress(int)} is called from this created thread, so
  * synchronization is left to the caller.
  *
- * @author peterLaurence on 14/10/17.
+ * @author P.Laurence on 14/10/17.
  */
 public class DownloadTask extends Thread {
     private String mUrlToDownload;

@@ -38,21 +38,22 @@
         app:layout_constraintTop_toBottomOf="@+id/map_archive_name"
         app:layout_constraintVertical_bias="0.0" />
 
-    <ViewStub
-        android:id="@+id/stub_extraction_ind_progressbar"
+    <ProgressBar
+        android:id="@+id/extraction_ind_progressbar"
         android:layout_width="18sp"
         android:layout_height="18sp"
         android:layout_gravity="center"
         android:layout_marginTop="24dp"
-        android:inflatedId="@+id/extraction_ind_progressbar"
-        android:layout="@layout/component_progressbar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="@+id/map_archive_name"
         app:layout_constraintTop_toBottomOf="@+id/map_archive_name"
         app:layout_constraintVertical_bias="0.0"
         tools:layout_editor_absoluteX="21dp"
         tools:layout_height="8dp"
-        tools:layout_width="8dp" />
+        tools:layout_width="8dp"
+        style="@style/Widget.AppCompat.ProgressBar">
+    </ProgressBar>
+
 
     <ImageView
         android:id="@+id/extraction_done"
@@ -75,7 +76,7 @@
         android:layout_height="18sp"
         android:layout_marginTop="24dp"
         android:src="@drawable/ic_error_outline_black_24dp"
-        android:tint="@color/colorError"
+        app:tint="@color/colorError"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="@+id/map_archive_name"

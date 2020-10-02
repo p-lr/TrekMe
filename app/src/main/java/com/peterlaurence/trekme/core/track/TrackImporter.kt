@@ -31,7 +31,7 @@ import javax.inject.Singleton
  *  * Get the list of gpx files created by location recording.
  *  * Get the content of each gpx file as [Gpx] instances.
  *
- * @author peterLaurence on 03/03/17 -- converted to Kotlin on 16/09/18
+ * @author P.Laurence on 03/03/17 -- converted to Kotlin on 16/09/18
  */
 @Singleton
 class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext) {

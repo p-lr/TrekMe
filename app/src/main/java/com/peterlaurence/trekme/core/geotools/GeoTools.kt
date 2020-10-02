@@ -5,7 +5,7 @@ import kotlin.math.*
 /**
  * Set of utility functions for geographic computations.
  *
- * @author peterLaurence on 02/07/17.
+ * @author P.Laurence on 02/07/17.
  */
 
 private const val toRad = 0.017453292519943295 // 2*pi/360

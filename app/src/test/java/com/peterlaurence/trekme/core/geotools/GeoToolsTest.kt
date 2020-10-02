@@ -4,7 +4,7 @@ import org.junit.Assert
 import org.junit.Test
 
 /**
- * @author peterLaurence on 30/03/18.
+ * @author P.Laurence on 30/03/18.
  */
 class GeoToolsTest {
     @Test

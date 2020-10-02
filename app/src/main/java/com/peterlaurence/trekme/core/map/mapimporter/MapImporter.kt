@@ -20,7 +20,7 @@ import kotlin.collections.ArrayList
  * of file-based maps.
  * This is typically used after a [MapArchive] has been extracted.
  *
- * @author peterLaurence on 23/06/16 -- Converted to Kotlin on 27/10/19
+ * @author P.Laurence on 23/06/16 -- Converted to Kotlin on 27/10/19
  */
 object MapImporter {
     private val parser: MapParser by lazy { LibvipsMapParser() }

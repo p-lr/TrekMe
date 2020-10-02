@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.util.gpx.model
 /**
  * The GPX schema, compliant with the Topografix GPX 1.1
  *
- * @author peterLaurence on 30/12/17.
+ * @author P.Laurence on 30/12/17.
  * @see [Topografix GPX 1.1](http://www.topografix.com/GPX/1/1/)
  */
 /* Root tag */

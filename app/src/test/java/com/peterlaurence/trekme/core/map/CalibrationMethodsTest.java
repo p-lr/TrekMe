@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Unit test for calibration.
  *
- * @author peterLaurence on 19/11/17.
+ * @author P.Laurence on 19/11/17.
  */
 @RunWith(RobolectricTestRunner.class)
 public class CalibrationMethodsTest {

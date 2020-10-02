@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.util.gpx.model
 /**
  * Represents a waypoint, point of interest, or named feature on a map.
  *
- * @author peterLaurence on 12/02/17.
+ * @author P.Laurence on 12/02/17.
  */
 data class TrackPoint(
         var latitude: Double = 0.0,

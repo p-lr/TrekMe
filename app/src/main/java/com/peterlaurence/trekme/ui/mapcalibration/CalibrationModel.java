@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.ui.mapcalibration;
 /**
  * Contract of a calibration model when up to 4 calibration points can be defined.
  *
- * @author peterLaurence on 22/05/16.
+ * @author P.Laurence on 22/05/16.
  */
 public interface CalibrationModel {
     void onFirstCalibrationPointSelected();

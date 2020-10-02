@@ -16,7 +16,7 @@ import kotlin.collections.ArrayList
 /**
  * A GPX parser compliant with the [GPX 1.1 schema](https://www.topografix.com/gpx/1/1/)
  *
- * @author peterLaurence on 12/02/17.
+ * @author P.Laurence on 12/02/17.
  */
 @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
 fun parseGpx(`in`: InputStream): Gpx {

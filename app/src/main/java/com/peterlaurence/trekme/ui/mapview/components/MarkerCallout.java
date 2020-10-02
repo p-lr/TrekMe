@@ -16,7 +16,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 /**
- * @author peterLaurence on 09/04/17.
+ * @author P.Laurence on 09/04/17.
  */
 public class MarkerCallout extends RelativeLayout {
     private ImageButton mMoveButton;

@@ -16,7 +16,7 @@ private const val TAG = "MapCreationTask"
  * Search for maps on all provided directories.
  * Parses the json files to, e.g, process calibration information.
  *
- * @author peterLaurence on 30/04/2017 -- converted to Kotlin on 05/05/2019
+ * @author P.Laurence on 30/04/2017 -- converted to Kotlin on 05/05/2019
  */
 fun mapCreationTask(mGson: Gson, vararg dirs: File): List<Map> {
     val mapFilesFoundList = mutableListOf<File>()

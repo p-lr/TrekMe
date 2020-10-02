@@ -18,7 +18,7 @@ import androidx.appcompat.widget.AppCompatImageView;
  * </ul>
  * The transitions between the two states are animated, using animated vector drawables.
  *
- * @author peterLaurence on 08/04/17.
+ * @author P.Laurence on 08/04/17.
  */
 public class MovableMarker extends AppCompatImageView {
     private AnimatedVectorDrawable mRounded;

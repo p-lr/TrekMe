@@ -15,7 +15,7 @@ import org.greenrobot.eventbus.EventBus;
 /**
  * A set of controls (start & stop) over the {@link com.peterlaurence.trekme.service.GpxRecordService}.
  *
- * @author peterLaurence on 23/12/17.
+ * @author P.Laurence on 23/12/17.
  */
 public class ActionsView extends CardView {
     private DelayedButton mButton;

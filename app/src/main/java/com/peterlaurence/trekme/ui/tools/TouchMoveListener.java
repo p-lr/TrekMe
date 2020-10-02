@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
  * }</pre>
  * </p>
  *
- * @author peterLaurence
+ * @author P.Laurence
  */
 public class TouchMoveListener extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener, ReferentialOwner {
     private final MapView mMapView;

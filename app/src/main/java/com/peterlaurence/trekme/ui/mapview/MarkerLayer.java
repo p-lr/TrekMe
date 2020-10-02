@@ -32,7 +32,7 @@ import static com.peterlaurence.mapview.api.MarkerApiKt.removeMarker;
  * All {@link MovableMarker} and {@link MarkerCallout} are managed here. <br>
  * This object is intended to work along with a {@link MapViewFragment}.
  *
- * @author peterLaurence on 09/04/17.
+ * @author P.Laurence on 09/04/17.
  */
 class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListener {
     List<MarkerGson.Marker> mMarkers;

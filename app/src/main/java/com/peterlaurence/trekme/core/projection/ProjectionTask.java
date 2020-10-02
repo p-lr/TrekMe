@@ -8,7 +8,7 @@ import java.lang.ref.WeakReference;
  * Computes a projection. On a WGS84 coordinates update, we need to compute the coordinates of the
  * currently visible map's projection.
  *
- * @author peterLaurence
+ * @author P.Laurence
  */
 public class ProjectionTask extends AsyncTask<Object, Void, Object> {
     private WeakReference<ProjectionUpdateLister> mProjectionUpdateListerWeakReference;

@@ -22,7 +22,7 @@ import java.util.*
  * List of recordings. It displays each recordings showing only the file name at first, then adds
  * the statistics.
  *
- * @author peterLaurence on 23/12/17 -- Converted to Kotlin on 30/09/18
+ * @author P.Laurence on 23/12/17 -- Converted to Kotlin on 30/09/18
  */
 class RecordListView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

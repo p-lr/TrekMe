@@ -8,7 +8,7 @@ import com.peterlaurence.trekme.core.map.mapimporter.MapImporter;
  * more precisely by the {@link com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel},
  * when a map has been successfully imported.
  *
- * @author peterLaurence on 22/12/17.
+ * @author P.Laurence on 22/12/17.
  */
 public class MapImportedEvent {
     public Map map;

@@ -23,7 +23,7 @@ import org.greenrobot.eventbus.EventBus
  * It is also important because the activity might start after an Intent with a result code. In this
  * case, [attemptedAtLeastOnce] is true and we shall not trigger background processing.
  *
- * @author peterLaurence on 07/10/2019
+ * @author P.Laurence on 07/10/2019
  */
 class MainActivityViewModel @ViewModelInject constructor(
         private val trekMeContext: TrekMeContext,

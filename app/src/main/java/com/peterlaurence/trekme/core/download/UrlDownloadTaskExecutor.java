@@ -15,7 +15,7 @@ import java.io.File;
  * This guaranties to keep the internal dataset clean.</li>
  * </ul>
  *
- * @author peterLaurence on 16/10/17.
+ * @author P.Laurence on 16/10/17.
  */
 public final class UrlDownloadTaskExecutor {
     private static SparseArray<DownloadTask> mDownloadTaskArray = new SparseArray<>();

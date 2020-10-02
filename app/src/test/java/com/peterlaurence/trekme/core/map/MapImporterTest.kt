@@ -19,7 +19,7 @@ import kotlin.test.fail
 /**
  * Unit tests for importing maps.
  *
- * @author peterLaurence on 19/08/16 -- Converted to Kotlin on 27/10/19
+ * @author P.Laurence on 19/08/16 -- Converted to Kotlin on 27/10/19
  */
 @RunWith(RobolectricTestRunner::class)
 class MapImporterTest {

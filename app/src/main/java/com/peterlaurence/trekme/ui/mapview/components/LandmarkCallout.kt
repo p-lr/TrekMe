@@ -13,7 +13,7 @@ import java.text.DecimalFormat
 /**
  * This callout is shown when a landmark is taped.
  *
- * @author peterLaurence on 09/03/19.
+ * @author P.Laurence on 09/03/19.
  */
 class LandmarkCallout(context: Context) : RelativeLayout(context) {
     private val moveButton: ImageButton

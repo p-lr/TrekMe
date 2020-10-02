@@ -35,7 +35,7 @@ import kotlinx.coroutines.withContext
  * Using ContentResolver, an InputStream is created from a [DocumentFile] when the user selects it
  * press the extract button. Then, the view-model is involved for the rest of the process.
  *
- * @author peterLaurence on 08/06/16 -- Converted to Kotlin on 18/01/19
+ * @author P.Laurence on 08/06/16 -- Converted to Kotlin on 18/01/19
  */
 @AndroidEntryPoint
 class MapImportFragment : Fragment() {

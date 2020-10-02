@@ -23,7 +23,7 @@ import com.peterlaurence.trekme.ui.maplist.MapAdapter.MapViewHolder
 /**
  * Adapter to provide access to the data set (here a list of [Map]).
  *
- * @author peterLaurence on 26/12/15 - Converted to Kotlin on 02/07/2020
+ * @author P.Laurence on 26/12/15 - Converted to Kotlin on 02/07/2020
  */
 class MapAdapter internal constructor(
         private val mapRepository: MapRepository,

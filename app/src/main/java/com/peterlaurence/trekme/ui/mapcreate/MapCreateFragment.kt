@@ -22,7 +22,7 @@ import com.peterlaurence.trekme.util.isFrench
 /**
  * This fragment is used for displaying available WMTS map sources.
  *
- * @author peterLaurence on 08/04/18
+ * @author P.Laurence on 08/04/18
  */
 class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     private lateinit var wmtsSourceSet: Array<WmtsSource>

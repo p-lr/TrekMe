@@ -36,7 +36,7 @@ import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
  * The reverse applies: when projected coordinates are changes, latitude and longitude are updated
  * only once.
  *
- * @author peterLaurence on 23/04/2017 -- Converted to Kotlin on 24/09/2019
+ * @author P.Laurence on 23/04/2017 -- Converted to Kotlin on 24/09/2019
  */
 class MarkerManageFragment : Fragment() {
     private var _binding: FragmentMarkerManageBinding? = null

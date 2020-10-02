@@ -41,7 +41,7 @@ import org.greenrobot.eventbus.Subscribe;
  * <li>Save the map</li>
  * </ul>
  *
- * @author peterLaurence on 16/04/16.
+ * @author P.Laurence on 16/04/16.
  */
 public class MapSettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 

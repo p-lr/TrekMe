@@ -12,7 +12,7 @@ import java.io.File
 /**
  * Unit tests for maps's json file parsing.
  *
- * @author peterLaurence on 26/02/17 -- Converted to Kotlin on 17/02/2019
+ * @author P.Laurence on 26/02/17 -- Converted to Kotlin on 17/02/2019
  */
 @RunWith(RobolectricTestRunner::class)
 class MapParserTest {

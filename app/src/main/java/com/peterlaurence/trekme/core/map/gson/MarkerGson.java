@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author peterLaurence on 30/04/17.
+ * @author P.Laurence on 30/04/17.
  */
 public class MarkerGson {
     public List<Marker> markers;

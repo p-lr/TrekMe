@@ -18,7 +18,7 @@ import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
  * Presenter for [MapViewFragment]. It is loosely coupled with it, so a different view could be used.
  * It uses data binding from Android Jetpack.
  *
- * @author peterLaurence on 19/03/16 -- Converted to Kotlin on 10/05/2019
+ * @author P.Laurence on 19/03/16 -- Converted to Kotlin on 10/05/2019
  */
 class MapViewFragmentPresenter
 constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Context) : MapViewFragmentContract.Presenter {

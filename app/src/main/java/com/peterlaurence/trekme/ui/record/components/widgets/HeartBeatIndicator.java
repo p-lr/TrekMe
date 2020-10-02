@@ -15,7 +15,7 @@ import com.peterlaurence.trekme.R;
  * <li>heart stopped</li>
  * </ul>
  *
- * @author peterLaurence on 30/12/17.
+ * @author P.Laurence on 30/12/17.
  */
 public class HeartBeatIndicator extends AppCompatImageButton {
     private AnimatedVectorDrawable mHeartBeatVectorDrawable;

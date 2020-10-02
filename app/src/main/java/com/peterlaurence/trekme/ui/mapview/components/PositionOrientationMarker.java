@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Custom marker for indicating the current position, and optionally the orientation.
  *
- * @author peterLaurence on 03/04/16.
+ * @author P.Laurence on 03/04/16.
  */
 public class PositionOrientationMarker extends View implements ReferentialOwner {
     private int mMeasureDimension;

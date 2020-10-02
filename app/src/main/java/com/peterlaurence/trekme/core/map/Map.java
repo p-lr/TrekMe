@@ -40,7 +40,7 @@ import java.util.Locale;
  * <b>Warning</b>: This class isn't thread-safe. It's advised to thread-confine the use of this
  * class to the main thread.
  *
- * @author peterLaurence
+ * @author P.Laurence
  */
 public class Map {
     private static final int THUMBNAIL_SIZE = 256;

@@ -19,7 +19,7 @@ import java.io.IOException
  *  * The folder where recordings are saved
  *  * The file in which app settings are saved (it's a private folder)
  *
- * @author peterLaurence on 07/10/17 -- converted to Kotlin on 20/11/18
+ * @author P.Laurence on 07/10/17 -- converted to Kotlin on 20/11/18
  */
 interface TrekMeContext {
     var defaultAppDir: File?

@@ -13,7 +13,7 @@ import com.peterlaurence.trekme.R
 /**
  * A custom view that draws a square between two [AreaMarker] and represents an area.
  *
- * @author peterLaurence on 12/05/18
+ * @author P.Laurence on 12/05/18
  */
 class AreaView(context: Context) : View(context), ReferentialOwner {
     private val strokeWidth: Float

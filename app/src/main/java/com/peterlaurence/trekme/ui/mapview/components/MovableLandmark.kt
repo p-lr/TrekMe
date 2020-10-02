@@ -16,7 +16,7 @@ import com.peterlaurence.trekme.core.map.gson.Landmark
  *
  * The transitions between the two states are animated, using animated vector drawables.
  *
- * @author peterLaurence on 04/03/19.
+ * @author P.Laurence on 04/03/19.
  */
 class MovableLandmark
 @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

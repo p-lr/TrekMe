@@ -12,7 +12,7 @@ import com.peterlaurence.trekme.R;
 /**
  * Custom marker which is part of the distance measurement feature.
  *
- * @author peterLaurence on 24/06/17.
+ * @author P.Laurence on 24/06/17.
  */
 public class DistanceMarker extends View {
     private int mMeasureDimension;

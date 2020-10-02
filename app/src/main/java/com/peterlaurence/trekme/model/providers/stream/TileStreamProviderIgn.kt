@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
  * row and col numbers.
  * Additional information have to be provided though, like IGN credentials.
  *
- * @author peterLaurence on 20/06/19
+ * @author P.Laurence on 20/06/19
  */
 class TileStreamProviderIgn(urlTileBuilder: UrlTileBuilder, val layer: Layer) : TileStreamProvider {
     private val base: TileStreamProvider

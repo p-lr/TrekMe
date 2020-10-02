@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * @author peterLaurence on 18/02/18.
+ * @author P.Laurence on 18/02/18.
  */
 public class MercatorProjectionTest {
     private Projection mProjection = new MercatorProjection();

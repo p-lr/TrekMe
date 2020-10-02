@@ -18,7 +18,7 @@ import com.peterlaurence.trekme.viewmodel.mapimport.*
  * [MapArchiveViewHolder]. The [MapImportFragment] notifies this adapter of any [UnzipEvent] related
  * using [setUnzipEventForItem].
  *
- * @author peterLaurence on 08/06/16 -- Converted to Kotlin on 19/01/19
+ * @author P.Laurence on 08/06/16 -- Converted to Kotlin on 19/01/19
  */
 class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
 

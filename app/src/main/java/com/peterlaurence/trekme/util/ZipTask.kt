@@ -18,7 +18,7 @@ import java.util.zip.ZipOutputStream
  * @param outputStream The stream in which the archive will be written.
  * @param listener    The [ZipProgressionListener] will be called back.
  *
- * @author peterLaurence on 31/07/17.
+ * @author P.Laurence on 31/07/17.
  */
 fun zipTask(folderToZip: File, outputStream: OutputStream, listener: ZipProgressionListener) {
     /* Get the list of files in the archive */

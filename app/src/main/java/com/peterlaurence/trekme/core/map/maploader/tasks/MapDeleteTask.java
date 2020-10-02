@@ -7,7 +7,7 @@ import com.peterlaurence.trekme.util.FileUtils;
 import java.io.File;
 
 /**
- * @author peterLaurence on 16/07/17.
+ * @author P.Laurence on 16/07/17.
  */
 public class MapDeleteTask extends AsyncTask<File, Void, Void> {
     private File mMapDirectory;

@@ -46,7 +46,7 @@ import org.greenrobot.eventbus.ThreadMode
 /**
  * This fragment displays a [Map], using [MapView].
  *
- * @author peterLaurence on 10/02/2019
+ * @author P.Laurence on 10/02/2019
  */
 @AndroidEntryPoint
 class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener,

@@ -35,7 +35,7 @@ import java.net.URL
  * * keeping track of the layer (as to each [WmtsSource] may correspond multiple layers)
  * * providing a [TileStreamProvider] for the fragment
  *
- * @author peterLaurence on 09/11/19
+ * @author P.Laurence on 09/11/19
  */
 class GoogleMapWmtsViewModel @ViewModelInject constructor(
         private val app: Application

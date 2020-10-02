@@ -67,7 +67,7 @@ import org.greenrobot.eventbus.Subscribe
  * The same settings can be seen at [USGS WMTS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/WMTS/1.0.0/WMTSCapabilities.xml)
  * for the "GoogleMapsCompatible" TileMatrixSet (and not the "default028mm" one).
  *
- * @author peterLaurence on 11/05/18
+ * @author P.Laurence on 11/05/18
  */
 @AndroidEntryPoint
 class GoogleMapWmtsViewFragment : Fragment() {

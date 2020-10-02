@@ -22,7 +22,7 @@ import java.util.*
  * Adapter class for recordings. It holds the view logic associated with the [RecyclerView]
  * defined in the [RecordListView].
  *
- * @author peterLaurence on 27/01/18 -- Converted to Kotlin on 01/10/18
+ * @author P.Laurence on 27/01/18 -- Converted to Kotlin on 01/10/18
  */
 class RecordingAdapter(
         private var selectedRecordings: ArrayList<File>

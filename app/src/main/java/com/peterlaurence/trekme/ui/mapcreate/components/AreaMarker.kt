@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.R
 /**
  * Custom marker which is part of the area selection feature.
  *
- * @author peterLaurence on 11/05/18.
+ * @author P.Laurence on 11/05/18.
  */
 class AreaMarker(context: Context) : View(context) {
     private var mMeasureDimension: Int = 0

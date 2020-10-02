@@ -20,7 +20,7 @@ import java.text.NumberFormat;
  * <li>The distance between two points</li>
  * </ul>
  *
- * @author peterLaurence on 03/06/17.
+ * @author P.Laurence on 03/06/17.
  */
 public class IndicatorOverlay extends RelativeLayout implements MapViewFragment.SpeedListener,
         DistanceLayer.DistanceListener {

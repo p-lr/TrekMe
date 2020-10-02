@@ -16,7 +16,7 @@ import org.greenrobot.eventbus.EventBus
 /**
  * The view model of the fragment which displays [Map]s.
  *
- * @author peterLaurence on 24/08/2019
+ * @author P.Laurence on 24/08/2019
  */
 class MapViewViewModel @ViewModelInject constructor(
         private val persistenceStrategy: PersistenceStrategy,

@@ -13,7 +13,7 @@ import java.io.File
  *  If there is no landmark file, this means that the map has no landmarks.
  *
  * This should be called off UI thread.
- * @author peterLaurence on 23/02/2019
+ * @author P.Laurence on 23/02/2019
  */
 fun mapLandmarkImportTask(map: Map, gson: Gson): LandmarkGson? {
     val landmarkFile = File(map.directory, MapLoader.MAP_LANDMARK_FILE_NAME)

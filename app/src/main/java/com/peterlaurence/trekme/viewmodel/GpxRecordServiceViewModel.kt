@@ -17,7 +17,7 @@ import org.greenrobot.eventbus.ThreadMode
  * [GpxRecordService], or (maybe better) expose a Flow of [Boolean], to be converted to LiveData in this
  * ViewModel (using Flow.asLiveData()).
  *
- * @author peterLaurence on 27/04/2019
+ * @author P.Laurence on 27/04/2019
  */
 class GpxRecordServiceViewModel: ViewModel() {
     private val status = MutableLiveData<Boolean>()

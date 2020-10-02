@@ -12,7 +12,7 @@ import com.peterlaurence.trekme.R;
 /**
  * Custom marker for map calibration.
  *
- * @author peterLaurence on 14/05/16.
+ * @author P.Laurence on 14/05/16.
  */
 public class CalibrationMarker extends View {
     private int mMeasureDimension;

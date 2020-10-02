@@ -14,7 +14,7 @@ import java.io.InputStream
  * exists, a dash with a number is appended.
  * * The size in bytes of the document being read.
  *
- * @author peterLaurence on 28/02/20
+ * @author P.Laurence on 28/02/20
  */
 suspend fun unarchive(inputStream: InputStream, outputDirectory: File, name: String, size: Long,
                       listener: UnzipProgressionListener) = withContext(Dispatchers.IO) {

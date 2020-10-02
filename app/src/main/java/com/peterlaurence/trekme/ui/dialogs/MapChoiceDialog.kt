@@ -21,7 +21,7 @@ import org.greenrobot.eventbus.EventBus
  * A dialog that displays the list of maps. The user can only select one map, and confirm or not the
  * selection. Upon selection of a map, a [MapSelectedEvent] is fired.
  *
- * @author peterLaurence on 01/09/2018
+ * @author P.Laurence on 01/09/2018
  */
 class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     private lateinit var recyclerView: RecyclerView

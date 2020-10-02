@@ -49,7 +49,7 @@ import kotlin.math.pow
  *
  * @param state The [RouteLayerState] to restore. If null, nothing is restored.
  *
- * @author peterLaurence on 13/05/17 -- Converted to Kotlin on 16/02/2019
+ * @author P.Laurence on 13/05/17 -- Converted to Kotlin on 16/02/2019
  */
 class RouteLayer(private val coroutineScope: CoroutineScope, private val state: RouteLayerState? = null) :
         TracksManageFragment.TrackChangeListener,

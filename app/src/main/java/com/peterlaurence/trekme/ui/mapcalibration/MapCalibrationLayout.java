@@ -15,7 +15,7 @@ import com.peterlaurence.trekme.R;
 /**
  * Layout for {@link MapCalibrationFragment}.
  *
- * @author peterLaurence on 22/05/16.
+ * @author P.Laurence on 22/05/16.
  */
 public class MapCalibrationLayout extends LinearLayout implements MapCalibrationFragment.MapCalibrationView {
     private EditText mEditTextLat;

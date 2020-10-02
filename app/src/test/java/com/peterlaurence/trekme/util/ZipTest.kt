@@ -18,7 +18,7 @@ import java.io.FileOutputStream
  * temporary folder. Right after that, it's unzipped in the same location. <br></br>
  * The test is considered successful if this operation is done completely without any error.
  *
- * @author peterLaurence on 10/08/17 -- Converted to Kotlin on 19/05/2019
+ * @author P.Laurence on 10/08/17 -- Converted to Kotlin on 19/05/2019
  */
 @RunWith(RobolectricTestRunner::class)
 class ZipTest {

@@ -30,7 +30,7 @@ import static com.peterlaurence.trekme.core.geotools.GeoToolsKt.distanceApprox;
 /**
  * Shows two {@link DistanceMarker} and a {@link LineView}.
  *
- * @author peterLaurence on 17/06/17.
+ * @author P.Laurence on 17/06/17.
  */
 public class DistanceLayer implements ReferentialOwner {
     private HandlerThread mDistanceThread;

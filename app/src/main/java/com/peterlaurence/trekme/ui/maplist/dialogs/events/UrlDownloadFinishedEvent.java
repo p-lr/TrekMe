@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.ui.maplist.dialogs.events;
 
 /**
- * @author peterLaurence on 16/10/17.
+ * @author P.Laurence on 16/10/17.
  */
 public class UrlDownloadFinishedEvent {
     public boolean success;

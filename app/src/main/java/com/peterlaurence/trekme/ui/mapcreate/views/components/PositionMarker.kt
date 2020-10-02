@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.R
 /**
  * Custom marker for indicating the current position.
  *
- * @author peterLaurence on 30/06/2019
+ * @author P.Laurence on 30/06/2019
  */
 class PositionMarker(context: Context): View(context) {
     private var measureDimension: Int = 65

@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.ui.maplist.dialogs.events;
 
 /**
- * @author peterLaurence on 14/10/17.
+ * @author P.Laurence on 14/10/17.
  */
 public class UrlDownloadEvent {
     public int percentProgress;

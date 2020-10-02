@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 /**
  * Global app settings are managed here.
  *
- * @author peterLaurence on 05/05/19
+ * @author P.Laurence on 05/05/19
  */
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {

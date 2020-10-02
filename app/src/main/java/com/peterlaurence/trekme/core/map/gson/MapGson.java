@@ -24,7 +24,7 @@ import java.util.List;
  * Every attribute is public, to avoid boilerplate setters/getters (so use with care). Their names
  * are identical to their json counterparts.
  *
- * @author peterLaurence
+ * @author P.Laurence
  */
 public class MapGson {
     public String name;

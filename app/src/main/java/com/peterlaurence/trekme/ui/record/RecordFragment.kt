@@ -39,7 +39,7 @@ import java.io.File
  * Holds controls and displays information about the [GpxRecordService].
  * Displays the list of records (gpx files) along their statistics.
  *
- * @author peterLaurence -- converted to Kotlin on 01/11/18
+ * @author P.Laurence -- converted to Kotlin on 01/11/18
  */
 @AndroidEntryPoint
 class RecordFragment : Fragment() {

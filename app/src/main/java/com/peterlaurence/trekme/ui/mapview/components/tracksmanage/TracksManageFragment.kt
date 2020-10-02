@@ -39,7 +39,7 @@ import java.io.FileNotFoundException
  * * Rename existing tracks,
  * * Import new tracks from existing GPX files.
  *
- * @author peterLaurence on 01/03/17 -- Converted to Kotlin on 24/04/19
+ * @author P.Laurence on 01/03/17 -- Converted to Kotlin on 24/04/19
  */
 @AndroidEntryPoint
 class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {

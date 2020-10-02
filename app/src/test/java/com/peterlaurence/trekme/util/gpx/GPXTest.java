@@ -37,7 +37,7 @@ import static junit.framework.Assert.fail;
 /**
  * GPX tests.
  *
- * @author peterLaurence on 12/02/17.
+ * @author P.Laurence on 12/02/17.
  */
 @RunWith(RobolectricTestRunner.class)
 public class GPXTest {

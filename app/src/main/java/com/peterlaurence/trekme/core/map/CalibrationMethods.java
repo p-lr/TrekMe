@@ -10,7 +10,7 @@ import java.util.Arrays;
  * The {@link CalibrationMethods} provides different methods to obtain a {@link Map.MapBounds} from multiple
  * {@link MapGson.Calibration.CalibrationPoint} objects.
  *
- * @author peterLaurence
+ * @author P.Laurence
  */
 public class CalibrationMethods {
     /**

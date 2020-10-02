@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * A {@code MapArchive} contains every information about a map archive.
  *
- * @author peterLaurence on 08/06/16.
+ * @author P.Laurence on 08/06/16.
  */
 public class MapArchive {
     private final File mMapArchiveFile;

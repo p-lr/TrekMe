@@ -16,7 +16,7 @@ import java.util.List;
  * For instance, it only looks for zip files and don't check whether those are real map archives or
  * not. But attempting to extract a wrong file is correctly reported to the user.
  *
- * @author peterLaurence on 30/04/17.
+ * @author P.Laurence on 30/04/17.
  */
 public class MapArchiveSearchTask extends Thread {
     private static final int MAX_RECURSION_DEPTH = 6;

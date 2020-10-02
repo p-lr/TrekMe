@@ -20,7 +20,7 @@ import javax.xml.transform.stream.StreamResult
  * But its features are limited to the needs of TrekMe app, which for instance only consist in
  * writing tracks (with track segments and way-points).
  *
- * @author peterLaurence on 30/12/17.
+ * @author P.Laurence on 30/12/17.
  */
 @Throws(ParserConfigurationException::class, TransformerException::class)
 fun writeGpx(gpx: Gpx, out: OutputStream) {

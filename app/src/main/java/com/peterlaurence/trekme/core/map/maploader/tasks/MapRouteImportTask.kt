@@ -17,7 +17,7 @@ import java.io.File
  *
  * @return A [RouteGson] instance if it succeeded, null otherwise.
  *
- * @author peterLaurence on 13/05/17 -- Converted to Kotlin on 17/02/2019
+ * @author P.Laurence on 13/05/17 -- Converted to Kotlin on 17/02/2019
  */
 fun mapRouteImportTask(map: Map, gson: Gson): RouteGson? {
     val routeFile = File(map.directory, MapLoader.MAP_ROUTE_FILE_NAME)

@@ -5,7 +5,7 @@ package com.peterlaurence.trekme.core.projection;
  * known as "Web Mercator" projected coordinate reference system (CRS).
  * That projected CRS is used for rendering maps in Google Maps, OpenStreetMap, etc.
  *
- * @author peterLaurence
+ * @author P.Laurence
  */
 public class MercatorProjection implements Projection {
     public static final transient String NAME = "Pseudo Mercator";

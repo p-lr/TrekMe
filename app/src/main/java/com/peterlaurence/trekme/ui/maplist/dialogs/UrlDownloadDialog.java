@@ -23,7 +23,7 @@ import org.greenrobot.eventbus.ThreadMode;
  * A {@link Dialog} that shows the progression of an URL download. <p>
  * It relies on the {@link EventBus} to get {@link UrlDownloadEvent} messages.
  *
- * @author peterLaurence on 07/10/17.
+ * @author P.Laurence on 07/10/17.
  */
 public class UrlDownloadDialog extends DialogFragment {
     private static final String MAP_NAME = "map_name";

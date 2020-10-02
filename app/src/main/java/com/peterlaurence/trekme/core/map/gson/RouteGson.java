@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author peterLaurence on 13/05/17.
+ * @author P.Laurence on 13/05/17.
  */
 public class RouteGson {
     public List<Route> routes;

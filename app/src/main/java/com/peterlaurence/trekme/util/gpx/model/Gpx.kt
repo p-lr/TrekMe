@@ -6,7 +6,7 @@ package com.peterlaurence.trekme.util.gpx.model
  *
  * Custom elements can be added to the extensions section of the GPX document.
  *
- * @author peterLaurence on 12/02/17.
+ * @author P.Laurence on 12/02/17.
  */
 data class Gpx(
         val metadata: Metadata? = null,

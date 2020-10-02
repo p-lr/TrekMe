@@ -25,7 +25,7 @@ import java.util.Stack;
 /**
  * Utility class.
  *
- * @author peterLaurence on 02/01/16.
+ * @author P.Laurence on 02/01/16.
  */
 public class FileUtils {
     /**

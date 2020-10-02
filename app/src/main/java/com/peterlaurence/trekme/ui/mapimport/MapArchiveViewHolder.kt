@@ -23,15 +23,11 @@ class MapArchiveViewHolder(binding: MapArchiveCardBinding) : RecyclerView.ViewHo
     var mapArchiveName: TextView = binding.mapArchiveName
         private set
 
-    /* The indeterminate unzip progressBar and its stub */
-    private val stubProgressBarUnzip = binding.stubExtractionIndProgressbar
-    private var progressBarIndUnzip: ProgressBar? = null
-
-    /* Those view below could also be loaded later using ViewStub */
     private val progressBarHorizontal: ProgressBar = binding.unzipProgressbar
     private val iconMapExtracted: ImageView = binding.extractionDone
     private val iconMapExtractionError: ImageView = binding.extractionError
     private val extractionLabel: TextView = binding.extractionTxtview
+    private val progressBarIndUnzip: ProgressBar = binding.extractionIndProgressbar
     private val progressBarIndMapCreation: ProgressBar = binding.mapcreationIndProgressbar
     private val iconMapCreated: ImageView = binding.mapcreationDone
     private val mapCreationLabel: TextView = binding.mapcreationTxtview
@@ -42,7 +38,7 @@ class MapArchiveViewHolder(binding: MapArchiveCardBinding) : RecyclerView.ViewHo
 
     fun init() {
         progressBarHorizontal.visibility = View.GONE
-        progressBarIndUnzip?.visibility = View.GONE
+        progressBarIndUnzip.visibility = View.GONE
         iconMapExtracted.visibility = View.GONE
         iconMapExtractionError.visibility = View.GONE
         extractionLabel.visibility = View.GONE
@@ -51,27 +47,16 @@ class MapArchiveViewHolder(binding: MapArchiveCardBinding) : RecyclerView.ViewHo
         mapCreationLabel.visibility = View.GONE
     }
 
-    /**
-     * Init views based on view stubs.
-     */
-    private fun initProgressBar() {
-        if (progressBarIndUnzip == null) {
-            progressBarIndUnzip = stubProgressBarUnzip.inflate() as? ProgressBar
-            progressBarIndUnzip?.indeterminateDrawable?.colorFilter = colorFilter
-        }
-    }
-
     fun onProgress(p: Int) {
-        initProgressBar()
         progressBarHorizontal.visibility = View.VISIBLE
-        progressBarIndUnzip?.visibility = View.VISIBLE
+        progressBarIndUnzip.visibility = View.VISIBLE
         extractionLabel.visibility = View.VISIBLE
         progressBarHorizontal.progress = p
     }
 
     fun onUnzipFinished() {
         progressBarHorizontal.visibility = View.GONE
-        progressBarIndUnzip?.visibility = View.GONE
+        progressBarIndUnzip.visibility = View.GONE
         extractionLabel.visibility = View.VISIBLE
         mapCreationLabel.visibility = View.VISIBLE
         iconMapExtracted.visibility = View.VISIBLE
@@ -79,8 +64,7 @@ class MapArchiveViewHolder(binding: MapArchiveCardBinding) : RecyclerView.ViewHo
     }
 
     fun onUnzipError() {
-        initProgressBar()
-        progressBarIndUnzip?.visibility = View.GONE
+        progressBarIndUnzip.visibility = View.GONE
         iconMapExtractionError.visibility = View.VISIBLE
         extractionLabel.setText(R.string.extraction_error)
     }
@@ -99,5 +83,6 @@ class MapArchiveViewHolder(binding: MapArchiveCardBinding) : RecyclerView.ViewHo
     init {
         progressBarHorizontal.max = 100
         progressBarIndMapCreation.indeterminateDrawable.colorFilter = colorFilter
+        progressBarIndUnzip.indeterminateDrawable.colorFilter = colorFilter
     }
 }

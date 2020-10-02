@@ -32,7 +32,7 @@ import kotlin.coroutines.resume
  * * [mapRouteImportTask] -> Import the list of routes for a given [Map]
  * * [MapArchiveSearchTask] -> Get the list of [MapArchive]
  *
- * @author peterLaurence -- converted to Kotlin on 16/02/2019
+ * @author P.Laurence -- converted to Kotlin on 16/02/2019
  */
 object MapLoader : MapImporter.MapImportListener {
     const val MAP_FILE_NAME = "map.json"

@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * A custom view that draws a line between two points and represents the distance
  * between them.
  *
- * @author peterLaurence on 21/06/17.
+ * @author P.Laurence on 21/06/17.
  */
 public class LineView extends View implements ReferentialOwner {
     private static final int DEFAULT_STROKE_COLOR = 0xCC311B92;
