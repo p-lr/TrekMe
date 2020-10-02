@@ -21,6 +21,7 @@ import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
+import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
@@ -34,7 +35,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -177,8 +177,9 @@ class GpxRecordService : Service() {
                 writeGpx(gpx, fos)
                 EventBus.getDefault().post(GpxFileWriteEvent(gpxFile, gpx))
             } catch (e: Exception) {
-                // for instance, don't care : we want to stop the service anyway
-                // TODO : warn the user that the gpx file could not be saved
+                EventBus.getDefault().post(GenericMessage(getString(R.string.service_gpx_error)))
+            } finally {
+                stop()
             }
         }
     }
@@ -230,11 +231,9 @@ class GpxRecordService : Service() {
     }
 
     /**
-     * Self-respond to a [GpxFileWriteEvent] emitted by the service.
-     * When a GPX file has just been written, stop the service and send the status.
+     * Stop the service and send the status.
      */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
+    private fun stop() = scope.launch {
         isStarted = false
         channel?.cancel()
         stopSelf()

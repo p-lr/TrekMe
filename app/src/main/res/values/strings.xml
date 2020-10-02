@@ -28,6 +28,7 @@
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>
     <string name="service_gpx_record_action">GPX recording</string>
+    <string name="service_gpx_error">Error while saving the GPX file :(</string>
 
     <!-- DownloadService -->
     <string name="service_download_name">Download service</string>
