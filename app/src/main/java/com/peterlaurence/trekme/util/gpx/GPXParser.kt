@@ -158,17 +158,32 @@ private fun readTrackExtensions(parser: XmlPullParser): TrackStatistics? {
 @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
 private fun readTrackStatistics(parser: XmlPullParser): TrackStatistics {
     parser.require(XmlPullParser.START_TAG, null, TAG_TRACK_STATISTICS)
-    val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0, 0)
-    trackStatistics.distance = parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble()
-            ?: 0.0
-    trackStatistics.elevationDifferenceMax = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DIFF_MAX)?.toDouble()
-            ?: 0.0
-    trackStatistics.elevationUpStack = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_UP_STACK)?.toDouble()
-            ?: 0.0
-    trackStatistics.elevationDownStack = parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DOWN_STACK)?.toDouble()
-            ?: 0.0
-    trackStatistics.durationInSecond = parser.getAttributeValue(null, ATTR_TRK_STAT_DURATION)?.toLong()
-            ?: 0
+    val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0)
+
+    trackStatistics.distance = runCatching {
+        parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble()
+    }.getOrNull() ?: 0.0
+
+    trackStatistics.elevationDifferenceMax = runCatching {
+        parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DIFF_MAX)?.toDouble()
+    }.getOrNull() ?: 0.0
+
+    trackStatistics.elevationUpStack = runCatching {
+        parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_UP_STACK)?.toDouble()
+    }.getOrNull() ?: 0.0
+
+    trackStatistics.elevationDownStack = runCatching {
+        parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DOWN_STACK)?.toDouble()
+    }.getOrNull() ?: 0.0
+
+    trackStatistics.durationInSecond = runCatching {
+        parser.getAttributeValue(null, ATTR_TRK_STAT_DURATION)?.toLong()
+    }.getOrNull()
+
+    trackStatistics.avgSpeed = runCatching {
+        parser.getAttributeValue(null, ATTR_TRK_STAT_AVG_SPEED)?.toDouble()
+    }.getOrNull()
+
     while (parser.next() != XmlPullParser.END_TAG) {
         if (parser.eventType != XmlPullParser.START_TAG) {
             continue

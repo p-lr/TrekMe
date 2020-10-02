@@ -233,10 +233,12 @@ class GpxRecordService : Service() {
     /**
      * Stop the service and send the status.
      */
-    private fun stop() = scope.launch {
+    private fun stop() {
         isStarted = false
-        channel?.cancel()
-        stopSelf()
+        scope.launch {
+            channel?.cancel()
+            stopSelf()
+        }
     }
 
     override fun onBind(intent: Intent): IBinder? {

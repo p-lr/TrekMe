@@ -17,7 +17,6 @@ import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.parseGpx
-import com.peterlaurence.trekme.util.gpx.writeGpx
 import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,7 +27,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -133,7 +131,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
             recordingsToGpx[gpxFile] = gpx
         }
 
-        setTrackStatistics(gpxFile, gpx)
+        setTrackStatistics(gpx)
         updateLiveData()
     }
 
@@ -176,11 +174,11 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
 
         /* Then compute the statistics */
         recordingsToGpx.forEach {
-            setTrackStatistics(it.key, it.value)
+            setTrackStatistics(it.value)
         }
     }
 
-    private suspend fun setTrackStatistics(gpxFile: File, gpx: Gpx) = withContext(Dispatchers.Default) {
+    private suspend fun setTrackStatistics(gpx: Gpx) = withContext(Dispatchers.Default) {
         gpx.tracks.firstOrNull()?.let { track ->
             val statCalculator = TrackStatCalculator()
             track.trackSegments.forEach { trackSegment ->
@@ -189,18 +187,6 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
             }
 
             val updatedStatistics = statCalculator.getStatistics()
-            if (track.statistics != null && track.statistics != updatedStatistics) {
-                /* Track statistics have changed, update the file */
-                track.statistics = updatedStatistics
-                try {
-                    withContext(Dispatchers.IO) {
-                        val fos = FileOutputStream(gpxFile)
-                        writeGpx(gpx, fos)
-                    }
-                } catch (e: Exception) {
-                    // couldn't update the statistics
-                }
-            }
             track.statistics = updatedStatistics
         }
     }

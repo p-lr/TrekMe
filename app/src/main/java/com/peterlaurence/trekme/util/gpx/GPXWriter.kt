@@ -125,6 +125,10 @@ private fun addTrackStatisticsToNode(statistics: TrackStatistics, n: Node, doc: 
     durationInSec.nodeValue = statistics.durationInSecond.toString()
     statisticsNodeAttr.setNamedItem(durationInSec)
 
+    val avgSpeed = doc.createAttribute(ATTR_TRK_STAT_AVG_SPEED)
+    avgSpeed.nodeValue = statistics.avgSpeed.toString()
+    statisticsNodeAttr.setNamedItem(avgSpeed)
+
     n.appendChild(statisticsNode)
 }
 
