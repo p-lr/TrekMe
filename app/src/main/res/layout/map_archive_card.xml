@@ -7,6 +7,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:animateLayoutChanges="true"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:paddingBottom="8dp"
     tools:layout_editor_absoluteX="0dp"
     tools:layout_editor_absoluteY="0dp">
 
@@ -14,9 +17,7 @@
         android:id="@+id/map_archive_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:paddingBottom="8dp"
         android:textColor="@color/colorPrimaryTextBlack"
         android:textSize="18sp"
         app:layout_constraintLeft_toLeftOf="parent"

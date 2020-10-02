@@ -225,4 +225,5 @@
     <string name="unknown_map_source">Source de carte inconnue. La configuration de cette carte est incorrecte.</string>
     <string name="service_gpx_error">Erreur à la création du fichier GPX :(</string>
     <string name="service_gpx_location_error">TrekMe n\'a pas accès à votre position :(</string>
+    <string name="imported_new_map">Une nouvelle carte a été créée</string>
 </resources>

@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.ViewStub
 import androidx.recyclerview.widget.RecyclerView
-import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.databinding.MapArchiveCardBinding
 import com.peterlaurence.trekme.viewmodel.mapimport.*
 
 /**
@@ -28,16 +28,15 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MapArchiveViewHolder {
         val ctx = parent.context
-        val v = LayoutInflater.from(ctx).inflate(R.layout.map_archive_card, parent, false)
+        val binding = MapArchiveCardBinding.inflate(LayoutInflater.from(ctx), parent, false)
 
-        return MapArchiveViewHolder(v)
+        return MapArchiveViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: MapArchiveViewHolder, position: Int) {
         val data = data ?: return
         val itemViewModel = data[position]
         val item = data[position]
-        holder.position = position
         holder.mapArchiveName.text = item.name
 
         if (selectedPosition == position) {
