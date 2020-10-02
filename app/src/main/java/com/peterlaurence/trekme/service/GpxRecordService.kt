@@ -55,7 +55,7 @@ import kotlin.coroutines.suspendCoroutine
  * of Google Play Services. This is because we absolutely need to use only the [LocationManager.GPS_PROVIDER].
  * The fused provider don't give us the hand on that.
  *
- * @author peterLaurence on 17/12/17 -- converted to Kotlin on 20/04/19
+ * @author P.Laurence on 17/12/17 -- converted to Kotlin on 20/04/19
  */
 @AndroidEntryPoint
 class GpxRecordService : Service() {
@@ -63,15 +63,15 @@ class GpxRecordService : Service() {
     @Inject
     lateinit var trekMeContext: TrekMeContext
 
-    private lateinit var serviceLooper: Looper
-    private lateinit var serviceHandler: Handler
-    private lateinit var locationManager: LocationManager
-    private lateinit var locationListener: LocationListener
+    private var serviceLooper: Looper? = null
+    private var serviceHandler: Handler? = null
+    private var locationManager: LocationManager? = null
+    private var locationListener: LocationListener? = null
     private var locationCounter: Long = 0
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private var trackPoints = mutableListOf<TrackPoint>()
-    private lateinit var trackStatCalculator: TrackStatCalculator
+    private val trackPoints = mutableListOf<TrackPoint>()
+    private var trackStatCalculator: TrackStatCalculator? = null
 
     /**
      * A [Channel] to be used for external communication, instead of sharing raw collections across
@@ -96,13 +96,11 @@ class GpxRecordService : Service() {
         thread.start()
 
         /* Get the HandlerThread's Looper and use it for our Handler */
-        serviceLooper = thread.looper
-        serviceHandler = Handler(serviceLooper)
+        val looper = thread.looper
+        serviceLooper = looper
+        serviceHandler = Handler(looper)
 
-
-        serviceHandler.handleMessage(Message())
-
-        trackPoints = mutableListOf()
+        serviceHandler?.handleMessage(Message())
 
         /* Prepare the stat calculator */
         trackStatCalculator = TrackStatCalculator()
@@ -125,8 +123,10 @@ class GpxRecordService : Service() {
                 val trackPoint = TrackPoint(location.latitude,
                         location.longitude, altitude, location.time, "")
                 trackPoints.add(trackPoint)
-                trackStatCalculator.addTrackPoint(trackPoint)
-                sendTrackStatistics(trackStatCalculator.getStatistics())
+                trackStatCalculator?.addTrackPoint(trackPoint)
+                trackStatCalculator?.getStatistics()?.also { stats ->
+                    sendTrackStatistics(stats)
+                }
                 sendTrackPoint(trackPoint)
             }
 
@@ -147,7 +147,7 @@ class GpxRecordService : Service() {
      * [THREAD_NAME] thread.
      */
     private fun createGpx() {
-        serviceHandler.post {
+        serviceHandler?.post {
             val trkSegList = ArrayList<TrackSegment>()
             trkSegList.add(TrackSegment(trackPoints))
 
@@ -157,10 +157,10 @@ class GpxRecordService : Service() {
             val trackName = "track-" + dateFormat.format(date)
 
             val track = Track(trkSegList, trackName)
-            track.statistics = trackStatCalculator.getStatistics()
+            track.statistics = trackStatCalculator?.getStatistics()
 
             /* Make the metadata */
-            val metadata = Metadata(trackName, date.time, trackStatCalculator.getBounds())
+            val metadata = Metadata(trackName, date.time, trackStatCalculator?.getBounds())
 
             val trkList = ArrayList<Track>()
             trkList.add(track)
@@ -246,7 +246,7 @@ class GpxRecordService : Service() {
 
     override fun onDestroy() {
         stopLocationUpdates()
-        serviceLooper.quitSafely()
+        serviceLooper?.quitSafely()
         scope.cancel()
         EventBus.getDefault().unregister(this)
     }
@@ -259,12 +259,17 @@ class GpxRecordService : Service() {
                         Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
         }
+        val locationListener = locationListener ?: return
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 2f, locationListener, serviceLooper)
+        runCatching {
+            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 2f, locationListener, serviceLooper)
+        }.onFailure {
+            EventBus.getDefault().post(GenericMessage(getString(R.string.service_gpx_location_error)))
+        }
     }
 
     private fun stopLocationUpdates() {
-        locationManager.removeUpdates(locationListener)
+        locationListener?.also { locationManager?.removeUpdates(it) }
     }
 
     /**
@@ -299,7 +304,7 @@ class GpxRecordService : Service() {
      * This is done in the [THREAD_NAME] thread, to ensure thread-safety.
      */
     private suspend fun newChannel(): Channel<TrackPoint>? = suspendCoroutine { cont ->
-        serviceHandler.post {
+        serviceHandler?.post {
             channel = Channel(capacity = Channel.UNLIMITED)
             trackPoints.forEach {
                 channel?.offer(it)

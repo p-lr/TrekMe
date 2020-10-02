@@ -224,4 +224,5 @@
     <string name="feedback_negative_msg">Dites-moi ce qui ne vas pas et je ferai de mon mieux pour vous aider.</string>
     <string name="unknown_map_source">Source de carte inconnue. La configuration de cette carte est incorrecte.</string>
     <string name="service_gpx_error">Erreur à la création du fichier GPX :(</string>
+    <string name="service_gpx_location_error">TrekMe n\'a pas accès à votre position :(</string>
 </resources>
