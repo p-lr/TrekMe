@@ -75,7 +75,7 @@ class RecordFragment : Fragment() {
          * Observe the changes in the [GpxRecordService] status, and update child views accordingly.
          */
         val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
-        gpxRecordServiceViewModel.getStatus().observe(viewLifecycleOwner) {
+        gpxRecordServiceViewModel.status.observe(viewLifecycleOwner) {
             it?.let { isActive ->
                 dispatchGpxRecordServiceStatus(isActive)
             }

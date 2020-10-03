@@ -19,22 +19,17 @@ import org.greenrobot.eventbus.ThreadMode
  *
  * @author P.Laurence on 27/04/2019
  */
-class GpxRecordServiceViewModel: ViewModel() {
-    private val status = MutableLiveData<Boolean>()
-
-    fun getStatus(): LiveData<Boolean> {
-        return status
-    }
+class GpxRecordServiceViewModel : ViewModel() {
+    private val statusFromEventBus = MutableLiveData(GpxRecordService.isStarted)
+    val status: LiveData<Boolean> = statusFromEventBus
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onGpxRecordServiceStatusEvent(event: GpxRecordServiceStatus) {
-        status.postValue(event.started)
+        statusFromEventBus.postValue(event.started)
     }
 
     init {
         EventBus.getDefault().register(this)
-
-        status.postValue(GpxRecordService.isStarted)
     }
 
     override fun onCleared() {
