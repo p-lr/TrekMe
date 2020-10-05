@@ -18,7 +18,9 @@ import com.peterlaurence.trekme.ui.mapview.components.LandmarkCallout
 import com.peterlaurence.trekme.ui.mapview.components.LineView
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.MovableLandmark
+import com.peterlaurence.trekme.ui.mapview.controller.positionCallout
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
+import com.peterlaurence.trekme.util.px
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -170,6 +172,9 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
         val map = map ?: return
 
         if (view is MovableLandmark && view.relativeX != null && view.relativeY != null) {
+            val relativeX = view.relativeX ?: return
+            val relativeY = view.relativeY ?: return
+
             /* Prepare the callout */
             val landmarkCallout = LandmarkCallout(context)
             landmarkCallout.setMoveAction {
@@ -180,7 +185,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
 
                 /* Use a trick to bring the landmark to the foreground */
                 mapView.removeMarker(view)
-                mapView.addMarker(view, view.relativeX!!, view.relativeY!!, -0.5f, -0.5f)
+                mapView.addMarker(view, relativeX, relativeY, -0.5f, -0.5f)
 
                 /* Remove the callout */
                 mapView.removeCallout(landmarkCallout)
@@ -204,7 +209,15 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
                 landmarkCallout.setSubTitle(it.lat, it.lon)
             }
 
-            mapView.addCallout(landmarkCallout, view.relativeX!!, view.relativeY!!, -0.5f, -1.2f)
+            val calloutHeight = 140.px
+            val markerHeight = 48.px // The view height is 48dp, but only the top half is used to draw the marker.
+            val calloutWidth = 100.px
+            val markerWidth = 24.px
+
+            val pos = positionCallout(mapView, calloutWidth, calloutHeight, relativeX, relativeY, markerWidth, markerHeight)
+
+            mapView.addCallout(landmarkCallout, relativeX, relativeY, pos.relativeAnchorLeft,
+                    pos.relativeAnchorTop, pos.absoluteAnchorLeft, pos.absoluteAnchorTop)
 
             landmarkCallout.transitionIn()
         }

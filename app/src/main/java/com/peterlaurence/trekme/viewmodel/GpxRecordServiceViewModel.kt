@@ -7,7 +7,6 @@ import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 /**
  * Expose to the activity and fragment/views the state of the [GpxRecordService].
@@ -23,8 +22,9 @@ class GpxRecordServiceViewModel : ViewModel() {
     private val statusFromEventBus = MutableLiveData(GpxRecordService.isStarted)
     val status: LiveData<Boolean> = statusFromEventBus
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe
     fun onGpxRecordServiceStatusEvent(event: GpxRecordServiceStatus) {
+        /* As the event might be coming from any thread, post on main thread */
         statusFromEventBus.postValue(event.started)
     }
 

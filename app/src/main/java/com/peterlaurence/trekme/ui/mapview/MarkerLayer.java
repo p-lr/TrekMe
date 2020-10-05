@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.navigation.Navigation;
 
 import com.peterlaurence.mapview.MapView;
@@ -16,7 +17,10 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.ui.mapview.components.MarkerCallout;
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab;
 import com.peterlaurence.trekme.ui.mapview.components.MovableMarker;
+import com.peterlaurence.trekme.ui.mapview.controller.CalloutPosition;
+import com.peterlaurence.trekme.ui.mapview.controller.CalloutPositionerKt;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
+import com.peterlaurence.trekme.util.MetricsKt;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -39,8 +43,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
     private Context mContext;
     private MapView mMapView;
     private Map mMap;
-    private MovableMarker mCurrentMovableMarker;
-
 
     /**
      * After being created, the method {@link #init(Map, MapView)} has to be called.
@@ -56,14 +58,11 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
     private static void attachMarkerGrab(final MovableMarker movableMarker, MapView mapView,
                                          Map map, Context context) {
         /* Add a view as background, to move easily the marker */
-        TouchMoveListener.MarkerMoveAgent markerMarkerMoveAgent = new TouchMoveListener.MarkerMoveAgent() {
-            @Override
-            public void onMarkerMove(MapView mapView, View view, double x, double y) {
-                moveMarker(mapView, view, x, y);
-                moveMarker(mapView, movableMarker, x, y);
-                movableMarker.setRelativeX(x);
-                movableMarker.setRelativeY(y);
-            }
+        TouchMoveListener.MarkerMoveAgent markerMarkerMoveAgent = (mapView1, view, x, y) -> {
+            moveMarker(mapView1, view, x, y);
+            moveMarker(mapView1, movableMarker, x, y);
+            movableMarker.setRelativeX(x);
+            movableMarker.setRelativeY(y);
         };
 
         MarkerGrab markerGrab = new MarkerGrab(context);
@@ -76,10 +75,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         markerGrab.morphIn(null);
     }
 
-    private void setCurrentMarker(MovableMarker movableMarker) {
-        mCurrentMovableMarker = movableMarker;
-    }
-
     @Override
     public void onMapMarkerUpdate() {
         drawMarkers();
@@ -90,7 +85,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
     }
 
     @Override
-    public void onMarkerTap(View view, int i, int i1) {
+    public void onMarkerTap(@NonNull View view, int x, int y) {
         if (mMapView == null) return;
 
         if (view instanceof MovableMarker) {
@@ -100,7 +95,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
             MarkerCallout markerCallout = new MarkerCallout(mContext);
             markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
                     mMapView, mContext, mMap));
-            markerCallout.setEditAction(new EditMarkerRunnable(mMap.getId(), movableMarker, MarkerLayer.this,
+            markerCallout.setEditAction(new EditMarkerRunnable(mMap.getId(), movableMarker,
                     markerCallout, mMapView));
             markerCallout.setDeleteAction(new DeleteMarkerRunnable(movableMarker, markerCallout,
                     mMapView, mMap));
@@ -108,7 +103,15 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
             markerCallout.setTitle(marker.name);
             markerCallout.setSubTitle(marker.lat, marker.lon);
 
-            addCallout(mMapView, markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(), -0.5f, -1.2f, 0f, 0f);
+            int calloutHeight = MetricsKt.getPx(120);
+            int markerHeight = MetricsKt.getPx(48); // The view height is 48dp, but only the top half is used to draw the marker.
+            int calloutWidth = MetricsKt.getPx(200);
+            int markerWidth = MetricsKt.getPx(24);
+            CalloutPosition pos = CalloutPositionerKt.positionCallout(mMapView, calloutWidth, calloutHeight,
+                    movableMarker.getRelativeX(), movableMarker.getRelativeY(), markerWidth, markerHeight);
+
+            addCallout(mMapView, markerCallout, movableMarker.getRelativeX(), movableMarker.getRelativeY(),
+                    pos.getRelativeAnchorLeft(), pos.getRelativeAnchorTop(), pos.getAbsoluteAnchorLeft(), pos.getAbsoluteAnchorTop());
             markerCallout.transitionIn();
         }
     }
@@ -200,23 +203,6 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         attachMarkerGrab(movableMarker, mMapView, mMap, mContext);
 
         addMarker(mMapView, movableMarker, relativeX, relativeY, -0.5f, -0.5f, 0f, 0f);
-    }
-
-    /**
-     * The {@link MarkerGson.Marker} of the {@code mCurrentMovableMarker} has changed. <br>
-     * Updates the view.
-     */
-    void updateCurrentMarker() {
-        if (mMap.getProjection() == null) {
-            mCurrentMovableMarker.setRelativeX(mCurrentMovableMarker.getMarker().lon);
-            mCurrentMovableMarker.setRelativeY(mCurrentMovableMarker.getMarker().lat);
-        } else {
-            mCurrentMovableMarker.setRelativeX(mCurrentMovableMarker.getMarker().proj_x);
-            mCurrentMovableMarker.setRelativeY(mCurrentMovableMarker.getMarker().proj_y);
-        }
-
-        moveMarker(mMapView, mCurrentMovableMarker, mCurrentMovableMarker.getRelativeX(),
-                mCurrentMovableMarker.getRelativeY());
     }
 
     /**
@@ -335,20 +321,19 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
 
     /**
      * This runnable is called when an external component requests a {@link MovableMarker} to
-     * be edited. <br>Here, this component is a {@link MarkerCallout}.
+     * be edited. <br>
+     * Here, this component is a {@link MarkerCallout}.
      */
     private static class EditMarkerRunnable implements Runnable {
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
-        private WeakReference<MarkerLayer> mMarkerLayerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
         private MapView mMapView;
         private int mMapId;
 
-        EditMarkerRunnable(int mapId, MovableMarker movableMarker, MarkerLayer markerLayer,
+        EditMarkerRunnable(int mapId, MovableMarker movableMarker,
                            MarkerCallout markerCallout, MapView mapView) {
             mMapId = mapId;
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
-            mMarkerLayerWeakReference = new WeakReference<>(markerLayer);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
             mMapView = mapView;
         }
@@ -358,14 +343,8 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
             MovableMarker movableMarker = mMovableMarkerWeakReference.get();
 
             if (movableMarker != null) {
-                        MarkerLayer markerLayer = mMarkerLayerWeakReference.get();
-                        if (markerLayer != null) {
-                            markerLayer.setCurrentMarker(movableMarker);
-                        }
-
-//                        listener.onRequestManageMarker(mMapId, movableMarker.getMarker());
-                        MapViewFragmentDirections.ActionMapViewFragmentToMarkerManageFragment action = MapViewFragmentDirections.actionMapViewFragmentToMarkerManageFragment(mMapId, movableMarker.getMarker());
-                        Navigation.findNavController(mMapView).navigate(action);
+                MapViewFragmentDirections.ActionMapViewFragmentToMarkerManageFragment action = MapViewFragmentDirections.actionMapViewFragmentToMarkerManageFragment(mMapId, movableMarker.getMarker());
+                Navigation.findNavController(mMapView).navigate(action);
             }
 
             /* Remove the callout */
