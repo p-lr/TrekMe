@@ -152,6 +152,10 @@ class RecordFragment : Fragment() {
     @Subscribe
     fun onRequestStartEvent(event: RequestStartEvent) {
         viewModel.startRecording()
+
+        /* The background location permission is asked after the dialog is closed. But it doesn't
+         * matter that the recording is already started - it works even when the permission is
+         * granted during the recording. */
         if (settings.isShowingLocationDisclaimer()) {
             LocalisationDisclaimer(settings).show(parentFragmentManager, null)
         }
