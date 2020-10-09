@@ -1,12 +1,15 @@
 package com.peterlaurence.trekme.ui.mapview.controller
 
 import com.peterlaurence.mapview.MapView
+import com.peterlaurence.mapview.api.getVisibleViewport
 
 data class CalloutPosition(val relativeAnchorTop: Float, val absoluteAnchorTop: Float,
                            val relativeAnchorLeft: Float, val absoluteAnchorLeft: Float)
 
 /**
- * Positions the callout based on provided info.
+ * Positions the callout, taking into account the available space around the marker. Accounts for
+ * the current scroll of the [MapView] (the visible part) and the limits of the [MapView].
+ *
  * The algorithm tries the following positions relative to the marker (x):
  *
  *                    5 1 6
@@ -26,17 +29,23 @@ fun positionCallout(mapView: MapView, calloutWidth: Int, calloutHeight: Int,
     val yInPx: Int = mapView.coordinateTranslater.translateAndScaleY(relativeY, mapView.scale)
     val xInPx: Int = mapView.coordinateTranslater.translateAndScaleX(relativeX, mapView.scale)
 
-    val limitBottom: Float = mapView.coordinateTranslater.baseHeight * mapView.scale
-    val roomFullTop = calloutHeight + markerHeight / 2f < yInPx
-    val roomCenteredTop = calloutHeight / 2f < yInPx
-    val roomFullBottom = calloutHeight + yInPx < limitBottom
-    val roomCenteredBottom = yInPx + calloutHeight / 2f < limitBottom
+    val viewport = mapView.getVisibleViewport()
 
-    val limitRight: Float = mapView.coordinateTranslater.baseWidth * mapView.scale
-    val roomCenteredLeft = calloutWidth / 2f < xInPx
-    val roomFullLeft = calloutWidth + markerWidth / 2f < xInPx
-    val roomCenteredRight = xInPx + calloutWidth / 2f < limitRight
-    val roomFullRight = xInPx + calloutWidth + markerWidth / 2f < limitRight
+    val limitBottom = (mapView.coordinateTranslater.baseHeight * mapView.scale).toInt()
+    val spaceBottom = viewport.bottom.coerceAtMost(limitBottom) - yInPx
+    val spaceTop = yInPx - viewport.top.coerceAtLeast(0)
+    val roomFullTop = calloutHeight + markerHeight / 2f < spaceTop
+    val roomCenteredTop = calloutHeight / 2f < spaceTop
+    val roomFullBottom = calloutHeight < spaceBottom
+    val roomCenteredBottom = calloutHeight / 2f < spaceBottom
+
+    val limitRight = (mapView.coordinateTranslater.baseWidth * mapView.scale).toInt()
+    val spaceRight = viewport.right.coerceAtMost(limitRight) - xInPx
+    val spaceLeft = xInPx - viewport.left.coerceAtLeast(0)
+    val roomCenteredLeft = calloutWidth / 2f < spaceLeft
+    val roomFullLeft = calloutWidth + markerWidth / 2f < spaceLeft
+    val roomCenteredRight = calloutWidth / 2f < spaceRight
+    val roomFullRight = calloutWidth + markerWidth / 2f < spaceRight
 
     // Top-centered
     if (roomFullTop && roomCenteredLeft && roomCenteredRight) {
