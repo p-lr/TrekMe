@@ -12,6 +12,7 @@ import androidx.lifecycle.LiveData
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.service.GpxRecordService
@@ -20,6 +21,7 @@ import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.ui.record.components.RecordListView
 import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
+import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
 import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import com.peterlaurence.trekme.ui.record.components.events.RequestStartEvent
@@ -34,6 +36,7 @@ import kotlinx.android.synthetic.main.fragment_record.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
+import javax.inject.Inject
 
 /**
  * Holds controls and displays information about the [GpxRecordService].
@@ -45,6 +48,9 @@ import java.io.File
 class RecordFragment : Fragment() {
     private var _binding: FragmentRecordBinding? = null
     private val binding get() = _binding!!
+
+    @Inject
+    lateinit var settings: Settings
 
     val viewModel: RecordViewModel by activityViewModels()
     private var recordingData: LiveData<List<RecordingData>>? = null
@@ -146,6 +152,9 @@ class RecordFragment : Fragment() {
     @Subscribe
     fun onRequestStartEvent(event: RequestStartEvent) {
         viewModel.startRecording()
+        if (settings.isShowingLocationDisclaimer()) {
+            LocalisationDisclaimer(settings).show(parentFragmentManager, null)
+        }
     }
 
     @Subscribe

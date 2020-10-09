@@ -99,9 +99,6 @@
     <string name="map_download_dialog_progress">Progression</string>
     <string name="import_error">Une erreur est survenue. Essayez de redémarrer l\'application.</string>
     <string name="mapcreate_settings">Paramètres</string>
-    <string name="ign_help_msg">Des identifiants sont nécessaires pour créer une carte IGN.
-    C\'est <b>gratuit</b>, mais il faut suivre scrupuleusement le tutoriel.</string>
-    <string name="ign_help_link">https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN</string>
     <string name="image_preferences_category">Image de présentation</string>
     <string name="image_change_btn_txt">Changer l\'image</string>
     <string name="service_download_finished">Téléchargment de la carte terminé</string>
@@ -226,4 +223,10 @@
     <string name="service_gpx_error">Erreur à la création du fichier GPX :(</string>
     <string name="service_gpx_location_error">TrekMe n\'a pas accès à votre position :(</string>
     <string name="imported_new_map">Une nouvelle carte a été créée</string>
+    <string name="location_info_title">Information</string>
+    <string name="background_location_disclaimer">TrekMe collecte les données de localisation pendant un enregistrement GPX,
+        même lorsque l\'application est fermée ou inutilisée.\n\nCes informations de localisation sont stockées localement sur votre
+        appareil et ne sont <b>en aucun cas communiquées à des tiers</b>.</string>
+    <string name="close_dialog">Fermer</string>
+    <string name="understood_dialog">J\'ai compris</string>
 </resources>

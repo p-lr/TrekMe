@@ -24,6 +24,8 @@
     <string name="bad_storage_status">There is something wrong with your SD card: we can\'t write to it.\nThis has nothing to do with TrekMe, and it won\'t be able to download maps or save changes.</string>
     <string name="storage_read_only">Your SD card is only accessible as read-only. This means we can\'t write to it and TrekMe won\'t be able to download maps or save changes.</string>
     <string name="storage_perm_denied">Please enable storage permission from settings</string>
+    <string name="close_dialog">Close</string>
+    <string name="understood_dialog">I understand</string>
 
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>
@@ -194,6 +196,10 @@
         \"Battery optimization\" or similar. You should see a list of applications. Scroll down to find TrekMe
         and disable the battery optimization.</string>
     <string name="automatic_import_feedback">Track imported in %1$d maps</string>
+    <string name="location_info_title">Information</string>
+    <string name="background_location_disclaimer">TrekMe collects location data during the GPX recording,
+        even when the app is closed or not in use.\n\nThis location data <b>isn\'t shared with anyone</b>,
+        and gpx files are stored locally on your device.</string>
 
     <!-- MapCreate fragment -->
     <string name="next_button">Next</string>
@@ -204,8 +210,6 @@
     <string name="ign_api_category">API</string>
     <string name="ign_api_key">Key</string>
     <string name="ign_tutorial"><u>Follow tutorial</u></string>
-    <string name="ign_help_msg">See how to get your API (french only)</string>
-    <string name="ign_help_link">https://github.com/peterLaurence/TrekMe/wiki/Tutoriel-:-obtenir-une-cl%C3%A9-IGN</string>
     <string name="ign_warning_storage_rights">TrekMe can\'t save your credentials, because it don\'t have Storage rights. In Android parameters, for Applications, look into TrekMe\'s permissions.</string>
     <string name="ign_warning_credentials">At least one of your credentials (user, password, API) is incorrect. You won\'t be able to download IGN maps until you fix this.</string>
     <string name="ign_snackbar_continue">Continue to map creation?</string>

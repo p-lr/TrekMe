@@ -28,6 +28,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val lastMapId = "lastMapId"
     private val defineScaleWhenCentered = "defineScaleWhenCentered"
     private val scaleCentered = "scaleCentered"
+    private val locationDisclaimer = "locationDisclaimer"
 
     /**
      * This is temporary migration code from the old settings mechanism to the new one which is
@@ -184,6 +185,16 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     fun setLastMapId(id: Int) {
         sharedPref.edit {
             putInt(lastMapId, id)
+        }
+    }
+
+    fun isShowingLocationDisclaimer(): Boolean {
+        return sharedPref.getBoolean(locationDisclaimer, true)
+    }
+
+    fun discardLocationDisclaimer() {
+        sharedPref.edit {
+            putBoolean(locationDisclaimer, false)
         }
     }
 }
