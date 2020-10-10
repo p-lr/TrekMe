@@ -304,4 +304,7 @@
     <string name="feedback_title">Do you like the application?</string>
     <string name="feedback_desc">Contribute to making TrekMe more popular, and encourage me to add more features.</string>
     <string name="feedback_negative_msg">Tell me about your issue and I\'ll do my best to help you.</string>
+    <string name="privacy_policy_title">Privacy policy</string>
+    <string name="privacy_policy_desc">We respect your privacy and will never share private data such as your location
+        to any third parties.</string>
 </resources>

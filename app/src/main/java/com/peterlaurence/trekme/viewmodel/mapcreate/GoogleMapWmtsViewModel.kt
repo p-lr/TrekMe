@@ -5,6 +5,8 @@ import android.content.Intent
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.backendApi.ignApiUrl
+import com.peterlaurence.trekme.core.backendApi.ordnanceSurveyApiUrl
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
@@ -43,8 +45,6 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private var ignApi: String? = null
     private var ordnanceSurveyApi: String? = null
-    private val ignApiUrl = "https://plrapps.ovh:8080/ign-api"
-    private val ordnanceSurveyApiUrl = "https://plrapps.ovh:8080/ordnance-survey-api"
 
     private val scaleAndScrollInitConfig = mapOf(
             WmtsSource.IGN to listOf(

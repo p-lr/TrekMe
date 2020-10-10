@@ -229,4 +229,8 @@
         appareil et ne sont <b>en aucun cas communiquées à des tiers</b>.</string>
     <string name="close_dialog">Fermer</string>
     <string name="understood_dialog">J\'ai compris</string>
+    <string name="privacy_policy_title">Politique de confidentialité</string>
+    <string name="privacy_policy_desc">Nous respectons votre vie privée et ne communiquerons jamais
+        votre position ou toute autre donnée personnelle à des tiers. Nous ne stockons pas ces informations
+        ailleurs que sur votre appareil.</string>
 </resources>

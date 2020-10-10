@@ -4,12 +4,15 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.Html
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.backendApi.privacyPolicyUrl
 import com.peterlaurence.trekme.databinding.FragmentAboutBinding
 
 /**
@@ -64,6 +67,12 @@ class AboutFragment : Fragment() {
                     }
                     .create().show()
         }
+
+        /* Privacy policy link */
+        val linkName = getString(R.string.privacy_policy_title)
+        val link = "<html><a href=\"$privacyPolicyUrl\">$linkName</a></html>"
+        binding.privacyPolicyLink.text = Html.fromHtml(link, Html.FROM_HTML_MODE_LEGACY)
+        binding.privacyPolicyLink.movementMethod = LinkMovementMethod.getInstance()
     }
 
     override fun onDestroyView() {
