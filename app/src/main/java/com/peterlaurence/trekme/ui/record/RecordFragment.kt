@@ -12,7 +12,6 @@ import androidx.lifecycle.LiveData
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
-import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.service.GpxRecordService
@@ -24,8 +23,8 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDi
 import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
 import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
-import com.peterlaurence.trekme.ui.record.components.events.RequestStartEvent
 import com.peterlaurence.trekme.ui.record.components.events.RequestStopEvent
+import com.peterlaurence.trekme.ui.record.components.events.ShowLocationDisclaimerEvent
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
@@ -36,7 +35,6 @@ import kotlinx.android.synthetic.main.fragment_record.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
-import javax.inject.Inject
 
 /**
  * Holds controls and displays information about the [GpxRecordService].
@@ -48,9 +46,6 @@ import javax.inject.Inject
 class RecordFragment : Fragment() {
     private var _binding: FragmentRecordBinding? = null
     private val binding get() = _binding!!
-
-    @Inject
-    lateinit var settings: Settings
 
     val viewModel: RecordViewModel by activityViewModels()
     private var recordingData: LiveData<List<RecordingData>>? = null
@@ -68,6 +63,9 @@ class RecordFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        /* This isn't a joke, we need to have the view-model instantiated now */
+        viewModel
 
         val statViewModel: RecordingStatisticsViewModel by activityViewModels()
         recordingData = statViewModel.getRecordingData()
@@ -150,15 +148,8 @@ class RecordFragment : Fragment() {
     }
 
     @Subscribe
-    fun onRequestStartEvent(event: RequestStartEvent) {
-        viewModel.startRecording()
-
-        /* The background location permission is asked after the dialog is closed. But it doesn't
-         * matter that the recording is already started - it works even when the permission is
-         * granted during the recording. */
-        if (settings.isShowingLocationDisclaimer()) {
-            LocalisationDisclaimer(settings).show(parentFragmentManager, null)
-        }
+    fun onShowLocationDisclaimer(event: ShowLocationDisclaimerEvent) {
+        LocalisationDisclaimer().show(parentFragmentManager, null)
     }
 
     @Subscribe

@@ -12,11 +12,12 @@ import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
-import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
+import com.peterlaurence.trekme.ui.record.components.events.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import org.greenrobot.eventbus.EventBus
@@ -31,7 +32,8 @@ import java.io.File
  */
 class RecordViewModel @ViewModelInject constructor(
         private val trackImporter: TrackImporter,
-        private val app: Application
+        private val app: Application,
+        private val settings: Settings
 ) : ViewModel() {
     private var recordingsSelected = listOf<File>()
 
@@ -92,7 +94,8 @@ class RecordViewModel @ViewModelInject constructor(
         }
     }
 
-    fun startRecording() {
+    @Subscribe
+    fun onRequestStartEvent(event: RequestStartEvent) {
         /* Check battery optimization, and inform the user if needed */
         if (isBatteryOptimized()) {
             EventBus.getDefault().post(RequestDisableBatteryOpt())
@@ -101,6 +104,16 @@ class RecordViewModel @ViewModelInject constructor(
         /* Start the service */
         val intent = Intent(app, GpxRecordService::class.java)
         app.startService(intent)
+
+        /* The background location permission is asked after the dialog is closed. But it doesn't
+         * matter that the recording is already started - it works even when the permission is
+         * granted during the recording. */
+        if (settings.isShowingLocationDisclaimer()) {
+            EventBus.getDefault().post(ShowLocationDisclaimerEvent())
+        } else {
+            /* If the disclaimer is discarded, ask for the permission anyway */
+            requestBackgroundLocationPerm()
+        }
     }
 
     /**
@@ -110,6 +123,20 @@ class RecordViewModel @ViewModelInject constructor(
         val pm = app.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
         val name = app.applicationContext.packageName
         return !pm.isIgnoringBatteryOptimizations(name)
+    }
+
+    @Subscribe
+    fun onLocationDisclaimerClosed(event: LocationDisclaimerClosedEvent) {
+        requestBackgroundLocationPerm()
+    }
+
+    private fun requestBackgroundLocationPerm() {
+        EventBus.getDefault().post(RequestBackgroundLocationPermission())
+    }
+
+    @Subscribe
+    fun onDiscardLocationDisclaimer(event: DiscardLocationDisclaimerEvent) {
+        settings.discardLocationDisclaimer()
     }
 
     override fun onCleared() {
