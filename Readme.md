@@ -408,10 +408,10 @@ Starting from Android 10, all maps (no matter if they're on the internal memory 
 deleted when TrekMe is uninstalled. Consequently, it's highly recommended to use the backup feature
 of TrekMe. You'll be able to restore your maps if you e.g change for a new device.
 
-To create an archive, go to the list of maps and press the "MANAGE" button at the bottom left:
+To create an archive, go to the list of maps and press the "EDIT" button at the bottom left:
 
 <p align="center">
-<img src="doc/tuto/bali-en.jpg" width="300">
+<img src="doc/tuto/reunion-en.png" width="300">
 </p>
 
 You land on a bunch of options related to the selected map. The last option is a "Save" button - press
