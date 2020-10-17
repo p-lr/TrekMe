@@ -57,9 +57,10 @@
     <string name="extraction_error">Erreur d\'extraction</string>
     <string name="snack_msg_show_map_list">Afficher la liste des cartes ?</string>
     <string name="archive_dialog_title">Sauvegarder la carte</string>
-    <string name="archive_dialog_description">La sauvegarde va créer une archive qui pourra à tout moment être restaurée dans le menu
-        d\'importation. Vous choisissez le dossier de destination de cette archive.\n\nLa progression apparaîtra dans une notification.</string>
-    <string name="archive_notification_msg">Sauvegarde de la carte %s en  cours</string>
+    <string name="archive_dialog_description">Vous allez sélectionner un dossier dans lequel une archive
+        de la carte sera créée. Cette archive pourra à tout moment être restaurée dans le menu
+        d\'importation.\n\nLa progression de l\'archivage apparaîtra dans une notification.</string>
+    <string name="archive_notification_msg">Sauvegarde de la carte %s en cours</string>
     <string name="archive_snackbar_finished">Sauvegarde terminée</string>
     <string name="archive_notification_title">Archivage</string>
     <string name="download_map_dialog_title">Téléchargement</string>
@@ -77,11 +78,6 @@
     <string name="wgs84_instead_of_projected">Vous avez mis des coordonnées WGS84 au lieu de coordonnées de projection</string>
     <string name="projected_instead_of_wgs84">Vous avez mis des coordonnées de projection au lieu de coordonnées WGS84 lat/lon</string>
     <string name="create_menu_title">Créer une nouvelle carte</string>
-    <string name="ign_user_catergory">Identification IGN</string>
-    <string name="ign_user">Utilisateur IGN</string>
-    <string name="ign_pwd">Mot de passe</string>
-    <string name="ign_api_category">API</string>
-    <string name="ign_api_key">Clé</string>
     <string name="next_button">Continuer</string>
     <string name="ign_source">IGN</string>
     <string name="ign_source_description">France et ses territoires</string>
@@ -108,7 +104,6 @@
     <string name="go_to_map_creation_btn">Créer une carte</string>
     <string name="download_confirm">Téléchargement lancé. Voir le statut dans les notifications.</string>
     <string name="confirm_exit">Appuyez à nouveau sur RETOUR pour quitter TrekMe</string>
-    <string name="ign_tutorial"><u>Suivre le tutoriel</u></string>
     <string name="ign_spain_source">IGN Espagne</string>
     <string name="track_file_name_change">Nom du fichier</string>
     <string name="choose_a_map">Choisissez une carte</string>
@@ -126,9 +121,6 @@
     <string name="gpx_import_error_msg">Oups.. il y a eu problème pendant l\'import</string>
     <string name="about">À propos</string>
     <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#sommaire</string>
-    <string name="ign_warning_storage_rights">TrekMe ne peut pas tenir compte de vos identifiants, parce que l\'application ne dispose pas l\'autorisation de <b>stockage</b>. Dans vos paramètres Android, pour Applications, veuillez vérifier les autorisations de TrekMe.</string>
-    <string name="ign_warning_credentials">Au moins un de vos identifiants (nom, mot de passe, clé d\'API) est incorrect. Vous ne pourrez pas créer de carte IGN tant que vous n\'aurez pas entré d\'identifiants corrects.</string>
-    <string name="ign_snackbar_continue">Continuer pour créer une carte ?</string>
     <string name="map_download_dialog_error">Une erreur est survenue durant l\'import de la carte, qui n\'apparaîtra probablement pas dans la liste des cartes, ou bien elle ne sera pas calibrée. Le plus simple est de télécharger à nouveau votre carte. Désolé :(</string>
     <string name="bad_storage_status">Votre carte SD présente un problème. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="storage_read_only">Votre carte SD est en lecture seule. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>

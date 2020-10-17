@@ -206,16 +206,6 @@
     <!-- MapCreate fragment -->
     <string name="next_button">Next</string>
     <string name="mapcreate_settings">Settings</string>
-    <string name="ign_user_catergory">IGN credentials</string>
-    <string name="ign_user">IGN user</string>
-    <string name="ign_pwd">IGN password</string>
-    <string name="ign_api_category">API</string>
-    <string name="ign_api_key">Key</string>
-    <string name="ign_tutorial"><u>Follow tutorial</u></string>
-    <string name="ign_warning_storage_rights">TrekMe can\'t save your credentials, because it don\'t have Storage rights. In Android parameters, for Applications, look into TrekMe\'s permissions.</string>
-    <string name="ign_warning_credentials">At least one of your credentials (user, password, API) is incorrect. You won\'t be able to download IGN maps until you fix this.</string>
-    <string name="ign_snackbar_continue">Continue to map creation?</string>
-
     <string name="ign_source">IGN</string>
     <string name="ign_source_description">France and its territories</string>
     <string name="open_street_map_source" translatable="false">OpenStreetMap</string>
