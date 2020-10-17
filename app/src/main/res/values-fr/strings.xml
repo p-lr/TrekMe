@@ -206,10 +206,11 @@
         fait pas de distinction, et peut arrêter brutalement le service (et TrekMe avec).</string>
     <string name="battery_warn_solution_btn_txt">Voir la solution</string>
     <string name="battery_warn_solution_title">Solution</string>
-    <string name="battery_warn_solution_msg">Allez dans les réglages du téléphone, dans \"Batterie\". Ensuite, il
-        faut y trouver un menu \"Optimisation de la batterie\" ou similaire. Là, on peut définir pour chaque application la limite
-        ou non de son activité en arrière plan et/ou l\'optimisation de la batterie.\nDonc pour Trekme, il faut autoriser son
-        execution en arrière plan et désactiver l\'optimisation.</string>
+    <string name="battery_warn_solution_msg">Allez dans les réglages du téléphone, dans \"Applications\" puis \"TrekMe\". Dans les
+        paramètres de Batterie, il faut y trouver un menu \"Optimisation de la batterie\". Par défaut l\'optimisation est activée.
+        Si elle est déactivée, vous n\'avez rien à faire. Sinon, affichez la liste des applis optimisées et descendez presque tout en bas
+        pour y trouver TrekMe. Enfin, vous pouvez déactiver l\'optimisation. C\'était bien caché\…
+    </string>
     <string name="track_add_error">Une erreur est survenue lors de l\'import de la trace</string>
     <string name="automatic_import_feedback">Trace importée dans %1$d carte(s)</string>
     <string name="user_manual_title">Manuel utilisateur</string>
@@ -233,4 +234,5 @@
     <string name="privacy_policy_desc">Nous respectons votre vie privée et ne communiquerons jamais
         votre position ou toute autre donnée personnelle à des tiers. Nous ne stockons pas ces informations
         ailleurs que sur votre appareil.</string>
+    <string name="solution_title">Solution</string>
 </resources>

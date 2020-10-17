@@ -35,19 +35,6 @@
             app:layout_constraintTop_toBottomOf="@+id/battery_opt_warn_msg" />
 
         <TextView
-            android:id="@+id/battery_warn_solution_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/battery_warn_solution_title"
-            android:textColor="@color/colorGreen"
-            android:textStyle="bold"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/battery_warn_solution_btn" />
-
-        <TextView
             android:id="@+id/battery_warn_solution"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -59,6 +46,6 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/battery_warn_solution_title" />
+            app:layout_constraintTop_toBottomOf="@id/battery_warn_solution_btn" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -39,13 +39,12 @@ class BatteryOptWarningDialog : DialogFragment() {
         val warningText = view.findViewById<TextView>(R.id.battery_opt_warn_msg)
         val solutionBtn = view.findViewById<Button>(R.id.battery_warn_solution_btn)
         val solutionText = view.findViewById<TextView>(R.id.battery_warn_solution)
-        val solutionTitle = view.findViewById<TextView>(R.id.battery_warn_solution_title)
 
         fun showSolution() {
+            dialog?.setTitle(getString(R.string.solution_title))
             warningText.visibility = View.GONE
             solutionBtn.visibility = View.GONE
             solutionText.visibility = View.VISIBLE
-            solutionTitle.visibility = View.VISIBLE
         }
 
         if (solutionShown) {
