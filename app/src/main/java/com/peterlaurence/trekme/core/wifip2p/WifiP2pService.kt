@@ -51,6 +51,7 @@ class WifiP2pService : Service() {
     private val peerListChannel = Channel<WifiP2pDeviceList>(capacity = 64)
     private var job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.Main)
+    private var autoRestart: Job? = null
 
     private val serviceName = "_trekme_mapshare"
     private val serviceType = "_presence._tcp"
@@ -93,13 +94,16 @@ class WifiP2pService : Service() {
 
                         manager.requestConnectionInfo(channel) { info ->
                             Log.d(TAG, "Got connection info $info")
+                            /* We got called back, so cancel auto-restart */
+                            autoRestart?.cancel()
+
                             if (info?.groupOwnerAddress == null) {
                                 /* This matters while in sending mode */
-                                if (wifiP2pState != Started) {
+                                if (mode is StartSend && wifiP2pState != Started) {
                                     Log.d(TAG, "Connection info is empty - go back to Started state")
                                     /* Go back to the started state */
-                                    wifiP2pState = Started
                                     scope.launch {
+                                        resetWifiP2p()
                                         initialize()
                                     }
                                 }
@@ -188,13 +192,14 @@ class WifiP2pService : Service() {
      * * [StopAction] -> Stops the service
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if (intent.action !in listOf(StartRcv::class.java.name, StartSend::class.java.name, StopAction::class.java.name)) {
+        val action = intent.action
+        if (action != null && action !in listOf(StartRcv::class.java.name, StartSend::class.java.name, StopAction::class.java.name)) {
             Log.e(TAG, "Illegal action sent to WifiP2pService")
             return START_NOT_STICKY
         }
 
         /* If the user used the notification action-stop button, stop the service */
-        if (intent.action == StopAction::class.java.name) {
+        if (action == StopAction::class.java.name) {
             wifiP2pState = Stopping
             /* Unregister Android-specific listener */
             runCatching {
@@ -329,7 +334,7 @@ class WifiP2pService : Service() {
     private suspend fun discoverReceivingDevice(): WifiP2pDevice = suspendCancellableCoroutine { cont ->
         val channel = channel ?: return@suspendCancellableCoroutine
         val manager = manager ?: return@suspendCancellableCoroutine
-        val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
+        val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, _, device ->
             Log.d(TAG, "Found a device advertising the right service")
             if (fullDomain.startsWith(serviceName)) {
                 Log.d(TAG, device.deviceAddress)
@@ -378,11 +383,21 @@ class WifiP2pService : Service() {
         manager?.connect(channel, config).also {
             /**
              * At this point, although the API has returned successfully, we still need to wait for
-             * the broadcast event WIFI_P2P_CONNECTION_CHANGED_ACTION to be sure we're indeed
+             * the broadcast event [WIFI_P2P_CONNECTION_CHANGED_ACTION] to be sure we're indeed
              * connected to the targeted device. We can infer this if the ip of the group owner is
              * not null.
              */
             wifiP2pState = AwaitingP2pConnection
+
+            /* Avoid hanging in this state and auto restart after some delay */
+            autoRestart = scope.launch {
+                delay(20_000)
+                if (wifiP2pState == AwaitingP2pConnection) {
+                    Log.d(TAG, "Returning back to started state after timeout")
+                    resetWifiP2p()
+                    initialize()
+                }
+            }
         }
     }
 
@@ -556,15 +571,16 @@ class WifiP2pService : Service() {
 
         /* We don't care about the success or failure of this call, this service is going to
          * shutdown anyway. */
-        manager.cancelConnect(channel).also { println("Cancel connect $it") }
-        manager.clearLocalServices(channel).also { println("ClearLocalServices $it") }
-        manager.clearServiceRequests(channel).also { println("ClearServiceRequests $it") }
-        manager.removeGroup(channel).also { println("Removegroup $it") }
-        manager.stopPeerDiscovery(channel).also { println("Stop peer discovery $it") }
+        manager.cancelConnect(channel).also { Log.d(TAG, "Cancel connect $it") }
+        manager.clearLocalServices(channel).also { Log.d(TAG, "ClearLocalServices $it") }
+        manager.clearServiceRequests(channel).also { Log.d(TAG, "ClearServiceRequests $it") }
+        manager.removeGroup(channel).also { Log.d(TAG, "Remove group $it") }
+        manager.stopPeerDiscovery(channel).also { Log.d(TAG, "Stop peer discovery $it") }
         peerListChannel.poll()
     }
 
     private suspend fun exitWithReason(reason: StopReason, resetConnection: Boolean = false) {
+        autoRestart?.cancel()
         if (resetConnection) resetWifiP2p()
         wifiP2pState = Stopped(reason)
         stopSelf()
@@ -638,7 +654,6 @@ private tailrec fun File.unique(): File {
     return if (!exists()) {
         this
     } else {
-        val regex = """(.*)-(\d+)""".toRegex()
         val matchResult = regex.find(name)
         if (matchResult == null) {
             File("$path-1").unique()
@@ -650,5 +665,7 @@ private tailrec fun File.unique(): File {
         }
     }
 }
+
+private val regex = """(.*)-(\d+)""".toRegex()
 
 private val TAG = WifiP2pService::class.java.name

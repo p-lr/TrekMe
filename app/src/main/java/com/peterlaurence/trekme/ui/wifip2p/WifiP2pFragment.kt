@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wifip2p.*
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
@@ -39,15 +38,15 @@ class WifiP2pFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.state.observe(this, Observer {
+        viewModel.state.observe(this) {
             it?.let { state ->
                 onState(state)
             }
-        })
+        }
 
-        viewModel.errors.observe(this, Observer {
+        viewModel.errors.observe(this) {
             it?.let { onError(it) }
-        })
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -116,9 +115,13 @@ class WifiP2pFragment : Fragment() {
 
         when (state) {
             Started -> onStarted()
+            AwaitingSocketConnection, SocketConnected -> {
+            } // Don't display anything for now
             AwaitingP2pConnection -> binding.status.text = getString(R.string.wifip2p_device_found)
             P2pConnected -> binding.status.text = getString(R.string.wifip2p_connected)
             is Loading -> onLoading(state.progress)
+            Stopping -> {
+            } // Don't display anything for now
             is Stopped -> {
                 binding.receiveBtn.isEnabled = true
                 binding.sendBtn.isEnabled = true
@@ -139,6 +142,8 @@ class WifiP2pFragment : Fragment() {
                         binding.emojiPartyFace.visibility = View.GONE
                         binding.stoppedStatus.text = getString(R.string.wifip2p_error).format(state.stopReason.error.name)
                     }
+                    is ByUser -> {
+                    } // Don't display anything for now
                 }
 
                 /* Check Wifi state again */
