@@ -84,12 +84,8 @@ fun Long.toSizeInMo(): Long {
 
 private data class TopLeftToBottomRight(val XLeft: Double, val YTop: Double, val XRight: Double, val YBottom: Double)
 
+@Suppress("LocalVariableName")
 private fun orderCoordinates(point1: Point, point2: Point): TopLeftToBottomRight {
-    /* Check that the two points have different X and Y */
-    if (point1.X == point2.X || point1.Y == point2.Y) {
-        throw Exception("Incorrect coordinates")
-    }
-
     val XLeft = min(point1.X, point2.X)
     val YTop = max(point1.Y, point2.Y)
     val XRight = max(point1.X, point2.X)
