@@ -303,10 +303,16 @@ Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre
 
 ### <a name="TOC-GPX-track-import"></a>Import d'un fichier GPX
 
-Alors que vous visionnez une carte, utilisez le bouton suivant :
+Alors que vous visionnez une carte, utilisez le menu en haut à droite :
 
 <p align="center">
-<img src="doc/tuto/manage-tracks.jpg" width="300">
+<img src="doc/tuto/upper-right-menu-fr.jpg" width="300">
+</p>
+
+Puis, sélectionnez "Gérer les traces":
+
+<p align="center">
+<img src="doc/tuto/manage-tracks-fr.jpg" width="300">
 </p>
 
 La liste des traces disponibles pour votre carte s'affiche alors (il est possible à ce stade qu'il y 
