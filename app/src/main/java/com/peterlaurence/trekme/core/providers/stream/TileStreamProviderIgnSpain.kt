@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.model.providers.stream
+package com.peterlaurence.trekme.core.providers.stream
 
 import com.peterlaurence.trekme.core.map.OutOfBounds
 import com.peterlaurence.trekme.core.map.TileResult

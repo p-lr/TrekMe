@@ -10,7 +10,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.model.map.MapRepository
+import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TrackNameChangedEvent
 import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
 import kotlinx.coroutines.CoroutineScope

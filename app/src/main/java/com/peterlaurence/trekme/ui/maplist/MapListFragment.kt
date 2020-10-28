@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.databinding.FragmentMapListBinding
-import com.peterlaurence.trekme.model.map.MapRepository
+import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.ui.maplist.MapAdapter.*
 import com.peterlaurence.trekme.ui.maplist.dialogs.ConfirmDeleteDialog
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel

@@ -41,7 +41,7 @@ import com.peterlaurence.trekme.billing.ign.BillingFlowEvent
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
-import com.peterlaurence.trekme.model.map.MapRepository
+import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import com.peterlaurence.trekme.service.event.MapDownloadFinishedEvent
 import com.peterlaurence.trekme.service.event.MapDownloadPendingEvent

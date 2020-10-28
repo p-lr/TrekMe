@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.toMarker
-import com.peterlaurence.trekme.model.map.MapRepository
+import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
 import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint

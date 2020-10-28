@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
-import com.peterlaurence.trekme.model.map.MapRepository
+import com.peterlaurence.trekme.repositories.map.MapRepository
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 

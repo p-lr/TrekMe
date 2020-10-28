@@ -21,7 +21,7 @@ import com.peterlaurence.trekme.core.providers.layers.IgnClassic
 import com.peterlaurence.trekme.core.providers.layers.IgnLayer
 import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.providers.layers.ignLayers
-import com.peterlaurence.trekme.model.providers.stream.createTileStreamProvider
+import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment

@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
-import com.peterlaurence.trekme.model.map.MapRepository;
+import com.peterlaurence.trekme.repositories.map.MapRepository;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 
