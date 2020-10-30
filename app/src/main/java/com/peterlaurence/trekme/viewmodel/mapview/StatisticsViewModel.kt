@@ -1,9 +1,11 @@
 package com.peterlaurence.trekme.viewmodel.mapview
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import org.greenrobot.eventbus.EventBus
@@ -15,7 +17,9 @@ import org.greenrobot.eventbus.ThreadMode
  *
  * @author P.Laurence on 01/05/20
  */
-class StatisticsViewModel : ViewModel() {
+class StatisticsViewModel @ViewModelInject constructor(
+        private val gpxRecordRepository: GpxRecordRepository
+) : ViewModel() {
     /* In this context, a null value means that statistics shouldn't be displayed - the view should
      * reflect this appropriately */
     private val _stats = MutableLiveData<TrackStatistics?>()
@@ -41,7 +45,7 @@ class StatisticsViewModel : ViewModel() {
     init {
         EventBus.getDefault().register(this)
 
-        if (!GpxRecordService.isStarted) {
+        if (!gpxRecordRepository.serviceState.value) {
             _stats.value = null
         }
     }

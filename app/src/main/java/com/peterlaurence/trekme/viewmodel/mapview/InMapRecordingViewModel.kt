@@ -37,8 +37,8 @@ import kotlinx.coroutines.launch
  * consumer is a coroutine inside this view-model. Between the two, the [GpxRecordRepository]
  * exposes a SharedFlow of events.
  *
- * The coroutine collect this SharedFlow. Inside of it, a [RouteBuilder] is being added new
- * [TrackPoint] as they arrive. If we receive a [LiveRouteStop] event, we create a new [RouteBuilder].
+ * The coroutine collects this SharedFlow, and adds new [TrackPoint]s to the [RouteBuilder] as they
+ * arrive. If the coroutine receives a [LiveRouteStop] event, it creates a new [RouteBuilder].
  * After each received point or event, the [route] is updated.
  *
  * The coroutine runs off UI thread. However the [MutableLiveData] triggers observers in the UI thread.

@@ -27,7 +27,6 @@ import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.writeGpx
@@ -212,7 +211,7 @@ class GpxRecordService : Service() {
 
         startForeground(SERVICE_ID, notification)
 
-        isStarted = true
+        repository.setServiceState(true)
 
         return START_NOT_STICKY
     }
@@ -232,7 +231,7 @@ class GpxRecordService : Service() {
      */
     private fun stop() {
         repository.reset()
-        isStarted = false
+        repository.setServiceState(false)
         stopSelf()
     }
 
@@ -281,18 +280,6 @@ class GpxRecordService : Service() {
         private const val GPX_VERSION = "1.1"
         private const val NOTIFICATION_ID = "peterlaurence.GpxRecordService"
         private const val SERVICE_ID = 126585
-
-        /**
-         * The status stated / stopped is statically accessible from anywhere in the app, and from
-         * any thread.
-         * Anytime the state changes, notify listeners.
-         */
-        @Volatile
-        var isStarted: Boolean = false
-            private set(value) {
-                EventBus.getDefault().post(GpxRecordServiceStatus(value))
-                field = value
-            }
     }
 }
 
