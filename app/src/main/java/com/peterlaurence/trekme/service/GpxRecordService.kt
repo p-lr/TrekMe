@@ -24,15 +24,18 @@ import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackStatistics
-import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
+import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
+import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
 import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.writeGpx
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
@@ -40,8 +43,6 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * A [Started service](https://developer.android.com/guide/components/services.html#CreatingAService)
@@ -63,6 +64,9 @@ class GpxRecordService : Service() {
     @Inject
     lateinit var trekMeContext: TrekMeContext
 
+    @Inject
+    lateinit var repository: GpxRecordRepository
+
     private var serviceLooper: Looper? = null
     private var serviceHandler: Handler? = null
     private var locationManager: LocationManager? = null
@@ -70,16 +74,7 @@ class GpxRecordService : Service() {
     private var locationCounter: Long = 0
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val trackPoints = mutableListOf<TrackPoint>()
     private var trackStatCalculator: TrackStatCalculator? = null
-
-    /**
-     * A [Channel] to be used for external communication, instead of sharing raw collections across
-     * threads (shared mutable state).
-     * All operations related to this channel in this class are thread-confined to the [THREAD_NAME]
-     * thread.
-     */
-    private var channel: Channel<TrackPoint>? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -122,12 +117,11 @@ class GpxRecordService : Service() {
                 val altitude = if (location.altitude != 0.0) location.altitude else null
                 val trackPoint = TrackPoint(location.latitude,
                         location.longitude, altitude, location.time, "")
-                trackPoints.add(trackPoint)
+                repository.addTrackPoint(trackPoint)
                 trackStatCalculator?.addTrackPoint(trackPoint)
                 trackStatCalculator?.getStatistics()?.also { stats ->
                     sendTrackStatistics(stats)
                 }
-                sendTrackPoint(trackPoint)
             }
 
             override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
@@ -149,6 +143,9 @@ class GpxRecordService : Service() {
     private fun createGpx() {
         serviceHandler?.post {
             val trkSegList = ArrayList<TrackSegment>()
+            val trackPoints = repository.liveRouteFlow.replayCache.mapNotNull {
+                if (it is LiveRoutePoint) it.pt else null
+            }
             trkSegList.add(TrackSegment(trackPoints))
 
             /* Name the track using the current date */
@@ -234,11 +231,9 @@ class GpxRecordService : Service() {
      * Stop the service and send the status.
      */
     private fun stop() {
+        repository.reset()
         isStarted = false
-        scope.launch {
-            channel?.cancel()
-            stopSelf()
-        }
+        stopSelf()
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -280,44 +275,6 @@ class GpxRecordService : Service() {
      */
     private fun sendTrackStatistics(stats: TrackStatistics) {
         EventBus.getDefault().postSticky(stats)
-    }
-
-    /**
-     * Add a new [TrackPoint] into the channel.
-     * Called from [THREAD_NAME] thread.
-     */
-    private fun sendTrackPoint(trackPoint: TrackPoint) {
-        channel?.offer(trackPoint)
-    }
-
-    @Subscribe
-    fun onChannelRequest(event: ChannelTrackPointRequest) = runBlocking {
-        scope.launch(Dispatchers.Default) {
-            val channel = newChannel()
-
-            if (channel != null && isStarted) {
-                EventBus.getDefault().post(channel)
-            }
-        }
-    }
-
-    /**
-     * Creates a new [Channel], filling it with all previously acquired [TrackPoint].
-     * This is done in the [THREAD_NAME] thread, to ensure thread-safety.
-     */
-    private suspend fun newChannel(): Channel<TrackPoint>? = suspendCoroutine { cont ->
-        serviceHandler?.post {
-            channel = Channel(capacity = Channel.UNLIMITED)
-            trackPoints.forEach {
-                channel?.offer(it)
-            }
-            /* Just in case the service was stopped by the time we get there */
-            if (!isStarted) {
-                cont.resume(null)
-            } else {
-                cont.resume(channel)
-            }
-        }
     }
 
     companion object {

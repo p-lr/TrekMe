@@ -465,7 +465,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         mapView?.also {
             configureMapView(it, map)
         }
-        inMapRecordingViewModel.reload()
         initLayers()
 
         /**

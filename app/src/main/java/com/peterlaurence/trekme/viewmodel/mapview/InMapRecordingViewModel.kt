@@ -9,17 +9,13 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.toMarker
 import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.service.event.ChannelTrackPointRequest
-import com.peterlaurence.trekme.service.event.GpxRecordServiceStatus
+import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
+import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
+import com.peterlaurence.trekme.repositories.recording.LiveRouteStop
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 /**
  * This view-model backs the feature that enables a fragment to be aware of a recording
@@ -38,79 +34,41 @@ import org.greenrobot.eventbus.ThreadMode
  * **Implementation**
  *
  * A producer-consumer pattern is employed here. The producer is the gpx recording service, the
- * consumer is a coroutine inside this view-model: [processNewTrackPoints]. Between the two, a
- * [Channel] serves as pipe and guaranties that no synchronisation issue will occur (despite the
- * fact that producer and the consumer work in two different threads).
+ * consumer is a coroutine inside this view-model. Between the two, the [GpxRecordRepository]
+ * exposes a SharedFlow of events.
  *
- * When this view-model first starts or upon request from the fragment (when the map changes), it
- * uses the event-bus to request the channel from the producer.
- * Upon reception of the channel, it launches its consumer coroutine ([processNewTrackPoints]).
- * The [MapRepository] is used to fetch the current map.
+ * The coroutine collect this SharedFlow. Inside of it, a [RouteBuilder] is being added new
+ * [TrackPoint] as they arrive. If we receive a [LiveRouteStop] event, we create a new [RouteBuilder].
+ * After each received point or event, the [route] is updated.
+ *
+ * The coroutine runs off UI thread. However the [MutableLiveData] triggers observers in the UI thread.
  */
 class InMapRecordingViewModel @ViewModelInject constructor(
-        private val mapRepository: MapRepository
+        private val mapRepository: MapRepository,
+        private val gpxRecordRepository: GpxRecordRepository
 ) : ViewModel() {
     private val route = MutableLiveData<LiveRoute>()
 
     init {
-        EventBus.getDefault().register(this)
-        requestTrackPointChannel()
-    }
+        viewModelScope.launch(Dispatchers.Default) {
+            val map = mapRepository.getCurrentMap() ?: return@launch
+            var routeBuilder = RouteBuilder(map)
 
-    fun reload() {
-        requestTrackPointChannel()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGpxRecordServiceEvent(event: GpxRecordServiceStatus) {
-        if (event.started) {
-            requestTrackPointChannel()
-        }
-    }
-
-    private fun requestTrackPointChannel() {
-        EventBus.getDefault().post(ChannelTrackPointRequest())
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onTrackPointChannelReceive(channel: Channel<TrackPoint>) {
-        val map = mapRepository.getCurrentMap()
-        if (map != null) {
-            viewModelScope.processNewTrackPoints(channel, map)
-        }
-    }
-
-    /**
-     * The coroutine that takes a [Channel] of [TrackPoint] as input and process new points as they
-     * arrive.
-     */
-    private fun CoroutineScope.processNewTrackPoints(trackPoints: ReceiveChannel<TrackPoint>, map: Map) =
-            launch(Dispatchers.Default) {
-                val routeBuilder = RouteBuilder(map)
-                for (point in trackPoints) {
-                    processSinglePoint(point, routeBuilder)
+            /**
+             *
+             */
+            gpxRecordRepository.liveRouteFlow.collect {
+                when (it) {
+                    is LiveRoutePoint -> routeBuilder.add(it.pt)
+                    is LiveRouteStop -> routeBuilder = RouteBuilder(map)
                 }
+                route.postValue(routeBuilder.liveRoute)
             }
-
-    /**
-     * The [RouteBuilder] is being added new [TrackPoint] as they arrive.
-     * Right after a point has been added, the [route] is updated. While this is done off UI thread,
-     * the [MutableLiveData] will trigger observers in the UI thread. In other words,
-     * [MutableLiveData] is thread safe.
-     */
-    private fun processSinglePoint(point: TrackPoint, routeBuilder: RouteBuilder) {
-        routeBuilder.add(point)
-        route.postValue(routeBuilder.liveRoute)
+        }
     }
 
     fun getLiveRoute(): LiveData<LiveRoute> {
         return route
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-
-        EventBus.getDefault().unregister(this)
     }
 }
 
