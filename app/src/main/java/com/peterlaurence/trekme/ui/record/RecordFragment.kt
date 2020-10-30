@@ -17,7 +17,6 @@ import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
-import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.ui.record.components.RecordListView
 import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
 import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
@@ -154,7 +153,7 @@ class RecordFragment : Fragment() {
 
     @Subscribe
     fun onRequestStopEvent(event: RequestStopEvent) {
-        EventBus.getDefault().post(RecordGpxStopEvent())
+        viewModel.stopGpxRecording()
     }
 
     @Subscribe

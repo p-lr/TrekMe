@@ -14,6 +14,7 @@ import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
@@ -33,12 +34,19 @@ import java.io.File
 class RecordViewModel @ViewModelInject constructor(
         private val trackImporter: TrackImporter,
         private val app: Application,
-        private val settings: Settings
+        private val settings: Settings,
+        private val gpxRecordRepository: GpxRecordRepository
 ) : ViewModel() {
     private var recordingsSelected = listOf<File>()
 
     init {
         EventBus.getDefault().register(this)
+    }
+
+    fun stopGpxRecording() {
+        viewModelScope.launch {
+            gpxRecordRepository.stopRecording()
+        }
     }
 
     /**

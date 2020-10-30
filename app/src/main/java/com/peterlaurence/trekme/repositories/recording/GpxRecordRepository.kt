@@ -14,6 +14,15 @@ class GpxRecordRepository {
     private val _serviceState = MutableStateFlow(false)
     val serviceState = _serviceState.asStateFlow()
 
+    /* The service listens to this signal. Upon reception of this signal, the service creates a
+     * gpx file and stop itself after notifying its state. */
+    private val _stopRecordingSignal = MutableSharedFlow<Unit>()
+    val stopRecordingSignal = _stopRecordingSignal.asSharedFlow()
+
+    suspend fun stopRecording() {
+        _stopRecordingSignal.emit(Unit)
+    }
+
     fun addTrackPoint(trackPoint: TrackPoint) {
         _liveRoute.tryEmit(LiveRoutePoint(trackPoint))
     }

@@ -27,16 +27,12 @@ import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.ui.events.RecordGpxStopEvent
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.writeGpx
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -77,8 +73,6 @@ class GpxRecordService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-
-        EventBus.getDefault().register(this)
 
         /* Start up the thread for background execution of tasks withing the service.  Note that we
          * create a separate thread because the service normally runs in the process's main thread,
@@ -131,6 +125,13 @@ class GpxRecordService : Service() {
         }
 
         startLocationUpdates()
+
+        /* Register a subscriber coroutine to the stop signal */
+        scope.launch {
+            repository.stopRecordingSignal.collect {
+                createGpx()
+            }
+        }
     }
 
     /**
@@ -217,16 +218,6 @@ class GpxRecordService : Service() {
     }
 
     /**
-     * Create and write a new gpx file.
-     * After this is done, a [GpxFileWriteEvent] is emitted through event bus so the service
-     * can stop properly.
-     */
-    @Subscribe
-    fun onRecordGpxStopEvent(event: RecordGpxStopEvent) {
-        createGpx()
-    }
-
-    /**
      * Stop the service and send the status.
      */
     private fun stop() {
@@ -244,7 +235,6 @@ class GpxRecordService : Service() {
         stopLocationUpdates()
         serviceLooper?.quitSafely()
         scope.cancel()
-        EventBus.getDefault().unregister(this)
     }
 
     /**

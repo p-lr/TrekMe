@@ -54,9 +54,6 @@ class InMapRecordingViewModel @ViewModelInject constructor(
             val map = mapRepository.getCurrentMap() ?: return@launch
             var routeBuilder = RouteBuilder(map)
 
-            /**
-             *
-             */
             gpxRecordRepository.liveRouteFlow.collect {
                 when (it) {
                     is LiveRoutePoint -> routeBuilder.add(it.pt)
