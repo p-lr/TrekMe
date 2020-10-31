@@ -5,9 +5,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.util.FileUtils
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,35 +26,6 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val defineScaleWhenCentered = "defineScaleWhenCentered"
     private val scaleCentered = "scaleCentered"
     private val locationDisclaimer = "locationDisclaimer"
-
-    /**
-     * This is temporary migration code from the old settings mechanism to the new one which is
-     * based on shared preferences. Was introduced in 2.2.8
-     * TODO: Remove this once most users upgraded.
-     */
-    init {
-        try {
-            val file = trekMeContext.getSettingsFile(app.applicationContext)
-            if (file.exists()) {
-                val json = FileUtils.getStringFromFile(file)
-                val oldSettings = Json.decodeFromString(SettingsData.serializer(), json)
-                with(oldSettings) {
-                    setAppDir(File(appDir))
-                    setStartOnPolicy(startOnPolicy)
-                    setDefineScaleCentered(defineScaleWhenCenter)
-                    setScaleCentered(scaleCentered)
-                    setFavoriteMapIds(favoriteMaps)
-                    setLastMapId(lastMapId)
-                    setMagnifyingFactor(magnifyingFactor)
-                    setRotationMode(rotationMode)
-                }
-
-                file.delete()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
     /**
      * Get the current application directory as [File].
@@ -198,26 +166,6 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 }
-
-/**
- * TODO: Remove this class after migrating settings to shared prefs is done
- *
- * @param appDir The current application directory
- * @param startOnPolicy Whether TrekMe should boot on the map list or on the last map
- * @param defineScaleWhenCenter If `true`, [scaleCentered] is accounted for. Otherwise,
- * [scaleCentered] is ignored.
- * @param scaleCentered The scale at which the MapView is set when centering on the current position
- * @param favoriteMaps The ids of maps which are marked as favorites
- */
-@Serializable
-private data class SettingsData(val appDir: String,
-                                val startOnPolicy: StartOnPolicy = StartOnPolicy.MAP_LIST,
-                                val lastMapId: Int = -1,
-                                val magnifyingFactor: Int = 0,
-                                val rotationMode: RotationMode = RotationMode.NONE,
-                                val defineScaleWhenCenter: Boolean = true,
-                                val scaleCentered: Float = 1f,
-                                val favoriteMaps: List<Int> = listOf())
 
 enum class StartOnPolicy {
     MAP_LIST, LAST_MAP
