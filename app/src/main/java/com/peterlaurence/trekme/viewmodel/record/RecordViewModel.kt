@@ -19,11 +19,11 @@ import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
 import com.peterlaurence.trekme.ui.record.components.events.*
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 
 /**
@@ -41,25 +41,28 @@ class RecordViewModel @ViewModelInject constructor(
 
     init {
         EventBus.getDefault().register(this)
+
+        viewModelScope.launch {
+            gpxRecordRepository.gpxFileWriteEvent.collect {
+                onGpxFileWriteEvent(it)
+            }
+        }
     }
 
     fun stopGpxRecording() {
-        viewModelScope.launch {
-            gpxRecordRepository.stopRecording()
-        }
+        gpxRecordRepository.stopRecording()
     }
 
     /**
      * Whenever a [GpxFileWriteEvent] is emitted, import the gpx track in all maps which intersects
      * the [BoundingBox] of the gpx track.
      */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) = viewModelScope.launch {
+    private suspend fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
         val gpx = event.gpx
 
         val boundingBox = gpx.metadata?.bounds?.let {
             BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
-        } ?: return@launch
+        } ?: return
 
         var importCount = 0
         supervisorScope {

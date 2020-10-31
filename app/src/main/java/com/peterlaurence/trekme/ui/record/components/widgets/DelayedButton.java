@@ -92,6 +92,10 @@ public class DelayedButton extends AppCompatImageButton {
      * finishes.
      */
     public void setMode(State state) {
+        post(() -> _setMode(state));
+    }
+
+    private void _setMode(State state) {
         if (isTransitioning) {
             mRequestedState = state;
             return;
@@ -111,6 +115,10 @@ public class DelayedButton extends AppCompatImageButton {
     }
 
     public void toggle() {
+        post(this::_toggle);
+    }
+
+    private void _toggle() {
         switch (mState) {
             case STOP:
                 setEnabled(false);

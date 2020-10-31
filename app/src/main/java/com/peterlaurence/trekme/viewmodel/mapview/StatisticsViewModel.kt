@@ -4,10 +4,11 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
-import com.peterlaurence.trekme.service.GpxRecordService
-import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -37,8 +38,7 @@ class StatisticsViewModel @ViewModelInject constructor(
      * that the next time the user navigates to the map view, a new instance of this view-model will
      * be created - so by construction [_stats] will hold a null value.
      */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
+    private fun onGpxFileWriteEvent() {
         _stats.value = null
     }
 
@@ -47,6 +47,12 @@ class StatisticsViewModel @ViewModelInject constructor(
 
         if (!gpxRecordRepository.serviceState.value) {
             _stats.value = null
+        }
+
+        viewModelScope.launch {
+            gpxRecordRepository.gpxFileWriteEvent.collect {
+                onGpxFileWriteEvent()
+            }
         }
     }
 

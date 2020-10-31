@@ -29,6 +29,7 @@ import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.writeGpx
+import com.peterlaurence.trekme.core.events.AppEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -62,6 +63,9 @@ class GpxRecordService : Service() {
     @Inject
     lateinit var repository: GpxRecordRepository
 
+    @Inject
+    lateinit var eventBus: AppEventBus
+
     private var serviceLooper: Looper? = null
     private var serviceHandler: Handler? = null
     private var locationManager: LocationManager? = null
@@ -87,8 +91,6 @@ class GpxRecordService : Service() {
         val looper = thread.looper
         serviceLooper = looper
         serviceHandler = Handler(looper)
-
-        serviceHandler?.handleMessage(Message())
 
         /* Prepare the stat calculator */
         trackStatCalculator = TrackStatCalculator()
@@ -172,9 +174,9 @@ class GpxRecordService : Service() {
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 writeGpx(gpx, fos)
-                EventBus.getDefault().post(GpxFileWriteEvent(gpxFile, gpx))
+                repository.produceGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, gpx))
             } catch (e: Exception) {
-                EventBus.getDefault().post(GenericMessage(getString(R.string.service_gpx_error)))
+                eventBus.produceGenericMessage(GenericMessage(getString(R.string.service_gpx_error)))
             } finally {
                 stop()
             }
@@ -221,7 +223,7 @@ class GpxRecordService : Service() {
      * Stop the service and send the status.
      */
     private fun stop() {
-        repository.reset()
+        repository.resetLiveRoute()
         repository.setServiceState(false)
         stopSelf()
     }

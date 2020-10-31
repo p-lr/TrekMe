@@ -39,7 +39,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.billing.ign.BillingFlowEvent
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.events.GenericMessage
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.service.event.MapDownloadEvent
@@ -58,6 +58,7 @@ import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
@@ -79,6 +80,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Inject
     lateinit var mapRepository: MapRepository
+
+    @Inject
+    lateinit var appEventBus: AppEventBus
+
     private val snackBarExit: Snackbar by lazy {
         Snackbar.make(binding.drawerLayout, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
     }
@@ -337,6 +342,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         /* Register event-bus */
         EventBus.getDefault().register(this)
 
+        lifecycleScope.launch {
+            appEventBus.genericMessageEvents.collect {
+                Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+
         super.onStart()
     }
 
@@ -538,11 +549,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     @Subscribe
     fun onBillingFlowEvent(event: BillingFlowEvent) {
         event.billingClient.launchBillingFlow(this, event.flowParams)
-    }
-
-    @Subscribe
-    fun onGenericMessage(event: GenericMessage) {
-        Snackbar.make(binding.navView, event.msg, Snackbar.LENGTH_SHORT).show()
     }
 
     @Subscribe

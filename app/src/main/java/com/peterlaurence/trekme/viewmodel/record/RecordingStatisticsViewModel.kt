@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.core.track.hpFilter
+import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.components.events.RecordingDeletionFailed
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
@@ -19,6 +20,7 @@ import com.peterlaurence.trekme.util.gpx.model.Track
 import com.peterlaurence.trekme.util.gpx.parseGpx
 import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
@@ -39,7 +41,8 @@ import java.util.concurrent.ConcurrentHashMap
  * [RecordingNameChangeEvent] to trigger proper update of [recordings].
  */
 class RecordingStatisticsViewModel @ViewModelInject constructor(
-        private val trackImporter: TrackImporter
+        private val trackImporter: TrackImporter,
+        private val gpxRecordRepository: GpxRecordRepository
 ) : ViewModel() {
 
     private val recordingData: MutableLiveData<List<RecordingData>> by lazy {
@@ -59,13 +62,16 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
 
     private val recordingsToGpx: MutableMap<File, Gpx> = ConcurrentHashMap()
 
-    fun getRecordingData(): LiveData<List<RecordingData>> {
-        return recordingData
+    init {
+        viewModelScope.launch {
+            gpxRecordRepository.gpxFileWriteEvent.collect {
+                addOneRecording(it.gpxFile, it.gpx)
+            }
+        }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
-        addOneRecording(event.gpxFile, event.gpx)
+    fun getRecordingData(): LiveData<List<RecordingData>> {
+        return recordingData
     }
 
     /**

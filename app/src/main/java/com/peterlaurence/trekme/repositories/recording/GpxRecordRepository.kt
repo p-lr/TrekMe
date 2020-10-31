@@ -1,6 +1,8 @@
 package com.peterlaurence.trekme.repositories.recording
 
+import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -16,18 +18,25 @@ class GpxRecordRepository {
 
     /* The service listens to this signal. Upon reception of this signal, the service creates a
      * gpx file and stop itself after notifying its state. */
-    private val _stopRecordingSignal = MutableSharedFlow<Unit>()
+    private val _stopRecordingSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val stopRecordingSignal = _stopRecordingSignal.asSharedFlow()
 
-    suspend fun stopRecording() {
-        _stopRecordingSignal.emit(Unit)
+    private val _gpxFileWriteEvent = MutableSharedFlow<GpxFileWriteEvent>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val gpxFileWriteEvent = _gpxFileWriteEvent.asSharedFlow()
+
+    fun produceGpxFileWriteEvent(event: GpxFileWriteEvent) {
+        _gpxFileWriteEvent.tryEmit(event)
+    }
+
+    fun stopRecording() {
+        _stopRecordingSignal.tryEmit(Unit)
     }
 
     fun addTrackPoint(trackPoint: TrackPoint) {
         _liveRoute.tryEmit(LiveRoutePoint(trackPoint))
     }
 
-    fun reset() {
+    fun resetLiveRoute() {
         _liveRoute.resetReplayCache()
         _liveRoute.tryEmit(LiveRouteStop)
     }
