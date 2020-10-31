@@ -9,9 +9,6 @@ import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 /**
  * The view-model for displaying track statistics in the MapView fragment.
@@ -26,11 +23,6 @@ class StatisticsViewModel @ViewModelInject constructor(
     private val _stats = MutableLiveData<TrackStatistics?>()
     val stats: LiveData<TrackStatistics?> = _stats
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onTrackStatistics(event: TrackStatistics) {
-        _stats.value = event
-    }
-
     /**
      * When the [GpxRecordService] emits a [GpxFileWriteEvent] (which means that it stopped recording
      * and has now written data to a gpx file), this view-model might or might not still be registered
@@ -43,8 +35,6 @@ class StatisticsViewModel @ViewModelInject constructor(
     }
 
     init {
-        EventBus.getDefault().register(this)
-
         if (!gpxRecordRepository.serviceState.value) {
             _stats.value = null
         }
@@ -54,10 +44,11 @@ class StatisticsViewModel @ViewModelInject constructor(
                 onGpxFileWriteEvent()
             }
         }
-    }
 
-    override fun onCleared() {
-        EventBus.getDefault().unregister(this)
-        super.onCleared()
+        viewModelScope.launch {
+            gpxRecordRepository.trackStatisticsEvent.collect {
+                _stats.value = it
+            }
+        }
     }
 }

@@ -21,19 +21,17 @@ import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
-import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.writeGpx
-import com.peterlaurence.trekme.core.events.AppEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -115,7 +113,7 @@ class GpxRecordService : Service() {
                 repository.addTrackPoint(trackPoint)
                 trackStatCalculator?.addTrackPoint(trackPoint)
                 trackStatCalculator?.getStatistics()?.also { stats ->
-                    sendTrackStatistics(stats)
+                    repository.postTrackStatisticsEvent(stats)
                 }
             }
 
@@ -174,9 +172,9 @@ class GpxRecordService : Service() {
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 writeGpx(gpx, fos)
-                repository.produceGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, gpx))
+                repository.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, gpx))
             } catch (e: Exception) {
-                eventBus.produceGenericMessage(GenericMessage(getString(R.string.service_gpx_error)))
+                eventBus.postMessage(GenericMessage(getString(R.string.service_gpx_error)))
             } finally {
                 stop()
             }
@@ -252,20 +250,12 @@ class GpxRecordService : Service() {
         runCatching {
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 2f, locationListener, serviceLooper)
         }.onFailure {
-            EventBus.getDefault().post(GenericMessage(getString(R.string.service_gpx_location_error)))
+            eventBus.postMessage(GenericMessage(getString(R.string.service_gpx_location_error)))
         }
     }
 
     private fun stopLocationUpdates() {
         locationListener?.also { locationManager?.removeUpdates(it) }
-    }
-
-    /**
-     * Send updated track statistics.
-     * Called from [THREAD_NAME] thread.
-     */
-    private fun sendTrackStatistics(stats: TrackStatistics) {
-        EventBus.getDefault().postSticky(stats)
     }
 
     companion object {

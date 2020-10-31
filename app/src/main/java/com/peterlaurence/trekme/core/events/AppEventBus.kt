@@ -13,7 +13,7 @@ class AppEventBus {
     private val _genericMessageEvents = MutableSharedFlow<GenericMessage>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val genericMessageEvents = _genericMessageEvents.asSharedFlow()
 
-    fun produceGenericMessage(msg: GenericMessage) {
+    fun postMessage(msg: GenericMessage) {
         _genericMessageEvents.tryEmit(msg)
     }
 }
