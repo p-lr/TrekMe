@@ -12,7 +12,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.util.*
 
@@ -72,7 +71,7 @@ class RecordListView @JvmOverloads constructor(
         editNameButton.setOnClickListener {
             if (selectedRecordings.size == 1) {
                 val recording = selectedRecordings[0]
-                EventBus.getDefault().post(listener?.onRequestEditRecording(recording))
+                listener?.onRequestEditRecording(recording)
             }
         }
 
@@ -82,12 +81,12 @@ class RecordListView @JvmOverloads constructor(
         shareButton.isEnabled = false
         shareButton.setOnClickListener {
             if (selectedRecordings.size >= 1) {
-                EventBus.getDefault().post(listener?.onRequestShareRecording(selectedRecordings))
+                listener?.onRequestShareRecording(selectedRecordings)
             }
         }
 
         deleteRecordingButton.setOnClickListener {
-            EventBus.getDefault().post(listener?.onRequestDeleteRecordings(selectedRecordings))
+            listener?.onRequestDeleteRecordings(selectedRecordings)
         }
 
         val llm = LinearLayoutManager(ctx)
