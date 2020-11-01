@@ -10,11 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.ui.record.components.events.RecordingDeletionFailed
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 import java.io.File
 import java.util.*
 
@@ -173,8 +171,7 @@ class RecordListView @JvmOverloads constructor(
         listener?.onSelectionChanged(selectedRecordings)
     }
 
-    @Subscribe
-    fun onRecordingDeletionFail(event: RecordingDeletionFailed) {
+    fun onRecordingDeletionFail() {
         /* Alert the user that some files could not be deleted */
         val snackbar = Snackbar.make(rootView, R.string.files_could_not_be_deleted,
                 Snackbar.LENGTH_SHORT)

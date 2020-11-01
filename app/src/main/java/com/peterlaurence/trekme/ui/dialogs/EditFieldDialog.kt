@@ -3,46 +3,30 @@ package com.peterlaurence.trekme.ui.dialogs
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.os.Parcelable
-import androidx.fragment.app.DialogFragment
-import androidx.appcompat.app.AlertDialog
 import android.view.WindowManager
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog.Companion.newInstance
-import org.greenrobot.eventbus.EventBus
 
 
 /**
- * Generic Dialog to edit a field. It relies on Green Robots's [EventBus] to send back an event that
- * subclasses [EditFieldEvent].
+ * Generic Dialog to edit a field. Subclasses should define what to do upon validation of a change.
  *
- * All required attributed are passed through the [newInstance] method.
+ * Title and initial value should passed through the [newInstance] method in the subclassed
+ * implementation.
  *
  * @author perterLaurence on 26/08/2018
  */
-class EditFieldDialog : DialogFragment() {
+abstract class EditFieldDialog : DialogFragment() {
     private lateinit var title: String
     private lateinit var initialValue: String
-    private lateinit var editFieldEvent: EditFieldEvent
 
     private lateinit var editText: EditText
 
     companion object {
-        private const val ARG_TITLE = "title"
-        private const val ARG_INIT_VALUE = "initValue"
-        private const val ARG_EVENT = "event"
-
-        @JvmStatic
-        fun newInstance(title: String, initialValue: String, event: EditFieldEvent): EditFieldDialog {
-            val fragment = EditFieldDialog()
-            val args = Bundle()
-            args.putString(ARG_TITLE, title)
-            args.putString(ARG_INIT_VALUE, initialValue)
-            args.putParcelable(ARG_EVENT, event)
-            fragment.arguments = args
-            return fragment
-        }
+        const val ARG_TITLE = "title"
+        const val ARG_INIT_VALUE = "initValue"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,12 +34,6 @@ class EditFieldDialog : DialogFragment() {
 
         title = arguments?.getString(ARG_TITLE) ?: ""
         initialValue = arguments?.getString(ARG_INIT_VALUE) ?: ""
-        try {
-            editFieldEvent = arguments?.getParcelable(ARG_EVENT)!!
-        } catch (e: Exception) {
-            // bad luck
-        }
-
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -68,11 +46,7 @@ class EditFieldDialog : DialogFragment() {
         editText.setSelection(initialValue.length)
 
         builder.setPositiveButton(getText(R.string.ok_dialog)) { _: DialogInterface, _: Int ->
-            if (this@EditFieldDialog::editFieldEvent.isInitialized) {
-                editFieldEvent.initialValue = initialValue
-                editFieldEvent.newValue = editText.text.toString()
-                EventBus.getDefault().post(editFieldEvent)
-            }
+            onEditField(initialValue, editText.text.toString())
         }
         builder.setNegativeButton(getText(R.string.cancel_dialog_string)) { _, _ -> dismiss() }
 
@@ -85,12 +59,6 @@ class EditFieldDialog : DialogFragment() {
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
         return dialog
     }
-}
 
-/**
- * The event that must be subclassed by every events passed to [EditFieldDialog.newInstance]
- * This is to ensure that listeners for one type of [EditFieldEvent] are not mistaken by other
- * type [EditFieldEvent] that have a different purpose.
- * It is sent when the user presses the "OK" button of the dialog.
- */
-abstract class EditFieldEvent(var initialValue: String, var newValue: String) : Parcelable
+    abstract fun onEditField(initialValue: String, newValue: String)
+}

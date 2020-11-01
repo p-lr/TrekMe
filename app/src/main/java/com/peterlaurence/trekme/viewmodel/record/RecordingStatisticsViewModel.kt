@@ -12,8 +12,8 @@ import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.core.track.hpFilter
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.ui.record.components.events.RecordingDeletionFailed
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
+import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.Track
@@ -24,9 +24,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.ConcurrentHashMap
@@ -42,7 +39,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class RecordingStatisticsViewModel @ViewModelInject constructor(
         private val trackImporter: TrackImporter,
-        private val gpxRecordRepository: GpxRecordRepository
+        private val gpxRecordRepository: GpxRecordRepository,
+        private val eventBus: RecordEventBus
 ) : ViewModel() {
 
     private val recordingData: MutableLiveData<List<RecordingData>> by lazy {
@@ -68,6 +66,12 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
                 addOneRecording(it.gpxFile, it.gpx)
             }
         }
+
+        viewModelScope.launch {
+            eventBus.recordingNameChangeEvent.collect {
+                onRecordingNameChangeEvent(it)
+            }
+        }
     }
 
     fun getRecordingData(): LiveData<List<RecordingData>> {
@@ -78,13 +82,12 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
      * Remove the existing file matching by name, then add the new file keeping the existing
      * [Gpx] instance.
      */
-    @Subscribe
-    fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) = viewModelScope.launch {
+    private suspend fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) {
         with(recordingsToGpx.iterator()) {
             forEach {
                 val gpxFile = it.key
                 if (FileUtils.getFileNameWithoutExtention(gpxFile) == event.initialValue) {
-                    val gpx = recordingsToGpx[gpxFile] ?: return@launch
+                    val gpx = recordingsToGpx[gpxFile] ?: return
                     val newFile = File(gpxFile.parent, event.newValue + "." + FileUtils.getFileExtension(gpxFile))
                     val success = withContext(Dispatchers.IO) {
                         TrackTools.renameGpxFile(gpxFile, newFile)
@@ -94,7 +97,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
                         recordingsToGpx[newFile] = gpx
                     }
                     updateLiveData()
-                    return@launch
+                    return
                 }
             }
         }
@@ -127,7 +130,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
 
         /* If only one removal failed, notify the user */
         if (!success) {
-            EventBus.getDefault().post(RecordingDeletionFailed())
+            eventBus.postRecordingDeletionFailed()
         }
     }
 
@@ -230,16 +233,6 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
             }
         }
         return recordingsToGpx.toMap()
-    }
-
-    init {
-        EventBus.getDefault().register(this)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-
-        EventBus.getDefault().unregister(this)
     }
 }
 
