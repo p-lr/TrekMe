@@ -10,17 +10,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wifip2p.*
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
-import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
-import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
+import com.peterlaurence.trekme.ui.wifip2p.dialogs.MapSelectionForSend
+import com.peterlaurence.trekme.ui.wifip2p.events.WifiP2pEventBus
 import com.peterlaurence.trekme.viewmodel.wifip2p.Errors
 import com.peterlaurence.trekme.viewmodel.wifip2p.ServiceAlreadyStarted
 import com.peterlaurence.trekme.viewmodel.wifip2p.WifiP2pViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * The frontend for the [WifiP2pService].
@@ -32,6 +34,9 @@ import org.greenrobot.eventbus.Subscribe
 class WifiP2pFragment : Fragment() {
     private var _binding: FragmentWifip2pBinding? = null
     private val binding get() = _binding!!
+
+    @Inject
+    lateinit var eventBus: WifiP2pEventBus
 
     private val viewModel: WifiP2pViewModel by viewModels()
 
@@ -47,6 +52,12 @@ class WifiP2pFragment : Fragment() {
         viewModel.errors.observe(this) {
             it?.let { onError(it) }
         }
+
+        lifecycleScope.launch {
+            eventBus.mapSelectedEvent.collect {
+                viewModel.onRequestSend(it)
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -59,8 +70,8 @@ class WifiP2pFragment : Fragment() {
         }
 
         binding.sendBtn.setOnClickListener {
-            val dialog = MapChoiceDialog()
-            dialog.show(requireActivity().supportFragmentManager, "MapChoiceDialog")
+            val dialog = MapSelectionForSend()
+            dialog.show(requireActivity().supportFragmentManager, "MapSelectionForSend")
             binding.receiveBtn.isEnabled = false
         }
 
@@ -96,11 +107,6 @@ class WifiP2pFragment : Fragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    @Subscribe
-    fun onMapSelected(event: MapSelectedEvent) {
-        viewModel.onRequestSend(event.mapId)
     }
 
     private fun onState(state: WifiP2pState) {
@@ -178,13 +184,7 @@ class WifiP2pFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
         checkWifiState(requireContext())
-    }
-
-    override fun onStop() {
-        EventBus.getDefault().unregister(this)
-        super.onStop()
     }
 
     private fun checkWifiState(context: Context) {

@@ -14,20 +14,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import org.greenrobot.eventbus.EventBus
 
 
 /**
  * A dialog that displays the list of maps. The user can only select one map, and confirm or not the
- * selection. Upon selection of a map, a [MapSelectedEvent] is fired.
+ * selection. Subclasses should define what to do upon selection of a map.
  *
  * @author P.Laurence on 01/09/2018
  */
-class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
+abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var mapChoiceAdapter: MapChoiceAdapter
     private var selectedIndex: Int = -1
-
     private var mapSelected: Map? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -51,8 +49,8 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         builder.setTitle(getString(R.string.choose_a_map))
         builder.setView(recyclerView)
         builder.setPositiveButton(getString(R.string.ok_dialog)) { _, _ ->
-            if (mapSelected != null) {
-                EventBus.getDefault().post(MapSelectedEvent(mapSelected?.id!!))
+            mapSelected?.id?.also { id ->
+                onOkPressed(id)
             }
         }
         builder.setNegativeButton(getString(R.string.cancel_dialog_string)) { _, _ ->
@@ -61,6 +59,8 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
 
         return builder.create()
     }
+
+    abstract fun onOkPressed(mapId: Int)
 
     override fun onMapSelected(map: Map, position: Int) {
         selectedIndex = position
@@ -73,8 +73,6 @@ class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         outState.putInt(KEY_BUNDLE_MAP_INDEX, selectedIndex)
     }
 }
-
-class MapSelectedEvent(val mapId: Int)
 
 private class MapChoiceAdapter(private val mapList: List<Map>, val listener: MapChoiceSelectionListener,
                                selectedIndex: Int) : RecyclerView.Adapter<MapChoiceViewHolder>(), MapChoiceItemClickListener {

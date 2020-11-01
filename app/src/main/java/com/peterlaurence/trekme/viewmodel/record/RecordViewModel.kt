@@ -17,8 +17,8 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.ui.dialogs.MapSelectedEvent
 import com.peterlaurence.trekme.ui.record.components.events.*
+import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -35,7 +35,8 @@ class RecordViewModel @ViewModelInject constructor(
         private val trackImporter: TrackImporter,
         private val app: Application,
         private val settings: Settings,
-        private val gpxRecordRepository: GpxRecordRepository
+        private val gpxRecordRepository: GpxRecordRepository,
+        private val eventBus: RecordEventBus
 ) : ViewModel() {
     private var recordingsSelected = listOf<File>()
 
@@ -45,6 +46,12 @@ class RecordViewModel @ViewModelInject constructor(
         viewModelScope.launch {
             gpxRecordRepository.gpxFileWriteEvent.collect {
                 onGpxFileWriteEvent(it)
+            }
+        }
+
+        viewModelScope.launch {
+            eventBus.mapSelectedEvent.collect {
+                onMapSelectedForRecord(it)
             }
         }
     }
@@ -91,9 +98,8 @@ class RecordViewModel @ViewModelInject constructor(
     /**
      * The business logic of parsing a GPX file.
      */
-    @Subscribe
-    fun onMapSelectedForRecord(event: MapSelectedEvent) {
-        val map = MapLoader.getMap(event.mapId) ?: return
+    private fun onMapSelectedForRecord(mapId: Int) {
+        val map = MapLoader.getMap(mapId) ?: return
 
         val recording = recordingsSelected.firstOrNull() ?: return
 

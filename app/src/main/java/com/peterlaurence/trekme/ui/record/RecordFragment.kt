@@ -16,10 +16,10 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog
-import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.ui.record.components.RecordListView
 import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
 import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
+import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImport
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
 import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import com.peterlaurence.trekme.ui.record.components.events.RequestStopEvent
@@ -105,8 +105,8 @@ class RecordFragment : Fragment() {
             override fun onRequestChooseMap() {
                 val fragmentActivity = activity
                 if (fragmentActivity != null) {
-                    val dialog = MapChoiceDialog()
-                    dialog.show(fragmentActivity.supportFragmentManager, "MapChoiceDialog")
+                    val dialog = MapSelectionForImport()
+                    dialog.show(fragmentActivity.supportFragmentManager, "MapSelectionForImport")
                 }
             }
 
@@ -132,7 +132,6 @@ class RecordFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
         EventBus.getDefault().register(binding.recordListView)
 
         recordingData?.value?.let {
@@ -142,7 +141,6 @@ class RecordFragment : Fragment() {
 
     override fun onStop() {
         EventBus.getDefault().unregister(binding.recordListView)
-        EventBus.getDefault().unregister(this)
         super.onStop()
     }
 
