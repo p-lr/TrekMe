@@ -20,13 +20,9 @@ class TrekmeFilesProvider : ContentProvider() {
         return true
     }
 
-    /**
-     * The file uri is supposed to be right next after the authority (it if was formed using
-     * [generateUri] method).
-     */
     @Throws(SecurityException::class)
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
-        val path = uri.path?.substringAfter(authority) ?: return null
+        val path = uri.path ?: return null
         val file = File(path)
         return if (file.exists()) {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
