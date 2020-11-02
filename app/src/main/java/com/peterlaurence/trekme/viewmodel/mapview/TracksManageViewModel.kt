@@ -6,6 +6,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -26,7 +27,8 @@ import java.io.FileNotFoundException
 class TracksManageViewModel @ViewModelInject constructor(
         private val mapRepository: MapRepository,
         private val trackImporter: TrackImporter,
-        private val app: Application
+        private val app: Application,
+        private val appEventBus: AppEventBus
 ) : ViewModel() {
     private val _tracks = MutableLiveData<List<RouteGson.Route>>()
     val tracks: LiveData<List<RouteGson.Route>> = _tracks
@@ -69,7 +71,7 @@ class TracksManageViewModel @ViewModelInject constructor(
                     _tracks.postValue((_tracks.value ?: listOf()) + result.routes)
                 }
                 /* Notify the rest of the app */
-                EventBus.getDefault().post(it)
+                appEventBus.postGpxImportResult(result)
                 result
             }
         }

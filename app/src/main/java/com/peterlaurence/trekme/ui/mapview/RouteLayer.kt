@@ -58,6 +58,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
     private lateinit var mapView: MapView
     private lateinit var map: Map
     private var pathView: PathView? = null
+    private var previousRoutes: List<RouteGson.Route>? = null
     private val liveRouteView: PathView by lazy {
         val context = mapView.context
         val view = PathView(context)
@@ -115,7 +116,8 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
     override fun onTrackChanged(map: Map, routeList: List<RouteGson.Route>) {
         Log.d(TAG, routeList.size.toString() + " new route received for map " + map.name)
 
-        drawStaticRoutes()
+        /* At this stage, all routes might have already been drawn */
+        if (previousRoutes?.containsAll(routeList) == false) drawStaticRoutes()
     }
 
     override fun onTrackVisibilityChanged() {
@@ -206,6 +208,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
      */
     private fun drawStaticRoutes() {
         val routes = map.routes ?: return
+        previousRoutes = routes
         val staticRouteFlow = getRouteFlow(routes) { route, path ->
             val drawablePath = object : PathView.DrawablePath {
                 override val visible: Boolean

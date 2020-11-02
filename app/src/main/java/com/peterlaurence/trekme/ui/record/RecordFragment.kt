@@ -12,6 +12,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
@@ -53,6 +54,9 @@ class RecordFragment : Fragment() {
     @Inject
     lateinit var eventBus: RecordEventBus
 
+    @Inject
+    lateinit var appEventBus: AppEventBus
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         _binding = FragmentRecordBinding.inflate(inflater, container, false)
@@ -79,6 +83,12 @@ class RecordFragment : Fragment() {
         lifecycleScope.launchWhenResumed {
             eventBus.showLocationDisclaimerSignal.collect {
                 LocalisationDisclaimer().show(parentFragmentManager, null)
+            }
+        }
+
+        lifecycleScope.launchWhenResumed {
+            appEventBus.gpxImportEvent.collect {
+                onGpxImported(it)
             }
         }
 
@@ -159,16 +169,15 @@ class RecordFragment : Fragment() {
         super.onStop()
     }
 
-    @Subscribe
-    fun onGpxImported(event: TrackImporter.GpxImportResult.GpxImportOk) {
-        /* Tell the user that the track will be shortly available in the map */
-        Snackbar.make(binding.root, R.string.track_is_being_added, Snackbar.LENGTH_LONG).show()
-    }
-
-    @Subscribe
-    fun onGpxImported(event: TrackImporter.GpxImportResult.GpxImportError) {
-        /* Tell the user that an error occurred */
-        Snackbar.make(binding.root, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
+    private fun onGpxImported(event: TrackImporter.GpxImportResult) {
+        when (event) {
+            is TrackImporter.GpxImportResult.GpxImportOk ->
+                /* Tell the user that the track will be shortly available in the map */
+                Snackbar.make(binding.root, R.string.track_is_being_added, Snackbar.LENGTH_LONG).show()
+            is TrackImporter.GpxImportResult.GpxImportError ->
+                /* Tell the user that an error occurred */
+                Snackbar.make(binding.root, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
+        }
     }
 
     @Subscribe

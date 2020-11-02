@@ -19,6 +19,7 @@ import com.peterlaurence.mapview.ReferentialOwner
 import com.peterlaurence.mapview.api.*
 import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
@@ -42,6 +43,7 @@ import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import javax.inject.Inject
 
 /**
  * This fragment displays a [Map], using [MapView].
@@ -51,6 +53,9 @@ import org.greenrobot.eventbus.ThreadMode
 @AndroidEntryPoint
 class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener,
         ReferentialOwner {
+
+    @Inject
+    lateinit var appEventBus: AppEventBus
 
     private var presenter: MapViewFragmentContract.Presenter? = null
     private var mapView: MapView? = null
@@ -208,6 +213,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* Now that everything is set-up, update with latest location */
         locationViewModel.getLocationLiveData().value?.also {
             onLocationReceived(it)
+        }
+
+        lifecycleScope.launchWhenResumed {
+            appEventBus.gpxImportEvent.collect {
+                onGpxImportEvent(it)
+            }
         }
 
         return presenter.androidView
@@ -426,11 +437,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         routeLayer?.onTrackVisibilityChanged()
     }
 
-    @Subscribe
-    fun onTrackChangedEvent(event: TrackImporter.GpxImportResult.GpxImportOk) {
-        routeLayer?.onTrackChanged(event.map, event.routes)
-        if (event.newMarkersCount > 0) {
-            markerLayer?.onMapMarkerUpdate()
+    private fun onGpxImportEvent(event: TrackImporter.GpxImportResult) {
+        if (event is TrackImporter.GpxImportResult.GpxImportOk) {
+            routeLayer?.onTrackChanged(event.map, event.routes)
+            if (event.newMarkersCount > 0) {
+                markerLayer?.onMapMarkerUpdate()
+            }
         }
     }
 

@@ -18,7 +18,7 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.ui.record.components.events.*
+import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -124,8 +124,8 @@ class RecordViewModel @ViewModelInject constructor(
 
         viewModelScope.launch {
             trackImporter.applyGpxFileToMap(recording, map).let {
-                /* Once done, all we want is to post an event */
-                EventBus.getDefault().post(it)
+                /* Once done, notify the rest of the app */
+                appEventBus.postGpxImportResult(it)
             }
         }
     }

@@ -132,6 +132,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             }
 
             /* Import the file */
+            // TODO: this shouldn't be done inside the lifecycleScope of this fragment
             lifecycleScope.launch {
                 try {
                     val result = viewModel.applyGpxUri(uri)
