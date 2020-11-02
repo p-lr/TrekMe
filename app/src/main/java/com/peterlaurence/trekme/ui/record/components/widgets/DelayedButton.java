@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.drawable.Animatable2;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
-import androidx.appcompat.widget.AppCompatImageButton;
 import android.util.AttributeSet;
+
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.core.content.ContextCompat;
 
 import com.peterlaurence.trekme.R;
 
@@ -13,15 +15,15 @@ import com.peterlaurence.trekme.R;
  * A button which has two modes : Play and Stop. <br>
  * There is a cooldown between each mode switch, to avoid a quick change of state. <br>
  * This is implemented using Animated Vector Drawables, so the cooldown is defined in the animations.
- *
+ * <p>
  * A request to change of state while the button is transitioning will be taken into account only
  * when the animation finishes.
  *
  * @author P.Laurence on 26/12/17.
  */
 public class DelayedButton extends AppCompatImageButton {
-    private AnimatedVectorDrawable mStopToPLayDrawable;
-    private AnimatedVectorDrawable mPlayToStopDrawable;
+    private final AnimatedVectorDrawable mStopToPLayDrawable;
+    private final AnimatedVectorDrawable mPlayToStopDrawable;
     private State mState;
     private State mRequestedState;
     private PlayStopListener mListener;
@@ -38,8 +40,8 @@ public class DelayedButton extends AppCompatImageButton {
     public DelayedButton(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        mStopToPLayDrawable = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_delayed_button_stop_to_play);
-        mPlayToStopDrawable = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_delayed_button_play_to_stop);
+        mStopToPLayDrawable = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_delayed_button_stop_to_play);
+        mPlayToStopDrawable = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_delayed_button_play_to_stop);
         setImageDrawable(mPlayToStopDrawable);
 
         mState = State.PLAY;
