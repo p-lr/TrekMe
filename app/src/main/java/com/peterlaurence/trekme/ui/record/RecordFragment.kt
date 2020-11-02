@@ -22,7 +22,6 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDi
 import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImport
 import com.peterlaurence.trekme.ui.record.components.dialogs.TrackFileNameEdit
-import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
@@ -32,8 +31,6 @@ import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_record.*
 import kotlinx.coroutines.flow.collect
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 import java.io.File
 import javax.inject.Inject
 
@@ -89,6 +86,12 @@ class RecordFragment : Fragment() {
         lifecycleScope.launchWhenResumed {
             appEventBus.gpxImportEvent.collect {
                 onGpxImported(it)
+            }
+        }
+
+        lifecycleScope.launchWhenResumed {
+            eventBus.disableBatteryOptSignal.collect {
+                BatteryOptWarningDialog().show(parentFragmentManager, null)
             }
         }
 
@@ -157,16 +160,10 @@ class RecordFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
 
         recordingData?.value?.let {
             updateRecordingData(it)
         }
-    }
-
-    override fun onStop() {
-        EventBus.getDefault().unregister(this)
-        super.onStop()
     }
 
     private fun onGpxImported(event: TrackImporter.GpxImportResult) {
@@ -178,11 +175,6 @@ class RecordFragment : Fragment() {
                 /* Tell the user that an error occurred */
                 Snackbar.make(binding.root, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
         }
-    }
-
-    @Subscribe
-    fun onRequestDisableBatteryOpt(event: RequestDisableBatteryOpt) {
-        BatteryOptWarningDialog().show(parentFragmentManager, null)
     }
 
     private fun updateRecordingData(data: List<RecordingData>) {

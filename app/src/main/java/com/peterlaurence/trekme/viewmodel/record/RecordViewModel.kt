@@ -18,12 +18,10 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 
 /**
@@ -133,7 +131,7 @@ class RecordViewModel @ViewModelInject constructor(
     private fun onRequestStartEvent() {
         /* Check battery optimization, and inform the user if needed */
         if (isBatteryOptimized()) {
-            EventBus.getDefault().post(RequestDisableBatteryOpt())
+            eventBus.disableBatteryOpt()
         }
 
         /* Start the service */
