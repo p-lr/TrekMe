@@ -6,18 +6,24 @@ import android.util.AttributeSet;
 import androidx.cardview.widget.CardView;
 
 import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.ui.record.components.events.RequestStartEvent;
-import com.peterlaurence.trekme.ui.record.components.events.RequestStopEvent;
 import com.peterlaurence.trekme.ui.record.components.widgets.DelayedButton;
+import com.peterlaurence.trekme.ui.record.events.RecordEventBus;
 
-import org.greenrobot.eventbus.EventBus;
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 
 /**
- * A set of controls (start & stop) over the {@link com.peterlaurence.trekme.service.GpxRecordService}.
+ * A set of controls (start & stop) over the GPX recording service.
  *
  * @author P.Laurence on 23/12/17.
  */
+@AndroidEntryPoint
 public class ActionsView extends CardView {
+
+    @Inject
+    public RecordEventBus mEventBus;
+
     private DelayedButton mButton;
 
     public ActionsView(Context context) {
@@ -30,11 +36,11 @@ public class ActionsView extends CardView {
 
     public ActionsView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context, attrs);
+        init(context);
     }
 
 
-    private void init(Context context, AttributeSet attrs) {
+    private void init(Context context) {
         inflate(context, R.layout.record_actions_layout, this);
 
         mButton = getRootView().findViewById(R.id.delayedButton);
@@ -64,7 +70,7 @@ public class ActionsView extends CardView {
      * this event and stop the service.
      */
     private void requestStop() {
-        EventBus.getDefault().post(new RequestStopEvent());
+        mEventBus.stopGpxRecording();
     }
 
     /**
@@ -72,6 +78,6 @@ public class ActionsView extends CardView {
      * this event and start the service.
      */
     private void requestStart() {
-        EventBus.getDefault().post(new RequestStartEvent());
+        mEventBus.startGpxRecording();
     }
 }

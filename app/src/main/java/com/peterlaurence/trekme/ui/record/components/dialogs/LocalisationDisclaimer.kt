@@ -6,23 +6,25 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.ui.record.components.events.DiscardLocationDisclaimerEvent
-import com.peterlaurence.trekme.ui.record.components.events.LocationDisclaimerClosedEvent
-import org.greenrobot.eventbus.EventBus
+import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * This disclaimer is shown after the user starts a GPX recording.
- * The user can opt-in for "never show this again". In this case, we send a
- * [DiscardLocationDisclaimerEvent].
+ * The user can opt-in for "never show this again". In this case, we discard the disclaimer.
  */
-class LocalisationDisclaimer() : DialogFragment() {
+@AndroidEntryPoint
+class LocalisationDisclaimer : DialogFragment() {
+    @Inject
+    lateinit var eventBus: RecordEventBus
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return AlertDialog.Builder(requireContext())
                 .setTitle(getString(R.string.location_info_title))
                 .setMessage(R.string.background_location_disclaimer)
                 .setNeutralButton(R.string.understood_dialog) { _, _ ->
-                    EventBus.getDefault().post(DiscardLocationDisclaimerEvent())
+                    eventBus.discardLocationDisclaimer()
                     notifyClosed()
                 }
                 .setPositiveButton(getString(R.string.close_dialog)) { _, _ ->
@@ -32,7 +34,7 @@ class LocalisationDisclaimer() : DialogFragment() {
     }
 
     private fun notifyClosed() {
-        EventBus.getDefault().post(LocationDisclaimerClosedEvent())
+        eventBus.closeLocationDisclaimer()
     }
 
     override fun onCancel(dialog: DialogInterface) {

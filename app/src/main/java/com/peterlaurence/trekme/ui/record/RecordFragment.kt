@@ -22,8 +22,6 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclai
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImport
 import com.peterlaurence.trekme.ui.record.components.dialogs.TrackFileNameEdit
 import com.peterlaurence.trekme.ui.record.components.events.RequestDisableBatteryOpt
-import com.peterlaurence.trekme.ui.record.components.events.RequestStopEvent
-import com.peterlaurence.trekme.ui.record.components.events.ShowLocationDisclaimerEvent
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
@@ -75,6 +73,12 @@ class RecordFragment : Fragment() {
         lifecycleScope.launchWhenResumed {
             eventBus.recordingDeletionFailedSignal.collect {
                 binding.recordListView.onRecordingDeletionFail()
+            }
+        }
+
+        lifecycleScope.launchWhenResumed {
+            eventBus.showLocationDisclaimerSignal.collect {
+                LocalisationDisclaimer().show(parentFragmentManager, null)
             }
         }
 
@@ -153,16 +157,6 @@ class RecordFragment : Fragment() {
     override fun onStop() {
         EventBus.getDefault().unregister(this)
         super.onStop()
-    }
-
-    @Subscribe
-    fun onShowLocationDisclaimer(event: ShowLocationDisclaimerEvent) {
-        LocalisationDisclaimer().show(parentFragmentManager, null)
-    }
-
-    @Subscribe
-    fun onRequestStopEvent(event: RequestStopEvent) {
-        viewModel.stopGpxRecording()
     }
 
     @Subscribe

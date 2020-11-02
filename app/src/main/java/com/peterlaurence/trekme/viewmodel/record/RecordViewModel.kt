@@ -8,6 +8,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.intersects
@@ -23,7 +24,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 import java.io.File
 
 /**
@@ -36,13 +36,12 @@ class RecordViewModel @ViewModelInject constructor(
         private val app: Application,
         private val settings: Settings,
         private val gpxRecordRepository: GpxRecordRepository,
-        private val eventBus: RecordEventBus
+        private val eventBus: RecordEventBus,
+        private val appEventBus: AppEventBus
 ) : ViewModel() {
     private var recordingsSelected = listOf<File>()
 
     init {
-        EventBus.getDefault().register(this)
-
         viewModelScope.launch {
             gpxRecordRepository.gpxFileWriteEvent.collect {
                 onGpxFileWriteEvent(it)
@@ -54,10 +53,30 @@ class RecordViewModel @ViewModelInject constructor(
                 onMapSelectedForRecord(it)
             }
         }
-    }
 
-    fun stopGpxRecording() {
-        gpxRecordRepository.stopRecording()
+        viewModelScope.launch {
+            eventBus.startGpxRecordingSignal.collect {
+                onRequestStartEvent()
+            }
+        }
+
+        viewModelScope.launch {
+            eventBus.stopGpxRecordingSignal.collect {
+                gpxRecordRepository.stopRecording()
+            }
+        }
+
+        viewModelScope.launch {
+            eventBus.locationDisclaimerClosedSignal.collect {
+                requestBackgroundLocationPerm()
+            }
+        }
+
+        viewModelScope.launch {
+            eventBus.discardLocationDisclaimerSignal.collect {
+                settings.discardLocationDisclaimer()
+            }
+        }
     }
 
     /**
@@ -87,7 +106,7 @@ class RecordViewModel @ViewModelInject constructor(
         }
         if (importCount > 0) {
             val msg = app.applicationContext.getString(R.string.automatic_import_feedback, importCount)
-            EventBus.getDefault().post(GenericMessage(msg))
+            appEventBus.postMessage(GenericMessage(msg))
         }
     }
 
@@ -111,8 +130,7 @@ class RecordViewModel @ViewModelInject constructor(
         }
     }
 
-    @Subscribe
-    fun onRequestStartEvent(event: RequestStartEvent) {
+    private fun onRequestStartEvent() {
         /* Check battery optimization, and inform the user if needed */
         if (isBatteryOptimized()) {
             EventBus.getDefault().post(RequestDisableBatteryOpt())
@@ -126,7 +144,7 @@ class RecordViewModel @ViewModelInject constructor(
          * matter that the recording is already started - it works even when the permission is
          * granted during the recording. */
         if (settings.isShowingLocationDisclaimer()) {
-            EventBus.getDefault().post(ShowLocationDisclaimerEvent())
+            eventBus.showLocationDisclaimer()
         } else {
             /* If the disclaimer is discarded, ask for the permission anyway */
             requestBackgroundLocationPerm()
@@ -142,23 +160,7 @@ class RecordViewModel @ViewModelInject constructor(
         return !pm.isIgnoringBatteryOptimizations(name)
     }
 
-    @Subscribe
-    fun onLocationDisclaimerClosed(event: LocationDisclaimerClosedEvent) {
-        requestBackgroundLocationPerm()
-    }
-
     private fun requestBackgroundLocationPerm() {
-        EventBus.getDefault().post(RequestBackgroundLocationPermission())
-    }
-
-    @Subscribe
-    fun onDiscardLocationDisclaimer(event: DiscardLocationDisclaimerEvent) {
-        settings.discardLocationDisclaimer()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-
-        EventBus.getDefault().unregister(this)
+        appEventBus.requestBackgroundLocation()
     }
 }

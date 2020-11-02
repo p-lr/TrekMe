@@ -29,4 +29,35 @@ class RecordEventBus {
     val recordingDeletionFailedSignal = _recordingDeletionFailedSignal.asSharedFlow()
 
     fun postRecordingDeletionFailed() = _recordingDeletionFailedSignal.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
+    private val _showLocationDisclaimerSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val showLocationDisclaimerSignal = _showLocationDisclaimerSignal.asSharedFlow()
+
+    fun showLocationDisclaimer() = _showLocationDisclaimerSignal.tryEmit(Unit)
+
+    private val _locationDisclaimerClosedSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val locationDisclaimerClosedSignal = _locationDisclaimerClosedSignal.asSharedFlow()
+
+    fun closeLocationDisclaimer() = _locationDisclaimerClosedSignal.tryEmit(Unit)
+
+    private val _discardLocationDisclaimerSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val discardLocationDisclaimerSignal = _discardLocationDisclaimerSignal.asSharedFlow()
+
+    fun discardLocationDisclaimer() = _discardLocationDisclaimerSignal.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
+    private val _startGpxRecordingSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val startGpxRecordingSignal = _startGpxRecordingSignal.asSharedFlow()
+
+    fun startGpxRecording() = _startGpxRecordingSignal.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
+    private val _stopGpxRecordingSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val stopGpxRecordingSignal = _stopGpxRecordingSignal.asSharedFlow()
+
+    fun stopGpxRecording() = _stopGpxRecordingSignal.tryEmit(Unit)
 }

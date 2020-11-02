@@ -51,7 +51,6 @@ import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
-import com.peterlaurence.trekme.ui.record.components.events.RequestBackgroundLocationPermission
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
 import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
@@ -348,6 +347,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
+        lifecycleScope.launch {
+            appEventBus.requestBackgroundLocationSignal.collect {
+                requestBackgroundLocationPermission(this@MainActivity)
+            }
+        }
+
         super.onStart()
     }
 
@@ -549,10 +554,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     @Subscribe
     fun onBillingFlowEvent(event: BillingFlowEvent) {
         event.billingClient.launchBillingFlow(this, event.flowParams)
-    }
-
-    @Subscribe
-    fun onRequestBackgroundLocation(event: RequestBackgroundLocationPermission) {
-        requestBackgroundLocationPermission(this)
     }
 }
