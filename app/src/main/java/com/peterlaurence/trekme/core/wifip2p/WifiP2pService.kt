@@ -28,9 +28,8 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -62,17 +61,18 @@ class WifiP2pService : Service() {
     private var isNetworkAvailable = false
     private var serviceStarted = false
 
-    private var wifiP2pState: WifiP2pState = Stopped()
+    private var wifiP2pState: WifiP2pState = _stateFlow.value
+        get() = _stateFlow.value
         private set(value) {
             field = value
-            stateChannel.offer(value)
+            _stateFlow.value = value
         }
 
     companion object {
         const val IMPORTED_PATH_ARG = "importedPath"
         const val MAP_ID_ARG = "mapId"
-        private val stateChannel = ConflatedBroadcastChannel<WifiP2pState>()
-        val stateFlow: Flow<WifiP2pState> = stateChannel.asFlow()
+        private val _stateFlow = MutableStateFlow<WifiP2pState>(Stopped())
+        val stateFlow = _stateFlow.asStateFlow()
     }
 
     private val receiver: BroadcastReceiver by lazy {
