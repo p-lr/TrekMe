@@ -49,7 +49,7 @@ apply plugin: "androidx.navigation.safeargs"
 
 dependencies {
     def lifecycle_version = '2.2.0'
-    def coroutine_version = '1.4.0'
+    def coroutine_version = '1.4.1'
     def nav_version = '2.3.1'
     def hilt_version = '1.0.0-alpha02'
     def dagger_hilt_version = '2.29.1-alpha'

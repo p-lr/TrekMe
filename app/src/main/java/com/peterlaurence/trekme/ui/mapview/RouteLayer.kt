@@ -35,7 +35,7 @@ import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.mapview.LiveRoute
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -321,8 +321,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private var routes: List<RouteGson.Route> = listOf()
     private var routeWithActiveDistance: RouteGson.Route? = null
     private var barycenterToRoute: kotlin.collections.Map<Barycenter, RouteGson.Route>? = null
-    private val scrollUpdateChannel = ConflatedBroadcastChannel<Unit>()
-    private val distanceCalculateChannel = ConflatedBroadcastChannel<Unit>()
+    private val scrollUpdateChannel = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val distanceCalculateChannel = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val infoForRoute: MutableMap<RouteGson.Route, Info> = mutableMapOf()
     private val grab1 = MarkerGrab(mapView.context, 50.px)
     private val grab2 = MarkerGrab(mapView.context, 50.px)
@@ -357,19 +357,20 @@ private class DistanceOnRouteController(private val pathView: PathView,
             field = value
             firstTouchMoveListener?.referentialData = value
             secondTouchMoveListener?.referentialData = value
-            scrollUpdateChannel.offer(Unit)
+            scrollUpdateChannel.tryEmit(Unit)
         }
 
     fun enable() {
         isActive = true
         activeRouteLookupJob = scope.launch {
-            scrollUpdateChannel.asFlow().sample(32).collect {
+            scrollUpdateChannel.sample(32).collect {
                 updateActiveRoute()
             }
         }
+        scrollUpdateChannel.tryEmit(Unit)  // Trigger the first computation
 
         distanceCalculationJob = scope.launch {
-            distanceCalculateChannel.asFlow().sample(32).collect {
+            distanceCalculateChannel.sample(32).collect {
                 updateDistance()
             }
         }
@@ -412,9 +413,6 @@ private class DistanceOnRouteController(private val pathView: PathView,
     fun destroy() {
         activeRouteLookupJob?.cancel()
         distanceCalculationJob?.cancel()
-        /* Also cancel underlying channels although not doing it doesn't leak anything */
-        scrollUpdateChannel.cancel()
-        distanceCalculateChannel.cancel()
     }
 
     /**
@@ -469,7 +467,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                 render()
 
                 /* And trigger the first distance calculation */
-                distanceCalculateChannel.offer(Unit)
+                distanceCalculateChannel.tryEmit(Unit)
             }
         }
     }
@@ -484,36 +482,34 @@ private class DistanceOnRouteController(private val pathView: PathView,
         grab2.morphIn()
 
         val nearestMarkerCalculator = NearestMarkerCalculator(route, map)
-        firstTouchMoveListener = TouchMoveListener(mapView,
-                TouchMoveListener.MarkerMoveAgent { mapView, view, x, y ->
-                    scope.launch {
-                        val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
-                        if (markerIndexed != null && view != null) {
-                            mapView?.moveMarker(view,
-                                    markerIndexed.marker.getRelativeX(map),
-                                    markerIndexed.marker.getRelativeY(map))
-                            infoForRoute[route]?.index1 = markerIndexed.index
-                            distanceCalculateChannel.offer(Unit)
-                            pathView.invalidate()
-                        }
-                    }
-                })
+        firstTouchMoveListener = TouchMoveListener(mapView) { mapView, view, x, y ->
+            scope.launch {
+                val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
+                if (markerIndexed != null && view != null) {
+                    mapView?.moveMarker(view,
+                            markerIndexed.marker.getRelativeX(map),
+                            markerIndexed.marker.getRelativeY(map))
+                    infoForRoute[route]?.index1 = markerIndexed.index
+                    distanceCalculateChannel.tryEmit(Unit)
+                    pathView.invalidate()
+                }
+            }
+        }
         grab1.setOnTouchListener(firstTouchMoveListener)
 
-        secondTouchMoveListener = TouchMoveListener(mapView,
-                TouchMoveListener.MarkerMoveAgent { mapView, view, x, y ->
-                    scope.launch {
-                        val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
-                        if (markerIndexed != null && view != null) {
-                            mapView?.moveMarker(view,
-                                    markerIndexed.marker.getRelativeX(map),
-                                    markerIndexed.marker.getRelativeY(map))
-                            infoForRoute[route]?.index2 = markerIndexed.index
-                            distanceCalculateChannel.offer(Unit)
-                            pathView.invalidate()
-                        }
-                    }
-                })
+        secondTouchMoveListener = TouchMoveListener(mapView) { mapView, view, x, y ->
+            scope.launch {
+                val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
+                if (markerIndexed != null && view != null) {
+                    mapView?.moveMarker(view,
+                            markerIndexed.marker.getRelativeX(map),
+                            markerIndexed.marker.getRelativeY(map))
+                    infoForRoute[route]?.index2 = markerIndexed.index
+                    distanceCalculateChannel.tryEmit(Unit)
+                    pathView.invalidate()
+                }
+            }
+        }
         grab2.setOnTouchListener(secondTouchMoveListener)
 
         if (info == null) {
