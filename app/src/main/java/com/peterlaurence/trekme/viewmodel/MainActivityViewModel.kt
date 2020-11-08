@@ -5,13 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
 
 
 /**
@@ -29,8 +29,14 @@ class MainActivityViewModel @ViewModelInject constructor(
         private val trekMeContext: TrekMeContext,
         private val settings: Settings,
         private val mapRepository: MapRepository
-): ViewModel() {
+) : ViewModel() {
     private var attemptedAtLeastOnce = false
+
+    private val _showMapListSignal = MutableSharedFlow<Unit>()
+    val showMapListSignal = _showMapListSignal.asSharedFlow()
+
+    private val _showMapViewSignal = MutableSharedFlow<Unit>()
+    val showMapViewSignal = _showMapViewSignal.asSharedFlow()
 
     /**
      * When the [MainActivity] first starts, we either:
@@ -48,21 +54,21 @@ class MainActivityViewModel @ViewModelInject constructor(
             }
 
             when (settings.getStartOnPolicy()) {
-                StartOnPolicy.MAP_LIST -> EventBus.getDefault().post(ShowMapListEvent())
+                StartOnPolicy.MAP_LIST -> _showMapListSignal.emit(Unit)
                 StartOnPolicy.LAST_MAP -> {
                     val id = settings.getLastMapId()
                     val found = id?.let {
                         val map = MapLoader.getMap(id)
                         map?.let {
                             mapRepository.setCurrentMap(map)
-                            EventBus.getDefault().post(ShowMapViewEvent(map))
+                            _showMapViewSignal.emit(Unit)
                             true
                         } ?: false
                     } ?: false
 
                     if (!found) {
                         /* Fall back to show the map list */
-                        EventBus.getDefault().post(ShowMapListEvent())
+                        _showMapListSignal.emit(Unit)
                     }
                 }
             }
@@ -71,10 +77,3 @@ class MainActivityViewModel @ViewModelInject constructor(
 
     fun getMapIndex(mapId: Int): Int = MapLoader.maps.indexOfFirst { it.id == mapId }
 }
-
-/**
- * Events that this view-model fires, intended to the main activity.
- */
-class ShowMapListEvent
-
-data class ShowMapViewEvent(val map: Map)

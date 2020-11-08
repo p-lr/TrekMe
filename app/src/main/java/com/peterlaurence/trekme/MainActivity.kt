@@ -43,9 +43,9 @@ import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.service.event.MapDownloadState
 import com.peterlaurence.trekme.service.event.MapDownloadFinished
 import com.peterlaurence.trekme.service.event.MapDownloadPending
+import com.peterlaurence.trekme.service.event.MapDownloadState
 import com.peterlaurence.trekme.service.event.MapDownloadStorageError
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
@@ -53,8 +53,6 @@ import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
-import com.peterlaurence.trekme.viewmodel.ShowMapListEvent
-import com.peterlaurence.trekme.viewmodel.ShowMapViewEvent
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -289,6 +287,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         }
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.showMapListSignal.collect {
+                showMapListFragment()
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.showMapViewSignal.collect {
+                showMapViewFragment()
+            }
+        }
     }
 
     /**
@@ -364,16 +374,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         super.onStart()
-    }
-
-    @Subscribe
-    fun onShowMapListEvent(event: ShowMapListEvent?) {
-        showMapListFragment()
-    }
-
-    @Subscribe
-    fun onShowMapViewEvent(event: ShowMapViewEvent?) {
-        showMapViewFragment()
     }
 
     override fun onStop() {
