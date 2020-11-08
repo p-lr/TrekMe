@@ -24,12 +24,9 @@ import com.peterlaurence.trekme.core.providers.layers.ignLayers
 import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.service.DownloadService
-import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
+import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -170,13 +167,9 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     }
 
     /**
-     * We start the download with the [DownloadService]. A sticky event is posted right before
-     * the service is started, which the service will read when it's started.
-     *
-     * WmtsLevelsDialog                            DownloadService
-     *                               "sticky"
-     *      RequestDownloadMapEvent   ----->          (event available)
-     *      Intent                    ----->          (service start, then process event)
+     * We start the download with the [DownloadService]. The download request is posted to the
+     * relevant repository before the service is started.
+     * The service then process the request when it starts.
      */
     fun onDownloadFormConfirmed(wmtsSource: WmtsSource,
                                 p1: Point, p2: Point, minLevel: Int, maxLevel: Int) {
@@ -185,7 +178,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         viewModelScope.launch {
             val tileStreamProvider = createTileStreamProvider(wmtsSource) ?: return@launch
             val layer = getLayerForSource(wmtsSource)
-            val request = RequestDownloadMapEvent(wmtsSource, layer, mapSpec, tileCount, tileStreamProvider)
+            val request = DownloadMapRequest(wmtsSource, layer, mapSpec, tileCount, tileStreamProvider)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)

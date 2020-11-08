@@ -35,7 +35,8 @@ import com.peterlaurence.trekme.util.stackTraceToString
 import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -108,9 +109,14 @@ class DownloadService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         /* If the user used the notification action-stop button, stop the service */
         if (intent.action == stopAction) {
-            _started.value = false
             stopForeground(true)
             stopService()
+            return START_NOT_STICKY
+        }
+
+        /* Notify that a download is already running */
+        if (started.value) {
+            repository.postDownloadEvent(MapDownloadAlreadyRunning)
             return START_NOT_STICKY
         }
 
@@ -146,7 +152,7 @@ class DownloadService : Service() {
 
         scope.launch {
             /* Only process the first event */
-            val request = repository.downloadMapRequestEvent.firstOrNull()
+            val request = repository.getDownloadMapRequest()
             if (request != null) {
                 processRequestDownloadMapEvent(request)
             }
@@ -158,22 +164,22 @@ class DownloadService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun processRequestDownloadMapEvent(event: RequestDownloadMapEvent) {
-        val source = event.source
-        val tileSequence = event.mapSpec.tileSequence
-        val tileStreamProvider = event.tileStreamProvider
+    private fun processRequestDownloadMapEvent(request: DownloadMapRequest) {
+        val source = request.source
+        val tileSequence = request.mapSpec.tileSequence
+        val tileStreamProvider = request.tileStreamProvider
 
         /* Throttle progress notification to every seconds */
         val throttledTask = scope.throttle(1000) { p: Double ->
             (this::onDownloadProgress)(p)
         }
-        val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles) { p ->
+        val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), request.numberOfTiles) { p ->
             if (started.value) {
                 throttledTask.offer(p)
 
                 /* Post-process if download reaches 100% */
                 if (p == 100.0) {
-                    postProcess(event.mapSpec, source, event.layer)
+                    postProcess(request.mapSpec, source, request.layer)
                 }
             }
         }
@@ -187,7 +193,7 @@ class DownloadService : Service() {
             destDir = destDirRes
         } else {
             /* Storage issue, warn and stop the service */
-            repository.setDownloadState(MapDownloadStorageError)
+            repository.postDownloadEvent(MapDownloadStorageError)
             stopService()
             return
         }
@@ -252,7 +258,7 @@ class DownloadService : Service() {
 
         /* Send a message carrying the progress info */
         progressEvent.progress = progress
-        repository.setDownloadState(progressEvent)
+        repository.postDownloadEvent(progressEvent)
     }
 
     private fun postProcess(mapSpec: MapSpec, source: WmtsSource, layer: Layer?) {
@@ -281,13 +287,14 @@ class DownloadService : Service() {
             /* Notify that the download is finished correctly.
              * Don't attempt to send more notifications, they will be dismissed anyway since the
              * service is about to stop. */
-            repository.setDownloadState(MapDownloadFinished(map.id))
+            repository.postDownloadEvent(MapDownloadFinished(map.id))
 
             stopService()
         }
     }
 
     private fun stopService() {
+        _started.value = false
         scope.cancel()
         stopSelf()
     }

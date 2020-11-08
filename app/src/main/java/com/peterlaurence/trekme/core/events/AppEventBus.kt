@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.core.events
 
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

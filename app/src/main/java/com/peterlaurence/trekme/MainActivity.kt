@@ -43,10 +43,7 @@ import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.service.event.MapDownloadFinished
-import com.peterlaurence.trekme.service.event.MapDownloadPending
-import com.peterlaurence.trekme.service.event.MapDownloadState
-import com.peterlaurence.trekme.service.event.MapDownloadStorageError
+import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
@@ -368,7 +365,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         lifecycleScope.launch {
-            downloadRepository.downloadState.collect {
+            downloadRepository.downloadEvent.collect {
                 onMapDownloadEvent(it)
             }
         }
@@ -458,6 +455,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun showWarningDialog(message: String, title: String, dismiss: DialogInterface.OnDismissListener?) {
         val builder = AlertDialog.Builder(this)
         builder.setMessage(message).setTitle(title)
+        builder.setPositiveButton(getString(R.string.ok_dialog), null)
         if (dismiss != null) {
             builder.setOnDismissListener(dismiss)
         }
@@ -497,12 +495,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun onMapDownloadEvent(state: MapDownloadState) {
-        when (state) {
+    private fun onMapDownloadEvent(event: MapDownloadEvent) {
+        when (event) {
             is MapDownloadFinished -> {
                 /* Only if the user is still on the GoogleMapWmtsFragment, navigate to the map list */
                 if (getString(R.string.google_map_wmts_label) == navController.currentDestination?.label) {
-                    showMapListFragment(state.mapId)
+                    showMapListFragment(event.mapId)
                 }
                 showMessageInSnackbar(getString(R.string.service_download_finished))
             }
@@ -511,6 +509,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 // Nothing particular to do, the service which fire those events already sends
                 // notifications with the progression.
             }
+            is MapDownloadAlreadyRunning -> showWarningDialog(getString(R.string.service_download_already_running), getString(R.string.warning_title), null)
         }
     }
 

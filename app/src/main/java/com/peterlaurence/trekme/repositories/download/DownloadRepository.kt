@@ -1,24 +1,25 @@
 package com.peterlaurence.trekme.repositories.download
 
-import com.peterlaurence.trekme.service.event.MapDownloadPending
-import com.peterlaurence.trekme.service.event.MapDownloadState
-import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
+import com.peterlaurence.trekme.service.event.DownloadMapRequest
+import com.peterlaurence.trekme.service.event.MapDownloadEvent
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class DownloadRepository {
-    /* This event is "sticky" */
-    private val _downloadMapRequestEvent = MutableSharedFlow<RequestDownloadMapEvent>(1, 0, BufferOverflow.DROP_OLDEST)
-    val downloadMapRequestEvent = _downloadMapRequestEvent.asSharedFlow()
+    private var downloadRequest: DownloadMapRequest? = null
 
-    fun postDownloadMapRequest(request: RequestDownloadMapEvent) = _downloadMapRequestEvent.tryEmit(request)
+    private val _downloadEvent: MutableSharedFlow<MapDownloadEvent> = MutableSharedFlow(0, 1, BufferOverflow.DROP_OLDEST)
+    val downloadEvent: SharedFlow<MapDownloadEvent> = _downloadEvent.asSharedFlow()
 
-    /**********************************************************************************************/
-
-    private val _downloadState: MutableStateFlow<MapDownloadState> = MutableStateFlow(MapDownloadPending(0.0))
-    val downloadState: StateFlow<MapDownloadState> = _downloadState.asStateFlow()
-
-    fun setDownloadState(state: MapDownloadState) {
-        _downloadState.value = state
+    /* Should only be invoked from the main thread */
+    fun postDownloadMapRequest(request: DownloadMapRequest) {
+        downloadRequest = request
     }
+
+    /* Should only be invoked from the main thread */
+    fun getDownloadMapRequest(): DownloadMapRequest? = downloadRequest
+
+    fun postDownloadEvent(event: MapDownloadEvent) = _downloadEvent.tryEmit(event)
 }

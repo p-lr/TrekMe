@@ -8,4 +8,4 @@ import com.peterlaurence.trekme.core.providers.layers.Layer
 /**
  * This event is sent by entities which reclaim a map download.
  */
-class RequestDownloadMapEvent(val source: WmtsSource, val layer: Layer?, val mapSpec: MapSpec, val numberOfTiles: Long, val tileStreamProvider: TileStreamProvider)
+class DownloadMapRequest(val source: WmtsSource, val layer: Layer?, val mapSpec: MapSpec, val numberOfTiles: Long, val tileStreamProvider: TileStreamProvider)

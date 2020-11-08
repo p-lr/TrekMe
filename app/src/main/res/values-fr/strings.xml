@@ -97,7 +97,7 @@
     <string name="mapcreate_settings">Paramètres</string>
     <string name="image_preferences_category">Image de présentation</string>
     <string name="image_change_btn_txt">Changer l\'image</string>
-    <string name="service_download_finished">Téléchargment de la carte terminé</string>
+    <string name="service_download_finished">Téléchargement de la carte terminé</string>
     <string name="map_size">Taille de la carte</string>
     <string name="delete_dialog">Supprimer</string>
     <string name="no_maps_found_warning">Vous n\'avez pas encore créé de carte</string>
@@ -227,4 +227,5 @@
         votre position ou toute autre donnée personnelle à des tiers. Nous ne stockons pas ces informations
         ailleurs que sur votre appareil.</string>
     <string name="solution_title">Solution</string>
+    <string name="service_download_already_running">Un téléchargement est déjà en cours. Veuillez attendre la fin du téléchargement avant d\'en lancer un autre.</string>
 </resources>
