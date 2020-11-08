@@ -29,7 +29,7 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
-import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
+import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapViewTileStreamProvider
@@ -56,6 +56,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     @Inject
     lateinit var appEventBus: AppEventBus
+
+    @Inject
+    lateinit var mapViewEventBus: MapViewEventBus
 
     private var presenter: MapViewFragmentContract.Presenter? = null
     private var mapView: MapView? = null
@@ -218,6 +221,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         lifecycleScope.launchWhenResumed {
             appEventBus.gpxImportEvent.collect {
                 onGpxImportEvent(it)
+            }
+        }
+
+        lifecycleScope.launchWhenResumed {
+            mapViewEventBus.trackVisibilityChangedSignal.collect {
+                routeLayer?.onTrackVisibilityChanged()
             }
         }
 
@@ -430,11 +439,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     override fun onStop() {
         super.onStop()
         state = saveState()
-    }
-
-    @Subscribe
-    fun onTrackVisibilityChangedEvent(event: TrackVisibilityChangedEvent) {
-        routeLayer?.onTrackVisibilityChanged()
     }
 
     private fun onGpxImportEvent(event: TrackImporter.GpxImportResult) {

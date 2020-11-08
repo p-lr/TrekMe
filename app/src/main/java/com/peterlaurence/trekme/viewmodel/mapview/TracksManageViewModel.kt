@@ -12,11 +12,9 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TrackNameChangedEvent
-import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
+import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
-import org.greenrobot.eventbus.EventBus
 import java.io.FileNotFoundException
 
 /**
@@ -28,7 +26,8 @@ class TracksManageViewModel @ViewModelInject constructor(
         private val mapRepository: MapRepository,
         private val trackImporter: TrackImporter,
         private val app: Application,
-        private val appEventBus: AppEventBus
+        private val appEventBus: AppEventBus,
+        private val mapViewEventBus: MapViewEventBus
 ) : ViewModel() {
     private val _tracks = MutableLiveData<List<RouteGson.Route>>()
     val tracks: LiveData<List<RouteGson.Route>> = _tracks
@@ -49,7 +48,7 @@ class TracksManageViewModel @ViewModelInject constructor(
                 _tracks.value = routes
                 saveChanges()
                 /* Notify other views */
-                EventBus.getDefault().post(TrackVisibilityChangedEvent())
+                mapViewEventBus.postTrackVisibilityChange()
             }
         }
     }
@@ -86,7 +85,7 @@ class TracksManageViewModel @ViewModelInject constructor(
         saveChanges()
 
         /* Notify the view */
-        EventBus.getDefault().post(TrackNameChangedEvent())
+        mapViewEventBus.postTrackNameChange()
     }
 
     fun saveChanges() {

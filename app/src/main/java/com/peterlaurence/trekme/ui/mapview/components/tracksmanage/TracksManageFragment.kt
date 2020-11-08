@@ -24,13 +24,13 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
-import com.peterlaurence.trekme.ui.mapview.events.TrackVisibilityChangedEvent
+import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.viewmodel.mapview.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 import java.io.FileNotFoundException
+import javax.inject.Inject
 
 /**
  * A fragment that shows the routes currently available for a given map, and
@@ -49,6 +49,9 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     private var trackRenameMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
     private val viewModel: TracksManageViewModel by viewModels()
+
+    @Inject
+    lateinit var eventBus: MapViewEventBus
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,11 +79,14 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             }
         }
 
-        /* Register the event-bus */
-        EventBus.getDefault().register(this)
-
         binding.floatingActionButton.setOnClickListener {
             onCreateTrack()
+        }
+
+        lifecycleScope.launch {
+            eventBus.trackNameChangeSignal.collect {
+                trackAdapter?.notifyDataSetChanged()
+            }
         }
 
         return binding.root
@@ -92,7 +98,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         _binding = null
         trackAdapter = null
         trackRenameMenuItem = null
-        EventBus.getDefault().unregister(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -146,11 +151,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
                 }
             }
         }
-    }
-
-    @Subscribe
-    fun onTrackNameChangedEvent(event: TrackNameChangedEvent) {
-        trackAdapter?.notifyDataSetChanged()
     }
 
     private fun onGpxParseResult(event: TrackImporter.GpxImportResult.GpxImportOk) {
@@ -231,8 +231,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     }
 
     override fun onVisibilityToggle(route: RouteGson.Route) {
-        EventBus.getDefault().post(TrackVisibilityChangedEvent())
-
         /* Save */
         viewModel.saveChanges()
     }
@@ -327,5 +325,3 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         private const val ROUTE_INDEX = "routeIndex"
     }
 }
-
-class TrackNameChangedEvent
