@@ -4,14 +4,14 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 /**
  * The view-model intended to be used by the [MapListFragment], which is the only view where the
@@ -26,7 +26,12 @@ class MapListViewModel @ViewModelInject constructor(
     val maps: LiveData<List<Map>> = _maps
 
     init {
-        EventBus.getDefault().register(this)
+        viewModelScope.launch {
+            MapLoader.mapListUpdateEventFlow.collect {
+                val favList = settings.getFavoriteMapIds()
+                updateMapListInFragment(favList)
+            }
+        }
     }
 
     fun setMap(map: Map) {
@@ -53,12 +58,6 @@ class MapListViewModel @ViewModelInject constructor(
         if (map != null) MapLoader.deleteMap(map)
     }
 
-    @Subscribe
-    fun onMapListUpdateEvent(event: MapListUpdateEvent) {
-        val favList = settings.getFavoriteMapIds()
-        updateMapListInFragment(favList)
-    }
-
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
         val mapList = MapLoader.maps
 
@@ -73,11 +72,5 @@ class MapListViewModel @ViewModelInject constructor(
         } else mapList
 
         _maps.postValue(mapListSorted)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-
-        EventBus.getDefault().unregister(this)
     }
 }

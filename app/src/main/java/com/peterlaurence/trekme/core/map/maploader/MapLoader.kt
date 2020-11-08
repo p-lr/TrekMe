@@ -13,9 +13,11 @@ import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
@@ -55,6 +57,9 @@ object MapLoader : MapImporter.MapImportListener {
     private val gson: Gson
     private val mapList: MutableList<Map> = mutableListOf()
     private var mapMarkerUpdateListener: MapMarkerUpdateListener? = null
+
+    private val _mapListUpdateEventFlow = MutableSharedFlow<MapListUpdateEvent>(0, 1, BufferOverflow.DROP_OLDEST)
+    val mapListUpdateEventFlow = _mapListUpdateEventFlow.asSharedFlow()
 
     /**
      * Get a read-only list of [Map]s
@@ -341,7 +346,7 @@ object MapLoader : MapImporter.MapImportListener {
     }
 
     private fun notifyMapListUpdateListeners() {
-        EventBus.getDefault().post(MapListUpdateEvent(maps.isNotEmpty()))
+        _mapListUpdateEventFlow.tryEmit(MapListUpdateEvent(maps.isNotEmpty()))
     }
 
     enum class CalibrationMethod {
