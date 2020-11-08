@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.viewmodel.common.LocationProvider
@@ -53,6 +54,10 @@ object AppModule {
     @Singleton
     @Provides
     fun bindGpxRecordRepository(): GpxRecordRepository = GpxRecordRepository()
+
+    @Singleton
+    @Provides
+    fun bindDownloadRepository(): DownloadRepository = DownloadRepository()
 
     @Singleton
     @Provides

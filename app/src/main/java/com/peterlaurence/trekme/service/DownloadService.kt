@@ -17,6 +17,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.events.GenericMessage
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
@@ -28,16 +29,13 @@ import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.stackTraceToString
 import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -65,6 +63,9 @@ class DownloadService : Service() {
     lateinit var settings: Settings
 
     @Inject
+    lateinit var repository: DownloadRepository
+
+    @Inject
     lateinit var appEventBus: AppEventBus
 
     private lateinit var onTapPendingIntent: PendingIntent
@@ -76,12 +77,11 @@ class DownloadService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var destDir: File
 
-    private val progressEvent = MapDownloadPendingEvent(0.0)
+    private val progressEvent = MapDownloadPending(0.0)
 
     companion object {
-        @JvmStatic
-        @Volatile
-        var started = false
+        private val _started = MutableStateFlow(false)
+        val started = _started.asStateFlow()
     }
 
     override fun onCreate() {
@@ -108,9 +108,9 @@ class DownloadService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         /* If the user used the notification action-stop button, stop the service */
         if (intent.action == stopAction) {
-            started = false
+            _started.value = false
             stopForeground(true)
-            stopSelf()
+            stopService()
             return START_NOT_STICKY
         }
 
@@ -141,17 +141,19 @@ class DownloadService : Service() {
 
         startForeground(downloadServiceNofificationId, notificationBuilder.build())
 
-        started = true
-        sendStartedStatus()
-
         /* Get ready for download and request download spec */
         progressEvent.progress = 0.0
 
         scope.launch {
-            appEventBus.downloadMapRequestEvent.collect {
-                processRequestDownloadMapEvent(it)
+            /* Only process the first event */
+            val request = repository.downloadMapRequestEvent.firstOrNull()
+            if (request != null) {
+                processRequestDownloadMapEvent(request)
             }
         }
+
+        _started.value = true
+        appEventBus.postMessage(GenericMessage(getString(R.string.download_confirm)))
 
         return START_NOT_STICKY
     }
@@ -166,7 +168,7 @@ class DownloadService : Service() {
             (this::onDownloadProgress)(p)
         }
         val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), event.numberOfTiles) { p ->
-            if (started) {
+            if (started.value) {
                 throttledTask.offer(p)
 
                 /* Post-process if download reaches 100% */
@@ -185,8 +187,8 @@ class DownloadService : Service() {
             destDir = destDirRes
         } else {
             /* Storage issue, warn and stop the service */
-            EventBus.getDefault().post(MapDownloadStorageErrorEvent)
-            stopSelf()
+            repository.setDownloadState(MapDownloadStorageError)
+            stopService()
             return
         }
 
@@ -250,7 +252,7 @@ class DownloadService : Service() {
 
         /* Send a message carrying the progress info */
         progressEvent.progress = progress
-        EventBus.getDefault().post(progressEvent)
+        repository.setDownloadState(progressEvent)
     }
 
     private fun postProcess(mapSpec: MapSpec, source: WmtsSource, layer: Layer?) {
@@ -279,15 +281,15 @@ class DownloadService : Service() {
             /* Notify that the download is finished correctly.
              * Don't attempt to send more notifications, they will be dismissed anyway since the
              * service is about to stop. */
-            EventBus.getDefault().post(MapDownloadFinishedEvent(map.id))
+            repository.setDownloadState(MapDownloadFinished(map.id))
 
-            /* Finally, stop the service */
-            stopSelf()
+            stopService()
         }
     }
 
-    private fun sendStartedStatus() {
-        EventBus.getDefault().post(DownloadServiceStatusEvent(started))
+    private fun stopService() {
+        scope.cancel()
+        stopSelf()
     }
 }
 
@@ -314,11 +316,11 @@ private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterato
     }
 
     override fun run() {
-        while (DownloadService.started) {
+        while (DownloadService.started.value) {
             val tile = tileIterator.next() ?: break
             bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level).also {
                 /* Only write if there was no error */
-                if (it != null && DownloadService.started) {
+                if (it != null && DownloadService.started.value) {
                     tileWriter.write(tile, bitmap)
                 }
             }

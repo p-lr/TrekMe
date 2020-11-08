@@ -41,11 +41,12 @@ import com.peterlaurence.trekme.billing.ign.BillingFlowEvent
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
+import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.service.event.MapDownloadEvent
-import com.peterlaurence.trekme.service.event.MapDownloadFinishedEvent
-import com.peterlaurence.trekme.service.event.MapDownloadPendingEvent
-import com.peterlaurence.trekme.service.event.MapDownloadStorageErrorEvent
+import com.peterlaurence.trekme.service.event.MapDownloadState
+import com.peterlaurence.trekme.service.event.MapDownloadFinished
+import com.peterlaurence.trekme.service.event.MapDownloadPending
+import com.peterlaurence.trekme.service.event.MapDownloadStorageError
 import com.peterlaurence.trekme.ui.events.DrawerClosedEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
 import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
@@ -79,6 +80,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Inject
     lateinit var mapRepository: MapRepository
+
+    @Inject
+    lateinit var downloadRepository: DownloadRepository
 
     @Inject
     lateinit var appEventBus: AppEventBus
@@ -353,6 +357,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
+        lifecycleScope.launch {
+            downloadRepository.downloadState.collect {
+                onMapDownloadEvent(it)
+            }
+        }
+
         super.onStart()
     }
 
@@ -487,18 +497,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    @Subscribe
-    fun onMapDownloadEvent(event: MapDownloadEvent) {
-        when (event) {
-            is MapDownloadFinishedEvent -> {
+    private fun onMapDownloadEvent(state: MapDownloadState) {
+        when (state) {
+            is MapDownloadFinished -> {
                 /* Only if the user is still on the GoogleMapWmtsFragment, navigate to the map list */
                 if (getString(R.string.google_map_wmts_label) == navController.currentDestination?.label) {
-                    showMapListFragment(event.mapId)
+                    showMapListFragment(state.mapId)
                 }
                 showMessageInSnackbar(getString(R.string.service_download_finished))
             }
-            is MapDownloadStorageErrorEvent -> showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title), null)
-            is MapDownloadPendingEvent -> {
+            is MapDownloadStorageError -> showWarningDialog(getString(R.string.service_download_bad_storage), getString(R.string.warning_title), null)
+            is MapDownloadPending -> {
                 // Nothing particular to do, the service which fire those events already sends
                 // notifications with the progression.
             }

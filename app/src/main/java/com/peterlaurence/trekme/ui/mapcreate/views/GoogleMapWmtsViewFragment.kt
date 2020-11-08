@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.api.addMarker
@@ -22,7 +21,6 @@ import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.ignLayers
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
-import com.peterlaurence.trekme.service.event.DownloadServiceStatusEvent
 import com.peterlaurence.trekme.ui.dialogs.SelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
@@ -207,19 +205,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     private fun stopLocationUpdates() {
         locationViewModel.stopLocationUpdates()
-    }
-
-    /**
-     * Confirm to the user that the download started.
-     */
-    @Subscribe
-    fun onDownloadServiceStatus(e: DownloadServiceStatusEvent) {
-        if (e.started) {
-            view?.let {
-                val snackBar = Snackbar.make(it, R.string.download_confirm, Snackbar.LENGTH_SHORT)
-                snackBar.show()
-            }
-        }
     }
 
     @Subscribe
