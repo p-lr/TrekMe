@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.backendApi.ignApiUrl
 import com.peterlaurence.trekme.core.backendApi.ordnanceSurveyApiUrl
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
@@ -40,7 +41,8 @@ import java.net.URL
  * @author P.Laurence on 09/11/19
  */
 class GoogleMapWmtsViewModel @ViewModelInject constructor(
-        private val app: Application
+        private val app: Application,
+        private val appEventBus: AppEventBus
 ) : ViewModel() {
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private var ignApi: String? = null
@@ -170,7 +172,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
      * the service is started, which the service will read when it's started.
      *
      * WmtsLevelsDialog                            DownloadService
-     *                                sticky
+     *                               "sticky"
      *      RequestDownloadMapEvent   ----->          (event available)
      *      Intent                    ----->          (service start, then process event)
      */
@@ -179,14 +181,11 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2)
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         viewModelScope.launch {
-            val tileStreamProvider = createTileStreamProvider(wmtsSource)
+            val tileStreamProvider = createTileStreamProvider(wmtsSource) ?: return@launch
 
-            if (tileStreamProvider != null) {
-                val layer = getLayerForSource(wmtsSource)
-                EventBus.getDefault().postSticky(
-                        RequestDownloadMapEvent(wmtsSource, layer, mapSpec, tileCount, tileStreamProvider))
-            }
-
+            val layer = getLayerForSource(wmtsSource)
+            val request = RequestDownloadMapEvent(wmtsSource, layer, mapSpec, tileCount, tileStreamProvider)
+            appEventBus.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
         }

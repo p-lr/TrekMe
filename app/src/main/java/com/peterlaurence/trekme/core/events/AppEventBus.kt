@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.events
 
 import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.service.event.RequestDownloadMapEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -31,4 +32,12 @@ class AppEventBus {
     val gpxImportEvent = _gpxImportEvent.asSharedFlow()
 
     fun postGpxImportResult(event: TrackImporter.GpxImportResult) = _gpxImportEvent.tryEmit(event)
+
+    /**********************************************************************************************/
+
+    /* This event is "sticky" */
+    private val _downloadMapRequestEvent = MutableSharedFlow<RequestDownloadMapEvent>(1, 0, BufferOverflow.DROP_OLDEST)
+    val downloadMapRequestEvent = _downloadMapRequestEvent.asSharedFlow()
+
+    fun postDownloadMapRequest(request: RequestDownloadMapEvent) = _downloadMapRequestEvent.tryEmit(request)
 }

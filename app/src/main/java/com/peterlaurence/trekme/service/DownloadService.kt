@@ -16,6 +16,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
@@ -34,6 +35,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -61,6 +63,9 @@ class DownloadService : Service() {
 
     @Inject
     lateinit var settings: Settings
+
+    @Inject
+    lateinit var appEventBus: AppEventBus
 
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
@@ -143,15 +148,15 @@ class DownloadService : Service() {
         progressEvent.progress = 0.0
 
         scope.launch {
-            processRequestDownloadMapEvent()
+            appEventBus.downloadMapRequestEvent.collect {
+                processRequestDownloadMapEvent(it)
+            }
         }
 
         return START_NOT_STICKY
     }
 
-    private fun processRequestDownloadMapEvent() {
-        val event = EventBus.getDefault().getStickyEvent(RequestDownloadMapEvent::class.java)
-                ?: return
+    private fun processRequestDownloadMapEvent(event: RequestDownloadMapEvent) {
         val source = event.source
         val tileSequence = event.mapSpec.tileSequence
         val tileStreamProvider = event.tileStreamProvider
