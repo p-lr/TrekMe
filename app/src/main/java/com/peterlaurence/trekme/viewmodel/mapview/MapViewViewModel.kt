@@ -9,9 +9,11 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
 
 /**
  * The view model of the fragment which displays [Map]s.
@@ -24,7 +26,8 @@ class MapViewViewModel @ViewModelInject constructor(
         private val billing: Billing,
         private val mapRepository: MapRepository
 ) : ViewModel() {
-    private val eventBus = EventBus.getDefault()
+    private val _ignLicenseEvents = MutableSharedFlow<IgnLicenseEvent>(0, 1, BufferOverflow.DROP_OLDEST)
+    val ignLicenseEvent = _ignLicenseEvents.asSharedFlow()
 
     /**
      * @return a [Map] instance, or null if there is none or there's a license issue
@@ -61,7 +64,7 @@ class MapViewViewModel @ViewModelInject constructor(
                 persistenceStrategy.persist(LicenseInfo(it.purchaseTime))
                 true
             } ?: {
-                eventBus.post(ErrorIgnLicenseEvent(map))
+                _ignLicenseEvents.tryEmit(ErrorIgnLicenseEvent(map))
                 false
             }()
         }
@@ -71,11 +74,11 @@ class MapViewViewModel @ViewModelInject constructor(
                 when (val accessState = checkTime(it.purchaseTimeMillis)) {
                     is AccessGranted -> true
                     is GracePeriod -> {
-                        eventBus.post(GracePeriodIgnEvent(map, accessState.remainingDays))
+                        _ignLicenseEvents.tryEmit(GracePeriodIgnEvent(map, accessState.remainingDays))
                         true
                     }
                     is AccessDeniedLicenseOutdated -> {
-                        eventBus.post(OutdatedIgnLicenseEvent(map))
+                        _ignLicenseEvents.tryEmit(OutdatedIgnLicenseEvent(map))
                         false
                     }
                 }
@@ -84,6 +87,8 @@ class MapViewViewModel @ViewModelInject constructor(
     }
 }
 
-data class OutdatedIgnLicenseEvent(val map: Map)
-data class ErrorIgnLicenseEvent(val map: Map)
-data class GracePeriodIgnEvent(val map: Map, val remainingDays: Int)
+sealed class IgnLicenseEvent
+data class OutdatedIgnLicenseEvent(val map: Map) : IgnLicenseEvent()
+data class ErrorIgnLicenseEvent(val map: Map) : IgnLicenseEvent()
+data class GracePeriodIgnEvent(val map: Map, val remainingDays: Int) : IgnLicenseEvent()
+

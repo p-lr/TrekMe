@@ -40,9 +40,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import javax.inject.Inject
 
 /**
@@ -109,7 +106,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* The navigation framework seems to not save the state before re-creating the view.. so
          * we do this by hand. */
         val mergedState = savedInstanceState ?: state
-        EventBus.getDefault().register(this)
 
         /* Create the presenter */
         presenter = MapViewFragmentPresenter(inflater, container, context)
@@ -230,6 +226,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             }
         }
 
+        lifecycleScope.launchWhenResumed {
+            mapViewViewModel.ignLicenseEvent.collect {
+                onIgnLicenseEvent(it)
+            }
+        }
+
         return presenter.androidView
     }
 
@@ -239,7 +241,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         orientationSensor?.stop()
         orientationJob?.cancel()
 
-        EventBus.getDefault().unregister(this)
         MapLoader.clearMapMarkerUpdateListener()
         destroyLayers()
         positionMarker = null
@@ -450,27 +451,23 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onOutdatedIgnLicense(event: OutdatedIgnLicenseEvent) {
-        val context = context ?: return
-        clearMap()
-        presenter?.showMessage(context.getString(R.string.expired_ign_license))
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onErrorIgnLicense(event: ErrorIgnLicenseEvent) {
-        val context = context ?: return
-        clearMap()
-        presenter?.showMessage(context.getString(R.string.missing_ign_license))
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onGracePeriodIgnLicense(event: GracePeriodIgnEvent) {
-        val view = view ?: return
-        val context = context ?: return
-        val msg = context.getString(R.string.grace_period_ign_license).format(event.remainingDays)
-        val snackBar = Snackbar.make(view, msg, Snackbar.LENGTH_INDEFINITE)
-        snackBar.show()
+    private fun onIgnLicenseEvent(event: IgnLicenseEvent) = when (event) {
+        is OutdatedIgnLicenseEvent -> {
+            clearMap()
+            presenter?.showMessage(getString(R.string.expired_ign_license))
+        }
+        is ErrorIgnLicenseEvent -> {
+            clearMap()
+            presenter?.showMessage(getString(R.string.missing_ign_license))
+        }
+        is GracePeriodIgnEvent -> {
+            val view = view
+            if (view != null) {
+                val msg = getString(R.string.grace_period_ign_license).format(event.remainingDays)
+                val snackBar = Snackbar.make(view, msg, Snackbar.LENGTH_INDEFINITE)
+                snackBar.show()
+            } else null
+        }
     }
 
     /**
