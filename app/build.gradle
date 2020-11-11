@@ -17,8 +17,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 103
-        versionName "2.4.8"
+        versionCode 104
+        versionName "2.4.9"
     }
 
     buildTypes {
@@ -59,7 +59,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation 'org.robolectric:robolectric:4.4'
 //    implementation project(":mapview-debug")
-    implementation 'com.peterlaurence:mapview:2.1.0'
+    implementation 'com.peterlaurence:mapview:2.1.1'
     implementation 'com.android.billingclient:billing:3.0.1'
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
@@ -91,10 +91,4 @@ dependencies {
 repositories {
     mavenCentral()
     maven { url "https://kotlin.bintray.com/kotlinx" }
-}
-
-kapt {
-    arguments {
-        arg('eventBusIndex', 'com.peterlaurence.trekme.MyEventBusIndex')
-    }
 }
