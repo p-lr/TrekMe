@@ -21,22 +21,22 @@ import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.ignLayers
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
-import com.peterlaurence.trekme.ui.dialogs.SelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
+import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
+import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.views.components.PositionMarker
-import com.peterlaurence.trekme.ui.mapcreate.views.events.LayerSelectEvent
 import com.peterlaurence.trekme.viewmodel.common.Location
 import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
+import javax.inject.Inject
 
 /**
  * Displays Google Maps - compatible tile matrix sets.
@@ -72,6 +72,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
     /* We don't provide a non-null equivalent because we use suspend functions which can access this
      * property when it's null */
     private var _binding: FragmentWmtsViewBinding? = null
+
+    @Inject
+    lateinit var eventBus: MapCreateEventBus
 
     private var wmtsSource: WmtsSource? = null
     private var mapView: MapView? = null
@@ -128,6 +131,12 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
         configure()
+
+        lifecycleScope.launchWhenResumed {
+            eventBus.layerSelectEvent.collect {
+                onLayerDefined(it)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -160,26 +169,20 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 _binding?.fabSave?.visibility = View.VISIBLE
             }
             R.id.map_layer_menu_id -> {
-                wmtsSource?.also { wmtsSource->
-                    val event = LayerSelectEvent(arrayListOf())
+                wmtsSource?.also { wmtsSource ->
                     val title = getString(R.string.ign_select_layer_title)
                     val values = ignLayers.map { it.publicName }
                     val layerPublicName = viewModel.getLayerPublicNameForSource(wmtsSource)
                     val layerSelectDialog =
-                            SelectDialog.newInstance(title, values, layerPublicName, event)
+                            LayerSelectDialog.newInstance(title, values, layerPublicName)
                     layerSelectDialog.show(
                             requireActivity().supportFragmentManager,
-                            "SelectDialog-${event.javaClass.canonicalName}"
+                            "LayerSelectDialog"
                     )
                 }
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        EventBus.getDefault().register(this)
     }
 
     override fun onResume() {
@@ -194,11 +197,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         stopLocationUpdates()
     }
 
-    override fun onStop() {
-        EventBus.getDefault().unregister(this)
-        super.onStop()
-    }
-
     private fun startLocationUpdates() {
         locationViewModel.startLocationUpdates()
     }
@@ -207,12 +205,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
         locationViewModel.stopLocationUpdates()
     }
 
-    @Subscribe
-    fun onLayerDefined(e: LayerSelectEvent) {
+    private fun onLayerDefined(layerPublicName: String) {
         val wmtsSource = wmtsSource ?: return
 
         /* Update the layer preference */
-        viewModel.setLayerForSourceFromPublicName(wmtsSource, e.getSelection())
+        viewModel.setLayerForSourceFromPublicName(wmtsSource, layerPublicName)
 
         /* Then re-create the MapView */
         shouldZoomOnPosition = true
