@@ -93,7 +93,10 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         buyBtn = view.findViewById(R.id.purchase_btn)
         buyBtn.text = getString(R.string.buy_btn)
         buyBtn.setOnClickListener {
-            viewModel.buyLicense()
+            val billingParams = viewModel.buyLicense()
+            activity?.also {
+                billingParams?.billingClient?.launchBillingFlow(it, billingParams.flowParams)
+            }
         }
 
         helpBtn = view.findViewById(R.id.help_license_info)

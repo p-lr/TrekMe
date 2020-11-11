@@ -10,7 +10,6 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -234,17 +233,18 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
 
     data class SkuQueryResult(val billingResult: BillingResult, val skuDetailsList: List<SkuDetails>)
 
-    fun launchBilling(skuDetails: SkuDetails, purchaseAcknowledgedCb: PurchaseAcknowledgedCallback, purchasePendingCb: PurchasePendingCallback) {
+    fun launchBilling(skuDetails: SkuDetails, purchaseAcknowledgedCb: PurchaseAcknowledgedCallback,
+                      purchasePendingCb: PurchasePendingCallback): BillingParams {
         val flowParams = BillingFlowParams.newBuilder()
                 .setSkuDetails(skuDetails)
                 .build()
         this.purchaseAcknowledgedCallback = purchaseAcknowledgedCb
         this.purchasePendingCallback = purchasePendingCb
-        EventBus.getDefault().post(BillingFlowEvent(billingClient, flowParams))
+        return BillingParams(billingClient, flowParams)
     }
 }
 
-data class BillingFlowEvent(val billingClient: BillingClient, val flowParams: BillingFlowParams)
+data class BillingParams(val billingClient: BillingClient, val flowParams: BillingFlowParams)
 
 private const val TAG = "ign.Billing.kt"
 

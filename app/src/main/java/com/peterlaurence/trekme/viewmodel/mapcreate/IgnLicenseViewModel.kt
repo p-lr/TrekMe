@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.SkuDetails
 import com.peterlaurence.trekme.billing.ign.Billing
+import com.peterlaurence.trekme.billing.ign.BillingParams
 import com.peterlaurence.trekme.billing.ign.LicenseInfo
 import com.peterlaurence.trekme.billing.ign.PersistenceStrategy
 import kotlinx.coroutines.Dispatchers
@@ -53,11 +54,11 @@ class IgnLicenseViewModel @ViewModelInject constructor(
         }
     }
 
-    fun buyLicense() {
+    fun buyLicense(): BillingParams? {
         val ignLicenseDetails = ignLicenseDetails.value
-        if (ignLicenseDetails != null) {
+        return if (ignLicenseDetails != null) {
             billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchaseAcknowledged, this::onPurchasePending)
-        }
+        } else null
     }
 
     private fun onPurchasePending() {

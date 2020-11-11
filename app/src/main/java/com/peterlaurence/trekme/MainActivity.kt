@@ -37,7 +37,6 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.peterlaurence.trekme.billing.ign.BillingFlowEvent
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
@@ -58,7 +57,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.EventBusException
-import org.greenrobot.eventbus.Subscribe
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -349,9 +347,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             warnIfBadStorageState()
         }
 
-        /* Register event-bus */
-        EventBus.getDefault().register(this)
-
+        /* React to some events */
         lifecycleScope.launch {
             appEventBus.genericMessageEvents.collect {
                 Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
@@ -371,11 +367,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         super.onStart()
-    }
-
-    override fun onStop() {
-        EventBus.getDefault().unregister(this)
-        super.onStop()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -557,10 +548,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 .setProgress(0, 0, false)
         notifyMgr?.notify(event.mapId, builder.build())
         Snackbar.make(binding.navView, archiveOkMsg, Snackbar.LENGTH_SHORT).show()
-    }
-
-    @Subscribe
-    fun onBillingFlowEvent(event: BillingFlowEvent) {
-        event.billingClient.launchBillingFlow(this, event.flowParams)
     }
 }
