@@ -53,8 +53,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.EventBusException
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -172,17 +170,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
             return true
-        }
-
-        /* Setup default eventbus to use an index instead of reflection, which is recommended for
-         * Android for best performance.
-         * See http://greenrobot.org/eventbus/documentation/subscriber-index */
-        init {
-            try {
-                EventBus.builder().addIndex(MyEventBusIndex()).installDefaultEventBus()
-            } catch (e: EventBusException) {
-                // don't care
-            }
         }
     }
 

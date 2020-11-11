@@ -16,13 +16,10 @@ import com.peterlaurence.trekme.util.ZipProgressionListener
 import com.peterlaurence.trekme.util.makeThumbnail
 import com.peterlaurence.trekme.util.stackTraceAsString
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
-import org.greenrobot.eventbus.EventBus
+import kotlinx.coroutines.flow.*
 import java.io.IOException
 import java.io.OutputStream
 
@@ -37,6 +34,9 @@ class MapSettingsViewModel @ViewModelInject constructor(
 
     private val _zipEvents = MutableLiveData<ZipEvent>()
     val zipEvents: LiveData<ZipEvent> = _zipEvents
+
+    private val _mapImageImportEvents = MutableSharedFlow<MapImageImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
+    val mapImageImportEvents = _mapImageImportEvents.asSharedFlow()
 
     /**
      * Changes the thumbnail of a [Map].
@@ -53,13 +53,13 @@ class MapSettingsViewModel @ViewModelInject constructor(
             if (thumbnail != null) {
                 map.image = thumbnail
                 MapLoader.saveMap(map)
-                EventBus.getDefault().post(MapImageImportResult(true))
+                _mapImageImportEvents.tryEmit(MapImageImportResult(true))
             } else {
-                EventBus.getDefault().post(MapImageImportResult(false))
+                _mapImageImportEvents.tryEmit(MapImageImportResult(false))
             }
         } catch (e: Exception) {
             Log.e(TAG, e.stackTraceAsString())
-            EventBus.getDefault().post(MapImageImportResult(false))
+            _mapImageImportEvents.tryEmit(MapImageImportResult(false))
         }
     }
 
