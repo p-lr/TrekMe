@@ -30,8 +30,6 @@ interface TrekMeContext {
     val credentialsDir: File
     val isAppDirReadOnly: Boolean
     fun init(applicationContext: Context)
-    @Deprecated("Will be removed after migrating settings to shared prefs is done")
-    fun getSettingsFile(applicationContext: Context): File
     fun checkAppDir(): Boolean
 }
 
@@ -96,15 +94,6 @@ class TrekMeContextAndroid : TrekMeContext {
         } catch (e: IOException) {
             Log.e(TAG, "We don't have right access to create application folder")
         }
-    }
-
-    /**
-     * The settings file is stored in a private folder of the app, and this folder will be deleted
-     * if the app is uninstalled. This is intended, not to persist those settings.
-     * TODO: Remove this method after migrating settings to shared prefs is done
-     */
-    override fun getSettingsFile(applicationContext: Context): File {
-        return File(applicationContext.filesDir, "settings.json")
     }
 
     /**

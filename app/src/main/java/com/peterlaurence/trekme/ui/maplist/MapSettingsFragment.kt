@@ -48,7 +48,6 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val args = arguments
-        // TODO: Use Safe Args https://developer.android.com/guide/navigation/navigation-pass-data
         if (args != null) {
             val mapId = args.getInt(ARG_MAP_ID)
             setMap(mapId)
