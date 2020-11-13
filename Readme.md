@@ -448,6 +448,7 @@ When the connexion is established, the load starts and you can see the progressi
 well, a gorgeous emoticon is shown. Otherwise, and especially if the load got interrupted, you're advised
 to start again (Wifi isn't 100% reliable).
 
-If it really takes too long for devices to establish a connection, try to reboot the two devices and
-retry the procedure.
+If it really takes too long for devices to establish a connection (more than 5 min), try to restart
+the receiving and sending on both phones. As last resort, reboot the two devices and retry the
+procedure.
 

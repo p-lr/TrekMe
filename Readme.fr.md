@@ -499,8 +499,9 @@ Si tout se passe bien, le transfert va jusqu'au bout et une magnifique emoticon 
 le cas contraire, et en particulier si le transfert s'est interrompu en cours de chargement, une nouvelle
 tentative peut réussir (ce sont les aléas de la Wifi).
 
-Si les deux appareils mettent vraiment trop de temps à se connecter et à débuter le transfert, essayez 
-de redémarrer les deux apprareils puis re-tentez la procédure.
+Si les deux appareils mettent vraiment trop de temps à se connecter et à débuter le transfert (plus
+de 5 min), essayez d'arrêter et relancer respectivement la réception et l'envoi. En dernier recours,
+redémarrer les deux apprareils puis re-tentez la procédure.
 
 ## <a name="TOC-IGN-maps"></a>Cartes IGN
 
