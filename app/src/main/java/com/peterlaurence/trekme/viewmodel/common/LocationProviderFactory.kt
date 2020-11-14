@@ -11,7 +11,7 @@ import com.google.android.gms.location.LocationServices
 
 /**
  * Get a [LocationProvider] given the provided [LocationSource].
- * @param context The application [Context] - *not* the activity itself. This is avoid memory leaks.
+ * @param context The application [Context] - *not* the activity itself. This is to avoid memory leaks.
  */
 fun getLocationProvider(source: LocationSource, context: Context): LocationProvider {
     return when (source) {
@@ -36,8 +36,7 @@ sealed class LocationProvider {
 data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float = 0f)
 
 /**
- * Use the Google api to receive location.
- * It's set to receive a new location at most every second.
+ * Uses the Google api to receive location at most every second.
  */
 private class GoogleLocationProvider(val context: Context) : LocationProvider() {
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
@@ -58,7 +57,9 @@ private class GoogleLocationProvider(val context: Context) : LocationProvider() 
 
         /**
          * Beware that this object holds a reference to the provided [locationCb] (which itself
-         * hides a reference to a view), so [stop] method must be called when appropriate.
+         * could have an implicit reference on a view). It's recommended to invoke [start] from a
+         * view-model to avoid this situation.
+         * Anyway, [stop] method should be called when appropriate.
          */
         googleLocationCallback = object : com.google.android.gms.location.LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
