@@ -46,9 +46,8 @@ fait pas de distinction, et arrête brutalement le service (et TrekMe avec).
 
 Pour éviter ce problème, il faut aller dans les réglages du téléphone, dans "Batterie". Ensuite, il 
 faut y trouver un menu "Optimisation de la batterie" ou similaire (cela diffère d'un téléphone a 
-l'autre). Là on peut définir pour chaque application la limite ou non de son activité en arrière plan
-et/ou l'optimisation de la batterie. 
-Donc pour Trekme, il faut autoriser son execution en arrière plan et désactiver l'optimisation.
+l'autre). Là on peut afficher la liste des applications "optimisées".  Si TrekMe fait partie de cette liste, 
+il faut autoriser son exécution en arrière plan et désactiver l'optimisation. 
 
 ## <a name="TOC-other"></a> J'ai un autre problème
 
