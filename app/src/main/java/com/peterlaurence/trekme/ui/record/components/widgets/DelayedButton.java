@@ -102,12 +102,15 @@ public class DelayedButton extends AppCompatImageButton {
             mRequestedState = state;
             return;
         }
+
         switch (state) {
             case STOP:
+                mStopToPLayDrawable.reset();
                 setImageDrawable(mStopToPLayDrawable);
                 mState = State.STOP;
                 break;
             case PLAY:
+                mPlayToStopDrawable.reset();
                 setImageDrawable(mPlayToStopDrawable);
                 mState = State.PLAY;
                 break;
