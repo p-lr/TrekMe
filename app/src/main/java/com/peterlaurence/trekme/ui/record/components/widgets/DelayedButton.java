@@ -42,6 +42,11 @@ public class DelayedButton extends AppCompatImageButton {
 
         mStopToPLayDrawable = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_delayed_button_stop_to_play);
         mPlayToStopDrawable = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_delayed_button_play_to_stop);
+
+        /* It appears that internally, we get an AnimatedVectorDrawable from a pool, and we might
+         * get an instance from a previous usage. So reset it.. */
+        mPlayToStopDrawable.reset();
+
         setImageDrawable(mPlayToStopDrawable);
 
         mState = State.PLAY;
@@ -102,6 +107,7 @@ public class DelayedButton extends AppCompatImageButton {
             mRequestedState = state;
             return;
         }
+        if (state == mState) return;
 
         switch (state) {
             case STOP:
@@ -157,7 +163,7 @@ public class DelayedButton extends AppCompatImageButton {
      * Apply it now.
      */
     private void checkState() {
-        if (mRequestedState != null && mState != mRequestedState) {
+        if (mRequestedState != null) {
             setMode(mRequestedState);
             mRequestedState = null;
         }
