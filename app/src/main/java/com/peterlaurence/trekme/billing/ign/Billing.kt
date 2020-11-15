@@ -7,9 +7,7 @@ import com.android.billingclient.api.BillingClient.BillingResponseCode.*
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -43,7 +41,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
 
     /**
      * Attempts to connect the billing service. This function immediately returns.
-     * See also [connectWithRetry], which suspends at most 10s.
+     * See also [awaitConnect], which suspends at most 10s.
      * Don't try to make this a suspend function - the [billingClient] keeps a reference on the
      * [BillingClientStateListener] so it would keep a reference on a continuation (leading to
      * insidious memory leaks, depending on who invokes that suspending function).
@@ -115,7 +113,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
      * This is why the acknowledgement is also made here.
      */
     suspend fun acknowledgeIgnLicense(purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback): Boolean {
-        runCatching { connectWithRetry() }.onFailure { return false }
+        runCatching { awaitConnect() }.onFailure { return false }
 
         val inAppPurchases = billingClient.queryPurchases(BillingClient.SkuType.SUBS)
         val oneTimeAck = inAppPurchases.purchasesList?.getIgnLicenseOneTime()?.let {
@@ -138,7 +136,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
     }
 
     suspend fun getIgnLicensePurchase(): Purchase? {
-        runCatching { connectWithRetry() }.onFailure { return null }
+        runCatching { awaitConnect() }.onFailure { return null }
 
         val inAppPurchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
         val oneTimeLicense = inAppPurchases.purchasesList?.getValidIgnLicenseOneTime()?.let {
@@ -190,7 +188,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
      * Get the details of the IGN annual subscription.
      */
     suspend fun getIgnLicenseDetails(): IgnLicenseDetails {
-        connectWithRetry()
+        awaitConnect()
         val (billingResult, skuDetailsList) = queryIgnLicenseDetails()
         return when (billingResult.responseCode) {
             OK -> skuDetailsList.find { it.sku == IGN_LICENSE_SUBSCRIPTION_SKU }?.let {
@@ -205,23 +203,22 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
     /**
      * Suspends at most 10s (waits for billing client to connect).
      * Since the [BillingClient] can only notify its state through the [connectionStateListener], we
-     * poll the [connected] status. Ideally, we would collect a state flow..
+     * poll the [connected] status. Ideally, we would collect the billing client state flow..
      */
-    private suspend fun connectWithRetry() = coroutineScope {
+    private suspend fun awaitConnect() {
         connectClient()
-        launch {
-            var awaited = 0
-            /* We wait at most 10 seconds */
-            while (awaited < 10000) {
-                if (connected) break else {
-                    delay(10)
-                    awaited += 10
-                }
+
+        var awaited = 0
+        /* We wait at most 10 seconds */
+        while (awaited < 10000) {
+            if (connected) break else {
+                delay(10)
+                awaited += 10
             }
         }
     }
 
-    private suspend fun queryIgnLicenseDetails(): SkuQueryResult = suspendCoroutine<SkuQueryResult> {
+    private suspend fun queryIgnLicenseDetails(): SkuQueryResult = suspendCoroutine {
         val skuList = ArrayList<String>()
         skuList.add(IGN_LICENSE_SUBSCRIPTION_SKU)
         val params = SkuDetailsParams.newBuilder()
