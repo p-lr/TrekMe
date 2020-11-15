@@ -154,7 +154,7 @@ class RecordListView @JvmOverloads constructor(
     }
 
     private fun multiSelect(position: Int) {
-        val recording = recordingDataList[position].recording
+        val recording = recordingDataList.getOrNull(position)?.recording ?: return
         if (selectedRecordings.contains(recording)) {
             selectedRecordings.remove(recording)
         } else {
@@ -164,7 +164,7 @@ class RecordListView @JvmOverloads constructor(
     }
 
     private fun singleSelect(position: Int) {
-        val recording = recordingDataList[position].recording
+        val recording = recordingDataList.getOrNull(position)?.recording ?: return
         selectedRecordings.clear()
         selectedRecordings.add(recording)
         listener?.onSelectionChanged(selectedRecordings)
