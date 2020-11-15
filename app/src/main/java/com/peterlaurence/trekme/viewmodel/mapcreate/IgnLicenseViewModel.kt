@@ -24,7 +24,10 @@ class IgnLicenseViewModel @ViewModelInject constructor(
 
     fun getIgnLicensePurchaseStatus() {
         viewModelScope.launch {
-            /* First, check if we just need to acknowledge the purchase */
+            /* Indicate that the license check is pending */
+            ignLicenseStatus.value = LicenseStatus.CHECK_PENDING
+
+            /* Check if we just need to acknowledge the purchase */
             val ackDone = billing.acknowledgeIgnLicense(this@IgnLicenseViewModel::onPurchaseAcknowledged)
 
             /* Otherwise, do normal checks */
@@ -62,7 +65,7 @@ class IgnLicenseViewModel @ViewModelInject constructor(
     }
 
     private fun onPurchasePending() {
-        ignLicenseStatus.postValue(LicenseStatus.PENDING)
+        ignLicenseStatus.postValue(LicenseStatus.PURCHASE_PENDING)
     }
 
     /**
@@ -98,7 +101,7 @@ class IgnLicenseViewModel @ViewModelInject constructor(
 }
 
 enum class LicenseStatus {
-    PURCHASED, NOT_PURCHASED, PENDING, UNKNOWN
+    CHECK_PENDING, PURCHASED, NOT_PURCHASED, PURCHASE_PENDING, UNKNOWN
 }
 
 data class IgnLicenseDetails(val skuDetails: SkuDetails) {

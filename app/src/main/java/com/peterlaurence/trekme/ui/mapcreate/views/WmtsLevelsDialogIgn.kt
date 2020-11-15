@@ -49,12 +49,13 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         viewModel.getIgnLicenseStatus().observe(this) {
             it?.also {
                 when (it) {
+                    LicenseStatus.CHECK_PENDING -> showCheckPending()
                     LicenseStatus.PURCHASED -> {
                         hidePriceIGN()
                         setDownloadEnabled(true)
                     }
                     LicenseStatus.NOT_PURCHASED -> viewModel.getIgnLicenseInfo()
-                    LicenseStatus.PENDING -> showPending()
+                    LicenseStatus.PURCHASE_PENDING -> showPending()
                     LicenseStatus.UNKNOWN -> showUnknown()
                 }
             }
@@ -105,6 +106,14 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
             builder.setMessage(R.string.ign_license_explanation)
             builder.show()
         }
+    }
+
+    private fun showCheckPending() {
+        priceInformation.visibility = View.GONE
+        priceValue.visibility = View.GONE
+        buyBtn.visibility = View.GONE
+        priceInformation.visibility = View.VISIBLE
+        priceInformation.text = getString(R.string.ign_license_check_pending)
     }
 
     private fun showPriceIGN() {
