@@ -7,6 +7,16 @@ import org.junit.Test
 
 class TrackStatCalculatorTest {
     private val trackPoints = listOf(
+            // First identical 10 points (see elevation test)
+            TrackPoint(50.3, 48.7, null),
+            TrackPoint(50.3, 48.7, null),
+            TrackPoint(50.3, 48.7, null),
+            TrackPoint(50.3, 48.7, null),
+            TrackPoint(50.3, 48.7, null),
+            TrackPoint(50.3, 48.7, null),
+            TrackPoint(50.3, 48.7, null),
+            TrackPoint(50.3, 48.7, null),
+            TrackPoint(50.3, 48.7, null),
             TrackPoint(50.3, 48.7, null),
             TrackPoint(50.3, 48.7, 10.0),
             TrackPoint(50.4, 48.75, 155.0),
@@ -35,15 +45,16 @@ class TrackStatCalculatorTest {
     }
 
     /**
-     * Keep in mind, first non-null elevation is filtered out.
+     * Keep in mind, elevation stats are computed starting after the 10th point (there's a buffer
+     * of 10 points on which we compute the elevation mean).
      */
     @Test
     fun elevationTest() {
         statCalculator.addTrackPointList(trackPoints)
         val stats = statCalculator.getStatistics()
 
-        assertEquals(220.0, stats.elevationDifferenceMax, 0.0)
-        assertEquals(220.0, stats.elevationUpStack, 0.0)
-        assertEquals(175.0, stats.elevationDownStack, 0.0)
+        assertEquals(76.25, stats.elevationDifferenceMax, 0.0)
+        assertEquals(110.4, stats.elevationUpStack, 0.1)
+        assertEquals(34.1, stats.elevationDownStack, 0.1)
     }
 }

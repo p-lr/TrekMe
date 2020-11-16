@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.core.track
 import android.os.Parcelable
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.statistics.mean
-import com.peterlaurence.trekme.core.statistics.rolling
 import com.peterlaurence.trekme.util.gpx.model.Bounds
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import kotlinx.android.parcel.Parcelize
@@ -30,13 +29,20 @@ class TrackStatCalculator {
     /* Duration statistic */
     private var firstPointTime: Long? = null
 
+    /* Elevation statistics */
+    private var lastKnownElevation: Double? = null
+    private var lowestElevation: Double? = null
+    private var highestElevation: Double? = null
+
     /* Bounds */
     private var minLat: Double? = null
     private var minLon: Double? = null
     private var maxLat: Double? = null
     private var maxLon: Double? = null
 
-    private val elevations = mutableListOf<Double>()
+    /* Size of the buffer used to compute elevation mean */
+    private val bufferSize = 10
+    private val buffer = ArrayDeque<TrackPoint>()
 
     fun getStatistics(): TrackStatistics {
         return trackStatistics
@@ -48,28 +54,25 @@ class TrackStatCalculator {
     }
 
     fun addTrackPointList(trkPtList: List<TrackPoint>) {
-        /* Update all but elevations stats (they'll be computed using all points) */
-        trkPtList.forEach {
-            updateDistance(it)
-            updateDuration(it)
-            updateBounds(it)
-            updateMeanSpeed()
-        }
-
-        /* Elevation stats */
-        val elevations = trkPtList.mapNotNull { it.elevation }
-        val smoothedElevations = elevations.rolling(10) {
-            it.mean()
-        }
-        computeElevationStats(smoothedElevations)
+        trkPtList.forEach { addTrackPoint(it) }
     }
 
     fun addTrackPoint(trkPt: TrackPoint) {
+        buffer.add(trkPt)
+        /* Keep the buffer at its target size */
+        if (buffer.size > bufferSize) buffer.poll()
+
         updateDistance(trkPt)
-        updateElevationStatistics(trkPt)
         updateDuration(trkPt)
         updateBounds(trkPt)
         updateMeanSpeed()
+
+        if (buffer.size == bufferSize) {
+            val elevations = buffer.mapNotNull { it.elevation }
+            if (elevations.isNotEmpty()) {
+                updateElevationStats(elevations.mean())
+            }
+        }
     }
 
     /**
@@ -91,44 +94,38 @@ class TrackStatCalculator {
         lastTrackPoint = trkPt
     }
 
-    private fun updateElevationStatistics(trkPt: TrackPoint) {
-        val ele = trkPt.elevation ?: return
-
-        elevations.add(ele)
-        val smoothedElevations = elevations.rolling(10) {
-            it.mean()
-        }
-
-        computeElevationStats(smoothedElevations)
-    }
-
-    private fun computeElevationStats(smoothedElevations: List<Double>) {
-        /* Lowest point */
-        val lowestPoint = smoothedElevations.minOrNull()
+    private fun updateElevationStats(ele: Double) {
+        /* Lowest point update */
+        lowestElevation?.also { eleLowest ->
+            if (ele <= eleLowest) {
+                lowestElevation = ele
+            }
+        } ?: { this.lowestElevation = ele }()
 
         /* Highest point update */
-        val highestPoint = smoothedElevations.maxOrNull()
+        highestElevation?.also { eleHighest ->
+            if (ele >= eleHighest) {
+                highestElevation = ele
+            }
+        } ?: { highestElevation = ele }()
 
         /* .. then we can update the elevation maximum difference*/
-        if (lowestPoint != null && highestPoint != null) {
-            trackStatistics.elevationDifferenceMax = highestPoint - lowestPoint
+        highestElevation?.also { eleHighest ->
+            lowestElevation?.also { eleLowest ->
+                trackStatistics.elevationDifferenceMax = eleHighest - eleLowest
+            }
         }
 
         /* Elevation stack update */
-        if (smoothedElevations.isEmpty()) return
-        var eleUpStack = 0.0
-        var eleDownStack = 0.0
-        smoothedElevations.reduce { elePrevious, d ->
-            val diff = abs(d - elePrevious)
-            if (d > elePrevious) {
-                eleUpStack += diff
-            } else if (d < elePrevious) {
-                eleDownStack += diff
+        lastKnownElevation?.also { elePrevious ->
+            val diff = abs(ele - elePrevious)
+            if (ele > elePrevious) {
+                trackStatistics.elevationUpStack += diff
+            } else if (ele < elePrevious) {
+                trackStatistics.elevationDownStack += diff
             }
-            d
         }
-        trackStatistics.elevationUpStack = eleUpStack
-        trackStatistics.elevationDownStack = eleDownStack
+        lastKnownElevation = ele
     }
 
     /**
