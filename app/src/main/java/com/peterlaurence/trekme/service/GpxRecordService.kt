@@ -79,10 +79,9 @@ class GpxRecordService : Service() {
         /* Start up the thread for background execution of tasks withing the service.  Note that we
          * create a separate thread because the service normally runs in the process's main thread,
          * which we don't want to block.
-         * We also make it background priority so CPU-intensive work will not disrupt our UI.
+         * We also make it low priority so CPU-intensive work will not disrupt our UI.
          */
-        val thread = HandlerThread(THREAD_NAME,
-                Thread.MIN_PRIORITY)
+        val thread = HandlerThread(THREAD_NAME, Thread.MIN_PRIORITY)
         thread.start()
 
         /* Get the HandlerThread's Looper and use it for our Handler */

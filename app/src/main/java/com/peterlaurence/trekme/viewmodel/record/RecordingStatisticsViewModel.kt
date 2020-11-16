@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackTools
-import com.peterlaurence.trekme.core.track.hpFilter
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
@@ -191,7 +190,6 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
         gpx.tracks.firstOrNull()?.let { track ->
             val statCalculator = TrackStatCalculator()
             track.trackSegments.forEach { trackSegment ->
-                trackSegment.hpFilter()
                 statCalculator.addTrackPointList(trackSegment.trackPoints)
             }
 
