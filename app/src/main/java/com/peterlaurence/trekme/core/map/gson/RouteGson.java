@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.core.map.gson;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,8 @@ public class RouteGson {
 
     public static class Route implements Serializable {
         public String name;
+        @Nullable
+        public String color; // In the form "#RRGGBB" or "#AARRGGBB"
         public boolean visible = true;
         private List<MarkerGson.Marker> route_markers;
         private transient Object mData;

@@ -21,14 +21,24 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
             android:background="@drawable/ripple"
+            android:contentDescription="@string/track_visibility_btn"
             android:src="@drawable/ic_visibility_black_24dp" />
+
+        <ImageButton
+            android:id="@+id/track_color_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/track_visible_btn"
+            android:background="@drawable/ripple"
+            android:contentDescription="@string/track_color_btn"
+            android:src="@drawable/ic_circle_24" />
 
         <TextView
             android:id="@+id/track_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_toStartOf="@id/track_visible_btn"
+            android:layout_toStartOf="@id/track_color_btn"
             android:layout_centerVertical="true"
             android:layout_marginStart="8dp"
             tools:text="A route"

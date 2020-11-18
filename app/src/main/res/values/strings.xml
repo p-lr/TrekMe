@@ -144,6 +144,8 @@
     <string name="tracks_label">"Tracks number : "</string>
     <string name="waypoints_label">"Waypoints number : "</string>
     <string name="gpx_import_error_msg">Oops.. something went wrong during the import</string>
+    <string name="track_visibility_btn">Track visibility</string>
+    <string name="track_color_btn">Track color</string>
 
     <!-- MapView fragment -->
     <string name="mapview_show_speed">Show speed</string>

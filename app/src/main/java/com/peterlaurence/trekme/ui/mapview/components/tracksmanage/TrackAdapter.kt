@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.gson.RouteGson.Route
+import com.peterlaurence.trekme.ui.mapview.colorRoute
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TrackAdapter.TrackViewHolder
 
 /**
@@ -98,6 +99,8 @@ class TrackAdapter(
             holder.setVisibleButtonIcon(route.visible)
             trackSelectionListener.onVisibilityToggle(route)
         }
+        holder.colorButton.setColorFilter(Color.parseColor(route.color ?: colorRoute))
+
         if (holder.layoutPosition == selectedRouteIndex) {
             holder.cardView.setCardBackgroundColor(colorAccent)
             holder.trackName.setTextColor(colorWhite)
@@ -123,12 +126,14 @@ class TrackAdapter(
     interface TrackSelectionListener {
         fun onTrackSelected()
         fun onVisibilityToggle(route: Route)
+        fun onColorChange(route: Route)
     }
 
     class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var cardView: CardView = itemView.findViewById(R.id.cv_track)
         var trackName: TextView = itemView.findViewById(R.id.track_name)
         var visibleButton: ImageButton = itemView.findViewById(R.id.track_visible_btn)
+        var colorButton: ImageButton = itemView.findViewById(R.id.track_color_btn)
 
         fun setVisibleButtonIcon(visible: Boolean) {
             visibleButton.setImageResource(if (visible) R.drawable.ic_visibility_black_24dp else R.drawable.ic_visibility_off_black_24dp)

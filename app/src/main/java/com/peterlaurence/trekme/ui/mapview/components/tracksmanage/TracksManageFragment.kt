@@ -231,7 +231,10 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     }
 
     override fun onVisibilityToggle(route: RouteGson.Route) {
-        /* Save */
+        viewModel.saveChanges()
+    }
+
+    override fun onColorChange(route: RouteGson.Route) {
         viewModel.saveChanges()
     }
 

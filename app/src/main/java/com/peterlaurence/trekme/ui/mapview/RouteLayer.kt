@@ -172,7 +172,7 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
         /* Beware, don't make this a class attribute or the flow below will keep a reference on
          * the RouteLayer instance and consequently also the MapView. */
         val liveRoutePaint = Paint().apply {
-            this.color = Color.parseColor("#FF9800")
+            this.color = Color.parseColor(colorLiveRoute)
         }
         val liveRouteFlow = getRouteFlow(listOf(liveRoute)) { route, path ->
             val drawablePath = object : PathView.DrawablePath {
@@ -210,11 +210,18 @@ class RouteLayer(private val coroutineScope: CoroutineScope, private val state: 
         val routes = map.routes ?: return
         previousRoutes = routes
         val staticRouteFlow = getRouteFlow(routes) { route, path ->
+            /* Honor the route color, if set */
+            val paint = runCatching {
+                Paint().apply {
+                    color = Color.parseColor(route.color ?: colorRoute)
+                }
+            }.getOrNull()
+
             val drawablePath = object : PathView.DrawablePath {
                 override val visible: Boolean
                     get() = route.visible
                 override var path: FloatArray = path
-                override var paint: Paint? = null
+                override var paint: Paint? = paint
                 override val width: Float? = null
             }
             route.data = drawablePath
