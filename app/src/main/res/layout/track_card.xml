@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toStartOf="@id/track_visible_btn"
-            android:background="@drawable/ripple"
+            android:background="@drawable/ripple_circle_bg"
             android:contentDescription="@string/track_color_btn"
             android:src="@drawable/ic_circle_24" />
 
