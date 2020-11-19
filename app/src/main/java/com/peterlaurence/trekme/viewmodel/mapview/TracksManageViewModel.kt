@@ -6,6 +6,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
@@ -14,7 +15,9 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
 
 /**
@@ -97,8 +100,10 @@ class TracksManageViewModel @ViewModelInject constructor(
     }
 
     fun saveChanges() {
-        map?.also {
-            MapLoader.saveRoutes(it)
+        viewModelScope.launch(Dispatchers.IO) {
+            map?.also {
+                MapLoader.saveRoutes(it)
+            }
         }
     }
 }
