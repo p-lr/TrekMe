@@ -233,4 +233,8 @@
     <string name="track_color_btn">Coleur de la trace</string>
     <string name="color_picker_title">Sélectionnez une couleur</string>
     <string name="apply_color_btn">Appliquer</string>
+    <string name="color_variant_label">Variante</string>
+    <string name="color_variant_normal">Normale</string>
+    <string name="color_variant_light">Claire</string>
+    <string name="color_variant_dark">Foncée</string>
 </resources>
