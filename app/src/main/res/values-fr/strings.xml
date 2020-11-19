@@ -231,4 +231,6 @@
     <string name="ign_license_check_pending">Vérification de la licence…</string>
     <string name="track_visibility_btn">Visibilité de la trace</string>
     <string name="track_color_btn">Coleur de la trace</string>
+    <string name="color_picker_title">Sélectionnez une couleur</string>
+    <string name="apply_color_btn">Appliquer</string>
 </resources>

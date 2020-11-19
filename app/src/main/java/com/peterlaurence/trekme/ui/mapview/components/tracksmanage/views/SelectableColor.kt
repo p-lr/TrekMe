@@ -4,14 +4,23 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.AttributeSet
 import android.view.View
 import com.peterlaurence.trekme.util.px
 
-
-class SelectableColor(context: Context) : View(context) {
-    private val diameterNormal: Int = 10.px
-    private val diameterSelected: Int = 12.px
-    private var diameter: Int = diameterNormal
+/**
+ * A circle view. When selected, it grows with a dark-grey stroke.
+ *
+ * @author P.Laurence on 19/11/20
+ */
+class SelectableColor @JvmOverloads constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
+    private val radiusNormal: Int = 18.px
+    private val radiusSelected: Int = 24.px
+    private var radius: Int = radiusNormal
     private val paint: Paint = Paint()
     private val strokePaint = Paint()
 
@@ -20,8 +29,8 @@ class SelectableColor(context: Context) : View(context) {
         paint.isAntiAlias = true
         strokePaint.isAntiAlias = true
         strokePaint.style = Paint.Style.STROKE
-        strokePaint.color = Color.BLACK
-        strokePaint.strokeWidth = 3.px.toFloat()
+        strokePaint.color = Color.parseColor("#424242")
+        strokePaint.strokeWidth = 4.px.toFloat()
     }
 
     fun setColor(color: Int) {
@@ -30,7 +39,7 @@ class SelectableColor(context: Context) : View(context) {
     }
 
     override fun setSelected(selected: Boolean) {
-        diameter = if (selected) diameterSelected else diameterNormal
+        radius = if (selected) radiusSelected else radiusNormal
         super.setSelected(selected)
     }
 
@@ -38,16 +47,18 @@ class SelectableColor(context: Context) : View(context) {
         super.onDraw(canvas)
 
         canvas.save()
-        val radius = (diameter / 2).toFloat()
-        canvas.drawCircle(radius, radius, radius, paint)
+        val radius = radius.toFloat()
+        val center = radiusSelected.toFloat()
+        canvas.drawCircle(center, center, radius, paint)
         if (isSelected) {
-            canvas.drawCircle(radius, radius, radius, strokePaint)
+            canvas.drawCircle(center, center, radius - strokePaint.strokeWidth / 2, strokePaint)
         }
         canvas.restore()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        setMeasuredDimension(diameterSelected, diameterSelected)
+        val dim = radiusSelected  * 2
+        setMeasuredDimension(dim, dim)
     }
 
     override fun performClick(): Boolean {

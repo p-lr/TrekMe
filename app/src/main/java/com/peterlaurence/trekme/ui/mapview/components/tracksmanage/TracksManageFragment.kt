@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
+import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.dialogs.ColorSelectDialog
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.viewmodel.mapview.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -85,6 +86,13 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
         lifecycleScope.launch {
             eventBus.trackNameChangeSignal.collect {
+                trackAdapter?.notifyDataSetChanged()
+            }
+        }
+
+        lifecycleScope.launch {
+            eventBus.trackColorChangeEvent.collect {
+                viewModel.changeRouteColor(it.routeId, it.color)
                 trackAdapter?.notifyDataSetChanged()
             }
         }
@@ -230,11 +238,11 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         trackRenameMenuItem?.isVisible = true
     }
 
-    override fun onVisibilityToggle(route: RouteGson.Route) {
-        viewModel.saveChanges()
+    override fun onColorButtonClicked(route: RouteGson.Route) {
+        ColorSelectDialog.newInstance(route.id).show(requireActivity().supportFragmentManager, "ColorSelectDialog")
     }
 
-    override fun onColorChange(route: RouteGson.Route) {
+    override fun onVisibilityToggle(route: RouteGson.Route) {
         viewModel.saveChanges()
     }
 

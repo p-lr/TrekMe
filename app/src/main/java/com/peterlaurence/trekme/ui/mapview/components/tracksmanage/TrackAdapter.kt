@@ -100,6 +100,9 @@ class TrackAdapter(
             trackSelectionListener.onVisibilityToggle(route)
         }
         holder.colorButton.setColorFilter(Color.parseColor(route.color ?: colorRoute))
+        holder.colorButton.setOnClickListener {
+            trackSelectionListener.onColorButtonClicked(route)
+        }
 
         if (holder.layoutPosition == selectedRouteIndex) {
             holder.cardView.setCardBackgroundColor(colorAccent)
@@ -125,8 +128,8 @@ class TrackAdapter(
 
     interface TrackSelectionListener {
         fun onTrackSelected()
+        fun onColorButtonClicked(route: Route)
         fun onVisibilityToggle(route: Route)
-        fun onColorChange(route: Route)
     }
 
     class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

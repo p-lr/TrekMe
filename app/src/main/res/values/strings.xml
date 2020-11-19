@@ -146,6 +146,8 @@
     <string name="gpx_import_error_msg">Oops.. something went wrong during the import</string>
     <string name="track_visibility_btn">Track visibility</string>
     <string name="track_color_btn">Track color</string>
+    <string name="color_picker_title">Select a color</string>
+    <string name="apply_color_btn">Apply</string>
 
     <!-- MapView fragment -->
     <string name="mapview_show_speed">Show speed</string>

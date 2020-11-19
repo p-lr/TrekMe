@@ -88,6 +88,14 @@ class TracksManageViewModel @ViewModelInject constructor(
         mapViewEventBus.postTrackNameChange()
     }
 
+    fun changeRouteColor(routeId: Int, color: String) {
+        val route = map?.routes?.firstOrNull { it.id == routeId }
+        if (route != null) {
+            route.color = color
+            saveChanges()
+        }
+    }
+
     fun saveChanges() {
         map?.also {
             MapLoader.saveRoutes(it)
