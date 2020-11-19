@@ -239,7 +239,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     }
 
     override fun onColorButtonClicked(route: RouteGson.Route) {
-        ColorSelectDialog.newInstance(route.id).show(requireActivity().supportFragmentManager, "ColorSelectDialog")
+        ColorSelectDialog.newInstance(route.id, route.color).show(requireActivity().supportFragmentManager, "ColorSelectDialog")
     }
 
     override fun onVisibilityToggle(route: RouteGson.Route) {

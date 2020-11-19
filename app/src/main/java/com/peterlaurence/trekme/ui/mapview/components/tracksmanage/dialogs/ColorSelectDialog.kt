@@ -58,12 +58,14 @@ class ColorSelectDialog : DialogFragment() {
 
     companion object {
         private const val ROUTE_ID = "routeId"
+        private const val COLOR_ID = "colorId"
 
         @JvmStatic
-        fun newInstance(routeId: Int): ColorSelectDialog {
+        fun newInstance(routeId: Int, color: String?): ColorSelectDialog {
             val fragment = ColorSelectDialog()
             val args = Bundle()
             args.putInt(ROUTE_ID, routeId)
+            args.putString(COLOR_ID, color)
             fragment.arguments = args
             return fragment
         }
@@ -75,9 +77,16 @@ class ColorSelectDialog : DialogFragment() {
         savedInstanceState?.getParcelable<PaletteVariant>(paletteBundleKey)?.also {
             paletteVariant = it
         }
-        savedInstanceState?.getInt(selectedBundleKey)?.also {
-            selectedIndex = it
+
+        selectedIndex = if (savedInstanceState != null) {
+            savedInstanceState.getInt(selectedBundleKey, -1)
+        } else {
+            val currentColor = arguments?.getString(COLOR_ID)
+            if (currentColor != null) {
+                resolvePaletteAndIndex(currentColor)
+            } else -1
         }
+
         routeId = arguments?.getInt(ROUTE_ID)
         colorViews.forEachIndexed { index: Int, selectableColor: SelectableColor ->
             selectableColor.setOnClickListener {
@@ -131,6 +140,35 @@ class ColorSelectDialog : DialogFragment() {
         colorViews.forEachIndexed { index, selectableColor ->
             selectableColor.setColor(Color.parseColor(palette[index]))
         }
+    }
+
+    /**
+     * Returns the index of the the color in the palette where it was found, or -1.
+     * Also set internal state such as [paletteVariant] and synchronizes the radio buttons.
+     */
+    private fun resolvePaletteAndIndex(currentColor: String): Int {
+        val palettes = listOf(normalPalette, lightPalette, darkPalette)
+        var index = -1
+        val paletteIndex = palettes.indexOfFirst {
+            index = it.indexOf(currentColor)
+            index != -1
+        }
+        when (paletteIndex) {
+            0 -> {
+                binding.variantsLayout.variants.variant_normal_radio_btn.isChecked = true
+                paletteVariant = PaletteVariant.NORMAL
+            }
+            1 -> {
+                binding.variantsLayout.variants.variant_light_radio_btn.isChecked = true
+                paletteVariant = PaletteVariant.LIGHT
+            }
+            2 -> {
+                binding.variantsLayout.variants.variant_dark_radio_btn.isChecked = true
+                paletteVariant = PaletteVariant.DARK
+            }
+        }
+
+        return index
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
