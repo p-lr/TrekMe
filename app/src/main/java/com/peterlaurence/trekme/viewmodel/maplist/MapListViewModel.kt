@@ -20,14 +20,15 @@ import kotlinx.coroutines.launch
  */
 class MapListViewModel @ViewModelInject constructor(
         private val settings: Settings,
-        private val mapRepository: MapRepository
+        private val mapRepository: MapRepository,
+        private val mapLoader: MapLoader
 ) : ViewModel() {
     private val _maps = MutableLiveData<List<Map>>()
     val maps: LiveData<List<Map>> = _maps
 
     init {
         viewModelScope.launch {
-            MapLoader.mapListUpdateEventFlow.collect {
+            mapLoader.mapListUpdateEventFlow.collect {
                 val favList = settings.getFavoriteMapIds()
                 updateMapListInFragment(favList)
             }
@@ -45,7 +46,7 @@ class MapListViewModel @ViewModelInject constructor(
     fun toggleFavorite(map: Map) {
         /* Toggle, then trigger a view refresh */
         map.isFavorite = !map.isFavorite
-        val maps = MapLoader.maps
+        val maps = mapLoader.maps
         val ids = maps.filter { it.isFavorite }.map { it.id }
         updateMapListInFragment(ids)
 
@@ -54,12 +55,12 @@ class MapListViewModel @ViewModelInject constructor(
     }
 
     fun deleteMap(mapId: Int) {
-        val map = MapLoader.getMap(mapId)
-        if (map != null) MapLoader.deleteMap(map)
+        val map = mapLoader.getMap(mapId)
+        if (map != null) mapLoader.deleteMap(map)
     }
 
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
-        val mapList = MapLoader.maps
+        val mapList = mapLoader.maps
 
         /* Order map list with favorites first */
         val mapListSorted = if (favoriteMapIds.isNotEmpty()) {

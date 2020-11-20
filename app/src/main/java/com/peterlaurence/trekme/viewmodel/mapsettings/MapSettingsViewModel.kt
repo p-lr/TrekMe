@@ -29,7 +29,8 @@ import java.io.OutputStream
  * @author P.Laurence on 14/08/20
  */
 class MapSettingsViewModel @ViewModelInject constructor(
-        val app: Application
+        val app: Application,
+        private val mapLoader: MapLoader
 ) : ViewModel() {
 
     private val _zipEvents = MutableLiveData<ZipEvent>()
@@ -52,7 +53,7 @@ class MapSettingsViewModel @ViewModelInject constructor(
             }
             if (thumbnail != null) {
                 map.image = thumbnail
-                MapLoader.saveMap(map)
+                mapLoader.saveMap(map)
                 _mapImageImportEvents.tryEmit(MapImageImportResult(true))
             } else {
                 _mapImageImportEvents.tryEmit(MapImageImportResult(false))
@@ -92,7 +93,7 @@ class MapSettingsViewModel @ViewModelInject constructor(
 
     @ExperimentalCoroutinesApi
     private fun zipProgressFlow(mapId: Int, outputStream: OutputStream): Flow<ZipEvent> = callbackFlow {
-        val map = MapLoader.getMap(mapId) ?: return@callbackFlow
+        val map = mapLoader.getMap(mapId) ?: return@callbackFlow
 
         val callback = object : ZipProgressionListener {
             private val mapName = map.name

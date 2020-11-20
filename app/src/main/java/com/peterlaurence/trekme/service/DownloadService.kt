@@ -61,6 +61,9 @@ class DownloadService : Service() {
     private val stopAction = "stop"
 
     @Inject
+    lateinit var mapLoader: MapLoader
+
+    @Inject
     lateinit var settings: Settings
 
     @Inject
@@ -270,7 +273,7 @@ class DownloadService : Service() {
             map.mapGson.calibration.calibration_method = MapLoader.CalibrationMethod.SIMPLE_2_POINTS.name
             map.mapGson.calibration.calibration_points = calibrationPoints.toList()
             map.calibrate()
-            MapLoader.addMap(map)
+            mapLoader.addMap(map)
         }
 
         val mapOrigin = if (source == WmtsSource.IGN) {

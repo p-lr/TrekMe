@@ -18,12 +18,11 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.map.maploader.MapLoader.getMap
-import com.peterlaurence.trekme.core.map.maploader.MapLoader.mutateMapProjection
-import com.peterlaurence.trekme.core.map.maploader.MapLoader.saveMap
 import com.peterlaurence.trekme.ui.maplist.events.MapImageImportResult
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
 
 /**
  * Fragment that shows the settings for a given map. It provides the abilities to :
@@ -40,10 +39,14 @@ import kotlinx.coroutines.flow.collect
  *
  * @author P.Laurence on 16/04/16 - Converted to Kotlin on 11/11/2020
  */
+@AndroidEntryPoint
 class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
     private var map: Map? = null
     private val viewModel: MapSettingsViewModel by activityViewModels()
     private var saveMapDialog: AlertDialog? = null
+
+    @Inject
+    lateinit var mapLoader: MapLoader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +77,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
      * @param mapId the id of the [Map]
      */
     private fun setMap(mapId: Int) {
-        val map = getMap(mapId)
+        val map = mapLoader.getMap(mapId)
         this.map = map
         if (map != null) {
             /* Choice is made to have the preference file name equal to the map name */
@@ -145,7 +148,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
                     return@OnPreferenceChangeListener true
                 }
                 val map = this.map
-                val saveMsg: String = if (map != null && mutateMapProjection(map, (projectionName as String))) {
+                val saveMsg: String = if (map != null && mapLoader.mutateMapProjection(map, (projectionName as String))) {
                     getString(R.string.calibration_projection_saved_ok)
                 } else {
                     getString(R.string.calibration_projection_error)
@@ -240,7 +243,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
      */
     private fun saveChanges() {
         map?.also {
-            saveMap(it)
+            mapLoader.saveMap(it)
         }
     }
 

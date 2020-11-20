@@ -23,19 +23,21 @@ public class MapMarkerImportTask extends AsyncTask<Void, Void, Void> {
     private MapLoader.MapMarkerUpdateListener mListener;
     private Map mMap;
     private Gson mGson;
+    private final String mFileName;
     private static final String TAG = "MapMarkerImportTask";
 
     public MapMarkerImportTask(MapLoader.MapMarkerUpdateListener listener, Map map,
-                               Gson gson) {
+                               Gson gson, String fileName) {
         super();
         mListener = listener;
         mMap = map;
         mGson = gson;
+        mFileName = fileName;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
-        File markerFile = new File(mMap.getDirectory(), MapLoader.MAP_MARKER_FILE_NAME);
+        File markerFile = new File(mMap.getDirectory(), mFileName);
         if (!markerFile.exists()) return null;
 
         String jsonString;

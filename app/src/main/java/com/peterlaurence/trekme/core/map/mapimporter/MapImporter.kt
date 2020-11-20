@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.core.map.mapimporter
 
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.gson.MapGson
@@ -59,9 +60,9 @@ object MapImporter {
 
     private val DIR_FILTER = FilenameFilter { dir, filename -> File(dir, filename).isDirectory }
 
-    suspend fun importFromFile(dir: File): MapImportResult {
+    suspend fun importFromFile(dir: File, mapLoader: MapLoader): MapImportResult {
         return try {
-            parseMap(parser, dir)
+            parseMap(parser, dir, mapLoader)
         } catch (e: MapParseException) {
             Log.e(TAG, "Error parsing $dir (${e.issue})")
             MapImportResult(null, MapParserStatus.NO_MAP)
@@ -76,7 +77,7 @@ object MapImporter {
         val status: MapParserStatus
 
         @Throws(MapParseException::class)
-        suspend fun parse(file: File): Map?
+        suspend fun parse(file: File, mapLoader: MapLoader): Map?
     }
 
     enum class MapParserStatus {
@@ -110,8 +111,9 @@ object MapImporter {
         }
     }
 
-    private suspend fun parseMap(mapParser: MapParser, mDir: File): MapImportResult = withContext(Dispatchers.Default) {
-        val map = mapParser.parse(mDir)
+    private suspend fun parseMap(mapParser: MapParser, mDir: File,
+                                 mapLoader: MapLoader): MapImportResult = withContext(Dispatchers.Default) {
+        val map = mapParser.parse(mDir, mapLoader)
         MapImportResult(map, mapParser.status)
     }
 
@@ -128,7 +130,7 @@ object MapImporter {
         }
 
         @Throws(MapParseException::class)
-        override suspend fun parse(file: File): Map {
+        override suspend fun parse(file: File, mapLoader: MapLoader): Map {
             if (!file.isDirectory) {
                 throw MapParseException(MapParseException.Issue.NOT_A_DIRECTORY)
             }
@@ -141,9 +143,9 @@ object MapImporter {
                     ?: throw MapParseException(MapParseException.Issue.NO_PARENT_FOLDER_FOUND)
 
             /* Check whether there is already a map.json file or not */
-            val existingJsonFile = File(parentFolder, MapLoader.MAP_FILE_NAME)
+            val existingJsonFile = File(parentFolder, MAP_FILENAME)
             if (existingJsonFile.exists()) {
-                val mapList = MapLoader.updateMaps(listOf(parentFolder))
+                val mapList = mapLoader.updateMaps(listOf(parentFolder))
                 status = MapParserStatus.EXISTING_MAP
                 if (mapList.isNotEmpty()) {
                     return mapList[0]
@@ -201,7 +203,7 @@ object MapImporter {
             mapGson.calibration.calibration_method = MapLoader.CalibrationMethod.SIMPLE_2_POINTS.name
 
             /* The json file */
-            val jsonFile = File(parentFolder, MapLoader.MAP_FILE_NAME)
+            val jsonFile = File(parentFolder, MAP_FILENAME)
 
             status = MapParserStatus.NEW_MAP
             return Map(mapGson, jsonFile, thumbnail)

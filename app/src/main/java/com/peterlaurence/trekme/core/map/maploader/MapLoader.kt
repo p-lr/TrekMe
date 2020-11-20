@@ -3,8 +3,8 @@ package com.peterlaurence.trekme.core.map.maploader
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.gson.*
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.map.maploader.tasks.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,7 +26,7 @@ import java.util.*
 import kotlin.coroutines.resume
 
 /**
- * Singleton object that acts as central point for most operations related to the maps.
+ * The MapLoader acts as central point for most operations related to the maps.
  * It uses the following tasks defined in [com.peterlaurence.trekme.core.map.maploader.tasks]:
  *
  * * [mapCreationTask] -> create instances of [Map]
@@ -36,23 +37,19 @@ import kotlin.coroutines.resume
  *
  * @author P.Laurence -- converted to Kotlin on 16/02/2019
  */
-object MapLoader : MapImporter.MapImportListener {
-    const val MAP_FILE_NAME = "map.json"
-    const val MAP_MARKER_FILE_NAME = "markers.json"
-    const val MAP_ROUTE_FILE_NAME = "routes.json"
-    const val MAP_LANDMARK_FILE_NAME = "landmarks.json"
-
+class MapLoader(
+        private val mainDispatcher: CoroutineDispatcher,
+        private val ioDispatcher: CoroutineDispatcher
+) : MapImporter.MapImportListener {
     /**
      * All [Projection]s are registered here.
      */
-    @JvmStatic
-    private val PROJECTION_HASH_MAP = object : HashMap<String, Class<out Projection>>() {
+    private val projectionHashMap = object : HashMap<String, Class<out Projection>>() {
         init {
             put(MercatorProjection.NAME, MercatorProjection::class.java)
             put(UniversalTransverseMercator.NAME, UniversalTransverseMercator::class.java)
         }
     }
-    private const val TAG = "MapLoader"
 
     private val gson: Gson
     private val mapList: MutableList<Map> = mutableListOf()
@@ -74,7 +71,7 @@ object MapLoader : MapImporter.MapImportListener {
     init {
         val factory = RuntimeTypeAdapterFactory.of(
                 Projection::class.java, "projection_name")
-        for ((key, value) in PROJECTION_HASH_MAP) {
+        for ((key, value) in projectionHashMap) {
             factory.registerSubtype(value, key)
         }
         gson = GsonBuilder().serializeNulls().setPrettyPrinting().registerTypeAdapterFactory(factory).create()
@@ -120,7 +117,7 @@ object MapLoader : MapImporter.MapImportListener {
      * @param dirs The directories in which to search for new maps.
      */
     private suspend fun findMaps(dirs: List<File>) = withContext(Dispatchers.Default) {
-        mapCreationTask(gson, *dirs.toTypedArray())
+        mapCreationTask(gson, MAP_FILENAME, *dirs.toTypedArray())
     }
 
     /**
@@ -128,7 +125,7 @@ object MapLoader : MapImporter.MapImportListener {
      */
     fun getMarkersForMap(map: Map) {
         val mapMarkerImportTask = MapMarkerImportTask(mapMarkerUpdateListener,
-                map, gson)
+                map, gson, MAP_MARKER_FILENAME)
         mapMarkerImportTask.execute()
     }
 
@@ -139,7 +136,7 @@ object MapLoader : MapImporter.MapImportListener {
      * given as parameter.
      */
     suspend fun importRoutesForMap(map: Map) = withContext(Dispatchers.Default) {
-        mapRouteImportTask(map, gson)
+        mapRouteImportTask(map, gson, MAP_ROUTE_FILENAME)
     }?.let { routeGson ->
         map.routeGson = routeGson
     }
@@ -152,7 +149,7 @@ object MapLoader : MapImporter.MapImportListener {
      */
     suspend fun getLandmarksForMap(map: Map) =
             withContext(Dispatchers.Default) {
-                mapLandmarkImportTask(map, gson)
+                mapLandmarkImportTask(map, gson, MAP_LANDMARK_FILENAME)
             }?.let { landmarkGson ->
                 map.landmarkGson = landmarkGson
             }
@@ -166,7 +163,7 @@ object MapLoader : MapImporter.MapImportListener {
      */
     @Suppress("unused")
     suspend fun getMapArchiveList(dirs: List<File>): List<MapArchive> = suspendCancellableCoroutine { cont ->
-        val task = MapArchiveSearchTask(dirs, object : MapArchiveListUpdateListener {
+        val task = MapArchiveSearchTask(dirs, MAP_FILENAME, object : MapArchiveListUpdateListener {
             override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
                 cont.resume(mapArchiveList)
             }
@@ -253,7 +250,7 @@ object MapLoader : MapImporter.MapImportListener {
     fun saveMarkers(map: Map) {
         val jsonString = gson.toJson(map.markerGson)
 
-        val markerFile = File(map.directory, MAP_MARKER_FILE_NAME)
+        val markerFile = File(map.directory, MAP_MARKER_FILENAME)
         writeToFile(jsonString, markerFile) {
             Log.e(TAG, "Error while saving the markers")
         }
@@ -265,7 +262,7 @@ object MapLoader : MapImporter.MapImportListener {
      */
     fun saveLandmarks(map: Map) {
         val jsonString = gson.toJson(map.landmarkGson)
-        val landmarkFile = File(map.directory, MAP_LANDMARK_FILE_NAME)
+        val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
 
         writeToFile(jsonString, landmarkFile) {
             Log.e(TAG, "Error while saving the landmarks")
@@ -280,7 +277,7 @@ object MapLoader : MapImporter.MapImportListener {
      */
     fun saveRoutes(map: Map) {
         val jsonString = gson.toJson(map.routeGson)
-        val routeFile = File(map.directory, MAP_ROUTE_FILE_NAME)
+        val routeFile = File(map.directory, MAP_ROUTE_FILENAME)
 
         writeToFile(jsonString, routeFile) {
             Log.e(TAG, "Error while saving the routes")
@@ -329,7 +326,7 @@ object MapLoader : MapImporter.MapImportListener {
      * @return true on success, false if something went wrong.
      */
     fun mutateMapProjection(map: Map, projectionName: String): Boolean {
-        val projectionType = PROJECTION_HASH_MAP[projectionName] ?: return false
+        val projectionType = projectionHashMap[projectionName] ?: return false
         try {
             val projection = projectionType.newInstance()
             map.projection = projection
@@ -394,3 +391,5 @@ object MapLoader : MapImporter.MapImportListener {
         }
     }
 }
+
+private const val TAG = "MapLoader"

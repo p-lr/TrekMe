@@ -8,6 +8,7 @@ import androidx.lifecycle.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maparchive.unarchive
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
+import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel.ItemData
@@ -22,7 +23,8 @@ import java.io.File
  */
 class MapImportViewModel @ViewModelInject constructor(
         private val settings: Settings,
-        private val app: Application
+        private val app: Application,
+        private val mapLoader: MapLoader
 ) : ViewModel() {
     private val _itemLiveData = MutableLiveData<List<ItemData>>()
     val itemLiveData: LiveData<List<ItemData>> = _itemLiveData
@@ -71,7 +73,7 @@ class MapImportViewModel @ViewModelInject constructor(
                         /* Import the extracted map */
                         override fun onUnzipFinished(outputDirectory: File) {
                             viewModelScope.launch {
-                                val res = MapImporter.importFromFile(outputDirectory)
+                                val res = MapImporter.importFromFile(outputDirectory, mapLoader)
                                 _unzipEvents.postValue(UnzipMapImportedEvent(item.id, res.map, res.status))
                             }
 

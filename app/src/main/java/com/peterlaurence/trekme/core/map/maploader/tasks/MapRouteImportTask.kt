@@ -4,7 +4,6 @@ import android.util.Log
 import com.google.gson.Gson
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 
@@ -19,8 +18,8 @@ import java.io.File
  *
  * @author P.Laurence on 13/05/17 -- Converted to Kotlin on 17/02/2019
  */
-fun mapRouteImportTask(map: Map, gson: Gson): RouteGson? {
-    val routeFile = File(map.directory, MapLoader.MAP_ROUTE_FILE_NAME)
+fun mapRouteImportTask(map: Map, gson: Gson, fileName: String): RouteGson? {
+    val routeFile = File(map.directory, fileName)
     if (!routeFile.exists()) return null
 
     return try {

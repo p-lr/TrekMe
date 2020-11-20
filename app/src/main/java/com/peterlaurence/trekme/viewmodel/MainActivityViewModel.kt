@@ -28,7 +28,8 @@ import kotlinx.coroutines.launch
 class MainActivityViewModel @ViewModelInject constructor(
         private val trekMeContext: TrekMeContext,
         private val settings: Settings,
-        private val mapRepository: MapRepository
+        private val mapRepository: MapRepository,
+        private val mapLoader: MapLoader
 ) : ViewModel() {
     private var attemptedAtLeastOnce = false
 
@@ -48,9 +49,9 @@ class MainActivityViewModel @ViewModelInject constructor(
             if (attemptedAtLeastOnce) return@launch
             attemptedAtLeastOnce = true // remember that we tried once
 
-            MapLoader.clearMaps()
+            mapLoader.clearMaps()
             trekMeContext.mapsDirList?.also { dirList ->
-                MapLoader.updateMaps(dirList)
+                mapLoader.updateMaps(dirList)
             }
 
             when (settings.getStartOnPolicy()) {
@@ -58,7 +59,7 @@ class MainActivityViewModel @ViewModelInject constructor(
                 StartOnPolicy.LAST_MAP -> {
                     val id = settings.getLastMapId()
                     val found = id?.let {
-                        val map = MapLoader.getMap(id)
+                        val map = mapLoader.getMap(id)
                         map?.let {
                             mapRepository.setCurrentMap(map)
                             _showMapViewSignal.emit(Unit)
@@ -75,5 +76,5 @@ class MainActivityViewModel @ViewModelInject constructor(
         }
     }
 
-    fun getMapIndex(mapId: Int): Int = MapLoader.maps.indexOfFirst { it.id == mapId }
+    fun getMapIndex(mapId: Int): Int = mapLoader.maps.indexOfFirst { it.id == mapId }
 }

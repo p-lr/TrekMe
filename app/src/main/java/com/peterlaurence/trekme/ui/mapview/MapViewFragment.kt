@@ -57,6 +57,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     @Inject
     lateinit var mapViewEventBus: MapViewEventBus
 
+    @Inject
+    lateinit var mapLoader: MapLoader
+
     private var presenter: MapViewFragmentContract.Presenter? = null
     private var mapView: MapView? = null
     private var mMap: Map? = null
@@ -152,17 +155,17 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         /* Create the marker layer */
-        markerLayer = MarkerLayer()
+        markerLayer = MarkerLayer(mapLoader)
 
         /* Create the route layer, restoring the previous state (if any) */
         val routeLayerState = mergedState?.getParcelable<RouteLayerState>(ROUTE_LAYER_STATE)
-        routeLayer = RouteLayer(lifecycleScope, routeLayerState)
+        routeLayer = RouteLayer(lifecycleScope, routeLayerState, mapLoader)
 
         /* Create the distance layer */
         distanceLayer = DistanceLayer(context, distanceListener)
 
         /* Create the landmark layer */
-        landmarkLayer = LandmarkLayer(context, lifecycleScope)
+        landmarkLayer = LandmarkLayer(context, lifecycleScope, mapLoader)
 
         /* Create the MapView.
          * Attached views must be known before onCreateView returns, or the save/restore state
@@ -241,7 +244,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         orientationSensor?.stop()
         orientationJob?.cancel()
 
-        MapLoader.clearMapMarkerUpdateListener()
+        mapLoader.clearMapMarkerUpdateListener()
         destroyLayers()
         positionMarker = null
         compassView = null

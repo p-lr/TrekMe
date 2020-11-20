@@ -35,7 +35,8 @@ class RecordViewModel @ViewModelInject constructor(
         private val settings: Settings,
         private val gpxRecordRepository: GpxRecordRepository,
         private val eventBus: RecordEventBus,
-        private val appEventBus: AppEventBus
+        private val appEventBus: AppEventBus,
+        private val mapLoader: MapLoader
 ) : ViewModel() {
     private var recordingsSelected = listOf<File>()
 
@@ -90,11 +91,11 @@ class RecordViewModel @ViewModelInject constructor(
 
         var importCount = 0
         supervisorScope {
-            MapLoader.maps.forEach { map ->
+            mapLoader.maps.forEach { map ->
                 launch {
                     if (map.intersects(boundingBox) == true) {
                         /* Import the new route */
-                        val result = trackImporter.applyGpxToMap(gpx, map)
+                        val result = trackImporter.applyGpxToMap(gpx, map, mapLoader)
                         if (result is TrackImporter.GpxImportResult.GpxImportOk && result.newRouteCount >= 1) {
                             importCount++
                         }
@@ -116,12 +117,12 @@ class RecordViewModel @ViewModelInject constructor(
      * The business logic of parsing a GPX file.
      */
     private fun onMapSelectedForRecord(mapId: Int) {
-        val map = MapLoader.getMap(mapId) ?: return
+        val map = mapLoader.getMap(mapId) ?: return
 
         val recording = recordingsSelected.firstOrNull() ?: return
 
         viewModelScope.launch {
-            trackImporter.applyGpxFileToMap(recording, map).let {
+            trackImporter.applyGpxFileToMap(recording, map, mapLoader).let {
                 /* Once done, notify the rest of the app */
                 appEventBus.postGpxImportResult(it)
             }

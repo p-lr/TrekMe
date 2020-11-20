@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
@@ -17,6 +18,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
 
 /**
@@ -62,4 +64,8 @@ object AppModule {
     @Singleton
     @Provides
     fun bindAppEventBus(): AppEventBus = AppEventBus()
+
+    @Singleton
+    @Provides
+    fun bindMapLoader(): MapLoader = MapLoader(Dispatchers.Main, Dispatchers.IO)
 }

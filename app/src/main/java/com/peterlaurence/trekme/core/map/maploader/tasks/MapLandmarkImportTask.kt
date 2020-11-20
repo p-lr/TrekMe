@@ -4,7 +4,6 @@ import android.util.Log
 import com.google.gson.Gson
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.LandmarkGson
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 
@@ -15,8 +14,8 @@ import java.io.File
  * This should be called off UI thread.
  * @author P.Laurence on 23/02/2019
  */
-fun mapLandmarkImportTask(map: Map, gson: Gson): LandmarkGson? {
-    val landmarkFile = File(map.directory, MapLoader.MAP_LANDMARK_FILE_NAME)
+fun mapLandmarkImportTask(map: Map, gson: Gson, fileName: String): LandmarkGson? {
+    val landmarkFile = File(map.directory, fileName)
     if (!landmarkFile.exists()) return null
 
     return try {

@@ -57,6 +57,9 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     @Inject
     MapRepository mMapRepository;
 
+    @Inject
+    MapLoader mMapLoader;
+
     /**
      * Before telling the {@link MapView} to move a marker, we save its relative coordinates so we
      * can use them later on calibration save.
@@ -280,7 +283,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         map.calibrate();
 
         /* Save */
-        MapLoader.INSTANCE.saveMap(map);
+        mMapLoader.saveMap(map);
 
         showSaveConfirmation();
     }

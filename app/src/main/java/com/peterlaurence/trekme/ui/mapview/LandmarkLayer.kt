@@ -12,7 +12,6 @@ import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.map.maploader.MapLoader.getLandmarksForMap
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.ui.mapview.components.LandmarkCallout
 import com.peterlaurence.trekme.ui.mapview.components.LineView
@@ -24,8 +23,11 @@ import com.peterlaurence.trekme.util.px
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineScope) :
-        MarkerTapListener, ReferentialOwner, CoroutineScope by coroutineScope {
+class LandmarkLayer(
+        val context: Context,
+        private val coroutineScope: CoroutineScope,
+        private val mapLoader: MapLoader
+) : MarkerTapListener, ReferentialOwner, CoroutineScope by coroutineScope {
     private var map: Map? = null
     private var mapView: MapView? = null
     private var lastKnownPosition: Pair<Double, Double> = Pair(0.0, 0.0)
@@ -60,7 +62,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
 
     private fun CoroutineScope.acquireThenDrawLandmarks() = launch {
         val map = map ?: return@launch
-        getLandmarksForMap(map)
+        mapLoader.getLandmarksForMap(map)
         drawLandmarks()
     }
 
@@ -151,7 +153,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
             }
 
             /* Save the changes on the markers.json file */
-            MapLoader.saveLandmarks(map)
+            mapLoader.saveLandmarks(map)
         }
 
         touchMoveListener = TouchMoveListener(this.mapView, landmarkMoveAgent, landmarkClickCallback)
@@ -202,7 +204,7 @@ class LandmarkLayer(val context: Context, private val coroutineScope: CoroutineS
 
                 val landmark = view.getLandmark()
                 if (landmark != null) {
-                    MapLoader.deleteLandmark(map, landmark)
+                    mapLoader.deleteLandmark(map, landmark)
                 }
             }
             view.getLandmark()?.also {

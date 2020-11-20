@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 /**
@@ -22,11 +24,15 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
  *
  * @author P.Laurence on 01/09/2018
  */
-abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
+@AndroidEntryPoint
+open class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var mapChoiceAdapter: MapChoiceAdapter
     private var selectedIndex: Int = -1
     private var mapSelected: Map? = null
+
+    @Inject
+    lateinit var mapLoader: MapLoader
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         recyclerView = RecyclerView(requireActivity().baseContext)
@@ -34,7 +40,7 @@ abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         recyclerView.layoutManager = llm
 
         /* Fetch the list of maps */
-        val mapList = MapLoader.maps
+        val mapList = mapLoader.maps
 
         /* Restore the selection after device rotation */
         selectedIndex = savedInstanceState?.getInt(KEY_BUNDLE_MAP_INDEX) ?: -1
@@ -60,7 +66,8 @@ abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         return builder.create()
     }
 
-    abstract fun onOkPressed(mapId: Int)
+    // Hilt doesn't support injection for abstract class (as of 2020/11 ..)
+    open fun onOkPressed(mapId: Int) {}
 
     override fun onMapSelected(map: Map, position: Int) {
         selectedIndex = position

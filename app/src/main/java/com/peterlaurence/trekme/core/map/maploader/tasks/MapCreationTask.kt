@@ -5,7 +5,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MapGson
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 
@@ -18,7 +17,7 @@ private const val TAG = "MapCreationTask"
  *
  * @author P.Laurence on 30/04/2017 -- converted to Kotlin on 05/05/2019
  */
-fun mapCreationTask(mGson: Gson, vararg dirs: File): List<Map> {
+fun mapCreationTask(mGson: Gson, mapFileName: String, vararg dirs: File): List<Map> {
     val mapFilesFoundList = mutableListOf<File>()
     val mapList = mutableListOf<Map>()
 
@@ -26,7 +25,7 @@ fun mapCreationTask(mGson: Gson, vararg dirs: File): List<Map> {
         if (depth > MAX_RECURSION_DEPTH) return
 
         /* Don't allow nested maps */
-        val rootJsonFile = File(root, MapLoader.MAP_FILE_NAME)
+        val rootJsonFile = File(root, mapFileName)
         if (rootJsonFile.exists() && rootJsonFile.isFile) {
             mapFilesFoundList.add(rootJsonFile)
             return

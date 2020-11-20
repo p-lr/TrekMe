@@ -21,6 +21,8 @@ import com.peterlaurence.trekme.databinding.FragmentMarkerManageBinding
 import com.peterlaurence.trekme.viewmodel.markermanage.GeographicCoords
 import com.peterlaurence.trekme.viewmodel.markermanage.MakerManageViewModel
 import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * A [Fragment] subclass that provides tools to:
@@ -38,9 +40,13 @@ import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
  *
  * @author P.Laurence on 23/04/2017 -- Converted to Kotlin on 24/09/2019
  */
+@AndroidEntryPoint
 class MarkerManageFragment : Fragment() {
     private var _binding: FragmentMarkerManageBinding? = null
     private val binding get() = _binding!!
+
+    @Inject
+    lateinit var mapLoader: MapLoader
 
     private val viewModel: MakerManageViewModel by viewModels()
     private val args: MarkerManageFragmentArgs by navArgs()
@@ -81,7 +87,7 @@ class MarkerManageFragment : Fragment() {
 
         _binding = FragmentMarkerManageBinding.inflate(inflater, container, false)
 
-        map = MapLoader.getMap(args.mapId)
+        map = mapLoader.getMap(args.mapId)
         map?.markers?.firstOrNull { it == args.marker }?.let {
             this.marker = it
         }
@@ -228,7 +234,7 @@ class MarkerManageFragment : Fragment() {
         marker.comment = binding.markerCommentId.text.toString()
 
         /* Save the changes on the markers.json file */
-        map?.let { MapLoader.saveMarkers(it) }
+        map?.let { mapLoader.saveMarkers(it) }
 
         hideSoftKeyboard()
 

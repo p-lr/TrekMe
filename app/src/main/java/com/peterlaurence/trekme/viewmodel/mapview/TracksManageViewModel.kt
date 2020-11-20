@@ -30,7 +30,8 @@ class TracksManageViewModel @ViewModelInject constructor(
         private val trackImporter: TrackImporter,
         private val app: Application,
         private val appEventBus: AppEventBus,
-        private val mapViewEventBus: MapViewEventBus
+        private val mapViewEventBus: MapViewEventBus,
+        private val mapLoader: MapLoader
 ) : ViewModel() {
     private val _tracks = MutableLiveData<List<RouteGson.Route>>()
     val tracks: LiveData<List<RouteGson.Route>> = _tracks
@@ -68,7 +69,7 @@ class TracksManageViewModel @ViewModelInject constructor(
      */
     suspend fun applyGpxUri(uri: Uri): TrackImporter.GpxImportResult? = coroutineScope {
         map?.let {
-            trackImporter.applyGpxUriToMap(uri, app.applicationContext.contentResolver, it).let { result ->
+            trackImporter.applyGpxUriToMap(uri, app.applicationContext.contentResolver, it, mapLoader).let { result ->
                 if (result is TrackImporter.GpxImportResult.GpxImportOk) {
                     _tracks.postValue((_tracks.value ?: listOf()) + result.routes)
                 }
@@ -102,7 +103,7 @@ class TracksManageViewModel @ViewModelInject constructor(
     fun saveChanges() {
         viewModelScope.launch(Dispatchers.IO) {
             map?.also {
-                MapLoader.saveRoutes(it)
+                mapLoader.saveRoutes(it)
             }
         }
     }

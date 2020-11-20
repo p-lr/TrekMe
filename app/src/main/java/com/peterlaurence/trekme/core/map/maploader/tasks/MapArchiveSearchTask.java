@@ -25,18 +25,20 @@ public class MapArchiveSearchTask extends Thread {
     private List<File> mMapArchiveFilesFoundList;
     private List<File> mFoldersToLookInto;
     private Boolean isCancelled = false;
+    private final String mFileName;
 
     static {
         mArchiveFormatList = new ArrayList<>();
         mArchiveFormatList.add("zip");
     }
 
-    public MapArchiveSearchTask(List<File> dirsToLookInto,
+    public MapArchiveSearchTask(List<File> dirsToLookInto, String fileName,
                                 MapLoader.MapArchiveListUpdateListener callback) {
         super();
         mMapArchiveFilesFoundList = new ArrayList<>();
         mMapArchiveUpdateListener = callback;
         mFoldersToLookInto = dirsToLookInto;
+        mFileName = fileName;
     }
 
     public void cancel() {
@@ -76,7 +78,7 @@ public class MapArchiveSearchTask extends Thread {
         for (File f : list) {
             if (isCancelled) break;
             if (f.isDirectory()) {
-                File jsonFile = new File(f, MapLoader.MAP_FILE_NAME);
+                File jsonFile = new File(f, mFileName);
 
                 /* Don't allow archives inside maps */
                 if (!jsonFile.exists()) {
