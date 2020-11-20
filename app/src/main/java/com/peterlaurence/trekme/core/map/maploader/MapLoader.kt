@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.map.maploader.tasks.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
+import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -53,7 +54,6 @@ class MapLoader(
 
     private val gson: Gson
     private val mapList: MutableList<Map> = mutableListOf()
-    private var mapMarkerUpdateListener: MapMarkerUpdateListener? = null
 
     private val _mapListUpdateEventFlow = MutableSharedFlow<MapListUpdateEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val mapListUpdateEventFlow = _mapListUpdateEventFlow.asSharedFlow()
@@ -123,10 +123,21 @@ class MapLoader(
     /**
      * Launch a [MapMarkerImportTask] which reads the markers.json file.
      */
-    fun getMarkersForMap(map: Map) {
-        val mapMarkerImportTask = MapMarkerImportTask(mapMarkerUpdateListener,
-                map, gson, MAP_MARKER_FILENAME)
-        mapMarkerImportTask.execute()
+    suspend fun getMarkersForMap(map: Map): Boolean  = withContext(ioDispatcher) {
+        val markerFile = File(map.directory, MAP_MARKER_FILENAME)
+        if (!markerFile.exists()) return@withContext false
+
+        val jsonString: String
+        return@withContext try {
+            jsonString = FileUtils.getStringFromFile(markerFile)
+            val markerGson: MarkerGson = gson.fromJson(jsonString, MarkerGson::class.java)
+            map.markerGson = markerGson
+            true
+        } catch (e: Exception) {
+            /* Error while decoding the json file */
+            Log.e(TAG, e.message, e)
+            false
+        }
     }
 
     /**
@@ -135,7 +146,7 @@ class MapLoader(
      * should be the UI thread), the result (a nullable instance of [RouteGson]) is set on the [Map]
      * given as parameter.
      */
-    suspend fun importRoutesForMap(map: Map) = withContext(Dispatchers.Default) {
+    suspend fun importRoutesForMap(map: Map) = withContext(ioDispatcher) {
         mapRouteImportTask(map, gson, MAP_ROUTE_FILENAME)
     }?.let { routeGson ->
         map.routeGson = routeGson
@@ -174,14 +185,6 @@ class MapLoader(
         }
 
         task.start()
-    }
-
-    fun setMapMarkerUpdateListener(listener: MapMarkerUpdateListener) {
-        mapMarkerUpdateListener = listener
-    }
-
-    fun clearMapMarkerUpdateListener() {
-        mapMarkerUpdateListener = null
     }
 
     /**
@@ -364,13 +367,6 @@ class MapLoader(
                 return UNKNOWN
             }
         }
-    }
-
-    /**
-     * When a map's markers are retrieved from their json content, this listener is called.
-     */
-    interface MapMarkerUpdateListener {
-        fun onMapMarkerUpdate()
     }
 
     interface MapArchiveListUpdateListener {

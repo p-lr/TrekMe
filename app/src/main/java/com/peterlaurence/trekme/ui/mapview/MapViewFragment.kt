@@ -155,7 +155,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         /* Create the marker layer */
-        markerLayer = MarkerLayer(mapLoader)
+        markerLayer = MarkerLayer(mapLoader, lifecycleScope)
 
         /* Create the route layer, restoring the previous state (if any) */
         val routeLayerState = mergedState?.getParcelable<RouteLayerState>(ROUTE_LAYER_STATE)
@@ -244,7 +244,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         orientationSensor?.stop()
         orientationJob?.cancel()
 
-        mapLoader.clearMapMarkerUpdateListener()
         destroyLayers()
         positionMarker = null
         compassView = null
@@ -449,7 +448,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         if (event is TrackImporter.GpxImportResult.GpxImportOk) {
             routeLayer?.onTrackChanged(event.map, event.routes)
             if (event.newMarkersCount > 0) {
-                markerLayer?.onMapMarkerUpdate()
+                markerLayer?.updateMarkers()
             }
         }
     }
