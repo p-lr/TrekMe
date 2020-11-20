@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.ui.mapview;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.content.Context;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -35,28 +34,20 @@ import static com.peterlaurence.mapview.api.MarkerApiKt.removeMarker;
 /**
  * All {@link MovableMarker} and {@link MarkerCallout} are managed here. <br>
  * This object is intended to work along with a {@link MapViewFragment}.
+ * After being created, the method {@link #init(Map, MapView)} has to be called.
  *
  * @author P.Laurence on 09/04/17.
  */
 class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListener {
     List<MarkerGson.Marker> mMarkers;
-    private Context mContext;
     private MapView mMapView;
     private Map mMap;
-
-    /**
-     * After being created, the method {@link #init(Map, MapView)} has to be called.
-     */
-    MarkerLayer(Context context) {
-        mContext = context;
-    }
 
     /**
      * A {@link MarkerGrab} is used along with a {@link TouchMoveListener} to reflect its
      * displacement to the marker passed as argument.
      */
-    private static void attachMarkerGrab(final MovableMarker movableMarker, MapView mapView,
-                                         Map map, Context context) {
+    private static void attachMarkerGrab(final MovableMarker movableMarker, MapView mapView, Map map) {
         /* Add a view as background, to move easily the marker */
         TouchMoveListener.MarkerMoveAgent markerMarkerMoveAgent = (mapView1, view, x, y) -> {
             moveMarker(mapView1, view, x, y);
@@ -65,7 +56,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
             movableMarker.setRelativeY(y);
         };
 
-        MarkerGrab markerGrab = new MarkerGrab(context);
+        MarkerGrab markerGrab = new MarkerGrab(mapView.getContext());
         TouchMoveListener.ClickCallback markerClickCallback = new MovableMarkerClickCallback(
                 movableMarker, markerGrab, mapView, map);
         TouchMoveListener touchMoveListener = new TouchMoveListener(mapView, markerMarkerMoveAgent, markerClickCallback);
@@ -92,9 +83,9 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
             MovableMarker movableMarker = (MovableMarker) view;
 
             /* Prepare the callout */
-            MarkerCallout markerCallout = new MarkerCallout(mContext);
+            MarkerCallout markerCallout = new MarkerCallout(mMapView.getContext());
             markerCallout.setMoveAction(new MorphMarkerRunnable(movableMarker, markerCallout,
-                    mMapView, mContext, mMap));
+                    mMapView, mMap));
             markerCallout.setEditAction(new EditMarkerRunnable(mMap.getId(), movableMarker,
                     markerCallout, mMapView));
             markerCallout.setDeleteAction(new DeleteMarkerRunnable(movableMarker, markerCallout,
@@ -143,7 +134,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         if (mMarkers == null) return;
 
         for (MarkerGson.Marker marker : mMarkers) {
-            MovableMarker movableMarker = new MovableMarker(mContext, true, marker);
+            MovableMarker movableMarker = new MovableMarker(mMapView.getContext(), true, marker);
             if (mMap.getProjection() == null) {
                 movableMarker.setRelativeX(marker.lon);
                 movableMarker.setRelativeY(marker.lat);
@@ -190,7 +181,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         }
 
         /* Create the corresponding view */
-        movableMarker = new MovableMarker(mContext, false, newMarker);
+        movableMarker = new MovableMarker(mMapView.getContext(), false, newMarker);
         movableMarker.setRelativeX(relativeX);
         movableMarker.setRelativeY(relativeY);
         movableMarker.initRounded();
@@ -200,7 +191,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         }
 
         /* Easily move the marker */
-        attachMarkerGrab(movableMarker, mMapView, mMap, mContext);
+        attachMarkerGrab(movableMarker, mMapView, mMap);
 
         addMarker(mMapView, movableMarker, relativeX, relativeY, -0.5f, -0.5f, 0f, 0f);
     }
@@ -284,15 +275,13 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
         private WeakReference<MovableMarker> mMovableMarkerWeakReference;
         private WeakReference<MarkerCallout> mMarkerCalloutWeakReference;
         private MapView mMapView;
-        private Context mContext;
         private Map mMap;
 
         MorphMarkerRunnable(MovableMarker movableMarker, MarkerCallout markerCallout, MapView mapView,
-                            Context context, Map map) {
+                            Map map) {
             mMovableMarkerWeakReference = new WeakReference<>(movableMarker);
             mMarkerCalloutWeakReference = new WeakReference<>(markerCallout);
             mMapView = mapView;
-            mContext = context;
             mMap = map;
         }
 
@@ -304,7 +293,7 @@ class MarkerLayer implements MapLoader.MapMarkerUpdateListener, MarkerTapListene
                 movableMarker.morphToDynamicForm();
 
                 /* Easily move the marker */
-                attachMarkerGrab(movableMarker, mMapView, mMap, mContext);
+                attachMarkerGrab(movableMarker, mMapView, mMap);
 
                 /* Use a trick to bring the marker to the foreground */
                 removeMarker(mMapView, movableMarker);

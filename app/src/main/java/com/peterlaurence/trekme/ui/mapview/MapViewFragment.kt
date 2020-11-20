@@ -152,7 +152,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         /* Create the marker layer */
-        markerLayer = MarkerLayer(context)
+        markerLayer = MarkerLayer()
 
         /* Create the route layer, restoring the previous state (if any) */
         val routeLayerState = mergedState?.getParcelable<RouteLayerState>(ROUTE_LAYER_STATE)
