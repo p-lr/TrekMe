@@ -87,16 +87,6 @@ object MapImporter {
         UNKNOWN_MAP_ORIGIN
     }
 
-    /**
-     * When a [Map] is parsed for [MapGson] object creation, a [MapImportListener]
-     * is called after the task is done.
-     */
-    interface MapImportListener {
-        fun onMapImported(map: Map?, status: MapParserStatus)
-
-        fun onMapImportError(e: MapParseException?)
-    }
-
     data class MapImportResult(val map: Map?, val status: MapParserStatus)
 
     /**

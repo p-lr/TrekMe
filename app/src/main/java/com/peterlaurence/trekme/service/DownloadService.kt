@@ -57,7 +57,7 @@ import javax.inject.Inject
 class DownloadService : Service() {
     private val notificationChannelId = "peterlaurence.DownloadService"
     private val downloadServiceNofificationId = 128565
-    private val threadCount = 8
+    private val workerCount = 8
     private val stopAction = "stop"
 
     @Inject
@@ -167,7 +167,7 @@ class DownloadService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun processRequestDownloadMapEvent(request: DownloadMapRequest) {
+    private suspend fun processRequestDownloadMapEvent(request: DownloadMapRequest) {
         val source = request.source
         val tileSequence = request.mapSpec.tileSequence
         val tileStreamProvider = request.tileStreamProvider
@@ -179,11 +179,6 @@ class DownloadService : Service() {
         val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), request.numberOfTiles) { p ->
             if (started.value) {
                 throttledTask.offer(p)
-
-                /* Post-process if download reaches 100% */
-                if (p == 100.0) {
-                    postProcess(request.mapSpec, source, request.layer)
-                }
             }
         }
 
@@ -220,9 +215,10 @@ class DownloadService : Service() {
             }
         }
 
-        /* Specific to OSM, don't use more than 2 threads */
-        val effectiveThreadCount = if (source == WmtsSource.OPEN_STREET_MAP) 2 else threadCount
-        launchDownloadTask(effectiveThreadCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
+        /* Specific to OSM, don't use more than 2 workers */
+        val effectiveWorkerCount = if (source == WmtsSource.OPEN_STREET_MAP) 2 else workerCount
+        launchDownloadTask(effectiveWorkerCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
+        postProcess(request.mapSpec, source, request.layer)
     }
 
     private fun createDestDir(): File? {
@@ -273,7 +269,6 @@ class DownloadService : Service() {
             map.mapGson.calibration.calibration_method = MapLoader.CalibrationMethod.SIMPLE_2_POINTS.name
             map.mapGson.calibration.calibration_points = calibrationPoints.toList()
             map.calibrate()
-            mapLoader.addMap(map)
         }
 
         val mapOrigin = if (source == WmtsSource.IGN) {
@@ -286,6 +281,7 @@ class DownloadService : Service() {
 
         scope.launch {
             calibrate(map)
+            mapLoader.addMap(map)
 
             /* Notify that the download is finished correctly.
              * Don't attempt to send more notifications, they will be dismissed anyway since the
@@ -301,36 +297,32 @@ class DownloadService : Service() {
         scope.cancel()
         stopSelf()
     }
-}
 
-private fun launchDownloadTask(threadCount: Int, tileIterator: ThreadSafeTileIterator,
-                               tileWriter: TileWriter, tileStreamProvider: TileStreamProvider) {
-    for (i in 0 until threadCount) {
-        val bitmapProvider = BitmapProvider(tileStreamProvider)
-        val downloadThread = TileDownloadThread(tileIterator, bitmapProvider, tileWriter)
-        downloadThread.start()
-    }
-}
-
-
-private class TileDownloadThread(private val tileIterator: ThreadSafeTileIterator,
-                                 private val bitmapProvider: BitmapProvider,
-                                 private val tileWriter: TileWriter) : Thread() {
-    val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565)
-
-    init {
-        val options = BitmapFactory.Options()
-        options.inBitmap = bitmap
-        options.inPreferredConfig = Bitmap.Config.RGB_565
-        bitmapProvider.setBitmapOptions(options)
+    private suspend fun launchDownloadTask(
+            workerCount: Int, tileIterator: ThreadSafeTileIterator,
+            tileWriter: TileWriter, tileStreamProvider: TileStreamProvider
+    ) = coroutineScope {
+        for (i in 0 until workerCount) {
+            val bitmapProvider = BitmapProvider(tileStreamProvider)
+            launchTileDownload(tileIterator, bitmapProvider, tileWriter)
+        }
     }
 
-    override fun run() {
-        while (DownloadService.started.value) {
+    private fun CoroutineScope.launchTileDownload(
+            tileIterator: ThreadSafeTileIterator, bitmapProvider: BitmapProvider,
+            tileWriter: TileWriter
+    ) = launch(Dispatchers.IO) {
+        while (started.value) {
+            val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565)
+            val options = BitmapFactory.Options()
+            options.inBitmap = bitmap
+            options.inPreferredConfig = Bitmap.Config.RGB_565
+            bitmapProvider.setBitmapOptions(options)
+
             val tile = tileIterator.next() ?: break
             bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level).also {
                 /* Only write if there was no error */
-                if (it != null && DownloadService.started.value) {
+                if (it != null && started.value) {
                     tileWriter.write(tile, bitmap)
                 }
             }

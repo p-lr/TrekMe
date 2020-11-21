@@ -70,7 +70,7 @@ class MapSettingsViewModel @ViewModelInject constructor(
      * main activity, and not the [MapSettingsFragment], because the user might leave this view ;
      * we want to reliably inform the user when this task is finished.
      */
-    fun saveMap(map: Map, uri: Uri) = viewModelScope.launch {
+    fun archiveMap(map: Map, uri: Uri) = viewModelScope.launch {
         val docFile = DocumentFile.fromTreeUri(app.applicationContext, uri)
         if (docFile != null && docFile.isDirectory) {
             val newFileName: String = map.generateNewNameWithDate() + ".zip"
@@ -120,6 +120,12 @@ class MapSettingsViewModel @ViewModelInject constructor(
             map.zip(callback, outputStream)
         }
         awaitClose()
+    }
+
+    fun saveMap(map: Map) {
+        viewModelScope.launch {
+            mapLoader.saveMap(map)
+        }
     }
 }
 

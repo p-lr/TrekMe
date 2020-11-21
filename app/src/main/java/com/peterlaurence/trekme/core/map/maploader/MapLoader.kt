@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.*
-import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.map.maploader.tasks.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
@@ -41,7 +40,7 @@ import kotlin.coroutines.resume
 class MapLoader(
         private val mainDispatcher: CoroutineDispatcher,
         private val ioDispatcher: CoroutineDispatcher
-) : MapImporter.MapImportListener {
+) {
     /**
      * All [Projection]s are registered here.
      */
@@ -123,7 +122,7 @@ class MapLoader(
     /**
      * Launch a [MapMarkerImportTask] which reads the markers.json file.
      */
-    suspend fun getMarkersForMap(map: Map): Boolean  = withContext(ioDispatcher) {
+    suspend fun getMarkersForMap(map: Map): Boolean = withContext(ioDispatcher) {
         val markerFile = File(map.directory, MAP_MARKER_FILENAME)
         if (!markerFile.exists()) return@withContext false
 
@@ -188,34 +187,16 @@ class MapLoader(
     }
 
     /**
-     * Add a [Map] to the internal list and generate the json file.
+     * Add a [Map] to the internal list and generate the json file. Then, saves the [Map].
      */
-    fun addMap(map: Map) {
+    suspend fun addMap(map: Map) {
         /* Add the map */
-        map.addIfNew()
+        withContext(mainDispatcher) {
+            map.addIfNew()
+        }
 
         /* Generate the json file */
         saveMap(map)
-
-        /* Notify for view update */
-        notifyMapListUpdateListeners()
-    }
-
-    /**
-     * Add a [Map] to the internal list and generate the json file.
-     * This is typically called after an import, after a [Map] has been generated from a file
-     * structure.
-     */
-    override fun onMapImported(map: Map?, status: MapImporter.MapParserStatus) {
-        if (map == null) return
-        addMap(map)
-    }
-
-    override fun onMapImportError(e: MapImporter.MapParseException?) {
-        Log.e(TAG, "Error while parsing a map")
-        if (e != null) {
-            Log.e(TAG, e.message, e)
-        }
     }
 
     /**
@@ -228,20 +209,25 @@ class MapLoader(
     }
 
     /**
-     * Save the content of a [Map], so the changes persist upon application restart. <br></br>
+     * Save the content of a [Map], so the changes persist upon application restart.
      * Here, it writes to the corresponding json file.
+     * Then, broadcasts an [MapListUpdateEvent].
      *
      * @param map The [Map] to save.
      */
-    fun saveMap(map: Map) {
-        val jsonString = gson.toJson(map.mapGson)
-        val configFile = map.configFile
+    suspend fun saveMap(map: Map) {
+        withContext(ioDispatcher) {
+            val jsonString = gson.toJson(map.mapGson)
+            val configFile = map.configFile
 
-        writeToFile(jsonString, configFile) {
-            Log.e(TAG, "Error while saving the map")
+            writeToFile(jsonString, configFile) {
+                Log.e(TAG, "Error while saving the map")
+            }
         }
 
-        notifyMapListUpdateListeners()
+        withContext(mainDispatcher) {
+            notifyMapListUpdateListeners()
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.peterlaurence.mapview.MapView;
@@ -15,11 +16,11 @@ import com.peterlaurence.mapview.MapViewConfiguration;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
-import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.repositories.map.MapRepository;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
+import com.peterlaurence.trekme.viewmodel.mapcalibration.MapCalibrationViewModel;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -54,11 +55,10 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
     private CalibrationMarker mCalibrationMarker;
     private int mCurrentCalibrationPoint;
     private View mView;
-    @Inject
-    MapRepository mMapRepository;
+    MapCalibrationViewModel mViewModel;
 
     @Inject
-    MapLoader mMapLoader;
+    MapRepository mMapRepository;
 
     /**
      * Before telling the {@link MapView} to move a marker, we save its relative coordinates so we
@@ -69,6 +69,13 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         calibrationMarker.setRelativeX(x);
         calibrationMarker.setRelativeY(y);
         moveMarker(mapView, view, x, y);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mViewModel = new ViewModelProvider(this).get(MapCalibrationViewModel.class);
     }
 
     @Override
@@ -283,7 +290,9 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         map.calibrate();
 
         /* Save */
-        mMapLoader.saveMap(map);
+        if (mViewModel != null) {
+            mViewModel.saveMap(map);
+        }
 
         showSaveConfirmation();
     }

@@ -203,12 +203,12 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
             }
         }
 
-        /* After the user selected a folder in which to save a map, call the relevant view-model */
+        /* After the user selected a folder in which to archive a map, call the relevant view-model */
         if (requestCode == MAP_SAVE_CODE && resultCode == Activity.RESULT_OK) {
             if (data == null) return
             val uri = data.data ?: return
             map?.also {
-                viewModel.saveMap(it, uri)
+                viewModel.archiveMap(it, uri)
             }
         }
     }
@@ -243,7 +243,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
      */
     private fun saveChanges() {
         map?.also {
-            mapLoader.saveMap(it)
+            viewModel.saveMap(it)
         }
     }
 
