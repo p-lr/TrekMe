@@ -25,9 +25,9 @@ import kotlinx.coroutines.launch
 
 class LandmarkLayer(
         val context: Context,
-        private val coroutineScope: CoroutineScope,
+        private val scope: CoroutineScope,
         private val mapLoader: MapLoader
-) : MarkerTapListener, ReferentialOwner, CoroutineScope by coroutineScope {
+) : MarkerTapListener, ReferentialOwner, CoroutineScope by scope {
     private var map: Map? = null
     private var mapView: MapView? = null
     private var lastKnownPosition: Pair<Double, Double> = Pair(0.0, 0.0)
@@ -153,7 +153,9 @@ class LandmarkLayer(
             }
 
             /* Save the changes on the markers.json file */
-            mapLoader.saveLandmarks(map)
+            scope.launch {
+                mapLoader.saveLandmarks(map)
+            }
         }
 
         touchMoveListener = TouchMoveListener(this.mapView, landmarkMoveAgent, landmarkClickCallback)
@@ -204,7 +206,9 @@ class LandmarkLayer(
 
                 val landmark = view.getLandmark()
                 if (landmark != null) {
-                    mapLoader.deleteLandmark(map, landmark)
+                    scope.launch {
+                        mapLoader.deleteLandmark(map, landmark)
+                    }
                 }
             }
             view.getLandmark()?.also {

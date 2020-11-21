@@ -7,7 +7,10 @@ import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.*
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
-import com.peterlaurence.trekme.core.map.maploader.tasks.*
+import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
+import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask
+import com.peterlaurence.trekme.core.map.maploader.tasks.mapLandmarkImportTask
+import com.peterlaurence.trekme.core.map.maploader.tasks.mapRouteImportTask
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
@@ -249,7 +252,7 @@ class MapLoader(
      * Save the [LandmarkGson] of a [Map], so the changes persist upon application restart.
      * @param map the [Map] to save.
      */
-    fun saveLandmarks(map: Map) {
+    suspend fun saveLandmarks(map: Map) = withContext(ioDispatcher) {
         val jsonString = gson.toJson(map.landmarkGson)
         val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
 
@@ -264,7 +267,7 @@ class MapLoader(
      *
      * @param map The [Map] to save.
      */
-    fun saveRoutes(map: Map) {
+    suspend fun saveRoutes(map: Map) = withContext(ioDispatcher) {
         val jsonString = gson.toJson(map.routeGson)
         val routeFile = File(map.directory, MAP_ROUTE_FILENAME)
 
@@ -278,16 +281,19 @@ class MapLoader(
      *
      * @param map The [Map] to delete.
      */
-    fun deleteMap(map: Map) {
+    suspend fun deleteMap(map: Map) {
         val mapDirectory = map.directory
-        mapList.remove(map)
+        withContext(mainDispatcher) {
+            mapList.remove(map)
+        }
 
         /* Notify for view update */
         notifyMapListUpdateListeners()
 
         /* Delete the map directory in a separate thread */
-        val mapDeleteTask = MapDeleteTask(mapDirectory)
-        mapDeleteTask.execute()
+        withContext(ioDispatcher) {
+            FileUtils.deleteRecursive(mapDirectory)
+        }
     }
 
     /**
@@ -305,8 +311,10 @@ class MapLoader(
     /**
      * Delete a [Landmark] from a [Map].
      */
-    fun deleteLandmark(map: Map, landmark: Landmark) {
-        map.landmarkGson.landmarks.remove(landmark)
+    suspend fun deleteLandmark(map: Map, landmark: Landmark) {
+        withContext(mainDispatcher) {
+            map.landmarkGson.landmarks.remove(landmark)
+        }
 
         saveLandmarks(map)
     }

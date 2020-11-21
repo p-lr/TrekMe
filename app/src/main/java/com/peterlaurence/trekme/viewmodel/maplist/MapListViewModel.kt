@@ -56,7 +56,11 @@ class MapListViewModel @ViewModelInject constructor(
 
     fun deleteMap(mapId: Int) {
         val map = mapLoader.getMap(mapId)
-        if (map != null) mapLoader.deleteMap(map)
+        if (map != null) {
+            viewModelScope.launch {
+                mapLoader.deleteMap(map)
+            }
+        }
     }
 
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
