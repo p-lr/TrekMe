@@ -57,11 +57,12 @@ class GpxRecordRepository {
 
     /**********************************************************************************************/
 
-    private val _trackStatisticsEvent = MutableSharedFlow<TrackStatistics>(1, 0, BufferOverflow.DROP_OLDEST)
+    /* Looks like a state flow, but it's not conflated so we can re-emit the same instance */
+    private val _trackStatisticsEvent = MutableSharedFlow<TrackStatistics?>(1, 0, BufferOverflow.DROP_OLDEST)
     val trackStatisticsEvent = _trackStatisticsEvent.asSharedFlow()
 
-    fun postTrackStatisticsEvent(event: TrackStatistics) {
-        _trackStatisticsEvent.tryEmit(event)
+    fun postTrackStatistics(stats: TrackStatistics?) {
+        _trackStatisticsEvent.tryEmit(stats)
     }
 }
 

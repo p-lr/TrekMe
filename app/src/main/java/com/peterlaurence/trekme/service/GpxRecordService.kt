@@ -112,7 +112,7 @@ class GpxRecordService : Service() {
                 repository.addTrackPoint(trackPoint)
                 trackStatCalculator?.addTrackPoint(trackPoint)
                 trackStatCalculator?.getStatistics()?.also { stats ->
-                    repository.postTrackStatisticsEvent(stats)
+                    repository.postTrackStatistics(stats)
                 }
             }
 
@@ -221,6 +221,7 @@ class GpxRecordService : Service() {
      */
     private fun stop() {
         repository.resetLiveRoute()
+        repository.postTrackStatistics(null)
         repository.setServiceState(false)
         stopSelf()
     }
