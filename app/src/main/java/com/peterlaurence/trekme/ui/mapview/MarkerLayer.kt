@@ -212,7 +212,9 @@ class MarkerLayer(
         }
 
         /* Save the changes on the markers.json file */
-        mapLoader.saveMarkers(map)
+        scope.launch {
+            mapLoader.saveMarkers(map)
+        }
     }
 
     /**
@@ -242,7 +244,9 @@ class MarkerLayer(
         /* Delete the marker */
         mapView.removeMarker(movableMarker)
         val marker = movableMarker.marker
-        mapLoader.deleteMarker(map, marker)
+        scope.launch {
+            mapLoader.deleteMarker(map, marker)
+        }
     }
 
     /**

@@ -231,12 +231,12 @@ class MapLoader(
     }
 
     /**
-     * Save the [MarkerGson] of a [Map], so the changes persist upon application restart.
+     * Saves the [MarkerGson] of a [Map], so the changes persist upon application restart.
      * Here, it writes to the corresponding json file.
      *
      * @param map The [Map] to save.
      */
-    fun saveMarkers(map: Map) {
+    suspend fun saveMarkers(map: Map) = withContext(ioDispatcher) {
         val jsonString = gson.toJson(map.markerGson)
 
         val markerFile = File(map.directory, MAP_MARKER_FILENAME)
@@ -293,9 +293,11 @@ class MapLoader(
     /**
      * Delete a [MarkerGson.Marker] from a [Map].
      */
-    fun deleteMarker(map: Map, marker: MarkerGson.Marker) {
-        val markerList = map.markers
-        markerList?.remove(marker)
+    suspend fun deleteMarker(map: Map, marker: MarkerGson.Marker) {
+        withContext(mainDispatcher) {
+            val markerList = map.markers
+            markerList?.remove(marker)
+        }
 
         saveMarkers(map)
     }

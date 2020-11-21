@@ -10,6 +10,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
@@ -22,6 +23,7 @@ import com.peterlaurence.trekme.viewmodel.markermanage.GeographicCoords
 import com.peterlaurence.trekme.viewmodel.markermanage.MakerManageViewModel
 import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -234,7 +236,11 @@ class MarkerManageFragment : Fragment() {
         marker.comment = binding.markerCommentId.text.toString()
 
         /* Save the changes on the markers.json file */
-        map?.let { mapLoader.saveMarkers(it) }
+        map?.let {
+            lifecycleScope.launch {
+                mapLoader.saveMarkers(it)
+            }
+        }
 
         hideSoftKeyboard()
 
