@@ -36,8 +36,9 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.events.StandardMessage
+import com.peterlaurence.trekme.core.events.WarningMessage
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
@@ -49,10 +50,8 @@ import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -63,9 +62,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val navController: NavController by lazy {
         findNavController(R.id.nav_host_fragment)
     }
-
-    @Inject
-    lateinit var trekMeContext: TrekMeContext
 
     @Inject
     lateinit var mapRepository: MapRepository
@@ -206,20 +202,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun warnIfBadStorageState() {
-        /* If something is wrong.. */
-        if (!trekMeContext.checkAppDir()) {
-            val warningTitle = getString(R.string.warning_title)
-            if (trekMeContext.isAppDirReadOnly) {
-                /* If its read only for sure, be explicit */
-                showWarningDialog(getString(R.string.storage_read_only), warningTitle, null)
-            } else {
-                /* Else, just say there is something wrong */
-                showWarningDialog(getString(R.string.bad_storage_status), warningTitle, null)
-            }
-        }
-    }
-
     private fun warnNoStoragePerm() {
         showWarningDialog(getString(R.string.no_storage_perm), getString(R.string.warning_title)) {
             if (!shouldInit(this)) {
@@ -311,27 +293,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     public override fun onStart() {
         requestMinimalPermissions(this)
 
-        /* This must be done before activity's onStart */
-        val shouldInit = shouldInit(this)
-        val appContext = applicationContext
-        lifecycleScope.launch {
-            /* Perform IO on background thread */
-            withContext(Dispatchers.Default) {
-                if (shouldInit) {
-                    trekMeContext.init(appContext)
-                }
-            }
-
-            /* Notify the view-model */
-            viewModel.onActivityStart()
-
-            warnIfBadStorageState()
-        }
-
         /* React to some events */
         lifecycleScope.launch {
             appEventBus.genericMessageEvents.collect {
-                Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
+                when (it) {
+                    is StandardMessage -> Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
+                    is WarningMessage -> showWarningDialog(it.msg, it.title, null)
+                }
             }
         }
 
@@ -346,6 +314,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 onMapDownloadEvent(it)
             }
         }
+
+        viewModel.onActivityStart()
 
         super.onStart()
     }

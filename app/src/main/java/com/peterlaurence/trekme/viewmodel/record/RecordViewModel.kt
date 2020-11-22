@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.GenericMessage
+import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -105,7 +105,7 @@ class RecordViewModel @ViewModelInject constructor(
         }
         if (importCount > 0) {
             val msg = app.applicationContext.getString(R.string.automatic_import_feedback, importCount)
-            appEventBus.postMessage(GenericMessage(msg))
+            appEventBus.postMessage(StandardMessage(msg))
         }
     }
 

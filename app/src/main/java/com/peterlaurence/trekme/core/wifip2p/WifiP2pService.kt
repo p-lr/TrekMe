@@ -514,9 +514,6 @@ class WifiP2pService : Service() {
                     val result = withContext(Dispatchers.IO) {
                         MapImporter.importFromFile(dir, mapLoader)
                     }
-                    result.map?.also { map ->
-                        mapLoader.addMap(map)
-                    }
                     /* The receiver resets the WifiP2P connection */
                     when (result.status) {
                         MapImporter.MapParserStatus.NEW_MAP,

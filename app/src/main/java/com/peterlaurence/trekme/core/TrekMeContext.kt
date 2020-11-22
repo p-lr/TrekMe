@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Build.VERSION_CODES.Q
 import android.os.Environment
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
@@ -28,9 +30,9 @@ interface TrekMeContext {
     val recordingsDir: File?
     var mapsDirList: List<File>?
     val credentialsDir: File
-    val isAppDirReadOnly: Boolean
-    fun init(applicationContext: Context)
-    fun checkAppDir(): Boolean
+    suspend fun isAppDirReadOnly(): Boolean
+    suspend fun init(applicationContext: Context)
+    suspend fun checkAppDir(): Boolean
 }
 
 class TrekMeContextAndroid : TrekMeContext {
@@ -75,8 +77,9 @@ class TrekMeContextAndroid : TrekMeContext {
      * Check whether the app root dir is in read-only state or not. This is usually used only if the
      * [checkAppDir] call returned `false`
      */
-    override val isAppDirReadOnly: Boolean
-        get() = Environment.getExternalStorageState(defaultAppDir) == Environment.MEDIA_MOUNTED_READ_ONLY
+    override suspend fun isAppDirReadOnly(): Boolean = withContext(Dispatchers.IO) {
+        Environment.getExternalStorageState(defaultAppDir) == Environment.MEDIA_MOUNTED_READ_ONLY
+    }
 
     /**
      * Create necessary folders and files, and identify folder in which the maps will be searched
@@ -84,15 +87,16 @@ class TrekMeContextAndroid : TrekMeContext {
      * @param applicationContext The context that *should not* be an Activity context. It should be
      * obtained from [Context.getApplicationContext].
      */
-    override fun init(applicationContext: Context) {
-        try {
-            resolveDirs(applicationContext)
-            createAppDirs()
-            createNomediaFile()
-        } catch (e: SecurityException) {
-            Log.e(TAG, "We don't have right access to create application folder")
-        } catch (e: IOException) {
-            Log.e(TAG, "We don't have right access to create application folder")
+    override suspend fun init(applicationContext: Context) {
+        withContext(Dispatchers.IO) {
+            try {
+                resolveDirs(applicationContext)
+                createAppDirs()
+            } catch (e: SecurityException) {
+                Log.e(TAG, "We don't have right access to create application folder")
+            } catch (e: IOException) {
+                Log.e(TAG, "We don't have right access to create application folder")
+            }
         }
     }
 
@@ -127,8 +131,8 @@ class TrekMeContextAndroid : TrekMeContext {
     /**
      * To function properly, the app needs to have read + write access to its root directory
      */
-    override fun checkAppDir(): Boolean {
-        return Environment.getExternalStorageState(defaultAppDir) == Environment.MEDIA_MOUNTED
+    override suspend fun checkAppDir(): Boolean = withContext(Dispatchers.IO) {
+        Environment.getExternalStorageState(defaultAppDir) == Environment.MEDIA_MOUNTED
     }
 
     @Throws(SecurityException::class)
@@ -171,23 +175,6 @@ class TrekMeContextAndroid : TrekMeContext {
             val created = dir.mkdir()
             if (!created) {
                 Log.e(TAG, "Could not create $label folder")
-            }
-        }
-    }
-
-    /**
-     * We have to create an empty ".nomedia" file at the root of each folder where TrekMe can
-     * download maps. This way, other apps don't index this content for media files.
-     */
-    @Throws(SecurityException::class, IOException::class)
-    private fun createNomediaFile() {
-        mapsDirList?.forEach {
-            if (it.exists()) {
-                val noMedia = File(defaultAppDir, ".nomedia")
-                val created = noMedia.createNewFile()
-                if (!created) {
-                    Log.e(TAG, "Could not create .nomedia file")
-                }
             }
         }
     }

@@ -17,9 +17,10 @@ import androidx.core.app.NotificationManagerCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.GenericMessage
+import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.map.createNomediaFile
 import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
@@ -162,7 +163,7 @@ class DownloadService : Service() {
         }
 
         _started.value = true
-        appEventBus.postMessage(GenericMessage(getString(R.string.download_confirm)))
+        appEventBus.postMessage(StandardMessage(getString(R.string.download_confirm)))
 
         return START_NOT_STICKY
     }
@@ -281,6 +282,7 @@ class DownloadService : Service() {
 
         scope.launch {
             calibrate(map)
+            map.createNomediaFile()
             mapLoader.addMap(map)
 
             /* Notify that the download is finished correctly.

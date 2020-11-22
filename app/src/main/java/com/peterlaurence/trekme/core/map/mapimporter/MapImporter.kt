@@ -5,8 +5,10 @@ import android.util.Log
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
+import com.peterlaurence.trekme.core.map.createNomediaFile
 import com.peterlaurence.trekme.core.map.gson.MapGson
-import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.LibvipsMapParser
+import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.LibvipsMapSeeker
+import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.importFromFile
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,15 +18,15 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 /**
- * The [MapImporter] exposes a single method : [.importFromFile].
- * For instance, [LibvipsMapParser] is the only parser used, because TrekMe only supports one kind
+ * The [MapImporter] exposes a single method : [importFromFile].
+ * For instance, [LibvipsMapSeeker] is the only seeker used, because TrekMe only supports one kind
  * of file-based maps.
  * This is typically used after a [MapArchive] has been extracted.
  *
  * @author P.Laurence on 23/06/16 -- Converted to Kotlin on 27/10/19
  */
 object MapImporter {
-    private val parser: MapParser by lazy { LibvipsMapParser() }
+    private val SEEKER: MapSeeker by lazy { LibvipsMapSeeker() }
     private const val THUMBNAIL_ACCEPT_SIZE = 256
     private val IMAGE_EXTENSIONS = arrayOf("jpg", "gif", "png", "bmp", "webp")
 
@@ -62,22 +64,23 @@ object MapImporter {
 
     suspend fun importFromFile(dir: File, mapLoader: MapLoader): MapImportResult {
         return try {
-            parseMap(parser, dir, mapLoader)
+            parseMap(SEEKER, dir, mapLoader)
         } catch (e: MapParseException) {
             Log.e(TAG, "Error parsing $dir (${e.issue})")
             MapImportResult(null, MapParserStatus.NO_MAP)
         }
     }
 
-    /**
-     * Produces a [Map] from a given [File].
-     */
-    private interface MapParser {
+    private interface MapSeeker {
 
         val status: MapParserStatus
 
+        /**
+         * Produces a [Map] from a given [File].
+         * Uses the [mapLoader] to add the map, if found.
+         */
         @Throws(MapParseException::class)
-        suspend fun parse(file: File, mapLoader: MapLoader): Map?
+        suspend fun seek(file: File, mapLoader: MapLoader): Map?
     }
 
     enum class MapParserStatus {
@@ -90,7 +93,7 @@ object MapImporter {
     data class MapImportResult(val map: Map?, val status: MapParserStatus)
 
     /**
-     * An Exception thrown when an error occurred in a [MapParser].
+     * An Exception thrown when an error occurred in a [MapSeeker].
      */
     class MapParseException internal constructor(internal val issue: Issue) : Exception() {
         internal enum class Issue {
@@ -101,16 +104,16 @@ object MapImporter {
         }
     }
 
-    private suspend fun parseMap(mapParser: MapParser, mDir: File,
-                                 mapLoader: MapLoader): MapImportResult = withContext(Dispatchers.Default) {
-        val map = mapParser.parse(mDir, mapLoader)
-        MapImportResult(map, mapParser.status)
+    private suspend fun parseMap(mapSeeker: MapSeeker, mDir: File,
+                                 mapLoader: MapLoader): MapImportResult = withContext(Dispatchers.IO) {
+        val map = mapSeeker.seek(mDir, mapLoader)
+        MapImportResult(map, mapSeeker.status)
     }
 
     /**
-     * This [MapParser] expects a folder structure corresponding to libvips's `dzsave` output.
+     * This [MapSeeker] expects a folder structure corresponding to libvips's `dzsave` output.
      */
-    private class LibvipsMapParser : MapParser {
+    private class LibvipsMapSeeker : MapSeeker {
         private val options = BitmapFactory.Options()
         override var status = MapParserStatus.NO_MAP
             private set
@@ -119,8 +122,8 @@ object MapImporter {
             options.inJustDecodeBounds = true
         }
 
-        @Throws(MapParseException::class)
-        override suspend fun parse(file: File, mapLoader: MapLoader): Map {
+        @Throws(MapParseException::class, SecurityException::class)
+        override suspend fun seek(file: File, mapLoader: MapLoader): Map? {
             if (!file.isDirectory) {
                 throw MapParseException(MapParseException.Issue.NOT_A_DIRECTORY)
             }
@@ -137,8 +140,11 @@ object MapImporter {
             if (existingJsonFile.exists()) {
                 val mapList = mapLoader.updateMaps(listOf(parentFolder))
                 status = MapParserStatus.EXISTING_MAP
-                if (mapList.isNotEmpty()) {
-                    return mapList[0]
+                val map = mapList.firstOrNull()
+                if (map != null) {
+                    /* The nomedia file might already exist, but we do it just in case */
+                    map.createNomediaFile()
+                    return map
                 }
             }
 
@@ -196,7 +202,11 @@ object MapImporter {
             val jsonFile = File(parentFolder, MAP_FILENAME)
 
             status = MapParserStatus.NEW_MAP
-            return Map(mapGson, jsonFile, thumbnail)
+
+            val map = Map(mapGson, jsonFile, thumbnail)
+            map.createNomediaFile()
+            mapLoader.addMap(map)
+            return map
         }
 
         /**

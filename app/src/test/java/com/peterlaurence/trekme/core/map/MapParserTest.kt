@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.map
 
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -16,11 +17,12 @@ import java.io.File
  */
 @RunWith(RobolectricTestRunner::class)
 class MapParserTest {
+    private val mapLoader = MapLoader(Dispatchers.Unconfined, Dispatchers.IO)
+
     @Test
     fun mapTracksParse() = runBlocking {
         if (jsonFilesDirectory != null) {
             val dirs = listOf(jsonFilesDirectory)
-            val mapLoader = MapLoader
             mapLoader.clearMaps()
             val mapList = mapLoader.updateMaps(dirs.filterNotNull())
 
@@ -28,7 +30,7 @@ class MapParserTest {
             assertEquals(1, mapList.size.toLong())
             val map = mapList[0]
 
-            MapLoader.importRoutesForMap(map)
+            mapLoader.importRoutesForMap(map)
             assertEquals(2, map.routes!!.size.toLong())
 
             val route = map.routes!![0]

@@ -22,7 +22,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.GenericMessage
+import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
@@ -173,7 +173,7 @@ class GpxRecordService : Service() {
                 writeGpx(gpx, fos)
                 repository.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, gpx))
             } catch (e: Exception) {
-                eventBus.postMessage(GenericMessage(getString(R.string.service_gpx_error)))
+                eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_error)))
             } finally {
                 stop()
             }
@@ -250,7 +250,7 @@ class GpxRecordService : Service() {
         runCatching {
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 2f, locationListener, serviceLooper)
         }.onFailure {
-            eventBus.postMessage(GenericMessage(getString(R.string.service_gpx_location_error)))
+            eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_location_error)))
         }
     }
 

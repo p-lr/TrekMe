@@ -1,10 +1,14 @@
 package com.peterlaurence.trekme.viewmodel
 
+import android.app.Application
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.MainActivity
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.events.WarningMessage
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
@@ -26,9 +30,11 @@ import kotlinx.coroutines.launch
  * @author P.Laurence on 07/10/2019
  */
 class MainActivityViewModel @ViewModelInject constructor(
+        private val app: Application,
         private val trekMeContext: TrekMeContext,
         private val settings: Settings,
         private val mapRepository: MapRepository,
+        private val appEventBus: AppEventBus,
         private val mapLoader: MapLoader
 ) : ViewModel() {
     private var attemptedAtLeastOnce = false
@@ -40,7 +46,7 @@ class MainActivityViewModel @ViewModelInject constructor(
     val showMapViewSignal = _showMapViewSignal.asSharedFlow()
 
     /**
-     * When the [MainActivity] first starts, we either:
+     * When the [MainActivity] first starts, we init the [TrekMeContext]. Thenn, we either:
      * * show the last viewed map
      * * show the map list
      */
@@ -48,6 +54,9 @@ class MainActivityViewModel @ViewModelInject constructor(
         viewModelScope.launch {
             if (attemptedAtLeastOnce) return@launch
             attemptedAtLeastOnce = true // remember that we tried once
+
+            trekMeContext.init(app.applicationContext)
+            warnIfBadStorageState()
 
             mapLoader.clearMaps()
             trekMeContext.mapsDirList?.also { dirList ->
@@ -72,6 +81,21 @@ class MainActivityViewModel @ViewModelInject constructor(
                         _showMapListSignal.emit(Unit)
                     }
                 }
+            }
+        }
+    }
+
+    private suspend fun warnIfBadStorageState() {
+        /* If something is wrong.. */
+        if (!trekMeContext.checkAppDir()) {
+            val ctx = app.applicationContext
+            val warningTitle = ctx.getString(R.string.warning_title)
+            if (trekMeContext.isAppDirReadOnly()) {
+                /* If its read only for sure, be explicit */
+                appEventBus.postMessage(WarningMessage(warningTitle, ctx.getString(R.string.storage_read_only)))
+            } else {
+                /* Else, just say there is something wrong */
+                appEventBus.postMessage(WarningMessage(warningTitle, ctx.getString(R.string.bad_storage_status)))
             }
         }
     }
