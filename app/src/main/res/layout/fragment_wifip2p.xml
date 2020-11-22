@@ -78,7 +78,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/guideline"
             app:srcCompat="@drawable/ic_announcement_black_24dp"
-            android:tint="@color/colorAccentRed"/>
+            app:tint="@color/colorAccentRed"/>
 
         <TextView
             android:id="@+id/warning_message"

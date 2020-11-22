@@ -46,7 +46,7 @@ class MainActivityViewModel @ViewModelInject constructor(
     val showMapViewSignal = _showMapViewSignal.asSharedFlow()
 
     /**
-     * When the [MainActivity] first starts, we init the [TrekMeContext]. Thenn, we either:
+     * When the [MainActivity] first starts, we init the [TrekMeContext]. Then, we either:
      * * show the last viewed map
      * * show the map list
      */
