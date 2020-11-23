@@ -25,7 +25,7 @@ import javax.inject.Inject
  * @author P.Laurence on 01/09/2018
  */
 @AndroidEntryPoint
-open class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
+abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var mapChoiceAdapter: MapChoiceAdapter
     private var selectedIndex: Int = -1
@@ -66,8 +66,7 @@ open class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         return builder.create()
     }
 
-    // Hilt doesn't support injection for abstract class (as of 2020/11 ..)
-    open fun onOkPressed(mapId: Int) {}
+    abstract fun onOkPressed(mapId: Int)
 
     override fun onMapSelected(map: Map, position: Int) {
         selectedIndex = position
