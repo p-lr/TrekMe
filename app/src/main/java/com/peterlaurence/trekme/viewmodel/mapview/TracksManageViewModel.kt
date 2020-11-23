@@ -15,7 +15,6 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
@@ -101,7 +100,7 @@ class TracksManageViewModel @ViewModelInject constructor(
     }
 
     fun saveChanges() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             map?.also {
                 mapLoader.saveRoutes(it)
             }

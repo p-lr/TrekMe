@@ -13,8 +13,7 @@ import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.events.TrackC
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views.SelectableColor
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.dialog_color_select.view.*
+import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
 /**
@@ -95,13 +94,13 @@ class ColorSelectDialog : DialogFragment() {
                 deselectAllBut(selectableColor)
             }
         }
-        binding.variantsLayout.variants.variant_normal_radio_btn.setOnClickListener {
+        binding.variantNormalRadioBtn.setOnClickListener {
             setPalette(PaletteVariant.NORMAL)
         }
-        binding.variantsLayout.variants.variant_light_radio_btn.setOnClickListener {
+        binding.variantLightRadioBtn.setOnClickListener {
             setPalette(PaletteVariant.LIGHT)
         }
-        binding.variantsLayout.variants.variant_dark_radio_btn.setOnClickListener {
+        binding.variantDarkRadioBtn.setOnClickListener {
             setPalette(PaletteVariant.DARK)
         }
 
@@ -155,15 +154,15 @@ class ColorSelectDialog : DialogFragment() {
         }
         when (paletteIndex) {
             0 -> {
-                binding.variantsLayout.variants.variant_normal_radio_btn.isChecked = true
+                binding.variantNormalRadioBtn.isChecked = true
                 paletteVariant = PaletteVariant.NORMAL
             }
             1 -> {
-                binding.variantsLayout.variants.variant_light_radio_btn.isChecked = true
+                binding.variantLightRadioBtn.isChecked = true
                 paletteVariant = PaletteVariant.LIGHT
             }
             2 -> {
-                binding.variantsLayout.variants.variant_dark_radio_btn.isChecked = true
+                binding.variantDarkRadioBtn.isChecked = true
                 paletteVariant = PaletteVariant.DARK
             }
         }

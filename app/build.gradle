@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlinx-serialization'
+apply plugin: "androidx.navigation.safeargs"
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
@@ -40,12 +41,6 @@ android {
         jvmTarget = "1.8"
     }
 }
-
-androidExtensions {
-    experimental = true
-}
-
-apply plugin: "androidx.navigation.safeargs"
 
 dependencies {
     def lifecycle_version = '2.2.0'

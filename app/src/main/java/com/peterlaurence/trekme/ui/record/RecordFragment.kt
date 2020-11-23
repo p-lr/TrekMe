@@ -29,7 +29,6 @@ import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_record.*
 import kotlinx.coroutines.flow.collect
 import java.io.File
 import javax.inject.Inject
@@ -113,7 +112,7 @@ class RecordFragment : Fragment() {
             }
         }
 
-        recordListView.setListener(object : RecordListView.RecordListViewListener {
+        binding.recordListView.setListener(object : RecordListView.RecordListViewListener {
             override fun onRequestShareRecording(recordings: List<File>) {
                 val activity = activity ?: return
                 val intentBuilder = ShareCompat.IntentBuilder.from(activity)

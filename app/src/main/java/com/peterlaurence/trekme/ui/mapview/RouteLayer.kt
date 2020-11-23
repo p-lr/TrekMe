@@ -33,10 +33,10 @@ import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import com.peterlaurence.trekme.util.formatDistance
 import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.mapview.LiveRoute
-import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
+import kotlinx.parcelize.Parcelize
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

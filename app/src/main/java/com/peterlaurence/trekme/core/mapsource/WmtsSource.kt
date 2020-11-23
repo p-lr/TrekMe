@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.mapsource
 
 import android.os.Parcelable
 import com.peterlaurence.trekme.core.providers.layers.Layer
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 
 enum class WmtsSource {
