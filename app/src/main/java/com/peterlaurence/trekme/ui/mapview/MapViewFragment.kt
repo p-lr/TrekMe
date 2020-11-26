@@ -6,7 +6,6 @@ import android.view.*
 import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -27,11 +26,12 @@ import com.peterlaurence.trekme.core.sensors.OrientationSensor
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.repositories.location.Location
+import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
-import com.peterlaurence.trekme.viewmodel.common.Location
-import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
+import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,6 +60,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     @Inject
     lateinit var mapLoader: MapLoader
 
+    @Inject
+    lateinit var locationSource: LocationSource
+
     private var presenter: MapViewFragmentContract.Presenter? = null
     private var mapView: MapView? = null
     private var mMap: Map? = null
@@ -81,7 +84,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var orientationJob: Job? = null
 
     private val mapViewViewModel: MapViewViewModel by viewModels()
-    private val locationViewModel: LocationViewModel by activityViewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
     private val statisticsViewModel: StatisticsViewModel by viewModels()
 
@@ -114,13 +116,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         presenter = MapViewFragmentPresenter(inflater, container, context)
         val presenter = presenter ?: return null
         presenter.setPositionTouchListener(this)
-
-        /* Observe location changes */
-        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner) {
-            it?.let {
-                onLocationReceived(it)
-            }
-        }
 
         /* Observe track statistics changes */
         statisticsViewModel.stats.observe(viewLifecycleOwner) {
@@ -212,8 +207,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             }
         }
 
-        /* Now that everything is set-up, update with latest location */
-        locationViewModel.getLocationLiveData().value?.also {
+        /* Observe location changes */
+        locationSource.locationFlow.collectWhileStarted(this) {
             onLocationReceived(it)
         }
 
@@ -402,19 +397,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     override fun onPositionTouch() {
         centerOnPosition()
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        locationViewModel.startLocationUpdates()
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        /* Save battery */
-        locationViewModel.stopLocationUpdates()
     }
 
     /**

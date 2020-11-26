@@ -21,14 +21,15 @@ import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.ignLayers
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
+import com.peterlaurence.trekme.repositories.location.Location
+import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.ui.mapcreate.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.views.components.PositionMarker
-import com.peterlaurence.trekme.viewmodel.common.Location
-import com.peterlaurence.trekme.viewmodel.common.LocationViewModel
+import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -76,6 +77,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
     @Inject
     lateinit var eventBus: MapCreateEventBus
 
+    @Inject
+    lateinit var locationSource: LocationSource
+
     private var wmtsSource: WmtsSource? = null
     private var mapView: MapView? = null
     private var areaLayer: AreaLayer? = null
@@ -84,7 +88,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private var shouldZoomOnPosition = true
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
-    private val locationViewModel: LocationViewModel by activityViewModels()
 
     private lateinit var area: Area
 
@@ -185,26 +188,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        startLocationUpdates()
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        stopLocationUpdates()
-    }
-
-    private fun startLocationUpdates() {
-        locationViewModel.startLocationUpdates()
-    }
-
-    private fun stopLocationUpdates() {
-        locationViewModel.stopLocationUpdates()
-    }
-
     private fun onLayerDefined(layerPublicName: String) {
         val wmtsSource = wmtsSource ?: return
 
@@ -265,10 +248,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
 
         /* 5- Finally, update the current position */
-        locationViewModel.getLocationLiveData().observe(viewLifecycleOwner) { loc ->
-            loc?.let {
-                onLocationReceived(loc)
-            }
+        locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
+            onLocationReceived(loc)
         }
     }
 
