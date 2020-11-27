@@ -1,21 +1,15 @@
 package com.peterlaurence.trekme.service
 
-import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.*
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
@@ -24,6 +18,8 @@ import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
+import com.peterlaurence.trekme.repositories.location.Location
+import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
@@ -46,10 +42,6 @@ import javax.inject.Inject
  * So when there is a Gpx recording, the user can always see it with the icon on the upper left
  * corner of the device.
  *
- * It uses the legacy location API in android.location, not the Google Location Services API, part
- * of Google Play Services. This is because we absolutely need to use only the [LocationManager.GPS_PROVIDER].
- * The fused provider don't give us the hand on that.
- *
  * @author P.Laurence on 17/12/17 -- converted to Kotlin on 20/04/19
  */
 @AndroidEntryPoint
@@ -64,10 +56,11 @@ class GpxRecordService : Service() {
     @Inject
     lateinit var eventBus: AppEventBus
 
+    @Inject
+    lateinit var locationSource: LocationSource
+
     private var serviceLooper: Looper? = null
     private var serviceHandler: Handler? = null
-    private var locationManager: LocationManager? = null
-    private var locationListener: LocationListener? = null
     private var locationCounter: Long = 0
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -92,44 +85,36 @@ class GpxRecordService : Service() {
         /* Prepare the stat calculator */
         trackStatCalculator = TrackStatCalculator()
 
-        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        locationListener = object : LocationListener {
-            override fun onLocationChanged(location: Location) {
-                locationCounter++
-                /* Drop points that aren't precise enough */
-                if (location.accuracy > 15) {
-                    return
-                }
-
-                /* Drop the first 3 points, so the GPS stabilizes */
-                if (locationCounter <= 3) {
-                    return
-                }
-
-                val altitude = if (location.altitude != 0.0) location.altitude else null
-                val trackPoint = TrackPoint(location.latitude,
-                        location.longitude, altitude, location.time, "")
-                repository.addTrackPoint(trackPoint)
-                trackStatCalculator?.addTrackPoint(trackPoint)
-                trackStatCalculator?.getStatistics()?.also { stats ->
-                    repository.postTrackStatistics(stats)
-                }
+        /* Listen to location data */
+        scope.launch {
+            locationSource.locationFlow.collect {
+                onLocationUpdate(it)
             }
-
-            override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
-
-            override fun onProviderEnabled(provider: String) {}
-
-            override fun onProviderDisabled(provider: String) {}
         }
-
-        startLocationUpdates()
 
         /* Register a subscriber coroutine to the stop signal */
         scope.launch {
             repository.stopRecordingSignal.collect {
                 createGpx()
             }
+        }
+    }
+
+    private fun onLocationUpdate(location: Location) {
+        locationCounter++
+
+        /* Drop the first 3 points, so the GPS stabilizes */
+        if (locationCounter <= 3) {
+            return
+        }
+
+        val altitude = if (location.altitude != 0.0) location.altitude else null
+        val trackPoint = TrackPoint(location.latitude,
+                location.longitude, altitude, location.time, "")
+        repository.addTrackPoint(trackPoint)
+        trackStatCalculator?.addTrackPoint(trackPoint)
+        trackStatCalculator?.getStatistics()?.also { stats ->
+            repository.postTrackStatistics(stats)
         }
     }
 
@@ -232,30 +217,8 @@ class GpxRecordService : Service() {
     }
 
     override fun onDestroy() {
-        stopLocationUpdates()
         serviceLooper?.quitSafely()
         scope.cancel()
-    }
-
-    /**
-     * Only use locations from the GPS.
-     */
-    private fun startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return
-        }
-        val locationListener = locationListener ?: return
-
-        runCatching {
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 2f, locationListener, serviceLooper)
-        }.onFailure {
-            eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_location_error)))
-        }
-    }
-
-    private fun stopLocationUpdates() {
-        locationListener?.also { locationManager?.removeUpdates(it) }
     }
 
     companion object {

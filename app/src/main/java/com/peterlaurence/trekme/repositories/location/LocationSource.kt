@@ -22,7 +22,8 @@ interface LocationSource {
  * [latitude] and [longitude] are in decimal degrees.
  * [speed] is in meters per second
  */
-data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float = 0f)
+data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float = 0f,
+                    val altitude: Double = 0.0, val time: Long = 0)
 
 /**
  * A [LocationSource] which uses Google's fused location provider. It combines all possible sources
@@ -33,14 +34,15 @@ data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val
 class GoogleLocationSource(private val applicationContext: Context) : LocationSource {
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
     private val locationRequest = LocationRequest().apply {
-        interval = 1000
-        fastestInterval = 1000
+        interval = 2000
+        fastestInterval = 2000
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
     /**
      * A conflated [SharedFlow] of [Location]s, with a replay of 1.
      * Automatically un-registers underlying callback when there are no collectors.
+     * TODO: Revert conflate and shareIn when #2408 is fixed
      */
     override val locationFlow: Flow<Location>
         get() = makeFlow(applicationContext).shareIn(
@@ -49,7 +51,7 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
                 1
         ).conflate()
 
-    private fun makeFlow(context: Context) : Flow<Location> {
+    private fun makeFlow(context: Context): Flow<Location> {
         val permission = ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -59,7 +61,7 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
             val callback = object : com.google.android.gms.location.LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult?) {
                     for (loc in locationResult?.locations ?: listOf()) {
-                        offer(Location(loc.latitude, loc.longitude, loc.speed))
+                        offer(Location(loc.latitude, loc.longitude, loc.speed, loc.altitude, loc.time))
                     }
                 }
             }
