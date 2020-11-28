@@ -53,7 +53,7 @@ class PositionMarker(context: Context): View(context) {
         positionBackgroundPaint.isAntiAlias = true
 
         /* Prepare the bitmap */
-        val bitmap = Bitmap.createBitmap(measureDimension, measureDimension, Bitmap.Config.ARGB_4444)
+        val bitmap = Bitmap.createBitmap(measureDimension, measureDimension, Bitmap.Config.ARGB_8888)
         val c = Canvas(bitmap)
         c.drawCircle(measureDimension / 2f, measureDimension / 2f, backgroundCircleDimension / 2f, positionBackgroundPaint)
         c.drawCircle(measureDimension / 2f, measureDimension / 2f, positionDimension / 2f, positionPaint)

@@ -118,7 +118,7 @@ public class PositionOrientationMarker extends View implements ReferentialOwner 
         }
 
         /* Prepare the bitmap */
-        mBitmap = Bitmap.createBitmap(mMeasureDimension, mMeasureDimension, Bitmap.Config.ARGB_4444);
+        mBitmap = Bitmap.createBitmap(mMeasureDimension, mMeasureDimension, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(mBitmap);
         c.drawCircle(mMeasureDimension / 2f, mMeasureDimension / 2f, mBackgroundCircleDimension / 2f, positionBackgroundPaint);
         c.drawCircle(mMeasureDimension / 2f, mMeasureDimension / 2f, mPositionDimension / 2f, positionPaint);
