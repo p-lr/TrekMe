@@ -88,10 +88,6 @@ class TileStreamProviderRetry(private val tileStreamProvider: TileStreamProvider
 class BitmapProvider(private val tileStreamProvider: TileStreamProvider, options: BitmapFactory.Options? = null) {
     private var bitmapLoadingOptions = options ?: BitmapFactory.Options()
 
-    init {
-        bitmapLoadingOptions.inPreferredConfig = Bitmap.Config.RGB_565
-    }
-
     fun getBitmap(row: Int, col: Int, zoomLvl: Int): Bitmap? {
         return try {
             val tileResult = tileStreamProvider.getTileStream(row, col, zoomLvl)

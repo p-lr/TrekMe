@@ -315,10 +315,10 @@ class DownloadService : Service() {
             tileWriter: TileWriter
     ) = launch(Dispatchers.IO) {
         while (started.value) {
-            val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.RGB_565)
+            val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
             val options = BitmapFactory.Options()
             options.inBitmap = bitmap
-            options.inPreferredConfig = Bitmap.Config.RGB_565
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888
             bitmapProvider.setBitmapOptions(options)
 
             val tile = tileIterator.next() ?: break

@@ -121,6 +121,7 @@ class TrekMeContextAndroid : TrekMeContext {
             defaultAppDir = dirs.firstOrNull()
             mapsDirList = dirs
         } else {
+            @Suppress("DEPRECATION")
             defaultAppDir = File(Environment.getExternalStorageDirectory(), appFolderName)
             val otherDirs = dirs.drop(1)
             mapsDirList = listOf(defaultAppDir!!) + otherDirs
