@@ -60,6 +60,11 @@ class PersistenceStrategy @Inject constructor(private val application: Applicati
                             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
                     )
                 } catch (e: Exception) {
+                    /* If the encrypted shared preference file comes from a previous installation
+                     * of the app, it can't be read back. So just remove it now.
+                     * The next time we access this property (to persist something), the file will
+                     * be successfully created. */
+                    application.applicationContext.deleteSharedPreferences(encryptedSharedPrefsName)
                     Log.e(TAG, e.stackTraceAsString())
                     null
                 }
