@@ -44,12 +44,13 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
      * Automatically un-registers underlying callback when there are no collectors.
      * TODO: Revert conflate and shareIn when #2408 is fixed
      */
-    override val locationFlow: Flow<Location>
-        get() = makeFlow(applicationContext).shareIn(
+    override val locationFlow: Flow<Location> by lazy {
+        makeFlow(applicationContext).shareIn(
                 ProcessLifecycleOwner.get().lifecycleScope,
                 SharingStarted.WhileSubscribed(),
                 1
         ).conflate()
+    }
 
     private fun makeFlow(context: Context): Flow<Location> {
         val permission = ActivityCompat.checkSelfPermission(
