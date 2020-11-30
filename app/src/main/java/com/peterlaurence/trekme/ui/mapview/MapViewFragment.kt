@@ -7,7 +7,6 @@ import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
@@ -310,15 +309,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     private fun getAndApplyMap() {
-        mapViewViewModel.getMap()?.let {
-            try {
-                if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-                    applyMap(it)
-                }
-            } catch (t: Throwable) {
-                // probably the fragment wasn't in the proper state
-            }
-        }
+        val map = mapViewViewModel.getMap()
+        if (map != null) applyMap(map)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

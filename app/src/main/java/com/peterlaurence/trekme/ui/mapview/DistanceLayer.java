@@ -35,16 +35,17 @@ import static com.peterlaurence.trekme.core.geotools.GeoToolsKt.distanceApprox;
 public class DistanceLayer implements ReferentialOwner {
     private HandlerThread mDistanceThread;
     private LimitedHandler mHandler;
-    private Context mContext;
+    private final Context mContext;
     private DistanceMarker mDistanceMarkerFirst;
     private DistanceMarker mDistanceMarkerSecond;
     private LineView mLineView;
     private TouchMoveListener mFirstTouchMoveListener;
     private TouchMoveListener mSecondTouchMoveListener;
     private boolean mVisible;
-    private DistanceListener mDistanceListener;
+    private final DistanceListener mDistanceListener;
     private MapView mMapView;
     private Map mMap;
+    private boolean isInitialized = false;
 
     private double mFirstMarkerRelativeX;
     private double mFirstMarkerRelativeY;
@@ -77,6 +78,7 @@ public class DistanceLayer implements ReferentialOwner {
     public void init(Map map, MapView mapView) {
         mMap = map;
         mMapView = mapView;
+        isInitialized = true;
     }
 
     public void destroy() {
@@ -95,6 +97,7 @@ public class DistanceLayer implements ReferentialOwner {
      * {@link #init(Map, MapView)} must have been called before.
      */
     public void show(@NotNull State state) {
+        if (!isInitialized) return;
         mMapView.addReferentialOwner(this);
 
         /* Create the DistanceView (the line between the two markers) */
@@ -278,7 +281,7 @@ public class DistanceLayer implements ReferentialOwner {
     private static class LimitedHandler extends Handler {
         private static final int DISTANCE_CALCULATION_TIMEOUT = 100;
         private static final int MESSAGE = 0;
-        private DistanceCalculationRunnable mDistanceRunnable;
+        private final DistanceCalculationRunnable mDistanceRunnable;
 
         LimitedHandler(Looper looper, DistanceCalculationRunnable task) {
             super(looper);
@@ -293,15 +296,15 @@ public class DistanceLayer implements ReferentialOwner {
         }
 
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NotNull Message msg) {
             post(mDistanceRunnable);
         }
     }
 
     private static class DistanceCalculationRunnable implements Runnable {
-        private Map mMap;
-        private Handler mPostExecuteHandler;
-        private UpdateDistanceListenerRunnable mPostExecuteTask;
+        private final Map mMap;
+        private final Handler mPostExecuteHandler;
+        private final UpdateDistanceListenerRunnable mPostExecuteTask;
         private volatile double mRelativeX1;
         private volatile double mRelativeY1;
         private volatile double mRelativeX2;
@@ -351,7 +354,7 @@ public class DistanceLayer implements ReferentialOwner {
 
     private static class UpdateDistanceListenerRunnable implements Runnable {
         private double mDistance;
-        private DistanceListener mDistanceListener;
+        private final DistanceListener mDistanceListener;
 
         UpdateDistanceListenerRunnable(DistanceListener listener) {
             mDistanceListener = listener;
