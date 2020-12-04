@@ -15,6 +15,7 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
     private val axisPaint = Paint().apply {
         strokeWidth = 2.px.toFloat()
         style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
         color = context.getColor(R.color.colorDarkGrey)
     }
 
@@ -48,13 +49,35 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         alpha = 180
     }
 
+    private val pointPaint = Paint().apply {
+        style = Paint.Style.FILL
+        isAntiAlias = true
+        color = context.getColor(R.color.colorAccent)
+    }
+
+    private val greyLinePaint = Paint().apply {
+        strokeWidth = 1.px.toFloat()
+        style = Paint.Style.STROKE
+        color = context.getColor(R.color.colorDarkGrey)
+    }
+
+    private val distancePaint = Paint().apply {
+        textSize = 12.px.toFloat()
+        style = Paint.Style.FILL
+        isAntiAlias = true
+        color = context.getColor(R.color.colorDarkGrey)
+    }
+
     private val padding = 8.px.toFloat()
     private val minAltitudeMargin = 16.px.toFloat()
     private val maxAltitudeMargin = 16.px.toFloat()
     private val maxDistanceMargin = 16.px.toFloat()
     private val highlightAltTxtPadding = 4.px.toFloat()
     private var highlightAltTxtOffsetX = 0f
-    private val highlightAltTxtOffsetY = 6.px.toFloat()
+    private val highlightAltTxtOffsetY = 10.px.toFloat()
+    private val pointRadius = 4.px.toFloat()
+    private var distTextOffsetX = 0f
+    private var distTextOffsetY = 0f
 
     private var points: List<AltPoint>? = null
     private var distMax: Double? = null
@@ -67,6 +90,7 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
     private val highlightPtRect = Rect()
     private val highlightPtBubble = RectF()
     private var altText: String = ""
+    private var distText: String = ""
 
     fun setPoints(points: List<AltPoint>, altMin: Double, altMax: Double) = post {
         val distMax = points.lastOrNull()?.dist ?: return@post
@@ -93,11 +117,14 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
 
         /* A dummy impl */
         // TODO : finish this
-        highlightPtX = translateX(points[2].dist, distMax)
-        highlightPtY = translateY(points[2].altitude, altRange)
+        val index = 3
+        highlightPtX = translateX(points[index].dist, distMax)
+        highlightPtY = translateY(points[index].altitude, altRange)
 
-        altText = formatDistance(points[2].altitude)
+        altText = formatDistance(points[index].altitude)
+        distText = formatDistance(points[index].dist)
         computeAltTextBubble(altText)
+        computeDistTextOffset(distText)
     }
 
     private fun makeArea(altitudeLine: Path, distMax: Double, altMax: Double): Path {
@@ -177,6 +204,15 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
                 highlightPtX - highlightAltTxtOffsetX,
                 highlightPtY - highlightAltTxtOffsetY, altitudeTextPaint)
 
+        /* Grey line */
+        canvas.drawLine(highlightPtX, highlightPtY, highlightPtX, yOrig, greyLinePaint)
+
+        /* Point */
+        canvas.drawCircle(highlightPtX, highlightPtY, pointRadius, pointPaint)
+
+        /* Distance text */
+        canvas.drawText(distText, highlightPtX + distTextOffsetX, yOrig + distTextOffsetY, distancePaint)
+
         super.onDraw(canvas)
     }
 
@@ -198,5 +234,20 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
             right = highlightPtX + b.right.toFloat() + p - offsetX
             bottom = highlightPtY + b.bottom.toFloat() + p - offsetY
         }
+    }
+
+    private fun computeDistTextOffset(distText: String) {
+        val r = Rect()
+        distancePaint.getTextBounds(distText, 0, distText.length, r)
+        val margin = 4.px.toFloat()
+        distTextOffsetX = if (highlightPtX + (r.right - r.left) / 2 > right) {
+            r.left - r.right - margin
+        } else if (highlightPtX + (r.right - r.left) / 2 < padding) {
+            margin
+        } else {
+            (r.left - r.right) / 2f
+        }
+
+        distTextOffsetY = r.bottom - r.top + 2.px.toFloat()
     }
 }
