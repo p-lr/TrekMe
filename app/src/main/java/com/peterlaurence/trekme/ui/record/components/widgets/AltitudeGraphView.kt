@@ -1,12 +1,11 @@
 package com.peterlaurence.trekme.ui.record.components.widgets
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.util.formatDistance
 import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.record.AltPoint
 
@@ -35,20 +34,70 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         alpha = 100
     }
 
+    private val altitudeTextPaint = Paint().apply {
+        color = Color.WHITE
+        textSize = 12.px.toFloat()
+        isAntiAlias = true
+        style = Paint.Style.FILL
+    }
+
+    private val altitudeTextBgPaint = Paint().apply {
+        color = Color.BLACK
+        isAntiAlias = true
+        style = Paint.Style.FILL
+        alpha = 180
+    }
+
     private val padding = 8.px.toFloat()
     private val minAltitudeMargin = 16.px.toFloat()
     private val maxAltitudeMargin = 16.px.toFloat()
     private val maxDistanceMargin = 16.px.toFloat()
+    private val highlightAltTxtPadding = 4.px.toFloat()
+    private var highlightAltTxtOffsetX = 0f
+    private val highlightAltTxtOffsetY = 6.px.toFloat()
 
-    private var altitudeLine: Path? = null
+    private var points: List<AltPoint>? = null
+    private var distMax: Double? = null
+    private var altMax: Double? = null
+    private var altMin: Double? = null
+    private var altitudeProfile: Path? = null
     private var areaPath = Path()
+    private var highlightPtX = 0f
+    private var highlightPtY = 0f
+    private val highlightPtRect = Rect()
+    private val highlightPtBubble = RectF()
+    private var altText: String = ""
 
     fun setPoints(points: List<AltPoint>, altMin: Double, altMax: Double) = post {
         val distMax = points.lastOrNull()?.dist ?: return@post
+        this.distMax = distMax
+        this.points = points
+        this.altMax = altMax
+        this.altMin = altMin
 
-        altitudeLine = points.toPath(distMax, altMax, altMin)
-        areaPath = makeArea(altitudeLine!!, distMax, altMax)
+        altitudeProfile = points.toPath(distMax, altMax, altMin)
+        areaPath = makeArea(altitudeProfile!!, distMax, altMax)
         invalidate()
+    }
+
+    /**
+     * Highlight and show the altitude of a point of the altitude profile, given the percent of the
+     * total distance.
+     */
+    fun setHighlightPt(percent: Int) = post {
+        val points = points ?: return@post
+        val distMax = distMax ?: return@post
+        val altMin = altMin
+        val altMax = altMax
+        val altRange = if (altMin != null && altMax != null) altMax - altMin else return@post
+
+        /* A dummy impl */
+        // TODO : finish this
+        highlightPtX = translateX(points[2].dist, distMax)
+        highlightPtY = translateY(points[2].altitude, altRange)
+
+        altText = formatDistance(points[2].altitude)
+        computeAltTextBubble(altText)
     }
 
     private fun makeArea(altitudeLine: Path, distMax: Double, altMax: Double): Path {
@@ -98,14 +147,15 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         setPoints(listOf(
                 AltPoint(0.0, 55.0),
                 AltPoint(150.0, 100.0),
-                AltPoint(1000.0, 0.0),
+                AltPoint(1000.0, 15.0),
                 AltPoint(1500.0, 30.0)
         ), 0.0, 100.0)
+        setHighlightPt(50)
     }
 
 
     override fun onDraw(canvas: Canvas) {
-        val altitudeLine = altitudeLine ?: return
+        val altitudeLine = altitudeProfile ?: return
         val xOrig = padding
         val yOrig = height - padding
 
@@ -119,6 +169,34 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         canvas.drawLine(xOrig, yOrig, width - padding, yOrig, axisPaint)
         canvas.drawLine(xOrig, yOrig, xOrig, padding, axisPaint)
 
+        /* Altitude text and bubble */
+        canvas.drawRoundRect(
+                highlightPtBubble, 6f, 6f, altitudeTextBgPaint
+        )
+        canvas.drawText(altText,
+                highlightPtX - highlightAltTxtOffsetX,
+                highlightPtY - highlightAltTxtOffsetY, altitudeTextPaint)
+
         super.onDraw(canvas)
+    }
+
+    private fun computeAltTextBubble(altText: String) {
+        altitudeTextPaint.getTextBounds(altText, 0, altText.length, highlightPtRect)
+        val b = highlightPtRect
+        val p = highlightAltTxtPadding
+        val offsetX = if (highlightPtX - (b.right - b.left) / 2f - p > padding) {
+            (b.right - b.left) / 2f
+        } else {
+            highlightPtX - padding - p
+        }
+        highlightAltTxtOffsetX = offsetX
+        val offsetY = highlightAltTxtOffsetY
+
+        with(highlightPtBubble) {
+            left = highlightPtX + b.left.toFloat() - p - offsetX
+            top = highlightPtY + b.top.toFloat() - p - offsetY
+            right = highlightPtX + b.right.toFloat() + p - offsetX
+            bottom = highlightPtY + b.bottom.toFloat() + p - offsetY
+        }
     }
 }
