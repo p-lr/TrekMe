@@ -145,7 +145,7 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         }
 
         highlightPtX = translateX(virtualPoint.dist, distMax)
-        highlightPtY = translateY(virtualPoint.altitude, altRange)
+        highlightPtY = translateY(virtualPoint.altitude - altMin, altRange)
 
         altText = formatDistance(virtualPoint.altitude)
         distText = formatDistance(virtualPoint.dist)
@@ -210,10 +210,10 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         setPoints(listOf(
                 AltPoint(0.0, 55.0),
                 AltPoint(150.0, 100.0),
-                AltPoint(1000.0, 15.0),
+                AltPoint(1000.0, -50.0),
                 AltPoint(1500.0, 30.0)
-        ), 0.0, 100.0)
-        setHighlightPt(35)
+        ), -50.0, 100.0)
+        setHighlightPt(50)
     }
 
 
