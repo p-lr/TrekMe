@@ -68,7 +68,10 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         color = context.getColor(R.color.colorDarkGrey)
     }
 
-    private val padding = 8.px.toFloat()
+    private val paddingLeft = 8.px.toFloat()
+    private val paddingRight = paddingLeft
+    private val paddingTop = 8.px.toFloat()
+    private val paddingBottom = 16.px.toFloat()
     private val minAltitudeMargin = 16.px.toFloat()
     private val maxAltitudeMargin = 16.px.toFloat()
     private val maxDistanceMargin = 16.px.toFloat()
@@ -117,7 +120,7 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
 
         /* A dummy impl */
         // TODO : finish this
-        val index = 3
+        val index = 0
         highlightPtX = translateX(points[index].dist, distMax)
         highlightPtY = translateY(points[index].altitude, altRange)
 
@@ -132,11 +135,11 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         path.addPath(altitudeLine)
         path.lineTo(
                 translateX(distMax, distMax),
-                height.toFloat() - padding
+                height.toFloat() - paddingBottom
         )
         path.lineTo(
                 translateX(0.0, distMax),
-                height.toFloat() - padding
+                height.toFloat() - paddingBottom
         )
 
         path.close()
@@ -161,12 +164,12 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
     }
 
     private fun translateX(x: Double, xRange: Double): Float {
-        return padding + ((width - 2 * padding - maxDistanceMargin) * x / xRange).toFloat()
+        return paddingLeft + ((width - paddingLeft - paddingRight - maxDistanceMargin) * x / xRange).toFloat()
     }
 
     private fun translateY(y: Double, yRange: Double): Float {
-        return height - padding - minAltitudeMargin -
-                ((height - 2 * padding - minAltitudeMargin - maxAltitudeMargin) * y / yRange).toFloat()
+        return height - paddingBottom - minAltitudeMargin -
+                ((height - paddingBottom - paddingTop - minAltitudeMargin - maxAltitudeMargin) * y / yRange).toFloat()
     }
 
     init {
@@ -183,8 +186,8 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
 
     override fun onDraw(canvas: Canvas) {
         val altitudeLine = altitudeProfile ?: return
-        val xOrig = padding
-        val yOrig = height - padding
+        val xOrig = paddingLeft
+        val yOrig = height - paddingBottom
 
         /* Altitude line */
         canvas.drawPath(altitudeLine, linePaint)
@@ -193,8 +196,8 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         canvas.drawPath(areaPath, areaPaint)
 
         /* Axis */
-        canvas.drawLine(xOrig, yOrig, width - padding, yOrig, axisPaint)
-        canvas.drawLine(xOrig, yOrig, xOrig, padding, axisPaint)
+        canvas.drawLine(xOrig, yOrig, width - paddingRight, yOrig, axisPaint)
+        canvas.drawLine(xOrig, yOrig, xOrig, paddingTop, axisPaint)
 
         /* Altitude text and bubble */
         canvas.drawRoundRect(
@@ -220,10 +223,12 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         altitudeTextPaint.getTextBounds(altText, 0, altText.length, highlightPtRect)
         val b = highlightPtRect
         val p = highlightAltTxtPadding
-        val offsetX = if (highlightPtX - (b.right - b.left) / 2f - p > padding) {
-            (b.right - b.left) / 2f
+        val offsetX = if (highlightPtX - (b.right - b.left) / 2f - p < paddingLeft) {
+            highlightPtX - paddingLeft - p
+        } else if (highlightPtX + (b.right - b.left) / 2f + p > right) {
+            highlightPtX + b.right + p - right + paddingLeft
         } else {
-            highlightPtX - padding - p
+            (b.right - b.left) / 2f
         }
         highlightAltTxtOffsetX = offsetX
         val offsetY = highlightAltTxtOffsetY
@@ -239,11 +244,11 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
     private fun computeDistTextOffset(distText: String) {
         val r = Rect()
         distancePaint.getTextBounds(distText, 0, distText.length, r)
-        val margin = 4.px.toFloat()
-        distTextOffsetX = if (highlightPtX + (r.right - r.left) / 2 > right) {
-            r.left - r.right - margin
-        } else if (highlightPtX + (r.right - r.left) / 2 < padding) {
-            margin
+        val p = highlightAltTxtPadding
+        distTextOffsetX = if (highlightPtX + (r.right - r.left) / 2 > right - paddingLeft) {
+            right - highlightPtX - paddingLeft + r.left - r.right - p
+        } else if (highlightPtX - (r.right - r.left) / 2 < paddingLeft) {
+            paddingLeft - highlightPtX
         } else {
             (r.left - r.right) / 2f
         }
