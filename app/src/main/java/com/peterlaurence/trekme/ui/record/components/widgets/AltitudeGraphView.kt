@@ -95,6 +95,12 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
     private var altText: String = ""
     private var distText: String = ""
 
+    /**
+     * Set the list of [AltPoint], which is *assumed* to be sorted by distance.
+     * In order to avoid the traversal cost of the provided list, the caller is responsible for
+     * providing the actual minimum and maximum altitudes. Failure to provide correct values will
+     * result in an incorrect render.
+     */
     fun setPoints(points: List<AltPoint>, altMin: Double, altMax: Double) = post {
         val distMax = points.lastOrNull()?.dist ?: return@post
         this.distMax = distMax
@@ -113,6 +119,8 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
     /**
      * Highlight and show the altitude of a point of the altitude profile, given the percent of the
      * total distance.
+     *
+     * @param percent As [Int] between 0 and 100
      */
     fun setHighlightPt(percent: Int) = post {
         val points = points ?: return@post
@@ -144,6 +152,14 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
 
         computeAltTextBubble(altText)
         computeDistTextOffset(distText)
+    }
+
+    /**
+     * Returns the width in pixels of the usable part of the graph. Call this only after this view
+     * is laid out. This is useful information for client code to compute the sampling of [points].
+     */
+    fun getDrawingWidth(): Int {
+        return right - paddingLeft.toInt() - paddingRight.toInt() - maxDistanceMargin.toInt()
     }
 
     private fun makeArea(altitudeLine: Path, distMax: Double): Path {
@@ -189,6 +205,8 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
 
     init {
         setWillNotDraw(false)
+
+        // TODO: Remove this
         setPoints(listOf(
                 AltPoint(0.0, 55.0),
                 AltPoint(150.0, 100.0),
