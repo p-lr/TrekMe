@@ -102,8 +102,11 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         this.altMax = altMax
         this.altMin = altMin
 
-        altitudeProfile = points.toPath(distMax, altMax, altMin)
-        areaPath = makeArea(altitudeProfile!!, distMax, altMax)
+        val altitudeProfile = points.toPath(distMax, altMax, altMin)
+        this.altitudeProfile = altitudeProfile
+        if (altitudeProfile != null) {
+            areaPath = makeArea(altitudeProfile, distMax)
+        }
         invalidate()
     }
 
@@ -114,23 +117,36 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
     fun setHighlightPt(percent: Int) = post {
         val points = points ?: return@post
         val distMax = distMax ?: return@post
+        if (points.isEmpty()) return@post
         val altMin = altMin
         val altMax = altMax
         val altRange = if (altMin != null && altMax != null) altMax - altMin else return@post
 
-        /* A dummy impl */
-        // TODO : finish this
-        val index = 0
-        highlightPtX = translateX(points[index].dist, distMax)
-        highlightPtY = translateY(points[index].altitude, altRange)
+        val virtualPoint = if (points.size == 1) {
+            points[0]
+        } else {
+            val virtDist = (percent / 100.0) * distMax
+            val nextDistIndex = points.indexOfFirst { it.dist > virtDist }.let {
+                if (it == -1) points.lastIndex else it
+            }
+            val prevPt = points[nextDistIndex - 1]
+            val nextPt = points[nextDistIndex]
+            val factor = (virtDist - prevPt.dist) / (nextPt.dist - prevPt.dist)
+            val alt = factor * nextPt.altitude + (1 - factor) * prevPt.altitude
+            AltPoint(virtDist, alt)
+        }
 
-        altText = formatDistance(points[index].altitude)
-        distText = formatDistance(points[index].dist)
+        highlightPtX = translateX(virtualPoint.dist, distMax)
+        highlightPtY = translateY(virtualPoint.altitude, altRange)
+
+        altText = formatDistance(virtualPoint.altitude)
+        distText = formatDistance(virtualPoint.dist)
+
         computeAltTextBubble(altText)
         computeDistTextOffset(distText)
     }
 
-    private fun makeArea(altitudeLine: Path, distMax: Double, altMax: Double): Path {
+    private fun makeArea(altitudeLine: Path, distMax: Double): Path {
         val path = Path()
         path.addPath(altitudeLine)
         path.lineTo(
@@ -147,7 +163,6 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
     }
 
     private fun List<AltPoint>.toPath(distMax: Double, altMax: Double, altMin: Double): Path? {
-        if (size < 2) return null
         val path = Path()
         val firstPt: AltPoint = firstOrNull() ?: return null
         val x0 = translateX(0.0, distMax)
@@ -180,7 +195,7 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
                 AltPoint(1000.0, 15.0),
                 AltPoint(1500.0, 30.0)
         ), 0.0, 100.0)
-        setHighlightPt(50)
+        setHighlightPt(35)
     }
 
 
