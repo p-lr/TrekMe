@@ -10,6 +10,7 @@ import androidx.preference.SeekBarPreference
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
+import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -23,6 +24,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by viewModels()
 
     private var startOnPref: ListPreference? = null
+    private var measurementSystemPref: ListPreference? = null
     private var rootFolderPref: ListPreference? = null
     private var magnifyingPref: ListPreference? = null
     private var rotationModePref: ListPreference? = null
@@ -52,6 +54,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 updateStartOnPolicy(policy)
             }
         })
+
+        viewModel.measurementSystemLiveData.observe(this) {
+            it?.let { updateMeasurementSystem(it) }
+        }
 
         viewModel.magnifyingFactorLiveData.observe(this, Observer {
             it?.let {
@@ -96,6 +102,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
         startOnPref?.setSummaryAndValue(txt)
     }
 
+    private fun updateMeasurementSystem(system: MeasurementSystem) {
+        val txt = when (system) {
+            MeasurementSystem.METRIC -> getString(R.string.metric_system)
+            MeasurementSystem.IMPERIAL -> getString(R.string.imperial_system)
+        }
+
+        measurementSystemPref?.setSummaryAndValue(txt)
+    }
+
     private fun updateMagnifyingFactor(factor: Int) {
         magnifyingPref?.setSummaryAndValue(factor.toString())
     }
@@ -121,6 +136,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun initComponents() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
+        measurementSystemPref = preferenceManager.findPreference(getString(R.string.preference_measurement_system))
         rootFolderPref = preferenceManager.findPreference(getString(R.string.preference_root_location_key))
         magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
         rotationModePref = preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
@@ -142,6 +158,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 else -> StartOnPolicy.MAP_LIST
             }
             viewModel.setStartOnPolicy(policy)
+            true
+        }
+
+        measurementSystemPref?.setOnPreferenceChangeListener { _, newValue ->
+            measurementSystemPref?.setSummaryAndValue(newValue as String)
+            val system = when (newValue) {
+                getString(R.string.metric_system) -> MeasurementSystem.METRIC
+                getString(R.string.imperial_system) -> MeasurementSystem.IMPERIAL
+                else -> MeasurementSystem.METRIC
+            }
+            viewModel.setMeasurementSystem(system)
             true
         }
 

@@ -5,7 +5,8 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.util.formatDistance
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatElevation
 import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.record.AltPoint
 
@@ -147,7 +148,7 @@ class AltitudeGraphView @JvmOverloads constructor(context: Context, attrs: Attri
         highlightPtX = translateX(virtualPoint.dist, distMax)
         highlightPtY = translateY(virtualPoint.altitude - altMin, altRange)
 
-        altText = formatDistance(virtualPoint.altitude)
+        altText = formatElevation(virtualPoint.altitude)
         distText = formatDistance(virtualPoint.dist)
 
         computeAltTextBubble(altText)

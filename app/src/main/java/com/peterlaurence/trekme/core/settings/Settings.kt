@@ -3,8 +3,10 @@ package com.peterlaurence.trekme.core.settings
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.icu.util.LocaleData
 import androidx.core.content.edit
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.units.MeasurementSystem
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,6 +27,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val lastMapId = "lastMapId"
     private val defineScaleWhenCentered = "defineScaleWhenCentered"
     private val scaleCentered = "scaleCentered"
+    private val measurementSystem = "measurementSystem"
     private val locationDisclaimer = "locationDisclaimer"
 
     /**
@@ -120,6 +123,20 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
      */
     fun getScaleCentered(): Float {
         return sharedPref.getFloat(scaleCentered, 1f)
+    }
+
+    fun getMeasurementSystem(): MeasurementSystem {
+        return when(sharedPref.getString(measurementSystem, null)) {
+            MeasurementSystem.METRIC.name -> MeasurementSystem.METRIC
+            MeasurementSystem.IMPERIAL.name -> MeasurementSystem.IMPERIAL
+            else -> MeasurementSystem.METRIC
+        }
+    }
+
+    fun setMeasurementSystem(system: MeasurementSystem) {
+        sharedPref.edit {
+            putString(measurementSystem, system.name)
+        }
     }
 
     fun setFavoriteMapIds(ids: List<Int>) {

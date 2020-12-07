@@ -270,6 +270,10 @@
     <string name="preference_starton_title">Start TrekMe on</string>
     <string name="preference_starton_maplist">the map list</string>
     <string name="preference_starton_lastmap">the last map</string>
+    <string name="preference_measurement_system" translatable="false">pref_measurement_system</string>
+    <string name="preference_measurement_system_title">Measurement system</string>
+    <string name="metric_system">Metric system</string>
+    <string name="imperial_system">Imperial system (miles)</string>
     <string name="root_folder_category">Root folder</string>
     <string name="preference_root_location_key" translatable="false">pref_download_location</string>
     <string name="preference_root_location_title">Selected folder</string>

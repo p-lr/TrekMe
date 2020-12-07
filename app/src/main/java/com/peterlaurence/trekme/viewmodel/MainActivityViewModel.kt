@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.events.WarningMessage
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
+import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -46,7 +47,8 @@ class MainActivityViewModel @ViewModelInject constructor(
     val showMapViewSignal = _showMapViewSignal.asSharedFlow()
 
     /**
-     * When the [MainActivity] first starts, we init the [TrekMeContext]. Then, we either:
+     * When the [MainActivity] first starts, we init the [TrekMeContext] and the [UnitFormatter].
+     * Then, we either:
      * * show the last viewed map
      * * show the map list
      */
@@ -62,6 +64,9 @@ class MainActivityViewModel @ViewModelInject constructor(
             trekMeContext.mapsDirList?.also { dirList ->
                 mapLoader.updateMaps(dirList)
             }
+
+            /* Get user-pref about metric or imperial system */
+            UnitFormatter.system = settings.getMeasurementSystem()
 
             when (settings.getStartOnPolicy()) {
                 StartOnPolicy.MAP_LIST -> _showMapListSignal.emit(Unit)

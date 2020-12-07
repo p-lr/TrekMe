@@ -27,10 +27,10 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.route.Barycenter
 import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
-import com.peterlaurence.trekme.util.formatDistance
 import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.mapview.LiveRoute
 import kotlinx.coroutines.*

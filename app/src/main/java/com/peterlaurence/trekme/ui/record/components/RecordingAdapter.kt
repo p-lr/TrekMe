@@ -11,9 +11,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
-import com.peterlaurence.trekme.util.formatDistance
-import com.peterlaurence.trekme.util.formatDuration
-import com.peterlaurence.trekme.util.formatSpeed
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatElevation
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatSpeed
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import java.io.File
 import java.util.*
@@ -90,10 +91,10 @@ class RecordingAdapter(
         distanceText.text = formatDistance(stat.distance)
 
         val elevationUpStackText = findViewById<TextView>(R.id.record_item_up_stat)
-        elevationUpStackText.text = "+".plus(formatDistance(stat.elevationUpStack))
+        elevationUpStackText.text = "+".plus(formatElevation(stat.elevationUpStack))
 
         val elevationDownStackText = findViewById<TextView>(R.id.record_item_down_stat)
-        elevationDownStackText.text = "-".plus(formatDistance(stat.elevationDownStack))
+        elevationDownStackText.text = "-".plus(formatElevation(stat.elevationDownStack))
 
         val chronoStatText = findViewById<TextView>(R.id.record_item_chrono_stat)
         chronoStatText.text = stat.durationInSecond?.let { formatDuration(it) } ?: "-"

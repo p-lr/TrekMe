@@ -524,7 +524,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         /* If the user wants to see the speed */
-        speedListener?.onSpeed(location.speed, SpeedUnit.KM_H)
+        speedListener?.onSpeed(location.speed)
     }
 
     /**
@@ -667,20 +667,15 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    enum class SpeedUnit {
-        KM_H, MPH
-    }
-
     /**
-     * As the `MapViewFragment` receives speed data, it can dispatch speed
+     * As this fragment receives speed data, it can dispatch speed
      * information to other sub-components.
      */
     interface SpeedListener {
         /**
          * @param speed speed in meters per second
-         * @param unit the desired unit to use for display
          */
-        fun onSpeed(speed: Float, unit: SpeedUnit)
+        fun onSpeed(speed: Float)
 
         fun toggleSpeedVisibility()
 

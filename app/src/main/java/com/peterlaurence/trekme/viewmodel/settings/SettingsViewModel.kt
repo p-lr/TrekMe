@@ -9,6 +9,8 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
+import com.peterlaurence.trekme.core.units.MeasurementSystem
+import com.peterlaurence.trekme.core.units.UnitFormatter
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -30,6 +32,8 @@ class SettingsViewModel @ViewModelInject constructor(
     val defineScaleCentered: LiveData<Boolean> = _defineScaleCentered
     private val _scaleCentered = MutableLiveData<Float>()
     val scaleCentered: LiveData<Float> = _scaleCentered
+    private val _measurementSystemLiveData = MutableLiveData<MeasurementSystem>()
+    val measurementSystemLiveData: LiveData<MeasurementSystem> = _measurementSystemLiveData
 
     /* For instance the need is only to fetch settings once */
     init {
@@ -54,6 +58,9 @@ class SettingsViewModel @ViewModelInject constructor(
 
         /* Scale centered */
         _scaleCentered.value = settings.getScaleCentered()
+
+        /* Measurement system */
+        _measurementSystemLiveData.value = settings.getMeasurementSystem()
     }
 
     fun setDownloadDirPath(newPath: String) {
@@ -64,6 +71,12 @@ class SettingsViewModel @ViewModelInject constructor(
     fun setStartOnPolicy(policy: StartOnPolicy) {
         _startOnPolicyLiveData.postValue(policy)
         settings.setStartOnPolicy(policy)
+    }
+
+    fun setMeasurementSystem(system: MeasurementSystem) {
+        UnitFormatter.system = system
+        _measurementSystemLiveData.postValue(system)
+        settings.setMeasurementSystem(system)
     }
 
     fun setMagnifyingFactor(factor: Int) {

@@ -7,7 +7,14 @@
             android:title="@string/preference_starton_title"
             android:entries="@array/starton_options"
             android:entryValues="@array/starton_options"/>
+
+        <ListPreference
+            android:key="@string/preference_measurement_system"
+            android:title="@string/preference_measurement_system_title"
+            android:entries="@array/measurement_systems"
+            android:entryValues="@array/measurement_systems"/>
     </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/root_folder_category">
 
         <ListPreference

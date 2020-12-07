@@ -237,4 +237,7 @@
     <string name="color_variant_normal">Normale</string>
     <string name="color_variant_light">Claire</string>
     <string name="color_variant_dark">Foncée</string>
+    <string name="preference_measurement_system_title">Unités de mesure</string>
+    <string name="metric_system">Système métrique</string>
+    <string name="imperial_system">Système impérial (miles)</string>
 </resources>

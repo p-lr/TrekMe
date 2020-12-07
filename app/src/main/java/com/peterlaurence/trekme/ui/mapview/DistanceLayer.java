@@ -20,7 +20,6 @@ import com.peterlaurence.trekme.ui.mapview.components.LineView;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static com.peterlaurence.mapview.api.MarkerApiKt.addMarker;
 import static com.peterlaurence.mapview.api.MarkerApiKt.moveMarker;
@@ -255,17 +254,11 @@ public class DistanceLayer implements ReferentialOwner {
         mHandler = null;
     }
 
-    public enum DistanceUnit {
-        KM, METERS, MILES
-    }
-
     public interface DistanceListener {
         /**
          * @param distance the numeric value of the distance, in meters
-         * @param unit     the unit in which the value has to be converted and shown, or {@code null} if
-         *                 the conversion is delegated to the view.
          */
-        void onDistance(float distance, @Nullable DistanceUnit unit);
+        void onDistance(float distance);
 
         void toggleDistanceVisibility();
 
@@ -366,7 +359,7 @@ public class DistanceLayer implements ReferentialOwner {
 
         @Override
         public void run() {
-            mDistanceListener.onDistance((float) mDistance, null);
+            mDistanceListener.onDistance((float) mDistance);
         }
     }
 

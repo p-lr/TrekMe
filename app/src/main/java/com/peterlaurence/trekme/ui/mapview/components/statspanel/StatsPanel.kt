@@ -5,12 +5,13 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayout
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatElevation
 import com.peterlaurence.trekme.databinding.StatsPanelLayoutBinding
-import com.peterlaurence.trekme.util.formatDistance
-import com.peterlaurence.trekme.util.formatDuration
 
 class StatsPanel @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null,
-                                           defStyleAttr: Int = 0): FlexboxLayout(context, attrs, defStyleAttr) {
+                                           defStyleAttr: Int = 0) : FlexboxLayout(context, attrs, defStyleAttr) {
 
     private val binding: StatsPanelLayoutBinding
 
@@ -25,11 +26,11 @@ class StatsPanel @JvmOverloads constructor(context: Context, attrs: AttributeSet
     }
 
     fun setElevationUp(elevationUp: Double) {
-        binding.statElevationUp.setText(formatDistance(elevationUp))
+        binding.statElevationUp.setText(formatElevation(elevationUp))
     }
 
     fun setElevationDown(elevationDown: Double) {
-        binding.statElevationDown.setText(formatDistance(elevationDown))
+        binding.statElevationDown.setText(formatElevation(elevationDown))
     }
 
     fun setChrono(chrono: Long?) {
