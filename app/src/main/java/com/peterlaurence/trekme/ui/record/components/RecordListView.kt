@@ -65,6 +65,7 @@ class RecordListView @JvmOverloads constructor(
         val editNameButton = findViewById<ImageButton>(R.id.edit_recording_button)
         val importButton = findViewById<ImageButton>(R.id.import_track_button)
         val shareButton = findViewById<ImageButton>(R.id.share_track_button)
+        val elevationGraphButton = findViewById<ImageButton>(R.id.elevation_track_button)
         val deleteRecordingButton = findViewById<ImageButton>(R.id.delete_recording_button)
 
         editNameButton.isEnabled = false
@@ -85,6 +86,11 @@ class RecordListView @JvmOverloads constructor(
             }
         }
 
+        elevationGraphButton.setOnClickListener {
+            val selected = selectedRecordings.firstOrNull()
+            if (selected != null) listener?.onRequestShowElevationGraph(selected)
+        }
+
         deleteRecordingButton.setOnClickListener {
             listener?.onRequestDeleteRecordings(selectedRecordings)
         }
@@ -97,7 +103,9 @@ class RecordListView @JvmOverloads constructor(
 
         recyclerView?.addOnItemTouchListener(RecyclerItemClickListener(this.context,
                 recyclerView, object : RecyclerItemClickListener.OnItemClickListener {
-            private fun updateShareAndDeleteButtons() {
+            val accentTint = resources.getColor(R.color.colorAccent, null)
+
+            private fun updateButtons() {
                 if (selectedRecordings.isEmpty()) {
                     shareButton.isEnabled = false
                     shareButton.drawable.setTint(Color.GRAY)
@@ -105,7 +113,7 @@ class RecordListView @JvmOverloads constructor(
                     deleteRecordingButton.visibility = View.GONE
                 } else {
                     shareButton.isEnabled = true
-                    shareButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
+                    shareButton.drawable.setTint(accentTint)
 
                     deleteRecordingButton.visibility = View.VISIBLE
                 }
@@ -120,16 +128,19 @@ class RecordListView @JvmOverloads constructor(
                 } else {
                     singleSelect(position)
                     editNameButton.isEnabled = true
-                    editNameButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
+                    editNameButton.drawable.setTint(accentTint)
 
                     importButton.isEnabled = true
-                    importButton.drawable.setTint(resources.getColor(R.color.colorAccent, null))
+                    importButton.drawable.setTint(accentTint)
+
+                    elevationGraphButton.isEnabled = true
+                    elevationGraphButton.drawable.setTint(accentTint)
 
                     recordingAdapter?.setSelectedRecordings(selectedRecordings)
                     recordingAdapter?.notifyDataSetChanged()
                 }
 
-                updateShareAndDeleteButtons()
+                updateButtons()
             }
 
             override fun onItemLongClick(view: View, position: Int) {
@@ -139,6 +150,8 @@ class RecordListView @JvmOverloads constructor(
                     editNameButton.drawable.setTint(Color.GRAY)
                     importButton.isEnabled = false
                     importButton.drawable.setTint(Color.GRAY)
+                    elevationGraphButton.isEnabled = false
+                    elevationGraphButton.drawable.setTint(Color.GRAY)
                     multiSelect(position)
                     recordingAdapter?.setSelectedRecordings(selectedRecordings)
                     recordingAdapter?.notifyDataSetChanged()
@@ -148,7 +161,7 @@ class RecordListView @JvmOverloads constructor(
                 }
                 isMultiSelectMode = !isMultiSelectMode
 
-                updateShareAndDeleteButtons()
+                updateButtons()
             }
         }))
     }
@@ -181,6 +194,7 @@ class RecordListView @JvmOverloads constructor(
         fun onRequestShareRecording(recordings: List<File>)
         fun onRequestChooseMap()
         fun onRequestEditRecording(recording: File)
+        fun onRequestShowElevationGraph(file: File)
         fun onRequestDeleteRecordings(recordings: List<File>)
         fun onSelectionChanged(recordings: List<File>)
     }

@@ -54,7 +54,7 @@ class RecordFragment : Fragment() {
     lateinit var appEventBus: AppEventBus
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
         _binding = FragmentRecordBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -145,6 +145,10 @@ class RecordFragment : Fragment() {
                     val editFieldDialog = TrackFileNameEdit.newInstance(getString(R.string.track_file_name_change), recordingName)
                     editFieldDialog.show(fragmentActivity.supportFragmentManager, "EditFieldDialog" + recording.name)
                 }
+            }
+
+            override fun onRequestShowElevationGraph(file: File) {
+                println("Show elevation for ${file.name}")
             }
 
             override fun onRequestDeleteRecordings(recordings: List<File>) {

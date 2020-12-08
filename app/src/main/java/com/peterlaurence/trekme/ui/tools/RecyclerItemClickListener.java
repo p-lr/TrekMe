@@ -1,17 +1,19 @@
 package com.peterlaurence.trekme.ui.tools;
 
 import android.content.Context;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * @author P.Laurence on 28/01/18.
  */
 public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
-    private OnItemClickListener mListener;
-    private GestureDetector mGestureDetector;
+    private final OnItemClickListener mListener;
+    private final GestureDetector mGestureDetector;
 
     public RecyclerItemClickListener(Context context, final RecyclerView recyclerView, OnItemClickListener listener) {
         mListener = listener;
@@ -27,7 +29,7 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
                 View childView = recyclerView.findChildViewUnder(e.getX(), e.getY());
 
                 if (childView != null && mListener != null) {
-                    mListener.onItemLongClick(childView, recyclerView.getChildPosition(childView));
+                    mListener.onItemLongClick(childView, recyclerView.getChildAdapterPosition(childView));
                 }
             }
         });
@@ -45,7 +47,7 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
     }
 
     @Override
-    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+    public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
 
     }
 

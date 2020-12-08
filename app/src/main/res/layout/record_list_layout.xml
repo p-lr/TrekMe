@@ -56,6 +56,19 @@
         app:layout_constraintStart_toEndOf="@+id/import_track_button" />
 
     <ImageButton
+        android:id="@+id/elevation_track_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/ripple"
+        android:src="@drawable/elevation_graph"
+        android:tint="@color/colorGrey"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/share_track_button" />
+
+    <ImageButton
         android:id="@+id/delete_recording_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
