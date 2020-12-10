@@ -51,7 +51,7 @@ public class Map {
     private MapBounds mMapBounds;
     private boolean isFavorite = false;
     /* The Java Object corresponding to the json configuration file */
-    private MapGson mMapGson;
+    private final MapGson mMapGson;
     /* The Java Object corresponding to the json file of markers */
     private MarkerGson mMarkerGson;
     /* The Java Object corresponding to the json file of routes */
@@ -111,11 +111,6 @@ public class Map {
         mMapGson.calibration.projection = projection;
     }
 
-    @SuppressWarnings("unused")
-    public void clearCalibrationPoints() {
-        mMapGson.calibration.calibration_points.clear();
-    }
-
     /**
      * Get the bounds the map. See {@link MapBounds}.
      */
@@ -146,7 +141,7 @@ public class Map {
             mMapGson.calibration.projection.init();
         }
 
-        List<MapGson.Calibration.CalibrationPoint> calibrationPoints = mMapGson.calibration.calibration_points;
+        List<MapGson.Calibration.CalibrationPoint> calibrationPoints = mMapGson.calibration.getCalibrationPoints();
         if (calibrationPoints == null) return;
         switch (getCalibrationMethod()) {
             case SIMPLE_2_POINTS:
@@ -182,7 +177,7 @@ public class Map {
 
     private void setCalibrationStatus() {
         // TODO : implement the detection of an erroneous calibration
-        if (mMapGson.calibration.calibration_points.size() >= 2) {
+        if (mMapGson.calibration.getCalibrationPoints().size() >= 2) {
             mCalibrationStatus = CalibrationStatus.OK;
         } else {
             mCalibrationStatus = CalibrationStatus.NONE;
@@ -338,11 +333,15 @@ public class Map {
      * through this call.
      */
     public List<MapGson.Calibration.CalibrationPoint> getCalibrationPoints() {
-        return new ArrayList<>(mMapGson.calibration.calibration_points);
+        return mMapGson.calibration.getCalibrationPoints();
     }
 
     public void addCalibrationPoint(MapGson.Calibration.CalibrationPoint point) {
-        mMapGson.calibration.calibration_points.add(point);
+        mMapGson.calibration.addCalibrationPoint(point);
+    }
+
+    public void setCalibrationPoints(List<MapGson.Calibration.CalibrationPoint> points) {
+        mMapGson.calibration.setCalibrationPoints(points);
     }
 
     public String getImageExtension() {
@@ -357,6 +356,7 @@ public class Map {
         return mMapGson.size.y;
     }
 
+    //TODO: Remove this. mMapGson should be private
     public final MapGson getMapGson() {
         return mMapGson;
     }

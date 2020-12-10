@@ -48,7 +48,7 @@ public class MapGson {
     public static class Calibration {
         public Projection projection;
         public String calibration_method;
-        public List<CalibrationPoint> calibration_points;
+        private final List<CalibrationPoint> calibration_points;
 
         /**
          * A CalibrationPoint defines a point on the map whose (x, y) relative coordinates
@@ -68,6 +68,19 @@ public class MapGson {
 
         public Calibration() {
             calibration_points = new ArrayList<>();
+        }
+
+        public void addCalibrationPoint(CalibrationPoint p) {
+            calibration_points.add(p);
+        }
+
+        public List<CalibrationPoint> getCalibrationPoints() {
+            return new ArrayList<>(calibration_points);
+        }
+
+        public void setCalibrationPoints(List<CalibrationPoint> points) {
+            calibration_points.clear();
+            calibration_points.addAll(points);
         }
     }
 

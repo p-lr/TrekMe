@@ -54,7 +54,7 @@ object UnitFormatter {
     }
 
     /**
-     * Given the speed in meters per seconds, format in km/h
+     * Given the speed in meters per seconds, format depending on the current measurement system.
      */
     fun formatSpeed(speed: Double): String {
         return when (system) {
