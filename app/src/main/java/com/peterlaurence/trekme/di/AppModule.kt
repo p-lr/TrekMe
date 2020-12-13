@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.location.GoogleLocationSource
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.repositories.recording.ElevationRepository
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import dagger.Module
 import dagger.Provides
@@ -53,6 +54,10 @@ object AppModule {
     @Singleton
     @Provides
     fun bindDownloadRepository(): DownloadRepository = DownloadRepository()
+
+    @Singleton
+    @Provides
+    fun bindElevationRepository(): ElevationRepository = ElevationRepository(Dispatchers.Default)
 
     @Singleton
     @Provides

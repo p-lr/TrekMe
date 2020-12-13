@@ -88,7 +88,11 @@
         android:id="@+id/recordFragment"
         android:name="com.peterlaurence.trekme.ui.record.RecordFragment"
         android:label="fragment_record"
-        tools:layout="@layout/fragment_record" />
+        tools:layout="@layout/fragment_record" >
+        <action
+            android:id="@+id/action_recordFragment_to_elevationFragment"
+            app:destination="@id/elevationFragment" />
+    </fragment>
     <action android:id="@+id/action_global_recordFragment" app:destination="@id/recordFragment" />
     <fragment
         android:id="@+id/wifiP2pFragment"
@@ -114,4 +118,8 @@
         android:name="com.peterlaurence.trekme.ui.about.AboutFragment"
         android:label="AboutFragment" />
     <action android:id="@+id/action_global_aboutFragment" app:destination="@id/aboutFragment"/>
+    <fragment
+        android:id="@+id/elevationFragment"
+        android:name="com.peterlaurence.trekme.ui.record.components.elevationgraph.ElevationFragment"
+        android:label="ElevationFragment" />
 </navigation>

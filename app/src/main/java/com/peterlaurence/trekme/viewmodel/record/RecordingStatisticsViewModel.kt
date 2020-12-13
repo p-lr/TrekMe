@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.core.track.TrackTools
+import com.peterlaurence.trekme.repositories.recording.ElevationRepository
 import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
@@ -39,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap
 class RecordingStatisticsViewModel @ViewModelInject constructor(
         private val trackImporter: TrackImporter,
         private val gpxRecordRepository: GpxRecordRepository,
+        private val elevationRepository: ElevationRepository,
         private val eventBus: RecordEventBus
 ) : ViewModel() {
 
@@ -130,6 +132,13 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
         /* If only one removal failed, notify the user */
         if (!success) {
             eventBus.postRecordingDeletionFailed()
+        }
+    }
+
+    fun onRequestShowElevation(gpxFile: File) {
+        val gpx = recordingsToGpx[gpxFile]
+        if (gpx != null) {
+            elevationRepository.setGpx(gpx, gpxFile.hashCode())
         }
     }
 

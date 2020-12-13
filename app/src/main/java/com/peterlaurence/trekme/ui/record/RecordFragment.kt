@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
@@ -148,7 +149,8 @@ class RecordFragment : Fragment() {
             }
 
             override fun onRequestShowElevationGraph(file: File) {
-                println("Show elevation for ${file.name}")
+                statViewModel.onRequestShowElevation(file)
+                findNavController().navigate(R.id.action_recordFragment_to_elevationFragment)
             }
 
             override fun onRequestDeleteRecordings(recordings: List<File>) {

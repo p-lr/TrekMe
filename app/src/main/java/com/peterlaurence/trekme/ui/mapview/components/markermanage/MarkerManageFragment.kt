@@ -90,9 +90,7 @@ class MarkerManageFragment : Fragment() {
         _binding = FragmentMarkerManageBinding.inflate(inflater, container, false)
 
         map = mapLoader.getMap(args.mapId)
-        map?.markers?.firstOrNull { it == args.marker }?.let {
-            this.marker = it
-        }
+        marker = map?.markers?.firstOrNull { it == args.marker }
 
         binding.markerLatId.addTextChangedListener(
                 onTextChanged = { _, _, _, _ ->
