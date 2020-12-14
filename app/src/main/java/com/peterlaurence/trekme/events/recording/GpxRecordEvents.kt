@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.recording
+package com.peterlaurence.trekme.events.recording
 
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class GpxRecordRepository {
+class GpxRecordEvents {
     private val _liveRoute = MutableSharedFlow<LiveRouteEvent>(replay = Int.MAX_VALUE)
     val liveRouteFlow = _liveRoute.asSharedFlow()
 

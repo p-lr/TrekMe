@@ -9,9 +9,9 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.toMarker
 import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
-import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
-import com.peterlaurence.trekme.repositories.recording.LiveRouteStop
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.events.recording.LiveRoutePoint
+import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
  * **Implementation**
  *
  * A producer-consumer pattern is employed here. The producer is the gpx recording service, the
- * consumer is a coroutine inside this view-model. Between the two, the [GpxRecordRepository]
+ * consumer is a coroutine inside this view-model. Between the two, the [GpxRecordEvents]
  * exposes a SharedFlow of events.
  *
  * The coroutine collects this SharedFlow, and adds new [TrackPoint]s to the [RouteBuilder] as they
@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
  */
 class InMapRecordingViewModel @ViewModelInject constructor(
         private val mapRepository: MapRepository,
-        private val gpxRecordRepository: GpxRecordRepository
+        private val gpxRecordEvents: GpxRecordEvents
 ) : ViewModel() {
     private val route = MutableLiveData<LiveRoute>()
 
@@ -54,7 +54,7 @@ class InMapRecordingViewModel @ViewModelInject constructor(
             val map = mapRepository.getCurrentMap() ?: return@launch
             var routeBuilder = RouteBuilder(map)
 
-            gpxRecordRepository.liveRouteFlow.collect {
+            gpxRecordEvents.liveRouteFlow.collect {
                 when (it) {
                     is LiveRoutePoint -> routeBuilder.add(it.pt)
                     is LiveRouteStop -> routeBuilder = RouteBuilder(map)

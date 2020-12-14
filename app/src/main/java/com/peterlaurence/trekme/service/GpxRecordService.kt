@@ -20,8 +20,8 @@ import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.repositories.location.Location
 import com.peterlaurence.trekme.repositories.location.LocationSource
-import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
-import com.peterlaurence.trekme.repositories.recording.LiveRoutePoint
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.writeGpx
@@ -51,7 +51,7 @@ class GpxRecordService : Service() {
     lateinit var trekMeContext: TrekMeContext
 
     @Inject
-    lateinit var repository: GpxRecordRepository
+    lateinit var eventsGpx: GpxRecordEvents
 
     @Inject
     lateinit var eventBus: AppEventBus
@@ -94,7 +94,7 @@ class GpxRecordService : Service() {
 
         /* Register a subscriber coroutine to the stop signal */
         scope.launch {
-            repository.stopRecordingSignal.collect {
+            eventsGpx.stopRecordingSignal.collect {
                 createGpx()
             }
         }
@@ -111,10 +111,10 @@ class GpxRecordService : Service() {
         val altitude = if (location.altitude != 0.0) location.altitude else null
         val trackPoint = TrackPoint(location.latitude,
                 location.longitude, altitude, location.time, "")
-        repository.addTrackPoint(trackPoint)
+        eventsGpx.addTrackPoint(trackPoint)
         trackStatCalculator?.addTrackPoint(trackPoint)
         trackStatCalculator?.getStatistics()?.also { stats ->
-            repository.postTrackStatistics(stats)
+            eventsGpx.postTrackStatistics(stats)
         }
     }
 
@@ -127,7 +127,7 @@ class GpxRecordService : Service() {
     private fun createGpx() {
         serviceHandler?.post {
             val trkSegList = ArrayList<TrackSegment>()
-            val trackPoints = repository.liveRouteFlow.replayCache.mapNotNull {
+            val trackPoints = eventsGpx.liveRouteFlow.replayCache.mapNotNull {
                 if (it is LiveRoutePoint) it.pt else null
             }
             trkSegList.add(TrackSegment(trackPoints))
@@ -156,7 +156,7 @@ class GpxRecordService : Service() {
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 writeGpx(gpx, fos)
-                repository.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, gpx))
+                eventsGpx.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, gpx))
             } catch (e: Exception) {
                 eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_error)))
             } finally {
@@ -196,7 +196,7 @@ class GpxRecordService : Service() {
 
         startForeground(SERVICE_ID, notification)
 
-        repository.setServiceState(true)
+        eventsGpx.setServiceState(true)
 
         return START_NOT_STICKY
     }
@@ -205,9 +205,9 @@ class GpxRecordService : Service() {
      * Stop the service and send the status.
      */
     private fun stop() {
-        repository.resetLiveRoute()
-        repository.postTrackStatistics(null)
-        repository.setServiceState(false)
+        eventsGpx.resetLiveRoute()
+        eventsGpx.postTrackStatistics(null)
+        eventsGpx.setServiceState(false)
         stopSelf()
     }
 

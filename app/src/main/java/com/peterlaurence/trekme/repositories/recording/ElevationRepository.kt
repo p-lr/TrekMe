@@ -3,15 +3,13 @@ package com.peterlaurence.trekme.repositories.recording
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.util.gpx.model.Gpx
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.net.InetAddress
 
-class ElevationRepository(private val dispatcher: CoroutineDispatcher) {
+class ElevationRepository(private val dispatcher: CoroutineDispatcher, private val ioDispatcher: CoroutineDispatcher) {
     private val _elevationPoints = MutableStateFlow<ElevationState>(Calculating)
     val elevationPoints: StateFlow<ElevationState> = _elevationPoints.asStateFlow()
 
@@ -40,6 +38,7 @@ class ElevationRepository(private val dispatcher: CoroutineDispatcher) {
     }
 
     private suspend fun gpxToElevationData(gpx: Gpx): ElevationData = withContext(dispatcher) {
+
         ElevationData(listOf(
                 ElePoint(0.0, 55.0),
                 ElePoint(150.0, 100.0),
@@ -47,6 +46,30 @@ class ElevationRepository(private val dispatcher: CoroutineDispatcher) {
                 ElePoint(1500.0, 30.0)
         ), -50.0, 100.0)
     }
+
+    /**
+     * Determine if we have an internet connection, then check the availability of the elevation
+     * REST api.
+     */
+    @Suppress("BlockingMethodInNonBlockingContext")
+    private suspend fun checkElevationRestApi(): ApiStatus = withContext(ioDispatcher) {
+        val internetOk = runCatching {
+            val ip = InetAddress.getByName("google.com")
+            ip.hostAddress != ""
+        }
+
+        return@withContext if (internetOk.isSuccess) {
+            val apiOk = runCatching {
+                val apiIp = InetAddress.getByName("wxs.ign.fr")
+                apiIp.hostAddress != ""
+            }
+            ApiStatus(true, apiOk.getOrDefault(false))
+        } else {
+            ApiStatus(internetOk = false, restApiOk = false)
+        }
+    }
+
+    private data class ApiStatus(val internetOk: Boolean = false, val restApiOk: Boolean = false)
 }
 
 sealed class ElevationState

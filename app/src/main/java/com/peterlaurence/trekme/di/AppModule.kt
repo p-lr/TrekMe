@@ -12,7 +12,7 @@ import com.peterlaurence.trekme.repositories.location.GoogleLocationSource
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
-import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,7 +49,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindGpxRecordRepository(): GpxRecordRepository = GpxRecordRepository()
+    fun bindGpxRecordEvents(): GpxRecordEvents = GpxRecordEvents()
 
     @Singleton
     @Provides
@@ -57,7 +57,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindElevationRepository(): ElevationRepository = ElevationRepository(Dispatchers.Default)
+    fun bindElevationRepository(): ElevationRepository = ElevationRepository(Dispatchers.Default, Dispatchers.IO)
 
     @Singleton
     @Provides

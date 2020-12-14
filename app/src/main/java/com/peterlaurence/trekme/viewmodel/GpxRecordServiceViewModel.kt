@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.repositories.recording.GpxRecordRepository
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.service.GpxRecordService
 
 /**
@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.service.GpxRecordService
  * @author P.Laurence on 27/04/2019
  */
 class GpxRecordServiceViewModel @ViewModelInject constructor(
-        gpxRecordRepository: GpxRecordRepository
+        gpxRecordEvents: GpxRecordEvents
 ) : ViewModel() {
-    val status: LiveData<Boolean> = gpxRecordRepository.serviceState.asLiveData(viewModelScope.coroutineContext)
+    val status: LiveData<Boolean> = gpxRecordEvents.serviceState.asLiveData(viewModelScope.coroutineContext)
 }
