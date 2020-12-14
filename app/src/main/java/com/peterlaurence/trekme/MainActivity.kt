@@ -10,7 +10,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION_CODES
@@ -43,15 +42,15 @@ import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.service.event.*
-import com.peterlaurence.trekme.ui.maplist.events.ZipCloseEvent
-import com.peterlaurence.trekme.ui.maplist.events.ZipEvent
-import com.peterlaurence.trekme.ui.maplist.events.ZipFinishedEvent
-import com.peterlaurence.trekme.ui.maplist.events.ZipProgressEvent
+import com.peterlaurence.trekme.ui.maplist.events.*
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.InetAddress
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -103,7 +102,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private val PERMISSIONS_MAP_CREATION = arrayOf(
                 Manifest.permission.INTERNET
         )
-        private const val TAG = "MainActivity"
 
         /**
          * Checks whether the app has permission to access fine location and (for Android < 10) to
@@ -187,18 +185,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     /**
      * Determine if we have an internet connection.
      */
-    private fun checkInternet(): Boolean {
-        val cm = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-        if (cm != null) {
-            val activeNetwork = cm.activeNetworkInfo
-            return activeNetwork != null && activeNetwork.isConnected
+    @Suppress("BlockingMethodInNonBlockingContext")
+    private suspend fun checkInternet(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val ip = InetAddress.getByName("google.com")
+            ip.hostAddress != ""
+        } catch (e: Throwable) {
+            false
         }
-        return false
     }
 
     private fun warnIfNotInternet() {
-        if (!checkInternet()) {
-            showMessageInSnackbar(getString(R.string.no_internet))
+        lifecycleScope.launchWhenCreated {
+            if (!checkInternet()) {
+                showMessageInSnackbar(getString(R.string.no_internet))
+            }
         }
     }
 
@@ -213,14 +214,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val mapSettingsViewModel = ViewModelProvider(this).get(MapSettingsViewModel::class.java)
-        mapSettingsViewModel.zipEvents.observe(this) { event: ZipEvent? ->
-            when (event) {
-                is ZipProgressEvent -> onZipProgressEvent(event)
-                is ZipFinishedEvent -> onZipFinishedEvent(event)
-                is ZipCloseEvent -> {
-                    // When resumed, the fragment is notified with this event (this is how LiveData
-                    // works). To avoid emitting a new notification for a ZipFinishedEvent, we use
-                    // ZipCloseEvent on which we do nothing.
+        mapSettingsViewModel.zipEvents.observe(this) { e: ZipEvent? ->
+            e?.also { event ->
+                when (event) {
+                    is ZipProgressEvent -> onZipProgressEvent(event)
+                    is ZipFinishedEvent -> onZipFinishedEvent(event)
+                    ZipError -> {
+                        //TODO: Display a warning
+                    }
+                    is ZipCloseEvent -> {
+                        // When resumed, the fragment is notified with this event (this is how LiveData
+                        // works). To avoid emitting a new notification for a ZipFinishedEvent, we use
+                        // ZipCloseEvent on which we do nothing.
+                    }
                 }
             }
         }
