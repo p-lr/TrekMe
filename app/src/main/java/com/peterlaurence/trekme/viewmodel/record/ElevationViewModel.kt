@@ -5,8 +5,11 @@ import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
 
 class ElevationViewModel @ViewModelInject constructor(
-        repository: ElevationRepository
+        private val repository: ElevationRepository
 ) : ViewModel() {
     val elevationPoints = repository.elevationPoints
 
+    fun onUpdateGraph(targetWidth: Int) {
+        repository.update(targetWidth)
+    }
 }

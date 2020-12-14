@@ -1,31 +1,42 @@
+@file:Suppress("LocalVariableName")
+
 package com.peterlaurence.trekme.repositories.recording
 
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.util.gpx.model.Gpx
+import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.net.InetAddress
 
-class ElevationRepository(private val dispatcher: CoroutineDispatcher, private val ioDispatcher: CoroutineDispatcher) {
+class ElevationRepository(
+        private val dispatcher: CoroutineDispatcher,
+        private val ioDispatcher: CoroutineDispatcher,
+        private val gpxRepository: GpxRepository
+) {
     private val _elevationPoints = MutableStateFlow<ElevationState>(Calculating)
     val elevationPoints: StateFlow<ElevationState> = _elevationPoints.asStateFlow()
 
     private var lastGpxId: Int? = null
+    private var lastTargetWidth: Int? = null
     private var job: Job? = null
 
     /**
      * Updates the elevation statistics, if necessary. The [Gpx] must be provided along with a
      * unique [id]. This is necessary to identify whether we should cancel an ongoing work or not.
      */
-    fun setGpx(gpx: Gpx, id: Int) {
-        if (id != lastGpxId) {
+    fun update(targetWidth: Int) {
+        val gpxData: GpxForElevation = gpxRepository.gpxForElevation ?: return
+        val (gpx, id) = gpxData
+        if (id != lastGpxId && targetWidth != lastTargetWidth) {
             job?.cancel()
             job = ProcessLifecycleOwner.get().lifecycleScope.launch {
                 _elevationPoints.emit(Calculating)
-                val data = gpxToElevationData(gpx)
+                val data = gpxToElevationData(gpx, targetWidth)
                 _elevationPoints.emit(data)
             }
 
@@ -37,14 +48,40 @@ class ElevationRepository(private val dispatcher: CoroutineDispatcher, private v
         }
     }
 
-    private suspend fun gpxToElevationData(gpx: Gpx): ElevationData = withContext(dispatcher) {
+    private suspend fun gpxToElevationData(gpx: Gpx, targetWidth: Int): ElevationData = withContext(dispatcher) {
+        var dist = 0.0
+        var lastPt: TrackPoint? = null
+        var minEle: Double? = null
+        var maxEle: Double? = null
+        val points = gpx.tracks.firstOrNull()?.trackSegments?.firstOrNull()?.trackPoints?.mapNotNull { pt ->
+            val lastPt_ = lastPt
+            val lastEle = lastPt_?.elevation
+            val newEle = pt.elevation
+            if (lastEle != null && newEle != null) {
+                dist += deltaTwoPoints(lastPt_.latitude, lastPt_.longitude, lastEle,
+                        pt.latitude, pt.longitude, newEle)
+            }
+            if (newEle != null) {
+                if (minEle == null) minEle = newEle
+                minEle?.also {
+                    if (newEle < it) minEle = newEle
+                }
+                if (maxEle == null) maxEle = newEle
+                maxEle?.also {
+                    if (newEle > it) maxEle = newEle
+                }
+            }
+            lastPt = pt
+            if (newEle != null) ElePoint(dist, newEle) else null
+        }
 
-        ElevationData(listOf(
-                ElePoint(0.0, 55.0),
-                ElePoint(150.0, 100.0),
-                ElePoint(1000.0, -50.0),
-                ElePoint(1500.0, 30.0)
-        ), -50.0, 100.0)
+        val minEle_ = minEle
+        val maxEle_ = maxEle
+        if (points != null && minEle_ != null && maxEle_ != null) {
+            ElevationData(points, minEle_, maxEle_)
+        } else {
+            ElevationData(listOf(), 0.0, 0.0)
+        }
     }
 
     /**

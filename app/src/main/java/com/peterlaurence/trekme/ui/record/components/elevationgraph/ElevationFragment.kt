@@ -45,5 +45,10 @@ class ElevationFragment : Fragment() {
                 }
             }
         }
+
+        val b = binding ?: return
+        view.post {
+            viewModel.onUpdateGraph(b.elevationGraphView.getDrawingWidth())
+        }
     }
 }
