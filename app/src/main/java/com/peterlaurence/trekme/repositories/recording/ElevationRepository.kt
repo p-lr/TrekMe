@@ -28,11 +28,14 @@ class ElevationRepository(
     /**
      * Updates the elevation statistics, if necessary. The [Gpx] must be provided along with a
      * unique [id]. This is necessary to identify whether we should cancel an ongoing work or not.
+     *
+     * @param targetWidth The actual amount of pixels in horizontal dimension. If the tracks has too
+     * many points, it will be sub-sampled.
      */
     fun update(targetWidth: Int) {
         val gpxData: GpxForElevation = gpxRepository.gpxForElevation ?: return
         val (gpx, id) = gpxData
-        if (id != lastGpxId && targetWidth != lastTargetWidth) {
+        if (id != lastGpxId || targetWidth != lastTargetWidth) {
             job?.cancel()
             job = ProcessLifecycleOwner.get().lifecycleScope.launch {
                 _elevationPoints.emit(Calculating)
@@ -44,6 +47,7 @@ class ElevationRepository(
             job?.invokeOnCompletion {
                 job = null
             }
+            lastTargetWidth = targetWidth
             lastGpxId = id
         }
     }
@@ -78,10 +82,24 @@ class ElevationRepository(
         val minEle_ = minEle
         val maxEle_ = maxEle
         if (points != null && minEle_ != null && maxEle_ != null) {
-            ElevationData(points, minEle_, maxEle_)
+            ElevationData(points.subSample(targetWidth), minEle_, maxEle_)
         } else {
             ElevationData(listOf(), 0.0, 0.0)
         }
+    }
+
+    /**
+     * Sub-sample if the list size exceeds 2 * [targetWidth].
+     */
+    private fun List<ElePoint>.subSample(targetWidth: Int): List<ElePoint> {
+        val chunkSize = size / targetWidth
+        return if (chunkSize >= 2) {
+            chunked(chunkSize).map { chunk ->
+                val dist = chunk.sumByDouble { it.dist } / chunk.size
+                val ele = chunk.sumByDouble { it.elevation } / chunk.size
+                ElePoint(dist, ele)
+            }
+        } else this
     }
 
     /**
