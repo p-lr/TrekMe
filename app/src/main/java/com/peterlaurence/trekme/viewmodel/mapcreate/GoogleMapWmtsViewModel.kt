@@ -5,7 +5,6 @@ import android.content.Intent
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.backendApi.ignApiUrl
 import com.peterlaurence.trekme.core.backendApi.ordnanceSurveyApiUrl
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
@@ -23,6 +22,7 @@ import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.providers.layers.ignLayers
 import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment
@@ -41,10 +41,10 @@ import java.net.URL
  */
 class GoogleMapWmtsViewModel @ViewModelInject constructor(
         private val app: Application,
-        private val downloadRepository: DownloadRepository
+        private val downloadRepository: DownloadRepository,
+        private val ignApiRepository: IgnApiRepository
 ) : ViewModel() {
     private val defaultIgnLayer: IgnLayer = IgnClassic
-    private var ignApi: String? = null
     private var ordnanceSurveyApi: String? = null
 
     private val scaleAndScrollInitConfig = mapOf(
@@ -134,9 +134,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         val mapSourceData = when (wmtsSource) {
             WmtsSource.IGN -> {
                 val layer = getLayerForSource(wmtsSource)!!
-                if (ignApi == null) {
-                    ignApi = getApi(ignApiUrl)
-                }
+                val ignApi = ignApiRepository.getApi()
                 IgnSourceData(ignApi ?: "", layer)
             }
             WmtsSource.ORDNANCE_SURVEY -> {

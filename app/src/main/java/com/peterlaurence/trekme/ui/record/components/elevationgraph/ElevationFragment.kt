@@ -31,7 +31,7 @@ class ElevationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycleScope.launch {
+        lifecycleScope.launchWhenResumed {
             viewModel.elevationPoints.collect { config ->
                 when (config) {
                     is ElevationData -> {

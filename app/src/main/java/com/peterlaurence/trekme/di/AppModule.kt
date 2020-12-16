@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.repositories.location.GoogleLocationSource
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.repositories.map.MapRepository
@@ -54,6 +55,10 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun bindIgnApiRepository(): IgnApiRepository = IgnApiRepository()
+
+    @Singleton
+    @Provides
     fun bindGpxRecordEvents(): GpxRecordEvents = GpxRecordEvents()
 
     @Singleton
@@ -62,8 +67,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindElevationRepository(gpxRepository: GpxRepository): ElevationRepository {
-        return ElevationRepository(Dispatchers.Default, Dispatchers.IO, gpxRepository)
+    fun bindElevationRepository(gpxRepository: GpxRepository, ignApiRepository: IgnApiRepository): ElevationRepository {
+        return ElevationRepository(Dispatchers.Default, Dispatchers.IO, gpxRepository, ignApiRepository)
     }
 
     @Singleton
