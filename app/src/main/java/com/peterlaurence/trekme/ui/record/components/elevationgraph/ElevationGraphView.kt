@@ -2,6 +2,8 @@ package com.peterlaurence.trekme.ui.record.components.elevationgraph
 
 import android.content.Context
 import android.graphics.*
+import android.os.Bundle
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import com.peterlaurence.trekme.R
@@ -9,6 +11,7 @@ import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatElevation
 import com.peterlaurence.trekme.repositories.recording.ElePoint
 import com.peterlaurence.trekme.util.px
+import kotlinx.parcelize.Parcelize
 
 
 class ElevationGraphView @JvmOverloads constructor(
@@ -96,6 +99,7 @@ class ElevationGraphView @JvmOverloads constructor(
     private val highlightPtBubble = RectF()
     private var eleText: String = ""
     private var distText: String = ""
+    private var highLightLastValue: Float? = 0.5f
 
     /**
      * Set the list of [ElePoint], which is *assumed* to be sorted by distance.
@@ -115,6 +119,9 @@ class ElevationGraphView @JvmOverloads constructor(
         if (elevationProfile != null) {
             areaPath = makeArea(elevationProfile, distMax)
         }
+        highLightLastValue?.also {
+            setHighlightPt(it)
+        }
         invalidate()
     }
 
@@ -125,6 +132,7 @@ class ElevationGraphView @JvmOverloads constructor(
      * @param progress As [Float] between 0f and 1f
      */
     fun setHighlightPt(progress: Float) = post {
+        highLightLastValue = progress
         val points = points ?: return@post
         val distMax = distMax ?: return@post
         if (points.isEmpty()) return@post
@@ -282,4 +290,20 @@ class ElevationGraphView @JvmOverloads constructor(
 
         distTextOffsetY = r.bottom - r.top + 2.px.toFloat()
     }
+
+    override fun onSaveInstanceState(): Parcelable {
+        val parentState = super.onSaveInstanceState() ?: Bundle()
+        return SavedState(parentState, highLightLastValue)
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+        val st = state as? SavedState
+        if (st != null) {
+            highLightLastValue = st.highLightVal
+        }
+    }
 }
+
+@Parcelize
+private data class SavedState(val parcelable: Parcelable, val highLightVal: Float?) : View.BaseSavedState(parcelable)
