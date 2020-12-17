@@ -119,12 +119,12 @@ class ElevationGraphView @JvmOverloads constructor(
     }
 
     /**
-     * Highlight and show the elevation of a point of the elevation profile, given the percent of the
-     * total distance.
+     * Highlight and show the elevation of a point of the elevation profile, given the proportion
+     * of the total distance.
      *
-     * @param percent As [Int] between 0 and 100
+     * @param progress As [Float] between 0f and 1f
      */
-    fun setHighlightPt(percent: Int) = post {
+    fun setHighlightPt(progress: Float) = post {
         val points = points ?: return@post
         val distMax = distMax ?: return@post
         if (points.isEmpty()) return@post
@@ -135,11 +135,11 @@ class ElevationGraphView @JvmOverloads constructor(
         val virtualPoint = if (points.size == 1) {
             points[0]
         } else {
-            val virtDist = (percent / 100.0) * distMax
+            val virtDist = progress * distMax
             val nextDistIndex = points.indexOfFirst { it.dist > virtDist }.let {
                 if (it == -1) points.lastIndex else it
             }
-            val prevPt = points[nextDistIndex - 1]
+            val prevPt = points[(nextDistIndex - 1).coerceAtLeast(0)]
             val nextPt = points[nextDistIndex]
             val factor = (virtDist - prevPt.dist) / (nextPt.dist - prevPt.dist)
             val ele = factor * nextPt.elevation + (1 - factor) * prevPt.elevation
@@ -154,6 +154,7 @@ class ElevationGraphView @JvmOverloads constructor(
 
         computeEleTextBubble(eleText)
         computeDistTextOffset(distText)
+        invalidate()
     }
 
     /**

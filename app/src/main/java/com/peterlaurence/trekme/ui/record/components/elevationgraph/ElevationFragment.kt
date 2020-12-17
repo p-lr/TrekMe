@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.slider.LabelFormatter.LABEL_GONE
 import com.peterlaurence.trekme.databinding.FragmentElevationBinding
 import com.peterlaurence.trekme.repositories.recording.Calculating
 import com.peterlaurence.trekme.repositories.recording.ElevationData
@@ -14,7 +15,6 @@ import com.peterlaurence.trekme.repositories.recording.NoNetwork
 import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ElevationFragment : Fragment() {
@@ -36,7 +36,6 @@ class ElevationFragment : Fragment() {
                 when (config) {
                     is ElevationData -> {
                         binding?.elevationGraphView?.setPoints(config.points, config.eleMin, config.eleMax)
-                        binding?.elevationGraphView?.setHighlightPt(50)
                     }
                     NoNetwork -> TODO()
                     Calculating -> {
@@ -49,6 +48,11 @@ class ElevationFragment : Fragment() {
         val b = binding ?: return
         view.post {
             viewModel.onUpdateGraph(b.elevationGraphView.getDrawingWidth())
+        }
+
+        b.slider.labelBehavior = LABEL_GONE
+        b.slider.addOnChangeListener { _, value, _ ->
+            b.elevationGraphView.setHighlightPt(value)
         }
     }
 }
