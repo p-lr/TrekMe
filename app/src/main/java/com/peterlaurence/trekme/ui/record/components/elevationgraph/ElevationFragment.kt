@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.slider.LabelFormatter.LABEL_GONE
+import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.databinding.FragmentElevationBinding
 import com.peterlaurence.trekme.repositories.recording.Calculating
 import com.peterlaurence.trekme.repositories.recording.ElevationData
@@ -31,11 +32,15 @@ class ElevationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val b = binding ?: return
         lifecycleScope.launchWhenResumed {
             viewModel.elevationPoints.collect { config ->
                 when (config) {
                     is ElevationData -> {
-                        binding?.elevationGraphView?.setPoints(config.points, config.eleMin, config.eleMax)
+                        b.elevationGraphView.setPoints(config.points, config.eleMin, config.eleMax)
+                        b.elevationTop.text = UnitFormatter.formatDistance(config.eleMax)
+                        b.elevationBottom.text = UnitFormatter.formatDistance(config.eleMin)
+                        b.elevationBottomTop.text = UnitFormatter.formatDistance(config.eleMax - config.eleMin)
                     }
                     NoNetwork -> TODO()
                     Calculating -> {
@@ -45,7 +50,6 @@ class ElevationFragment : Fragment() {
             }
         }
 
-        val b = binding ?: return
         view.post {
             viewModel.onUpdateGraph(b.elevationGraphView.getDrawingWidth())
         }

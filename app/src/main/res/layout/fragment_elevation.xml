@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="16dp"
@@ -10,13 +11,88 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.2"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.80"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/elevation_top_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:layout_constraintEnd_toStartOf="@id/guideline1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/elevation_top" />
+
+        <TextView
+            android:id="@+id/elevation_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/elevation_top_icon"
+            app:layout_constraintStart_toEndOf="@+id/elevation_top_icon"
+            app:layout_constraintTop_toTopOf="@+id/elevation_top_icon"
+            tools:text="25 m" />
+
+        <ImageView
+            android:id="@+id/elevation_bottom_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/elevation_bottom" />
+
+        <TextView
+            android:id="@+id/elevation_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/elevation_bottom_icon"
+            app:layout_constraintStart_toEndOf="@+id/elevation_bottom_icon"
+            app:layout_constraintTop_toTopOf="@+id/elevation_bottom_icon"
+            tools:text="758 m" />
+
+        <ImageView
+            android:id="@+id/elevation_bottom_top_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:layout_constraintEnd_toStartOf="@id/guideline3"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/elevation_bottom_top" />
+
+        <TextView
+            android:id="@+id/elevation_bottom_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/elevation_bottom_top_icon"
+            app:layout_constraintStart_toEndOf="@+id/elevation_bottom_top_icon"
+            app:layout_constraintTop_toTopOf="@+id/elevation_bottom_top_icon"
+            tools:text="500 m" />
+
         <com.peterlaurence.trekme.ui.record.components.elevationgraph.ElevationGraphView
             android:id="@+id/elevationGraphView"
             android:layout_width="match_parent"
             android:layout_height="300dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/elevation_top_icon" />
 
         <com.google.android.material.slider.Slider
             android:id="@+id/slider"
