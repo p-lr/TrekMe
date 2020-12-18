@@ -37,14 +37,25 @@ class ElevationFragment : Fragment() {
             viewModel.elevationPoints.collect { config ->
                 when (config) {
                     is ElevationData -> {
+                        b.loadingPanel.visibility = View.GONE
+                        b.showGraph(true)
                         b.elevationGraphView.setPoints(config.points, config.eleMin, config.eleMax)
                         b.elevationTop.text = UnitFormatter.formatDistance(config.eleMax)
                         b.elevationBottom.text = UnitFormatter.formatDistance(config.eleMin)
                         b.elevationBottomTop.text = UnitFormatter.formatDistance(config.eleMax - config.eleMin)
                     }
-                    NoNetwork -> TODO()
+                    NoNetwork -> {
+                        b.loadingPanel.visibility = View.VISIBLE
+                        b.progressBar.visibility = View.GONE
+                        b.loadingMsg.visibility = View.VISIBLE
+                        b.showGraph(false)
+                        b.loadingMsg.text = "No network"
+                    }
                     Calculating -> {
-                        println("calculating")
+                        b.showGraph(false)
+                        b.loadingPanel.visibility = View.VISIBLE
+                        b.progressBar.visibility = View.VISIBLE
+                        b.loadingMsg.text = "Calculating.."
                     }
                 }
             }
@@ -58,5 +69,9 @@ class ElevationFragment : Fragment() {
         b.slider.addOnChangeListener { _, value, _ ->
             b.elevationGraphView.setHighlightPt(value)
         }
+    }
+
+    private fun FragmentElevationBinding.showGraph(b: Boolean) {
+        graphLayout.visibility = if (b) View.VISIBLE else View.GONE
     }
 }

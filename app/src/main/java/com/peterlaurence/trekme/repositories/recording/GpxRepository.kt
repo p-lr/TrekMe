@@ -12,4 +12,7 @@ class GpxRepository {
 
 }
 
+/**
+ * Contains a [Gpx] along with a unique [id].
+ */
 data class GpxForElevation(val gpx: Gpx, val id: Int)

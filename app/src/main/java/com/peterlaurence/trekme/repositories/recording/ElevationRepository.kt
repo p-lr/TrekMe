@@ -23,16 +23,16 @@ class ElevationRepository(
         private val gpxRepository: GpxRepository,
         private val ignApiRepository: IgnApiRepository
 ) {
-    private val _elevationPoints = MutableStateFlow<ElevationState>(Calculating)
-    val elevationPoints: StateFlow<ElevationState> = _elevationPoints.asStateFlow()
+    private val _elevationRepoState = MutableStateFlow<ElevationState>(Calculating)
+    val elevationRepoState: StateFlow<ElevationState> = _elevationRepoState.asStateFlow()
 
     private var lastGpxId: Int? = null
     private var lastTargetWidth: Int? = null
     private var job: Job? = null
 
     /**
-     * Updates the elevation statistics, if necessary. The [Gpx] must be provided along with a
-     * unique [id]. This is necessary to identify whether we should cancel an ongoing work or not.
+     * Retrieves the latest [GpxForElevation] from the [GpxRepository], and uses the id to decide
+     * whether to cancel the ongoing work or not.
      *
      * @param targetWidth The actual amount of pixels in horizontal dimension. If the tracks has too
      * many points, it will be sub-sampled.
@@ -43,9 +43,14 @@ class ElevationRepository(
         if (id != lastGpxId || targetWidth != lastTargetWidth) {
             job?.cancel()
             job = ProcessLifecycleOwner.get().lifecycleScope.launch {
-                _elevationPoints.emit(Calculating)
+                val apiStatus = checkElevationRestApi()
+                if (!apiStatus.internetOk || !apiStatus.restApiOk) {
+                    _elevationRepoState.emit(NoNetwork)
+                    return@launch
+                }
+                _elevationRepoState.emit(Calculating)
                 val data = gpxToElevationData(gpx, targetWidth)
-                _elevationPoints.emit(data)
+                _elevationRepoState.emit(data)
             }
 
             /* Avoid keeping reference on data */

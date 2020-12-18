@@ -7,7 +7,7 @@ import com.peterlaurence.trekme.repositories.recording.ElevationRepository
 class ElevationViewModel @ViewModelInject constructor(
         private val repository: ElevationRepository
 ) : ViewModel() {
-    val elevationPoints = repository.elevationPoints
+    val elevationPoints = repository.elevationRepoState
 
     fun onUpdateGraph(targetWidth: Int) {
         repository.update(targetWidth)
