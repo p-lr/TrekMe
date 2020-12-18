@@ -212,6 +212,10 @@
         even when the app is closed or not in use.\n\nThis location data <b>isn\'t shared with anyone</b>,
         and gpx files are stored locally on your device.</string>
 
+    <!-- Elevation fragment -->
+    <string name="network_required">You must online to continue, as this feature uses a web service to check for elevations.</string>
+    <string name="elevation_compute_in_progress">Computing elevations…</string>
+
     <!-- MapCreate fragment -->
     <string name="next_button">Next</string>
     <string name="mapcreate_settings">Settings</string>

@@ -40,7 +40,7 @@ class ElevationRepository(
     fun update(targetWidth: Int) {
         val gpxData: GpxForElevation = gpxRepository.gpxForElevation ?: return
         val (gpx, id) = gpxData
-        if (id != lastGpxId || targetWidth != lastTargetWidth) {
+        if (id != lastGpxId || targetWidth != lastTargetWidth || _elevationRepoState.value is NoNetwork) {
             job?.cancel()
             job = ProcessLifecycleOwner.get().lifecycleScope.launch {
                 val apiStatus = checkElevationRestApi()

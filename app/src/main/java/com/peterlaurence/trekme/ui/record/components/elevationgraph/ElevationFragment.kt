@@ -8,11 +8,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.slider.LabelFormatter.LABEL_GONE
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.databinding.FragmentElevationBinding
 import com.peterlaurence.trekme.repositories.recording.Calculating
 import com.peterlaurence.trekme.repositories.recording.ElevationData
 import com.peterlaurence.trekme.repositories.recording.NoNetwork
+import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -40,30 +42,31 @@ class ElevationFragment : Fragment() {
                         b.loadingPanel.visibility = View.GONE
                         b.showGraph(true)
                         b.elevationGraphView.setPoints(config.points, config.eleMin, config.eleMax)
-                        b.elevationTop.text = UnitFormatter.formatDistance(config.eleMax)
-                        b.elevationBottom.text = UnitFormatter.formatDistance(config.eleMin)
-                        b.elevationBottomTop.text = UnitFormatter.formatDistance(config.eleMax - config.eleMin)
+                        b.elevationTop.text = UnitFormatter.formatElevation(config.eleMax)
+                        b.elevationBottom.text = UnitFormatter.formatElevation(config.eleMin)
+                        b.elevationBottomTop.text = UnitFormatter.formatElevation(config.eleMax - config.eleMin)
                     }
                     NoNetwork -> {
                         b.loadingPanel.visibility = View.VISIBLE
                         b.progressBar.visibility = View.GONE
                         b.loadingMsg.visibility = View.VISIBLE
                         b.showGraph(false)
-                        b.loadingMsg.text = "No network"
+                        b.loadingMsg.text = getString(R.string.network_required)
                     }
                     Calculating -> {
                         b.showGraph(false)
                         b.loadingPanel.visibility = View.VISIBLE
                         b.progressBar.visibility = View.VISIBLE
-                        b.loadingMsg.text = "Calculating.."
+                        b.loadingMsg.text = getString(R.string.elevation_compute_in_progress)
                     }
                 }
             }
         }
 
-        view.post {
-            viewModel.onUpdateGraph(b.elevationGraphView.getDrawingWidth())
-        }
+        /* Compute the usable size of the graph. We know that we use the entire screen width, so
+         * the usable size is screen_width minus padding. */
+        val graphUsableWidth = resources.configuration.screenWidthDp.px - b.elevationGraphView.getDrawingPadding()
+        viewModel.onUpdateGraph(graphUsableWidth)
 
         b.slider.labelBehavior = LABEL_GONE
         b.slider.addOnChangeListener { _, value, _ ->

@@ -166,11 +166,11 @@ class ElevationGraphView @JvmOverloads constructor(
     }
 
     /**
-     * Returns the width in pixels of the usable part of the graph. Call this only after this view
-     * is laid out. This is useful information for client code to compute the sampling of [points].
+     * Returns the numbers of pixels eaten in padding. Client code uses this information to know
+     * the width in pixels of the usable part of the graph.
      */
-    fun getDrawingWidth(): Int {
-        return right - paddingLeft.toInt() - paddingRight.toInt() - maxDistanceMargin.toInt()
+    fun getDrawingPadding(): Int {
+        return paddingLeft.toInt() + paddingRight.toInt() + maxDistanceMargin.toInt()
     }
 
     private fun makeArea(elevationLine: Path, distMax: Double): Path {

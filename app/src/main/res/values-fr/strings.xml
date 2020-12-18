@@ -240,4 +240,6 @@
     <string name="preference_measurement_system_title">Unités de mesure</string>
     <string name="metric_system">Système métrique</string>
     <string name="imperial_system">Système impérial (miles)</string>
+    <string name="network_required">Cette fonctionnalité necessite d\'être connecté à internet, pour vérifier les altitudes en certains points.</string>
+    <string name="elevation_compute_in_progress">Calcul des altitudes en cours…</string>
 </resources>
