@@ -28,6 +28,7 @@ class ElevationRepository(
 
     private var lastGpxId: Int? = null
     private var lastTargetWidth: Int? = null
+    private val correctionStore = hashMapOf<Int, Double>()
     private var job: Job? = null
 
     /**
@@ -43,13 +44,8 @@ class ElevationRepository(
         if (id != lastGpxId || targetWidth != lastTargetWidth || _elevationRepoState.value is NoNetwork) {
             job?.cancel()
             job = ProcessLifecycleOwner.get().lifecycleScope.launch {
-                val apiStatus = checkElevationRestApi()
-                if (!apiStatus.internetOk || !apiStatus.restApiOk) {
-                    _elevationRepoState.emit(NoNetwork)
-                    return@launch
-                }
                 _elevationRepoState.emit(Calculating)
-                val data = gpxToElevationData(gpx, targetWidth)
+                val data = gpxToElevationData(gpx, id, targetWidth)
                 _elevationRepoState.emit(data)
             }
 
@@ -62,7 +58,7 @@ class ElevationRepository(
         }
     }
 
-    private suspend fun gpxToElevationData(gpx: Gpx, targetWidth: Int): ElevationData = withContext(dispatcher) {
+    private suspend fun gpxToElevationData(gpx: Gpx, id: Int, targetWidth: Int): ElevationState = withContext(dispatcher) {
         var dist = 0.0
         var lastPt: TrackPoint? = null
         var minElePt: TrackPoint? = null
@@ -95,7 +91,16 @@ class ElevationRepository(
         val maxEle_ = maxElePt?.elevation
 
         if (points != null && minEle_ != null && maxEle_ != null) {
-            val cor = computeCorrection(minElePt, minEle_, maxElePt, maxEle_)
+            /* First, check if we already have the correction in the store */
+            val corStored = correctionStore[id]
+            if (corStored == null) {
+                /* Otherwise, check for internet connectivity and compute the correction */
+                val apiStatus = checkElevationRestApi()
+                if (apiStatus.internetOk && apiStatus.restApiOk) {
+                    correctionStore[id] = computeCorrection(minElePt, minEle_, maxElePt, maxEle_)
+                }
+            }
+            val cor = correctionStore[id] ?: return@withContext NoNetwork
             val subSampled = points.subSample(targetWidth)
             val corrected = subSampled.map {
                 it.copy(elevation = it.elevation + cor)
