@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.databinding.FragmentElevationBinding
 import com.peterlaurence.trekme.repositories.recording.Calculating
+import com.peterlaurence.trekme.repositories.recording.ElevationCorrectionError
 import com.peterlaurence.trekme.repositories.recording.ElevationData
 import com.peterlaurence.trekme.repositories.recording.NoNetwork
 import com.peterlaurence.trekme.util.px
@@ -39,23 +40,27 @@ class ElevationFragment : Fragment() {
             viewModel.elevationPoints.collect { config ->
                 when (config) {
                     is ElevationData -> {
-                        b.loadingPanel.visibility = View.GONE
                         b.showGraph(true)
                         b.elevationGraphView.setPoints(config.points, config.eleMin, config.eleMax)
                         b.elevationTop.text = UnitFormatter.formatElevation(config.eleMax)
                         b.elevationBottom.text = UnitFormatter.formatElevation(config.eleMin)
                         b.elevationBottomTop.text = UnitFormatter.formatElevation(config.eleMax - config.eleMin)
                     }
-                    NoNetwork -> {
-                        b.loadingPanel.visibility = View.VISIBLE
-                        b.progressBar.visibility = View.GONE
-                        b.loadingMsg.visibility = View.VISIBLE
+                    is NoNetwork -> {
                         b.showGraph(false)
-                        b.loadingMsg.text = getString(R.string.network_required)
+                        if (config.restApiOk) {
+                            b.loadingMsg.text = getString(R.string.network_required)
+                        } else {
+                            b.loadingMsg.text = getString(R.string.elevation_service_down)
+                        }
+
+                    }
+                    ElevationCorrectionError -> {
+                        b.showGraph(false)
+                        b.loadingMsg.text = getString(R.string.elevation_correction_error)
                     }
                     Calculating -> {
                         b.showGraph(false)
-                        b.loadingPanel.visibility = View.VISIBLE
                         b.progressBar.visibility = View.VISIBLE
                         b.loadingMsg.text = getString(R.string.elevation_compute_in_progress)
                     }
@@ -76,5 +81,8 @@ class ElevationFragment : Fragment() {
 
     private fun FragmentElevationBinding.showGraph(b: Boolean) {
         graphLayout.visibility = if (b) View.VISIBLE else View.GONE
+        loadingPanel.visibility = if (!b) View.VISIBLE else View.GONE
+        progressBar.visibility = View.GONE
+        loadingMsg.visibility = if (!b) View.VISIBLE else View.GONE
     }
 }

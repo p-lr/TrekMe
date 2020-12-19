@@ -41,7 +41,9 @@ class ElevationRepository(
     fun update(targetWidth: Int) {
         val gpxData: GpxForElevation = gpxRepository.gpxForElevation ?: return
         val (gpx, id) = gpxData
-        if (id != lastGpxId || targetWidth != lastTargetWidth || _elevationRepoState.value is NoNetwork) {
+        if (id != lastGpxId || targetWidth != lastTargetWidth
+                || _elevationRepoState.value is NoNetwork
+                || _elevationRepoState.value is ElevationCorrectionError) {
             job?.cancel()
             job = ProcessLifecycleOwner.get().lifecycleScope.launch {
                 _elevationRepoState.emit(Calculating)
@@ -93,14 +95,24 @@ class ElevationRepository(
         if (points != null && minEle_ != null && maxEle_ != null) {
             /* First, check if we already have the correction in the store */
             val corStored = correctionStore[id]
+            var restApiOk = false
+            var error = false
             if (corStored == null) {
                 /* Otherwise, check for internet connectivity and compute the correction */
                 val apiStatus = checkElevationRestApi()
-                if (apiStatus.internetOk && apiStatus.restApiOk) {
-                    correctionStore[id] = computeCorrection(minElePt, minEle_, maxElePt, maxEle_)
+                restApiOk = if (apiStatus.internetOk) apiStatus.restApiOk else true
+                runCatching {
+                    if (apiStatus.internetOk && apiStatus.restApiOk) {
+                        correctionStore[id] = computeCorrection(minElePt, minEle_, maxElePt, maxEle_)
+                    }
+                }.onFailure {
+                    error = true
                 }
             }
-            val cor = correctionStore[id] ?: return@withContext NoNetwork
+            val cor = correctionStore[id]
+                    ?: return@withContext if (error) {
+                        ElevationCorrectionError
+                    } else NoNetwork(restApiOk)
             val subSampled = points.subSample(targetWidth)
             val corrected = subSampled.map {
                 it.copy(elevation = it.elevation + cor)
@@ -151,7 +163,7 @@ class ElevationRepository(
 
         return@withContext if (internetOk.isSuccess) {
             val apiOk = runCatching {
-                val apiIp = InetAddress.getByName("wxs.ign.fr")
+                val apiIp = InetAddress.getByName(elevationServiceHost)
                 apiIp.hostAddress != ""
             }
             ApiStatus(true, apiOk.getOrDefault(false))
@@ -165,7 +177,7 @@ class ElevationRepository(
         val ignApi = ignApiRepository.getApi()
         val longitudeList = trkPoints.joinToString(separator = "|") { "${it.longitude}" }
         val latitudeList = trkPoints.joinToString(separator = "|") { "${it.latitude}" }
-        val url = "http://wxs.ign.fr/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList&zonly=true"
+        val url = "http://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList&zonly=true"
         val req = ignApiRepository.requestBuilder.url(url).build()
         return performRequest<ElevationsResponse>(client, req)?.elevations
     }
@@ -176,9 +188,12 @@ class ElevationRepository(
     private data class ApiStatus(val internetOk: Boolean = false, val restApiOk: Boolean = false)
 }
 
+private const val elevationServiceHost = "wxs.ign.fr"
+
 sealed class ElevationState
-object NoNetwork : ElevationState()
 object Calculating : ElevationState()
+data class NoNetwork(val restApiOk: Boolean) : ElevationState()
+object ElevationCorrectionError : ElevationState()
 data class ElevationData(val points: List<ElePoint> = listOf(), val eleMin: Double = 0.0, val eleMax: Double = 0.0) : ElevationState()
 
 /**

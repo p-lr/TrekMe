@@ -214,6 +214,8 @@
 
     <!-- Elevation fragment -->
     <string name="network_required">You must online to continue, as this feature uses a web service to check for elevations.</string>
+    <string name="elevation_service_down">The elevation service is temporarily unavailable :(</string>
+    <string name="elevation_correction_error">TrekMe couldn\'t check elevations for this track. The service might be temporarily unavailable, or the area isn\'t covered.</string>
     <string name="elevation_compute_in_progress">Computing elevations…</string>
 
     <!-- MapCreate fragment -->
