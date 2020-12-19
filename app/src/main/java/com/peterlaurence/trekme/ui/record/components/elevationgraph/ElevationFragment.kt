@@ -20,6 +20,13 @@ import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 
+/**
+ * Shows an elevation graph along with:
+ * * The lowest and highest elevations
+ * * The difference between the highest and lowest elevations
+ *
+ * @author P.Laurence on 13/12/20
+ */
 @AndroidEntryPoint
 class ElevationFragment : Fragment() {
     private var binding: FragmentElevationBinding? = null

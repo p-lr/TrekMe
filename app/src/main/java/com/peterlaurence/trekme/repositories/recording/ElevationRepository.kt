@@ -17,6 +17,17 @@ import kotlinx.serialization.Serializable
 import okhttp3.OkHttpClient
 import java.net.InetAddress
 
+/**
+ * Generates elevation graph data, as state of the exposed [elevationRepoState]. Other states are:
+ * * [Calculating] indicating that a computation is ongoing
+ * * [ElevationCorrectionError] indicating that the last computation couldn't be completed successfully
+ * * [NoNetwork] when it detects that remote servers aren't reachable
+ *
+ * Client code uses the [update] method to trigger either a graph data generation or an update.
+ * Internally, this repository uses [gpxRepository] to retrieve the active [Gpx] instance to work on.
+ *
+ * @author P.Laurence on 13/12/20
+ */
 class ElevationRepository(
         private val dispatcher: CoroutineDispatcher,
         private val ioDispatcher: CoroutineDispatcher,
