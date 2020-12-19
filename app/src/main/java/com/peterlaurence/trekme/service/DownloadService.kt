@@ -314,13 +314,13 @@ class DownloadService : Service() {
             tileIterator: ThreadSafeTileIterator, bitmapProvider: BitmapProvider,
             tileWriter: TileWriter
     ) = launch(Dispatchers.IO) {
-        while (started.value) {
-            val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
-            val options = BitmapFactory.Options()
-            options.inBitmap = bitmap
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888
-            bitmapProvider.setBitmapOptions(options)
+        val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
+        val options = BitmapFactory.Options()
+        options.inBitmap = bitmap
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888
+        bitmapProvider.setBitmapOptions(options)
 
+        while (started.value) {
             val tile = tileIterator.next() ?: break
             bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level).also {
                 /* Only write if there was no error */
