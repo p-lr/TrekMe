@@ -62,14 +62,23 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
             val callback = object : com.google.android.gms.location.LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult?) {
                     for (loc in locationResult?.locations ?: listOf()) {
-                        offer(Location(loc.latitude, loc.longitude, loc.speed, loc.altitude, loc.time))
+                        runCatching {
+                            offer(Location(loc.latitude, loc.longitude, loc.speed, loc.altitude, loc.time))
+                        }
                     }
                 }
             }
 
             if (permission) {
-                fusedLocationClient.requestLocationUpdates(locationRequest,
-                        callback, null)
+                fusedLocationClient.requestLocationUpdates(
+                        locationRequest,
+                        callback,
+                        null
+                ).addOnFailureListener {
+                    /* In case of error, close the flow, so that the next subscription will trigger
+                     * a new flow creation. */
+                    close(it)
+                }
             }
 
             awaitClose {
