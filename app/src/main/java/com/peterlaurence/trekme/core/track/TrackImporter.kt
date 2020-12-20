@@ -67,7 +67,7 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
      */
     suspend fun applyGpxUriToMap(uri: Uri, contentResolver: ContentResolver, map: Map,
                                  mapLoader: MapLoader): GpxImportResult {
-        return try {
+        return runCatching {
             val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
             parcelFileDescriptor?.use {
                 val fileDescriptor = parcelFileDescriptor.fileDescriptor
@@ -77,10 +77,9 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
                     applyGpxInputStreamToMap(fileInputStream, map, fileName, mapLoader)
                 }
             }
-        } catch (e: Exception) {
+        }.onFailure {
             Log.e(TAG, "File with uri $uri doesn't exists")
-            null
-        } ?: GpxImportResult.GpxImportError
+        }.getOrNull() ?: GpxImportResult.GpxImportError
     }
 
     /**
@@ -133,8 +132,8 @@ class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext
     }
 
     /**
-     * Launches a GPX parse. Then, on the calling [CoroutineScope] (which [CoroutineDispatcher] should
-     * be [Dispatchers.Main]), applies the result on the provided [Map].
+     * Parses a [Gpx] from the given [InputStream]. Then, on the calling [CoroutineScope] (which
+     * [CoroutineDispatcher] should be [Dispatchers.Main]), applies the result on the provided [Map].
      */
     private suspend fun applyGpxInputStreamToMap(input: InputStream, map: Map,
                                                  defaultName: String,

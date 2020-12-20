@@ -30,16 +30,14 @@ fun parseGpx(`in`: InputStream): Gpx {
 }
 
 /**
- * A version of [parseGpx] method which returns a [Gpx] instance or null if any exception occurs.
+ * A variant of [parseGpx] which returns a [Gpx] instance or null if case of failure.
  */
 fun parseGpxSafely(input: InputStream): Gpx? {
-    try {
+    return runCatching {
         input.use {
-            return parseGpx(it)
+            parseGpx(it)
         }
-    } catch (e: Exception) {
-        return null
-    }
+    }.getOrNull()
 }
 
 @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
