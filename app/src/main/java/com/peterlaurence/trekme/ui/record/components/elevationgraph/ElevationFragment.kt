@@ -47,11 +47,16 @@ class ElevationFragment : Fragment() {
             viewModel.elevationPoints.collect { config ->
                 when (config) {
                     is ElevationData -> {
-                        b.showGraph(true)
-                        b.elevationGraphView.setPoints(config.points, config.eleMin, config.eleMax)
-                        b.elevationTop.text = UnitFormatter.formatElevation(config.eleMax)
-                        b.elevationBottom.text = UnitFormatter.formatElevation(config.eleMin)
-                        b.elevationBottomTop.text = UnitFormatter.formatElevation(config.eleMax - config.eleMin)
+                        if (config.points.isNotEmpty()) {
+                            b.showGraph(true)
+                            b.elevationGraphView.setPoints(config.points, config.eleMin, config.eleMax)
+                            b.elevationTop.text = UnitFormatter.formatElevation(config.eleMax)
+                            b.elevationBottom.text = UnitFormatter.formatElevation(config.eleMin)
+                            b.elevationBottomTop.text = UnitFormatter.formatElevation(config.eleMax - config.eleMin)
+                        } else {
+                            b.showGraph(false)
+                            b.loadingMsg.text = getString(R.string.no_elevations)
+                        }
                     }
                     is NoNetwork -> {
                         b.showGraph(false)

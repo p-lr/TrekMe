@@ -244,4 +244,5 @@
     <string name="elevation_compute_in_progress">Calcul des altitudes en cours…</string>
     <string name="elevation_service_down">Le service de vérification des altitudes est temporairement inacessible :(</string>
     <string name="elevation_correction_error">TrekMe n\'a pu vérifier les altitudes. Le service est peut-être temporairement indisponible, ou bien la zone n\'est pas couverte.</string>
+    <string name="no_elevations">Ce fichier GPX ne contient pas d\'information d\'altitude. TrekMe ne peut pas affichier le profil altimétrique.</string>
 </resources>
