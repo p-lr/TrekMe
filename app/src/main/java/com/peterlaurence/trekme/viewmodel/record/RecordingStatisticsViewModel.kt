@@ -44,7 +44,6 @@ import java.util.concurrent.ConcurrentHashMap
  * @author P.Laurence on 21/04/19
  */
 class RecordingStatisticsViewModel @ViewModelInject constructor(
-        private val trackImporter: TrackImporter,
         private val gpxRecordEvents: GpxRecordEvents,
         private val gpxRepository: GpxRepository,
         private val eventBus: RecordEventBus
@@ -63,7 +62,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
     }
 
     private val recordings: List<File>
-        get() = trackImporter.recordings?.toMutableList() ?: listOf()
+        get() = gpxRepository.recordings?.toList() ?: listOf()
 
     private val recordingsToData: MutableMap<File, RecordingData> = ConcurrentHashMap()
 

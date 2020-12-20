@@ -17,6 +17,7 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.id
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
@@ -30,6 +31,7 @@ import kotlinx.coroutines.supervisorScope
  * @author P.Laurence on 16/04/20
  */
 class RecordViewModel @ViewModelInject constructor(
+        private val gpxRepository: GpxRepository,
         private val trackImporter: TrackImporter,
         private val app: Application,
         private val settings: Settings,
@@ -120,7 +122,7 @@ class RecordViewModel @ViewModelInject constructor(
         val map = mapLoader.getMap(mapId) ?: return
 
         val recordingData = recordingsSelected.firstOrNull() ?: return
-        val recording = trackImporter.recordings?.firstOrNull { it.id() == recordingData.id }
+        val recording = gpxRepository.recordings?.firstOrNull { it.id() == recordingData.id }
                 ?: return
 
         viewModelScope.launch {

@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.core.track
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
-import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
@@ -21,8 +20,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Utility toolbox to :
@@ -33,35 +30,7 @@ import javax.inject.Singleton
  *
  * @author P.Laurence on 03/03/17 -- converted to Kotlin on 16/09/18
  */
-@Singleton
-class TrackImporter @Inject constructor(private val trekMeContext: TrekMeContext) {
-    /**
-     * Get the list of [File] which extension is in the list of supported extension for track
-     * file. Files are searched into the [TrekMeContext.recordingsDir].
-     */
-    val recordings: Array<File>?
-        get() = trekMeContext.recordingsDir?.listFiles(supportedFileFilter)
-
-    private val supportedTrackFilesExtensions = arrayOf("gpx", "xml")
-
-    private val supportedFileFilter = filter@{ dir: File, filename: String ->
-        /* We only look at files */
-        if (File(dir, filename).isDirectory) {
-            return@filter false
-        }
-
-        supportedTrackFilesExtensions.any { filename.endsWith(".$it") }
-    }
-
-    fun isFileSupported(uri: Uri, contentResolver: ContentResolver): Boolean {
-        val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-        val extension = fileName.substringAfterLast('.', "")
-
-        if ("" == extension) return false
-
-        return supportedTrackFilesExtensions.any { it == extension }
-    }
-
+class TrackImporter {
     /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */

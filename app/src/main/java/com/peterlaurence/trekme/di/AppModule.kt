@@ -7,6 +7,7 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
@@ -14,7 +15,6 @@ import com.peterlaurence.trekme.repositories.location.GoogleLocationSource
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
-import com.peterlaurence.trekme.repositories.recording.GpxRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,11 +47,11 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindMapRepository(): MapRepository = MapRepository()
+    fun bindTrackImporter(): TrackImporter = TrackImporter()
 
     @Singleton
     @Provides
-    fun bindGpxRepository(): GpxRepository = GpxRepository()
+    fun bindMapRepository(): MapRepository = MapRepository()
 
     @Singleton
     @Provides
