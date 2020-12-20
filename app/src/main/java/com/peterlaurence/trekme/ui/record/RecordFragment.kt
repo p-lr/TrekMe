@@ -14,7 +14,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.service.GpxRecordService
@@ -24,14 +23,12 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclai
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImport
 import com.peterlaurence.trekme.ui.record.components.dialogs.TrackFileNameEdit
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
-import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import java.io.File
 import javax.inject.Inject
 
 /**
@@ -114,13 +111,13 @@ class RecordFragment : Fragment() {
         }
 
         binding.recordListView.setListener(object : RecordListView.RecordListViewListener {
-            override fun onRequestShareRecording(recordings: List<File>) {
+            override fun onRequestShareRecording(dataList: List<RecordingData>) {
                 val activity = activity ?: return
                 val intentBuilder = ShareCompat.IntentBuilder.from(activity)
                         .setType("text/plain")
-                recordings.forEach {
+                dataList.forEach {
                     try {
-                        val uri = TrekmeFilesProvider.generateUri(it)
+                        val uri = statViewModel.getRecordingUri(it)
                         if (uri != null) {
                             intentBuilder.addStream(uri)
                         }
@@ -139,26 +136,25 @@ class RecordFragment : Fragment() {
                 }
             }
 
-            override fun onRequestEditRecording(recording: File) {
+            override fun onRequestEditRecording(data: RecordingData) {
                 val fragmentActivity = activity
                 if (fragmentActivity != null) {
-                    val recordingName = FileUtils.getFileNameWithoutExtention(recording)
-                    val editFieldDialog = TrackFileNameEdit.newInstance(getString(R.string.track_file_name_change), recordingName)
-                    editFieldDialog.show(fragmentActivity.supportFragmentManager, "EditFieldDialog" + recording.name)
+                    val editFieldDialog = TrackFileNameEdit.newInstance(getString(R.string.track_file_name_change), data.name)
+                    editFieldDialog.show(fragmentActivity.supportFragmentManager, "EditFieldDialog" + data.name)
                 }
             }
 
-            override fun onRequestShowElevationGraph(file: File) {
-                statViewModel.onRequestShowElevation(file)
+            override fun onRequestShowElevationGraph(data: RecordingData) {
+                statViewModel.onRequestShowElevation(data)
                 findNavController().navigate(R.id.action_recordFragment_to_elevationFragment)
             }
 
-            override fun onRequestDeleteRecordings(recordings: List<File>) {
-                statViewModel.onRequestDeleteRecordings(recordings)
+            override fun onRequestDeleteRecordings(dataList: List<RecordingData>) {
+                statViewModel.onRequestDeleteRecordings(dataList)
             }
 
-            override fun onSelectionChanged(recordings: List<File>) {
-                viewModel.setSelectedRecordings(recordings)
+            override fun onSelectionChanged(dataList: List<RecordingData>) {
+                viewModel.setSelectedRecordings(dataList)
             }
         })
     }

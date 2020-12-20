@@ -24,14 +24,12 @@ import java.net.InetAddress
  * * [NoNetwork] when it detects that remote servers aren't reachable
  *
  * Client code uses the [update] method to trigger either a graph data generation or an update.
- * Internally, this repository uses [gpxRepository] to retrieve the active [Gpx] instance to work on.
  *
  * @author P.Laurence on 13/12/20
  */
 class ElevationRepository(
         private val dispatcher: CoroutineDispatcher,
         private val ioDispatcher: CoroutineDispatcher,
-        private val gpxRepository: GpxRepository,
         private val ignApiRepository: IgnApiRepository
 ) {
     private val _elevationRepoState = MutableStateFlow<ElevationState>(Calculating)
@@ -42,21 +40,31 @@ class ElevationRepository(
     private val correctionStore = hashMapOf<Int, Double>()
     private var job: Job? = null
 
+    private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
+
     /**
-     * Retrieves the latest [GpxForElevation] from the [GpxRepository], and uses the id to decide
-     * whether to cancel the ongoing work or not.
+     * Computes elevation data from the given [GpxForElevation] and [targetWidth], and updates the
+     * exposed [elevationRepoState].
+     * When [gpxData] is null, the state is set to [Calculating]. Otherwise, the id of [gpxData] is
+     * used to decide whether to cancel the ongoing work or not.
      *
+     * @param gpxData The data to work on.
      * @param targetWidth The actual amount of pixels in horizontal dimension. If the tracks has too
      * many points, it will be sub-sampled.
      */
-    fun update(targetWidth: Int) {
-        val gpxData: GpxForElevation = gpxRepository.gpxForElevation ?: return
+    fun update(gpxData: GpxForElevation?, targetWidth: Int) {
+        if (gpxData == null) {
+            primaryScope.launch {
+                _elevationRepoState.emit(Calculating)
+            }
+            return
+        }
         val (gpx, id) = gpxData
         if (id != lastGpxId || targetWidth != lastTargetWidth
                 || _elevationRepoState.value is NoNetwork
                 || _elevationRepoState.value is ElevationCorrectionError) {
             job?.cancel()
-            job = ProcessLifecycleOwner.get().lifecycleScope.launch {
+            job = primaryScope.launch {
                 _elevationRepoState.emit(Calculating)
                 val data = gpxToElevationData(gpx, id, targetWidth)
                 _elevationRepoState.emit(data)

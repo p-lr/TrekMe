@@ -15,6 +15,7 @@ import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.core.track.id
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
@@ -22,7 +23,6 @@ import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import java.io.File
 
 /**
  * The business logic for importing a recording (gpx file) into a map.
@@ -38,7 +38,7 @@ class RecordViewModel @ViewModelInject constructor(
         private val appEventBus: AppEventBus,
         private val mapLoader: MapLoader
 ) : ViewModel() {
-    private var recordingsSelected = listOf<File>()
+    private var recordingsSelected = listOf<RecordingData>()
 
     init {
         viewModelScope.launch {
@@ -109,7 +109,7 @@ class RecordViewModel @ViewModelInject constructor(
         }
     }
 
-    fun setSelectedRecordings(recordings: List<File>) {
+    fun setSelectedRecordings(recordings: List<RecordingData>) {
         recordingsSelected = recordings
     }
 
@@ -119,7 +119,9 @@ class RecordViewModel @ViewModelInject constructor(
     private fun onMapSelectedForRecord(mapId: Int) {
         val map = mapLoader.getMap(mapId) ?: return
 
-        val recording = recordingsSelected.firstOrNull() ?: return
+        val recordingData = recordingsSelected.firstOrNull() ?: return
+        val recording = trackImporter.recordings?.firstOrNull { it.id() == recordingData.id }
+                ?: return
 
         viewModelScope.launch {
             trackImporter.applyGpxFileToMap(recording, map, mapLoader).let {

@@ -12,7 +12,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
-import java.io.File
 import java.util.*
 
 /**
@@ -25,7 +24,7 @@ class RecordListView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : CardView(context, attrs, defStyleAttr) {
     private var isMultiSelectMode = false
-    var selectedRecordings = ArrayList<File>()
+    var selectedRecordings = ArrayList<RecordingData>()
         private set
 
     private var recyclerView: RecyclerView? = null
@@ -167,7 +166,7 @@ class RecordListView @JvmOverloads constructor(
     }
 
     private fun multiSelect(position: Int) {
-        val recording = recordingDataList.getOrNull(position)?.recording ?: return
+        val recording = recordingDataList.getOrNull(position) ?: return
         if (selectedRecordings.contains(recording)) {
             selectedRecordings.remove(recording)
         } else {
@@ -177,7 +176,7 @@ class RecordListView @JvmOverloads constructor(
     }
 
     private fun singleSelect(position: Int) {
-        val recording = recordingDataList.getOrNull(position)?.recording ?: return
+        val recording = recordingDataList.getOrNull(position) ?: return
         selectedRecordings.clear()
         selectedRecordings.add(recording)
         listener?.onSelectionChanged(selectedRecordings)
@@ -191,11 +190,11 @@ class RecordListView @JvmOverloads constructor(
     }
 
     interface RecordListViewListener {
-        fun onRequestShareRecording(recordings: List<File>)
+        fun onRequestShareRecording(dataList: List<RecordingData>)
         fun onRequestChooseMap()
-        fun onRequestEditRecording(recording: File)
-        fun onRequestShowElevationGraph(file: File)
-        fun onRequestDeleteRecordings(recordings: List<File>)
-        fun onSelectionChanged(recordings: List<File>)
+        fun onRequestEditRecording(data: RecordingData)
+        fun onRequestShowElevationGraph(data: RecordingData)
+        fun onRequestDeleteRecordings(dataList: List<RecordingData>)
+        fun onSelectionChanged(dataList: List<RecordingData>)
     }
 }

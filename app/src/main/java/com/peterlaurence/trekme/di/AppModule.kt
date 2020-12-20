@@ -67,8 +67,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindElevationRepository(gpxRepository: GpxRepository, ignApiRepository: IgnApiRepository): ElevationRepository {
-        return ElevationRepository(Dispatchers.Default, Dispatchers.IO, gpxRepository, ignApiRepository)
+    fun bindElevationRepository(ignApiRepository: IgnApiRepository): ElevationRepository {
+        return ElevationRepository(Dispatchers.Default, Dispatchers.IO, ignApiRepository)
     }
 
     @Singleton

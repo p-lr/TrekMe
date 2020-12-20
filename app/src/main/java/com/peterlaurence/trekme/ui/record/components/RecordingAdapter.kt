@@ -16,7 +16,6 @@ import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatElevation
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatSpeed
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
-import java.io.File
 import java.util.*
 
 /**
@@ -26,7 +25,7 @@ import java.util.*
  * @author P.Laurence on 27/01/18 -- Converted to Kotlin on 01/10/18
  */
 class RecordingAdapter(
-        private var selectedRecordings: ArrayList<File>
+        private var selectedRecordings: ArrayList<RecordingData>
 ) : RecyclerView.Adapter<RecordingAdapter.RecordingViewHolder>() {
     private val diffCallback: DiffUtil.ItemCallback<RecordingData> = object : DiffUtil.ItemCallback<RecordingData>() {
         override fun areItemsTheSame(oldItem: RecordingData, newItem: RecordingData): Boolean {
@@ -53,15 +52,15 @@ class RecordingAdapter(
 
     override fun onBindViewHolder(holder: RecordingViewHolder, position: Int) {
         val data = differ.currentList[position] ?: return
-        holder.recordingName.text = data.recording.name
+        holder.recordingName.text = data.name
 
         /* If there is some statistics attached to the first track, show the corresponding view */
-        holder.statView.visibility = data.gpx?.tracks?.firstOrNull()?.statistics?.let {
+        holder.statView.visibility = data.statistics?.let {
             holder.layout.setStatistics(it)
             View.VISIBLE
         } ?: View.GONE
 
-        if (selectedRecordings.contains(data.recording)) {
+        if (selectedRecordings.contains(data)) {
             holder.layout.setBackgroundColor(-0x77de690d)
         } else {
             if (position % 2 == 0) {
@@ -82,7 +81,7 @@ class RecordingAdapter(
         var statView: Flow = itemView.findViewById(R.id.flow)
     }
 
-    fun setSelectedRecordings(selectedRecordings: ArrayList<File>) {
+    fun setSelectedRecordings(selectedRecordings: ArrayList<RecordingData>) {
         this.selectedRecordings = selectedRecordings
     }
 

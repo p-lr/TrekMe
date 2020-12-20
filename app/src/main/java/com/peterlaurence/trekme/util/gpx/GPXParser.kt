@@ -3,6 +3,8 @@ package com.peterlaurence.trekme.util.gpx
 import android.util.Xml
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.util.gpx.model.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -18,22 +20,23 @@ import kotlin.collections.ArrayList
  *
  * @author P.Laurence on 12/02/17.
  */
+@Suppress("BlockingMethodInNonBlockingContext")
 @Throws(XmlPullParserException::class, IOException::class, ParseException::class)
-fun parseGpx(`in`: InputStream): Gpx {
+suspend fun parseGpx(`in`: InputStream): Gpx = withContext(Dispatchers.IO) {
     `in`.use {
         val parser = Xml.newPullParser()
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
         parser.setInput(it, null)
         parser.nextTag()
-        return readGpx(parser)
+        readGpx(parser)
     }
 }
 
 /**
  * A variant of [parseGpx] which returns a [Gpx] instance or null if case of failure.
  */
-fun parseGpxSafely(input: InputStream): Gpx? {
-    return runCatching {
+suspend fun parseGpxSafely(input: InputStream): Gpx? = withContext(Dispatchers.IO) {
+    runCatching {
         input.use {
             parseGpx(it)
         }
