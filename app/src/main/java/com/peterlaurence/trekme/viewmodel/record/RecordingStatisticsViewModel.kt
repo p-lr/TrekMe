@@ -22,7 +22,7 @@ import com.peterlaurence.trekme.util.gpx.parseGpx
 import com.peterlaurence.trekme.util.gpx.parseGpxSafely
 import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
@@ -222,34 +222,31 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
     /**
      * Updates the correspondence between each recording and its corresponding [RecordingData]
      * instance ([recordingsToData]).
-     * The first call parses all recordings, computing statistics along the way.
-     * Subsequent calls only parse new files.
+     * Concurrently parses all recordings and computing statistics.
      */
-    private suspend fun updateRecordingsToGpxMap(): Map<File, RecordingData> {
-        // TODO: this should be optimized in speed by running all this concurrently
-        suspend fun parseGpxAndComputeStats(file: File) {
-            try {
+    private suspend fun updateRecordingsToGpxMap() = withContext(Dispatchers.Default) {
+        suspend fun parseGpxAndComputeStats(file: File): Gpx? {
+            return try {
                 val gpx = parseGpx(FileInputStream(file))
                 setTrackStatistics(gpx)
                 recordingsToData[file] = makeRecordingData(file, gpx)
+                gpx
             } catch (e: Exception) {
                 Log.e(TAG, "The file ${file.name} was parsed with error ${stackTraceToString(e)}")
+                null
             }
         }
 
-        if (recordingsToData.isEmpty()) {
-            recordings.forEach { file ->
-                parseGpxAndComputeStats(file)
+        /* Update our data structure with controlled concurrency */
+        val coreCount = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(2)
+        recordings.asFlow().mapNotNull { file ->
+            flow {
+                val gpx = if (!recordingsToData.keys.contains(file)) {
+                    parseGpxAndComputeStats(file)
+                } else null
+                emit(gpx)
             }
-        } else {
-            recordings.filter { !recordingsToData.keys.contains(it) }.forEach { file ->
-                parseGpxAndComputeStats(file)
-            }
-            recordingsToData.keys.filter { !(recordings.contains(it)) }.forEach {
-                recordingsToData.remove(it)
-            }
-        }
-        return recordingsToData.toMap()
+        }.flattenMerge(coreCount).collect()
     }
 }
 
