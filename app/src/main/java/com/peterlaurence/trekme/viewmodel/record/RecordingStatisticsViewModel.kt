@@ -94,8 +94,8 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
     }
 
     /**
-     * Remove the existing file matching by name, then add the new file keeping the existing
-     * [Gpx] instance.
+     * Remove the existing file matching by name, then add the new file along with the new
+     * [RecordingData] instance.
      */
     private suspend fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) {
         with(recordingsToData.iterator()) {
@@ -181,7 +181,8 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
     }
 
     private fun updateLiveData() {
-        /* Transform a copy of the original Map */
+        /* Transform a defensive copy of the original Map - the view uses DiffUtils, which performs
+         * background calculations on the given data structure. */
         val data = recordingsToData.toMap().values.sortedByDescending {
             it.time ?: -1
         }
@@ -253,6 +254,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
 private const val TAG = "RecordingStatisticsVM"
 
 /**
- * A [RecordingData] is just wrapper on the [File] and its corresponding [Gpx] data.
+ * A [RecordingData] is just wrapper on the [File] and its corresponding [TrackStatistics] data and
+ * timestamp. The timestamp is used to sort visual elements.
  */
 data class RecordingData(val id: Int, val name: String, val statistics: TrackStatistics? = null, val time: Long? = null)

@@ -16,7 +16,6 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -29,7 +28,7 @@ import java.util.*
 import kotlin.coroutines.resume
 
 /**
- * The MapLoader acts as central point for most operations related to the maps.
+ * The MapLoader acts as central point for most operations related to maps.
  * It uses the following tasks defined in [com.peterlaurence.trekme.core.map.maploader.tasks]:
  *
  * * [mapCreationTask] -> create instances of [Map]
@@ -42,6 +41,7 @@ import kotlin.coroutines.resume
  */
 class MapLoader(
         private val mainDispatcher: CoroutineDispatcher,
+        private val defaultDispatcher: CoroutineDispatcher,
         private val ioDispatcher: CoroutineDispatcher
 ) {
     /**
@@ -118,7 +118,7 @@ class MapLoader(
      *
      * @param dirs The directories in which to search for new maps.
      */
-    private suspend fun findMaps(dirs: List<File>) = withContext(Dispatchers.Default) {
+    private suspend fun findMaps(dirs: List<File>) = withContext(defaultDispatcher) {
         mapCreationTask(gson, MAP_FILENAME, *dirs.toTypedArray())
     }
 
@@ -161,7 +161,7 @@ class MapLoader(
      * given as parameter.
      */
     suspend fun getLandmarksForMap(map: Map) =
-            withContext(Dispatchers.Default) {
+            withContext(defaultDispatcher) {
                 mapLandmarkImportTask(map, gson, MAP_LANDMARK_FILENAME)
             }?.let { landmarkGson ->
                 map.landmarkGson = landmarkGson
