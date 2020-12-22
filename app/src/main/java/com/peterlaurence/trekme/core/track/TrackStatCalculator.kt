@@ -22,7 +22,12 @@ import kotlin.math.min
  * @author P.Laurence on 09/09/18
  */
 class TrackStatCalculator {
-    private val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0)
+    private var distance: Double = 0.0
+    private var elevationDiffMax = 0.0
+    private var elevationUpStack = 0.0
+    private var elevationDownStack = 0.0
+    private var durationInSecond = 0L
+    private var avgSpeed = 0.0
 
     private var lastTrackPoint: TrackPoint? = null
 
@@ -45,7 +50,8 @@ class TrackStatCalculator {
     private val buffer = ArrayDeque<TrackPoint>()
 
     fun getStatistics(): TrackStatistics {
-        return trackStatistics
+        return TrackStatistics(distance, elevationDiffMax, elevationUpStack, elevationDownStack,
+                durationInSecond, avgSpeed)
     }
 
     fun getBounds(): Bounds? {
@@ -82,7 +88,7 @@ class TrackStatCalculator {
     private fun updateDistance(trkPt: TrackPoint) {
         lastTrackPoint?.also { p ->
             /* If we have elevation information for both points, use it */
-            trackStatistics.distance += if (p.elevation != null && trkPt.elevation != null) {
+            distance += if (p.elevation != null && trkPt.elevation != null) {
                 deltaTwoPoints(p.latitude, p.longitude, p.elevation!!, trkPt.latitude,
                         trkPt.longitude, trkPt.elevation!!)
             } else {
@@ -112,7 +118,7 @@ class TrackStatCalculator {
         /* .. then we can update the elevation maximum difference*/
         highestElevation?.also { eleHighest ->
             lowestElevation?.also { eleLowest ->
-                trackStatistics.elevationDifferenceMax = eleHighest - eleLowest
+                elevationDiffMax = eleHighest - eleLowest
             }
         }
 
@@ -120,9 +126,9 @@ class TrackStatCalculator {
         lastKnownElevation?.also { elePrevious ->
             val diff = abs(ele - elePrevious)
             if (ele > elePrevious) {
-                trackStatistics.elevationUpStack += diff
+                elevationUpStack += diff
             } else if (ele < elePrevious) {
-                trackStatistics.elevationDownStack += diff
+                elevationDownStack += diff
             }
         }
         lastKnownElevation = ele
@@ -134,16 +140,16 @@ class TrackStatCalculator {
     private fun updateDuration(trkPt: TrackPoint) {
         trkPt.time?.also { time ->
             firstPointTime?.also { origin ->
-                trackStatistics.durationInSecond = (time - origin) / 1000
+                if (time > origin) { // time should always be increasing, but who knows...
+                    durationInSecond = (time - origin) / 1000
+                }
             } ?: { firstPointTime = time }()
         }
     }
 
     private fun updateMeanSpeed() {
-        trackStatistics.durationInSecond?.also { duration ->
-            if (duration != 0L) {
-                trackStatistics.avgSpeed = trackStatistics.distance / duration
-            }
+        if (durationInSecond != 0L) {
+            avgSpeed = distance / durationInSecond
         }
     }
 
@@ -166,6 +172,6 @@ class TrackStatCalculator {
  * @param avgSpeed The average speed in meters per seconds
  */
 @Parcelize
-data class TrackStatistics(var distance: Double, var elevationDifferenceMax: Double,
-                           var elevationUpStack: Double, var elevationDownStack: Double,
-                           var durationInSecond: Long? = null, var avgSpeed: Double? = null) : Parcelable
+data class TrackStatistics(val distance: Double, var elevationDifferenceMax: Double,
+                           val elevationUpStack: Double, val elevationDownStack: Double,
+                           val durationInSecond: Long? = null, val avgSpeed: Double? = null) : Parcelable

@@ -13,6 +13,7 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.concurrent.getOrSet
 
 
 /**
@@ -159,29 +160,28 @@ private fun readTrackExtensions(parser: XmlPullParser): TrackStatistics? {
 @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
 private fun readTrackStatistics(parser: XmlPullParser): TrackStatistics {
     parser.require(XmlPullParser.START_TAG, null, TAG_TRACK_STATISTICS)
-    val trackStatistics = TrackStatistics(0.0, 0.0, 0.0, 0.0)
 
-    trackStatistics.distance = runCatching {
+    val distance = runCatching {
         parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble()
     }.getOrNull() ?: 0.0
 
-    trackStatistics.elevationDifferenceMax = runCatching {
+    val elevationDifferenceMax = runCatching {
         parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DIFF_MAX)?.toDouble()
     }.getOrNull() ?: 0.0
 
-    trackStatistics.elevationUpStack = runCatching {
+    val elevationUpStack = runCatching {
         parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_UP_STACK)?.toDouble()
     }.getOrNull() ?: 0.0
 
-    trackStatistics.elevationDownStack = runCatching {
+    val elevationDownStack = runCatching {
         parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DOWN_STACK)?.toDouble()
     }.getOrNull() ?: 0.0
 
-    trackStatistics.durationInSecond = runCatching {
+    val durationInSecond = runCatching {
         parser.getAttributeValue(null, ATTR_TRK_STAT_DURATION)?.toLong()
     }.getOrNull()
 
-    trackStatistics.avgSpeed = runCatching {
+    val avgSpeed = runCatching {
         parser.getAttributeValue(null, ATTR_TRK_STAT_AVG_SPEED)?.toDouble()
     }.getOrNull()
 
@@ -192,7 +192,7 @@ private fun readTrackStatistics(parser: XmlPullParser): TrackStatistics {
         skip(parser)
     }
     parser.require(XmlPullParser.END_TAG, null, TAG_TRACK_STATISTICS)
-    return trackStatistics
+    return TrackStatistics(distance, elevationDifferenceMax, elevationUpStack, elevationDownStack, durationInSecond, avgSpeed)
 }
 
 /* Process summary tags in the feed */
@@ -295,6 +295,16 @@ fun getGpxDateParser(): SimpleDateFormat {
     return DATE_PARSER
 }
 
-/* We don't add the trailing 'Z', because sometimes it's missing and we don't care about a
- * better precision than the second. */
-private val DATE_PARSER = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
+private val DATE_PARSER_tl = ThreadLocal<SimpleDateFormat>()
+
+/**
+ * We use a [ThreadLocal] because [SimpleDateFormat] isn't thread-safe, and the gpx parser might be
+ * invoked from multiple threads. Therefore, we cannot use a unique instance of [SimpleDateFormat].
+ *
+ * We don't add the trailing 'Z', because sometimes it's missing and we don't care about a
+ * better precision than the second.
+ **/
+private val DATE_PARSER: SimpleDateFormat
+    get() = DATE_PARSER_tl.getOrSet {
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
+    }
