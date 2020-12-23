@@ -19,6 +19,11 @@ import kotlin.math.min
  * * bounds
  * * average speed
  *
+ * Beware, [addTrackPoint] and [addTrackPointList] aren't synchronized.
+ * A safe usage is to have one [TrackStatCalculator] instance per coroutine.
+ * Yet, it is acceptable to invoke [addTrackPoint] from one thread before invoking [getStatistics]
+ * from another thread.
+ *
  * @author P.Laurence on 09/09/18
  */
 class TrackStatCalculator {

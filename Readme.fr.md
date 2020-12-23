@@ -349,9 +349,10 @@ Un indicateur dans le panneau "Service de localisation" affiche le statut du ser
 Un dernier panneau affiche la liste des enregistrements effectués.
 En sélectionnant un enregistrement, trois boutons en bas à gauche vous permettent respectivement de :
 
-* renommer le fichier gpx
-* l'importer dans une carte existante (un menu vous donne alors le choix de la carte)
-* partager un ou plusieurs fichiers gpx
+* Renommer le fichier gpx
+* L'importer dans une carte existante (un menu vous donne alors le choix de la carte)
+* Partager un ou plusieurs fichiers gpx
+* Afficher le profil altimétrique
 
 **Mode de sélection multiple**
 
@@ -362,7 +363,7 @@ Pour revenir au mode de sélection normal, appuyez à nouveau deux secondes sur 
 
 Que vous soyez en mode de sélection simple ou multiple, le bouton de partage est disponible :
 <p align="center">
-<img src="doc/tuto/share-recording.jpg" width="300">
+<img src="doc/tuto/share-recording-fr.jpg" width="300">
 </p>
 
 **Supprimer un enregistrement**
@@ -378,6 +379,14 @@ enregistrements _et_ la trace est automatiquement importée dans toutes les cart
 l'afficher. Il est donc très facile de vous enregistrer et d'afficher vos traces sur vos cartes
 favorites.
 
+**Profil altimétrique**
+
+Le profil altimétrique vous permet de connaître l'altitude en tout point du parcours, et en particulier
+les altitudes min, max, et le dénivelé (non-cumulé).
+
+<p align="center">
+<img src="doc/tuto/ele-profile-fr.jpg" width="300">
+</p>
 
 ## <a name="TOC-Settings"></a>Paramètres
 

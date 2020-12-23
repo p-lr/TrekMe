@@ -316,9 +316,10 @@ An indicator reports back the status of the location service. A panel shows the 
 
 From there, when selecting a track, there are three buttons at the bottom which enable you to :
 
-* rename it,
-* import it into an existing map (press the import button at the bottom of the list, then choose the map),
-* share it
+* Rename it,
+* Import it into an existing map (press the import button at the bottom of the list, then choose the map),
+* Share it,
+* Show the elevation profile
 
 
 **Multiple-selection mode**
@@ -330,7 +331,7 @@ To revert back to single selection mode, long press again somewhere in the list.
 
 Whatever the selection mode, the share button below is available:
 <p align="center">
-<img src="doc/tuto/share-recording.jpg" width="300">
+<img src="doc/tuto/share-recording-en.jpg" width="300">
 </p>
 
 **Delete a recording**
@@ -342,6 +343,15 @@ To delete a recording, activate the multiple-selection mode. A remove button app
 After you stop a recording, a new GPX file is added to the recordings list _and_ the corresponding
 track is automatically imported into all relevant maps.
 This way, it's super easy to record yourself and see your tracks on your favorite maps.
+
+**Elevation profile**
+
+The elevation profile allows you to know the elevation at any point of the trek. It also shows the
+minimum and maximum elevations.
+
+<p align="center">
+<img src="doc/tuto/ele-profile-en.jpg" width="300">
+</p>
 
 ## <a name="TOC-Settings"></a>Settings
 

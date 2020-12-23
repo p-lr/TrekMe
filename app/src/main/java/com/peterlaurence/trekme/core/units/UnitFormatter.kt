@@ -41,7 +41,9 @@ object UnitFormatter {
      */
     fun formatElevation(dist: Double): String {
         return when (system) {
-            MeasurementSystem.METRIC -> formatDistance(dist)
+            MeasurementSystem.METRIC -> {
+                "%.0f m".format(dist)
+            }
             MeasurementSystem.IMPERIAL -> {
                 val ft = dist * TO_FEET
                 "%.0f ft".format(ft)
