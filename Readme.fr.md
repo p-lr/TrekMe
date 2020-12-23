@@ -337,7 +337,7 @@ Depuis le menu principal allez à "Enregistrement GPX". Vous arrivez à une inte
  celle-ci :
 
 <p align="center">
-<img src="doc/tuto/gpx-recordings.jpg" width="300">
+<img src="doc/tuto/gpx-recordings-fr.jpg" width="300">
 </p>
 
 Un enregistrement peut être démarré ou arrêté depuis le panneau "Commandes".
@@ -347,11 +347,11 @@ est arrêté. Ce service s'arrête dès que vous l'arrêtez depuis le panneau "C
 Un indicateur dans le panneau "Service de localisation" affiche le statut du service.
 
 Un dernier panneau affiche la liste des enregistrements effectués.
-En sélectionnant un enregistrement, trois boutons en bas à gauche vous permettent respectivement de :
+En sélectionnant un enregistrement, quatre boutons en bas à gauche vous permettent respectivement de :
 
 * Renommer le fichier gpx
-* L'importer dans une carte existante (un menu vous donne alors le choix de la carte)
-* Partager un ou plusieurs fichiers gpx
+* Importer la trace dans une carte existante (un menu vous donne alors le choix de la carte)
+* Partager un ou plusieurs fichiers gpx (par email, par exemple)
 * Afficher le profil altimétrique
 
 **Mode de sélection multiple**
@@ -363,7 +363,7 @@ Pour revenir au mode de sélection normal, appuyez à nouveau deux secondes sur 
 
 Que vous soyez en mode de sélection simple ou multiple, le bouton de partage est disponible :
 <p align="center">
-<img src="doc/tuto/share-recording-fr.jpg" width="300">
+<img src="doc/tuto/share-recording.jpg" width="300">
 </p>
 
 **Supprimer un enregistrement**

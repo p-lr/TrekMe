@@ -314,11 +314,11 @@ The recording can be started or stopped from the control panel. When recording, 
 runs in the background. It continues even if TrekMe is stopped or paused.
 An indicator reports back the status of the location service. A panel shows the list of recordings.
 
-From there, when selecting a track, there are three buttons at the bottom which enable you to :
+From there, when selecting a track, four buttons at the bottom-left enable you to :
 
-* Rename it,
-* Import it into an existing map (press the import button at the bottom of the list, then choose the map),
-* Share it,
+* Rename the track,
+* Import the track into an existing map (press the import button at the bottom of the list, then choose the map),
+* Share the gpx file (using e.g email),
 * Show the elevation profile
 
 
@@ -331,7 +331,7 @@ To revert back to single selection mode, long press again somewhere in the list.
 
 Whatever the selection mode, the share button below is available:
 <p align="center">
-<img src="doc/tuto/share-recording-en.jpg" width="300">
+<img src="doc/tuto/share-recording.jpg" width="300">
 </p>
 
 **Delete a recording**
