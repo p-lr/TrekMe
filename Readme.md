@@ -336,7 +336,9 @@ Whatever the selection mode, the share button below is available:
 
 **Delete a recording**
 
-To delete a recording, activate the multiple-selection mode. A remove button appears at the bottom right.
+A delete button at the bottom-right with a red trash-icon allows you to delete one or multiple
+recordings. Beware the if you press that button, all selected recordings will be *permanently*
+deleted.
 
 **Automatic import of a track**
 

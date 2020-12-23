@@ -368,9 +368,9 @@ Que vous soyez en mode de sélection simple ou multiple, le bouton de partage es
 
 **Supprimer un enregistrement**
 
-Passez en mode de sélection multiple. Un bouton rouge en bas à droite apparaît. Attention, si vous 
-pressez ce bouton rouge, tous les enregistrement sélectionnés (cad sur fond bleu) seront **définitivement**
-  supprimés. 
+Un bouton rouge en bas à droite avec une icone de corbeille est accessible en mode de sélection
+simple ou multiple. Attention, si vous pressez ce bouton rouge, tous les enregistrements sélectionnés
+(cad sur fond bleu) seront **définitivement** supprimés.
   
 **Import automatique d'une trace**
 
