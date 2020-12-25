@@ -6,11 +6,10 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.*
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
@@ -18,11 +17,12 @@ import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
-import com.peterlaurence.trekme.repositories.location.Location
-import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
+import com.peterlaurence.trekme.repositories.location.Location
+import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
+import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.writeGpx
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,6 +33,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+
 
 /**
  * A [Started service](https://developer.android.com/guide/components/services.html#CreatingAService)
@@ -172,16 +173,20 @@ class GpxRecordService : Service() {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
-        val icon = BitmapFactory.decodeResource(resources,
-                R.mipmap.ic_launcher)
+        val iconDrawable = ContextCompat.getDrawable(applicationContext, R.mipmap.ic_launcher)
+        val icon = if (iconDrawable != null) getBitmapFromDrawable(iconDrawable) else null
 
         val notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
                 .setContentTitle(getText(R.string.app_name))
                 .setContentText(getText(R.string.service_gpx_record_action))
                 .setSmallIcon(R.drawable.ic_my_location_black_24dp)
-                .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
+                .apply {
+                    if (icon != null) {
+                        setLargeIcon(icon)
+                    }
+                }
 
         if (Build.VERSION.SDK_INT >= 26) {
             /* This is only needed on Devices on Android O and above */

@@ -14,6 +14,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
@@ -32,6 +33,7 @@ import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.service.event.*
+import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.util.stackTraceToString
 import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
@@ -124,20 +126,25 @@ class DownloadService : Service() {
             return START_NOT_STICKY
         }
 
-        val icon: Bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
+        val iconDrawable = ContextCompat.getDrawable(applicationContext, R.mipmap.ic_launcher)
+        val icon = if (iconDrawable != null) getBitmapFromDrawable(iconDrawable) else null
 
         /* From here, we know that the service is being created by the activity */
         notificationBuilder = NotificationCompat.Builder(applicationContext, notificationChannelId)
                 .setContentTitle(getText(R.string.app_name))
                 .setContentText(getText(R.string.service_download_action))
                 .setSmallIcon(R.drawable.ic_file_download_24dp)
-                .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
                 .setContentIntent(onTapPendingIntent)
                 .setColor(getColor(R.color.colorAccent))
                 .addAction(R.drawable.ic_stop_black_24dp, getString(R.string.service_download_stop), onStopPendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setOnlyAlertOnce(true)
+                .apply {
+                    if (icon != null) {
+                        setLargeIcon(icon)
+                    }
+                }
 
         /* This is only needed on Devices on Android O and above */
         if (android.os.Build.VERSION.SDK_INT >= 26) {

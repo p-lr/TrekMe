@@ -3,6 +3,8 @@ package com.peterlaurence.trekme.util
 import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.media.ThumbnailUtils
 import android.net.Uri
 import java.io.FileInputStream
@@ -27,4 +29,20 @@ fun makeThumbnail(imageUri: Uri, resolver: ContentResolver, thumbnailSize: Int, 
     } catch (e: Exception) {
         return null
     }
+}
+
+/**
+ * Converts any drawable into a [Bitmap].
+ * The intrinsic dimensions of the drawable must be greater than 0, or this function returns null.
+ */
+fun getBitmapFromDrawable(drawable: Drawable): Bitmap? {
+    val width = drawable.intrinsicWidth
+    val height = drawable.intrinsicHeight
+    return if (width > 0 && height > 0) {
+        val bmp = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        bmp
+    } else null
 }
