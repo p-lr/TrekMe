@@ -86,6 +86,9 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, isSizeCo
     } catch (e: SecurityException) {
         Log.e(TAG, "Zip traversal vulnerability tried to be exploited")
         result = false
+    } catch (e: IllegalArgumentException) { // Although not documented, ZipInputStream.getNextEntry() can throw IllegalArgumentException
+        Log.e(TAG, stackTraceToString(e))
+        result = false
     }
 
     if (result) {
