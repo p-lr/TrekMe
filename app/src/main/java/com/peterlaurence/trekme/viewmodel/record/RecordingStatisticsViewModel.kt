@@ -109,8 +109,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
     /**
      * Resolves the given uri to an actual file, and copies it to the app's storage location for
      * recordings. Then, the copied file is parsed to get the corresponding [Gpx] instance along
-     * with its statistics. Finally, the relevant livedata is updated so the UI can show the
-     * imported file.
+     * with its statistics. Finally, [recordingData] is updated so the UI can show the imported file.
      */
     private suspend fun importRecordingFromUri(
             uri: Uri, contentResolver: ContentResolver
@@ -120,7 +119,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
             val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
             parcelFileDescriptor?.use {
                 val fileDescriptor = parcelFileDescriptor.fileDescriptor
-                FileInputStream(fileDescriptor).also { fileInputStream ->
+                FileInputStream(fileDescriptor).use { fileInputStream ->
                     val name = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
                             ?: "A track"
                     fileName = name
