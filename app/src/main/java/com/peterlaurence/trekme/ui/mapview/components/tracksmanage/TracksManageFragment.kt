@@ -60,7 +60,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
 
         _binding = FragmentTracksManageBinding.inflate(inflater, container, false)
 
@@ -145,7 +145,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             }
 
             /* Import the file */
-            // TODO: this shouldn't be done inside the lifecycleScope of this fragment
+            // TODO: this shouldn't be done inside the lifecycleScope of this fragment, and events
+            // should be emitted in case of error as global messages (the activity listens to such message events)
             lifecycleScope.launch {
                 try {
                     val result = viewModel.applyGpxUri(uri)

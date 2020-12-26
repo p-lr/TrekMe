@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
 /**
- * The business logic for importing a recording (gpx file) into a map.
+ * The view-model associated with the record fragment.
  *
  * @author P.Laurence on 16/04/20
  */

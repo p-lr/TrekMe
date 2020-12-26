@@ -1,6 +1,8 @@
 package com.peterlaurence.trekme.ui.record
 
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -43,6 +45,7 @@ class RecordFragment : Fragment() {
     private val binding get() = _binding!!
 
     val viewModel: RecordViewModel by activityViewModels()
+    val statViewModel: RecordingStatisticsViewModel by activityViewModels()
     private var recordingData: LiveData<List<RecordingData>>? = null
 
     @Inject
@@ -92,7 +95,6 @@ class RecordFragment : Fragment() {
             }
         }
 
-        val statViewModel: RecordingStatisticsViewModel by activityViewModels()
         recordingData = statViewModel.getRecordingData()
         recordingData?.observe(viewLifecycleOwner) {
             it?.let { data ->
@@ -156,6 +158,16 @@ class RecordFragment : Fragment() {
             override fun onSelectionChanged(dataList: List<RecordingData>) {
                 viewModel.setSelectedRecordings(dataList)
             }
+
+            override fun onImportFiles() {
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+
+                /* Search for all documents available via installed storage providers */
+                intent.type = "*/*"
+                startActivityForResult(intent, IMPORT_RECORDINGS_CODE)
+            }
         })
     }
 
@@ -164,6 +176,22 @@ class RecordFragment : Fragment() {
 
         recordingData?.value?.let {
             updateRecordingData(it)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        if (requestCode == IMPORT_RECORDINGS_CODE && resultCode == Activity.RESULT_OK) {
+            val uri = resultData?.data
+            val uriList = if (uri != null) {
+                /* One file selected */
+                listOf(uri)
+            } else {
+                val clipData = resultData?.clipData ?: return
+                (0 until clipData.itemCount).map {
+                    clipData.getItemAt(it).uri
+                }
+            }
+            statViewModel.importRecordings(uriList)
         }
     }
 
@@ -190,5 +218,10 @@ class RecordFragment : Fragment() {
             binding.statusView.onServiceStopped()
             binding.actionsView.onServiceStopped()
         }
+    }
+
+    companion object {
+        const val TAG = "RecordFragment"
+        private const val IMPORT_RECORDINGS_CODE = 6843
     }
 }

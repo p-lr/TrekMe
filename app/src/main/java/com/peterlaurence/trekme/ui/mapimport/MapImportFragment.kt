@@ -8,10 +8,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
+import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * A [Fragment] subclass that displays the list of maps archives available for import.
+ * Displays the list of maps archives available for import.
  * Leverages the Storage Access Framework (SAF) to get the list of [DocumentFile]s from a directory
  * selected by the user. The SAF guarantees that the application is granted access to that folder.
  * Using ContentResolver, an InputStream is created from a [DocumentFile] when the user selects it
@@ -39,7 +39,6 @@ import kotlinx.coroutines.withContext
  */
 @AndroidEntryPoint
 class MapImportFragment : Fragment() {
-    /* View binding boilerplate */
     private var _binding: FragmentMapImportBinding? = null // backing field
     private val binding get() = _binding!!
 
@@ -52,7 +51,7 @@ class MapImportFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.itemLiveData.observe(this, Observer {
+        viewModel.itemLiveData.observe(this) {
             it?.let { mapArchiveList ->
                 this.data = mapArchiveList
                 mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
@@ -60,9 +59,9 @@ class MapImportFragment : Fragment() {
                 binding.welcomePanel.visibility = View.GONE
                 binding.archiveListPanel.visibility = View.VISIBLE
             }
-        })
+        }
 
-        viewModel.unzipEvents.observe(this, Observer {
+        viewModel.unzipEvents.observe(this) {
             it?.let { event ->
                 val itemData = data.firstOrNull { item ->
                     item.id == event.itemId
@@ -74,7 +73,7 @@ class MapImportFragment : Fragment() {
                     onMapImported()
                 }
             }
-        })
+        }
 
         setHasOptionsMenu(false)
     }
@@ -82,7 +81,7 @@ class MapImportFragment : Fragment() {
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentMapImportBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -130,7 +129,7 @@ class MapImportFragment : Fragment() {
                 view.context,
                 DividerItemDecoration.VERTICAL
         )
-        val divider = view.context.getDrawable(R.drawable.divider)
+        val divider = ContextCompat.getDrawable(view.context, R.drawable.divider)
         if (divider != null) {
             dividerItemDecoration.setDrawable(divider)
         }

@@ -246,4 +246,6 @@
     <string name="elevation_correction_error">TrekMe n\'a pu vérifier les altitudes. Le service est peut-être temporairement indisponible, ou bien la zone n\'est pas couverte.</string>
     <string name="no_elevations">Ce fichier GPX ne contient pas d\'information d\'altitude. TrekMe ne peut pas affichier le profil altimétrique.</string>
     <string name="recordings_menu_import">Importer des fichiers</string>
+    <string name="recording_imported_success">%1$d fichiers importés avec succès</string>
+    <string name="recording_imported_failure">Erreur d\'import pour %1$s</string>
 </resources>

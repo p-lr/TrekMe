@@ -2,6 +2,8 @@
 
 package com.peterlaurence.trekme.viewmodel.record
 
+import android.app.Application
+import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
@@ -9,6 +11,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.track.*
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
@@ -28,6 +34,7 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -46,7 +53,10 @@ import java.util.concurrent.ConcurrentHashMap
 class RecordingStatisticsViewModel @ViewModelInject constructor(
         private val gpxRecordEvents: GpxRecordEvents,
         private val gpxRepository: GpxRepository,
-        private val eventBus: RecordEventBus
+        private val appEventBus: AppEventBus,
+        private val eventBus: RecordEventBus,
+        private val trekMeContext: TrekMeContext,
+        private val app: Application
 ) : ViewModel() {
 
     private val recordingData: MutableLiveData<List<RecordingData>> by lazy {
@@ -78,6 +88,58 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
                 onRecordingNameChangeEvent(it)
             }
         }
+    }
+
+    /**
+     * Imports all [Uri]s, and notifies the user when either all imports succeeded, or one of the
+     * imports failed.
+     */
+    fun importRecordings(uriList: List<Uri>) = viewModelScope.launch {
+        val contentResolver = app.applicationContext.contentResolver
+        var successCnt = 0
+        uriList.forEach { uri ->
+            if (importRecordingFromUri(uri, contentResolver)) successCnt++
+        }
+        if (uriList.isNotEmpty() && uriList.size == successCnt) {
+            val msg = app.applicationContext.getString(R.string.recording_imported_success, uriList.size)
+            appEventBus.postMessage(StandardMessage(msg))
+        }
+    }
+
+    /**
+     * Resolves the given uri to an actual file, and copies it to the app's storage location for
+     * recordings. Then, the copied file is parsed to get the corresponding [Gpx] instance along
+     * with its statistics. Finally, the relevant livedata is updated so the UI can show the
+     * imported file.
+     */
+    private suspend fun importRecordingFromUri(
+            uri: Uri, contentResolver: ContentResolver
+    ): Boolean = withContext(Dispatchers.IO) {
+        var fileName = ""
+        runCatching {
+            val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
+            parcelFileDescriptor?.use {
+                val fileDescriptor = parcelFileDescriptor.fileDescriptor
+                FileInputStream(fileDescriptor).also { fileInputStream ->
+                    val name = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
+                            ?: "A track"
+                    fileName = name
+                    val outputDir = trekMeContext.recordingsDir ?: return@withContext false
+                    val file = File(outputDir, name)
+                    fileInputStream.copyTo(FileOutputStream(file))
+                    val gpx = parseGpx(FileInputStream(file))
+                    setTrackStatistics(gpx)
+                    addOneRecording(file, gpx)
+                }
+            }
+        }.onFailure {
+            val msg = if (fileName.isNotEmpty()) {
+                app.applicationContext.getString(R.string.recording_imported_failure, fileName)
+            } else {
+                app.applicationContext.getString(R.string.recording_imported_failure, "file")
+            }
+            appEventBus.postMessage(StandardMessage(msg))
+        }.isSuccess
     }
 
     fun getRecordingData(): LiveData<List<RecordingData>> {
@@ -199,6 +261,9 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
         updateLiveData()
     }
 
+    /**
+     * Set track statistics on the first track of the given [Gpx] instance.
+     */
     private suspend fun setTrackStatistics(gpx: Gpx) = withContext(Dispatchers.Default) {
         gpx.tracks.firstOrNull()?.let { track ->
             val statCalculator = TrackStatCalculator()

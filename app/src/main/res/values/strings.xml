@@ -212,6 +212,8 @@
     <string name="background_location_disclaimer">TrekMe collects location data during the GPX recording,
         even when the app is closed or not in use.\n\nThis location data <b>isn\'t shared with anyone</b>,
         and gpx files are stored locally on your device.</string>
+    <string name="recording_imported_success">Successfully imported in %1$d files</string>
+    <string name="recording_imported_failure">Couldn\'t import %1$s</string>
 
     <!-- Elevation fragment -->
     <string name="no_elevations">This GPX file contains no elevations. TrekMe can\'t show the elevation profile.</string>

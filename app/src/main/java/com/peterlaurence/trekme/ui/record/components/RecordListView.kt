@@ -3,13 +3,14 @@ package com.peterlaurence.trekme.ui.record.components
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageButton
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.databinding.RecordListLayoutBinding
 import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import java.util.*
@@ -57,15 +58,21 @@ class RecordListView @JvmOverloads constructor(
     }
 
     private fun init(context: Context) {
-        View.inflate(context, R.layout.record_list_layout, this)
+        val b = RecordListLayoutBinding.inflate(LayoutInflater.from(context), this, true)
 
         val ctx = getContext()
-        recyclerView = findViewById(R.id.recordings_recycler_id)
-        val editNameButton = findViewById<ImageButton>(R.id.edit_recording_button)
-        val importButton = findViewById<ImageButton>(R.id.import_track_button)
-        val shareButton = findViewById<ImageButton>(R.id.share_track_button)
-        val elevationGraphButton = findViewById<ImageButton>(R.id.elevation_track_button)
-        val deleteRecordingButton = findViewById<ImageButton>(R.id.delete_recording_button)
+        val toolbar = b.recordListToolbar
+        recyclerView = b.recordingsRecyclerId
+        val editNameButton = b.editRecordingButton
+        val importButton = b.importTrackButton
+        val shareButton = b.shareTrackButton
+        val elevationGraphButton = b.elevationTrackButton
+        val deleteRecordingButton = b.deleteRecordingButton
+
+        toolbar.menu.findItem(R.id.import_new_recordings).setOnMenuItemClickListener {
+            listener?.onImportFiles()
+            true
+        }
 
         editNameButton.isEnabled = false
         editNameButton.setOnClickListener {
@@ -196,5 +203,6 @@ class RecordListView @JvmOverloads constructor(
         fun onRequestShowElevationGraph(data: RecordingData)
         fun onRequestDeleteRecordings(dataList: List<RecordingData>)
         fun onSelectionChanged(dataList: List<RecordingData>)
+        fun onImportFiles()
     }
 }
