@@ -39,7 +39,7 @@ fun getBitmapFromDrawable(drawable: Drawable): Bitmap? {
     val width = drawable.intrinsicWidth
     val height = drawable.intrinsicHeight
     return if (width > 0 && height > 0) {
-        val bmp = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)

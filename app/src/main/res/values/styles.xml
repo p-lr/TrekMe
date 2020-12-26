@@ -60,4 +60,9 @@
         <item name="colorPrimaryDark">@color/colorAccentDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
+
+    <style name="recordingsToolbarTitle">
+        <item name="android:textColor">@color/colorPrimaryTextBlack</item>
+        <item name="android:textSize">18sp</item>
+    </style>
 </resources>
