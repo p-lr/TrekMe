@@ -45,10 +45,11 @@ class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder, private
  * Same as [TileStreamProviderHttp], but using user-agent authentication.
  */
 class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, private val userAgent: String,
-                                 private val requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
+                                 requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
+    private val tileStreamProviderHttp = TileStreamProviderHttp(urlTileBuilder, requestProperties)
+
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         val url = URL(urlTileBuilder.build(zoomLvl, row, col))
-        val tileStreamProviderHttp = TileStreamProviderHttp(urlTileBuilder, requestProperties)
         val connection = tileStreamProviderHttp.createConnection(url)
 
         /* Set authentication */
