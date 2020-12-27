@@ -221,13 +221,14 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
         /* Notify the repo that we're about to submit new data, invalidating the existing one */
         gpxRepository.resetGpxForElevation()
 
-        val (gpx, gpxFile) = withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             val gpxFile = getGpxFileForId(recordingData.id)
-            Pair(parseGpxSafely(FileInputStream(gpxFile)), gpxFile)
-        }
-
-        if (gpx != null && gpxFile != null) {
-            gpxRepository.setGpxForElevation(gpx, gpxFile.id())
+            val gpx = gpxFile?.let {
+                parseGpxSafely(FileInputStream(it))
+            }
+            if (gpx != null) {
+                gpxRepository.setGpxForElevation(gpx, gpxFile.id())
+            }
         }
     }
 
