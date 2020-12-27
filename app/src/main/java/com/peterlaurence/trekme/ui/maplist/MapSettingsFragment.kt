@@ -43,7 +43,6 @@ import javax.inject.Inject
 class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
     private var map: Map? = null
     private val viewModel: MapSettingsViewModel by activityViewModels()
-    private var saveMapDialog: AlertDialog? = null
 
     @Inject
     lateinit var mapLoader: MapLoader
@@ -172,8 +171,8 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
                     }
                     .setNegativeButton(R.string.cancel_dialog_string
                     ) { dialog: DialogInterface, _ -> dialog.dismiss() }
-            saveMapDialog = builder.create()
-            saveMapDialog?.show()
+            val saveMapDialog = builder.create()
+            saveMapDialog.show()
             true
         }
     }
@@ -188,7 +187,6 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         super.onPause()
         preferenceScreen.sharedPreferences
                 .unregisterOnSharedPreferenceChangeListener(this)
-        saveMapDialog?.dismiss()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
