@@ -1,10 +1,7 @@
 package com.peterlaurence.trekme.core.providers.stream
 
 import com.peterlaurence.trekme.core.map.TileStreamProvider
-import com.peterlaurence.trekme.core.mapsource.IgnSourceData
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.mapsource.MapSourceData
-import com.peterlaurence.trekme.core.mapsource.OrdnanceSurveyData
+import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.providers.urltilebuilder.*
 
 /**
@@ -16,7 +13,7 @@ fun createTileStreamProvider(wmtsSource: WmtsSource, mapSourceData: MapSourceDat
         WmtsSource.IGN -> {
             val ignSourceData = mapSourceData as? IgnSourceData
                     ?: throw Exception("Missing API for IGN source")
-            val urlTileBuilder = UrlTileBuilderIgn(ignSourceData.api, ignSourceData.layer.realName)
+            val urlTileBuilder = UrlTileBuilderIgn(ignSourceData.api, ignSourceData.layer.wmtsName)
             TileStreamProviderIgn(urlTileBuilder, ignSourceData.layer)
         }
         WmtsSource.USGS -> {
@@ -24,7 +21,8 @@ fun createTileStreamProvider(wmtsSource: WmtsSource, mapSourceData: MapSourceDat
             TileStreamProviderUSGS(urlTileBuilder)
         }
         WmtsSource.OPEN_STREET_MAP -> {
-            val urlTileBuilder = UrlTileBuilderOSM()
+            val osmSourceData = mapSourceData as OsmSourceData
+            val urlTileBuilder = UrlTileBuilderOSM(osmSourceData.layer.id)
             TileStreamProviderOSM(urlTileBuilder)
         }
         WmtsSource.IGN_SPAIN -> {

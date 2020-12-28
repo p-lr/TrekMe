@@ -5,8 +5,8 @@ import com.peterlaurence.trekme.core.map.TileResult
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderRetry
+import com.peterlaurence.trekme.core.providers.layers.IgnClassic
 import com.peterlaurence.trekme.core.providers.layers.Layer
-import com.peterlaurence.trekme.core.providers.layers.ignClassic
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 
 /**
@@ -29,7 +29,7 @@ class TileStreamProviderIgn(urlTileBuilder: UrlTileBuilder, val layer: Layer) : 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         /* Filter-out inaccessible tiles at lower levels */
         when (zoomLvl) {
-            3 -> if (layer.publicName == ignClassic) {
+            3 -> if (layer == IgnClassic) {
                 if (row >= 6 || col > 7) return OutOfBounds
             } else {
                 if (row > 7 || col > 7) return OutOfBounds

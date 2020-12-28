@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.R
  */
 abstract class SingleSelectDialog : DialogFragment() {
     private lateinit var title: String
-    private lateinit var values: List<String>
+    private lateinit var values: Array<String>
     private lateinit var valueSelected: String
 
     companion object {
@@ -27,7 +27,7 @@ abstract class SingleSelectDialog : DialogFragment() {
         super.onCreate(savedInstanceState)
 
         title = arguments?.getString(ARG_TITLE) ?: ""
-        values = arguments?.getStringArrayList(ARG_VALUES) ?: listOf()
+        values = arguments?.getStringArray(ARG_VALUES) ?: arrayOf()
         valueSelected = arguments?.getString(ARG_VALUE_SELECTED) ?: ""
     }
 
@@ -36,17 +36,17 @@ abstract class SingleSelectDialog : DialogFragment() {
         builder.setTitle(title)
         val indexSelected = values.indexOf(valueSelected)
         var selection: String? = null
-        builder.setSingleChoiceItems(values.toTypedArray(), indexSelected) { _: DialogInterface, i: Int ->
+        builder.setSingleChoiceItems(values, indexSelected) { _: DialogInterface, i: Int ->
             selection = values[i]
         }
         builder.setPositiveButton(getText(R.string.ok_dialog)) { _: DialogInterface, _: Int ->
             selection?.also {
-                onSelection(it)
+                onSelection(values.indexOf(it))
             }
         }
         builder.setNegativeButton(getText(R.string.cancel_dialog_string)) { _, _ -> dismiss() }
         return builder.create()
     }
 
-    abstract fun onSelection(selection: String)
+    abstract fun onSelection(index: Int)
 }

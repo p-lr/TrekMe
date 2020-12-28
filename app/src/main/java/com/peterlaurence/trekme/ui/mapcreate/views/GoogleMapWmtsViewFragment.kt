@@ -19,7 +19,7 @@ import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
-import com.peterlaurence.trekme.core.providers.layers.ignLayers
+import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
 import com.peterlaurence.trekme.repositories.location.Location
 import com.peterlaurence.trekme.repositories.location.LocationSource
@@ -100,6 +100,14 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private val x1 = -x0
     private val y1 = x0
 
+    private val layerIdToResId = mapOf(
+            ignScanExpressStd to R.string.layer_ign_scan_express_std,
+            ignClassic to R.string.layer_ign_classic,
+            ignSatellite to R.string.layer_ign_satellite,
+            osmTopo to R.string.layer_osm_topo,
+            osmStreet to R.string.layer_osm_street
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -157,6 +165,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val layerMenu = menu.findItem(R.id.map_layer_menu_id)
         layerMenu.isVisible = when (wmtsSource) {
             WmtsSource.IGN -> true
+            WmtsSource.OPEN_STREET_MAP -> true
             else -> false
         }
 
@@ -174,10 +183,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
             R.id.map_layer_menu_id -> {
                 wmtsSource?.also { wmtsSource ->
                     val title = getString(R.string.ign_select_layer_title)
-                    val values = ignLayers.map { it.publicName }
-                    val layerPublicName = viewModel.getLayerPublicNameForSource(wmtsSource)
+                    val layers = viewModel.getLayersForSource(wmtsSource) ?: return@also
+                    val activeLayer = viewModel.getActiveLayerForSource(wmtsSource) ?: return@also
+                    val ids = layers.map { it.id }
+                    val values = layers.mapNotNull { translateLayerName(it) }
+                    val selectedValue = translateLayerName(activeLayer) ?: return@also
                     val layerSelectDialog =
-                            LayerSelectDialog.newInstance(title, values, layerPublicName)
+                            LayerSelectDialog.newInstance(title, ids, values, selectedValue)
                     layerSelectDialog.show(
                             requireActivity().supportFragmentManager,
                             "LayerSelectDialog"
@@ -188,11 +200,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun onLayerDefined(layerPublicName: String) {
+    private fun onLayerDefined(layerId: String) {
         val wmtsSource = wmtsSource ?: return
 
         /* Update the layer preference */
-        viewModel.setLayerForSourceFromPublicName(wmtsSource, layerPublicName)
+        viewModel.setLayerForSourceFromId(wmtsSource, layerId)
 
         /* Then re-create the MapView */
         shouldZoomOnPosition = true
@@ -251,6 +263,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
         locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
             onLocationReceived(loc)
         }
+    }
+
+    private fun translateLayerName(layer: Layer): String? {
+        val res = layerIdToResId[layer.id] ?: return null
+        return getString(res)
     }
 
     /**

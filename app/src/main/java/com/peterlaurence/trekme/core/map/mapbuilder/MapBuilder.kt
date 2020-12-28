@@ -26,7 +26,7 @@ fun buildMap(mapSpec: MapSpec, layer: Layer?, mapOrigin: Map.MapOrigin,
     mapGson.provider = MapGson.Provider().apply {
         generated_by = mapOrigin
         wmts_source = source
-        layer_real_name = layer?.realName
+        layer_real_name = layer?.wmtsName
         image_extension = imageExtension
     }
 

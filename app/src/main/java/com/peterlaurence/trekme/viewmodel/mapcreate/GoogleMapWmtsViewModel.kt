@@ -9,17 +9,11 @@ import com.peterlaurence.trekme.core.backendApi.ordnanceSurveyApiUrl
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
-import com.peterlaurence.trekme.core.mapsource.IgnSourceData
-import com.peterlaurence.trekme.core.mapsource.NoData
-import com.peterlaurence.trekme.core.mapsource.OrdnanceSurveyData
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
-import com.peterlaurence.trekme.core.providers.layers.IgnClassic
-import com.peterlaurence.trekme.core.providers.layers.IgnLayer
-import com.peterlaurence.trekme.core.providers.layers.Layer
-import com.peterlaurence.trekme.core.providers.layers.ignLayers
+import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
@@ -45,6 +39,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         private val ignApiRepository: IgnApiRepository
 ) : ViewModel() {
     private val defaultIgnLayer: IgnLayer = IgnClassic
+    private val defaultOsmLayer: OsmLayer = WorldStreetMap
     private var ordnanceSurveyApi: String? = null
 
     private val scaleAndScrollInitConfig = mapOf(
@@ -111,29 +106,33 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         return scaleAndScrollInitConfig[wmtsSource]
     }
 
-    fun getLayerPublicNameForSource(wmtsSource: WmtsSource): String {
-        return activeLayerForSource[wmtsSource]?.publicName ?: ""
+    fun getLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
+        return when (wmtsSource) {
+            WmtsSource.IGN -> ignLayers
+            WmtsSource.OPEN_STREET_MAP -> osmLayers
+            else -> null
+        }
     }
 
-    private fun getLayerForSource(wmtsSource: WmtsSource): Layer? {
-        return if (wmtsSource == WmtsSource.IGN) {
-            activeLayerForSource[wmtsSource] ?: defaultIgnLayer
-        } else null
+    fun getActiveLayerForSource(wmtsSource: WmtsSource): Layer? {
+        return when (wmtsSource) {
+            WmtsSource.IGN -> activeLayerForSource[wmtsSource] ?: defaultIgnLayer
+            WmtsSource.OPEN_STREET_MAP -> activeLayerForSource[wmtsSource] ?: defaultOsmLayer
+            else -> null
+        }
     }
 
-    fun setLayerForSourceFromPublicName(wmtsSource: WmtsSource, layerName: String) {
-        if (wmtsSource == WmtsSource.IGN) {
-            val layer = ignLayers.firstOrNull { it.publicName == layerName }
-            if (layer != null) {
-                activeLayerForSource[wmtsSource] = layer
-            }
+    fun setLayerForSourceFromId(wmtsSource: WmtsSource, layerId: String) {
+        val layer = getLayer(layerId)
+        if (layer != null) {
+            activeLayerForSource[wmtsSource] = layer
         }
     }
 
     suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider? {
         val mapSourceData = when (wmtsSource) {
             WmtsSource.IGN -> {
-                val layer = getLayerForSource(wmtsSource)!!
+                val layer = getActiveLayerForSource(wmtsSource)!!
                 val ignApi = ignApiRepository.getApi()
                 IgnSourceData(ignApi ?: "", layer)
             }
@@ -142,6 +141,10 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
                     ordnanceSurveyApi = getApi(ordnanceSurveyApiUrl)
                 }
                 OrdnanceSurveyData(ordnanceSurveyApi ?: "")
+            }
+            WmtsSource.OPEN_STREET_MAP -> {
+                val layer = getActiveLayerForSource(wmtsSource)!!
+                OsmSourceData(layer)
             }
             else -> NoData
         }
@@ -153,15 +156,13 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     }
 
     private suspend fun getApi(urlStr: String): String? = withContext(Dispatchers.IO) {
-        val url = URL(urlStr)
-        val connection = url.openConnection()
-        try {
+        runCatching {
+            val url = URL(urlStr)
+            val connection = url.openConnection()
             connection.getInputStream().bufferedReader().use {
                 it.readText()
             }
-        } catch (t: Throwable) {
-            null
-        }
+        }.getOrNull()
     }
 
     /**
@@ -175,7 +176,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         viewModelScope.launch {
             val tileStreamProvider = createTileStreamProvider(wmtsSource) ?: return@launch
-            val layer = getLayerForSource(wmtsSource)
+            val layer = getActiveLayerForSource(wmtsSource)
             val request = DownloadMapRequest(wmtsSource, layer, mapSpec, tileCount, tileStreamProvider)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)

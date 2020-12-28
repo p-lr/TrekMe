@@ -15,4 +15,5 @@ data class WmtsSourceBundle(val wmtsSource: WmtsSource, val levelMin: Int = 1, v
 sealed class MapSourceData
 data class IgnSourceData(val api: String, val layer: Layer) : MapSourceData()
 data class OrdnanceSurveyData(val api: String): MapSourceData()
+data class OsmSourceData(val layer: Layer): MapSourceData()
 object NoData : MapSourceData()
