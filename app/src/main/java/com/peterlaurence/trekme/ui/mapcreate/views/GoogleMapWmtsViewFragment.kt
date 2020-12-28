@@ -326,6 +326,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 }
             }
         }
+        /* OSM maps renders too small text. As a workaround, we set the magnifying factor to 1. */
+        if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
+            config.setMagnifyingFactor(1)
+        }
 
         mapView.configure(config)
 
