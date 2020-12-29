@@ -63,9 +63,17 @@ public class IndicatorOverlay extends RelativeLayout implements MapViewFragment.
     }
 
     @Override
-    public void toggleSpeedVisibility() {
+    public boolean toggleSpeedVisibility() {
         mSpeedVisibility = !mSpeedVisibility;
         mSpeedTextView.setVisibility(mSpeedVisibility ? VISIBLE : GONE);
+        updateVisibility();
+        return mSpeedVisibility;
+    }
+
+    @Override
+    public void setSpeedVisible(boolean v) {
+        mSpeedVisibility = v;
+        mSpeedTextView.setVisibility(v ? VISIBLE : GONE);
         updateVisibility();
     }
 

@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.core.settings
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import android.icu.util.LocaleData
 import androidx.core.content.edit
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.units.MeasurementSystem
@@ -17,12 +16,13 @@ import javax.inject.Singleton
  * This class internally uses [SharedPreferences].
  */
 @Singleton
-class Settings @Inject constructor(private val trekMeContext: TrekMeContext, private val app: Application) {
+class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app: Application) {
     private val sharedPref: SharedPreferences = app.applicationContext.getSharedPreferences(settingsFile, Context.MODE_PRIVATE)
     private val appDirKey = "appDir"
     private val startOnPolicy = "startOnPolicy"
     private val favoriteMaps = "favoriteMaps"
     private val rotationMode = "rotationMode"
+    private val speedVisibility = "speedVisibility"
     private val magnifyingFactor = "magnifyingFactor"
     private val lastMapId = "lastMapId"
     private val defineScaleWhenCentered = "defineScaleWhenCentered"
@@ -99,6 +99,16 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 
+    fun getSpeedVisibility(): Boolean {
+        return sharedPref.getBoolean(speedVisibility, false)
+    }
+
+    fun setSpeedVisibility(v: Boolean) {
+        sharedPref.edit {
+            putBoolean(speedVisibility, v)
+        }
+    }
+
     fun setDefineScaleCentered(defined: Boolean) {
         sharedPref.edit {
             putBoolean(defineScaleWhenCentered, defined)
@@ -126,7 +136,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     }
 
     fun getMeasurementSystem(): MeasurementSystem {
-        return when(sharedPref.getString(measurementSystem, null)) {
+        return when (sharedPref.getString(measurementSystem, null)) {
             MeasurementSystem.METRIC.name -> MeasurementSystem.METRIC
             MeasurementSystem.IMPERIAL.name -> MeasurementSystem.IMPERIAL
             else -> MeasurementSystem.METRIC

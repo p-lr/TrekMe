@@ -50,6 +50,10 @@ class MapViewViewModel @ViewModelInject constructor(
 
     fun getScaleCentered(): Float = settings.getScaleCentered()
 
+    fun getSpeedVisibility(): Boolean = settings.getSpeedVisibility()
+
+    fun setSpeedVisibility(v: Boolean) = settings.setSpeedVisibility(v)
+
     private suspend fun checkForIgnLicense(map: Map): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
 

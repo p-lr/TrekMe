@@ -184,6 +184,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             distanceLayer?.show(distanceLayerState)
         }
 
+        /* Also restore speed visibility */
+        speedListener?.setSpeedVisible(mapViewViewModel.getSpeedVisibility())
+
         /* In free-rotating mode, show the compass right from the start */
         if (rotationMode == RotationMode.FREE) {
             compassView?.visibility = View.VISIBLE
@@ -351,7 +354,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 return true
             }
             R.id.speedometer_id -> {
-                speedListener?.toggleSpeedVisibility()
+                speedListener?.toggleSpeedVisibility()?.also { visible ->
+                    mapViewViewModel.setSpeedVisibility(visible)
+                }
                 return true
             }
             R.id.distancemeter_id -> {
@@ -677,7 +682,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
          */
         fun onSpeed(speed: Float)
 
-        fun toggleSpeedVisibility()
+        fun setSpeedVisible(v: Boolean)
+
+        fun toggleSpeedVisibility(): Boolean
 
         fun hideSpeed()
     }
