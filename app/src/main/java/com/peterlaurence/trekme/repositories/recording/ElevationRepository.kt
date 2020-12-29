@@ -198,7 +198,9 @@ class ElevationRepository(
         val latitudeList = trkPoints.joinToString(separator = "|") { "${it.latitude}" }
         val url = "http://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList&zonly=true"
         val req = ignApiRepository.requestBuilder.url(url).build()
-        return performRequest<ElevationsResponse>(client, req)?.elevations
+        return performRequest<ElevationsResponse>(client, req)?.elevations?.let {
+            if (it.contains(-99999.0)) trkPoints.mapNotNull { pt -> pt.elevation } else it
+        }
     }
 
     @Serializable
