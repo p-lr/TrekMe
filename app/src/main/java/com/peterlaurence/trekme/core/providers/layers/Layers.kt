@@ -17,12 +17,14 @@ val ignLayers: List<IgnLayer> = listOf(IgnClassic, Satellite, ScanExpressStandar
 sealed class OsmLayer(override val id: String, override val wmtsName: String) : Layer(id, wmtsName)
 object WorldTopoMap : OsmLayer(osmTopo, "World_Topo_Map")
 object WorldStreetMap : OsmLayer(osmStreet, "World_Street_Map")
+object OpenTopoMap : OsmLayer(openTopoMap, "OpenTopoMap")
 
 const val osmTopo = "osmTopo"
 const val osmStreet = "osmStreet"
+const val openTopoMap = "openTopoMap"
 
 /* All supported OSM layers */
-val osmLayers: List<OsmLayer> = listOf(WorldStreetMap, WorldTopoMap)
+val osmLayers: List<OsmLayer> = listOf(WorldStreetMap, WorldTopoMap, OpenTopoMap)
 
 fun getLayer(id: String): Layer? {
     return when (id) {
@@ -31,6 +33,7 @@ fun getLayer(id: String): Layer? {
         ignSatellite -> Satellite
         osmTopo -> WorldTopoMap
         osmStreet -> WorldStreetMap
+        openTopoMap -> OpenTopoMap
         else -> null
     }
 }

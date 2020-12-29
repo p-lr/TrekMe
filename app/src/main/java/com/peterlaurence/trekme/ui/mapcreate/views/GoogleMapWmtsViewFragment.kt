@@ -105,7 +105,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
             ignClassic to R.string.layer_ign_classic,
             ignSatellite to R.string.layer_ign_satellite,
             osmTopo to R.string.layer_osm_topo,
-            osmStreet to R.string.layer_osm_street
+            osmStreet to R.string.layer_osm_street,
+            openTopoMap to R.string.layer_osm_opentopo
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {

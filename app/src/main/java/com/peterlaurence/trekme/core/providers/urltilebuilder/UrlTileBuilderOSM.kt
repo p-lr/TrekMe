@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.providers.urltilebuilder
 
+import com.peterlaurence.trekme.core.providers.layers.openTopoMap
 import com.peterlaurence.trekme.core.providers.layers.osmStreet
 import com.peterlaurence.trekme.core.providers.layers.osmTopo
 
@@ -18,6 +19,10 @@ class UrlTileBuilderOSM(private val layerId: String) : UrlTileBuilder {
         return when (layerId) {
             osmStreet -> "https://tile.openstreetmap.org/$level/$col/$row.png"
             osmTopo -> "https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/WMTS/tile/1.0.0/World_Topo_Map/default/GoogleMapsCompatible/$level/$row/$col.jpg"
+            openTopoMap -> {
+                val server = listOf("a", "b", "c").random()
+                "https://$server.tile.opentopomap.org/$level/$col/$row.png"
+            }
             else -> "https://tile.openstreetmap.org/$level/$col/$row.png"
         }
     }
