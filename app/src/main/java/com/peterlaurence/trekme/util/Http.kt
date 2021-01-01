@@ -10,8 +10,8 @@ import java.io.IOException
 import kotlin.coroutines.resumeWithException
 
 
-suspend inline fun <reified T> performRequest(client: OkHttpClient, request: Request): T? = withContext(Dispatchers.IO) {
-    val call = client.newCall(request)
+suspend inline fun <reified T> OkHttpClient.performRequest(request: Request): T? = withContext(Dispatchers.IO) {
+    val call = newCall(request)
     val r = call.await()
     val str = runCatching { r?.string() }.getOrNull()
     if (str != null) {
