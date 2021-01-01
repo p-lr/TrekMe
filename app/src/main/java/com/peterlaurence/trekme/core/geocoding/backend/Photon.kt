@@ -41,7 +41,7 @@ class Photon(private val client: OkHttpClient) : GeocodingBackend {
                     PhotonType.House -> POI
                 }
                 val name = it.properties.name
-                val locality = it.properties.city
+                val locality = "${it.properties.city}, ${it.properties.state}"
                 GeoPlace(geoType, name, locality, lat, lon)
             } else null
         }

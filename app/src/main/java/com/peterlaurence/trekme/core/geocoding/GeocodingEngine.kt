@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.geocoding
 
 import com.peterlaurence.trekme.core.geocoding.backend.GeocodingBackend
+import com.peterlaurence.trekme.core.geocoding.backend.Nominatim
 import com.peterlaurence.trekme.core.geocoding.backend.Photon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -24,7 +25,7 @@ import okhttp3.OkHttpClient
 class GeocodingEngine(private val scope: CoroutineScope) {
     private val httpClient = OkHttpClient()
     private val backends: List<GeocodingBackend> = listOf(
-            Photon(httpClient),
+            Nominatim(httpClient), Photon(httpClient),
     )
 
     private val _geoPlaceFlow = MutableSharedFlow<List<GeoPlace>?>(0, 1, BufferOverflow.DROP_OLDEST)
