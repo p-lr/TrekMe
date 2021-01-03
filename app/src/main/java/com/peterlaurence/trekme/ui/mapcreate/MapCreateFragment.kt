@@ -52,7 +52,7 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentMapCreateBinding.inflate(inflater, container, false)
         return binding.root
     }

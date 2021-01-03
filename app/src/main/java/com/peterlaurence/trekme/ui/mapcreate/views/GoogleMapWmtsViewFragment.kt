@@ -1,10 +1,13 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
 import android.annotation.SuppressLint
+import android.app.SearchManager
+import android.content.Context
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -160,14 +163,35 @@ class GoogleMapWmtsViewFragment : Fragment() {
         menu.clear()
 
         /* Fill the new one */
-        inflater.inflate(R.menu.menu_fragment_map_create, menu)
+        inflater.inflate(R.menu.menu_fragment_wmts, menu)
 
-        /* Only show the layer menu for IGN France for instance */
         val layerMenu = menu.findItem(R.id.map_layer_menu_id)
-        layerMenu.isVisible = when (wmtsSource) {
-            WmtsSource.IGN -> true
-            WmtsSource.OPEN_STREET_MAP -> true
-            else -> false
+        layerMenu?.isVisible = shouldShowLayerMenu()
+
+        val areaWidget = menu.findItem(R.id.map_area_widget_id)
+
+        val searchItem: MenuItem = menu.findItem(R.id.search) ?: return
+        val searchView = searchItem.actionView as SearchView
+        val activity = activity ?: return
+        val searchManager = activity.getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.componentName))
+
+        val queryListener = object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                println("search query : $query")
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                println("search changed : $newText")
+                return true
+            }
+        }
+        searchView.setOnQueryTextListener(queryListener)
+        searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
+            areaWidget?.isVisible = !hasFocus
+            layerMenu?.isVisible = if (hasFocus) false else shouldShowLayerMenu()
+            mapView?.visibility = if (hasFocus) View.GONE else View.VISIBLE
         }
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -199,6 +223,17 @@ class GoogleMapWmtsViewFragment : Fragment() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    /**
+     * Only show the layer menu for IGN France and OSM
+     */
+    private fun shouldShowLayerMenu(): Boolean {
+        return when (wmtsSource) {
+            WmtsSource.IGN -> true
+            WmtsSource.OPEN_STREET_MAP -> true
+            else -> false
+        }
     }
 
     private fun onLayerDefined(layerId: String) {
