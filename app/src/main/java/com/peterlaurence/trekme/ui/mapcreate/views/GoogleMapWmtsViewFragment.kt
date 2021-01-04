@@ -10,7 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.api.addMarker
@@ -91,6 +93,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private var shouldZoomOnPosition = true
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
+    private val geocodingViewModel: GeocodingViewModel by viewModels()
 
     private lateinit var area: Area
 
@@ -111,6 +114,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
             osmStreet to R.string.layer_osm_street,
             openTopoMap to R.string.layer_osm_opentopo
     )
+
+    private var placesAdapter: PlacesAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,8 +150,24 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fabSave.setOnClickListener { validateArea() }
         binding.fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
-        configure()
+        initPlaceRecyclerView()
+        configureMapView()
 
+        /* Listen to position update */
+        locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
+            onLocationReceived(loc)
+        }
+
+        /* Listen to places search results */
+        lifecycleScope.launchWhenResumed {
+            geocodingViewModel.geoPlaceFlow.collect {
+                it?.let {
+                    placesAdapter?.setGeoPlaces(it)
+                }
+            }
+        }
+
+        /* Listen to layer selection event */
         lifecycleScope.launchWhenResumed {
             eventBus.layerSelectEvent.collect {
                 onLayerDefined(it)
@@ -170,7 +191,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         val areaWidget = menu.findItem(R.id.map_area_widget_id)
 
-        val searchItem: MenuItem = menu.findItem(R.id.search) ?: return
+        val searchItem = menu.findItem(R.id.search) ?: return
         val searchView = searchItem.actionView as SearchView
         val activity = activity ?: return
         val searchManager = activity.getSystemService(Context.SEARCH_SERVICE) as SearchManager
@@ -178,12 +199,16 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         val queryListener = object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                println("search query : $query")
+                if (query != null) {
+                    geocodingViewModel.search(query)
+                }
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                println("search changed : $newText")
+                if (newText != null) {
+                    geocodingViewModel.search(newText)
+                }
                 return true
             }
         }
@@ -192,6 +217,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             areaWidget?.isVisible = !hasFocus
             layerMenu?.isVisible = if (hasFocus) false else shouldShowLayerMenu()
             mapView?.visibility = if (hasFocus) View.GONE else View.VISIBLE
+            _binding?.placesRecyclerView?.visibility = if (hasFocus) View.VISIBLE else View.GONE
         }
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -225,6 +251,16 @@ class GoogleMapWmtsViewFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
+    private fun initPlaceRecyclerView() {
+        val context = context ?: return
+        val binding = _binding ?: return
+        val llm = LinearLayoutManager(context)
+        binding.placesRecyclerView.layoutManager = llm
+
+        placesAdapter = PlacesAdapter()
+        binding.placesRecyclerView.adapter = placesAdapter
+    }
+
     /**
      * Only show the layer menu for IGN France and OSM
      */
@@ -246,10 +282,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
         shouldZoomOnPosition = true
         positionMarker = null
         removeMapView()
-        configure()
+        configureMapView()
     }
 
-    private fun configure() = lifecycleScope.launch {
+    private fun configureMapView() = lifecycleScope.launch {
         val wmtsSource = wmtsSource ?: return@launch
 
         /* 0- Show infinite progressbar to the user until we're done testing the tile provider */
@@ -293,11 +329,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
                     }
                 }
             }
-        }
-
-        /* 5- Finally, update the current position */
-        locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
-            onLocationReceived(loc)
         }
     }
 
