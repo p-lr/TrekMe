@@ -7,13 +7,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.databinding.GeoplaceItemBinding
+import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 
 /**
  * Defines how given list of [GeoPlace] are rendered.
  *
  * @author P.Laurence on 04/01/2021
  */
-class PlacesAdapter : RecyclerView.Adapter<PlacesAdapter.GeoPlaceViewHolder>() {
+class PlacesAdapter(private val eventBus: MapCreateEventBus) : RecyclerView.Adapter<PlacesAdapter.GeoPlaceViewHolder>() {
     private val diffCallback: DiffUtil.ItemCallback<GeoPlace> = object : DiffUtil.ItemCallback<GeoPlace>() {
         override fun areItemsTheSame(oldItem: GeoPlace, newItem: GeoPlace): Boolean {
             return oldItem.hashCode() == newItem.hashCode()
@@ -41,6 +42,9 @@ class PlacesAdapter : RecyclerView.Adapter<PlacesAdapter.GeoPlaceViewHolder>() {
         val data = differ.currentList[position] ?: return
         holder.setTitle(data.name)
         holder.setSubtitle(data.locality)
+        holder.view.setOnClickListener {
+            eventBus.postPlaceSelectEvent(data)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -48,6 +52,8 @@ class PlacesAdapter : RecyclerView.Adapter<PlacesAdapter.GeoPlaceViewHolder>() {
     }
 
     class GeoPlaceViewHolder(private val itemBinding: GeoplaceItemBinding) : RecyclerView.ViewHolder(itemBinding.root) {
+        val view = itemBinding.root
+
         fun setTitle(title: String) {
             itemBinding.title.text = title
         }

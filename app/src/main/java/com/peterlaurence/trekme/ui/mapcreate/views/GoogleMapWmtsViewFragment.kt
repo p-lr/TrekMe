@@ -1,11 +1,11 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
 import android.annotation.SuppressLint
-import android.app.SearchManager
-import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
@@ -18,7 +18,9 @@ import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.api.addMarker
 import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.api.moveToMarker
+import com.peterlaurence.mapview.api.removeMarker
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
@@ -105,6 +107,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private val y0 = -x0
     private val x1 = -x0
     private val y1 = x0
+
+    private val placeMarker: ImageView by lazy {
+        ImageView(context).apply {
+            setImageResource(R.drawable.ic_baseline_location_on_24)
+            setColorFilter(Color.BLUE)
+        }
+    }
 
     private val layerIdToResId = mapOf(
             ignScanExpressStd to R.string.layer_ign_scan_express_std,
@@ -193,9 +202,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         val searchItem = menu.findItem(R.id.search) ?: return
         val searchView = searchItem.actionView as SearchView
-        val activity = activity ?: return
-        val searchManager = activity.getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.componentName))
 
         val queryListener = object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -218,6 +224,16 @@ class GoogleMapWmtsViewFragment : Fragment() {
             layerMenu?.isVisible = if (hasFocus) false else shouldShowLayerMenu()
             mapView?.visibility = if (hasFocus) View.GONE else View.VISIBLE
             _binding?.placesRecyclerView?.visibility = if (hasFocus) View.VISIBLE else View.GONE
+        }
+
+        /* React to place selection */
+        lifecycleScope.launch {
+            eventBus.paceSelectEvent.collect {
+                searchItem.collapseActionView()
+                mapView?.visibility = View.VISIBLE
+                _binding?.placesRecyclerView?.visibility = View.GONE
+                moveToPlace(it)
+            }
         }
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -255,10 +271,21 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val context = context ?: return
         val binding = _binding ?: return
         val llm = LinearLayoutManager(context)
-        binding.placesRecyclerView.layoutManager = llm
+        val recyclerView = binding.placesRecyclerView
+        recyclerView.layoutManager = llm
 
-        placesAdapter = PlacesAdapter()
-        binding.placesRecyclerView.adapter = placesAdapter
+        placesAdapter = PlacesAdapter(eventBus)
+        recyclerView.adapter = placesAdapter
+    }
+
+    private fun moveToPlace(place: GeoPlace) {
+        val projected = projection.doProjection(place.lat, place.lon) ?: return
+        val X = projected[0]
+        val Y = projected[1]
+
+        mapView?.removeMarker(placeMarker)
+        mapView?.addMarker(placeMarker, X, Y)
+        mapView?.moveToMarker(placeMarker, 0.5f, true)
     }
 
     /**
