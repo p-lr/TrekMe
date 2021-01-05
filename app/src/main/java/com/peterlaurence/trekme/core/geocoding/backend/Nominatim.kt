@@ -38,8 +38,8 @@ class Nominatim(private val client: OkHttpClient) : GeocodingBackend {
             val name = it.displayName.substringBefore(",")
             val allInfos = it.displayName.split(',').map { it.trim() }
 
-            val locality = if (allInfos.size > 3) {
-                "${allInfos[2]}, ${allInfos.last()}"
+            val locality = if (allInfos.size > 4) {
+                "${allInfos[2]}, ${allInfos[allInfos.size-2]}, ${allInfos[allInfos.size-1]}"
             } else it.displayName.substringAfter(",")
 
             GeoPlace(type, name, locality, it.lat, it.lon)

@@ -254,4 +254,6 @@
     <string name="layer_osm_topo">Topo</string>
     <string name="layer_osm_street">OSM</string>
     <string name="layer_osm_opentopo">OpenTopoMap</string>
+    <string name="place_search_hint">Chercher un lieu</string>
+    <string name="place_outside_of_covered_area">Ce lieu est hors de la zone couverte par cette carte.</string>
 </resources>

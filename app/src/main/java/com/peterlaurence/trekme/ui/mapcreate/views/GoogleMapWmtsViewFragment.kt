@@ -4,16 +4,24 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.api.addMarker
 import com.peterlaurence.mapview.api.moveMarker
 import com.peterlaurence.mapview.api.moveToMarker
+import com.peterlaurence.mapview.api.removeMarker
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
@@ -88,6 +96,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private var shouldZoomOnPosition = true
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
+    private val geocodingViewModel: GeocodingViewModel by viewModels()
 
     private lateinit var area: Area
 
@@ -100,6 +109,14 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private val x1 = -x0
     private val y1 = x0
 
+    private val placeMarker: ImageView by lazy {
+        ImageView(context).apply {
+            setImageResource(R.drawable.ic_baseline_location_on_48)
+            setColorFilter(getColor(context, R.color.colorMarkerStroke))
+            alpha = 0.85f
+        }
+    }
+
     private val layerIdToResId = mapOf(
             ignScanExpressStd to R.string.layer_ign_scan_express_std,
             ignClassic to R.string.layer_ign_classic,
@@ -108,6 +125,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
             osmStreet to R.string.layer_osm_street,
             openTopoMap to R.string.layer_osm_opentopo
     )
+
+    private var placesAdapter: PlacesAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,8 +161,24 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fabSave.setOnClickListener { validateArea() }
         binding.fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
-        configure()
+        initPlaceRecyclerView()
+        configureMapView()
 
+        /* Listen to position update */
+        locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
+            onLocationReceived(loc)
+        }
+
+        /* Listen to places search results */
+        lifecycleScope.launchWhenResumed {
+            geocodingViewModel.geoPlaceFlow.collect {
+                it?.let {
+                    placesAdapter?.setGeoPlaces(it)
+                }
+            }
+        }
+
+        /* Listen to layer selection event */
         lifecycleScope.launchWhenResumed {
             eventBus.layerSelectEvent.collect {
                 onLayerDefined(it)
@@ -160,14 +195,47 @@ class GoogleMapWmtsViewFragment : Fragment() {
         menu.clear()
 
         /* Fill the new one */
-        inflater.inflate(R.menu.menu_fragment_map_create, menu)
+        inflater.inflate(R.menu.menu_fragment_wmts, menu)
 
-        /* Only show the layer menu for IGN France for instance */
         val layerMenu = menu.findItem(R.id.map_layer_menu_id)
-        layerMenu.isVisible = when (wmtsSource) {
-            WmtsSource.IGN -> true
-            WmtsSource.OPEN_STREET_MAP -> true
-            else -> false
+        layerMenu?.isVisible = shouldShowLayerMenu()
+
+        val areaWidget = menu.findItem(R.id.map_area_widget_id)
+
+        val searchItem = menu.findItem(R.id.search) ?: return
+        val searchView = searchItem.actionView as SearchView
+
+        val queryListener = object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (query != null) {
+                    geocodingViewModel.search(query)
+                }
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText != null) {
+                    geocodingViewModel.search(newText)
+                }
+                return true
+            }
+        }
+        searchView.setOnQueryTextListener(queryListener)
+        searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
+            areaWidget?.isVisible = !hasFocus
+            layerMenu?.isVisible = if (hasFocus) false else shouldShowLayerMenu()
+            mapView?.visibility = if (hasFocus) View.GONE else View.VISIBLE
+            _binding?.placesRecyclerView?.visibility = if (hasFocus) View.VISIBLE else View.GONE
+        }
+
+        /* React to place selection */
+        lifecycleScope.launch {
+            eventBus.paceSelectEvent.collect {
+                searchItem.collapseActionView()
+                mapView?.visibility = View.VISIBLE
+                _binding?.placesRecyclerView?.visibility = View.GONE
+                moveToPlace(it)
+            }
         }
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -201,6 +269,51 @@ class GoogleMapWmtsViewFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
+    private fun initPlaceRecyclerView() {
+        val context = context ?: return
+        val binding = _binding ?: return
+        val llm = LinearLayoutManager(context)
+        val recyclerView = binding.placesRecyclerView
+        recyclerView.layoutManager = llm
+
+        placesAdapter = PlacesAdapter(eventBus)
+        recyclerView.adapter = placesAdapter
+    }
+
+    private fun moveToPlace(place: GeoPlace) {
+        /* First, we check that this place is in the bounds of the map */
+        val wmtsSource = wmtsSource ?: return
+        val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
+        val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
+        boundaryConf?.boundingBoxList?.also { boxes ->
+            if (!boxes.contains(place.lat, place.lon)) {
+                val view = view ?: return
+                Snackbar.make(view, getString(R.string.place_outside_of_covered_area), Snackbar.LENGTH_LONG).show()
+                return
+            }
+        }
+
+        /* If it's in the bounds, add a marker */
+        val projected = projection.doProjection(place.lat, place.lon) ?: return
+        val X = projected[0]
+        val Y = projected[1]
+
+        mapView?.removeMarker(placeMarker)
+        mapView?.addMarker(placeMarker, X, Y)
+        mapView?.moveToMarker(placeMarker, 0.5f, true)
+    }
+
+    /**
+     * Only show the layer menu for IGN France and OSM
+     */
+    private fun shouldShowLayerMenu(): Boolean {
+        return when (wmtsSource) {
+            WmtsSource.IGN -> true
+            WmtsSource.OPEN_STREET_MAP -> true
+            else -> false
+        }
+    }
+
     private fun onLayerDefined(layerId: String) {
         val wmtsSource = wmtsSource ?: return
 
@@ -211,10 +324,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
         shouldZoomOnPosition = true
         positionMarker = null
         removeMapView()
-        configure()
+        configureMapView()
     }
 
-    private fun configure() = lifecycleScope.launch {
+    private fun configureMapView() = lifecycleScope.launch {
         val wmtsSource = wmtsSource ?: return@launch
 
         /* 0- Show infinite progressbar to the user until we're done testing the tile provider */
@@ -258,11 +371,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
                     }
                 }
             }
-        }
-
-        /* 5- Finally, update the current position */
-        locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
-            onLocationReceived(loc)
         }
     }
 
