@@ -1,13 +1,13 @@
 package com.peterlaurence.trekme.ui.mapcreate.views
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -110,8 +110,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     private val placeMarker: ImageView by lazy {
         ImageView(context).apply {
-            setImageResource(R.drawable.ic_baseline_location_on_24)
-            setColorFilter(Color.BLUE)
+            setImageResource(R.drawable.ic_baseline_location_on_48)
+            setColorFilter(getColor(context, R.color.colorMarkerStroke))
+            alpha = 0.85f
         }
     }
 
