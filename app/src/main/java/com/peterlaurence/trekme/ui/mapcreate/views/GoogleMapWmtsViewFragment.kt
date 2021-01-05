@@ -13,6 +13,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
 import com.peterlaurence.mapview.api.addMarker
@@ -280,6 +281,19 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun moveToPlace(place: GeoPlace) {
+        /* First, we check that this place is in the bounds of the map */
+        val wmtsSource = wmtsSource ?: return
+        val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
+        val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
+        boundaryConf?.boundingBoxList?.also { boxes ->
+            if (!boxes.contains(place.lat, place.lon)) {
+                val view = view ?: return
+                Snackbar.make(view, getString(R.string.place_outside_of_covered_area), Snackbar.LENGTH_LONG).show()
+                return
+            }
+        }
+
+        /* If it's in the bounds, add a marker */
         val projected = projection.doProjection(place.lat, place.lon) ?: return
         val X = projected[0]
         val Y = projected[1]
