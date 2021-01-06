@@ -76,8 +76,8 @@ But their maps aren't ideal for hiking. When possible, it is better to use maps 
 details. 
 
 For example, France's IGN is ideal when you are in France and its territories (Guadeloupe, Martinique,
-Réunion, Tahiti, etc.). There is also USGS for the USA. But not all countries have similar service, 
-so sometimes you will have to fallback to OpenStreetMap or Google map.
+Réunion, Tahiti, etc.). There is also USGS for the USA. However, not all countries have similar service, 
+so sometimes you will have to fallback to OpenStreetMap.
 
 Some providers require you to subscribe to download their maps. This step is free for individuals, 
 unless you have specific needs like heavy loads for your organization.
@@ -94,12 +94,14 @@ When you've made your choice, the map appears shortly.
 <img src="doc/tuto/select-area.jpg" width="300">
 </p>
 
-From there, you can zoom into the area in the world you want to capture. Then, press the area button
-in the top-bar (which looks like a square) so an area of selection appears. This area can be resized
- by moving the two blue rounds. 
+From there, you can zoom into the area in the world you want to capture. Or, you can search for a 
+particular place, using the search button in the top bar. When you found the place you're looking for,
+press the area button in the top-bar (which looks like a square) so an area of selection appears. 
+This area can be resized by moving the two blue rounds. If you can't reach the blue rounds (after you
+e.g zoomed in), pressing the area button again will make the area fit on the screen. 
  
- Beware that USGS only provides detailed levels for USA. Actually, other providers only cover their 
- relevant country, except for OpenStreetMap which covers the entire world.
+Beware that USGS only provides detailed levels for USA. Actually, other providers only cover their 
+relevant country, except for OpenStreetMap which covers the entire world.
 
 When you're done, press the download button, at the bottom right. Except for France's IGN, for which
  an annual subscription is required, you'll see this configuration menu:

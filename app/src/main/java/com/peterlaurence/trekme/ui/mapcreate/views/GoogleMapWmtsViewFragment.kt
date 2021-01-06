@@ -514,11 +514,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         val wmtsSource = wmtsSource ?: return
 
-        /* Project lat/lon off UI thread and update the position */
         lifecycleScope.launch {
+            /* Project lat/lon off UI thread */
             val projectedValues = withContext(Dispatchers.Default) {
                 projection.doProjection(location.latitude, location.longitude)
             }
+
+            /* Update the position */
             if (projectedValues != null) {
                 updatePosition(projectedValues[0], projectedValues[1])
                 if (shouldZoomOnPosition) {

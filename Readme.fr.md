@@ -94,9 +94,10 @@ Quand vous avez fait votre choix, la carte s'affiche après un délai de quelque
 <img src="doc/tuto/select-area.jpg" width="300">
 </p>
 
-Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse. Un bouton en haut à droite, 
-ressemblant à un carré, vous permet de faire apparaître une zone modifiable en déplaçant les deux
-ronds bleus.
+Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse, ou bien rechercher un lieu
+particulier avec le bouton recherche. Quand vous avec trouvé la bonne zone, un bouton en haut à 
+droite, ressemblant à un carré, fait apparaître une zone bleue qui définit ce qui sera téléchargé. 
+Cette zone est modifiable en déplaçant les deux ronds bleus.
 Quand vous êtes satisfait de votre sélection, utilisez le bouton de téléchargement en bas à droite.
 
 NB : La plupart des fournisseurs de cartes n'ont qu'une couverture partielle du globe. A l'exception 
@@ -113,6 +114,8 @@ Les fournisseurs de carte proposent différents niveaux de zoom, allant de 1 (ni
 (carte très détaillée).
 Dans la plupart des cas, vous ne voulez pas des niveaux 1 à 10, et le niveau 18 n'est pas nécessaire. 
 C'est la raison pour laquelle le réglage par défaut est de 12 pour le zoom minimum, et 16 pour le maximum.
+Ces réglages par défaut conviennent pour la plupart des usages, et il est conseillé de ne pas les
+changer sauf si vous savez ce que vous faites.
 
 La quantité d'images qui devront être téléchargées dépend directement du choix des niveaux de zoom 
 min et max. Plus le niveau de zoom min est petit et plus le niveau max est grand, plus la quantité à
