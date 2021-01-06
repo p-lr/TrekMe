@@ -90,15 +90,12 @@ class BitmapProvider(private val tileStreamProvider: TileStreamProvider, options
     private var bitmapLoadingOptions = options ?: BitmapFactory.Options()
 
     fun getBitmap(row: Int, col: Int, zoomLvl: Int): Bitmap? {
-        return try {
+        return runCatching {
             val tileResult = tileStreamProvider.getTileStream(row, col, zoomLvl)
             (tileResult as? TileStream)?.tileStream.use {
                 BitmapFactory.decodeStream(it, null, bitmapLoadingOptions)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        }.getOrNull()
     }
 
     fun setBitmapOptions(options: BitmapFactory.Options) {
