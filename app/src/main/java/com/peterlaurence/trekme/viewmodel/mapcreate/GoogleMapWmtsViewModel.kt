@@ -13,6 +13,7 @@ import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
+import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
@@ -21,6 +22,8 @@ import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -41,6 +44,9 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
     private var ordnanceSurveyApi: String? = null
+
+    private val _wmtsSourceAccessibility = MutableStateFlow(true)
+    val wmtsSourceAccessibility = _wmtsSourceAccessibility.asStateFlow()
 
     private val scaleAndScrollInitConfig = mapOf(
             WmtsSource.IGN to listOf(
@@ -181,6 +187,28 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
+        }
+    }
+
+    /**
+     * Simple check whether we are able to download tiles or not.
+     */
+    fun checkTileAccessibility(wmtsSource: WmtsSource, tileStreamProvider: TileStreamProvider) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _wmtsSourceAccessibility.value = when (wmtsSource) {
+                WmtsSource.IGN -> {
+                    try {
+                        checkIgnProvider(tileStreamProvider)
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                WmtsSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
+                WmtsSource.USGS -> checkUSGSProvider(tileStreamProvider)
+                WmtsSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
+                WmtsSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
+                WmtsSource.ORDNANCE_SURVEY -> checkOrdnanceSurveyProvider(tileStreamProvider)
+            }
         }
     }
 }

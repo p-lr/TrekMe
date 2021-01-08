@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.ui.mapcreate.views
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Parcelable
 import android.text.method.LinkMovementMethod
 import android.view.*
 import android.widget.ImageView
@@ -40,8 +41,10 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
 /**
@@ -88,16 +91,17 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private var wmtsSource: WmtsSource? = null
     private var mapView: MapView? = null
     private var areaLayer: AreaLayer? = null
-    private var positionMarker: PositionMarker? = null
+    private var positionMarkerTag = "position_marker"
+    private var lastPlacePosition: PlacePosition? = null
     private val projection = MercatorProjection()
-    private var shouldZoomOnPosition = true
+    private var shouldCenterOnFirstLocation = true
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
     private val geocodingViewModel: GeocodingViewModel by viewModels()
 
     private lateinit var area: Area
 
-    /* Size of level 18 */
+    /* Size of level 18 (levels are 0-based) */
     private val mapSize = 67108864
 
     private val tileSize = 256
@@ -123,6 +127,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
         wmtsSource = arguments?.getParcelable<WmtsSourceBundle>(ARG_WMTS_SOURCE)?.wmtsSource
 
         setHasOptionsMenu(true)
+        shouldCenterOnFirstLocation = savedInstanceState == null
+        lastPlacePosition = savedInstanceState?.getParcelable(BUNDLE_LAST_PLACE_POS)
     }
 
     override fun onDestroyView() {
@@ -131,7 +137,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         mapView?.destroy()
         mapView = null
         areaLayer = null
-        positionMarker = null
     }
 
     override fun onCreateView(
@@ -140,18 +145,14 @@ class GoogleMapWmtsViewFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View {
         _binding = FragmentWmtsViewBinding.inflate(inflater, container, false)
-        return _binding!!.root
-    }
+        val binding = _binding!!
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val binding = _binding ?: return
         binding.fabSave.setOnClickListener { validateArea() }
         binding.fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
         initPlaceRecyclerView()
-        configureMapView()
+        setMapView(MapView(requireContext()))
+        checkThenConfigureMapView()
 
         /* Listen to position update */
         locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
@@ -173,6 +174,14 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 onLayerDefined(it)
             }
         }
+
+        lifecycleScope.launch {
+            viewModel.wmtsSourceAccessibility.collect {
+                if (it) hideWarningMessage() else showWarningMessage()
+            }
+        }
+
+        return _binding!!.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -269,6 +278,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         recyclerView.adapter = placesAdapter
     }
 
+    @Suppress("LocalVariableName")
     private fun moveToPlace(place: GeoPlace) {
         /* First, we check that this place is in the bounds of the map */
         val wmtsSource = wmtsSource ?: return
@@ -286,16 +296,21 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val projected = projection.doProjection(place.lat, place.lon) ?: return
         val X = projected[0]
         val Y = projected[1]
+        lastPlacePosition = PlacePosition(X, Y)
 
         val mapView = mapView ?: return
 
-        val placeMarker = mapView.getMarkerByTag("place_marker")?.also {
+        val placeMarker = updatePlaceMarker(mapView, X, Y)
+        mapView.moveToMarker(placeMarker, 0.25f, true)
+    }
+
+    private fun updatePlaceMarker(mapView: MapView, X: Double, Y: Double): View {
+        val tag = "place_marker"
+        return mapView.getMarkerByTag(tag)?.also {
             mapView.moveMarker(it, X, Y)
         } ?: makePlaceMarker().also {
-            mapView.addMarker(it, X, Y)
+            mapView.addMarker(it, X, Y, tag = tag)
         }
-
-        mapView.moveToMarker(placeMarker, 0.5f, true)
     }
 
     private fun makePlaceMarker(): ImageView {
@@ -323,14 +338,32 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* Update the layer preference */
         viewModel.setLayerForSourceFromId(wmtsSource, layerId)
 
-        /* Then re-create the MapView */
-        shouldZoomOnPosition = true
-        positionMarker = null
+        /* Remove the existing the MapView, while remembering scale and scroll */
         removeMapView()
-        configureMapView()
+        val previousScale = mapView?.scale
+        val previousScrollX = mapView?.scrollX
+        val previousScrollY = mapView?.scrollY
+        mapView?.destroy()
+
+        /* Create and configure a new MapView */
+        setMapView(MapView(requireContext()))
+        checkThenConfigureMapView()
+
+        /* Restore the scale and scroll */
+        if (previousScale != null && previousScrollX != null && previousScrollY != null) {
+            mapView?.scale = previousScale
+            mapView?.scrollTo(previousScrollX, previousScrollY)
+        }
+
+        /* Restore the location marker right now - even if subsequent updates will do it anyway. */
+        lifecycleScope.launch {
+            locationSource.locationFlow.take(1).collect {
+                onLocationReceived(it)
+            }
+        }
     }
 
-    private fun configureMapView() = lifecycleScope.launch {
+    private fun checkThenConfigureMapView() = lifecycleScope.launch {
         val wmtsSource = wmtsSource ?: return@launch
 
         /* 0- Show infinite progressbar to the user until we're done testing the tile provider */
@@ -343,27 +376,23 @@ class GoogleMapWmtsViewFragment : Fragment() {
             return@launch
         }
 
-        /* 2- Configure the mapView only if the test succeeds */
+        /* 2- Configure the mapView */
         val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
-        val checkResult = checkTileAccessibility(streamProvider)
-        try {
-            if (!checkResult) {
-                showWarningMessage()
-                return@launch
-            } else {
-                addMapView(streamProvider, mapConfiguration)
-                hideWarningMessage()
+        configureMapView(streamProvider, mapConfiguration)
+        viewModel.checkTileAccessibility(wmtsSource, streamProvider)
+
+        /* 3- Restore the last place position */
+        lastPlacePosition?.also { pos ->
+            mapView?.also { mapView ->
+                updatePlaceMarker(mapView, pos.X, pos.Y)
             }
-        } catch (e: IllegalStateException) {
-            /* Since this can happen anytime during the lifecycle of this fragment, we should be
-             * resilient and discard this error */
         }
 
-        /* 3- Hide the progressbar, whatever the outcome */
+        /* 4- Hide the progressbar, whatever the outcome */
         val binding = _binding ?: return@launch
         binding.progressBarWaiting.visibility = View.GONE
 
-        /* 4- Scroll to the init position if there is one pre-configured */
+        /* 5- Scroll to the init position if there is one pre-configured */
         mapConfiguration?.also { config ->
             /* At this point the mapView should be initialized, but we never know.. */
             mapView?.apply {
@@ -380,27 +409,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private fun translateLayerName(layer: Layer): String? {
         val res = layerIdToResId[layer.id] ?: return null
         return getString(res)
-    }
-
-    /**
-     * Simple check whether we are able to download tiles or not.
-     */
-    private suspend fun checkTileAccessibility(tileStreamProvider: TileStreamProvider): Boolean = withContext(Dispatchers.IO) {
-        when (wmtsSource) {
-            WmtsSource.IGN -> {
-                try {
-                    checkIgnProvider(tileStreamProvider)
-                } catch (e: Exception) {
-                    false
-                }
-            }
-            WmtsSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
-            WmtsSource.USGS -> checkUSGSProvider(tileStreamProvider)
-            WmtsSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
-            WmtsSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
-            WmtsSource.ORDNANCE_SURVEY -> checkOrdnanceSurveyProvider(tileStreamProvider)
-            null -> false
-        }
     }
 
     private fun showWarningMessage() {
@@ -421,10 +429,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fragmentWmtWarningLink.visibility = View.GONE
     }
 
-    private fun addMapView(tileStreamProvider: TileStreamProvider, mapConfig: List<Config>? = null) {
+    private fun configureMapView(tileStreamProvider: TileStreamProvider, mapConfig: List<Config>? = null) {
         if (_binding == null) return
-        val context = this.context ?: return
-        val mapView = MapView(context)
+        val mapView = mapView ?: return
 
         val config = MapViewConfiguration(
                 19, mapSize, mapSize, tileSize,
@@ -438,6 +445,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 }
             }
         }
+
         /* OSM maps renders too small text. As a workaround, we set the magnifying factor to 1. */
         if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
             config.setMagnifyingFactor(1)
@@ -447,9 +455,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         /* Map calibration */
         mapView.defineBounds(x0, y0, x1, y1)
-
-        /* Add the view */
-        setMapView(mapView)
     }
 
     private fun setMapView(mapView: MapView) {
@@ -466,7 +471,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun removeMapView() {
-        _binding?.root?.removeViewAt(0)
+        val mapView = mapView ?: return
+        _binding?.root?.removeView(mapView)
     }
 
     private fun addAreaLayer() {
@@ -526,7 +532,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             /* Update the position */
             if (projectedValues != null) {
                 updatePosition(projectedValues[0], projectedValues[1])
-                if (shouldZoomOnPosition) {
+                if (shouldCenterOnFirstLocation) {
                     val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
                     val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
                     boundaryConf?.boundingBoxList?.also { boxes ->
@@ -535,7 +541,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
                         }
                     }
 
-                    shouldZoomOnPosition = false
+                    shouldCenterOnFirstLocation = false
                 }
             }
         }
@@ -543,7 +549,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     private fun centerOnPosition() {
         val wmtsSource = wmtsSource ?: return
-        val positionMarker = positionMarker ?: return
+        val positionMarker = mapView?.getMarkerByTag(positionMarkerTag) ?: return
         val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
         val scaleConf = mapConfiguration?.filterIsInstance<ScaleForZoomOnPositionConfig>()?.firstOrNull()
         mapView?.moveToMarker(positionMarker, scaleConf?.scale ?: 1f, true)
@@ -557,17 +563,23 @@ class GoogleMapWmtsViewFragment : Fragment() {
      * @param y the projected Y coordinate
      */
     private fun updatePosition(x: Double, y: Double) {
-        val context = context ?: return
-        if (positionMarker == null) {
-            positionMarker = PositionMarker(context).also {
-                mapView?.addMarker(it, x, y, -0.5f, -0.5f)
-            }
-        } else {
-            positionMarker?.also {
-                mapView?.moveMarker(it, x, y)
-            }
+        val mapView = mapView ?: return
+        val tag = positionMarkerTag
+        mapView.getMarkerByTag(tag)?.also {
+            mapView.moveMarker(it, x, y)
+        } ?: PositionMarker(mapView.context).also {
+            mapView.addMarker(it, x, y, -0.5f, -0.5f, tag = tag)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(BUNDLE_LAST_PLACE_POS, lastPlacePosition)
     }
 }
 
+@Parcelize
+private data class PlacePosition(val X: Double, val Y: Double) : Parcelable
+
 private const val ARG_WMTS_SOURCE = "wmtsSource"
+private const val BUNDLE_LAST_PLACE_POS = "lastPlacePos"
