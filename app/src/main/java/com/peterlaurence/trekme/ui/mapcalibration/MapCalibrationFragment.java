@@ -150,7 +150,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         mCalibrationMarker = new CalibrationMarker(this.getContext());
         TouchMoveListener.MarkerMoveAgent moveAgent = new CalibrationMarkerMarkerMoveAgent();
         mCalibrationMarker.setOnTouchListener(new TouchMoveListener(mapView, moveAgent));
-        addMarker(mapView, mCalibrationMarker, 0.5, 0.5, -0.5f, -0.5f, 0f, 0f);
+        addMarker(mapView, mCalibrationMarker, 0.5, 0.5, -0.5f, -0.5f, 0f, 0f, null);
 
         /* Add the MapView to the root view */
         setMapView(mapView);

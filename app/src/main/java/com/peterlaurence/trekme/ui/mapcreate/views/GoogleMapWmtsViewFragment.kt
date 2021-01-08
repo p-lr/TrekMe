@@ -16,10 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.mapview.MapViewConfiguration
-import com.peterlaurence.mapview.api.addMarker
-import com.peterlaurence.mapview.api.moveMarker
-import com.peterlaurence.mapview.api.moveToMarker
-import com.peterlaurence.mapview.api.removeMarker
+import com.peterlaurence.mapview.api.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.TileStreamProvider
@@ -108,14 +105,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private val y0 = -x0
     private val x1 = -x0
     private val y1 = x0
-
-    private val placeMarker: ImageView by lazy {
-        ImageView(context).apply {
-            setImageResource(R.drawable.ic_baseline_location_on_48)
-            setColorFilter(getColor(context, R.color.colorMarkerStroke))
-            alpha = 0.85f
-        }
-    }
 
     private val layerIdToResId = mapOf(
             ignScanExpressStd to R.string.layer_ign_scan_express_std,
@@ -298,9 +287,23 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val X = projected[0]
         val Y = projected[1]
 
-        mapView?.removeMarker(placeMarker)
-        mapView?.addMarker(placeMarker, X, Y)
-        mapView?.moveToMarker(placeMarker, 0.5f, true)
+        val mapView = mapView ?: return
+
+        val placeMarker = mapView.getMarkerByTag("place_marker")?.also {
+            mapView.moveMarker(it, X, Y)
+        } ?: makePlaceMarker().also {
+            mapView.addMarker(it, X, Y)
+        }
+
+        mapView.moveToMarker(placeMarker, 0.5f, true)
+    }
+
+    private fun makePlaceMarker(): ImageView {
+        return ImageView(context).apply {
+            setImageResource(R.drawable.ic_baseline_location_on_48)
+            setColorFilter(getColor(context, R.color.colorMarkerStroke))
+            alpha = 0.85f
+        }
     }
 
     /**

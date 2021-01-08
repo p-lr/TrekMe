@@ -143,9 +143,9 @@ public class DistanceLayer implements ReferentialOwner {
 
         /* ..and add them to the MapView */
         addMarker(mMapView, mDistanceMarkerFirst, mFirstMarkerRelativeX, mFirstMarkerRelativeY,
-                -0.5f, -0.5f, 0f, 0f);
+                -0.5f, -0.5f, 0f, 0f, null);
         addMarker(mMapView, mDistanceMarkerSecond, mSecondMarkerRelativeX, mSecondMarkerRelativeY,
-                -0.5f, -0.5f, 0f, 0f);
+                -0.5f, -0.5f, 0f, 0f, null);
         mVisible = true;
 
         /* Start the thread that will process distance calculations */
