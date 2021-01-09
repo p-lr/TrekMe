@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.views
+package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

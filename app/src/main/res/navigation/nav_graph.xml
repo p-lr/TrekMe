@@ -78,7 +78,7 @@
         app:destination="@id/mapCreateFragment"/>
     <fragment
         android:id="@+id/googleMapWmtsViewFragment"
-        android:name="com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment"
+        android:name="com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment"
         android:label="@string/google_map_wmts_label">
         <argument
             android:name="wmtsSource"

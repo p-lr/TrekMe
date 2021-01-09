@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.components
+package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components
 
 import android.content.Context
 import android.util.AttributeSet

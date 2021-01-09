@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.views
+package com.peterlaurence.trekme.ui.mapcreate.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
@@ -18,7 +18,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
 import com.peterlaurence.trekme.core.mapsource.wmts.toTransactionsNumber
-import com.peterlaurence.trekme.ui.mapcreate.components.Area
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
 import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
 import java.text.NumberFormat
 

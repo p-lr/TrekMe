@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.views
+package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
@@ -29,12 +30,14 @@ import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
 import com.peterlaurence.trekme.repositories.location.Location
 import com.peterlaurence.trekme.repositories.location.LocationSource
-import com.peterlaurence.trekme.ui.mapcreate.components.Area
-import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
-import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaLayer
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
+import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialog
+import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialogIgn
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.ui.mapcreate.views.components.PositionMarker
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
@@ -135,6 +138,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         super.onDestroyView()
         _binding = null
         mapView?.destroy()
+        placesAdapter = null
         mapView = null
         areaLayer = null
     }
@@ -262,6 +266,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
                             "LayerSelectDialog"
                     )
                 }
+            }
+            R.id.overlay_layers_id -> {
+                findNavController().navigate(R.id.mapListFragment)
             }
         }
         return super.onOptionsItemSelected(item)

@@ -20,7 +20,7 @@ import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
-import com.peterlaurence.trekme.ui.mapcreate.views.GoogleMapWmtsViewFragment
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
