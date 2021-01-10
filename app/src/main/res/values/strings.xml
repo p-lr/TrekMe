@@ -278,6 +278,7 @@
     <string name="layer_osm_street">StreetMap</string>
     <string name="layer_osm_opentopo">OpenTopoMap</string>
     <string name="place_search_hint">Search a place</string>
+    <string name="add_layer">Add layer</string>
 
     <!-- TrackViewFragment -->
     <string name="distance">Distance</string>

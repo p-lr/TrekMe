@@ -127,7 +127,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        wmtsSource = arguments?.getParcelable<WmtsSourceBundle>(ARG_WMTS_SOURCE)?.wmtsSource
+        wmtsSource = arguments?.let {
+            GoogleMapWmtsViewFragmentArgs.fromBundle(it)
+        }?.wmtsSourceBundle?.wmtsSource
 
         setHasOptionsMenu(true)
         shouldCenterOnFirstLocation = savedInstanceState == null
@@ -588,5 +590,4 @@ class GoogleMapWmtsViewFragment : Fragment() {
 @Parcelize
 private data class PlacePosition(val X: Double, val Y: Double) : Parcelable
 
-private const val ARG_WMTS_SOURCE = "wmtsSource"
 private const val BUNDLE_LAST_PLACE_POS = "lastPlacePos"
