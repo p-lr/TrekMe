@@ -7,9 +7,7 @@ import com.peterlaurence.trekme.util.gpx.model.Bounds
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import kotlinx.parcelize.Parcelize
 import java.util.*
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.*
 
 /**
  * Calculates statistics for a track:
@@ -18,6 +16,9 @@ import kotlin.math.min
  * * duration
  * * bounds
  * * average speed
+ *
+ * Distance and elevation stack are computed using a rolling mean of [bufferSize] points and an
+ * elevation threshold of 10 meters.
  *
  * Beware, [addTrackPoint] and [addTrackPointList] aren't synchronized.
  * A safe usage is to have one [TrackStatCalculator] instance per coroutine.
@@ -34,7 +35,7 @@ class TrackStatCalculator {
     private var durationInSecond = 0L
     private var avgSpeed = 0.0
 
-    private var lastTrackPoint: TrackPoint? = null
+    private var previousTrackPoint: TrackPoint? = null
 
     /* Duration statistic */
     private var firstPointTime: Long? = null
@@ -51,8 +52,10 @@ class TrackStatCalculator {
     private var maxLon: Double? = null
 
     /* Size of the buffer used to compute elevation mean */
-    private val bufferSize = 10
+    private val bufferSize = 5
     private val buffer = ArrayDeque<TrackPoint>()
+
+    private var snapshot: Snapshot? = null
 
     fun getStatistics(): TrackStatistics {
         return TrackStatistics(distance, elevationDiffMax, elevationUpStack, elevationDownStack,
@@ -68,8 +71,16 @@ class TrackStatCalculator {
         trkPtList.forEach { addTrackPoint(it) }
     }
 
+    /**
+     * The first 10 points are added to the buffer. The first time the buffer is full, we make a
+     * snapshot. Then, subsequent snapshots are made only when the mean elevation is greater or
+     * smaller than the previous elevation snapshot by 10 meters.
+     * When we make a new snapshot, we update the distance and elevation stats accordingly.
+     */
     fun addTrackPoint(trkPt: TrackPoint) {
         buffer.add(trkPt)
+        val firstSnapshot = buffer.size == bufferSize
+
         /* Keep the buffer at its target size */
         if (buffer.size > bufferSize) buffer.poll()
 
@@ -81,9 +92,21 @@ class TrackStatCalculator {
         if (buffer.size == bufferSize) {
             val elevations = buffer.mapNotNull { it.elevation }
             if (elevations.isNotEmpty()) {
-                updateElevationStats(elevations.mean())
+                val meanEle = elevations.mean()
+                val diffEle = snapshot?.let { abs(it.elevation - meanEle) }
+                if (diffEle != null && diffEle > 10.0) {
+                    distance = snapshot!!.distance + sqrt((distance - snapshot!!.distance).pow(2) + diffEle.pow(2))
+                    this.snapshot = Snapshot(distance, meanEle)
+                    updateElevationStats(meanEle)
+                }
+                if (firstSnapshot) {
+                    snapshot = Snapshot(distance, meanEle)
+                }
             }
         }
+
+        /* Remember the previous track point */
+        previousTrackPoint = trkPt
     }
 
     /**
@@ -91,18 +114,9 @@ class TrackStatCalculator {
      * rough (but fast) formulas.
      */
     private fun updateDistance(trkPt: TrackPoint) {
-        lastTrackPoint?.also { p ->
-            /* If we have elevation information for both points, use it */
-            distance += if (p.elevation != null && trkPt.elevation != null) {
-                deltaTwoPoints(p.latitude, p.longitude, p.elevation!!, trkPt.latitude,
-                        trkPt.longitude, trkPt.elevation!!)
-            } else {
-                deltaTwoPoints(p.latitude, p.longitude, trkPt.latitude, trkPt.longitude)
-            }
+        previousTrackPoint?.also { p ->
+            distance += deltaTwoPoints(p.latitude, p.longitude, trkPt.latitude, trkPt.longitude)
         }
-
-        /* Update the last track point reference */
-        lastTrackPoint = trkPt
     }
 
     private fun updateElevationStats(ele: Double) {
@@ -165,6 +179,8 @@ class TrackStatCalculator {
         maxLon = max(trkPt.longitude, maxLon ?: Double.MIN_VALUE)
     }
 }
+
+private data class Snapshot(val distance: Double, val elevation: Double)
 
 /**
  * Container for statistics of a track.
