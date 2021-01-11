@@ -270,7 +270,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 }
             }
             R.id.overlay_layers_id -> {
-                findNavController().navigate(R.id.mapListFragment)
+                wmtsSource?.also {
+                    val bundle = WmtsSourceBundle(it)
+                    val action = GoogleMapWmtsViewFragmentDirections.actionGoogleMapWmtsViewFragmentToLayerOverlayFragment(bundle)
+                    findNavController().navigate(action)
+                }
             }
         }
         return super.onOptionsItemSelected(item)
