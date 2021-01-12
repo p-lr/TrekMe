@@ -204,6 +204,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val layerMenu = menu.findItem(R.id.map_layer_menu_id)
         layerMenu?.isVisible = shouldShowLayerMenu()
 
+        val layerOverlayMenu = menu.findItem(R.id.overlay_layers_id)
+        layerOverlayMenu?.isVisible = shouldShowLayerOverlayMenu()
+
         val areaWidget = menu.findItem(R.id.map_area_widget_id)
 
         val searchItem = menu.findItem(R.id.search) ?: return
@@ -343,6 +346,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
             WmtsSource.OPEN_STREET_MAP -> true
             else -> false
         }
+    }
+
+    private fun shouldShowLayerOverlayMenu(): Boolean {
+        return wmtsSource == WmtsSource.IGN
     }
 
     private fun onLayerDefined(layerId: String) {

@@ -114,7 +114,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
 
     fun getLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
         return when (wmtsSource) {
-            WmtsSource.IGN -> ignLayers
+            WmtsSource.IGN -> ignLayersPrimary
             WmtsSource.OPEN_STREET_MAP -> osmLayers
             else -> null
         }
