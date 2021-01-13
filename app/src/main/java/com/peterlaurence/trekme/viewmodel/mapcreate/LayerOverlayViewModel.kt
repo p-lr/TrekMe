@@ -8,25 +8,32 @@ import com.peterlaurence.trekme.core.providers.layers.Slopes
 import com.peterlaurence.trekme.core.providers.layers.ignLayersOverlay
 
 class LayerOverlayViewModel : ViewModel() {
-    private val model: MutableMap<WmtsSource, List<LayerProperties>> = mutableMapOf()
+    private val model: MutableMap<WmtsSource, MutableList<LayerProperties>> = mutableMapOf()
 
     fun getSelectedLayers(wmtsSource: WmtsSource): List<LayerProperties> {
         return model[wmtsSource] ?: listOf()
     }
 
-    fun getAvailableLayers(wmtsSource: WmtsSource): List<LayerInfo> {
+    fun getAvailableLayersId(wmtsSource: WmtsSource): List<String> {
         return if (wmtsSource == WmtsSource.IGN) {
-            ignLayersOverlay.map { layer ->
-                val name = when (layer) {
-                    is Road -> "Roads"
-                    is Slopes -> "Slopes"
-                }
-                LayerInfo(name, layer.id)
-            }
+            ignLayersOverlay.map { it.id }
         } else listOf()
     }
 
+    fun addLayer(wmtsSource: WmtsSource, id: String) {
+        when (wmtsSource) {
+            WmtsSource.IGN -> {
+                val layer = ignLayersOverlay.firstOrNull { it.id == id } ?: return
+                val existingLayers = model.getOrPut(wmtsSource) {
+                    mutableListOf()
+                }
+                if (!existingLayers.any { it.layer.id == id }) {
+                    existingLayers.add(LayerProperties(layer, 0.5f))
+                }
+            }
+            else -> {}
+        }
+    }
 }
 
-data class LayerProperties(val name: String, val layer: Layer, val opacity: Float)
-data class LayerInfo(val name: String, val id: String)
+data class LayerProperties(val layer: Layer, var opacity: Float)
