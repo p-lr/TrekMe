@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.repositories.mapcreate
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.providers.layers.ignLayersOverlay
+import java.util.*
 
 class LayerOverlayRepository {
     private val model: MutableMap<WmtsSource, MutableList<LayerProperties>> = mutableMapOf()
@@ -32,6 +33,21 @@ class LayerOverlayRepository {
             }
         }
         return getLayerProperties(wmtsSource)
+    }
+
+    fun moveLayer(wmtsSource: WmtsSource, from: Int, to: Int): List<LayerProperties>? {
+        return model[wmtsSource]?.let {
+            if (from in it.indices && to in it.indices) {
+                Collections.swap(it, from, to)
+                it
+            } else null
+        }
+    }
+
+    fun removeLayer(wmtsSource: WmtsSource, index: Int): List<LayerProperties>? {
+        return model[wmtsSource]?.also {
+            it.removeAt(index)
+        }
     }
 }
 

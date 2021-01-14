@@ -27,4 +27,14 @@ class LayerOverlayViewModel @ViewModelInject constructor(
         val data = repository.addLayer(wmtsSource, id)
         _liveData.value = data
     }
+
+    fun moveLayer(wmtsSource: WmtsSource, from: Int, to: Int) {
+        val data = repository.moveLayer(wmtsSource, from, to)
+        _liveData.value = data
+    }
+
+    fun removeLayer(wmtsSource: WmtsSource, index: Int) {
+        val data = repository.removeLayer(wmtsSource, index)
+        _liveData.value = data
+    }
 }

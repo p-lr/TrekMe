@@ -1,13 +1,18 @@
 package com.peterlaurence.trekme.ui.mapcreate.overlay
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.databinding.LayerItemBinding
 
-class LayerOverlayAdapter : RecyclerView.Adapter<LayerOverlayAdapter.LayerOverlayViewHolder>() {
+class LayerOverlayAdapter(
+        private val itemTouchHelper: ItemTouchHelper
+) : RecyclerView.Adapter<LayerOverlayAdapter.LayerOverlayViewHolder>() {
     private val diffCallback: DiffUtil.ItemCallback<LayerInfo> = object : DiffUtil.ItemCallback<LayerInfo>() {
         override fun areItemsTheSame(oldItem: LayerInfo, newItem: LayerInfo): Boolean {
             return oldItem.hashCode() == newItem.hashCode()
@@ -26,9 +31,17 @@ class LayerOverlayAdapter : RecyclerView.Adapter<LayerOverlayAdapter.LayerOverla
         differ.submitList(data.toList())
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LayerOverlayViewHolder {
         val v = LayerItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return LayerOverlayViewHolder(v)
+        return LayerOverlayViewHolder(v).apply {
+            dragButton.setOnTouchListener { _, event ->
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                    itemTouchHelper.startDrag(this)
+                }
+                return@setOnTouchListener true
+            }
+        }
     }
 
     override fun onBindViewHolder(holder: LayerOverlayViewHolder, position: Int) {
@@ -49,6 +62,7 @@ class LayerOverlayAdapter : RecyclerView.Adapter<LayerOverlayAdapter.LayerOverla
     class LayerOverlayViewHolder(private val itemBinding: LayerItemBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         val view = itemBinding.root
         val slider = itemBinding.slider
+        val dragButton = itemBinding.dragButton
 
         fun setTitle(title: String) {
             itemBinding.title.text = title
