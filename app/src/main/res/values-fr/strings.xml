@@ -262,4 +262,5 @@
     <string name="layer_ign_slopes">Pentes en montagne</string>
     <string name="overlay_title">Couche</string>
     <string name="overlay_opacity">Opacité</string>
+    <string name="overlay_empty">Aucune couche ajoutée.\nUtilisez le bouton ci-dessous pour ajouter une nouvelle couche.</string>
 </resources>

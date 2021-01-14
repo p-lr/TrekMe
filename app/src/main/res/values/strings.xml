@@ -285,6 +285,7 @@
     <!-- LayerOverlayFragment -->
     <string name="overlay_title">Layer name</string>
     <string name="overlay_opacity">Opacity</string>
+    <string name="overlay_empty">No layers added\nUse the button below to add a new layer.</string>
 
     <!-- TrackViewFragment -->
     <string name="distance">Distance</string>

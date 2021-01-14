@@ -62,8 +62,13 @@ class LayerOverlayFragment : Fragment() {
         recyclerView.adapter = adapter
         viewModel.init(wmtsSource)
 
-        viewModel.liveData.observe(viewLifecycleOwner) {
-            it?.also { properties ->
+        viewModel.liveData.observe(viewLifecycleOwner) { properties ->
+            if (properties.isNullOrEmpty()) {
+                binding.header.visibility = View.GONE
+                binding.emptyMessage.visibility = View.VISIBLE
+            } else {
+                binding.header.visibility = View.VISIBLE
+                binding.emptyMessage.visibility = View.GONE
                 val dataSet = properties.mapNotNull { property ->
                     val name = translateLayerName(property.layer.id) ?: return@mapNotNull null
                     LayerInfo(name, property)
