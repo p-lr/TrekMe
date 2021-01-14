@@ -260,4 +260,6 @@
     <string name="add_layer">Ajouter une couche</string>
     <string name="layer_ign_roads">Routes</string>
     <string name="layer_ign_slopes">Pentes en montagne</string>
+    <string name="overlay_title">Couche</string>
+    <string name="overlay_opacity">Opacité</string>
 </resources>

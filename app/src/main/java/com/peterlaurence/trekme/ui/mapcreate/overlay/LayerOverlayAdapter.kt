@@ -34,6 +34,12 @@ class LayerOverlayAdapter : RecyclerView.Adapter<LayerOverlayAdapter.LayerOverla
     override fun onBindViewHolder(holder: LayerOverlayViewHolder, position: Int) {
         val data = differ.currentList[position] ?: return
         holder.setTitle(data.name)
+
+        holder.slider.value = data.properties.opacity
+        holder.slider.clearOnChangeListeners()
+        holder.slider.addOnChangeListener { _, value, _ ->
+            data.properties.opacity = value
+        }
     }
 
     override fun getItemCount(): Int {
@@ -42,6 +48,7 @@ class LayerOverlayAdapter : RecyclerView.Adapter<LayerOverlayAdapter.LayerOverla
 
     class LayerOverlayViewHolder(private val itemBinding: LayerItemBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         val view = itemBinding.root
+        val slider = itemBinding.slider
 
         fun setTitle(title: String) {
             itemBinding.title.text = title

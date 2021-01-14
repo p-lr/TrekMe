@@ -282,6 +282,10 @@
     <string name="place_search_hint">Search a place</string>
     <string name="add_layer">Add layer</string>
 
+    <!-- LayerOverlayFragment -->
+    <string name="overlay_title">Layer name</string>
+    <string name="overlay_opacity">Opacity</string>
+
     <!-- TrackViewFragment -->
     <string name="distance">Distance</string>
     <string name="current_recording">Current recording</string>
