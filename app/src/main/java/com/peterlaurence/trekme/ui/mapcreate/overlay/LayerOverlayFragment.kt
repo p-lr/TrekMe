@@ -13,10 +13,10 @@ import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.providers.layers.ignRoad
 import com.peterlaurence.trekme.core.providers.layers.ignSlopes
 import com.peterlaurence.trekme.databinding.FragmentLayerOverlayBinding
+import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.viewmodel.mapcreate.LayerOverlayViewModel
-import com.peterlaurence.trekme.viewmodel.mapcreate.LayerProperties
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
@@ -54,39 +54,34 @@ class LayerOverlayFragment : Fragment() {
         recyclerView.adapter = adapter
 
         val viewModel: LayerOverlayViewModel by viewModels()
-        fun updateLayers() {
-            wmtsSource?.also { source ->
-                val properties = viewModel.getSelectedLayers(source)
-                val dataSet = properties.mapNotNull {
-                    val name = translateLayerName(it.layer.id) ?: return@mapNotNull null
-                    LayerInfo(name, it)
+        val wmtsSource = wmtsSource ?: return binding.root
+        viewModel.init(wmtsSource)
+
+        viewModel.liveData.observe(viewLifecycleOwner) {
+            it?.also { properties ->
+                val dataSet = properties.mapNotNull { property ->
+                    val name = translateLayerName(property.layer.id) ?: return@mapNotNull null
+                    LayerInfo(name, property)
                 }
                 adapter.setLayerInfo(dataSet)
             }
         }
-        updateLayers()
 
         binding.addLayerFab.setOnClickListener {
-            wmtsSource?.also {
-                val ids = viewModel.getAvailableLayersId(it)
-
-                val values = ids.mapNotNull { id -> translateLayerName(id) }
-                val layerSelectDialog =
-                        LayerSelectDialog.newInstance("Select a layer", ids, values, "")
-                layerSelectDialog.show(
-                        requireActivity().supportFragmentManager,
-                        "LayerOverlaySelectDialog"
-                )
-            }
+            val ids = viewModel.getAvailableLayersId(wmtsSource)
+            val values = ids.mapNotNull { id -> translateLayerName(id) }
+            val layerSelectDialog =
+                    LayerSelectDialog.newInstance("Select a layer", ids, values, "")
+            layerSelectDialog.show(
+                    requireActivity().supportFragmentManager,
+                    "LayerOverlaySelectDialog"
+            )
         }
 
         /* Listen to layer selection event */
         lifecycleScope.launchWhenResumed {
             eventBus.layerSelectEvent.collect { id ->
-                wmtsSource?.also { source ->
-                    viewModel.addLayer(source, id)
-                    updateLayers()
-                }
+                viewModel.addLayer(wmtsSource, id)
             }
         }
 

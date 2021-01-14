@@ -1,39 +1,30 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
+import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.providers.layers.Layer
-import com.peterlaurence.trekme.core.providers.layers.Road
-import com.peterlaurence.trekme.core.providers.layers.Slopes
-import com.peterlaurence.trekme.core.providers.layers.ignLayersOverlay
+import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
+import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 
-class LayerOverlayViewModel : ViewModel() {
-    private val model: MutableMap<WmtsSource, MutableList<LayerProperties>> = mutableMapOf()
+class LayerOverlayViewModel @ViewModelInject constructor(
+        private val repository: LayerOverlayRepository
+) : ViewModel() {
+    private val _liveData = MutableLiveData<List<LayerProperties>>()
+    val liveData: LiveData<List<LayerProperties>> = _liveData
 
-    fun getSelectedLayers(wmtsSource: WmtsSource): List<LayerProperties> {
-        return model[wmtsSource] ?: listOf()
+    fun init(wmtsSource: WmtsSource) {
+        val data = repository.getLayerProperties(wmtsSource)
+        _liveData.value = data
     }
 
     fun getAvailableLayersId(wmtsSource: WmtsSource): List<String> {
-        return if (wmtsSource == WmtsSource.IGN) {
-            ignLayersOverlay.map { it.id }
-        } else listOf()
+        return repository.getAvailableLayersId(wmtsSource)
     }
 
     fun addLayer(wmtsSource: WmtsSource, id: String) {
-        when (wmtsSource) {
-            WmtsSource.IGN -> {
-                val layer = ignLayersOverlay.firstOrNull { it.id == id } ?: return
-                val existingLayers = model.getOrPut(wmtsSource) {
-                    mutableListOf()
-                }
-                if (!existingLayers.any { it.layer.id == id }) {
-                    existingLayers.add(LayerProperties(layer, 0.5f))
-                }
-            }
-            else -> {}
-        }
+        val data = repository.addLayer(wmtsSource, id)
+        _liveData.value = data
     }
 }
-
-data class LayerProperties(val layer: Layer, var opacity: Float)
