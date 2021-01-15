@@ -30,6 +30,7 @@ import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
+import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
@@ -101,6 +102,23 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* When the fragment is created for the first time, center on first location */
         shouldCenterOnFirstLocation = savedInstanceState == null
+
+        /* Observe location changes */
+        locationSource.locationFlow.collectWhileStarted(this) {
+            onLocationReceived(it)
+        }
+
+        appEventBus.gpxImportEvent.collectWhileResumed(this) {
+            onGpxImportEvent(it)
+        }
+
+        mapViewEventBus.trackVisibilityChangedSignal.collectWhileResumed(this) {
+            routeLayer?.onTrackVisibilityChanged()
+        }
+
+        mapViewViewModel.ignLicenseEvent.collectWhileResumed(this) {
+            onIgnLicenseEvent(it)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -206,29 +224,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 lifecycleScope.launchWhenStarted {
                     mapView?.disableRotation(0f)
                 }
-            }
-        }
-
-        /* Observe location changes */
-        locationSource.locationFlow.collectWhileStarted(this) {
-            onLocationReceived(it)
-        }
-
-        lifecycleScope.launchWhenResumed {
-            appEventBus.gpxImportEvent.collect {
-                onGpxImportEvent(it)
-            }
-        }
-
-        lifecycleScope.launchWhenResumed {
-            mapViewEventBus.trackVisibilityChangedSignal.collect {
-                routeLayer?.onTrackVisibilityChanged()
-            }
-        }
-
-        lifecycleScope.launchWhenResumed {
-            mapViewViewModel.ignLicenseEvent.collect {
-                onIgnLicenseEvent(it)
             }
         }
 

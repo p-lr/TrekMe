@@ -30,14 +30,15 @@ import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
 import com.peterlaurence.trekme.repositories.location.Location
 import com.peterlaurence.trekme.repositories.location.LocationSource
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaLayer
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialog
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialogIgn
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaLayer
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
+import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
@@ -134,6 +135,27 @@ class GoogleMapWmtsViewFragment : Fragment() {
         setHasOptionsMenu(true)
         shouldCenterOnFirstLocation = savedInstanceState == null
         lastPlacePosition = savedInstanceState?.getParcelable(BUNDLE_LAST_PLACE_POS)
+
+        /* Listen to position update */
+        locationSource.locationFlow.collectWhileResumed(this) { loc ->
+            onLocationReceived(loc)
+        }
+
+        /* Listen to places search results */
+        geocodingViewModel.geoPlaceFlow.collectWhileResumed(this) {
+            it?.let {
+                placesAdapter?.setGeoPlaces(it)
+            }
+        }
+
+        /* Listen to layer selection event */
+        eventBus.layerSelectEvent.collectWhileStarted(this) {
+            onLayerDefined(it)
+        }
+
+        viewModel.wmtsSourceAccessibility.collectWhileResumed(this) {
+            if (it) hideWarningMessage() else showWarningMessage()
+        }
     }
 
     override fun onDestroyView() {
@@ -159,33 +181,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         initPlaceRecyclerView()
         setMapView(MapView(requireContext()))
         checkThenConfigureMapView()
-
-        /* Listen to position update */
-        locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
-            onLocationReceived(loc)
-        }
-
-        /* Listen to places search results */
-        lifecycleScope.launchWhenResumed {
-            geocodingViewModel.geoPlaceFlow.collect {
-                it?.let {
-                    placesAdapter?.setGeoPlaces(it)
-                }
-            }
-        }
-
-        /* Listen to layer selection event */
-        lifecycleScope.launchWhenResumed {
-            eventBus.layerSelectEvent.collect {
-                onLayerDefined(it)
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.wmtsSourceAccessibility.collect {
-                if (it) hideWarningMessage() else showWarningMessage()
-            }
-        }
 
         return _binding!!.root
     }

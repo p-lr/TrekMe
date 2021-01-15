@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
+import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
@@ -39,7 +40,8 @@ import java.net.URL
 class GoogleMapWmtsViewModel @ViewModelInject constructor(
         private val app: Application,
         private val downloadRepository: DownloadRepository,
-        private val ignApiRepository: IgnApiRepository
+        private val ignApiRepository: IgnApiRepository,
+        private val layerOverlayRepository: LayerOverlayRepository
 ) : ViewModel() {
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
@@ -139,8 +141,9 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         val mapSourceData = when (wmtsSource) {
             WmtsSource.IGN -> {
                 val layer = getActiveLayerForSource(wmtsSource)!!
+                val overlays = layerOverlayRepository.getLayerProperties(wmtsSource)
                 val ignApi = ignApiRepository.getApi()
-                IgnSourceData(ignApi ?: "", layer)
+                IgnSourceData(ignApi ?: "", layer, overlays)
             }
             WmtsSource.ORDNANCE_SURVEY -> {
                 if (ordnanceSurveyApi == null) {

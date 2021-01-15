@@ -34,7 +34,7 @@ inline fun <reified T> Flow<T>.collectWhileStartedIn(
 }
 
 class ObserverWhileStartedImpl<T>(
-        lifecycleOwner: LifecycleOwner,
+        private val lifecycleOwner: LifecycleOwner,
         private val flow: Flow<T>,
         private val collector: suspend (T) -> Unit
 ) : DefaultLifecycleObserver {
@@ -50,6 +50,39 @@ class ObserverWhileStartedImpl<T>(
     }
 
     override fun onStop(owner: LifecycleOwner) {
+        job?.cancel()
+        job = null
+    }
+
+    init {
+        lifecycleOwner.lifecycle.addObserver(this)
+    }
+}
+
+inline fun <reified T> Flow<T>.collectWhileResumed(
+        lifecycleOwner: LifecycleOwner,
+        noinline collector: suspend (T) -> Unit
+) {
+    ObserverWhileResumedImpl(lifecycleOwner, this, collector)
+}
+
+class ObserverWhileResumedImpl<T>(
+        private val lifecycleOwner: LifecycleOwner,
+        private val flow: Flow<T>,
+        private val collector: suspend (T) -> Unit
+) : DefaultLifecycleObserver {
+
+    private var job: Job? = null
+
+    override fun onResume(owner: LifecycleOwner) {
+        job = owner.lifecycleScope.launch {
+            flow.collect {
+                collector(it)
+            }
+        }
+    }
+
+    override fun onPause(owner: LifecycleOwner) {
         job?.cancel()
         job = null
     }
