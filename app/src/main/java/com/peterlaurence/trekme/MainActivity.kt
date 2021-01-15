@@ -252,6 +252,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             e.printStackTrace()
         }
 
+        /* React to some events */
         lifecycleScope.launchWhenCreated {
             viewModel.showMapListSignal.collect {
                 showMapListFragment()
@@ -262,6 +263,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             viewModel.showMapViewSignal.collect {
                 showMapViewFragment()
             }
+        }
+
+        appEventBus.genericMessageEvents.collectWhileStarted(this) {
+            when (it) {
+                is StandardMessage -> Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
+                is WarningMessage -> showWarningDialog(it.msg, it.title, null)
+            }
+        }
+
+        appEventBus.requestBackgroundLocationSignal.collectWhileStarted(this) {
+            requestBackgroundLocationPermission(this@MainActivity)
+        }
+
+        downloadRepository.downloadEvent.collectWhileStarted(this) {
+            onMapDownloadEvent(it)
         }
     }
 
@@ -298,22 +314,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     public override fun onStart() {
         requestMinimalPermissions(this)
-
-        /* React to some events */
-        appEventBus.genericMessageEvents.collectWhileStarted(this) {
-            when (it) {
-                is StandardMessage -> Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
-                is WarningMessage -> showWarningDialog(it.msg, it.title, null)
-            }
-        }
-
-        appEventBus.requestBackgroundLocationSignal.collectWhileStarted(this) {
-            requestBackgroundLocationPermission(this@MainActivity)
-        }
-
-        downloadRepository.downloadEvent.collectWhileStarted(this) {
-            onMapDownloadEvent(it)
-        }
 
         viewModel.onActivityStart()
 

@@ -34,7 +34,7 @@ inline fun <reified T> Flow<T>.collectWhileStartedIn(
 }
 
 class ObserverWhileStartedImpl<T>(
-        private val lifecycleOwner: LifecycleOwner,
+        lifecycleOwner: LifecycleOwner,
         private val flow: Flow<T>,
         private val collector: suspend (T) -> Unit
 ) : DefaultLifecycleObserver {
@@ -67,7 +67,7 @@ inline fun <reified T> Flow<T>.collectWhileResumed(
 }
 
 class ObserverWhileResumedImpl<T>(
-        private val lifecycleOwner: LifecycleOwner,
+        lifecycleOwner: LifecycleOwner,
         private val flow: Flow<T>,
         private val collector: suspend (T) -> Unit
 ) : DefaultLifecycleObserver {
