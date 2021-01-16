@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.views
+package com.peterlaurence.trekme.ui.mapcreate.dialogs
 
 import android.os.Bundle
 import android.view.View
@@ -9,7 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
-import com.peterlaurence.trekme.ui.mapcreate.components.Area
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
 import com.peterlaurence.trekme.viewmodel.mapcreate.LicenseStatus
 

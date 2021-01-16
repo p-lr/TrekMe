@@ -43,12 +43,12 @@ import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.ui.maplist.events.*
+import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.InetAddress
 import javax.inject.Inject
@@ -252,6 +252,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             e.printStackTrace()
         }
 
+        /* React to some events */
         lifecycleScope.launchWhenCreated {
             viewModel.showMapListSignal.collect {
                 showMapListFragment()
@@ -262,6 +263,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             viewModel.showMapViewSignal.collect {
                 showMapViewFragment()
             }
+        }
+
+        appEventBus.genericMessageEvents.collectWhileStarted(this) {
+            when (it) {
+                is StandardMessage -> Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
+                is WarningMessage -> showWarningDialog(it.msg, it.title, null)
+            }
+        }
+
+        appEventBus.requestBackgroundLocationSignal.collectWhileStarted(this) {
+            requestBackgroundLocationPermission(this@MainActivity)
+        }
+
+        downloadRepository.downloadEvent.collectWhileStarted(this) {
+            onMapDownloadEvent(it)
         }
     }
 
@@ -298,28 +314,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     public override fun onStart() {
         requestMinimalPermissions(this)
-
-        /* React to some events */
-        lifecycleScope.launch {
-            appEventBus.genericMessageEvents.collect {
-                when (it) {
-                    is StandardMessage -> Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
-                    is WarningMessage -> showWarningDialog(it.msg, it.title, null)
-                }
-            }
-        }
-
-        lifecycleScope.launch {
-            appEventBus.requestBackgroundLocationSignal.collect {
-                requestBackgroundLocationPermission(this@MainActivity)
-            }
-        }
-
-        lifecycleScope.launch {
-            downloadRepository.downloadEvent.collect {
-                onMapDownloadEvent(it)
-            }
-        }
 
         viewModel.onActivityStart()
 

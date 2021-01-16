@@ -13,8 +13,17 @@ fun createTileStreamProvider(wmtsSource: WmtsSource, mapSourceData: MapSourceDat
         WmtsSource.IGN -> {
             val ignSourceData = mapSourceData as? IgnSourceData
                     ?: throw Exception("Missing API for IGN source")
-            val urlTileBuilder = UrlTileBuilderIgn(ignSourceData.api, ignSourceData.layer.wmtsName)
-            TileStreamProviderIgn(urlTileBuilder, ignSourceData.layer)
+            val urlTileBuilder = UrlTileBuilderIgn(ignSourceData.api, ignSourceData.layer)
+            val primaryTileStreamProvider = TileStreamProviderIgn(urlTileBuilder, ignSourceData.layer)
+            if (ignSourceData.overlays.isEmpty()) {
+                primaryTileStreamProvider
+            } else {
+                val tileStreamOverlays = ignSourceData.overlays.map {
+                    val ts = TileStreamProviderIgn(UrlTileBuilderIgn(ignSourceData.api, it.layer), it.layer)
+                    TileStreamWithAlpha(ts, it.opacity)
+                }
+                TileStreamProviderOverlay(primaryTileStreamProvider, tileStreamOverlays)
+            }
         }
         WmtsSource.USGS -> {
             val urlTileBuilder = UrlTileBuilderUSGS()

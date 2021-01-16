@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.views
+package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.mapview.MapView
@@ -29,13 +30,15 @@ import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
 import com.peterlaurence.trekme.repositories.location.Location
 import com.peterlaurence.trekme.repositories.location.LocationSource
-import com.peterlaurence.trekme.ui.mapcreate.components.Area
-import com.peterlaurence.trekme.ui.mapcreate.components.AreaLayer
-import com.peterlaurence.trekme.ui.mapcreate.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
+import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialog
+import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialogIgn
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.ui.mapcreate.views.components.PositionMarker
-import com.peterlaurence.trekme.util.collectWhileStarted
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaLayer
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaListener
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
+import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -124,17 +127,41 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        wmtsSource = arguments?.getParcelable<WmtsSourceBundle>(ARG_WMTS_SOURCE)?.wmtsSource
+        wmtsSource = arguments?.let {
+            GoogleMapWmtsViewFragmentArgs.fromBundle(it)
+        }?.wmtsSourceBundle?.wmtsSource
 
         setHasOptionsMenu(true)
         shouldCenterOnFirstLocation = savedInstanceState == null
         lastPlacePosition = savedInstanceState?.getParcelable(BUNDLE_LAST_PLACE_POS)
+
+        /* Listen to position update */
+        locationSource.locationFlow.collectWhileResumed(this) { loc ->
+            onLocationReceived(loc)
+        }
+
+        /* Listen to places search results */
+        geocodingViewModel.geoPlaceFlow.collectWhileResumed(this) {
+            it?.let {
+                placesAdapter?.setGeoPlaces(it)
+            }
+        }
+
+        /* Listen to layer selection event */
+        eventBus.layerSelectEvent.collectWhileResumed(this) {
+            onLayerDefined(it)
+        }
+
+        viewModel.wmtsSourceAccessibility.collectWhileResumed(this) {
+            if (it) hideWarningMessage() else showWarningMessage()
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
         mapView?.destroy()
+        placesAdapter = null
         mapView = null
         areaLayer = null
     }
@@ -154,33 +181,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         setMapView(MapView(requireContext()))
         checkThenConfigureMapView()
 
-        /* Listen to position update */
-        locationSource.locationFlow.collectWhileStarted(this@GoogleMapWmtsViewFragment) { loc ->
-            onLocationReceived(loc)
-        }
-
-        /* Listen to places search results */
-        lifecycleScope.launchWhenResumed {
-            geocodingViewModel.geoPlaceFlow.collect {
-                it?.let {
-                    placesAdapter?.setGeoPlaces(it)
-                }
-            }
-        }
-
-        /* Listen to layer selection event */
-        lifecycleScope.launchWhenResumed {
-            eventBus.layerSelectEvent.collect {
-                onLayerDefined(it)
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.wmtsSourceAccessibility.collect {
-                if (it) hideWarningMessage() else showWarningMessage()
-            }
-        }
-
         return _binding!!.root
     }
 
@@ -197,6 +197,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         val layerMenu = menu.findItem(R.id.map_layer_menu_id)
         layerMenu?.isVisible = shouldShowLayerMenu()
+
+        val layerOverlayMenu = menu.findItem(R.id.overlay_layers_id)
+        layerOverlayMenu?.isVisible = shouldShowLayerOverlayMenu()
 
         val areaWidget = menu.findItem(R.id.map_area_widget_id)
 
@@ -261,6 +264,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
                             requireActivity().supportFragmentManager,
                             "LayerSelectDialog"
                     )
+                }
+            }
+            R.id.overlay_layers_id -> {
+                wmtsSource?.also {
+                    val bundle = WmtsSourceBundle(it)
+                    val action = GoogleMapWmtsViewFragmentDirections.actionGoogleMapWmtsViewFragmentToLayerOverlayFragment(bundle)
+                    findNavController().navigate(action)
                 }
             }
         }
@@ -330,6 +340,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
             WmtsSource.OPEN_STREET_MAP -> true
             else -> false
         }
+    }
+
+    private fun shouldShowLayerOverlayMenu(): Boolean {
+        return wmtsSource == WmtsSource.IGN
     }
 
     private fun onLayerDefined(layerId: String) {
@@ -581,5 +595,4 @@ class GoogleMapWmtsViewFragment : Fragment() {
 @Parcelize
 private data class PlacePosition(val X: Double, val Y: Double) : Parcelable
 
-private const val ARG_WMTS_SOURCE = "wmtsSource"
 private const val BUNDLE_LAST_PLACE_POS = "lastPlacePos"

@@ -256,4 +256,12 @@
     <string name="layer_osm_opentopo">OpenTopoMap</string>
     <string name="place_search_hint">Chercher un lieu</string>
     <string name="place_outside_of_covered_area">Ce lieu est hors de la zone couverte par cette carte.</string>
+    <string name="mapcreate_overlay_layers">Superposer des couches</string>
+    <string name="add_layer">Ajouter une couche</string>
+    <string name="layer_ign_roads">Routes</string>
+    <string name="layer_ign_slopes">Pentes en montagne</string>
+    <string name="overlay_title">Couche</string>
+    <string name="overlay_opacity">Opacité</string>
+    <string name="overlay_empty">Aucune couche ajoutée.\nUtilisez le bouton ci-dessous pour ajouter une nouvelle couche.</string>
+    <string name="layer_ign_cadastre">Paracelles cadastrales</string>
 </resources>

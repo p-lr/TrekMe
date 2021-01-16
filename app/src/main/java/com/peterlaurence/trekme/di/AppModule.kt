@@ -14,6 +14,7 @@ import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.repositories.location.GoogleLocationSource
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
 import dagger.Module
 import dagger.Provides
@@ -64,6 +65,10 @@ object AppModule {
     @Singleton
     @Provides
     fun bindDownloadRepository(): DownloadRepository = DownloadRepository()
+
+    @Singleton
+    @Provides
+    fun bindLayerOverlayRepository(): LayerOverlayRepository = LayerOverlayRepository()
 
     @Singleton
     @Provides

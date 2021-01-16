@@ -11,7 +11,6 @@ import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
@@ -25,12 +24,12 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclai
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImport
 import com.peterlaurence.trekme.ui.record.components.dialogs.TrackFileNameEdit
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
 /**
@@ -54,6 +53,46 @@ class RecordFragment : Fragment() {
     @Inject
     lateinit var appEventBus: AppEventBus
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        /* This isn't a joke, we need to have the view-model instantiated now */
+        viewModel
+
+        eventBus.recordingDeletionFailedSignal.collectWhileResumed(this) {
+            binding.recordListView.onRecordingDeletionFail()
+        }
+
+        eventBus.showLocationDisclaimerSignal.collectWhileResumed(this) {
+            LocalisationDisclaimer().show(parentFragmentManager, null)
+        }
+
+        appEventBus.gpxImportEvent.collectWhileResumed(this) {
+            onGpxImported(it)
+        }
+
+        eventBus.disableBatteryOptSignal.collectWhileResumed(this) {
+            BatteryOptWarningDialog().show(parentFragmentManager, null)
+        }
+
+        recordingData = statViewModel.getRecordingData()
+        recordingData?.observe(this) {
+            it?.let { data ->
+                updateRecordingData(data)
+            }
+        }
+
+        /**
+         * Observe the changes in the [GpxRecordService] status, and update child views accordingly.
+         */
+        val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
+        gpxRecordServiceViewModel.status.observe(this) {
+            it?.let { isActive ->
+                dispatchGpxRecordServiceStatus(isActive)
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         _binding = FragmentRecordBinding.inflate(inflater, container, false)
@@ -67,50 +106,6 @@ class RecordFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        /* This isn't a joke, we need to have the view-model instantiated now */
-        viewModel
-
-        lifecycleScope.launchWhenResumed {
-            eventBus.recordingDeletionFailedSignal.collect {
-                binding.recordListView.onRecordingDeletionFail()
-            }
-        }
-
-        lifecycleScope.launchWhenResumed {
-            eventBus.showLocationDisclaimerSignal.collect {
-                LocalisationDisclaimer().show(parentFragmentManager, null)
-            }
-        }
-
-        lifecycleScope.launchWhenResumed {
-            appEventBus.gpxImportEvent.collect {
-                onGpxImported(it)
-            }
-        }
-
-        lifecycleScope.launchWhenResumed {
-            eventBus.disableBatteryOptSignal.collect {
-                BatteryOptWarningDialog().show(parentFragmentManager, null)
-            }
-        }
-
-        recordingData = statViewModel.getRecordingData()
-        recordingData?.observe(viewLifecycleOwner) {
-            it?.let { data ->
-                updateRecordingData(data)
-            }
-        }
-
-        /**
-         * Observe the changes in the [GpxRecordService] status, and update child views accordingly.
-         */
-        val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
-        gpxRecordServiceViewModel.status.observe(viewLifecycleOwner) {
-            it?.let { isActive ->
-                dispatchGpxRecordServiceStatus(isActive)
-            }
-        }
 
         binding.recordListView.setListener(object : RecordListView.RecordListViewListener {
             override fun onRequestShareRecording(dataList: List<RecordingData>) {
