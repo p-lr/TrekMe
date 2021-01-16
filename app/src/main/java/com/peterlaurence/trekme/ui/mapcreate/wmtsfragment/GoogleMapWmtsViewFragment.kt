@@ -39,7 +39,6 @@ import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
 import com.peterlaurence.trekme.util.collectWhileResumed
-import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -149,7 +148,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
 
         /* Listen to layer selection event */
-        eventBus.layerSelectEvent.collectWhileStarted(this) {
+        eventBus.layerSelectEvent.collectWhileResumed(this) {
             onLayerDefined(it)
         }
 
