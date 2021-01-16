@@ -19,7 +19,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Your IGN license has expired :(\n\nTo buy it for this year, go to map creation and create an IGN map." />
+            tools:text="Your IGN module has expired :(\n\nTo buy it for this year, go to map creation and create an IGN map." />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_position"

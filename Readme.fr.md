@@ -517,8 +517,10 @@ redémarrer les deux apprareils puis re-tentez la procédure.
 
 ## <a name="TOC-IGN-maps"></a>Cartes IGN
 
-TrekMe vous propose un abonnement annuel. Pourquoi n'est-ce pas gratuit? L'esprit de TrekMe est la 
-consultation hors ligne des cartes. Or, le stockage des cartes IGN n'est autorisé que dans le cadre 
-d'une [licence d'exploitation grand public numérique](http://professionnels.ign.fr/doc/bareme_LCO_2019.pdf). 
-Cette licence est payante. L'application vous invitera donc à la régler quand vous voudrez créer 
-votre première carte IGN. Vous êtes alors parti pour un an.
+TrekMe vous propose un abonnement annuel, avec une semaine d'essai gratuite sans engagement. 
+Pourquoi n'est-ce pas gratuit? L'esprit de TrekMe est la consultation hors ligne des cartes. 
+Bien que certaines ressources sont désormais libres, les cartes IGN les plus demandées comme 
+"Plan IGN" sont toujours basées sur des 
+[ressources payantes](https://www.ign.fr/sites/default/files/2020-12/cp_gratuite_donnees_2020.pdf). 
+Pour cette raison, et aussi pour rémunérer le travail considérable que représente le développement
+de cette application, les cartes IGN sont proposées au travers d'un "module IGN", valable un an.

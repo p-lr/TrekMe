@@ -105,7 +105,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
     }
 
     /**
-     * This is one of the first things to do. If the IGN license is among the purchases, check if it
+     * This is one of the first things to do. If the IGN module is among the purchases, check if it
      * should be acknowledged. This call is required when the acknowledgement wasn't done right after
      * a billing flow (typically when the payment method is slow and the user didn't wait the end of
      * the procedure with the [onPurchasesUpdated] call). So we can end up with a purchase which is

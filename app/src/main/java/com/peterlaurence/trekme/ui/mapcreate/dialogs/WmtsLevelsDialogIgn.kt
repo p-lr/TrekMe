@@ -81,7 +81,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
 
     /**
      * In addition to to what the base class does, we want to control specific fields related to
-     * IGN license.
+     * IGN module.
      */
     override fun configureComponents(view: View) {
         super.configureComponents(view)

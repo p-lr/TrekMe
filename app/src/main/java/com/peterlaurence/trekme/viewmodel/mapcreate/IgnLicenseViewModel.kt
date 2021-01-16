@@ -69,7 +69,7 @@ class IgnLicenseViewModel @ViewModelInject constructor(
     }
 
     /**
-     * This is the callback called when the IGN license is considered successfully bought.
+     * This is the callback called when the IGN module is considered successfully bought.
      */
     private fun onPurchaseAcknowledged() {
         /* It's assumed that if this is called, it's a success */
