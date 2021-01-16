@@ -32,9 +32,9 @@ open class WmtsLevelsDialog : DialogFragment() {
     private var minLevel = 1
     private var maxLevel = 18
 
-    /* Start values */
+    /* Default start values - those can be changed from the WmtsSourceBundle */
     private val startMinLevel = 12
-    private val startMaxLevel = 16
+    private var startMaxLevel = 16
 
     private var currentMinLevel = startMinLevel
     private var currentMaxLevel = startMaxLevel
@@ -70,6 +70,7 @@ open class WmtsLevelsDialog : DialogFragment() {
         wmtsSourceBundle?.also {
             minLevel = it.levelMin
             maxLevel = it.levelMax
+            startMaxLevel = it.startMaxLevel
         }
 
         configureComponents(view)

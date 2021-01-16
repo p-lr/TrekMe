@@ -585,7 +585,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 map.levelList.size, map.widthPx, map.heightPx, tileSize, tileStreamProvider)
                 .setMaxScale(2f)
                 .setMagnifyingFactor(factor)
-                .setPadding(tileSize * 2)
+                .setPadding(tileSize)
 
         /* The MapView only supports one square tile size */
         mapView.configure(config)

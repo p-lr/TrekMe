@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
+import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
@@ -114,7 +115,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         return scaleAndScrollInitConfig[wmtsSource]
     }
 
-    fun getLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
+    fun getAvailablePrimaryLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
         return when (wmtsSource) {
             WmtsSource.IGN -> ignLayersPrimary
             WmtsSource.OPEN_STREET_MAP -> osmLayers
@@ -122,7 +123,10 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         }
     }
 
-    fun getActiveLayerForSource(wmtsSource: WmtsSource): Layer? {
+    /**
+     * Returns the active primary layer for the given source.
+     */
+    fun getPrimaryLayerForSource(wmtsSource: WmtsSource): Layer? {
         return when (wmtsSource) {
             WmtsSource.IGN -> activeLayerForSource[wmtsSource] ?: defaultIgnLayer
             WmtsSource.OPEN_STREET_MAP -> activeLayerForSource[wmtsSource] ?: defaultOsmLayer
@@ -137,11 +141,18 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         }
     }
 
+    /**
+     * Returns the active overlay layers for the given source.
+     */
+    fun getOverlayLayersForSource(wmtsSource: WmtsSource): List<LayerProperties> {
+        return layerOverlayRepository.getLayerProperties(wmtsSource)
+    }
+
     suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider? {
         val mapSourceData = when (wmtsSource) {
             WmtsSource.IGN -> {
-                val layer = getActiveLayerForSource(wmtsSource)!!
-                val overlays = layerOverlayRepository.getLayerProperties(wmtsSource)
+                val layer = getPrimaryLayerForSource(wmtsSource)!!
+                val overlays = getOverlayLayersForSource(wmtsSource)
                 val ignApi = ignApiRepository.getApi()
                 IgnSourceData(ignApi ?: "", layer, overlays)
             }
@@ -152,7 +163,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
                 OrdnanceSurveyData(ordnanceSurveyApi ?: "")
             }
             WmtsSource.OPEN_STREET_MAP -> {
-                val layer = getActiveLayerForSource(wmtsSource)!!
+                val layer = getPrimaryLayerForSource(wmtsSource)!!
                 OsmSourceData(layer)
             }
             else -> NoData
@@ -185,7 +196,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         viewModelScope.launch {
             val tileStreamProvider = createTileStreamProvider(wmtsSource) ?: return@launch
-            val layer = getActiveLayerForSource(wmtsSource)
+            val layer = getPrimaryLayerForSource(wmtsSource)
             val request = DownloadMapRequest(wmtsSource, layer, mapSpec, tileCount, tileStreamProvider)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)

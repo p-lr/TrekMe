@@ -253,8 +253,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
             R.id.map_layer_menu_id -> {
                 wmtsSource?.also { wmtsSource ->
                     val title = getString(R.string.ign_select_layer_title)
-                    val layers = viewModel.getLayersForSource(wmtsSource) ?: return@also
-                    val activeLayer = viewModel.getActiveLayerForSource(wmtsSource) ?: return@also
+                    val layers = viewModel.getAvailablePrimaryLayersForSource(wmtsSource) ?: return@also
+                    val activeLayer = viewModel.getPrimaryLayerForSource(wmtsSource) ?: return@also
                     val ids = layers.map { it.id }
                     val values = layers.mapNotNull { translateLayerName(it) }
                     val selectedValue = translateLayerName(activeLayer) ?: return@also
@@ -514,9 +514,22 @@ class GoogleMapWmtsViewFragment : Fragment() {
             if (fm != null) {
                 wmtsSource?.let {
                     val mapConfiguration = viewModel.getScaleAndScrollConfig(it)
+
+                    /* Specifically for Cadastre IGN layer, set the startMaxLevel to 17 */
+                    val hasCadastreOverlay = viewModel.getOverlayLayersForSource(it).any { layerProp ->
+                        layerProp.layer is Cadastre
+                    }
+                    val startMaxLevel = if (hasCadastreOverlay) 17 else null
+
+                    /* Otherwise, honor the level limits configuration for this source, if any. */
                     val levelConf = mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
+
                     val mapSourceBundle = if (levelConf != null) {
-                        WmtsSourceBundle(it, levelConf.levelMin, levelConf.levelMax)
+                        if (startMaxLevel != null) {
+                            WmtsSourceBundle(it, levelConf.levelMin, levelConf.levelMax, startMaxLevel)
+                        } else {
+                            WmtsSourceBundle(it, levelConf.levelMin, levelConf.levelMax)
+                        }
                     } else {
                         WmtsSourceBundle(it)
                     }

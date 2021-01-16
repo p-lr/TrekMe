@@ -11,7 +11,7 @@ enum class WmtsSource {
 }
 
 @Parcelize
-data class WmtsSourceBundle(val wmtsSource: WmtsSource, val levelMin: Int = 1, val levelMax: Int = 18) : Parcelable
+data class WmtsSourceBundle(val wmtsSource: WmtsSource, val levelMin: Int = 1, val levelMax: Int = 18, val startMaxLevel: Int = 16) : Parcelable
 
 sealed class MapSourceData
 data class IgnSourceData(val api: String, val layer: Layer, val overlays: List<LayerProperties>) : MapSourceData()
