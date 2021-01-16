@@ -10,6 +10,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.databinding.LayerItemBinding
 
+/**
+ * Defines how [LayerInfo]s are laid out.
+ *
+ * @author P.Laurence on 2021-01-12
+ */
 class LayerOverlayAdapter(
         private val itemTouchHelper: ItemTouchHelper
 ) : RecyclerView.Adapter<LayerOverlayAdapter.LayerOverlayViewHolder>() {

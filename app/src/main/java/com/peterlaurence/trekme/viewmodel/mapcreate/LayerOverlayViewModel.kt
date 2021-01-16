@@ -8,6 +8,11 @@ import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 
+/**
+ * Acts as a middle-man between the [LayerOverlayRepository] and the [LayerOverlayFragment].
+ *
+ * @author P.Laurence on 2021-01-11
+ */
 class LayerOverlayViewModel @ViewModelInject constructor(
         private val repository: LayerOverlayRepository
 ) : ViewModel() {

@@ -5,6 +5,14 @@ import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.providers.layers.ignLayersOverlay
 import java.util.*
 
+/**
+ * Each [WmtsSource] can be associated with "overlay" layers, which should be drawn on top of the
+ * primary layer.
+ * This repository holds the correspondence between [WmtsSource]s and [LayerProperties], and exposes
+ * methods to add, remove, and reorder layers.
+ *
+ * @author P.Laurence on 2021-01-14
+ */
 class LayerOverlayRepository {
     private val model: MutableMap<WmtsSource, MutableList<LayerProperties>> = mutableMapOf()
 

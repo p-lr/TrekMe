@@ -25,6 +25,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
+/**
+ * User interface to add, remove, and reorder overlays.
+ * Removal is done with a swipe gesture, while reordering is done using drag & drop using a handle
+ * on the right-side.
+ *
+ * @author P.Laurence on 2021-01-09
+ */
 @AndroidEntryPoint
 class LayerOverlayFragment : Fragment() {
     @Inject
