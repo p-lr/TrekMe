@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.providers.layers.ignCadastre
 import com.peterlaurence.trekme.core.providers.layers.ignRoad
 import com.peterlaurence.trekme.core.providers.layers.ignSlopes
 import com.peterlaurence.trekme.databinding.FragmentLayerOverlayBinding
@@ -35,6 +36,7 @@ class LayerOverlayFragment : Fragment() {
     private val layerIdToResId = mapOf(
             ignRoad to R.string.layer_ign_roads,
             ignSlopes to R.string.layer_ign_slopes,
+            ignCadastre to R.string.layer_ign_cadastre
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {

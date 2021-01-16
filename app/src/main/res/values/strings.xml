@@ -276,6 +276,7 @@
     <string name="layer_ign_satellite">IGN Satellite</string>
     <string name="layer_ign_roads">Roads</string>
     <string name="layer_ign_slopes">Mountain Slopes</string>
+    <string name="layer_ign_cadastre">Cadastre</string>
     <string name="layer_osm_topo">TopoMap</string>
     <string name="layer_osm_street">StreetMap</string>
     <string name="layer_osm_opentopo">OpenTopoMap</string>

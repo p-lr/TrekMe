@@ -8,20 +8,22 @@ object IgnClassic : IgnLayer(ignClassic, "GEOGRAPHICALGRIDSYSTEMS.MAPS")
 object Satellite : IgnLayer(ignSatellite, "ORTHOIMAGERY.ORTHOPHOTOS")
 
 sealed class IgnLayerOverlay(override val id: String, override val wmtsName: String) : Layer(id, wmtsName)
-object Road : IgnLayerOverlay(ignRoad, "TRANSPORTNETWORKS.ROAD")
+object Road : IgnLayerOverlay(ignRoad, "TRANSPORTNETWORKS.ROADS")
 object Slopes : IgnLayerOverlay(ignSlopes, "GEOGRAPHICALGRIDSYSTEMS.SLOPES.MOUNTAIN")
+object Cadastre : IgnLayerOverlay(ignCadastre, "CADASTRALPARCELS.PARCELLAIRE_EXPRESS")
 
 const val ignScanExpressStd = "Scan Express Standard"
 const val ignClassic = "Cartes IGN"
 const val ignSatellite = "Photographies aériennes"
 const val ignRoad = "Routes IGN"
 const val ignSlopes = "Carte des pentes"
+const val ignCadastre = "Parcelles cadastrales"
 
 /* Primary IGN layers are layers which are rendered below overlay layers */
 val ignLayersPrimary: List<IgnLayer> = listOf(IgnClassic, Satellite, ScanExpressStandard)
 
 /* Overlay layers can be drawn above primary layers (e.g routes, slopes, ..) */
-val ignLayersOverlay: List<IgnLayerOverlay> = listOf(Road, Slopes)
+val ignLayersOverlay: List<IgnLayerOverlay> = listOf(Slopes, Cadastre)
 
 sealed class OsmLayer(override val id: String, override val wmtsName: String) : Layer(id, wmtsName)
 object WorldTopoMap : OsmLayer(osmTopo, "World_Topo_Map")

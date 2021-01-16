@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream
 
 class TileStreamProviderOverlay(
         private val layerPrimary: TileStreamProvider,
-        private val layerSecondary: TileStreamProvider
+        private val layersOverlay: List<TileStreamWithAlpha>
 ) : TileStreamProvider {
     private val paint = Paint(Paint.FILTER_BITMAP_FLAG).apply {
         alpha = 180
@@ -30,16 +30,19 @@ class TileStreamProviderOverlay(
             BitmapFactory.decodeStream(it, null, options)
         } ?: return TileStream(null)
 
-        val bitmapOverInputStr = layerSecondary.getTileStream(row, col, zoomLvl).let {
-            if (it is TileStream) it.tileStream else null
-        } ?: return TileStream(null)
-
-        val bitmapOver = bitmapOverInputStr.use {
-            BitmapFactory.decodeStream(bitmapOverInputStr, null, null)
-        } ?: return TileStream(null)
-
         val canvas = Canvas(bitmap)
-        canvas.drawBitmap(bitmapOver, 0f, 0f, paint)
+        for (overlay in layersOverlay) {
+            val bitmapOverInputStr = overlay.tileStreamProvider.getTileStream(row, col, zoomLvl).let {
+                if (it is TileStream) it.tileStream else null
+            } ?: return TileStream(null)
+
+            val bitmapOver = bitmapOverInputStr.use {
+                BitmapFactory.decodeStream(bitmapOverInputStr, null, null)
+            } ?: return TileStream(null)
+
+            paint.alpha = (255f * overlay.opacity).toInt()
+            canvas.drawBitmap(bitmapOver, 0f, 0f, paint)
+        }
 
         val bos = ByteArrayOutputStream()
         bitmap.compress(CompressFormat.PNG, 100, bos)
@@ -47,3 +50,5 @@ class TileStreamProviderOverlay(
         return TileStream(ByteArrayInputStream(bos.toByteArray()))
     }
 }
+
+data class TileStreamWithAlpha(val tileStreamProvider: TileStreamProvider, val opacity: Float)
