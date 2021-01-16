@@ -70,6 +70,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             it?.also { routes ->
                 trackAdapter?.setRouteList(routes)
                 updateEmptyRoutePanelVisibility()
+                updateMenuVisibility(routes.size)
             }
         }
 
@@ -112,7 +113,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         menu.clear()
         inflater.inflate(R.menu.menu_fragment_tracks_manage, menu)
         trackRenameMenuItem = menu.findItem(R.id.track_rename_id)
-        trackRenameMenuItem?.isVisible = trackAdapter?.selectedRouteIndex ?: -1 >= 0
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -260,6 +260,11 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         } else {
             binding.emptyRoutePanel.visibility = View.VISIBLE
         }
+    }
+
+    private fun updateMenuVisibility(routeCnt: Int) {
+        val selectedInRange = trackAdapter?.selectedRouteIndex ?: -1 in 0 until routeCnt
+        trackRenameMenuItem?.isVisible = routeCnt > 0 && selectedInRange
     }
 
     private fun onCreateTrack() {

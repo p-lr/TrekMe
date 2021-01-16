@@ -57,11 +57,7 @@ class TrackAdapter(
     }
 
     val selectedRoute: Route?
-        get() = try {
-            differ.currentList[selectedRouteIndex]
-        } catch (e: ArrayIndexOutOfBoundsException) {
-            null
-        }
+        get() = differ.currentList.getOrNull(selectedRouteIndex)
 
     fun restoreSelectionIndex(selectionIndex: Int) {
         selectedRouteIndex = selectionIndex
