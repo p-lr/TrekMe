@@ -4,7 +4,7 @@ package com.peterlaurence.trekme.repositories.recording
 
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
+import com.peterlaurence.trekme.core.track.DistanceCalculator
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
@@ -80,18 +80,12 @@ class ElevationRepository(
     }
 
     private suspend fun gpxToElevationData(gpx: Gpx, id: Int, targetWidth: Int): ElevationState = withContext(dispatcher) {
-        var dist = 0.0
-        var lastPt: TrackPoint? = null
         var minElePt: TrackPoint? = null
         var maxElePt: TrackPoint? = null
+        val distanceCalculator = DistanceCalculator()
         val points = gpx.tracks.firstOrNull()?.trackSegments?.firstOrNull()?.trackPoints?.mapNotNull { pt ->
-            val lastPt_ = lastPt
-            val lastEle = lastPt_?.elevation
+            distanceCalculator.addPoint(pt.latitude, pt.longitude, pt.elevation)
             val newEle = pt.elevation
-            if (lastEle != null && newEle != null) {
-                dist += deltaTwoPoints(lastPt_.latitude, lastPt_.longitude, lastEle,
-                        pt.latitude, pt.longitude, newEle)
-            }
             if (newEle != null) {
                 if (minElePt == null) minElePt = pt
                 minElePt?.also {
@@ -104,8 +98,7 @@ class ElevationRepository(
                     if (curMax != null && newEle > curMax) maxElePt = pt
                 }
             }
-            lastPt = pt
-            if (newEle != null) ElePoint(dist, newEle) else null
+            if (newEle != null) ElePoint(distanceCalculator.distance, newEle) else null
         }
 
         val minEle_ = minElePt?.elevation
