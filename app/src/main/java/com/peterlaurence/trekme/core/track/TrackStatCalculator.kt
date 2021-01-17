@@ -28,14 +28,12 @@ import kotlin.math.*
  * @author P.Laurence on 09/09/18
  */
 class TrackStatCalculator {
-    private var distance: Double = 0.0
     private var elevationDiffMax = 0.0
     private var elevationUpStack = 0.0
     private var elevationDownStack = 0.0
     private var durationInSecond = 0L
     private var avgSpeed = 0.0
 
-    private var previousTrackPoint: TrackPoint? = null
 
     /* Duration statistic */
     private var firstPointTime: Long? = null
@@ -51,14 +49,10 @@ class TrackStatCalculator {
     private var maxLat: Double? = null
     private var maxLon: Double? = null
 
-    /* Size of the buffer used to compute elevation mean */
-    private val bufferSize = 5
-    private val buffer = ArrayDeque<TrackPoint>()
-
-    private var snapshot: Snapshot? = null
+    private val distanceCalculator = DistanceCalculator()
 
     fun getStatistics(): TrackStatistics {
-        return TrackStatistics(distance, elevationDiffMax, elevationUpStack, elevationDownStack,
+        return TrackStatistics(distanceCalculator.distance, elevationDiffMax, elevationUpStack, elevationDownStack,
                 durationInSecond, avgSpeed)
     }
 
@@ -71,52 +65,14 @@ class TrackStatCalculator {
         trkPtList.forEach { addTrackPoint(it) }
     }
 
-    /**
-     * The first 10 points are added to the buffer. The first time the buffer is full, we make a
-     * snapshot. Then, subsequent snapshots are made only when the mean elevation is greater or
-     * smaller than the previous elevation snapshot by 10 meters.
-     * When we make a new snapshot, we update the distance and elevation stats accordingly.
-     */
     fun addTrackPoint(trkPt: TrackPoint) {
-        buffer.add(trkPt)
-        val firstSnapshot = buffer.size == bufferSize
+        distanceCalculator.addPoint(trkPt.latitude, trkPt.longitude, trkPt.elevation) { ele ->
+            updateElevationStats(ele)
+        }
 
-        /* Keep the buffer at its target size */
-        if (buffer.size > bufferSize) buffer.poll()
-
-        updateDistance(trkPt)
         updateDuration(trkPt)
         updateBounds(trkPt)
         updateMeanSpeed()
-
-        if (buffer.size == bufferSize) {
-            val elevations = buffer.mapNotNull { it.elevation }
-            if (elevations.isNotEmpty()) {
-                val meanEle = elevations.mean()
-                val diffEle = snapshot?.let { abs(it.elevation - meanEle) }
-                if (diffEle != null && diffEle > 10.0) {
-                    distance = snapshot!!.distance + sqrt((distance - snapshot!!.distance).pow(2) + diffEle.pow(2))
-                    this.snapshot = Snapshot(distance, meanEle)
-                    updateElevationStats(meanEle)
-                }
-                if (firstSnapshot) {
-                    snapshot = Snapshot(distance, meanEle)
-                }
-            }
-        }
-
-        /* Remember the previous track point */
-        previousTrackPoint = trkPt
-    }
-
-    /**
-     * As the distance is computed incrementally, track points are considered near enough to use
-     * rough (but fast) formulas.
-     */
-    private fun updateDistance(trkPt: TrackPoint) {
-        previousTrackPoint?.also { p ->
-            distance += deltaTwoPoints(p.latitude, p.longitude, trkPt.latitude, trkPt.longitude)
-        }
     }
 
     private fun updateElevationStats(ele: Double) {
@@ -168,7 +124,7 @@ class TrackStatCalculator {
 
     private fun updateMeanSpeed() {
         if (durationInSecond != 0L) {
-            avgSpeed = distance / durationInSecond
+            avgSpeed = distanceCalculator.distance / durationInSecond
         }
     }
 
@@ -177,6 +133,66 @@ class TrackStatCalculator {
         minLon = min(trkPt.longitude, minLon ?: Double.MAX_VALUE)
         maxLat = max(trkPt.latitude, maxLat ?: Double.MIN_VALUE)
         maxLon = max(trkPt.longitude, maxLon ?: Double.MIN_VALUE)
+    }
+}
+
+class DistanceCalculator {
+    var distance: Double = 0.0
+        private set
+
+    /* Size of the buffer used to compute elevation mean */
+    private val bufferSize = 5
+    private val buffer = ArrayDeque<Double>()
+
+    private var previousLat: Double? = null
+    private var previousLon: Double? = null
+    private var snapshot: Snapshot? = null
+
+    /**
+     * The first points are added to the buffer. The first time the buffer is full, we make a
+     * snapshot. Then, subsequent snapshots are made only when the mean elevation is greater or
+     * smaller than the previous elevation snapshot by 10 meters.
+     * When we make a new snapshot, the distance is updated and the provided [onEleSnapShot] callback
+     * is invoked with the mean elevation. This callback can be used to update elevation statistics.
+     */
+    fun addPoint(lat: Double, lon: Double, ele: Double?, onEleSnapShot: ((Double) -> Unit)? = null) {
+        buffer.add(ele ?: Double.NaN)
+        val firstSnapshot = buffer.size == bufferSize
+
+        /* Keep the buffer at its target size */
+        if (buffer.size > bufferSize) buffer.poll()
+
+        updateDistance(lat, lon)
+
+        if (buffer.size == bufferSize) {
+            val elevations = buffer.filterNot { it.isNaN() }
+            if (elevations.isNotEmpty()) {
+                val meanEle = elevations.mean()
+                val diffEle = snapshot?.let { abs(it.elevation - meanEle) }
+                if (diffEle != null && diffEle > 10.0) {
+                    distance = snapshot!!.distance + sqrt((distance - snapshot!!.distance).pow(2) + diffEle.pow(2))
+                    this.snapshot = Snapshot(distance, meanEle)
+                    onEleSnapShot?.invoke(meanEle)
+                }
+                if (firstSnapshot) {
+                    snapshot = Snapshot(distance, meanEle)
+                }
+            }
+        }
+    }
+
+    /**
+     * As the distance is computed incrementally, points are considered near enough to use
+     * rough (but fast) formulas.
+     */
+    private fun updateDistance(lat: Double, lon: Double) {
+        val prevLat = previousLat
+        val prevLon = previousLon
+        if (prevLat != null && prevLon != null) {
+            distance += deltaTwoPoints(prevLat, prevLon, lat, lon)
+        }
+        previousLat = lat
+        previousLon = lon
     }
 }
 

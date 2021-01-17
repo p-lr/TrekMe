@@ -19,7 +19,6 @@ import com.peterlaurence.mapview.api.removeMarker
 import com.peterlaurence.mapview.paths.PathView
 import com.peterlaurence.mapview.paths.addPathView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.getRelativeX
 import com.peterlaurence.trekme.core.map.getRelativeY
@@ -27,6 +26,7 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.route.Barycenter
 import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
+import com.peterlaurence.trekme.core.track.DistanceCalculator
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
@@ -641,20 +641,13 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val iMax = max(info.index1, info.index2)
         val iterator = route.routeMarkers.listIterator(iMin)
 
-        var previous = iterator.next()
-        var distance = 0.0
+        val distanceCalculator = DistanceCalculator()
         for (i in iMin until iMax) {
-            val nextMarker = iterator.next()
-            distance += if (previous.elevation == null || nextMarker.elevation == null) {
-                deltaTwoPoints(previous.lat, previous.lon, nextMarker.lat, nextMarker.lon)
-            } else {
-                deltaTwoPoints(previous.lat, previous.lon, previous.elevation, nextMarker.lat,
-                        nextMarker.lon, nextMarker.elevation)
-            }
-            previous = nextMarker
+            val marker = iterator.next()
+            distanceCalculator.addPoint(marker.lat, marker.lon, marker.elevation)
         }
 
-        distance
+        distanceCalculator.distance
     }
 
     private data class Info(var index1: Int, var index2: Int)
