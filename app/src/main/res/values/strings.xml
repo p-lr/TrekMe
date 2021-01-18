@@ -271,6 +271,7 @@
     <string name="mapcreate_warning_ign">It looks like there\'s an issue with either IGN servers or your internet connection :(</string>
     <string name="mapcreate_warning_others">Please check your internet connection. Another explanation is a temporary outage of the provider, due to an intense use.</string>
     <string name="mapcreate_btn_nav_credentials">Fix my credentials</string>
+    <string name="layer_ign_plan_v2">IGN Plan</string>
     <string name="layer_ign_scan_express_std">Scan Expresss Standard</string>
     <string name="layer_ign_classic">IGN Classic</string>
     <string name="layer_ign_satellite">IGN Satellite</string>

@@ -1,15 +1,12 @@
 package com.peterlaurence.trekme.core.providers.urltilebuilder
 
-import com.peterlaurence.trekme.core.providers.layers.Cadastre
-import com.peterlaurence.trekme.core.providers.layers.IgnLayer
-import com.peterlaurence.trekme.core.providers.layers.IgnLayerOverlay
-import com.peterlaurence.trekme.core.providers.layers.Layer
+import com.peterlaurence.trekme.core.providers.layers.*
 
 
 class UrlTileBuilderIgn(private val api: String, private val layer: Layer) : UrlTileBuilder {
     override fun build(level: Int, row: Int, col: Int): String {
         val imgFormat = when (layer) {
-            is IgnLayer -> "jpeg"
+            is PlanIgnV2 -> "png"
             is IgnLayerOverlay -> "png"
             else -> "jpeg"
         }

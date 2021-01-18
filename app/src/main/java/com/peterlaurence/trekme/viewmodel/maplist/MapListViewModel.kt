@@ -14,9 +14,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
- * The view-model intended to be used by the [MapListFragment], which is the only view where the
- * user can change of [Map].
- * So, all necessary model actions are taken in this view-model.
+ * This view-model is intended to be used by the [MapListFragment], which displays the list of [Map].
+ * Handles map selection, map deletion, and setting a map as favorite.
  */
 class MapListViewModel @ViewModelInject constructor(
         private val settings: Settings,

@@ -264,4 +264,5 @@
     <string name="overlay_opacity">Opacité</string>
     <string name="overlay_empty">Aucune couche ajoutée.\nUtilisez le bouton ci-dessous pour ajouter une nouvelle couche.</string>
     <string name="layer_ign_cadastre">Paracelles cadastrales</string>
+    <string name="layer_ign_plan_v2">Plan IGN v2</string>
 </resources>
