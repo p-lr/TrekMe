@@ -95,7 +95,8 @@ Quand vous avez fait votre choix, la carte s'affiche après un délai de quelque
 </p>
 
 Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse, ou bien rechercher un lieu
-particulier avec le bouton recherche. Quand vous avec trouvé la bonne zone, un bouton en haut à 
+particulier avec le bouton recherche. Pour l'IGN, il a des fonctionnalités supplémentaires comme le
+[choix de différentes couches](doc/ign_layers.fr.md). Quand vous avec trouvé la bonne zone, un bouton en haut à 
 droite, ressemblant à un carré, fait apparaître une zone bleue qui définit ce qui sera téléchargé. 
 Cette zone est modifiable en déplaçant les deux ronds bleus.
 Quand vous êtes satisfait de votre sélection, utilisez le bouton de téléchargement en bas à droite.
