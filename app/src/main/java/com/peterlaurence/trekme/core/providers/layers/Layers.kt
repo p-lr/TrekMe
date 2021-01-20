@@ -25,7 +25,7 @@ const val ignCadastre = "Parcelles cadastrales"
 val ignLayersPrimary: List<IgnLayer> = listOf(IgnClassic, PlanIgnV2, Satellite, ScanExpressStandard)
 
 /* Overlay layers can be drawn above primary layers (e.g routes, slopes, ..) */
-val ignLayersOverlay: List<IgnLayerOverlay> = listOf(Slopes, Cadastre)
+val ignLayersOverlay: List<IgnLayerOverlay> = listOf(Slopes, Cadastre, Road)
 
 sealed class OsmLayer(override val id: String, override val wmtsName: String) : Layer(id, wmtsName)
 object WorldTopoMap : OsmLayer(osmTopo, "World_Topo_Map")

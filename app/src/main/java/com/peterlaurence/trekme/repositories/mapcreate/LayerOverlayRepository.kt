@@ -34,7 +34,7 @@ class LayerOverlayRepository {
                 val layer = ignLayersOverlay.firstOrNull { it.id == id } ?: return listOf()
                 val existingLayers = getLayerProperties(wmtsSource) as MutableList
                 if (!existingLayers.any { it.layer.id == layer.id }) {
-                    existingLayers.add(LayerProperties(layer, 0.5f))
+                    existingLayers.add(LayerProperties(layer, 1f))
                 }
             }
             else -> {

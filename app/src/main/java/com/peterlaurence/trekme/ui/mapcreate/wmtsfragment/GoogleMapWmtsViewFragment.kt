@@ -394,7 +394,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* 2- Configure the mapView */
         val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
         configureMapView(streamProvider, mapConfiguration)
-        viewModel.checkTileAccessibility(wmtsSource, streamProvider)
 
         /* 3- Restore the last place position */
         lastPlacePosition?.also { pos ->

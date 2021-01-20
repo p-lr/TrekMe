@@ -15,6 +15,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
+import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
 import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
@@ -169,7 +170,12 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
             else -> NoData
         }
         return try {
-            createTileStreamProvider(wmtsSource, mapSourceData)
+            createTileStreamProvider(wmtsSource, mapSourceData).also {
+                /* Don't test the stream provider if it has overlays */
+                if (it !is TileStreamProviderOverlay) {
+                    checkTileAccessibility(wmtsSource, it)
+                }
+            }
         } catch (e: Exception) {
             null
         }
@@ -207,7 +213,7 @@ class GoogleMapWmtsViewModel @ViewModelInject constructor(
     /**
      * Simple check whether we are able to download tiles or not.
      */
-    fun checkTileAccessibility(wmtsSource: WmtsSource, tileStreamProvider: TileStreamProvider) {
+    private fun checkTileAccessibility(wmtsSource: WmtsSource, tileStreamProvider: TileStreamProvider) {
         viewModelScope.launch(Dispatchers.IO) {
             _wmtsSourceAccessibility.value = when (wmtsSource) {
                 WmtsSource.IGN -> {
