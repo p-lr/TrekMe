@@ -15,7 +15,7 @@
     <string name="calibration_enter_values">Remplir les valeurs pour le point choisi</string>
     <string name="wgs84_switch">WGS84 lat/lng</string>
     <string name="latitude_short">Lat</string>
-    <string name="longitude_short">Lng</string>
+    <string name="longitude_short">Lon</string>
     <string name="calibration_point_saved">Point sauvegardé</string>
     <string name="projected_x_short">E</string>
     <string name="projected_y_short">N</string>
@@ -265,4 +265,6 @@
     <string name="overlay_empty">Aucune couche ajoutée.\nUtilisez le bouton ci-dessous pour ajouter une nouvelle couche.</string>
     <string name="layer_ign_cadastre">Paracelles cadastrales</string>
     <string name="layer_ign_plan_v2">Plan IGN v2</string>
+    <string name="elevation_short">Alt</string>
+    <string name="mapview_gpsdata_enable">Afficher données GPS</string>
 </resources>

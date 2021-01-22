@@ -23,6 +23,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
     private val favoriteMaps = "favoriteMaps"
     private val rotationMode = "rotationMode"
     private val speedVisibility = "speedVisibility"
+    private val gpsDataVisibility = "gpsDataVisibility"
     private val magnifyingFactor = "magnifyingFactor"
     private val lastMapId = "lastMapId"
     private val defineScaleWhenCentered = "defineScaleWhenCentered"
@@ -106,6 +107,16 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
     fun setSpeedVisibility(v: Boolean) {
         sharedPref.edit {
             putBoolean(speedVisibility, v)
+        }
+    }
+
+    fun getGpsDataVisibility(): Boolean {
+        return sharedPref.getBoolean(gpsDataVisibility, false)
+    }
+
+    fun setGpsDataVisibility(v: Boolean) {
+        sharedPref.edit {
+            putBoolean(gpsDataVisibility, v)
         }
     }
 

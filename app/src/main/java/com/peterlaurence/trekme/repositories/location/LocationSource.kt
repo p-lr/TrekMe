@@ -20,7 +20,9 @@ interface LocationSource {
 
 /**
  * [latitude] and [longitude] are in decimal degrees.
- * [speed] is in meters per second
+ * [altitude] is in meters.
+ * [speed] is in meters per second.
+ * [time] is the UTC time in milliseconds since January 1, 1970
  */
 data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float = 0f,
                     val altitude: Double = 0.0, val time: Long = 0)

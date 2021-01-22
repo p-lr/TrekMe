@@ -202,8 +202,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             distanceLayer?.show(distanceLayerState)
         }
 
-        /* Also restore speed visibility */
+        /* Restore speed visibility */
         speedListener?.setSpeedVisible(mapViewViewModel.getSpeedVisibility())
+
+        /* Restore GPS data visibility */
+        presenter.setGpsDataVisible(mapViewViewModel.getGpsDataVisibility())
 
         /* In free-rotating mode, show the compass right from the start */
         if (rotationMode == RotationMode.FREE) {
@@ -335,6 +338,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         val itemLockOnPosition = menu.findItem(R.id.lock_on_position_id)
         itemLockOnPosition.isChecked = lockView
 
+        val itemGpsData = menu.findItem(R.id.gps_data_enable_id)
+        itemGpsData.isChecked = mapViewViewModel.getGpsDataVisibility()
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -381,6 +387,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             R.id.lock_on_position_id -> {
                 item.isChecked = !item.isChecked
                 lockView = item.isChecked
+                return true
+            }
+            R.id.gps_data_enable_id -> {
+                val newVisi = mapViewViewModel.toggleGpsDataVisibility()
+                item.isChecked = newVisi
+                presenter?.setGpsDataVisible(newVisi)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -502,6 +514,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private fun onLocationReceived(location: Location) {
         if (isHidden) return
+
+        presenter?.setGpsData(location)
 
         /* If there is no MapView, no need to go further */
         mapView ?: return
@@ -703,6 +717,8 @@ interface MapViewFragmentContract {
         fun removeMapView(mapView: MapView?)
         fun showStatistics(trackStatistics: TrackStatistics)
         fun hideStatistics()
+        fun setGpsData(location: Location)
+        fun setGpsDataVisible(visible: Boolean)
     }
 
     interface View {

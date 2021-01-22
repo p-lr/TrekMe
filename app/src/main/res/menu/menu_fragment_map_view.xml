@@ -50,5 +50,9 @@
         app:showAsAction="never"
         android:title="@string/mapview_orientation_enable" />
 
-
+    <item
+        android:id="@+id/gps_data_enable_id"
+        android:checkable="true"
+        app:showAsAction="never"
+        android:title="@string/mapview_gpsdata_enable" />
 </menu>

@@ -112,6 +112,7 @@
     <string name="wgs84_switch">WGS84 lat/lng</string>
     <string name="latitude_short">Lat</string>
     <string name="longitude_short">Lng</string>
+    <string name="elevation_short">Ele</string>
     <string name="projected_x_short">E</string>
     <string name="projected_y_short">N</string>
 
@@ -159,6 +160,7 @@
     <string name="mapview_measure_distance">Measure distance</string>
     <string name="mapview_measure_distance_on_track">Distance on track</string>
     <string name="mapview_orientation_enable">Show orientation</string>
+    <string name="mapview_gpsdata_enable">Show GPS data</string>
     <string name="mapview_add_landmark">Add landmark</string>
     <string name="mapview_lock_on_position">Lock on position</string>
     <string name="callout_landmark_title">Landmark</string>

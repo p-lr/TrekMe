@@ -10,7 +10,9 @@ import androidx.core.view.children
 import com.peterlaurence.mapview.MapView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.databinding.FragmentMapViewBinding
+import com.peterlaurence.trekme.repositories.location.Location
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 
@@ -45,6 +47,7 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
         get() = customView
 
     private var positionTouchListener: PositionTouchListener? = null
+    private var lastLocation: Location? = null
 
     init {
         binding.fabPosition.setOnClickListener {
@@ -107,6 +110,27 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
 
     override fun hideStatistics() {
         binding.statsPanel.visibility = View.GONE
+    }
+
+    override fun setGpsData(location: Location) {
+        lastLocation = location
+        if (binding.gpsDataPanel.visibility == View.VISIBLE) {
+            updateGpsDataPanel(location)
+        }
+    }
+
+    override fun setGpsDataVisible(visible: Boolean) {
+        binding.gpsDataPanel.visibility = if (visible) View.VISIBLE else View.GONE
+        if (visible) {
+            val loc = lastLocation ?: return
+            updateGpsDataPanel(loc)
+        }
+    }
+
+    private fun updateGpsDataPanel(location: Location) {
+        binding.latValue.text = UnitFormatter.formatLatLon(location.latitude)
+        binding.lonValue.text = UnitFormatter.formatLatLon(location.longitude)
+        binding.eleValue.text = UnitFormatter.formatElevation(location.altitude)
     }
 
     interface PositionTouchListener {

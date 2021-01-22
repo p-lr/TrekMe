@@ -51,6 +51,13 @@ object UnitFormatter {
         }
     }
 
+    /**
+     * Format latitude and longitude in decimal degrees, at 1E-5 precision.
+     */
+    fun formatLatLon(latOrLon: Double): String {
+        return "%.5f°".format(latOrLon)
+    }
+
     fun formatDuration(durationInSec: Long): String {
         return DateUtils.formatElapsedTime(durationInSec)
     }

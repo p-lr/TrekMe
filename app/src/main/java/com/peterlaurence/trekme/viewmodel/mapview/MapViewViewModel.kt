@@ -54,6 +54,14 @@ class MapViewViewModel @ViewModelInject constructor(
 
     fun setSpeedVisibility(v: Boolean) = settings.setSpeedVisibility(v)
 
+    fun getGpsDataVisibility(): Boolean = settings.getGpsDataVisibility()
+
+    fun toggleGpsDataVisibility(): Boolean {
+        val v = !getGpsDataVisibility()
+        settings.setGpsDataVisibility(v)
+        return v
+    }
+
     private suspend fun checkForIgnLicense(map: Map): Boolean {
         if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
 
