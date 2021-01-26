@@ -1,245 +1,214 @@
-package com.peterlaurence.trekme.util.gpx;
+package com.peterlaurence.trekme.util.gpx
 
-import com.peterlaurence.trekme.util.gpx.model.Gpx;
-import com.peterlaurence.trekme.util.gpx.model.Metadata;
-import com.peterlaurence.trekme.util.gpx.model.Track;
-import com.peterlaurence.trekme.util.gpx.model.TrackPoint;
-import com.peterlaurence.trekme.util.gpx.model.TrackSegment;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
-import static com.peterlaurence.trekme.util.gpx.GPXParserKt.getGpxDateParser;
-import static com.peterlaurence.trekme.util.gpx.GPXParserKt.parseGpx;
-import static com.peterlaurence.trekme.util.gpx.GPXWriterKt.writeGpx;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.fail;
+import com.peterlaurence.trekme.util.gpx.model.Gpx
+import kotlinx.coroutines.runBlocking
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.xmlpull.v1.XmlPullParserException
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.ParseException
+import java.util.*
+import javax.xml.parsers.ParserConfigurationException
+import javax.xml.transform.TransformerException
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.fail
 
 /**
  * GPX tests.
  *
  * @author P.Laurence on 12/02/17.
  */
-@RunWith(RobolectricTestRunner.class)
-public class GPXTest {
-    private static File mGpxFilesDirectory;
+@RunWith(RobolectricTestRunner::class)
+class GPXTest {
+    companion object {
+        private var mGpxFilesDirectory: File? = null
 
-    static {
-        try {
-            URL gpxDirURL = GPXTest.class.getClassLoader().getResource("gpxfiles");
-            mGpxFilesDirectory = new File(gpxDirURL.toURI());
-        } catch (Exception e) {
-            System.out.println("No resource file for gpx files directory.");
+        init {
+            try {
+                val gpxDirURL = GPXTest::class.java.classLoader!!.getResource("gpxfiles")
+                mGpxFilesDirectory = File(gpxDirURL.toURI())
+            } catch (e: Exception) {
+                println("No resource file for gpx files directory.")
+            }
         }
     }
 
     @Rule
-    public TemporaryFolder mTestFolder = new TemporaryFolder();
+    @JvmField
+    var mTestFolder = TemporaryFolder()
 
-    private final File gpxSample = new File(mGpxFilesDirectory, "sample_gpx_1.gpx");
-    private final File gpxRealRoute = new File(mGpxFilesDirectory, "chauvigny_choucas.gpx");
+    private val gpxSample = File(mGpxFilesDirectory, "sample_gpx_1.gpx")
+    private val gpxRealRoute = File(mGpxFilesDirectory, "chauvigny_choucas.gpx")
 
     @Test
-    public void simpleFileTest() {
+    fun simpleFileTest() = runBlocking {
         if (mGpxFilesDirectory != null) {
             if (gpxSample.exists()) {
                 try {
-                    Gpx gpx = parseGpx(new FileInputStream(gpxSample));
+                    val (metadata, trackList, wayPoints) = parseGpx(FileInputStream(gpxSample))
 
                     /* Metadata check */
-                    Metadata metadata = gpx.getMetadata();
-                    assertNotNull(metadata);
-                    assertEquals("Example gpx", metadata.getName());
-                    Calendar cal = readTime(metadata.getTime());
-                    assertEquals(2018, cal.get(Calendar.YEAR));
-                    assertEquals(8, cal.get(Calendar.MONTH));
-                    assertEquals(9, cal.get(Calendar.DAY_OF_MONTH));
-                    assertEquals(47, cal.get(Calendar.SECOND));
-
-                    List<Track> trackList = gpx.getTracks();
-                    assertEquals(2, trackList.size());  // 1 track, 1 route
-
-                    Track track = trackList.get(0);
-                    List<TrackSegment> trackSegmentList = track.getTrackSegments();
-                    assertEquals("Example track", track.getName());
-                    assertEquals(1, trackSegmentList.size());
-                    TrackSegment trackSegment = trackSegmentList.get(0);
-                    List<TrackPoint> trackPointList = trackSegment.getTrackPoints();
-                    assertEquals(7, trackPointList.size());
-                    TrackPoint firstTrackPoint = trackPointList.get(0);
-
-                    Double lat = firstTrackPoint.getLatitude();
-                    Double lon = firstTrackPoint.getLongitude();
-                    Double elevation = firstTrackPoint.getElevation();
-                    assertEquals(46.57608333, lat);
-                    assertEquals(8.89241667, lon);
-                    assertEquals(2376.0, elevation);
-
-                    assertEquals(getGpxDateParser().parse("2007-10-14T10:09:57Z").getTime(),
-                            firstTrackPoint.getTime(), 0.0);
+                    assertNotNull(metadata)
+                    assertEquals("Example gpx", metadata.name)
+                    val cal = readTime(metadata.time)
+                    assertEquals(2018, cal[Calendar.YEAR])
+                    assertEquals(8, cal[Calendar.MONTH])
+                    assertEquals(9, cal[Calendar.DAY_OF_MONTH])
+                    assertEquals(47, cal[Calendar.SECOND])
+                    assertEquals(2, trackList.size) // 1 track, 1 route
+                    val (trackSegmentList, name, statistics) = trackList[0]
+                    assertEquals("Example track", name)
+                    assertEquals(1, trackSegmentList.size)
+                    val (trackPointList) = trackSegmentList[0]
+                    assertEquals(7, trackPointList.size)
+                    val (lat, lon, elevation, time) = trackPointList[0]
+                    assertEquals(46.57608333, lat)
+                    assertEquals(8.89241667, lon)
+                    assertEquals(2376.0, elevation)
+                    assertEquals(getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(),
+                            time!!.toDouble())
 
                     /* Check that the track has statistics */
-                    assertNotNull(track.getStatistics());
-                    assertEquals(track.getStatistics().getDistance(), 102.0);
+                    assertNotNull(statistics)
+                    assertEquals(statistics.distance, 102.0)
+                    assertEquals(4, wayPoints.size)
+                    val (latitude, longitude, elevation1, _, name1) = wayPoints[0]
+                    assertEquals(54.9328621088893, latitude)
+                    assertEquals(9.860624216140083, longitude)
+                    assertEquals("Waypoint 1", name1)
+                    assertEquals(127.1, elevation1)
 
-                    List<TrackPoint> wayPoints = gpx.getWayPoints();
-                    assertEquals(4, wayPoints.size());
-
-                    TrackPoint wayPoint1 = wayPoints.get(0);
-                    assertEquals(54.9328621088893, wayPoint1.getLatitude());
-                    assertEquals(9.860624216140083, wayPoint1.getLongitude());
-                    assertEquals("Waypoint 1", wayPoint1.getName());
-                    assertEquals(127.1, wayPoint1.getElevation());
-
-                    /*
-                     * Route tests
-                     */
-                    Track route = trackList.get(1);
-                    assertEquals("Patrick's Route", route.getName());
-                    assertEquals(1, route.getTrackSegments().size());
+                    /* Route tests */
+                    val (trackSegments, name2) = trackList[1]
+                    assertEquals("Patrick's Route", name2)
+                    assertEquals(1, trackSegments.size)
                     // we only look after the first segment, as in our representation a route is
                     // a track with a single segment.
-                    TrackSegment routeSegment = route.getTrackSegments().get(0);
-                    List<TrackPoint> routePointList = routeSegment.getTrackPoints();
-                    assertEquals(4, routePointList.size());
-                    TrackPoint firstRoutePoint = routePointList.get(0);
-
-                    assertEquals(54.9328621088893, firstRoutePoint.getLatitude());
-                    assertEquals(9.860624216140083, firstRoutePoint.getLongitude());
-                    assertEquals(141.7, firstRoutePoint.getElevation());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    fail();
+                    val (routePointList) = trackSegments[0]
+                    assertEquals(4, routePointList.size)
+                    val (latitude1, longitude1, elevation2) = routePointList[0]
+                    assertEquals(54.9328621088893, latitude1)
+                    assertEquals(9.860624216140083, longitude1)
+                    assertEquals(141.7, elevation2)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    fail()
                 }
             }
         }
     }
 
     /**
-     * Tests the gpx writer against the gpx parser : parse an existing gpx file, the use the gpx
-     * writer to write a gpx file somewhere in a temp folder, then use the gpx parser again to parse
-     * the resulting file. <br>
+     * Tests the gpx writer against the gpx parser : parse an existing gpx file, use the gpx writer
+     * to write a gpx file somewhere in a temp folder, then use the gpx parser again to parse the
+     * resulting file.
      * The resulting file should have identical values (at least for tags that the writer supports).
      */
     @Test
-    public void writeTest() {
+    fun writeTest() = runBlocking {
         try {
             /* First read an existing gpx file */
-            Gpx gpxInput = null;
+            val gpxInput: Gpx?
             try {
-                gpxInput = parseGpx(new FileInputStream(gpxSample));
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail();
+                gpxInput = parseGpx(FileInputStream(gpxSample))
+            } catch (e: Exception) {
+                e.printStackTrace()
+                fail()
             }
 
             /* Write it in a temporary folder */
-            File testFile = mTestFolder.newFile();
-            FileOutputStream fos = new FileOutputStream(testFile);
-            writeGpx(gpxInput, fos);
+            val testFile = mTestFolder.newFile()
+            val fos = FileOutputStream(testFile)
+            writeGpx(gpxInput, fos)
 
-            /* Now read it back */
-            Gpx gpx = parseGpx(new FileInputStream(testFile));
+            /* Now read it back */  val (metadata, trackList) = parseGpx(FileInputStream(testFile))
 
             /* Metadata check */
-            Metadata metadata = gpx.getMetadata();
-            assertNotNull(metadata);
-            assertEquals("Example gpx", metadata.getName());
-            Calendar cal = readTime(metadata.getTime());
-            assertEquals(2018, cal.get(Calendar.YEAR));
-            assertEquals(8, cal.get(Calendar.MONTH));
-            assertEquals(9, cal.get(Calendar.DAY_OF_MONTH));
-            assertEquals(47, cal.get(Calendar.SECOND));
-
-            List<Track> trackList = gpx.getTracks();
-            assertEquals(2, trackList.size());
-
-            Track track = trackList.get(0);
-            List<TrackSegment> trackSegmentList = track.getTrackSegments();
-            assertEquals("Example track", track.getName());
-            assertEquals(1, trackSegmentList.size());
-            TrackSegment trackSegment = trackSegmentList.get(0);
-            List<TrackPoint> trackPointList = trackSegment.getTrackPoints();
-            assertEquals(7, trackPointList.size());
-            TrackPoint firstTrackPoint = trackPointList.get(0);
-
-            Double lat = firstTrackPoint.getLatitude();
-            Double lon = firstTrackPoint.getLongitude();
-            Double elevation = firstTrackPoint.getElevation();
-            assertEquals(46.57608333, lat);
-            assertEquals(8.89241667, lon);
-            assertEquals(2376.0, elevation);
-
-            assertEquals(getGpxDateParser().
-                    parse("2007-10-14T10:09:57Z").getTime(), firstTrackPoint.getTime(), 0.0);
-
-            assertNotNull(track.getStatistics());
-            assertEquals(track.getStatistics().getDistance(), 102.0);
-        } catch (IOException | ParserConfigurationException | TransformerException | ParseException | XmlPullParserException e) {
-            e.printStackTrace();
-            fail();
+            assertNotNull(metadata)
+            assertEquals("Example gpx", metadata.name)
+            val cal = readTime(metadata.time)
+            assertEquals(2018, cal[Calendar.YEAR])
+            assertEquals(8, cal[Calendar.MONTH])
+            assertEquals(9, cal[Calendar.DAY_OF_MONTH])
+            assertEquals(47, cal[Calendar.SECOND])
+            assertEquals(2, trackList.size)
+            val (trackSegmentList, name, statistics) = trackList[0]
+            assertEquals("Example track", name)
+            assertEquals(1, trackSegmentList.size)
+            val (trackPointList) = trackSegmentList[0]
+            assertEquals(7, trackPointList.size)
+            val (lat, lon, elevation, time) = trackPointList[0]
+            assertEquals(46.57608333, lat)
+            assertEquals(8.89241667, lon)
+            assertEquals(2376.0, elevation)
+            assertEquals(getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(), time!!.toDouble())
+            assertNotNull(statistics)
+            assertEquals(statistics.distance, 102.0)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            fail()
+        } catch (e: ParserConfigurationException) {
+            e.printStackTrace()
+            fail()
+        } catch (e: TransformerException) {
+            e.printStackTrace()
+            fail()
+        } catch (e: ParseException) {
+            e.printStackTrace()
+            fail()
+        } catch (e: XmlPullParserException) {
+            e.printStackTrace()
+            fail()
         }
     }
 
     @Test
-    public void readGpxWithRoute() {
+    fun readGpxWithRoute() = runBlocking {
         try {
-            Gpx gpx = parseGpx(new FileInputStream(gpxRealRoute));
-            Metadata metadata = gpx.getMetadata();
-            assertNotNull(metadata);
-            assertNull(metadata.getName());
-            List<Track> tracks = gpx.getTracks();
-            assertEquals(1, tracks.size());
-            assertEquals("Sentier Les Choucas- La Barre", tracks.get(0).getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            val (metadata, tracks) = parseGpx(FileInputStream(gpxRealRoute))
+            assertNotNull(metadata)
+            assertNull(metadata.name)
+            assertEquals(1, tracks.size)
+            assertEquals("Sentier Les Choucas- La Barre", tracks[0].name)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            fail()
         }
     }
 
     @Test
-    public void dateParse() {
-        String aDate = "2017-09-26T08:38:12+02:00";
+    fun dateParse() {
+        val aDate = "2017-09-26T08:38:12+02:00"
         try {
-            Date date = getGpxDateParser().parse(aDate);
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-            int year = cal.get(Calendar.YEAR);
-            int month = cal.get(Calendar.MONTH);
-            int day = cal.get(Calendar.DAY_OF_MONTH);
-            int secs = cal.get(Calendar.SECOND);
-            assertEquals(2017, year);
-            assertEquals(8, month);
-            assertEquals(26, day);
-            assertEquals(12, secs);
-        } catch (ParseException e) {
-            fail();
+            val date = getGpxDateParser().parse(aDate)
+            assertNotNull(date)
+            val cal = Calendar.getInstance()
+            cal.time = date
+            val year = cal[Calendar.YEAR]
+            val month = cal[Calendar.MONTH]
+            val day = cal[Calendar.DAY_OF_MONTH]
+            val secs = cal[Calendar.SECOND]
+            assertEquals(2017, year)
+            assertEquals(8, month)
+            assertEquals(26, day)
+            assertEquals(12, secs)
+        } catch (e: ParseException) {
+            fail()
         }
     }
 
-    private Calendar readTime(Long time) {
-        Date date = new Date(time);
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return cal;
+    private fun readTime(time: Long?): Calendar {
+        val date = Date(time!!)
+        val cal = Calendar.getInstance()
+        cal.time = date
+        return cal
     }
 }

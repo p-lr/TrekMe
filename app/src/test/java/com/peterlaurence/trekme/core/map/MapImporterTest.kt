@@ -20,7 +20,7 @@ import kotlin.test.*
  */
 @RunWith(RobolectricTestRunner::class)
 class MapImporterTest {
-    private val mapLoader = MapLoader(Dispatchers.Unconfined, Dispatchers.IO)
+    private val mapLoader = MapLoader(Dispatchers.Unconfined, Dispatchers.Default, Dispatchers.IO)
 
     @Before
     fun clear() {

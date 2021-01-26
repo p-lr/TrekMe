@@ -17,7 +17,7 @@ import java.io.File
  */
 @RunWith(RobolectricTestRunner::class)
 class MapParserTest {
-    private val mapLoader = MapLoader(Dispatchers.Unconfined, Dispatchers.IO)
+    private val mapLoader = MapLoader(Dispatchers.Unconfined, Dispatchers.Default, Dispatchers.IO)
 
     @Test
     fun mapTracksParse() = runBlocking {
