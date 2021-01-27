@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
+            android:contentDescription="@string/center_on_position_btn_desc"
             android:src="@drawable/ic_gps_fixed_24dp"
             android:tint="@color/colorDarkGrey"
             app:backgroundTint="@color/colorWhite"
@@ -70,9 +71,9 @@
             android:id="@+id/gps_data_panel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:background="@color/colorIndicatorOverlay"
             android:padding="8dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@id/stats_panel"
             app:layout_constraintLeft_toLeftOf="parent">
 
@@ -146,6 +147,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <data>
+
         <variable
             name="message"
             type="String" />

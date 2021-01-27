@@ -133,6 +133,7 @@
     <string name="confirm_import">You can now import the map</string>
     <string name="import_error">An error occurred. Try restart the app.</string>
     <string name="map_import_error">Error: the map format is\'t recognized.</string>
+    <string name="import_from_folder_btn_desc" translatable="false">Import from folder button</string>
 
     <!-- Menu of the map view fragment -->
     <string name="manage_tracks_menu">Manage tracks</string>
@@ -158,6 +159,7 @@
     <string name="color_variant_normal">Normal</string>
     <string name="color_variant_light">Light</string>
     <string name="color_variant_dark">Dark</string>
+    <string name="add_track_btn_desc" translatable="false">Add track button</string>
 
     <!-- MapView fragment -->
     <string name="mapview_show_speed">Show speed</string>
@@ -182,6 +184,7 @@
     <string name="missing_ign_license">"Your IGN module is missing.\n\nTo retrieve it, go to map creation and create an IGN map."</string>
     <string name="grace_period_ign_license">"You IGN module has expired. You have %1$d days to buy it for this year."</string>
     <string name="unknown_map_source">Unknown map source. The map configuration is incorrect.</string>
+    <string name="center_on_position_btn_desc" translatable="false">Center on position button</string>
 
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>
@@ -341,6 +344,9 @@
     <string name="wifip2p_successful_load">Successfully loaded %1$s</string>
     <string name="wifip2p_warning_wifi">You need to enable Wifi on your device to use this feature, even if there is no network or Hotspot.</string>
     <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.md#map-sharing</string>
+    <string name="wifip2p_warning_wifi_img" translatable="false">Warning Wifi image</string>
+    <string name="wifip2p_happy_img" translatable="false">Happy image</string>
+    <string name="wifip2p_sad_img" translatable="false">Sad image</string>
 
     <!-- AboutFragment -->
     <string name="user_manual_title">User manual</string>

@@ -38,7 +38,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="8dp"
+            android:baselineAligned="false">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
@@ -85,7 +86,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="8dp"
+            android:baselineAligned="false">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
@@ -140,7 +142,9 @@
             android:background="@drawable/comment_section"
             android:padding="10dp"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:hint="@string/comment_label"
+            android:importantForAutofill="no" />
 
     </LinearLayout>
 </ScrollView>
