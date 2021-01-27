@@ -10,6 +10,7 @@ import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
@@ -95,7 +96,7 @@ class MapViewStateRestoreInMapCreationTest {
         Thread.sleep(1000)
 
         /* Check that the MapView is displayed */
-        onView(withId(R.id.tileview_ign_id)).check(ViewAssertions.matches(isDisplayed()))
+        onView(withId(R.id.tileview_ign_id)).check(matches(isDisplayed()))
 
         /* Set a predefined scale to the MapView */
         onView(withId(R.id.tileview_ign_id)).perform(MapViewsScalingAction(scaleTest))
@@ -140,7 +141,7 @@ class MapViewStateRestoreInMapCreationTest {
         Thread.sleep(2000)
 
         /* Check that the new displayed map has the same scale as before */
-        onView(withId(R.id.tileview_ign_id)).check(ViewAssertions.matches(checkMapViewScale(scaleTest)))
+        onView(withId(R.id.tileview_ign_id)).check(matches(checkMapViewScale(scaleTest)))
     }
 
     private fun childAtPosition(

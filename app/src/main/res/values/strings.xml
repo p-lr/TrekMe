@@ -99,6 +99,11 @@
     <string name="projection_none">None</string>
     <string name="wgs84_instead_of_projected">You entered WGS84 lat/lon instead of projected values</string>
     <string name="projected_instead_of_wgs84">You entered projected values instead of WGS84 lat/lon</string>
+    <string name="save_calibration_btn" translatable="false">Save calibration button</string>
+    <string name="first_calibration_pt" translatable="false">First calibration point</string>
+    <string name="third_calibration_pt" translatable="false">Third calibration point</string>
+    <string name="second_calibration_pt" translatable="false">Second calibration point</string>
+    <string name="fourth_calibration_pt" translatable="false">Fourth calibration point</string>
 
 
     <!-- Keys and ids of graphical components -->
@@ -223,6 +228,9 @@
     <string name="elevation_service_down">The elevation service is temporarily unavailable :(</string>
     <string name="elevation_correction_error">TrekMe couldn\'t check elevations for this track. The service might be temporarily unavailable, or the area isn\'t covered.</string>
     <string name="elevation_compute_in_progress">Computing elevations…</string>
+    <string name="elevation_top_icon" translatable="false">Elevation top icon</string>
+    <string name="elevation_bottom_icon" translatable="false">Elevation bottom icon</string>
+    <string name="elevation_bottom_top_icon" translatable="false">Elevation bottom-top icon</string>
 
     <!-- MapCreate fragment -->
     <string name="next_button">Next</string>
@@ -344,4 +352,6 @@
     <string name="privacy_policy_title">Privacy policy</string>
     <string name="privacy_policy_desc">We respect your privacy and will never share private data such as your location
         to any third parties.</string>
+    <string name="thumb_up_button" translatable="false">Thumb-up button</string>
+    <string name="thumb_down_button" translatable="false">Thumb-down button</string>
 </resources>

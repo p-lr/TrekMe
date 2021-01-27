@@ -7,8 +7,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.peterlaurence.trekme.R;
 
@@ -28,7 +29,7 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
     private String mProjYLabelTxt;
 
     /* WGS84 switch */
-    private Switch mWgs84Switch;
+    private SwitchCompat mWgs84Switch;
     private TextView mWgs84SwitchLabel;
 
     /* CalibrationPointSelector */
@@ -55,10 +56,10 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
 
     public MapCalibrationLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        init(context, attrs);
+        init(context);
     }
 
-    private void init(Context context, AttributeSet attrs) {
+    private void init(Context context) {
         inflate(context, R.layout.fragment_map_calibration, this);
         setOrientation(VERTICAL);
 
@@ -125,7 +126,7 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
     @Override
     public double getXValue() {
         try {
-            return Double.valueOf(mEditTextLng.getText().toString());
+            return Double.parseDouble(mEditTextLng.getText().toString());
         } catch (NumberFormatException e) {
             // alert the user
             return Double.MAX_VALUE;
@@ -135,7 +136,7 @@ public class MapCalibrationLayout extends LinearLayout implements MapCalibration
     @Override
     public double getYValue() {
         try {
-            return Double.valueOf(mEditTextLat.getText().toString());
+            return Double.parseDouble(mEditTextLat.getText().toString());
         } catch (NumberFormatException e) {
             // alert the user
             return Double.MAX_VALUE;
