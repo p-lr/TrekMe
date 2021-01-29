@@ -85,7 +85,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         viewModel.scaleCentered.observe(this) {
             it?.let {
-                updateScaleCentered(it)
+                updateScaleRatioCentered(it)
             }
         }
     }
@@ -140,8 +140,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         scaleCenteredPref?.isVisible = defined
     }
 
-    private fun updateScaleCentered(scaleCentered: Float) {
-        scaleCenteredPref?.value = (scaleCentered * 50).toInt()
+    private fun updateScaleRatioCentered(scaleCentered: Float) {
+        scaleCenteredPref?.value = scaleCentered.toInt()
     }
 
     private fun initComponents() {
@@ -152,7 +152,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
         rotationModePref = preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
         defineScaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_change_scale_when_centering_key))
-        scaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_scale_at_center_key))
+        scaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_zoom_when_centered_key))
 
         rootFolderPref?.setOnPreferenceChangeListener { _, newValue ->
             val newPath = newValue as String
@@ -224,7 +224,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         scaleCenteredPref?.showSeekBarValue = true
         scaleCenteredPref?.setOnPreferenceChangeListener { _, v ->
             val percent = (v as Int).toFloat()
-            viewModel.setScaleCentered(percent)
+            viewModel.setScaleRatioCentered(percent)
             true
         }
     }

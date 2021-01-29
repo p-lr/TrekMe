@@ -108,7 +108,7 @@ class SettingsViewModel @ViewModelInject constructor(
      *    100 -> maxScale
      *    0   -> 0f
      */
-    fun setScaleCentered(percent: Float) {
+    fun setScaleRatioCentered(percent: Float) {
         require(percent in 0f..100f)
         settings.setScaleRatioCentered(percent)
     }
