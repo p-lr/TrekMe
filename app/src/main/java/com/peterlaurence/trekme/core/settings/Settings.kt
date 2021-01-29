@@ -25,9 +25,10 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
     private val speedVisibility = "speedVisibility"
     private val gpsDataVisibility = "gpsDataVisibility"
     private val magnifyingFactor = "magnifyingFactor"
+    private val maxScale = "maxScale"
     private val lastMapId = "lastMapId"
     private val defineScaleWhenCentered = "defineScaleWhenCentered"
-    private val scaleCentered = "scaleCentered"
+    private val scaleRatioCentered = "scaleRatioCentered"
     private val measurementSystem = "measurementSystem"
     private val locationDisclaimer = "locationDisclaimer"
 
@@ -85,6 +86,16 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
 
     fun getMagnifyingFactor(): Int = sharedPref.getInt(magnifyingFactor, 0)
 
+    fun getMaxScale(): Float {
+        return sharedPref.getFloat(maxScale, 2f)
+    }
+
+    fun setMaxScale(scale: Float) {
+        sharedPref.edit {
+            putFloat(maxScale, scale)
+        }
+    }
+
     /**
      * Get the rotation behavior when viewing a map.
      */
@@ -133,17 +144,19 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
         return sharedPref.getBoolean(defineScaleWhenCentered, true)
     }
 
-    fun setScaleCentered(scale: Float) {
+    fun setScaleRatioCentered(scale: Float) {
         sharedPref.edit {
-            putFloat(scaleCentered, scale)
+            putFloat(scaleRatioCentered, scale)
         }
     }
 
     /**
-     * The scale at which the MapView is set when centering on the current position
+     * The scale ratio in percent (between 0f and the max allowed scale) at which the MapView is set
+     * when centering on the current position.
+     * By default, the max scale is 2f and the scale ratio is 50f.
      */
-    fun getScaleCentered(): Float {
-        return sharedPref.getFloat(scaleCentered, 1f)
+    fun getScaleRatioCentered(): Float {
+        return sharedPref.getFloat(scaleRatioCentered, 50f)
     }
 
     fun getMeasurementSystem(): MeasurementSystem {

@@ -69,11 +69,20 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var positionMarker: PositionOrientationMarker? = null
     private var compassView: CompassView? = null
     private var lockView = false
-    private var rotationMode: RotationMode = RotationMode.NONE
-    private var defineScaleCentered = true
-    private var scaleCentered = 1f
+
+    /* Map settings */
+    private val rotationMode: RotationMode
+        get() = mapViewViewModel.getRotationMode()
+    private val defineScaleCentered
+        get() = mapViewViewModel.getDefineScaleCentered()
+    private val scaleCentered
+        get() = mapViewViewModel.getScaleCentered()
+    private val magnifyingFactor: Int
+        get() = mapViewViewModel.getMagnifyingFactor()
+    private val maxScale: Float
+        get() = mapViewViewModel.getMaxScale()
     private var shouldCenterOnFirstLocation = false
-    private var magnifyingFactor: Int? = null
+
     private var orientationSensor: OrientationSensor? = null
     private var markerLayer: MarkerLayer? = null
     private var routeLayer: RouteLayer? = null
@@ -191,8 +200,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter.setMapView(it)
         }
 
-        /* Get the settings, then apply the Map to the current MapView */
-        getMapSettings()
+        /* Apply the Map to the current MapView */
         getAndApplyMap()
 
         /* Eventually restore the distance layer if it was visible before device rotation */
@@ -300,13 +308,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             duration = 800
             start()
         }
-    }
-
-    private fun getMapSettings() {
-        magnifyingFactor = mapViewViewModel.getMagnifyingFactor()
-        rotationMode = mapViewViewModel.getRotationMode()
-        defineScaleCentered = mapViewViewModel.getDefineScaleCentered()
-        scaleCentered = mapViewViewModel.getScaleCentered()
     }
 
     private fun getAndApplyMap() {
@@ -587,9 +588,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         mMap = map
         val tileSize = map.levelList.firstOrNull()?.tile_size?.x ?: return
 
-        /* The magnifying factor - default to 1 */
-        val factor = this.magnifyingFactor ?: 1
-
         val tileStreamProvider = makeMapViewTileStreamProvider(map)
         if (tileStreamProvider == null) {
             presenter?.showMessage(requireContext().getString(R.string.unknown_map_source))
@@ -597,8 +595,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
         val config = MapViewConfiguration(
                 map.levelList.size, map.widthPx, map.heightPx, tileSize, tileStreamProvider)
-                .setMaxScale(2f)
-                .setMagnifyingFactor(factor)
+                .setMaxScale(maxScale)
+                .setMagnifyingFactor(magnifyingFactor)
                 .setPadding(tileSize)
 
         /* The MapView only supports one square tile size */

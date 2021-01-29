@@ -267,4 +267,5 @@
     <string name="layer_ign_plan_v2">Plan IGN v2</string>
     <string name="elevation_short">Alt</string>
     <string name="mapview_gpsdata_enable">Afficher données GPS</string>
+    <string name="preference_max_scale">Échelle maximale</string>
 </resources>

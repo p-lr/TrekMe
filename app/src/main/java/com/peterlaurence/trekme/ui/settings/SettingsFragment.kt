@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.ui.settings
 
 import android.os.Bundle
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
@@ -26,6 +25,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var startOnPref: ListPreference? = null
     private var measurementSystemPref: ListPreference? = null
     private var rootFolderPref: ListPreference? = null
+    private var maxScalePref: ListPreference? = null
     private var magnifyingPref: ListPreference? = null
     private var rotationModePref: ListPreference? = null
     private var defineScaleCenteredPref: CheckBoxPreference? = null
@@ -37,51 +37,57 @@ class SettingsFragment : PreferenceFragmentCompat() {
         initComponents()
 
         /* Observe the changes in the model */
-        viewModel.appDirListLiveData.observe(this, Observer {
+        viewModel.appDirListLiveData.observe(this) {
             it?.let { dirs ->
                 updateDownloadDirList(dirs.toTypedArray())
             }
-        })
+        }
 
-        viewModel.appDirLiveData.observe(this, Observer {
+        viewModel.appDirLiveData.observe(this) {
             it?.let { path ->
                 updateDownloadSelection(path)
             }
-        })
+        }
 
-        viewModel.startOnPolicyLiveData.observe(this, Observer {
+        viewModel.startOnPolicyLiveData.observe(this) {
             it?.let { policy ->
                 updateStartOnPolicy(policy)
             }
-        })
+        }
 
         viewModel.measurementSystemLiveData.observe(this) {
             it?.let { updateMeasurementSystem(it) }
         }
 
-        viewModel.magnifyingFactorLiveData.observe(this, Observer {
+        viewModel.maxScaleLiveData.observe(this) {
+            it?.let {
+                updateMaxScale(it)
+            }
+        }
+
+        viewModel.magnifyingFactorLiveData.observe(this) {
             it?.let {
                 updateMagnifyingFactor(it)
             }
-        })
+        }
 
-        viewModel.rotationModeLiveData.observe(this, Observer {
+        viewModel.rotationModeLiveData.observe(this) {
             it?.let {
                 updateRotationMode(it)
             }
-        })
+        }
 
-        viewModel.defineScaleCentered.observe(this, Observer {
+        viewModel.defineScaleCentered.observe(this) {
             it?.let {
                 updateDefineScaleCentered(it)
             }
-        })
+        }
 
-        viewModel.scaleCentered.observe(this, Observer {
+        viewModel.scaleCentered.observe(this) {
             it?.let {
                 updateScaleCentered(it)
             }
-        })
+        }
     }
 
     private fun updateDownloadDirList(dirs: Array<String>) {
@@ -111,6 +117,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         measurementSystemPref?.setSummaryAndValue(txt)
     }
 
+    private fun updateMaxScale(scale: Float) {
+        maxScalePref?.setSummaryAndValue(scale.toInt().toString())
+    }
+
     private fun updateMagnifyingFactor(factor: Int) {
         magnifyingPref?.setSummaryAndValue(factor.toString())
     }
@@ -138,6 +148,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
         measurementSystemPref = preferenceManager.findPreference(getString(R.string.preference_measurement_system))
         rootFolderPref = preferenceManager.findPreference(getString(R.string.preference_root_location_key))
+        maxScalePref = preferenceManager.findPreference(getString(R.string.preference_max_scale_key))
         magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
         rotationModePref = preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
         defineScaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_change_scale_when_centering_key))
@@ -169,6 +180,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 else -> MeasurementSystem.METRIC
             }
             viewModel.setMeasurementSystem(system)
+            true
+        }
+
+        maxScalePref?.setOnPreferenceChangeListener { _, newValue ->
+            val strValue = newValue as String
+            maxScalePref?.setSummaryAndValue(strValue)
+            val scale = strValue.toFloat()
+            viewModel.setMaxScale(scale)
             true
         }
 
@@ -204,17 +223,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         scaleCenteredPref?.max = 100
         scaleCenteredPref?.showSeekBarValue = true
         scaleCenteredPref?.setOnPreferenceChangeListener { _, v ->
-            /* Remarkable values:
-             * SeekBar value -> Scale
-             *           100 -> 2f
-             *            50 -> 1f
-             *             0 -> 0f
-             */
-            val value = v as Int
-            val scaleFactor = value.toFloat() / 50f
-            if (scaleFactor != viewModel.scaleCentered.value) {
-                viewModel.setScaleCentered(scaleFactor)
-            }
+            val percent = (v as Int).toFloat()
+            viewModel.setScaleCentered(percent)
             true
         }
     }

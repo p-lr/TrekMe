@@ -4,14 +4,12 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.core.units.UnitFormatter
-import kotlinx.coroutines.launch
 import java.io.File
 
 class SettingsViewModel @ViewModelInject constructor(
@@ -24,6 +22,8 @@ class SettingsViewModel @ViewModelInject constructor(
     val appDirLiveData: LiveData<String> = _appDirLiveData
     private val _startOnPolicyLiveData = MutableLiveData<StartOnPolicy>()
     val startOnPolicyLiveData: LiveData<StartOnPolicy> = _startOnPolicyLiveData
+    private val _maxScaleLiveData = MutableLiveData<Float>()
+    val maxScaleLiveData: LiveData<Float> = _maxScaleLiveData
     private val _magnifyingFactorLiveData = MutableLiveData<Int>()
     val magnifyingFactorLiveData: LiveData<Int> = _magnifyingFactorLiveData
     private val _rotationModeLiveData = MutableLiveData<RotationMode>()
@@ -47,6 +47,9 @@ class SettingsViewModel @ViewModelInject constructor(
         /* StartOn policy */
         _startOnPolicyLiveData.value = settings.getStartOnPolicy()
 
+        /* Max scale */
+        _maxScaleLiveData.value = settings.getMaxScale()
+
         /* Magnifying factor */
         _magnifyingFactorLiveData.value = settings.getMagnifyingFactor()
 
@@ -57,7 +60,7 @@ class SettingsViewModel @ViewModelInject constructor(
         _defineScaleCentered.value = settings.getDefineScaleCentered()
 
         /* Scale centered */
-        _scaleCentered.value = settings.getScaleCentered()
+        _scaleCentered.value = settings.getScaleRatioCentered()
 
         /* Measurement system */
         _measurementSystemLiveData.value = settings.getMeasurementSystem()
@@ -79,11 +82,14 @@ class SettingsViewModel @ViewModelInject constructor(
         settings.setMeasurementSystem(system)
     }
 
+    fun setMaxScale(scale: Float) {
+        _maxScaleLiveData.postValue(scale)
+        settings.setMaxScale(scale)
+    }
+
     fun setMagnifyingFactor(factor: Int) {
         _magnifyingFactorLiveData.postValue(factor)
-        viewModelScope.launch {
-            settings.setMagnifyingFactor(factor)
-        }
+        settings.setMagnifyingFactor(factor)
     }
 
     fun setRotationMode(mode: RotationMode) {
@@ -96,11 +102,14 @@ class SettingsViewModel @ViewModelInject constructor(
     }
 
     /**
-     * Define the scale of the MapView should be set when centering on the current position.
-     * It should be between 0f and 2f.
+     * Define the scale ratio of the MapView when centering on the current position.
+     * Value should be between 0f and 100f.
+     * The correspondence is a linear interpolation between:
+     *    100 -> maxScale
+     *    0   -> 0f
      */
-    fun setScaleCentered(scaleCentered: Float) {
-        require(scaleCentered in 0f..2f)
-        settings.setScaleCentered(scaleCentered)
+    fun setScaleCentered(percent: Float) {
+        require(percent in 0f..100f)
+        settings.setScaleRatioCentered(percent)
     }
 }

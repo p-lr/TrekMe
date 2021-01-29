@@ -44,11 +44,15 @@ class MapViewViewModel @ViewModelInject constructor(
 
     fun getMagnifyingFactor(): Int = settings.getMagnifyingFactor()
 
+    fun getMaxScale(): Float = settings.getMaxScale()
+
     fun getRotationMode(): RotationMode = settings.getRotationMode()
 
     fun getDefineScaleCentered(): Boolean = settings.getDefineScaleCentered()
 
-    fun getScaleCentered(): Float = settings.getScaleCentered()
+    fun getScaleCentered(): Float {
+        return settings.getScaleRatioCentered() * getMaxScale() / 100f
+    }
 
     fun getSpeedVisibility(): Boolean = settings.getSpeedVisibility()
 

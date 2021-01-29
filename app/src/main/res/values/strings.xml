@@ -320,6 +320,8 @@
     <string name="preference_root_location_key" translatable="false">pref_download_location</string>
     <string name="preference_root_location_title">Selected folder</string>
     <string name="maps_category">Maps</string>
+    <string name="preference_max_scale_key" translatable="false">pref_map_max_scale</string>
+    <string name="preference_max_scale">Max scale</string>
     <string name="preference_magnifying_factor">Magnifying factor</string>
     <string name="preference_magnifying_key" translatable="false">pref_map_magnifying</string>
     <string name="preference_rotation_mode_key" translatable="false">pref_rotation_mode</string>
