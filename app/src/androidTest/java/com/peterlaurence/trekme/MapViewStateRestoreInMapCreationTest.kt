@@ -2,29 +2,22 @@ package com.peterlaurence.trekme
 
 
 import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
-import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.ViewMatchers.*
-import androidx.test.ext.junit.rules.ActivityScenarioRule
-import androidx.test.filters.LargeTest
-import androidx.test.rule.GrantPermissionRule
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.peterlaurence.mapview.MapView
-import org.hamcrest.Description
+import com.peterlaurence.trekme.matchers.checkMapViewScale
+import com.peterlaurence.trekme.matchers.childAtPosition
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.*
-import org.hamcrest.TypeSafeMatcher
-import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 
 /**
  * When creating a map, some providers provide the ability to change of layer. When changing of layer,
@@ -34,28 +27,12 @@ import org.junit.runner.RunWith
  *
  * @author P.Laurence
  */
-@LargeTest
-@RunWith(AndroidJUnit4::class)
-class MapViewStateRestoreInMapCreationTest {
+class MapViewStateRestoreInMapCreationTest : AbstractTest() {
     private val scaleTest = 6.1035156E-5f
-
-    @get:Rule
-    val activityRule = ActivityScenarioRule(MainActivity::class.java)
-
-    @Rule
-    @JvmField
-    var grantPermissionRule: GrantPermissionRule =
-            GrantPermissionRule.grant(
-                    "android.permission.ACCESS_FINE_LOCATION",
-                    "android.permission.READ_EXTERNAL_STORAGE",
-                    "android.permission.WRITE_EXTERNAL_STORAGE")
 
     @Test
     fun mainTest() {
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        Thread.sleep(4000)
+        Thread.sleep(1000)
 
         val appCompatImageButton = onView(
                 allOf(withContentDescription("Open navigation drawer"),
@@ -142,39 +119,6 @@ class MapViewStateRestoreInMapCreationTest {
 
         /* Check that the new displayed map has the same scale as before */
         onView(withId(R.id.tileview_ign_id)).check(matches(checkMapViewScale(scaleTest)))
-    }
-
-    private fun childAtPosition(
-            parentMatcher: Matcher<View>, position: Int): Matcher<View> {
-
-        return object : TypeSafeMatcher<View>() {
-            override fun describeTo(description: Description) {
-                description.appendText("Child at position $position in parent ")
-                parentMatcher.describeTo(description)
-            }
-
-            public override fun matchesSafely(view: View): Boolean {
-                val parent = view.parent
-                return parent is ViewGroup && parentMatcher.matches(parent)
-                        && view == parent.getChildAt(position)
-            }
-        }
-    }
-
-    private fun checkMapViewScale(scale: Float): Matcher<View> {
-        return object : TypeSafeMatcher<View>() {
-            override fun describeTo(description: Description) {
-                description.appendText("has scale: ").appendValue(scale)
-            }
-
-            override fun describeMismatchSafely(view: View, mismatchDescription: Description) {
-                mismatchDescription.appendText("Actual size was ${(view as? MapView)?.scale}")
-            }
-
-            override fun matchesSafely(view: View): Boolean {
-                return (view as? MapView)?.scale == scale
-            }
-        }
     }
 }
 

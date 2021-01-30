@@ -5,6 +5,11 @@
     android:layout_height="match_parent"
     tools:context=".ui.maplist.MapListFragment">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/map_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <RelativeLayout
         android:id="@+id/loadingPanel"
         android:layout_width="match_parent"

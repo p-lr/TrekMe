@@ -38,7 +38,6 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
 
     private var llm: LinearLayoutManager? = null
     private var llmState: Parcelable? = null
-    private var recyclerView: RecyclerView? = null
     private var adapter: MapAdapter? = null
     private val viewModel: MapListViewModel by activityViewModels()
     private var mapList: List<Map> = listOf()
@@ -63,7 +62,7 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
         _binding = FragmentMapListBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -71,7 +70,6 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        recyclerView = null
         adapter = null
         llm = null
     }
@@ -108,20 +106,9 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         llmState = llm?.onSaveInstanceState()
     }
 
-    /**
-     * As the list of maps is generated in [onStart], we have to remove it in [onStop].
-     */
-    override fun onStop() {
-        super.onStop()
-
-        recyclerView?.also {
-            (binding.root as ViewGroup).removeView(it)
-        }
-    }
-
     override fun onStart() {
         super.onStart()
-        generateMapList()
+        configureMapList()
 
         /* Only when navigating back to this fragment, redraw the list of maps. */
         if (isLeftFromNavigation) {
@@ -130,11 +117,10 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
         }
     }
 
-    private fun generateMapList() {
+    private fun configureMapList() {
         val ctx = context
         if (ctx != null) {
-            val recyclerView = RecyclerView(ctx)
-            this.recyclerView = recyclerView
+            val recyclerView = binding.mapList
             recyclerView.setHasFixedSize(false)
             llm = LinearLayoutManager(ctx)
             recyclerView.layoutManager = llm
@@ -145,7 +131,6 @@ class MapListFragment : Fragment(), MapSelectionListener, MapSettingsListener, M
                     ctx.getColor(R.color.colorPrimaryTextBlack),
                     resources)
             recyclerView.adapter = adapter
-            (binding.root as ViewGroup).addView(recyclerView, 0)
         }
     }
 
