@@ -73,12 +73,13 @@ class ElevationRepository(
 
                 val apiStatus = checkElevationRestApi()
                 if (apiStatus.restApiOk && apiStatus.restApiOk) {
-                    val realElevations = runCatching {
-                        getRealElevations(gpx)
-                    }.getOrElse {
+                    val realElevations = getRealElevations(gpx)
+
+                    if (realElevations == null) {
                         _elevationRepoState.emit(ElevationCorrectionError)
                         return@launch
                     }
+
                     val data = makeElevationData(gpx, realElevations).let {
                         /* Sub-sample the result */
                         if (it is ElevationData) {
@@ -101,16 +102,17 @@ class ElevationRepository(
     }
 
     /**
-     * Get real elevations every 15m.
+     * Get real elevations every 20m. Returns null when an error occurred which would make the returned
+     * list inconsistent (we shall not mix real elevations with original elevations from the GPS).
      */
-    private suspend fun getRealElevations(gpx: Gpx): List<PointIndexed> = withContext(dispatcher) {
+    private suspend fun getRealElevations(gpx: Gpx): List<PointIndexed>? = withContext(dispatcher) {
         val pointsFlow = flow {
             var previousPt: TrackPoint? = null
             val trackPoints = gpx.tracks.firstOrNull()?.trackSegments?.firstOrNull()?.trackPoints
             trackPoints?.mapIndexed { index, pt ->
                 previousPt?.also { prev ->
                     val d = deltaTwoPoints(prev.latitude, prev.longitude, pt.latitude, pt.longitude)
-                    if (d > 15 || index == trackPoints.lastIndex) {
+                    if (d > 20 || index == trackPoints.lastIndex) {
                         emit(PointIndexed(index, pt.latitude, pt.longitude, pt.elevation ?: 0.0))
                     }
                 } ?: suspend {
@@ -120,15 +122,18 @@ class ElevationRepository(
             }
         }
 
-        pointsFlow.chunk(40).buffer(8).flowOn(dispatcher).map { pts ->
-            flow {
-                val elevations = getElevations(pts)
-                val points = elevations?.zip(pts)?.map { (ele, pt) ->
-                    PointIndexed(pt.index, pt.lat, pt.lon, ele)
-                } ?: pts
-                emit(points)
-            }
-        }.flattenMerge(8).flowOn(ioDispatcher).toList().flatten()
+        runCatching {
+            pointsFlow.chunk(40).buffer(8).flowOn(dispatcher).map { pts ->
+                flow {
+                    /* If we fail to fetch elevation for one chunk, stop the whole flow */
+                    val elevations = getElevations(pts) ?: throw Exception("Missing data")
+                    val points = elevations.zip(pts).map { (ele, pt) ->
+                        PointIndexed(pt.index, pt.lat, pt.lon, ele)
+                    }
+                    emit(points)
+                }
+            }.flattenMerge(8).flowOn(ioDispatcher).toList().flatten()
+        }.getOrNull()
     }
 
     /**
@@ -204,15 +209,18 @@ class ElevationRepository(
         val ignApi = ignApiRepository.getApi()
         val longitudeList = trkPoints.joinToString(separator = "|") { "${it.lon}" }
         val latitudeList = trkPoints.joinToString(separator = "|") { "${it.lat}" }
-        val url = "http://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList&zonly=true"
+        val url = "http://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList"
         val req = ignApiRepository.requestBuilder.url(url).build()
-        return client.performRequest<ElevationsResponse>(req)?.elevations?.let {
+        return client.performRequest<ElevationsResponse>(req)?.elevations?.map { it.z }?.let {
             if (it.contains(-99999.0)) trkPoints.map { pt -> pt.ele } else it
         }
     }
 
     @Serializable
-    private data class ElevationsResponse(val elevations: List<Double>)
+    private data class ElevationsResponse(val elevations: List<EleIgnPt>)
+
+    @Serializable
+    private data class EleIgnPt(val lat: Double, val lon: Double, val z: Double, val acc: Double)
 
     private data class ApiStatus(val internetOk: Boolean = false, val restApiOk: Boolean = false)
 

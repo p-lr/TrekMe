@@ -13,10 +13,10 @@ import kotlin.coroutines.resumeWithException
 suspend inline fun <reified T> OkHttpClient.performRequest(request: Request): T? = withContext(Dispatchers.IO) {
     val call = newCall(request)
     val r = call.await()
-    val str = runCatching { r?.string() }.getOrNull()
-    if (str != null) {
+    runCatching {
+        val str = r?.string()!!
         Json { isLenient = true; ignoreUnknownKeys = true }.decodeFromString<T>(str)
-    } else null
+    }.getOrNull()
 }
 
 suspend fun Call.await() = suspendCancellableCoroutine<ResponseBody?> { continuation ->
