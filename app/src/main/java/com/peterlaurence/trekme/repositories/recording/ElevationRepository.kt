@@ -44,6 +44,7 @@ class ElevationRepository(
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .cache(null)
             .build()
 
     /**
@@ -126,9 +127,14 @@ class ElevationRepository(
             pointsFlow.chunk(40).buffer(8).flowOn(dispatcher).map { pts ->
                 flow {
                     /* If we fail to fetch elevation for one chunk, stop the whole flow */
-                    val elevations = getElevations(pts) ?: throw Exception("Missing data")
-                    val points = elevations.zip(pts).map { (ele, pt) ->
-                        PointIndexed(pt.index, pt.lat, pt.lon, ele)
+                    val points = when (val eleResult = getElevations(
+                            pts.map { it.lat }, pts.map { it.lon })
+                    ) {
+                        Error -> throw Exception("Missing data")
+                        NonTrusted -> pts
+                        is TrustedElevations -> eleResult.elevations.zip(pts).map { (ele, pt) ->
+                            PointIndexed(pt.index, pt.lat, pt.lon, ele)
+                        }
                     }
                     emit(points)
                 }
@@ -205,15 +211,17 @@ class ElevationRepository(
         }
     }
 
-    private suspend fun getElevations(trkPoints: List<PointIndexed>): List<Double>? {
+    private suspend fun getElevations(latList: List<Double>, lonList: List<Double>): ElevationResult {
         val ignApi = ignApiRepository.getApi()
-        val longitudeList = trkPoints.joinToString(separator = "|") { "${it.lon}" }
-        val latitudeList = trkPoints.joinToString(separator = "|") { "${it.lat}" }
+        val longitudeList = lonList.joinToString(separator = "|") { it.toString() }
+        val latitudeList = latList.joinToString(separator = "|") { it.toString() }
         val url = "http://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList"
         val req = ignApiRepository.requestBuilder.url(url).build()
-        return client.performRequest<ElevationsResponse>(req)?.elevations?.map { it.z }?.let {
-            if (it.contains(-99999.0)) trkPoints.map { pt -> pt.ele } else it
-        }
+        val eleList = client.performRequest<ElevationsResponse>(req)?.elevations?.map { it.z }
+                ?: return Error
+        return if (eleList.contains(-99999.0)) {
+            NonTrusted
+        } else TrustedElevations(eleList)
     }
 
     @Serializable
@@ -225,6 +233,7 @@ class ElevationRepository(
     private data class ApiStatus(val internetOk: Boolean = false, val restApiOk: Boolean = false)
 
     private data class PointIndexed(val index: Int, val lat: Double, val lon: Double, val ele: Double)
+
 }
 
 private const val elevationServiceHost = "wxs.ign.fr"
@@ -242,3 +251,8 @@ data class ElevationData(val points: List<ElePoint> = listOf(), val eleMin: Doub
  * @param elevation altitude in meters
  */
 data class ElePoint(val dist: Double, val elevation: Double)
+
+private sealed class ElevationResult
+private object Error : ElevationResult()
+private object NonTrusted : ElevationResult()
+private data class TrustedElevations(val elevations: List<Double>) : ElevationResult()
