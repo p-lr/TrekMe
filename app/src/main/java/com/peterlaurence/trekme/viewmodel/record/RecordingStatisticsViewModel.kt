@@ -227,7 +227,7 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
                 parseGpxSafely(FileInputStream(it))
             }
             if (gpx != null) {
-                gpxRepository.setGpxForElevation(gpx, gpxFile.id())
+                gpxRepository.setGpxForElevation(gpx, gpxFile)
             }
         }
     }

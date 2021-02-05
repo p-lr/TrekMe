@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 import okhttp3.OkHttpClient
 import java.net.InetAddress
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Generates elevation graph data, as state of the exposed [elevationRepoState]. Other states are:
@@ -36,7 +37,6 @@ class ElevationRepository(
     val elevationRepoState: StateFlow<ElevationState> = _elevationRepoState.asStateFlow()
 
     private var lastGpxId: Int? = null
-    private var lastTargetWidth: Int? = null
     private var job: Job? = null
 
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
@@ -57,36 +57,30 @@ class ElevationRepository(
      * @param targetWidth The actual amount of pixels in horizontal dimension. If the tracks has too
      * many points, it will be sub-sampled.
      */
-    fun update(gpxData: GpxForElevation?, targetWidth: Int) {
+    fun update(gpxData: GpxForElevation?) {
         if (gpxData == null) {
             primaryScope.launch {
                 _elevationRepoState.emit(Calculating)
             }
             return
         }
-        val (gpx, id) = gpxData
-        if (id != lastGpxId || targetWidth != lastTargetWidth
-                || _elevationRepoState.value is NoNetwork
-                || _elevationRepoState.value is ElevationCorrectionError) {
+        val gpx = gpxData.gpx
+        val id = gpxData.id
+        if (id != lastGpxId || _elevationRepoState.value is NoNetwork || _elevationRepoState.value is ElevationCorrectionError) {
             job?.cancel()
             job = primaryScope.launch {
                 _elevationRepoState.emit(Calculating)
 
                 val apiStatus = checkElevationRestApi()
                 if (apiStatus.restApiOk && apiStatus.restApiOk) {
-                    val realElevations = getRealElevations(gpx)
+                    val (realElevations, trusted) = getRealElevations(gpx)
 
                     if (realElevations == null) {
                         _elevationRepoState.emit(ElevationCorrectionError)
                         return@launch
                     }
 
-                    val data = makeElevationData(gpx, realElevations).let {
-                        /* Sub-sample the result */
-                        if (it is ElevationData) {
-                            it.copy(points = it.points.subSample(targetWidth))
-                        } else it
-                    }
+                    val data = makeElevationData(gpx, id, realElevations)
                     _elevationRepoState.emit(data)
                 } else {
                     _elevationRepoState.emit(NoNetwork(apiStatus.restApiOk))
@@ -97,7 +91,6 @@ class ElevationRepository(
             job?.invokeOnCompletion {
                 job = null
             }
-            lastTargetWidth = targetWidth
             lastGpxId = id
         }
     }
@@ -106,7 +99,7 @@ class ElevationRepository(
      * Get real elevations every 20m. Returns null when an error occurred which would make the returned
      * list inconsistent (we shall not mix real elevations with original elevations from the GPS).
      */
-    private suspend fun getRealElevations(gpx: Gpx): List<PointIndexed>? = withContext(dispatcher) {
+    private suspend fun getRealElevations(gpx: Gpx): PayloadInfo = withContext(dispatcher) {
         val pointsFlow = flow {
             var previousPt: TrackPoint? = null
             val trackPoints = gpx.tracks.firstOrNull()?.trackSegments?.firstOrNull()?.trackPoints
@@ -123,7 +116,8 @@ class ElevationRepository(
             }
         }
 
-        runCatching {
+        val isTrusted = AtomicBoolean(false)
+        val payload = runCatching {
             pointsFlow.chunk(40).buffer(8).flowOn(dispatcher).map { pts ->
                 flow {
                     /* If we fail to fetch elevation for one chunk, stop the whole flow */
@@ -131,7 +125,10 @@ class ElevationRepository(
                             pts.map { it.lat }, pts.map { it.lon })
                     ) {
                         Error -> throw Exception("Missing data")
-                        NonTrusted -> pts
+                        NonTrusted -> {
+                            isTrusted.set(false)
+                            pts
+                        }
                         is TrustedElevations -> eleResult.elevations.zip(pts).map { (ele, pt) ->
                             PointIndexed(pt.index, pt.lat, pt.lon, ele)
                         }
@@ -140,16 +137,18 @@ class ElevationRepository(
                 }
             }.flattenMerge(8).flowOn(ioDispatcher).toList().flatten()
         }.getOrNull()
+
+        PayloadInfo(payload, isTrusted.get())
     }
 
     /**
      * Perform interpolation between each real elevations.
      */
-    private fun makeElevationData(gpx: Gpx, points: List<PointIndexed>): ElevationState {
+    private fun makeElevationData(gpx: Gpx, id: Int, points: List<PointIndexed>): ElevationState {
         /* Take into account the trivial case where there is one or no points */
         if (points.size < 2) {
             val ele = points.firstOrNull()?.ele ?: 0.0
-            return ElevationData(points.map { ElePoint(0.0, it.ele) }, ele, ele)
+            return ElevationData(id, points.map { ElePoint(0.0, it.ele) }, ele, ele)
         }
         val ptsSorted = points.sortedBy { it.index }.iterator()
 
@@ -172,7 +171,7 @@ class ElevationRepository(
         val minEle = points.minByOrNull { it.ele }?.ele ?: 0.0
         val maxEle = points.maxByOrNull { it.ele }?.ele ?: 0.0
 
-        return ElevationData(interpolated ?: listOf(), minEle, maxEle)
+        return ElevationData(id, interpolated ?: listOf(), minEle, maxEle)
     }
 
     /**
@@ -234,6 +233,7 @@ class ElevationRepository(
 
     private data class PointIndexed(val index: Int, val lat: Double, val lon: Double, val ele: Double)
 
+    private data class PayloadInfo(val pointIndexed: List<PointIndexed>?, val trusted: Boolean)
 }
 
 private const val elevationServiceHost = "wxs.ign.fr"
@@ -242,7 +242,7 @@ sealed class ElevationState
 object Calculating : ElevationState()
 data class NoNetwork(val restApiOk: Boolean) : ElevationState()
 object ElevationCorrectionError : ElevationState()
-data class ElevationData(val points: List<ElePoint> = listOf(), val eleMin: Double = 0.0, val eleMax: Double = 0.0) : ElevationState()
+data class ElevationData(val id: Int, val points: List<ElePoint> = listOf(), val eleMin: Double = 0.0, val eleMax: Double = 0.0) : ElevationState()
 
 /**
  * A point representing the elevation at a given distance from the departure.

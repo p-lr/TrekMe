@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.util.gpx.model
 
 /**
- * GPX documents has a version and a creator as attributes, and contains an optional metadata header,
+ * GPX documents have a version and a creator as attributes, and contains an optional metadata header,
  * followed by waypoints, routes, and tracks.
  *
  * Custom elements can be added to the extensions section of the GPX document.

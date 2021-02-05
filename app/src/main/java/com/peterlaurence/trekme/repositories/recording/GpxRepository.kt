@@ -37,8 +37,8 @@ class GpxRepository @Inject constructor(private val trekMeContext: TrekMeContext
 
     val gpxForElevation = _gpxForElevation.asSharedFlow()
 
-    fun setGpxForElevation(gpx: Gpx, id: Int) {
-        _gpxForElevation.tryEmit(GpxForElevation(gpx, id))
+    fun setGpxForElevation(gpx: Gpx, gpxFile: File) {
+        _gpxForElevation.tryEmit(GpxForElevation(gpx, gpxFile))
     }
 
     fun resetGpxForElevation() {
@@ -58,4 +58,6 @@ class GpxRepository @Inject constructor(private val trekMeContext: TrekMeContext
 /**
  * Contains a [Gpx] along with a unique [id].
  */
-data class GpxForElevation(val gpx: Gpx, val id: Int)
+data class GpxForElevation(val gpx: Gpx, val gpxFile: File) {
+    val id = gpxFile.hashCode()
+}
