@@ -3,7 +3,12 @@ package com.peterlaurence.trekme.viewmodel.record
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.repositories.recording.*
+import com.peterlaurence.trekme.repositories.recording.ElevationData
+import com.peterlaurence.trekme.repositories.recording.ElevationRepository
+import com.peterlaurence.trekme.repositories.recording.GpxForElevation
+import com.peterlaurence.trekme.repositories.recording.GpxRepository
+import com.peterlaurence.trekme.util.gpx.model.ElevationSource
+import com.peterlaurence.trekme.util.gpx.model.ElevationSourceInfo
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
 import com.peterlaurence.trekme.util.gpx.writeGpx
 import kotlinx.coroutines.Dispatchers
@@ -24,8 +29,8 @@ class ElevationViewModel @ViewModelInject constructor(
                     is ElevationData -> {
                         val gpxForElevation = gpxRepository.gpxForElevation.replayCache.firstOrNull()
                         gpxForElevation?.also { gpxForEle ->
-                            if (gpxForEle.id == state.id) {
-                                updateGpxFileWithTrustedElevations(gpxForEle, state.points)
+                            if (gpxForEle.id == state.id && state.elevationSource == ElevationSource.IGN_RGE_ALTI) {
+                                updateGpxFileWithTrustedElevations(gpxForEle, state)
                             }
                         }
                     }
@@ -36,9 +41,11 @@ class ElevationViewModel @ViewModelInject constructor(
         }
     }
 
-    private fun updateGpxFileWithTrustedElevations(gpxForElevation: GpxForElevation, points: List<ElePoint>) {
+    private fun updateGpxFileWithTrustedElevations(gpxForElevation: GpxForElevation, eleData: ElevationData) {
+        val points = eleData.points
+        val gpx = gpxForElevation.gpx
         /* Update only the first segment of the first track */
-        val newTracks = gpxForElevation.gpx.tracks.mapIndexed { iTrack, track ->
+        val newTracks = gpx.tracks.mapIndexed { iTrack, track ->
             if (iTrack == 0) {
                 val trackSegments = track.trackSegments.mapIndexed { iSeg, trackSegment ->
                     if (iSeg == 0) {
@@ -53,7 +60,8 @@ class ElevationViewModel @ViewModelInject constructor(
                 track.copy(trackSegments = trackSegments)
             } else track
         }
-        val newGpx = gpxForElevation.gpx.copy(tracks = newTracks)
+        val newMetadata = gpx.metadata?.copy(elevationSourceInfo = ElevationSourceInfo(eleData.elevationSource, eleData.sampling))
+        val newGpx = gpx.copy(tracks = newTracks, metadata = newMetadata)
 
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {

@@ -70,6 +70,7 @@ private fun readGpx(parser: XmlPullParser): Gpx {
 private fun readMetadata(parser: XmlPullParser): Metadata {
     var name: String? = null
     var time: Long? = null
+    var eleSrcInfo: ElevationSourceInfo? = null
     parser.require(XmlPullParser.START_TAG, null, TAG_METADATA)
     while (parser.next() != XmlPullParser.END_TAG) {
         if (parser.eventType != XmlPullParser.START_TAG) {
@@ -78,11 +79,31 @@ private fun readMetadata(parser: XmlPullParser): Metadata {
         when (parser.name) {
             TAG_NAME -> name = readName(parser)
             TAG_TIME -> time = readTime(parser)
+            TAG_ELE_SOURCE_INFO -> eleSrcInfo = readEleSourceInfo(parser)
             else -> skip(parser)
         }
     }
     parser.require(XmlPullParser.END_TAG, null, TAG_METADATA)
-    return Metadata(name, time)
+    return Metadata(name, time, elevationSourceInfo = eleSrcInfo)
+}
+
+@Throws(IOException::class, XmlPullParserException::class, ParseException::class)
+private fun readEleSourceInfo(parser: XmlPullParser): ElevationSourceInfo? {
+    return try {
+        parser.require(XmlPullParser.START_TAG, null, TAG_ELE_SOURCE_INFO)
+        val source = parser.getAttributeValue(null, ATTR_ELE_SOURCE).toString()
+        val sampling = parser.getAttributeValue(null, ATTR_SAMPLING).toInt()
+        val eleSrc = ElevationSource.values().firstOrNull { it.toString() == source }
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) {
+                continue
+            }
+        }
+        parser.require(XmlPullParser.END_TAG, null, TAG_ELE_SOURCE_INFO)
+        eleSrc?.let { ElevationSourceInfo(eleSrc, sampling) }
+    } catch (e: Exception) {
+        null
+    }
 }
 
 /**

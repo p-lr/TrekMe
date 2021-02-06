@@ -23,6 +23,9 @@ const val TAG_TIME = "time"
 
 /* Metadata nodes */
 const val TAG_BOUNDS = "bounds"
+const val TAG_ELE_SOURCE_INFO = "elesrcinfo"
+const val ATTR_ELE_SOURCE = "source"
+const val ATTR_SAMPLING = "sampling"
 
 /* Track nodes */
 const val TAG_SEGMENT = "trkseg"

@@ -64,7 +64,6 @@ fun writeGpx(gpx: Gpx, out: OutputStream) {
 private fun Node.addMetadata(metadata: Metadata, doc: Document) {
     val metadataNode = doc.createElement(TAG_METADATA)
 
-    /* Name */
     if (metadata.name != null) {
         val node = doc.createElement(TAG_NAME)
         node.appendChild(doc.createTextNode(metadata.name))
@@ -74,6 +73,23 @@ private fun Node.addMetadata(metadata: Metadata, doc: Document) {
     if (metadata.time != null) {
         val node = doc.createElement(TAG_TIME)
         node.appendChild(doc.createTextNode(DATE_FORMATTER.format(metadata.time)))
+        metadataNode.appendChild(node)
+    }
+
+    if (metadata.elevationSourceInfo != null) {
+        val node = doc.createElement(TAG_ELE_SOURCE_INFO)
+        val attrs = node.attributes
+
+        /* Source */
+        val eleSrcNode = doc.createAttribute(ATTR_ELE_SOURCE)
+        eleSrcNode.nodeValue = metadata.elevationSourceInfo.elevationSource.toString()
+        attrs.setNamedItem(eleSrcNode)
+
+        /* Sampling */
+        val samplingNode = doc.createAttribute(ATTR_SAMPLING)
+        samplingNode.nodeValue = metadata.elevationSourceInfo.sampling.toString()
+        attrs.setNamedItem(samplingNode)
+
         metadataNode.appendChild(node)
     }
     appendChild(metadataNode)

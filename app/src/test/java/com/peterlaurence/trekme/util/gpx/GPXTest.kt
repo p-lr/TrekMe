@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.util.gpx
 
+import com.peterlaurence.trekme.util.gpx.model.ElevationSource
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -64,6 +65,11 @@ class GPXTest {
                     assertEquals(9, cal[Calendar.DAY_OF_MONTH])
                     assertEquals(47, cal[Calendar.SECOND])
                     assertEquals(2, trackList.size) // 1 track, 1 route
+                    val eleSource = metadata.elevationSourceInfo
+                    assertNotNull(eleSource)
+                    assertEquals(ElevationSource.GPS, eleSource.elevationSource)
+                    assertEquals(20, eleSource.sampling)
+
                     val (trackSegmentList, name, statistics) = trackList[0]
                     assertEquals("Example track", name)
                     assertEquals(1, trackSegmentList.size)
@@ -129,7 +135,8 @@ class GPXTest {
             val fos = FileOutputStream(testFile)
             writeGpx(gpxInput, fos)
 
-            /* Now read it back */  val (metadata, trackList) = parseGpx(FileInputStream(testFile))
+            /* Now read it back */
+            val (metadata, trackList) = parseGpx(FileInputStream(testFile))
 
             /* Metadata check */
             assertNotNull(metadata)
@@ -140,6 +147,11 @@ class GPXTest {
             assertEquals(9, cal[Calendar.DAY_OF_MONTH])
             assertEquals(47, cal[Calendar.SECOND])
             assertEquals(2, trackList.size)
+            val eleSource = metadata.elevationSourceInfo
+            assertNotNull(eleSource)
+            assertEquals(ElevationSource.GPS, eleSource.elevationSource)
+            assertEquals(20, eleSource.sampling)
+
             val (trackSegmentList, name, statistics) = trackList[0]
             assertEquals("Example track", name)
             assertEquals(1, trackSegmentList.size)

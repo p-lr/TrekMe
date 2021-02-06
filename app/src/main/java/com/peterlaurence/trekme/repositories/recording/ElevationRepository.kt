@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.util.chunk
+import com.peterlaurence.trekme.util.gpx.model.ElevationSource
 import com.peterlaurence.trekme.util.gpx.model.Gpx
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import com.peterlaurence.trekme.util.performRequest
@@ -38,6 +39,7 @@ class ElevationRepository(
 
     private var lastGpxId: Int? = null
     private var job: Job? = null
+    private val sampling = 20
 
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
     private val client = OkHttpClient.Builder()
@@ -48,14 +50,12 @@ class ElevationRepository(
             .build()
 
     /**
-     * Computes elevation data from the given [GpxForElevation] and [targetWidth], and updates the
-     * exposed [elevationRepoState].
+     * Computes elevation data from the given [GpxForElevation] and updates the exposed
+     * [elevationRepoState].
      * When [gpxData] is null, the state is set to [Calculating]. Otherwise, the id of [gpxData] is
      * used to decide whether to cancel the ongoing work or not.
      *
      * @param gpxData The data to work on.
-     * @param targetWidth The actual amount of pixels in horizontal dimension. If the tracks has too
-     * many points, it will be sub-sampled.
      */
     fun update(gpxData: GpxForElevation?) {
         if (gpxData == null) {
@@ -80,7 +80,7 @@ class ElevationRepository(
                         return@launch
                     }
 
-                    val data = makeElevationData(gpx, id, realElevations)
+                    val data = makeElevationData(gpx, id, realElevations, trusted)
                     _elevationRepoState.emit(data)
                 } else {
                     _elevationRepoState.emit(NoNetwork(apiStatus.restApiOk))
@@ -96,7 +96,7 @@ class ElevationRepository(
     }
 
     /**
-     * Get real elevations every 20m. Returns null when an error occurred which would make the returned
+     * Get real elevations every [sampling]m. Returns null when an error occurred which would make the returned
      * list inconsistent (we shall not mix real elevations with original elevations from the GPS).
      */
     private suspend fun getRealElevations(gpx: Gpx): PayloadInfo = withContext(dispatcher) {
@@ -106,7 +106,7 @@ class ElevationRepository(
             trackPoints?.mapIndexed { index, pt ->
                 previousPt?.also { prev ->
                     val d = deltaTwoPoints(prev.latitude, prev.longitude, pt.latitude, pt.longitude)
-                    if (d > 20 || index == trackPoints.lastIndex) {
+                    if (d > sampling || index == trackPoints.lastIndex) {
                         emit(PointIndexed(index, pt.latitude, pt.longitude, pt.elevation ?: 0.0))
                     }
                 } ?: suspend {
@@ -144,11 +144,12 @@ class ElevationRepository(
     /**
      * Perform interpolation between each real elevations.
      */
-    private fun makeElevationData(gpx: Gpx, id: Int, points: List<PointIndexed>): ElevationState {
+    private fun makeElevationData(gpx: Gpx, id: Int, points: List<PointIndexed>, trusted: Boolean): ElevationState {
+        val eleSource = if (trusted) ElevationSource.IGN_RGE_ALTI else ElevationSource.GPS
         /* Take into account the trivial case where there is one or no points */
         if (points.size < 2) {
             val ele = points.firstOrNull()?.ele ?: 0.0
-            return ElevationData(id, points.map { ElePoint(0.0, it.ele) }, ele, ele)
+            return ElevationData(id, points.map { ElePoint(0.0, it.ele) }, ele, ele, eleSource, sampling)
         }
         val ptsSorted = points.sortedBy { it.index }.iterator()
 
@@ -171,7 +172,7 @@ class ElevationRepository(
         val minEle = points.minByOrNull { it.ele }?.ele ?: 0.0
         val maxEle = points.maxByOrNull { it.ele }?.ele ?: 0.0
 
-        return ElevationData(id, interpolated ?: listOf(), minEle, maxEle)
+        return ElevationData(id, interpolated ?: listOf(), minEle, maxEle, eleSource, sampling)
     }
 
     /**
@@ -242,7 +243,8 @@ sealed class ElevationState
 object Calculating : ElevationState()
 data class NoNetwork(val restApiOk: Boolean) : ElevationState()
 object ElevationCorrectionError : ElevationState()
-data class ElevationData(val id: Int, val points: List<ElePoint> = listOf(), val eleMin: Double = 0.0, val eleMax: Double = 0.0) : ElevationState()
+data class ElevationData(val id: Int, val points: List<ElePoint> = listOf(), val eleMin: Double = 0.0, val eleMax: Double = 0.0,
+                            val elevationSource: ElevationSource, val sampling: Int) : ElevationState()
 
 /**
  * A point representing the elevation at a given distance from the departure.
