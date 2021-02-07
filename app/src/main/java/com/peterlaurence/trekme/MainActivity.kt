@@ -267,7 +267,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         appEventBus.genericMessageEvents.collectWhileStarted(this) {
             when (it) {
-                is StandardMessage -> Snackbar.make(binding.navView, it.msg, Snackbar.LENGTH_SHORT).show()
+                is StandardMessage -> {
+                    val duration = if (it.showLong) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
+                    Snackbar.make(binding.navView, it.msg, duration).show()
+                }
                 is WarningMessage -> showWarningDialog(it.msg, it.title, null)
             }
         }

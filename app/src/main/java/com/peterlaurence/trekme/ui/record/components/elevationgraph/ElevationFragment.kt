@@ -11,7 +11,9 @@ import com.google.android.material.slider.LabelFormatter.LABEL_GONE
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.databinding.FragmentElevationBinding
-import com.peterlaurence.trekme.repositories.recording.*
+import com.peterlaurence.trekme.repositories.recording.Calculating
+import com.peterlaurence.trekme.repositories.recording.ElePoint
+import com.peterlaurence.trekme.repositories.recording.ElevationData
 import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -66,19 +68,6 @@ class ElevationFragment : Fragment() {
                             b.showGraph(false)
                             b.loadingMsg.text = getString(R.string.no_elevations)
                         }
-                    }
-                    is NoNetwork -> {
-                        b.showGraph(false)
-                        if (config.restApiOk) {
-                            b.loadingMsg.text = getString(R.string.network_required)
-                        } else {
-                            b.loadingMsg.text = getString(R.string.elevation_service_down)
-                        }
-
-                    }
-                    ElevationCorrectionError -> {
-                        b.showGraph(false)
-                        b.loadingMsg.text = getString(R.string.elevation_correction_error)
                     }
                     Calculating -> {
                         b.showGraph(false)

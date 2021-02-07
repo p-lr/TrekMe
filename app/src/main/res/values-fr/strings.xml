@@ -240,7 +240,8 @@
     <string name="preference_measurement_system_title">Unités de mesure</string>
     <string name="metric_system">Système métrique</string>
     <string name="imperial_system">Système impérial (miles)</string>
-    <string name="network_required">Cette fonctionnalité necessite d\'être connecté à internet, pour vérifier les altitudes en certains points.</string>
+    <string name="network_required">Cette fonctionnalité necessite d\'être connecté à internet, pour vérifier les altitudes. Une fois les vraies altitudes récupérées,
+        la connexion internet ne sera plus nécessaire.</string>
     <string name="elevation_compute_in_progress">Calcul des altitudes en cours…</string>
     <string name="elevation_service_down">Le service de vérification des altitudes est temporairement inacessible :(</string>
     <string name="elevation_correction_error">TrekMe n\'a pu vérifier les altitudes. Le service est peut-être temporairement indisponible, ou bien la zone n\'est pas couverte.</string>
