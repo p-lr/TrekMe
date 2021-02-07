@@ -73,14 +73,14 @@ class ElevationRepository(
 
                 val apiStatus = checkElevationRestApi()
                 if (apiStatus.restApiOk && apiStatus.restApiOk) {
-                    val (realElevations, trusted) = getRealElevations(gpx)
+                    val (realElevations, eleSource, needsUpdate) = getRealElevations(gpx)
 
                     if (realElevations == null) {
                         _elevationRepoState.emit(ElevationCorrectionError)
                         return@launch
                     }
 
-                    val data = makeElevationData(gpx, id, realElevations, trusted)
+                    val data = makeElevationData(gpx, id, realElevations, eleSource, needsUpdate)
                     _elevationRepoState.emit(data)
                 } else {
                     _elevationRepoState.emit(NoNetwork(apiStatus.restApiOk))
@@ -116,8 +116,9 @@ class ElevationRepository(
             }
         }
 
-        val isTrusted = AtomicBoolean(false)
-        val payload = runCatching {
+        val noError = AtomicBoolean(true)
+
+        suspend fun useApi() = runCatching {
             pointsFlow.chunk(40).buffer(8).flowOn(dispatcher).map { pts ->
                 flow {
                     /* If we fail to fetch elevation for one chunk, stop the whole flow */
@@ -126,7 +127,7 @@ class ElevationRepository(
                     ) {
                         Error -> throw Exception("Missing data")
                         NonTrusted -> {
-                            isTrusted.set(false)
+                            noError.set(false)
                             pts
                         }
                         is TrustedElevations -> eleResult.elevations.zip(pts).map { (ele, pt) ->
@@ -138,18 +139,32 @@ class ElevationRepository(
             }.flattenMerge(8).flowOn(ioDispatcher).toList().flatten()
         }.getOrNull()
 
-        PayloadInfo(payload, isTrusted.get())
+        val trustedElevations = gpx.hasTrustedElevations()
+
+        val payload = if (trustedElevations) {
+            pointsFlow.toList()
+        } else useApi()
+
+        /* Needs update if it wasn't already trusted and there was no errors */
+        val needsUpdate = !trustedElevations && noError.get()
+
+        val eleSource = if (needsUpdate) ElevationSource.IGN_RGE_ALTI else ElevationSource.GPS
+
+        PayloadInfo(payload, eleSource, needsUpdate)
+    }
+
+    private fun Gpx.hasTrustedElevations(): Boolean {
+        return metadata?.elevationSourceInfo?.elevationSource == ElevationSource.IGN_RGE_ALTI
     }
 
     /**
      * Perform interpolation between each real elevations.
      */
-    private fun makeElevationData(gpx: Gpx, id: Int, points: List<PointIndexed>, trusted: Boolean): ElevationState {
-        val eleSource = if (trusted) ElevationSource.IGN_RGE_ALTI else ElevationSource.GPS
+    private fun makeElevationData(gpx: Gpx, id: Int, points: List<PointIndexed>, eleSource: ElevationSource, needsUpdate: Boolean): ElevationState {
         /* Take into account the trivial case where there is one or no points */
         if (points.size < 2) {
             val ele = points.firstOrNull()?.ele ?: 0.0
-            return ElevationData(id, points.map { ElePoint(0.0, it.ele) }, ele, ele, eleSource, sampling)
+            return ElevationData(id, points.map { ElePoint(0.0, it.ele) }, ele, ele, eleSource, needsUpdate, sampling)
         }
         val ptsSorted = points.sortedBy { it.index }.iterator()
 
@@ -172,7 +187,8 @@ class ElevationRepository(
         val minEle = points.minByOrNull { it.ele }?.ele ?: 0.0
         val maxEle = points.maxByOrNull { it.ele }?.ele ?: 0.0
 
-        return ElevationData(id, interpolated ?: listOf(), minEle, maxEle, eleSource, sampling)
+        return ElevationData(id, interpolated
+                ?: listOf(), minEle, maxEle, eleSource, needsUpdate, sampling)
     }
 
     /**
@@ -234,7 +250,7 @@ class ElevationRepository(
 
     private data class PointIndexed(val index: Int, val lat: Double, val lon: Double, val ele: Double)
 
-    private data class PayloadInfo(val pointIndexed: List<PointIndexed>?, val trusted: Boolean)
+    private data class PayloadInfo(val pointIndexed: List<PointIndexed>?, val elevationSource: ElevationSource, val needsUpdate: Boolean)
 }
 
 private const val elevationServiceHost = "wxs.ign.fr"
@@ -244,7 +260,7 @@ object Calculating : ElevationState()
 data class NoNetwork(val restApiOk: Boolean) : ElevationState()
 object ElevationCorrectionError : ElevationState()
 data class ElevationData(val id: Int, val points: List<ElePoint> = listOf(), val eleMin: Double = 0.0, val eleMax: Double = 0.0,
-                            val elevationSource: ElevationSource, val sampling: Int) : ElevationState()
+                         val elevationSource: ElevationSource, val needsUpdate: Boolean, val sampling: Int) : ElevationState()
 
 /**
  * A point representing the elevation at a given distance from the departure.

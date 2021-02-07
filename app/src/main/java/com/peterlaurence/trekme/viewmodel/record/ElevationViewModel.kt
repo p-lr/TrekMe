@@ -29,7 +29,7 @@ class ElevationViewModel @ViewModelInject constructor(
                     is ElevationData -> {
                         val gpxForElevation = gpxRepository.gpxForElevation.replayCache.firstOrNull()
                         gpxForElevation?.also { gpxForEle ->
-                            if (gpxForEle.id == state.id && state.elevationSource == ElevationSource.IGN_RGE_ALTI) {
+                            if (gpxForEle.id == state.id && state.needsUpdate) {
                                 updateGpxFileWithTrustedElevations(gpxForEle, state)
                             }
                         }
