@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
+import com.peterlaurence.trekme.core.track.DistanceCalculatorImpl
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
@@ -83,8 +84,9 @@ class GpxRecordService : Service() {
         serviceLooper = looper
         serviceHandler = Handler(looper)
 
-        /* Prepare the stat calculator */
-        trackStatCalculator = TrackStatCalculator()
+        /* Prepare the stat calculator. Since we're getting elevations from the GPS, we're using
+         * a distance calculator designed to deal with non-trusted elevations. */
+        trackStatCalculator = TrackStatCalculator(DistanceCalculatorImpl(false))
 
         /* Listen to location data */
         scope.launch {

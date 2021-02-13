@@ -15,3 +15,10 @@ data class Gpx(
         val creator: String = "",
         var version: String = "1.1"
 )
+
+/**
+ * For instance, only trust [ElevationSource.IGN_RGE_ALTI].
+ */
+fun Gpx.hasTrustedElevations(): Boolean {
+    return metadata?.elevationSourceInfo?.elevationSource == ElevationSource.IGN_RGE_ALTI
+}

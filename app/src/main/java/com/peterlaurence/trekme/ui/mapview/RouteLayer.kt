@@ -26,7 +26,7 @@ import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.route.Barycenter
 import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
-import com.peterlaurence.trekme.core.track.DistanceCalculator
+import com.peterlaurence.trekme.core.track.DistanceCalculatorImpl
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
@@ -641,13 +641,13 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val iMax = max(info.index1, info.index2)
         val iterator = route.routeMarkers.listIterator(iMin)
 
-        val distanceCalculator = DistanceCalculator()
+        val distanceCalculator = DistanceCalculatorImpl(false)
         for (i in iMin until iMax) {
             val marker = iterator.next()
             distanceCalculator.addPoint(marker.lat, marker.lon, marker.elevation)
         }
 
-        distanceCalculator.distance
+        distanceCalculator.getDistance()
     }
 
     private data class Info(var index1: Int, var index2: Int)

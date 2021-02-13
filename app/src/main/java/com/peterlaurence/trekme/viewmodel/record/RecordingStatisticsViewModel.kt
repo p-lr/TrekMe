@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeE
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.model.Gpx
+import com.peterlaurence.trekme.util.gpx.model.hasTrustedElevations
 import com.peterlaurence.trekme.util.gpx.parseGpx
 import com.peterlaurence.trekme.util.gpx.parseGpxSafely
 import com.peterlaurence.trekme.util.stackTraceToString
@@ -266,7 +267,8 @@ class RecordingStatisticsViewModel @ViewModelInject constructor(
      */
     private suspend fun setTrackStatistics(gpx: Gpx) = withContext(Dispatchers.Default) {
         gpx.tracks.firstOrNull()?.let { track ->
-            val statCalculator = TrackStatCalculator()
+            val distanceCalculator = DistanceCalculatorImpl(gpx.hasTrustedElevations())
+            val statCalculator = TrackStatCalculator(distanceCalculator)
             track.trackSegments.forEach { trackSegment ->
                 statCalculator.addTrackPointList(trackSegment.trackPoints)
             }

@@ -27,7 +27,7 @@ import kotlin.math.*
  *
  * @author P.Laurence on 09/09/18
  */
-class TrackStatCalculator {
+class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
     private var elevationDiffMax = 0.0
     private var elevationUpStack = 0.0
     private var elevationDownStack = 0.0
@@ -49,10 +49,8 @@ class TrackStatCalculator {
     private var maxLat: Double? = null
     private var maxLon: Double? = null
 
-    private val distanceCalculator = DistanceCalculator()
-
     fun getStatistics(): TrackStatistics {
-        return TrackStatistics(distanceCalculator.distance, elevationDiffMax, elevationUpStack, elevationDownStack,
+        return TrackStatistics(distanceCalculator.getDistance(), elevationDiffMax, elevationUpStack, elevationDownStack,
                 durationInSecond, avgSpeed)
     }
 
@@ -124,7 +122,7 @@ class TrackStatCalculator {
 
     private fun updateMeanSpeed() {
         if (durationInSecond != 0L) {
-            avgSpeed = distanceCalculator.distance / durationInSecond
+            avgSpeed = distanceCalculator.getDistance() / durationInSecond
         }
     }
 
@@ -136,9 +134,17 @@ class TrackStatCalculator {
     }
 }
 
-class DistanceCalculator {
-    var distance: Double = 0.0
-        private set
+interface DistanceCalculator {
+    fun getDistance(): Double
+    fun addPoint(lat: Double, lon: Double, ele: Double?, onEleSnapShot: ((Double) -> Unit)? = null)
+}
+
+/**
+ * When we trust the values of elevations, we use a lower threshold.
+ */
+class DistanceCalculatorImpl(isElevationTrusted: Boolean) : DistanceCalculator {
+    private val eleThreshold: Int = if (isElevationTrusted) 3 else 10
+    private var distance: Double = 0.0
 
     /* Size of the buffer used to compute elevation mean */
     private val bufferSize = 5
@@ -148,6 +154,10 @@ class DistanceCalculator {
     private var previousLon: Double? = null
     private var snapshot: Snapshot? = null
 
+    override fun getDistance(): Double {
+        return distance
+    }
+
     /**
      * The first points are added to the buffer. The first time the buffer is full, we make a
      * snapshot. Then, subsequent snapshots are made only when the mean elevation is greater or
@@ -155,7 +165,7 @@ class DistanceCalculator {
      * When we make a new snapshot, the distance is updated and the provided [onEleSnapShot] callback
      * is invoked with the mean elevation. This callback can be used to update elevation statistics.
      */
-    fun addPoint(lat: Double, lon: Double, ele: Double?, onEleSnapShot: ((Double) -> Unit)? = null) {
+    override fun addPoint(lat: Double, lon: Double, ele: Double?, onEleSnapShot: ((Double) -> Unit)?) {
         buffer.add(ele ?: Double.NaN)
         val firstSnapshot = buffer.size == bufferSize
 
@@ -169,7 +179,7 @@ class DistanceCalculator {
             if (elevations.isNotEmpty()) {
                 val meanEle = elevations.mean()
                 val diffEle = snapshot?.let { abs(it.elevation - meanEle) }
-                if (diffEle != null && diffEle > 10.0) {
+                if (diffEle != null && diffEle > eleThreshold) {
                     distance = snapshot!!.distance + sqrt((distance - snapshot!!.distance).pow(2) + diffEle.pow(2))
                     this.snapshot = Snapshot(distance, meanEle)
                     onEleSnapShot?.invoke(meanEle)
