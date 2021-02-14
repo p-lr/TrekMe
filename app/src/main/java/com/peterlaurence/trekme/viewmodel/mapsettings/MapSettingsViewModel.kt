@@ -122,6 +122,12 @@ class MapSettingsViewModel @ViewModelInject constructor(
         awaitClose()
     }
 
+    fun renameMap(map: Map, newName: String) {
+        viewModelScope.launch {
+            mapLoader.renameMap(map, newName)
+        }
+    }
+
     fun saveMap(map: Map) {
         viewModelScope.launch {
             mapLoader.saveMap(map)

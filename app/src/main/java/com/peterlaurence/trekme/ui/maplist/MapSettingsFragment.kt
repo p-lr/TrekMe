@@ -133,7 +133,10 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         }
         mapNamePreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue: Any? ->
             try {
-                map?.name = newValue as String?
+                val newName = newValue as? String
+                map?.also {
+                    if (newName != null) viewModel.renameMap(it, newName)
+                }
                 true
             } catch (e: Exception) {
                 false

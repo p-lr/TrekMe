@@ -320,6 +320,19 @@ class MapLoader(
     }
 
     /**
+     * Renaming a map involves two steps:
+     * 1. Rename the directory containing files
+     * 2. Change the name that appears in map.json
+     * After that call, the map.json isn't updated. To update it, invoke [saveMap].
+     */
+    suspend fun renameMap(map: Map, newName: String) {
+        withContext(ioDispatcher) {
+            map.directory.renameTo(File(map.directory.parentFile, newName))
+            map.name = newName
+        }
+    }
+
+    /**
      * Mutate the [Projection] of a given [Map].
      *
      * @return true on success, false if something went wrong.
