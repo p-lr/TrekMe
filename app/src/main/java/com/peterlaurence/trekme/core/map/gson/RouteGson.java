@@ -24,6 +24,7 @@ public class RouteGson {
         private List<MarkerGson.Marker> route_markers;
         private transient Object mData;
         private final transient Object mDataLock = new Object();
+        public boolean elevationTrusted = false;
 
         public Route() {
             route_markers = new ArrayList<>();
@@ -62,6 +63,7 @@ public class RouteGson {
             name = route.name;
             visible = route.visible;
             route_markers = route.route_markers;
+            elevationTrusted = route.elevationTrusted;
         }
 
         public void toggleVisibility() {

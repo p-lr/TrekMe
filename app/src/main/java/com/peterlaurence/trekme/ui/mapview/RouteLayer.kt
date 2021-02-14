@@ -641,7 +641,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val iMax = max(info.index1, info.index2)
         val iterator = route.routeMarkers.listIterator(iMin)
 
-        val distanceCalculator = DistanceCalculatorImpl(false)
+        val distanceCalculator = DistanceCalculatorImpl(route.elevationTrusted)
         for (i in iMin until iMax) {
             val marker = iterator.next()
             distanceCalculator.addPoint(marker.lat, marker.lon, marker.elevation)

@@ -8,10 +8,7 @@ import com.peterlaurence.trekme.core.map.gson.MarkerGson
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.util.gpx.model.Gpx
-import com.peterlaurence.trekme.util.gpx.model.Track
-import com.peterlaurence.trekme.util.gpx.model.TrackPoint
-import com.peterlaurence.trekme.util.gpx.model.TrackSegment
+import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.parseGpxSafely
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -92,7 +89,7 @@ class TrackImporter {
      */
     private suspend fun convertGpx(gpx: Gpx, map: Map, defaultName: String = "track"): Pair<List<RouteGson.Route>, List<MarkerGson.Marker>> = withContext(Dispatchers.Default) {
         val routes = gpx.tracks.mapIndexed { index, track ->
-            gpxTrackToRoute(map, track, index, defaultName)
+            gpxTrackToRoute(map, track, gpx.hasTrustedElevations(), index, defaultName)
         }
         val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
             gpxWaypointsToMarker(map, wpt, index, defaultName)
@@ -140,9 +137,9 @@ class TrackImporter {
     /**
      * Converts a [Track] into a [RouteGson.Route].
      * A single [Track] may contain several [TrackSegment].
-     * This should be call off UI thread.
+     * This should be invoked off UI thread.
      */
-    private fun gpxTrackToRoute(map: Map, track: Track, index: Int, defaultName: String): RouteGson.Route {
+    private fun gpxTrackToRoute(map: Map, track: Track, elevationTrusted: Boolean, index: Int, defaultName: String): RouteGson.Route {
         /* Create a new route */
         val route = RouteGson.Route()
 
@@ -165,6 +162,7 @@ class TrackImporter {
                 route.routeMarkers.add(marker)
             }
         }
+        route.elevationTrusted = elevationTrusted
         return route
     }
 
