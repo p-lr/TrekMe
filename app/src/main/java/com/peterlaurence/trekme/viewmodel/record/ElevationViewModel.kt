@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.record
 
 import android.app.Application
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
@@ -12,12 +11,15 @@ import com.peterlaurence.trekme.repositories.recording.*
 import com.peterlaurence.trekme.util.gpx.model.ElevationSourceInfo
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
 import com.peterlaurence.trekme.util.gpx.writeGpx
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
+import javax.inject.Inject
 
-class ElevationViewModel @ViewModelInject constructor(
+@HiltViewModel
+class ElevationViewModel @Inject constructor(
         private val repository: ElevationRepository,
         private val gpxRepository: GpxRepository,
         private val appEventBus: AppEventBus,

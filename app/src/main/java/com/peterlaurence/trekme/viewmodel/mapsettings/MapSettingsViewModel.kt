@@ -4,7 +4,6 @@ import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,6 +14,7 @@ import com.peterlaurence.trekme.ui.maplist.events.*
 import com.peterlaurence.trekme.util.ZipProgressionListener
 import com.peterlaurence.trekme.util.makeThumbnail
 import com.peterlaurence.trekme.util.stackTraceAsString
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
@@ -22,13 +22,15 @@ import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
 import java.io.IOException
 import java.io.OutputStream
+import javax.inject.Inject
 
 /**
  * The view-model for the [MapSettingsFragment].
  *
  * @author P.Laurence on 14/08/20
  */
-class MapSettingsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MapSettingsViewModel @Inject constructor(
         val app: Application,
         private val mapLoader: MapLoader
 ) : ViewModel() {

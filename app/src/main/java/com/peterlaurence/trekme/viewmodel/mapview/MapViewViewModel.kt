@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.viewmodel.mapview
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.ign.*
@@ -8,19 +7,22 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * The view model of the fragment which displays [Map]s.
  *
  * @author P.Laurence on 24/08/2019
  */
-class MapViewViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MapViewViewModel @Inject constructor(
         private val persistenceStrategy: PersistenceStrategy,
         private val settings: Settings,
         private val billing: Billing,

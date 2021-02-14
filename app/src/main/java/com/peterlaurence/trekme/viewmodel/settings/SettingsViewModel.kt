@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.viewmodel.settings
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,9 +9,12 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.core.units.UnitFormatter
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
+import javax.inject.Inject
 
-class SettingsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
         trekMeContext: TrekMeContext,
         private val settings: Settings
 ) : ViewModel() {

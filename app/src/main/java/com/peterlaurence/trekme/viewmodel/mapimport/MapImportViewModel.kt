@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.viewmodel.mapimport
 import android.app.Application
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maparchive.unarchive
@@ -12,16 +11,19 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel.ItemData
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.io.File
+import javax.inject.Inject
 
 /**
  * This view-model manages [ItemData]s, which are wrappers around [DocumentFile]s.
  * The view supplies the list of [DocumentFile]s when the user selects a directory.
  */
-class MapImportViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MapImportViewModel @Inject constructor(
         private val settings: Settings,
         private val app: Application,
         private val mapLoader: MapLoader

@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.viewmodel.mapcreate
 
 import android.app.Application
 import android.content.Intent
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.backendApi.ordnanceSurveyApiUrl
@@ -24,12 +23,14 @@ import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
+import javax.inject.Inject
 
 /**
  * View-model for [GoogleMapWmtsViewFragment]. It takes care of:
@@ -39,7 +40,8 @@ import java.net.URL
  *
  * @author P.Laurence on 09/11/19
  */
-class GoogleMapWmtsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class GoogleMapWmtsViewModel @Inject constructor(
         private val app: Application,
         private val downloadRepository: DownloadRepository,
         private val ignApiRepository: IgnApiRepository,

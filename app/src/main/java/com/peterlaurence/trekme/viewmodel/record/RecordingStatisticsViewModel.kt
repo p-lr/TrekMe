@@ -6,7 +6,6 @@ import android.app.Application
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -28,6 +27,7 @@ import com.peterlaurence.trekme.util.gpx.model.hasTrustedElevations
 import com.peterlaurence.trekme.util.gpx.parseGpx
 import com.peterlaurence.trekme.util.gpx.parseGpxSafely
 import com.peterlaurence.trekme.util.stackTraceToString
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -37,6 +37,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
+import javax.inject.Inject
 
 
 /**
@@ -51,7 +52,8 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @author P.Laurence on 21/04/19
  */
-class RecordingStatisticsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class RecordingStatisticsViewModel @Inject constructor(
         private val gpxRecordEvents: GpxRecordEvents,
         private val gpxRepository: GpxRepository,
         private val appEventBus: AppEventBus,

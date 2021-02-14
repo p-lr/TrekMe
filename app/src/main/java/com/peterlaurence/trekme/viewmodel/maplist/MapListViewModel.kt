@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.viewmodel.maplist
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,14 +9,17 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * This view-model is intended to be used by the [MapListFragment], which displays the list of [Map].
  * Handles map selection, map deletion, and setting a map as favorite.
  */
-class MapListViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MapListViewModel @Inject constructor(
         private val settings: Settings,
         private val mapRepository: MapRepository,
         private val mapLoader: MapLoader

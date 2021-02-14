@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.viewmodel.mapview
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,14 +7,16 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.track.toMarker
-import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
+import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * This view-model backs the feature that enables a fragment to be aware of a recording
@@ -43,7 +44,8 @@ import kotlinx.coroutines.launch
  *
  * The coroutine runs off UI thread. However the [MutableLiveData] triggers observers in the UI thread.
  */
-class InMapRecordingViewModel @ViewModelInject constructor(
+@HiltViewModel
+class InMapRecordingViewModel @Inject constructor(
         private val mapRepository: MapRepository,
         private val gpxRecordEvents: GpxRecordEvents
 ) : ViewModel() {

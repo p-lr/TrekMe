@@ -1,19 +1,21 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /**
  * Acts as a middle-man between the [LayerOverlayRepository] and the [LayerOverlayFragment].
  *
  * @author P.Laurence on 2021-01-11
  */
-class LayerOverlayViewModel @ViewModelInject constructor(
+@HiltViewModel
+class LayerOverlayViewModel @Inject constructor(
         private val repository: LayerOverlayRepository
 ) : ViewModel() {
     private val _liveData = MutableLiveData<List<LayerProperties>>()
@@ -34,12 +36,12 @@ class LayerOverlayViewModel @ViewModelInject constructor(
     }
 
     fun moveLayer(wmtsSource: WmtsSource, from: Int, to: Int) {
-        val data = repository.moveLayer(wmtsSource, from, to)
+        val data = repository.moveLayer(wmtsSource, from, to) ?: return
         _liveData.value = data
     }
 
     fun removeLayer(wmtsSource: WmtsSource, index: Int) {
-        val data = repository.removeLayer(wmtsSource, index)
+        val data = repository.removeLayer(wmtsSource, index) ?: return
         _liveData.value = data
     }
 }

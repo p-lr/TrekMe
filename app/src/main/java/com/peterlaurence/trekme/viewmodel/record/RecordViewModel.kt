@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
@@ -21,16 +20,19 @@ import com.peterlaurence.trekme.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import javax.inject.Inject
 
 /**
  * The view-model associated with the record fragment.
  *
  * @author P.Laurence on 16/04/20
  */
-class RecordViewModel @ViewModelInject constructor(
+@HiltViewModel
+class RecordViewModel @Inject constructor(
         private val gpxRepository: GpxRepository,
         private val trackImporter: TrackImporter,
         private val app: Application,

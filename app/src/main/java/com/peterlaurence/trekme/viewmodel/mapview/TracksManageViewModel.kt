@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.viewmodel.mapview
 
 import android.app.Application
 import android.net.Uri
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,17 +14,20 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
+import javax.inject.Inject
 
 /**
  * The view-model of the list of tracks, accessible when viewing a map.
  *
  * @author P.Laurence on 25/09/2020
  */
-class TracksManageViewModel @ViewModelInject constructor(
+@HiltViewModel
+class TracksManageViewModel @Inject constructor(
         private val mapRepository: MapRepository,
         private val gpxRepository: GpxRepository,
         private val trackImporter: TrackImporter,

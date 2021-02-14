@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.viewmodel
 
 import android.app.Application
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.MainActivity
@@ -14,9 +13,11 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 /**
@@ -30,7 +31,8 @@ import kotlinx.coroutines.launch
  *
  * @author P.Laurence on 07/10/2019
  */
-class MainActivityViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MainActivityViewModel @Inject constructor(
         private val app: Application,
         private val trekMeContext: TrekMeContext,
         private val settings: Settings,

@@ -2,20 +2,22 @@ package com.peterlaurence.trekme.viewmodel.wifip2p
 
 import android.app.Application
 import android.content.Intent
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.wifip2p.*
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /**
  * The view-model for the WifiP2P feature (map sharing).
  *
  * @author P.Laurence on 07/04/20
  */
-class WifiP2pViewModel @ViewModelInject constructor(
+@HiltViewModel
+class WifiP2pViewModel @Inject constructor(
         private val trekMeContext: TrekMeContext,
         private val app: Application
 ) : ViewModel() {

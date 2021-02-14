@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.viewmodel.mapcreate
 
 import android.util.Log
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,11 +10,14 @@ import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.billing.ign.BillingParams
 import com.peterlaurence.trekme.billing.ign.LicenseInfo
 import com.peterlaurence.trekme.billing.ign.PersistenceStrategy
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
+import javax.inject.Inject
 
-class IgnLicenseViewModel @ViewModelInject constructor(
+@HiltViewModel
+class IgnLicenseViewModel @Inject constructor(
         private val billing: Billing,
         private val persistenceStrategy: PersistenceStrategy
 ) : ViewModel() {
