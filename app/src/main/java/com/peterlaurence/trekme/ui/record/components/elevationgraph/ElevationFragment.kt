@@ -14,6 +14,7 @@ import com.peterlaurence.trekme.databinding.FragmentElevationBinding
 import com.peterlaurence.trekme.repositories.recording.Calculating
 import com.peterlaurence.trekme.repositories.recording.ElePoint
 import com.peterlaurence.trekme.repositories.recording.ElevationData
+import com.peterlaurence.trekme.util.gpx.model.ElevationSource
 import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -63,6 +64,11 @@ class ElevationFragment : Fragment() {
                                 b.elevationTop.text = UnitFormatter.formatElevation(config.eleMax)
                                 b.elevationBottom.text = UnitFormatter.formatElevation(config.eleMin)
                                 b.elevationBottomTop.text = UnitFormatter.formatElevation(config.eleMax - config.eleMin)
+                                b.elevationSrcTxt.text = when (config.elevationSource) {
+                                    ElevationSource.GPS -> getString(R.string.elevation_src_gps)
+                                    ElevationSource.IGN_RGE_ALTI -> getString(R.string.elevation_src_ign_rge_alti)
+                                    ElevationSource.UNKNOWN -> getString(R.string.elevation_src_unknown)
+                                }
                             }
                         } else {
                             b.showGraph(false)

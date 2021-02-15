@@ -143,8 +143,12 @@ class GpxRecordService : Service() {
             val track = Track(trkSegList, trackName)
             track.statistics = trackStatCalculator?.getStatistics()
 
-            /* Make the metadata */
-            val metadata = Metadata(trackName, date.time, trackStatCalculator?.getBounds())
+            /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
+             * actual source (which might be wifi, etc. It doesn't matter because GPS elevation is
+             * considered not trustworthy), with a sampling of 1 since each point has its own
+             * elevation value. */
+            val metadata = Metadata(trackName, date.time, trackStatCalculator?.getBounds(),
+                    elevationSourceInfo = ElevationSourceInfo(ElevationSource.GPS, 1))
 
             val trkList = ArrayList<Track>()
             trkList.add(track)

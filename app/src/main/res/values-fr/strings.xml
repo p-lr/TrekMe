@@ -245,7 +245,7 @@
     <string name="elevation_compute_in_progress">Calcul des altitudes en cours…</string>
     <string name="elevation_service_down">Le service de vérification des altitudes est temporairement inacessible :(</string>
     <string name="elevation_correction_error">TrekMe n\'a pu vérifier les altitudes. Le service est peut-être temporairement indisponible, ou bien la zone n\'est pas couverte.</string>
-    <string name="no_elevations">Ce fichier GPX ne contient pas d\'information d\'altitude. TrekMe ne peut pas affichier le profil altimétrique.</string>
+    <string name="no_elevations">Ce fichier GPX ne contient pas d\'information d\'altitude. TrekMe ne peut pas afficher le profil altimétrique.</string>
     <string name="recordings_menu_import">Importer des fichiers</string>
     <string name="recording_imported_success">%1$d fichiers importés avec succès</string>
     <string name="recording_imported_failure">Erreur d\'import pour %1$s</string>
@@ -269,4 +269,8 @@
     <string name="elevation_short">Alt</string>
     <string name="mapview_gpsdata_enable">Afficher données GPS</string>
     <string name="preference_max_scale">Échelle maximale</string>
+    <string name="elevation_src_label">Précision des données d\'altitude</string>
+    <string name="elevation_src_gps">Les données d\'altitude proviennent du GPS, avec une précision moyenne.</string>
+    <string name="elevation_src_ign_rge_alti">Les données d\'altitude proviennent de la base de données RGE Alti de l\'IGN, avec une bonne précision.</string>
+    <string name="elevation_src_unknown">Les données d\'altitude proviennent d\'une source inconnue. Si les données proviennent du GPS, la précision est moyenne.</string>
 </resources>

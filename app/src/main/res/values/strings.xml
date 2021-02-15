@@ -234,6 +234,10 @@
     <string name="elevation_top_icon" translatable="false">Elevation top icon</string>
     <string name="elevation_bottom_icon" translatable="false">Elevation bottom icon</string>
     <string name="elevation_bottom_top_icon" translatable="false">Elevation bottom-top icon</string>
+    <string name="elevation_src_label">Elevation data accuracy</string>
+    <string name="elevation_src_gps">Elevation data comes from the GPS, with medium accuracy.</string>
+    <string name="elevation_src_ign_rge_alti">Elevation data comes from IGN\'s RGE Alti database, with great accuracy.</string>
+    <string name="elevation_src_unknown">Elevation data comes from an unknown source. If the source is the GPS, the accuracy is medium.</string>
 
     <!-- MapCreate fragment -->
     <string name="next_button">Next</string>

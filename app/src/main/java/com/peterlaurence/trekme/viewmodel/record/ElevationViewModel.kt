@@ -18,6 +18,20 @@ import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import javax.inject.Inject
 
+/**
+ * This view-model listens to the [ElevationRepository]'s state changes. Whenever the repository
+ * notifies that a gpx file needs to be updated (through [ElevationData.needsUpdate]), this
+ * view-model performs the update. When it happens, it means that the repository successfully
+ * fetched elevation data from a trusted source.
+ * By default, when a gpx file is created by TrekMe, the gpx file metadata indicates that the
+ * elevation source is the GPS. When the repository requires an update, the elevation source is
+ * necessarily different.
+ *
+ * This view-model also notifies the UI of other events coming from the [ElevationRepository], such
+ * as when an error occurred, or when there's no network.
+ *
+ * @author P.Laurence on 2020/12/13
+ **/
 @HiltViewModel
 class ElevationViewModel @Inject constructor(
         private val repository: ElevationRepository,

@@ -15,5 +15,5 @@ data class Bounds(val minLat: Double, val minLon: Double, val maxLat: Double, va
 data class ElevationSourceInfo(val elevationSource: ElevationSource, val sampling: Int)
 
 enum class ElevationSource {
-    GPS, IGN_RGE_ALTI
+    GPS, IGN_RGE_ALTI, UNKNOWN
 }

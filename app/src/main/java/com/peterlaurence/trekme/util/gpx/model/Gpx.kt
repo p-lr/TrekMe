@@ -22,3 +22,7 @@ data class Gpx(
 fun Gpx.hasTrustedElevations(): Boolean {
     return metadata?.elevationSourceInfo?.elevationSource == ElevationSource.IGN_RGE_ALTI
 }
+
+fun Gpx.getElevationSource(): ElevationSource {
+    return metadata?.elevationSourceInfo?.elevationSource ?: ElevationSource.UNKNOWN
+}

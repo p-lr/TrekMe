@@ -7,9 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.util.chunk
-import com.peterlaurence.trekme.util.gpx.model.ElevationSource
-import com.peterlaurence.trekme.util.gpx.model.Gpx
-import com.peterlaurence.trekme.util.gpx.model.TrackPoint
+import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
@@ -151,13 +149,9 @@ class ElevationRepository(
         /* Needs update if it wasn't already trusted and there was no errors */
         val needsUpdate = usedApi && !trustedElevations && noError.get()
 
-        val eleSource = if (needsUpdate) ElevationSource.IGN_RGE_ALTI else ElevationSource.GPS
+        val eleSource = if (needsUpdate) ElevationSource.IGN_RGE_ALTI else gpx.getElevationSource()
 
         PayloadInfo(payload, eleSource, needsUpdate)
-    }
-
-    private fun Gpx.hasTrustedElevations(): Boolean {
-        return metadata?.elevationSourceInfo?.elevationSource == ElevationSource.IGN_RGE_ALTI
     }
 
     /**
