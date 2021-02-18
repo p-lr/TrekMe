@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import static com.peterlaurence.trekme.core.map.ConstantsKt.MAP_FILENAME;
+
 /**
  * A {@code Map} contains all the information that defines a map. That includes :
  * <ul>
@@ -46,7 +48,7 @@ public class Map {
     private static final int THUMBNAIL_SIZE = 256;
     private static final String THUMBNAIL_NAME = "image.jpg";
     /* The configuration file of the map, named map.json */
-    private final File mConfigFile;
+    private File mConfigFile;
     private Bitmap mImage;
     private MapBounds mMapBounds;
     private boolean isFavorite = false;
@@ -187,8 +189,15 @@ public class Map {
     /**
      * @return the {@link File} which is the folder containing the map.
      */
-    public File getDirectory() {
+    public final File getDirectory() {
         return mConfigFile.getParentFile();
+    }
+
+    /**
+     * When the directory changed (after e.g a rename), the config file must be updated.
+     */
+    public void setDirectory(File dir) {
+        mConfigFile = new File(dir, MAP_FILENAME);
     }
 
     public String getName() {

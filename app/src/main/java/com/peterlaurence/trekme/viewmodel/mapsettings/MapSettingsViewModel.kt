@@ -127,10 +127,32 @@ class MapSettingsViewModel @Inject constructor(
     fun renameMap(map: Map, newName: String) {
         viewModelScope.launch {
             mapLoader.renameMap(map, newName)
+            mapLoader.saveMap(map)
         }
     }
 
-    fun saveMap(map: Map) {
+    fun setCalibrationPointsNumber(map: Map, numberStr: String?) {
+        when(numberStr) {
+            "2" -> map.calibrationMethod = MapLoader.CalibrationMethod.SIMPLE_2_POINTS
+            "3" -> map.calibrationMethod = MapLoader.CalibrationMethod.CALIBRATION_3_POINTS
+            "4" -> map.calibrationMethod = MapLoader.CalibrationMethod.CALIBRATION_4_POINTS
+            else -> map.calibrationMethod = MapLoader.CalibrationMethod.SIMPLE_2_POINTS
+        }
+        saveMapAsync(map)
+    }
+
+    fun setProjection(map: Map, projectionName: String?): Boolean {
+        return if (projectionName != null) {
+            mapLoader.mutateMapProjection(map, projectionName)
+        } else {
+            map.projection = null
+            true
+        }.also {
+            saveMapAsync(map)
+        }
+    }
+
+    private fun saveMapAsync(map: Map) {
         viewModelScope.launch {
             mapLoader.saveMap(map)
         }

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -79,8 +80,9 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         val map = mapLoader.getMap(mapId)
         this.map = map
         if (map != null) {
-            /* Choice is made to have the preference file name equal to the map name */
-            preferenceManager.sharedPreferencesName = map.name
+            /* Choice is made to have the preference file name equal to the map name, from which
+             * we strip reserved characters */
+            preferenceManager.sharedPreferencesName = map.name.replace("[\\\\/:*?\"<>|]".toRegex(), "")
             initComponents()
         }
     }
@@ -104,7 +106,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
 
             /* Search for all documents available via installed storage providers */
             intent.type = "image/*"
-            startActivityForResult(intent, IMAGE_REQUEST_CODE)
+            imageChangeResultLauncher.launch(intent)
             true
         }
 
@@ -122,12 +124,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         }
         calibrationPointsNumberPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
             map?.let { map ->
-                when (newValue as String?) {
-                    "2" -> map.calibrationMethod = MapLoader.CalibrationMethod.SIMPLE_2_POINTS
-                    "3" -> map.calibrationMethod = MapLoader.CalibrationMethod.CALIBRATION_3_POINTS
-                    "4" -> map.calibrationMethod = MapLoader.CalibrationMethod.CALIBRATION_4_POINTS
-                    else -> map.calibrationMethod = MapLoader.CalibrationMethod.SIMPLE_2_POINTS
-                }
+                viewModel.setCalibrationPointsNumber(map, newValue as String?)
                 true
             } ?: false
         }
@@ -144,13 +141,13 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         }
         calibrationListPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, projectionName: Any ->
             try {
+                val map = this.map ?: return@OnPreferenceChangeListener false
                 /* If the projection is set to none */
                 if (getString(R.string.projection_none) == projectionName) {
-                    map?.projection = null
+                    viewModel.setProjection(map, null)
                     return@OnPreferenceChangeListener true
                 }
-                val map = this.map
-                val saveMsg: String = if (map != null && mapLoader.mutateMapProjection(map, (projectionName as String))) {
+                val saveMsg: String = if (viewModel.setProjection(map, projectionName as String)) {
                     getString(R.string.calibration_projection_saved_ok)
                 } else {
                     getString(R.string.calibration_projection_error)
@@ -170,7 +167,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
                     .setPositiveButton(R.string.ok_dialog
                     ) { _, _ ->
                         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                        startActivityForResult(intent, MAP_SAVE_CODE)
+                        mapSaveResultLauncher.launch(intent)
                     }
                     .setNegativeButton(R.string.cancel_dialog_string
                     ) { dialog: DialogInterface, _ -> dialog.dismiss() }
@@ -192,24 +189,26 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
                 .unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        /* Check if the request code is the one we are interested in */
-        if (requestCode == IMAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            if (data != null) {
-                val uri = data.data
-                val map = this.map
-                if (uri != null && map != null) {
-                    viewModel.setMapImage(map, uri)
-                }
+    private val mapSaveResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        /* After the user selected a folder in which to archive a map, call the relevant view-model */
+        if (result.resultCode == Activity.RESULT_OK) {
+            if (result.data == null) return@registerForActivityResult
+            val uri = result.data?.data
+            val map = this.map
+            if (uri != null && map != null) {
+                viewModel.archiveMap(map, uri)
             }
         }
+    }
 
-        /* After the user selected a folder in which to archive a map, call the relevant view-model */
-        if (requestCode == MAP_SAVE_CODE && resultCode == Activity.RESULT_OK) {
-            if (data == null) return
-            val uri = data.data ?: return
-            map?.also {
-                viewModel.archiveMap(it, uri)
+    private val imageChangeResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        /* Check if the request code is the one we are interested in */
+        if (result.resultCode == Activity.RESULT_OK) {
+            if (result.data == null) return@registerForActivityResult
+            val uri = result.data?.data
+            val map = this.map
+            if (uri != null && map != null) {
+                viewModel.setMapImage(map, uri)
             }
         }
     }
@@ -235,23 +234,11 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         val pref = findPreference<Preference>(key)
         if (pref != null) {
             pref.summary = sharedPreferences.getString(key, "default")
-            saveChanges()
-        }
-    }
-
-    /**
-     * Save the Map content
-     */
-    private fun saveChanges() {
-        map?.also {
-            viewModel.saveMap(it)
         }
     }
 
     companion object {
         private const val ARG_MAP_ID = "mapId"
-        private const val IMAGE_REQUEST_CODE = 1338
-        private const val MAP_SAVE_CODE = 3465
 
         /* Convenience method */
         private fun setListPreferenceSummaryAndValue(preference: ListPreference?, value: String) {
