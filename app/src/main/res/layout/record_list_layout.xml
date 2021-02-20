@@ -26,7 +26,8 @@
         android:tint="@color/colorGrey"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        android:contentDescription="@string/recording_edit_name_desc" />
 
     <ImageButton
         android:id="@+id/import_track_button"
@@ -39,7 +40,8 @@
         android:tint="@color/colorGrey"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/edit_recording_button" />
+        app:layout_constraintStart_toEndOf="@+id/edit_recording_button"
+        android:contentDescription="@string/recording_import_desc" />
 
     <ImageButton
         android:id="@+id/share_track_button"
@@ -52,7 +54,8 @@
         android:tint="@color/colorGrey"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/import_track_button" />
+        app:layout_constraintStart_toEndOf="@+id/import_track_button"
+        android:contentDescription="@string/recording_share_desc" />
 
     <ImageButton
         android:id="@+id/elevation_track_button"
@@ -65,7 +68,8 @@
         android:tint="@color/colorGrey"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/share_track_button" />
+        app:layout_constraintStart_toEndOf="@+id/share_track_button"
+        android:contentDescription="@string/recording_show_elevations_desc" />
 
     <ImageButton
         android:id="@+id/delete_recording_button"
@@ -78,7 +82,8 @@
         android:tint="@color/colorAccentRed"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="@string/recording_delete_desc" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recordings_recycler_id"

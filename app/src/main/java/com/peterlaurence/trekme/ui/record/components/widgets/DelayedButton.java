@@ -40,6 +40,8 @@ public class DelayedButton extends AppCompatImageButton {
     public DelayedButton(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
+        setContentDescription(context.getString(R.string.delayed_button_desc));
+
         mStopToPLayDrawable = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_delayed_button_stop_to_play);
         mPlayToStopDrawable = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_delayed_button_play_to_stop);
 

@@ -18,8 +18,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 124
-        versionName "2.6.12"
+        versionCode 125
+        versionName "2.6.13"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -78,7 +78,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1"
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0'
     implementation "com.squareup.okhttp3:okhttp:4.9.0"
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
     implementation "com.google.dagger:hilt-android:$dagger_hilt_version"

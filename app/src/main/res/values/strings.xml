@@ -27,6 +27,7 @@
     <string name="storage_perm_denied">Please enable storage permission from settings</string>
     <string name="close_dialog">Close</string>
     <string name="understood_dialog">I understand</string>
+    <string name="delayed_button_desc">Start / Strop a GPX recording</string>
 
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>
@@ -224,6 +225,11 @@
         and gpx files are stored locally on your device.</string>
     <string name="recording_imported_success">Successfully imported in %1$d files</string>
     <string name="recording_imported_failure">Couldn\'t import %1$s</string>
+    <string name="recording_edit_name_desc">Edit recording name</string>
+    <string name="recording_import_desc">Import the recording into a map</string>
+    <string name="recording_share_desc">Share a recording</string>
+    <string name="recording_show_elevations_desc">Show the elevation profile</string>
+    <string name="recording_delete_desc">Delete a recording</string>
 
     <!-- Elevation fragment -->
     <string name="no_elevations">This GPX file contains no elevations. TrekMe can\'t show the elevation profile.</string>
