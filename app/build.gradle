@@ -18,8 +18,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 125
-        versionName "2.6.13"
+        versionCode 126
+        versionName "2.7.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -50,11 +50,11 @@ dependencies {
     def hilt_version = '1.0.0-alpha03'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation 'org.robolectric:robolectric:4.5.1'
 //    implementation project(":mapview-debug")
-    implementation 'ovh.plrapps:mapview:3.0.0-rc6'
+    implementation 'ovh.plrapps:mapview:3.0.0-rc7'
     implementation 'com.android.billingclient:billing:3.0.2'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
@@ -72,7 +72,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.preference:preference-ktx:1.1.1'
-    implementation 'com.google.android.gms:play-services-location:17.1.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.google.android:flexbox:2.0.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
@@ -95,6 +95,4 @@ dependencies {
 }
 repositories {
     mavenCentral()
-    maven { url "https://repo1.maven.org/maven2" }
-    maven { url "https://kotlin.bintray.com/kotlinx" }
 }

@@ -13,7 +13,7 @@ import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 class TileStreamProviderSwiss(urlTileBuilder: UrlTileBuilder) : TileStreamProvider {
     private val requestProperties = mapOf(
             "Referer" to "https://wmts.geo.admin.ch",
-            "User-Agent" to "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+            "User-Agent" to "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
     )
     private val base = TileStreamProviderRetry(TileStreamProviderHttp(urlTileBuilder, requestProperties))
 
