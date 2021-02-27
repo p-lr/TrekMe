@@ -3,8 +3,8 @@ package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
-import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.api.*
+import ovh.plrapps.mapview.MapView
+import ovh.plrapps.mapview.api.*
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import kotlin.math.max
 import kotlin.math.min
@@ -41,7 +41,7 @@ class AreaLayer(val context: Context, private val areaListener: AreaListener) {
 
         /* Create the area view between the two markers */
         areaView = AreaView(context)
-        mapView.addReferentialOwner(areaView)
+        mapView.addReferentialListener(areaView)
         mapView.addView(areaView)
 
         /* Setup the first marker */
@@ -52,7 +52,7 @@ class AreaLayer(val context: Context, private val areaListener: AreaListener) {
             mapView_.moveMarker(areaMarkerFirst, x, y)
             onMarkerMoved()
         }
-        val firstMarkerTouchMoveListener = TouchMoveListener(mapView, firstMarkerMoveAgent)
+        val firstMarkerTouchMoveListener = TouchMoveListener(mapView, null, firstMarkerMoveAgent)
         areaMarkerFirst.setOnTouchListener(firstMarkerTouchMoveListener)
 
         /* Setup the second marker */
@@ -63,7 +63,7 @@ class AreaLayer(val context: Context, private val areaListener: AreaListener) {
             mapView_.moveMarker(areaMarkerSecond, x, y)
             onMarkerMoved()
         }
-        val secondMarkerTouchMoveListener = TouchMoveListener(mapView, secondMarkerMoveAgent)
+        val secondMarkerTouchMoveListener = TouchMoveListener(mapView, null, secondMarkerMoveAgent)
         areaMarkerSecond.setOnTouchListener(secondMarkerTouchMoveListener)
 
         /* Setup the central marker */
@@ -74,7 +74,7 @@ class AreaLayer(val context: Context, private val areaListener: AreaListener) {
                     y - centralMarkerRelativeY)
             onMarkerMoved()
         }
-        val centralMarkerTouchMoveListener = TouchMoveListener(mapView, centralMarkerMoveAgent)
+        val centralMarkerTouchMoveListener = TouchMoveListener(mapView, null, centralMarkerMoveAgent)
         areaMarkerCentral.setOnTouchListener(centralMarkerTouchMoveListener)
 
         /* Set their positions */
@@ -100,7 +100,7 @@ class AreaLayer(val context: Context, private val areaListener: AreaListener) {
             mapView.removeMarker(areaMarkerSecond)
             mapView.removeMarker(areaMarkerCentral)
             mapView.removeView(areaView)
-            mapView.removeReferentialOwner(areaView)
+            mapView.removeReferentialListener(areaView)
         }
 
         visible = false
@@ -118,18 +118,18 @@ class AreaLayer(val context: Context, private val areaListener: AreaListener) {
         firstMarkerRelativeY += deltaY
         secondMarkerRelativeY += deltaY
 
-        firstMarkerRelativeX = mapView.getConstrainedX(firstMarkerRelativeX)
-        firstMarkerRelativeY = mapView.getConstrainedY(firstMarkerRelativeY)
+        firstMarkerRelativeX = mapView.getConstrainedX(firstMarkerRelativeX) ?: return
+        firstMarkerRelativeY = mapView.getConstrainedY(firstMarkerRelativeY) ?: return
         mapView.moveMarker(areaMarkerFirst, firstMarkerRelativeX, firstMarkerRelativeY)
 
-        secondMarkerRelativeX = mapView.getConstrainedX(secondMarkerRelativeX)
-        secondMarkerRelativeY = mapView.getConstrainedY(secondMarkerRelativeY)
+        secondMarkerRelativeX = mapView.getConstrainedX(secondMarkerRelativeX) ?: return
+        secondMarkerRelativeY = mapView.getConstrainedY(secondMarkerRelativeY) ?: return
         mapView.moveMarker(areaMarkerSecond, secondMarkerRelativeX, secondMarkerRelativeY)
     }
 
     private fun onMarkerMoved() {
         /* Update the ui */
-        val translater = mapView.coordinateTranslater
+        val translater = mapView.coordinateTranslater ?: return
         areaView.updateArea(
                 translater.translateX(firstMarkerRelativeX).toFloat(),
                 translater.translateY(firstMarkerRelativeY).toFloat(),
@@ -147,7 +147,7 @@ class AreaLayer(val context: Context, private val areaListener: AreaListener) {
         /* Calculate the relative coordinates of the first marker */
         var x = mapView.scrollX + (mapView.width * 0.66f).toInt() - mapView.offsetX
         var y = mapView.scrollY + (mapView.height * 0.33f).toInt() - mapView.offsetY
-        val coordinateTranslater = mapView.coordinateTranslater
+        val coordinateTranslater = mapView.coordinateTranslater ?: return
         var relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mapView.scale)
         var relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mapView.scale)
 

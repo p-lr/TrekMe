@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
-import com.peterlaurence.mapview.MapView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.core.units.UnitFormatter
@@ -15,6 +14,7 @@ import com.peterlaurence.trekme.databinding.FragmentMapViewBinding
 import com.peterlaurence.trekme.repositories.location.Location
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
+import ovh.plrapps.mapview.MapView
 
 /**
  * Presenter for [MapViewFragment]. It is loosely coupled with it, so a different view could be used.

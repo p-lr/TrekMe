@@ -4,11 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.view.View
-import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.ReferentialData
-import com.peterlaurence.mapview.ReferentialOwner
-import com.peterlaurence.mapview.api.*
-import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -22,32 +17,41 @@ import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import com.peterlaurence.trekme.util.px
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapview.MapView
+import ovh.plrapps.mapview.ReferentialData
+import ovh.plrapps.mapview.ReferentialListener
+import ovh.plrapps.mapview.api.*
+import ovh.plrapps.mapview.markers.MarkerTapListener
 
 class LandmarkLayer(
         val context: Context,
         private val scope: CoroutineScope,
         private val mapLoader: MapLoader
-) : MarkerTapListener, ReferentialOwner, CoroutineScope by scope {
+) : MarkerTapListener, ReferentialListener, CoroutineScope by scope {
     private var map: Map? = null
     private var mapView: MapView? = null
     private var lastKnownPosition: Pair<Double, Double> = Pair(0.0, 0.0)
     private val movableLandmarkList: MutableList<MovableLandmark> = mutableListOf()
     private var touchMoveListener: TouchMoveListener? = null
 
-    override var referentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
+    var referentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
 
             movableLandmarkList.forEach {
-                it.getLineView()?.referentialData = value
-                touchMoveListener?.referentialData = value
+                it.getLineView()?.onReferentialChanged(value)
+                touchMoveListener?.onReferentialChanged(value)
             }
         }
+
+    override fun onReferentialChanged(refData: ReferentialData) {
+        referentialData = refData
+    }
 
     fun init(map: Map, mapView: MapView) {
         this.map = map
         setMapView(mapView)
-        mapView.addReferentialOwner(this)
+        mapView.addReferentialListener(this)
 
         if (map.areLandmarksDefined()) {
             drawLandmarks()
@@ -57,7 +61,7 @@ class LandmarkLayer(
     }
 
     fun destroy() {
-        mapView?.removeReferentialOwner(this)
+        mapView?.removeReferentialListener(this)
     }
 
     private fun CoroutineScope.acquireThenDrawLandmarks() = launch {
@@ -97,7 +101,7 @@ class LandmarkLayer(
         /* Calculate the relative coordinates of the center of the screen */
         val x = mapView.scrollX + mapView.width / 2 - mapView.offsetX
         val y = mapView.scrollY + mapView.height / 2 - mapView.offsetY
-        val coordinateTranslater = mapView.coordinateTranslater
+        val coordinateTranslater = mapView.coordinateTranslater ?: return
         val relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mapView.scale)
         val relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mapView.scale)
 
@@ -158,8 +162,8 @@ class LandmarkLayer(
             }
         }
 
-        touchMoveListener = TouchMoveListener(this.mapView, landmarkMoveAgent, landmarkClickCallback)
-        touchMoveListener?.referentialData = referentialData
+        touchMoveListener = TouchMoveListener(mapView ?: return, landmarkClickCallback, landmarkMoveAgent)
+        touchMoveListener?.onReferentialChanged(referentialData)
         markerGrab.setOnTouchListener(touchMoveListener)
         if (movableLandmark.relativeX != null && movableLandmark.relativeY != null) {
             this.mapView?.addMarker(markerGrab, movableLandmark.relativeX!!, movableLandmark.relativeY!!, -0.5f, -0.5f)

@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.ui.mapview.controller
 
-import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.api.getVisibleViewport
+import ovh.plrapps.mapview.MapView
+import ovh.plrapps.mapview.api.getVisibleViewport
 
 data class CalloutPosition(val relativeAnchorTop: Float, val absoluteAnchorTop: Float,
                            val relativeAnchorLeft: Float, val absoluteAnchorLeft: Float)
@@ -26,12 +26,14 @@ data class CalloutPosition(val relativeAnchorTop: Float, val absoluteAnchorTop: 
 fun positionCallout(mapView: MapView, calloutWidth: Int, calloutHeight: Int,
                     relativeX: Double, relativeY: Double,
                     markerWidth: Int, markerHeight: Int): CalloutPosition {
-    val yInPx: Int = mapView.coordinateTranslater.translateAndScaleY(relativeY, mapView.scale)
-    val xInPx: Int = mapView.coordinateTranslater.translateAndScaleX(relativeX, mapView.scale)
+
+    val ct = mapView.coordinateTranslater ?: return CalloutPosition(-0.5f, 0f, -0.5f, 0f)
+    val yInPx: Int = ct.translateAndScaleY(relativeY, mapView.scale)
+    val xInPx: Int = ct.translateAndScaleX(relativeX, mapView.scale)
 
     val viewport = mapView.getVisibleViewport()
 
-    val limitBottom = (mapView.coordinateTranslater.baseHeight * mapView.scale).toInt()
+    val limitBottom = (ct.baseHeight * mapView.scale).toInt()
     val spaceBottom = viewport.bottom.coerceAtMost(limitBottom) - yInPx
     val spaceTop = yInPx - viewport.top.coerceAtLeast(0)
     val roomFullTop = calloutHeight + markerHeight / 2f < spaceTop
@@ -39,7 +41,7 @@ fun positionCallout(mapView: MapView, calloutWidth: Int, calloutHeight: Int,
     val roomFullBottom = calloutHeight < spaceBottom
     val roomCenteredBottom = calloutHeight / 2f < spaceBottom
 
-    val limitRight = (mapView.coordinateTranslater.baseWidth * mapView.scale).toInt()
+    val limitRight = (ct.baseWidth * mapView.scale).toInt()
     val spaceRight = viewport.right.coerceAtMost(limitRight) - xInPx
     val spaceLeft = xInPx - viewport.left.coerceAtLeast(0)
     val roomCenteredLeft = calloutWidth / 2f < spaceLeft

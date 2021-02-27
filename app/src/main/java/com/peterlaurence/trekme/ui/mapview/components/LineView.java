@@ -7,10 +7,10 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 
-import com.peterlaurence.mapview.ReferentialData;
-import com.peterlaurence.mapview.ReferentialOwner;
-
 import org.jetbrains.annotations.NotNull;
+
+import ovh.plrapps.mapview.ReferentialData;
+import ovh.plrapps.mapview.ReferentialListener;
 
 
 /**
@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author P.Laurence on 21/06/17.
  */
-public class LineView extends View implements ReferentialOwner {
+public class LineView extends View implements ReferentialListener {
     private static final int DEFAULT_STROKE_COLOR = 0xCC311B92;
     private static final int DEFAULT_STROKE_WIDTH_DP = 4;
     private float mStrokeWidth;
@@ -28,14 +28,8 @@ public class LineView extends View implements ReferentialOwner {
 
     private ReferentialData mReferentialData;
 
-    @NotNull
     @Override
-    public ReferentialData getReferentialData() {
-        return mReferentialData;
-    }
-
-    @Override
-    public void setReferentialData(@NotNull ReferentialData referentialData) {
+    public void onReferentialChanged(@NotNull ReferentialData referentialData) {
         mReferentialData = referentialData;
         invalidate();
     }

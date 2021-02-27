@@ -12,7 +12,7 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.ViewMatchers.*
-import com.peterlaurence.mapview.MapView
+import ovh.plrapps.mapview.MapView
 import com.peterlaurence.trekme.matchers.checkMapViewScale
 import com.peterlaurence.trekme.matchers.childAtPosition
 import org.hamcrest.Matcher

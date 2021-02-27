@@ -4,9 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.view.View
 import androidx.navigation.Navigation
-import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.api.*
-import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.gson.MarkerGson.Marker
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -20,6 +17,9 @@ import com.peterlaurence.trekme.ui.tools.TouchMoveListener.MarkerMoveAgent
 import com.peterlaurence.trekme.util.px
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapview.MapView
+import ovh.plrapps.mapview.api.*
+import ovh.plrapps.mapview.markers.MarkerTapListener
 
 /**
  * All [MovableMarker] and [MarkerCallout] are managed here.
@@ -117,7 +117,7 @@ class MarkerLayer(
         /* Calculate the relative coordinates of the center of the screen */
         val x = mapView.scrollX + mapView.width / 2 - mapView.offsetX
         val y = mapView.scrollY + mapView.height / 2 - mapView.offsetY
-        val coordinateTranslater = mapView.coordinateTranslater
+        val coordinateTranslater = mapView.coordinateTranslater ?: return
         val relativeX = coordinateTranslater.translateAndScaleAbsoluteToRelativeX(x, mapView.scale)
         val relativeY = coordinateTranslater.translateAndScaleAbsoluteToRelativeY(y, mapView.scale)
         val movableMarker: MovableMarker
@@ -191,7 +191,7 @@ class MarkerLayer(
                 mapView.removeMarker(markerGrab)
                 val l = markerGrab.onTouchMoveListener
                 if (l != null) {
-                    mapView.removeReferentialOwner(l)
+                    mapView.removeReferentialListener(l)
                 }
             }
         })
@@ -265,8 +265,8 @@ class MarkerLayer(
         val markerGrab = MarkerGrab(mapView.context)
 
         val markerClickCallback = makeClickCallback(movableMarker, markerGrab, mapView, map, mapLoader)
-        val touchMoveListener = TouchMoveListener(mapView, markerMarkerMoveAgent, markerClickCallback)
-        mapView.addReferentialOwner(touchMoveListener)
+        val touchMoveListener = TouchMoveListener(mapView, markerClickCallback, markerMarkerMoveAgent)
+        mapView.addReferentialListener(touchMoveListener)
         markerGrab.onTouchMoveListener = touchMoveListener
         mapView.addMarker(markerGrab, movableMarker.relativeX, movableMarker.relativeY, -0.5f, -0.5f, 0f, 0f)
         markerGrab.morphIn(null)

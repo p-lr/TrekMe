@@ -6,16 +6,17 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import androidx.core.content.ContextCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.peterlaurence.mapview.ReferentialData
-import com.peterlaurence.mapview.ReferentialOwner
 import com.peterlaurence.trekme.R
+import ovh.plrapps.mapview.ReferentialData
+import ovh.plrapps.mapview.ReferentialListener
 import kotlin.math.max
 
 class CompassView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null,
-                                            defStyleAttr: Int = 0) : FloatingActionButton(context, attrs, defStyleAttr), ReferentialOwner {
+                                            defStyleAttr: Int = 0) : FloatingActionButton(context, attrs, defStyleAttr), ReferentialListener {
 
-    private val compass = context.getDrawable(R.drawable.compass)!!
+    private val compass = ContextCompat.getDrawable(context, R.drawable.compass)!!
     private val squareDim = max(compass.intrinsicWidth, compass.intrinsicHeight)
     private var bitmap: Bitmap? = null
     private val defaultPaint = Paint().apply {
@@ -39,11 +40,15 @@ class CompassView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         }
     }
 
-    override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
+    var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
             invalidate()
         }
+
+    override fun onReferentialChanged(refData: ReferentialData) {
+        referentialData = refData
+    }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)

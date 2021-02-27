@@ -6,16 +6,16 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.TypedValue
 import android.view.View
-import com.peterlaurence.mapview.ReferentialData
-import com.peterlaurence.mapview.ReferentialOwner
 import com.peterlaurence.trekme.R
+import ovh.plrapps.mapview.ReferentialData
+import ovh.plrapps.mapview.ReferentialListener
 
 /**
  * A custom view that draws a square between two [AreaMarker] and represents an area.
  *
  * @author P.Laurence on 12/05/18
  */
-class AreaView(context: Context) : View(context), ReferentialOwner {
+class AreaView(context: Context) : View(context), ReferentialListener {
     private val strokeWidth: Float
     private val paintBackground: Paint = Paint()
     private val paintStroke: Paint = Paint()
@@ -26,11 +26,15 @@ class AreaView(context: Context) : View(context), ReferentialOwner {
     private var x2: Float = 0f
     private var y2: Float = 0f
 
-    override var referentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
+    private var referentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
             invalidate()
         }
+
+    override fun onReferentialChanged(refData: ReferentialData) {
+        referentialData = refData
+    }
 
     init {
         setWillNotDraw(false)

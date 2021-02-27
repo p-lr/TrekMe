@@ -9,18 +9,19 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.view.View;
 
-import com.peterlaurence.mapview.ReferentialData;
-import com.peterlaurence.mapview.ReferentialOwner;
 import com.peterlaurence.trekme.R;
 
 import org.jetbrains.annotations.NotNull;
+
+import ovh.plrapps.mapview.ReferentialData;
+import ovh.plrapps.mapview.ReferentialListener;
 
 /**
  * Custom marker for indicating the current position, and optionally the orientation.
  *
  * @author P.Laurence on 03/04/16.
  */
-public class PositionOrientationMarker extends View implements ReferentialOwner {
+public class PositionOrientationMarker extends View implements ReferentialListener {
     private int mMeasureDimension;
     private int mOrientationRadius1Dimension;
     private int mPositionDimension;
@@ -41,14 +42,8 @@ public class PositionOrientationMarker extends View implements ReferentialOwner 
         init(context);
     }
 
-    @NotNull
     @Override
-    public ReferentialData getReferentialData() {
-        return referentialData;
-    }
-
-    @Override
-    public void setReferentialData(@NotNull ReferentialData referentialData) {
+    public void onReferentialChanged(@NotNull ReferentialData referentialData) {
         this.referentialData = referentialData;
     }
 

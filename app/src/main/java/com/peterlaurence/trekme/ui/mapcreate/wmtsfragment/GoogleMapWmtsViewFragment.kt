@@ -16,9 +16,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
-import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.MapViewConfiguration
-import com.peterlaurence.mapview.api.*
+import ovh.plrapps.mapview.MapView
+import ovh.plrapps.mapview.MapViewConfiguration
+import ovh.plrapps.mapview.api.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.TileStreamProvider

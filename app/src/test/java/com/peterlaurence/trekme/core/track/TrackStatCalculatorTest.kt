@@ -30,7 +30,7 @@ class TrackStatCalculatorTest {
 
     @Before
     fun init() {
-        statCalculator = TrackStatCalculator()
+        statCalculator = TrackStatCalculator(DistanceCalculatorImpl(false))
     }
 
     /**

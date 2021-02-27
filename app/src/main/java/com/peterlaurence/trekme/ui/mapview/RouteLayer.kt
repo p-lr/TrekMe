@@ -10,14 +10,6 @@ import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.ReferentialData
-import com.peterlaurence.mapview.ReferentialOwner
-import com.peterlaurence.mapview.api.addMarker
-import com.peterlaurence.mapview.api.moveMarker
-import com.peterlaurence.mapview.api.removeMarker
-import com.peterlaurence.mapview.paths.PathView
-import com.peterlaurence.mapview.paths.addPathView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.getRelativeX
@@ -37,6 +29,14 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.parcelize.Parcelize
+import ovh.plrapps.mapview.MapView
+import ovh.plrapps.mapview.ReferentialData
+import ovh.plrapps.mapview.ReferentialListener
+import ovh.plrapps.mapview.api.addMarker
+import ovh.plrapps.mapview.api.moveMarker
+import ovh.plrapps.mapview.api.removeMarker
+import ovh.plrapps.mapview.paths.PathView
+import ovh.plrapps.mapview.paths.addPathView
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -149,7 +149,7 @@ class RouteLayer(
     fun activateDistanceOnTrack() {
         val controller = distanceOnRouteController ?: return
         if (isInitialized && !controller.isActive) {
-            mapView.addReferentialOwner(controller)
+            mapView.addReferentialListener(controller)
             controller.enable()
         }
     }
@@ -157,7 +157,7 @@ class RouteLayer(
     fun disableDistanceOnTrack() {
         val controller = distanceOnRouteController ?: return
         if (!isInitialized) return
-        mapView.removeReferentialOwner(controller)
+        mapView.removeReferentialListener(controller)
         controller.disable()
     }
 
@@ -246,7 +246,7 @@ class RouteLayer(
             val controller = distanceOnRouteController ?: return@launch
             controller.setRoutes(processedStaticRoutes, map, state?.distOnRouteState)
             if (state != null && state.wasDistanceOnTrackActive && !controller.isActive) {
-                mapView.addReferentialOwner(controller)
+                mapView.addReferentialListener(controller)
                 controller.enable()
             }
         }
@@ -286,6 +286,8 @@ class RouteLayer(
         var i = 0
         var init = true
 
+        val coordinateTranslater = mapView.coordinateTranslater ?: return null
+
         /* While we iterate the list of markers, some new markers may be concurrently added to the
          * list. This is the case for the liveroute, inside the associated view-model.
          * By holding the monitor of the list of markers, we ensure that no new markers are added
@@ -295,13 +297,13 @@ class RouteLayer(
                 val relativeX = marker.getRelativeX(map)
                 val relativeY = marker.getRelativeY(map)
                 if (init) {
-                    lines[i] = mapView.coordinateTranslater.translateX(relativeX).toFloat()
-                    lines[i + 1] = mapView.coordinateTranslater.translateY(relativeY).toFloat()
+                    lines[i] = coordinateTranslater.translateX(relativeX).toFloat()
+                    lines[i + 1] = coordinateTranslater.translateY(relativeY).toFloat()
                     init = false
                     i += 2
                 } else {
-                    lines[i] = mapView.coordinateTranslater.translateX(relativeX).toFloat()
-                    lines[i + 1] = mapView.coordinateTranslater.translateY(relativeY).toFloat()
+                    lines[i] = coordinateTranslater.translateX(relativeX).toFloat()
+                    lines[i + 1] = coordinateTranslater.translateY(relativeY).toFloat()
                     if (i + 2 >= size) break
                     lines[i + 2] = lines[i]
                     lines[i + 3] = lines[i + 1]
@@ -323,7 +325,7 @@ class RouteLayer(
  */
 private class DistanceOnRouteController(private val pathView: PathView,
                                         private val mapView: MapView,
-                                        private val scope: CoroutineScope) : ReferentialOwner {
+                                        private val scope: CoroutineScope) : ReferentialListener {
     var isActive: Boolean = false
         private set
     private var map: Map? = null
@@ -361,13 +363,17 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }.toMap()
     }
 
-    override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
+    private var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
-            firstTouchMoveListener?.referentialData = value
-            secondTouchMoveListener?.referentialData = value
+            firstTouchMoveListener?.onReferentialChanged(value)
+            secondTouchMoveListener?.onReferentialChanged(value)
             scrollUpdateChannel.tryEmit(Unit)
         }
+
+    override fun onReferentialChanged(refData: ReferentialData) {
+        referentialData = refData
+    }
 
     fun enable() {
         isActive = true
@@ -463,8 +469,9 @@ private class DistanceOnRouteController(private val pathView: PathView,
 
     private fun updateActiveRoute() {
         /* Compute the relative coordinates of the center of the MapView's visible area */
-        val x = mapView.coordinateTranslater.translateAbsoluteToRelativeX((referentialData.centerX * mapView.coordinateTranslater.baseWidth).toInt())
-        val y = mapView.coordinateTranslater.translateAbsoluteToRelativeY((referentialData.centerY * mapView.coordinateTranslater.baseHeight).toInt())
+        val ct = mapView.coordinateTranslater ?: return
+        val x = ct.translateAbsoluteToRelativeX((referentialData.centerX * ct.baseWidth).toInt())
+        val y = ct.translateAbsoluteToRelativeY((referentialData.centerY * ct.baseHeight).toInt())
 
         barycenterToRoute?.filter { it.value.visible }?.minByOrNull {
             computeDistance(x, y, it.key)
@@ -576,7 +583,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
             override val visible: Boolean
                 get() = routeWithActiveDistance.visible
             override var path: FloatArray = drawablePath.path
-            override val width: Float? = distancePathWidth
+            override val width: Float = distancePathWidth
             override var paint: Paint? = distancePaint
             override val count: Int
                 get() = abs(i2() - i1()).coerceAtMost(length)

@@ -11,8 +11,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.peterlaurence.mapview.MapView;
-import com.peterlaurence.mapview.MapViewConfiguration;
+import ovh.plrapps.mapview.MapView;
+import ovh.plrapps.mapview.MapViewConfiguration;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
@@ -29,9 +29,9 @@ import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-import static com.peterlaurence.mapview.api.MarkerApiKt.addMarker;
-import static com.peterlaurence.mapview.api.MarkerApiKt.moveMarker;
-import static com.peterlaurence.mapview.api.MarkerApiKt.moveToMarker;
+import static ovh.plrapps.mapview.api.MarkerApiKt.addMarker;
+import static ovh.plrapps.mapview.api.MarkerApiKt.moveMarker;
+import static ovh.plrapps.mapview.api.MarkerApiKt.moveToMarker;
 import static com.peterlaurence.trekme.viewmodel.common.tileviewcompat.CompatibityUtilsKt.makeMapViewTileStreamProvider;
 
 

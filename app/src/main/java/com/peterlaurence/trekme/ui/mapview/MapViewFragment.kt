@@ -10,12 +10,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
-import com.peterlaurence.mapview.MapView
-import com.peterlaurence.mapview.MapViewConfiguration
-import com.peterlaurence.mapview.ReferentialData
-import com.peterlaurence.mapview.ReferentialOwner
-import com.peterlaurence.mapview.api.*
-import com.peterlaurence.mapview.markers.MarkerTapListener
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
@@ -40,6 +34,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapview.MapView
+import ovh.plrapps.mapview.MapViewConfiguration
+import ovh.plrapps.mapview.ReferentialData
+import ovh.plrapps.mapview.ReferentialListener
+import ovh.plrapps.mapview.api.*
+import ovh.plrapps.mapview.markers.MarkerTapListener
 import javax.inject.Inject
 
 /**
@@ -49,7 +49,7 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListener,
-        ReferentialOwner {
+        ReferentialListener {
 
     @Inject
     lateinit var appEventBus: AppEventBus
@@ -98,12 +98,16 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private var state: Bundle? = null
 
-    override var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
+    private var referentialData: ReferentialData = ReferentialData(false, 0f, 1f, 0.0, 0.0)
         set(value) {
             field = value
-            positionMarker?.referentialData = value
+            positionMarker?.onReferentialChanged(value)
             compassView?.referentialData = value
         }
+
+    override fun onReferentialChanged(refData: ReferentialData) {
+        referentialData = refData
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -634,7 +638,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             } // nothing to do
         }
 
-        mapView.addReferentialOwner(this)
+        mapView.addReferentialListener(this)
     }
 
     private fun centerOnPosition() {

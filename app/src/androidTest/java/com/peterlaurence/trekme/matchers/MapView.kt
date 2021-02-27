@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.matchers
 
 import android.view.View
-import com.peterlaurence.mapview.MapView
+import ovh.plrapps.mapview.MapView
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.TypeSafeMatcher

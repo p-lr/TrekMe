@@ -54,7 +54,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation 'org.robolectric:robolectric:4.5.1'
 //    implementation project(":mapview-debug")
-    implementation 'com.peterlaurence:mapview:2.1.5'
+    implementation 'ovh.plrapps:mapview:3.0.0-rc6'
     implementation 'com.android.billingclient:billing:3.0.2'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
@@ -95,5 +95,6 @@ dependencies {
 }
 repositories {
     mavenCentral()
+    maven { url "https://repo1.maven.org/maven2" }
     maven { url "https://kotlin.bintray.com/kotlinx" }
 }

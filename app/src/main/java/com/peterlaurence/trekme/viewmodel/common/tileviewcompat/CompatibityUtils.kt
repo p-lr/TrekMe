@@ -7,7 +7,7 @@ import com.peterlaurence.trekme.core.map.TileStreamProvider
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import com.peterlaurence.mapview.core.TileStreamProvider as MapViewTileStreamProvider
+import ovh.plrapps.mapview.core.TileStreamProvider as MapViewTileStreamProvider
 
 
 /**
@@ -17,15 +17,13 @@ import com.peterlaurence.mapview.core.TileStreamProvider as MapViewTileStreamPro
  */
 fun makeMapViewTileStreamProvider(map: Map): MapViewTileStreamProvider? {
     return if (map.origin != null) {
-        object : MapViewTileStreamProvider {
-            override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
-                val relativePathString = "$zoomLvl${File.separator}$row${File.separator}$col${map.imageExtension}"
+        MapViewTileStreamProvider { row, col, zoomLvl ->
+            val relativePathString = "$zoomLvl${File.separator}$row${File.separator}$col${map.imageExtension}"
 
-                return try {
-                    FileInputStream(File(map.directory, relativePathString))
-                } catch (e: Exception) {
-                    null
-                }
+            try {
+                FileInputStream(File(map.directory, relativePathString))
+            } catch (e: Exception) {
+                null
             }
         }
     } else {
