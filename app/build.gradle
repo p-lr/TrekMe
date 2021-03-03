@@ -46,7 +46,7 @@ android {
 
 dependencies {
     def lifecycle_version = '2.3.0'
-    def coroutine_version = '1.4.1'
+    def coroutine_version = '1.4.3'
     def hilt_version = '1.0.0-alpha03'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
