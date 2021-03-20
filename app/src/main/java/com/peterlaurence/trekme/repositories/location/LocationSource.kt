@@ -35,7 +35,7 @@ data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val
  */
 class GoogleLocationSource(private val applicationContext: Context) : LocationSource {
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
-    private val locationRequest = LocationRequest().apply {
+    private val locationRequest = LocationRequest.create().apply {
         interval = 2000
         fastestInterval = 2000
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
