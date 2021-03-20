@@ -501,8 +501,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
         firstTouchMoveListener = TouchMoveListener(mapView) { mapView, view, x, y ->
             scope.launch {
                 val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
-                if (markerIndexed != null && view != null) {
-                    mapView?.moveMarker(view,
+                if (markerIndexed != null) {
+                    mapView.moveMarker(view,
                             markerIndexed.marker.getRelativeX(map),
                             markerIndexed.marker.getRelativeY(map))
                     infoForRoute[route]?.index1 = markerIndexed.index
@@ -516,8 +516,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
         secondTouchMoveListener = TouchMoveListener(mapView) { mapView, view, x, y ->
             scope.launch {
                 val markerIndexed = nearestMarkerCalculator.findNearest(x, y)
-                if (markerIndexed != null && view != null) {
-                    mapView?.moveMarker(view,
+                if (markerIndexed != null) {
+                    mapView.moveMarker(view,
                             markerIndexed.marker.getRelativeX(map),
                             markerIndexed.marker.getRelativeY(map))
                     infoForRoute[route]?.index2 = markerIndexed.index
