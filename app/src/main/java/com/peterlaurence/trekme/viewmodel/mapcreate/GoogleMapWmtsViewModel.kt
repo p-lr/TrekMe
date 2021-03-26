@@ -29,8 +29,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.IllegalStateException
 import java.net.URL
 import javax.inject.Inject
+import kotlin.jvm.Throws
 
 /**
  * View-model for [GoogleMapWmtsViewFragment]. It takes care of:
@@ -151,17 +153,22 @@ class GoogleMapWmtsViewModel @Inject constructor(
         return layerOverlayRepository.getLayerProperties(wmtsSource)
     }
 
+    /**
+     * Creates the [TileStreamProvider] for the given source. If we couldn't fetch the API key (when
+     * we should have been able to do so), an [IllegalStateException] is thrown.
+     */
+    @Throws(IllegalStateException::class)
     suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider? {
         val mapSourceData = when (wmtsSource) {
             WmtsSource.IGN -> {
                 val layer = getPrimaryLayerForSource(wmtsSource)!!
                 val overlays = getOverlayLayersForSource(wmtsSource)
-                val ignApi = ignApiRepository.getApi()
-                IgnSourceData(ignApi ?: "", layer, overlays)
+                val ignApi = ignApiRepository.getApi() ?: throw IllegalStateException()
+                IgnSourceData(ignApi, layer, overlays)
             }
             WmtsSource.ORDNANCE_SURVEY -> {
                 if (ordnanceSurveyApi == null) {
-                    ordnanceSurveyApi = getApi(ordnanceSurveyApiUrl)
+                    ordnanceSurveyApi = getApi(ordnanceSurveyApiUrl) ?: throw IllegalStateException()
                 }
                 OrdnanceSurveyData(ordnanceSurveyApi ?: "")
             }

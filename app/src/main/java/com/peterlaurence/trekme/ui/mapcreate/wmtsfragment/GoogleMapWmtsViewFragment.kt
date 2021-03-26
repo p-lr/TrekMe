@@ -16,9 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
-import ovh.plrapps.mapview.MapView
-import ovh.plrapps.mapview.MapViewConfiguration
-import ovh.plrapps.mapview.api.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.TileStreamProvider
@@ -42,12 +39,13 @@ import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
+import ovh.plrapps.mapview.MapView
+import ovh.plrapps.mapview.MapViewConfiguration
+import ovh.plrapps.mapview.api.*
 import javax.inject.Inject
 
 /**
@@ -98,6 +96,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private var lastPlacePosition: PlacePosition? = null
     private val projection = MercatorProjection()
     private var shouldCenterOnFirstLocation = true
+    private var configurationJob: Job? = null
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
     private val geocodingViewModel: GeocodingViewModel by viewModels()
@@ -254,7 +253,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
             R.id.map_layer_menu_id -> {
                 wmtsSource?.also { wmtsSource ->
                     val title = getString(R.string.ign_select_layer_title)
-                    val layers = viewModel.getAvailablePrimaryLayersForSource(wmtsSource) ?: return@also
+                    val layers = viewModel.getAvailablePrimaryLayersForSource(wmtsSource)
+                            ?: return@also
                     val activeLayer = viewModel.getPrimaryLayerForSource(wmtsSource) ?: return@also
                     val ids = layers.map { it.id }
                     val values = layers.mapNotNull { translateLayerName(it) }
@@ -378,42 +378,55 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
     }
 
-    private fun checkThenConfigureMapView() = lifecycleScope.launch {
-        val wmtsSource = wmtsSource ?: return@launch
+    private fun checkThenConfigureMapView() {
+        /* Cancel any previous configuration job. */
+        configurationJob?.cancel()
 
-        /* 0- Show infinite progressbar to the user until we're done testing the tile provider */
-        _binding?.progressBarWaiting?.visibility = View.VISIBLE
+        configurationJob = lifecycleScope.launch {
+            val wmtsSource = wmtsSource ?: return@launch
 
-        /* 1- Create the TileStreamProvider */
-        val streamProvider = viewModel.createTileStreamProvider(wmtsSource)
-        if (streamProvider == null) {
-            showWarningMessage()
-            return@launch
-        }
+            /* 0- Show infinite progressbar to the user until we're done testing the tile provider */
+            _binding?.progressBarWaiting?.visibility = View.VISIBLE
 
-        /* 2- Configure the mapView */
-        val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
-        configureMapView(streamProvider, mapConfiguration)
+            /* 1- Create the TileStreamProvider */
+            val streamProvider = runCatching {
+                viewModel.createTileStreamProvider(wmtsSource)
+            }.onFailure {
+                /* Couldn't fetch API key. The VPS might be down. */
+                showVpsFailureMessage()
+                return@launch
+            }.getOrNull()
 
-        /* 3- Restore the last place position */
-        lastPlacePosition?.also { pos ->
-            mapView?.also { mapView ->
-                updatePlaceMarker(mapView, pos.X, pos.Y)
+            if (streamProvider == null) {
+                showWarningMessage()
+                return@launch
             }
-        }
+            ensureActive()
 
-        /* 4- Hide the progressbar, whatever the outcome */
-        val binding = _binding ?: return@launch
-        binding.progressBarWaiting.visibility = View.GONE
+            /* 2- Configure the mapView */
+            val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
+            configureMapView(streamProvider, mapConfiguration)
 
-        /* 5- Scroll to the init position if there is one pre-configured */
-        mapConfiguration?.also { config ->
-            /* At this point the mapView should be initialized, but we never know.. */
-            mapView?.apply {
-                config.forEach {
-                    if (it is InitScaleAndScrollConfig) {
-                        scale = it.scale
-                        scrollTo(it.scrollX, it.scrollY)
+            /* 3- Restore the last place position */
+            lastPlacePosition?.also { pos ->
+                mapView?.also { mapView ->
+                    updatePlaceMarker(mapView, pos.X, pos.Y)
+                }
+            }
+
+            /* 4- Hide the progressbar, whatever the outcome */
+            val binding = _binding ?: return@launch
+            binding.progressBarWaiting.visibility = View.GONE
+
+            /* 5- Scroll to the init position if there is one pre-configured */
+            mapConfiguration?.also { config ->
+                /* At this point the mapView should be initialized, but we never know.. */
+                mapView?.apply {
+                    config.forEach {
+                        if (it is InitScaleAndScrollConfig) {
+                            scale = it.scale
+                            scrollTo(it.scrollX, it.scrollY)
+                        }
                     }
                 }
             }
@@ -423,6 +436,13 @@ class GoogleMapWmtsViewFragment : Fragment() {
     private fun translateLayerName(layer: Layer): String? {
         val res = layerIdToResId[layer.id] ?: return null
         return getString(res)
+    }
+
+    private fun showVpsFailureMessage() {
+        val binding = _binding ?: return
+        binding.fragmentWmtWarning.visibility = View.VISIBLE
+        binding.fragmentWmtWarningLink.visibility = View.VISIBLE
+        binding.fragmentWmtWarning.text = getText(R.string.mapreate_warning_vps)
     }
 
     private fun showWarningMessage() {
