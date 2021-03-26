@@ -10,7 +10,8 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
-import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
+import com.peterlaurence.trekme.repositories.api.IgnApiRepository
+import com.peterlaurence.trekme.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.repositories.location.GoogleLocationSource
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.repositories.map.MapRepository
@@ -57,6 +58,10 @@ object AppModule {
     @Singleton
     @Provides
     fun bindIgnApiRepository(): IgnApiRepository = IgnApiRepository()
+
+    @Singleton
+    @Provides
+    fun bindOrdnanceSurveyApiRepository(): OrdnanceSurveyApiRepository = OrdnanceSurveyApiRepository()
 
     @Singleton
     @Provides

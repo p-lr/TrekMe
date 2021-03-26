@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.backendApi.ordnanceSurveyApiUrl
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
@@ -16,8 +15,9 @@ import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
 import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
+import com.peterlaurence.trekme.repositories.api.IgnApiRepository
+import com.peterlaurence.trekme.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
-import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.service.DownloadService
@@ -29,10 +29,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.IllegalStateException
 import java.net.URL
 import javax.inject.Inject
-import kotlin.jvm.Throws
 
 /**
  * View-model for [GoogleMapWmtsViewFragment]. It takes care of:
@@ -47,11 +45,11 @@ class GoogleMapWmtsViewModel @Inject constructor(
         private val app: Application,
         private val downloadRepository: DownloadRepository,
         private val ignApiRepository: IgnApiRepository,
+        private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
         private val layerOverlayRepository: LayerOverlayRepository
 ) : ViewModel() {
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
-    private var ordnanceSurveyApi: String? = null
 
     private val _wmtsSourceAccessibility = MutableStateFlow(true)
     val wmtsSourceAccessibility = _wmtsSourceAccessibility.asStateFlow()
@@ -167,10 +165,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 IgnSourceData(ignApi, layer, overlays)
             }
             WmtsSource.ORDNANCE_SURVEY -> {
-                if (ordnanceSurveyApi == null) {
-                    ordnanceSurveyApi = getApi(ordnanceSurveyApiUrl) ?: throw IllegalStateException()
-                }
-                OrdnanceSurveyData(ordnanceSurveyApi ?: "")
+                val api = ordnanceSurveyApiRepository.getApi() ?: throw IllegalStateException()
+                OrdnanceSurveyData(api)
             }
             WmtsSource.OPEN_STREET_MAP -> {
                 val layer = getPrimaryLayerForSource(wmtsSource)!!

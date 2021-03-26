@@ -5,7 +5,7 @@ package com.peterlaurence.trekme.repositories.recording
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
-import com.peterlaurence.trekme.repositories.ign.IgnApiRepository
+import com.peterlaurence.trekme.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.util.chunk
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.performRequest
