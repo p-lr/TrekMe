@@ -10,7 +10,7 @@ import static org.junit.Assert.assertNotNull;
  * @author P.Laurence on 18/02/18.
  */
 public class MercatorProjectionTest {
-    private Projection mProjection = new MercatorProjection();
+    private final Projection mProjection = new MercatorProjection();
 
     @Test
     public void centerOfParis() {

@@ -480,6 +480,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 notifyMgr?.createNotificationChannel(channel)
                 builder = Notification.Builder(this, notificationChannelId)
             } else {
+                @Suppress("DEPRECATION")
                 builder = Notification.Builder(this)
             }
 

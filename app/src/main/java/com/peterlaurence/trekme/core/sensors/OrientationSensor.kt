@@ -6,6 +6,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.view.Surface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -29,7 +30,12 @@ class OrientationSensor(val activity: Activity) : SensorEventListener {
         while (isStarted) {
             delay(1)
             updateOrientation()
-            val screenRotation: Int = activity.windowManager.defaultDisplay.rotation
+            val screenRotation: Int = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                @Suppress("DEPRECATION")
+                activity.windowManager.defaultDisplay.rotation
+            } else {
+                activity.display?.rotation ?: Surface.ROTATION_0
+            }
             var fix = 0
             when (screenRotation) {
                 Surface.ROTATION_90 -> fix = 90

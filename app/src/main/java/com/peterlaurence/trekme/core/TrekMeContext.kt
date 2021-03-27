@@ -160,6 +160,7 @@ class TrekMeContextAndroid : TrekMeContext {
      */
     private fun renameLegacyDir() {
         if (android.os.Build.VERSION.SDK_INT < Q) {
+            @Suppress("DEPRECATION")
             val legacyAppDir = File(Environment.getExternalStorageDirectory(),
                     appFolderNameLegacy)
             if (legacyAppDir.exists()) {
