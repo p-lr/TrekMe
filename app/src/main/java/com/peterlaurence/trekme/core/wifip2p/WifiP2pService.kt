@@ -8,9 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkRequest
 import android.net.wifi.WpsInfo
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
@@ -64,7 +61,6 @@ class WifiP2pService : Service() {
 
     private var isWifiP2pEnabled = false
     private var isDiscoveryActive = false
-    private var isNetworkAvailable = false
     private var serviceStarted = false
 
     private var wifiP2pState: WifiP2pState = _stateFlow.value
@@ -171,20 +167,6 @@ class WifiP2pService : Service() {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
 
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        cm.registerNetworkCallback(NetworkRequest.Builder().build(),
-                object : ConnectivityManager.NetworkCallback() {
-                    override fun onAvailable(network: Network) {
-                        println("Network changed: available")
-                        isNetworkAvailable = true
-                    }
-
-                    override fun onLost(network: Network) {
-                        println("Network changed: lost")
-                        isNetworkAvailable = false
-                    }
-                })
-
         manager = getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
 
         /* register the BroadcastReceiver with the intent values to be matched  */
@@ -272,7 +254,7 @@ class WifiP2pService : Service() {
     }
 
     private suspend fun initialize() {
-        channel = manager?.initialize(this, mainLooper) {
+        channel = manager?.initialize(this.applicationContext, mainLooper) {
             Log.e(TAG, "Lost wifip2p connection")
         }
 
@@ -506,8 +488,11 @@ class WifiP2pService : Service() {
                 wifiP2pState = Loading(p)
             }
 
-            override fun onUnzipFinished(outputDirectory: File) {
-                wifiP2pState = Loading(100)
+            override fun onUnzipFinished(outputDirectory: File, percent: Double) {
+                /* Logically, the percent here should always be 100.0. Indeed, in case of failure,
+                 * onUnzipError is invoked. However, shall we need that information in the future,
+                 * we can get the precise percent of missing data. */
+                wifiP2pState = Loading(percent.toInt())
 
                 /* Import the map */
                 scope.launch {
@@ -586,6 +571,7 @@ class WifiP2pService : Service() {
         autoRestart?.cancel()
         if (resetConnection) resetWifiP2p()
         wifiP2pState = Stopped(reason)
+        scope.cancel()
         stopSelf()
     }
 }

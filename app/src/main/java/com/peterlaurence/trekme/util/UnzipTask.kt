@@ -13,12 +13,13 @@ private const val TAG = "UnzipTask"
  * Unzips from an [InputStream] into an [outputFolder].
  * To compute progress and callback the provided [unzipProgressionListener] with correct values, this
  * function also expects the size of the input stream as [size] parameter. As this size might be the
- * compressed or uncompressed size of the stream, the [isInitialized] flag is expected.
+ * compressed or uncompressed size of the stream, the [isSizeCompressed] flag is expected.
  */
 fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, isSizeCompressed: Boolean,
               unzipProgressionListener: UnzipProgressionListener) {
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
     var result = true
+    var progress = -1.0
 
     try {
         /* Create output directory if necessary */
@@ -28,7 +29,6 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, isSizeCo
 
         var bytesRead = 0L
         val zis = ZipInputStream(inputStream)
-        var progress = -1
         while (true) {
             val entry = zis.nextEntry ?: break
             val fileName = entry.name
@@ -62,9 +62,9 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, isSizeCo
                 }
 
                 bytesRead += if (isSizeCompressed) entry.compressedSize else bytesEntry
-                val newProgress = (bytesRead / size.toDouble() * 100).toInt()
+                val newProgress = bytesRead / size.toDouble() * 100
                 if (newProgress != progress) {
-                    unzipProgressionListener.onProgress(newProgress)
+                    unzipProgressionListener.onProgress(newProgress.toInt())
                     progress = newProgress
                 }
 
@@ -92,7 +92,7 @@ fun unzipTask(inputStream: InputStream, outputFolder: File, size: Long, isSizeCo
     }
 
     if (result) {
-        unzipProgressionListener.onUnzipFinished(outputFolder)
+        unzipProgressionListener.onUnzipFinished(outputFolder, progress)
     } else {
         unzipProgressionListener.onUnzipError()
     }
@@ -108,8 +108,9 @@ interface UnzipProgressionListener {
      * Called once the extraction is done.
      *
      * @param outputDirectory the (just created) parent folder
+     * @param percent the total percent of bytes received (should be 100.0 under normal conditions).
      */
-    fun onUnzipFinished(outputDirectory: File)
+    fun onUnzipFinished(outputDirectory: File, percent: Double)
 
     /**
      * Called whenever an error happens during extraction.
