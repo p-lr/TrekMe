@@ -70,16 +70,34 @@ class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, pri
     }
 }
 
+/**
+ * This provider retries up to [maxRetry] times to fetch a tile. However, if it fails two times to
+ * fetch a tile after all attempts, it stops retrying.
+ */
 class TileStreamProviderRetry(private val tileStreamProvider: TileStreamProvider,
-                              private val retryCount: Int = 30) : TileStreamProvider {
+                              private val maxRetry: Int = 30) : TileStreamProvider {
+    private var effectiveRetry = maxRetry
+    private var failCnt = 0
+
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         var retryCnt = 0
         var result: TileResult
         do {
             result = tileStreamProvider.getTileStream(row, col, zoomLvl)
             retryCnt++
-        } while (result !is OutOfBounds && ((result as? TileStream)?.tileStream == null) && retryCnt <= retryCount)
+        } while (result !is OutOfBounds && ((result as? TileStream)?.tileStream == null) && shouldRetry(retryCnt))
         return result
+    }
+
+    private fun shouldRetry(retryCount: Int): Boolean {
+        /* If we fail two times, we stop retrying and set effectiveRetry to 0 */
+        if (retryCount > maxRetry) {
+            failCnt++
+            if (failCnt == 2) {
+                effectiveRetry = 0
+            }
+        }
+        return retryCount <= effectiveRetry
     }
 }
 
