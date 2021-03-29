@@ -75,7 +75,7 @@ class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, pri
  * fetch a tile after all attempts, it stops retrying.
  */
 class TileStreamProviderRetry(private val tileStreamProvider: TileStreamProvider,
-                              private val maxRetry: Int = 30) : TileStreamProvider {
+                              private val maxRetry: Int = 5) : TileStreamProvider {
     private var effectiveRetry = maxRetry
     private var failCnt = 0
 
@@ -84,6 +84,9 @@ class TileStreamProviderRetry(private val tileStreamProvider: TileStreamProvider
         var result: TileResult
         do {
             result = tileStreamProvider.getTileStream(row, col, zoomLvl)
+            runCatching {
+                if (retryCnt > 0) Thread.sleep(1000)
+            }
             retryCnt++
         } while (result !is OutOfBounds && ((result as? TileStream)?.tileStream == null) && shouldRetry(retryCnt))
         return result
