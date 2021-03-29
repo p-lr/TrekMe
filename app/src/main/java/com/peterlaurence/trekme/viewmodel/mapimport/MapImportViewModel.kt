@@ -73,7 +73,7 @@ class MapImportViewModel @Inject constructor(
                         }
 
                         /* Import the extracted map */
-                        override fun onUnzipFinished(outputDirectory: File) {
+                        override fun onUnzipFinished(outputDirectory: File, percent: Double) {
                             viewModelScope.launch {
                                 val res = MapImporter.importFromFile(outputDirectory, mapLoader)
                                 _unzipEvents.postValue(UnzipMapImportedEvent(item.id, res.map, res.status))
