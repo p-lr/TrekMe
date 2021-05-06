@@ -103,8 +103,8 @@ class ElevationFragment : Fragment() {
         val chunkSize = size / targetWidth
         return if (chunkSize >= 2) {
             chunked(chunkSize).map { chunk ->
-                val dist = chunk.sumByDouble { it.dist } / chunk.size
-                val ele = chunk.sumByDouble { it.elevation } / chunk.size
+                val dist = chunk.sumOf { it.dist } / chunk.size
+                val ele = chunk.sumOf { it.elevation } / chunk.size
                 ElePoint(dist, ele)
             }
         } else this

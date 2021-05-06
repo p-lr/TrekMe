@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.repositories.location
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -40,6 +41,7 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
         fastestInterval = 2000
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
+    private val looper = Looper.getMainLooper()
 
     /**
      * A conflated [SharedFlow] of [Location]s, with a replay of 1.
@@ -75,7 +77,7 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
                 fusedLocationClient.requestLocationUpdates(
                         locationRequest,
                         callback,
-                        null
+                        looper
                 ).addOnFailureListener {
                     /* In case of error, close the flow, so that the next subscription will trigger
                      * a new flow creation. */

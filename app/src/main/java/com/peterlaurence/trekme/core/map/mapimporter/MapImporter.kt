@@ -311,7 +311,7 @@ object MapImporter {
                 BitmapFactory.decodeFile(imageFile.path, options)
                 if (options.outWidth == THUMBNAIL_ACCEPT_SIZE && options.outHeight == THUMBNAIL_ACCEPT_SIZE) {
                     val locale = Locale.getDefault()
-                    if (!imageFile.name.toLowerCase(locale).contains(THUMBNAIL_EXCLUDE_NAME.toLowerCase(locale))) {
+                    if (!imageFile.name.lowercase(locale).contains(THUMBNAIL_EXCLUDE_NAME.lowercase(locale))) {
                         return imageFile
                     }
                 }
