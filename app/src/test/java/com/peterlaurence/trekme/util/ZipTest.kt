@@ -35,7 +35,7 @@ class ZipTest {
 
                 }
 
-                override fun onUnzipFinished(outputDirectory: File) {
+                override fun onUnzipFinished(outputDirectory: File, percent: Double) {
                     println("Unzip finished")
                     FileUtils.deleteRecursive(mTestFolder)
                 }
