@@ -66,9 +66,7 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
             val callback = object : com.google.android.gms.location.LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult?) {
                     for (loc in locationResult?.locations ?: listOf()) {
-                        runCatching {
-                            offer(Location(loc.latitude, loc.longitude, loc.speed, loc.altitude, loc.time))
-                        }
+                        trySend(Location(loc.latitude, loc.longitude, loc.speed, loc.altitude, loc.time))
                     }
                 }
             }

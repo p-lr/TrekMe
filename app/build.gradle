@@ -18,8 +18,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 132
-        versionName "2.7.4"
+        versionCode 133
+        versionName "2.7.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,6 +34,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions {
+        exclude "DebugProbesKt.bin"
+    }
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -41,19 +44,19 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs = ['-Xjvm-default=all-compatibility']
     }
 }
 
 dependencies {
     def lifecycle_version = '2.3.1'
-    def coroutine_version = '1.4.3'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation 'org.robolectric:robolectric:4.5.1'
 //    implementation project(":mapview-debug")
-    implementation 'ovh.plrapps:mapview:3.0.0'
+    implementation 'ovh.plrapps:mapview:3.1.0'
     implementation 'com.android.billingclient:billing:3.0.3'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
@@ -75,9 +78,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.google.android:flexbox:2.0.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0'
     implementation "com.squareup.okhttp3:okhttp:4.9.0"
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
     implementation "com.google.dagger:hilt-android:$hilt_version"

@@ -137,7 +137,7 @@ class MapSourceAdapter(private val wmtsSourceSet: Array<WmtsSource>, private val
             val mapAdapter = mapAdapterWeakReference.get()
             val mapViewHolder = mapViewHolderWeakReference.get()
             if (mapViewHolder != null && mapAdapter != null) {
-                val position = mapViewHolder.adapterPosition
+                val position = mapViewHolder.bindingAdapterPosition
 
                 /* Update selection */
                 mapAdapter.updateSelectionIndex(position)

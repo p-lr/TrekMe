@@ -186,7 +186,7 @@ class DownloadService : Service() {
         }
         val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), request.numberOfTiles) { p ->
             if (started.value) {
-                throttledTask.offer(p)
+                throttledTask.trySend(p)
             }
         }
 

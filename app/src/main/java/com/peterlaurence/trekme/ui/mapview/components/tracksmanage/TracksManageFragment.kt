@@ -219,7 +219,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 /* Remove the track from the list and from the map */
-                trackAdapter?.getRouteAt(viewHolder.adapterPosition)?.also {
+                trackAdapter?.getRouteAt(viewHolder.bindingAdapterPosition)?.also {
                     viewModel.removeRoute(it)
                 }
             }

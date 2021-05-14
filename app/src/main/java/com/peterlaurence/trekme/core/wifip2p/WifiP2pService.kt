@@ -564,7 +564,7 @@ class WifiP2pService : Service() {
         manager.clearServiceRequests(channel).also { Log.d(TAG, "ClearServiceRequests $it") }
         manager.removeGroup(channel).also { Log.d(TAG, "Remove group $it") }
         manager.stopPeerDiscovery(channel).also { Log.d(TAG, "Stop peer discovery $it") }
-        peerListChannel.poll()
+        peerListChannel.tryReceive()
     }
 
     private suspend fun exitWithReason(reason: StopReason, resetConnection: Boolean = false) {
