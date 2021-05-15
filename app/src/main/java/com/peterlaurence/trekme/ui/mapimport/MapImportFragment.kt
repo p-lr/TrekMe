@@ -192,7 +192,9 @@ class MapImportFragment : Fragment() {
         val view = view ?: return
         val snackbar = Snackbar.make(view, R.string.snack_msg_show_map_list, Snackbar.LENGTH_LONG)
         snackbar.setAction(R.string.ok_dialog) {
-            findNavController().navigate(R.id.mapListFragment)
+            runCatching {
+                findNavController().navigate(R.id.mapListFragment)
+            }
         }
         snackbar.show()
     }
