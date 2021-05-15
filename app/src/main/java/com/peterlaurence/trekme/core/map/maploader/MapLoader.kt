@@ -218,20 +218,19 @@ class MapLoader(
      *
      * @param map The [Map] to save.
      */
-    suspend fun saveMap(map: Map) {
-        withContext(ioDispatcher) {
-            val jsonString = gson.toJson(map.mapGson)
-            val configFile = map.configFile
+    suspend fun saveMap(map: Map) = withContext(mainDispatcher) {
+        val jsonString = gson.toJson(map.mapGson)
 
+        withContext(ioDispatcher) {
+            val configFile = map.configFile
             writeToFile(jsonString, configFile) {
                 Log.e(TAG, "Error while saving the map")
             }
         }
 
-        withContext(mainDispatcher) {
-            notifyMapListUpdateListeners()
-        }
+        notifyMapListUpdateListeners()
     }
+
 
     /**
      * Saves the [MarkerGson] of a [Map], so the changes persist upon application restart.
@@ -239,12 +238,14 @@ class MapLoader(
      *
      * @param map The [Map] to save.
      */
-    suspend fun saveMarkers(map: Map) = withContext(ioDispatcher) {
+    suspend fun saveMarkers(map: Map) = withContext(mainDispatcher) {
         val jsonString = gson.toJson(map.markerGson)
 
-        val markerFile = File(map.directory, MAP_MARKER_FILENAME)
-        writeToFile(jsonString, markerFile) {
-            Log.e(TAG, "Error while saving the markers")
+        withContext(ioDispatcher) {
+            val markerFile = File(map.directory, MAP_MARKER_FILENAME)
+            writeToFile(jsonString, markerFile) {
+                Log.e(TAG, "Error while saving the markers")
+            }
         }
     }
 
@@ -252,12 +253,14 @@ class MapLoader(
      * Save the [LandmarkGson] of a [Map], so the changes persist upon application restart.
      * @param map the [Map] to save.
      */
-    suspend fun saveLandmarks(map: Map) = withContext(ioDispatcher) {
+    suspend fun saveLandmarks(map: Map) = withContext(mainDispatcher) {
         val jsonString = gson.toJson(map.landmarkGson)
-        val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
 
-        writeToFile(jsonString, landmarkFile) {
-            Log.e(TAG, "Error while saving the landmarks")
+        withContext(ioDispatcher) {
+            val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
+            writeToFile(jsonString, landmarkFile) {
+                Log.e(TAG, "Error while saving the landmarks")
+            }
         }
     }
 
@@ -267,12 +270,14 @@ class MapLoader(
      *
      * @param map The [Map] to save.
      */
-    suspend fun saveRoutes(map: Map) = withContext(ioDispatcher) {
+    suspend fun saveRoutes(map: Map) = withContext(mainDispatcher) {
         val jsonString = gson.toJson(map.routeGson)
-        val routeFile = File(map.directory, MAP_ROUTE_FILENAME)
 
-        writeToFile(jsonString, routeFile) {
-            Log.e(TAG, "Error while saving the routes")
+        withContext(ioDispatcher) {
+            val routeFile = File(map.directory, MAP_ROUTE_FILENAME)
+            writeToFile(jsonString, routeFile) {
+                Log.e(TAG, "Error while saving the routes")
+            }
         }
     }
 
@@ -281,16 +286,14 @@ class MapLoader(
      *
      * @param map The [Map] to delete.
      */
-    suspend fun deleteMap(map: Map) {
-        val mapDirectory = map.directory
-        withContext(mainDispatcher) {
-            mapList.remove(map)
-        }
+    suspend fun deleteMap(map: Map) = withContext(mainDispatcher) {
+        mapList.remove(map)
 
         /* Notify for view update */
         notifyMapListUpdateListeners()
 
         /* Delete the map directory in a separate thread */
+        val mapDirectory = map.directory
         withContext(ioDispatcher) {
             FileUtils.deleteRecursive(mapDirectory)
         }
