@@ -3,12 +3,15 @@ package com.peterlaurence.trekme.viewmodel.record
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
 import android.os.PowerManager
+import androidx.core.location.LocationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
+import com.peterlaurence.trekme.core.events.WarningMessage
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -136,6 +139,16 @@ class RecordViewModel @Inject constructor(
     }
 
     private fun onRequestStartEvent() {
+        /* Check location service. If disabled, no need to go further. */
+        if (!isLocationEnabled()) {
+            val msg = WarningMessage(
+                    title = app.applicationContext.getString(R.string.warning_title),
+                    msg = app.applicationContext.getString(R.string.location_disabled_warning)
+            )
+            appEventBus.postMessage(msg)
+            return
+        }
+
         /* Check battery optimization, and inform the user if needed */
         if (isBatteryOptimized()) {
             eventBus.disableBatteryOpt()
@@ -163,6 +176,11 @@ class RecordViewModel @Inject constructor(
         val pm = app.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
         val name = app.applicationContext.packageName
         return !pm.isIgnoringBatteryOptimizations(name)
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val lm = app.applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return LocationManagerCompat.isLocationEnabled(lm)
     }
 
     private fun requestBackgroundLocationPerm() {

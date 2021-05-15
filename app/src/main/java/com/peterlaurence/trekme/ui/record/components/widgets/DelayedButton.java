@@ -4,8 +4,11 @@ import android.content.Context;
 import android.graphics.drawable.Animatable2;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.content.ContextCompat;
 
@@ -15,9 +18,6 @@ import com.peterlaurence.trekme.R;
  * A button which has two modes : Play and Stop. <br>
  * There is a cooldown between each mode switch, to avoid a quick change of state. <br>
  * This is implemented using Animated Vector Drawables, so the cooldown is defined in the animations.
- * <p>
- * A request to change of state while the button is transitioning will be taken into account only
- * when the animation finishes.
  *
  * @author P.Laurence on 26/12/17.
  */
@@ -25,9 +25,10 @@ public class DelayedButton extends AppCompatImageButton {
     private final AnimatedVectorDrawable mStopToPLayDrawable;
     private final AnimatedVectorDrawable mPlayToStopDrawable;
     private State mState;
-    private State mRequestedState;
     private PlayStopListener mListener;
     private Boolean isTransitioning = false;
+    private static final String STARTED_KEY = "started";
+    private static final String SUPER_STATE_KEY = "superState";
 
     public DelayedButton(Context context) {
         this(context, null);
@@ -65,7 +66,6 @@ public class DelayedButton extends AppCompatImageButton {
                 super.onAnimationEnd(drawable);
 
                 isTransitioning = false;
-                checkState();
                 setEnabled(true);
             }
         });
@@ -82,7 +82,6 @@ public class DelayedButton extends AppCompatImageButton {
                 super.onAnimationEnd(drawable);
 
                 isTransitioning = false;
-                checkState();
                 setEnabled(true);
             }
         });
@@ -95,32 +94,30 @@ public class DelayedButton extends AppCompatImageButton {
     }
 
     /**
-     * Request a state change. But it might not happen immediately, in the case the button is
-     * transitioning between its two possible states. In this case, the state given as parameter
-     * is saved as {@link #mRequestedState} and will be taken into account when the animation
-     * finishes.
+     * Request a state change, which might be denied, in the case the button is transitioning
+     * between its two possible states.
      */
     public void setMode(State state) {
         post(() -> _setMode(state));
     }
 
     private void _setMode(State state) {
-        if (isTransitioning) {
-            mRequestedState = state;
-            return;
-        }
         if (state == mState) return;
 
         switch (state) {
-            case STOP:
+            case PLAY:
+                setEnabled(false);
                 mStopToPLayDrawable.reset();
                 setImageDrawable(mStopToPLayDrawable);
-                mState = State.STOP;
+                mStopToPLayDrawable.start();
+                mState = State.PLAY;
                 break;
-            case PLAY:
+            case STOP:
+                setEnabled(false);
                 mPlayToStopDrawable.reset();
                 setImageDrawable(mPlayToStopDrawable);
-                mState = State.PLAY;
+                mPlayToStopDrawable.start();
+                mState = State.STOP;
                 break;
             default:
                 // don't care
@@ -132,42 +129,20 @@ public class DelayedButton extends AppCompatImageButton {
     }
 
     private void _toggle() {
+        if (isTransitioning) return;
         switch (mState) {
             case STOP:
-                setEnabled(false);
-                setImageDrawable(mStopToPLayDrawable);
-                mStopToPLayDrawable.start();
-                mState = State.PLAY;
-
                 if (mListener != null) {
                     mListener.onStop();
                 }
                 break;
-
             case PLAY:
-                setEnabled(false);
-                setImageDrawable(mPlayToStopDrawable);
-                mPlayToStopDrawable.start();
-                mState = State.STOP;
-
                 if (mListener != null) {
                     mListener.onPlay();
                 }
                 break;
-
             default:
                 // don't care
-        }
-    }
-
-    /**
-     * If a state change request happened while a transition was running, the change was postponed.
-     * Apply it now.
-     */
-    private void checkState() {
-        if (mRequestedState != null) {
-            setMode(mRequestedState);
-            mRequestedState = null;
         }
     }
 
@@ -179,5 +154,38 @@ public class DelayedButton extends AppCompatImageButton {
         void onPlay();
 
         void onStop();
+    }
+
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        Bundle b = new Bundle();
+        b.putBoolean(STARTED_KEY, mState == State.STOP);
+        b.putParcelable(SUPER_STATE_KEY, superState);
+        return b;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        Bundle b = (Bundle) state;
+        boolean started = b.getBoolean(STARTED_KEY);
+        Parcelable superState = b.getParcelable(SUPER_STATE_KEY);
+        super.onRestoreInstanceState(superState);
+        State st = started ? State.STOP : State.PLAY;
+        switch (st) {
+            case PLAY:
+                mPlayToStopDrawable.reset();
+                setImageDrawable(mPlayToStopDrawable);
+                break;
+            case STOP:
+                mStopToPLayDrawable.reset();
+                setImageDrawable(mStopToPLayDrawable);
+                break;
+            default:
+                // don't care
+        }
+        mState = st;
+        _setMode(st);
     }
 }
