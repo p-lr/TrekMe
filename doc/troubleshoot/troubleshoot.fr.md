@@ -3,6 +3,7 @@
 * [Je n'arrive pas à me localiser sur ma carte](#TOC-loc)
 * [Au moment de créer une carte, j'ai un message qui me dit de vérifier ma connexion internet](#TOC-no-internet)
 * [Mon enregistrement GPX s'arrête parfois tout seul](#TOC-record-gpx-stop)
+* [Des lignes droites apparaîssent sur mon enregistrement GPX](#TOC-record-gpx-straight-lines)
 * [J'ai un autre problème](#TOC-other)
 
 
@@ -46,8 +47,17 @@ fait pas de distinction, et arrête brutalement le service (et TrekMe avec).
 
 Pour éviter ce problème, il faut aller dans les réglages du téléphone, dans "Batterie". Ensuite, il 
 faut y trouver un menu "Optimisation de la batterie" ou similaire (cela diffère d'un téléphone a 
-l'autre). Là on peut afficher la liste des applications "optimisées".  Si TrekMe fait partie de cette liste, 
-il faut autoriser son exécution en arrière plan et désactiver l'optimisation. 
+l'autre). Là on peut afficher la liste des applications "optimisées". Si TrekMe fait partie de cette liste, 
+il faut autoriser son exécution en arrière plan en désactivant l'optimisation.
+
+## <a name="TOC-record-gpx-straight-lines"></a> Des lignes droites apparaîssent sur mon enregistrement GPX
+
+Ce problème peut avoir deux causes :
+
+1. L'optimisation de la batterie est active pour TrekMe. Dans ce cas, voir [Mon enregistrement GPX s'arrête parfois tout seul](#TOC-record-gpx-stop).
+
+2. L'autorisation de location pour TrekMe n'est pas au niveau suffisant. Elle doit être au niveau
+"Toujours autoriser", et pas seulement quand l'appli est en cours d'utilisation.
 
 ## <a name="TOC-other"></a> J'ai un autre problème
 

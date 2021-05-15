@@ -3,6 +3,7 @@
 * [I can't get my position on the map](#TOC-loc)
 * [As I'm creating a new map, a message tells me to check my internet connection](#TOC-no-internet)
 * [My GPX recording sometimes stops by itself](#TOC-record-gpx-stop)
+* [Straight lines appear on my GPX recording](#TOC-record-gpx-straight-lines)
 * [I have another issue](#TOC-other)
 
 
@@ -47,6 +48,15 @@ you're aware of it.
 To fix this issue, you have to go to your device settings -> "Battery". Then, you should see a menu
 "Battery optimization" or similar. You should see a list of applications. Scroll down to find TrekMe
 and disable the battery optimization.
+
+## <a name="TOC-record-gpx-straight-lines"></a> Straight lines appear on my GPX recording
+
+This problem can have two root causes:
+
+1. The battery optimization is active for TrekMe. Follow instructions for [My GPX recording sometimes stops by itself](#TOC-record-gpx-stop).
+
+2. The location permission isn't set to "Allow all the time". Allowing the location just when using 
+the app isn't enough.
 
 ## <a name="TOC-other"></a> I have another issue
 
