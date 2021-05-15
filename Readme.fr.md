@@ -344,9 +344,12 @@ Depuis le menu principal allez à "Enregistrement GPX". Vous arrivez à une inte
 <img src="doc/tuto/gpx-recordings-fr.jpg" width="300">
 </p>
 
-Un enregistrement peut être démarré ou arrêté depuis le panneau "Commandes".
+Un enregistrement peut être démarré ou arrêté depuis le panneau "Commandes". 
 Quand un enregistrement est en cours, un service spécifique est démarré, qui fonctionne même si TrekMe 
 est arrêté. Ce service s'arrête dès que vous l'arrêtez depuis le panneau "Commandes".
+Si vous avez Android 10 ou plus, vous devez vous assurer que TrekMe a l'autorisation de localisation 
+en mode "Toujours autoriser", et pas seulement si l'appli est en cours d'utilisation. Sinon, 
+l'enregistrement n'enregistrera parfois pas de points et des lignes droites apparaîtront.
 
 Un indicateur dans le panneau "Service de localisation" affiche le statut du service.
 

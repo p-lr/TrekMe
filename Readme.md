@@ -314,6 +314,10 @@ From the "GPX Record" option menu, you get the following interface:
 
 The recording can be started or stopped from the control panel. When recording, the location service
 runs in the background. It continues even if TrekMe is stopped or paused.
+If you have Android 10 or above, you need to make sure that the location permission for TrekMe is set
+to "Allow all the time", and not just when using the app. Otherwise, some points won't be recorded 
+and straight lines will appear on the track.
+
 An indicator reports back the status of the location service. A panel shows the list of recordings.
 
 From there, when selecting a track, four buttons at the bottom-left enable you to :
