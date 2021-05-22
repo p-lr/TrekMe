@@ -332,11 +332,14 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         inflater.inflate(R.menu.menu_fragment_map_view, menu)
 
         /* .. and restore some checkable state */
-        val item = menu.findItem(R.id.distancemeter_id)
-        item.isChecked = distanceLayer?.isVisible ?: false
+        val itemSpeed = menu.findItem(R.id.speedometer_id)
+        itemSpeed.isChecked = mapViewViewModel.getSpeedVisibility()
 
-        val itemDistanceTrack = menu.findItem(R.id.distance_on_track_id)
-        itemDistanceTrack.isChecked = routeLayer?.isDistanceOnTrackActive ?: false
+        val itemDistance = menu.findItem(R.id.distancemeter_id)
+        itemDistance.isChecked = distanceLayer?.isVisible ?: false
+
+        val itemDistanceOnTrack = menu.findItem(R.id.distance_on_track_id)
+        itemDistanceOnTrack.isChecked = routeLayer?.isDistanceOnTrackActive ?: false
 
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
         itemOrientation.isChecked = orientationSensor?.isStarted ?: false
@@ -364,6 +367,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 speedListener?.toggleSpeedVisibility()?.also { visible ->
                     mapViewViewModel.setSpeedVisibility(visible)
                 }
+                item.isChecked = !item.isChecked
                 return true
             }
             R.id.distancemeter_id -> {

@@ -21,6 +21,7 @@
 
     <item
         android:id="@+id/speedometer_id"
+        android:checkable="true"
         android:icon="@drawable/ic_speedometer"
         android:title="@string/mapview_show_speed"
         app:showAsAction="ifRoom" />
