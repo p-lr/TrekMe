@@ -345,6 +345,7 @@
     <string name="preference_change_scale_when_centering">Define scale when centering on position</string>
     <string name="preference_zoom_when_centered_key" translatable="false">pref_scale_zoom_when_centered</string>
     <string name="preference_zoom_when_centered">Zoom when centered</string>
+    <string name="preference_zoom_when_centered_compl">(current: %1$s)</string>
 
     <!-- WifiP2pFragment -->
     <string name="wifip2p_stop_btn">Stop</string>

@@ -24,4 +24,15 @@ class MapViewEventBus {
     val trackColorChangeEvent = _trackColorChangeEvent.asSharedFlow()
 
     fun postTrackColorChange(event: TrackColorChangeEvent) = _trackColorChangeEvent.tryEmit(event)
+
+    /**********************************************************************************************/
+
+    var scaleRatio: Int? = null
+        private set
+
+    /* For now, just remember the scale ratio. Ultimately, we could store the MapState here, maybe
+     * inside a SharedFlow. */
+    fun rememberMapState(scaleRatio: Int) {
+        this.scaleRatio = scaleRatio
+    }
 }

@@ -103,6 +103,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             field = value
             positionMarker?.onReferentialChanged(value)
             compassView?.referentialData = value
+            rememberScaleRatio()
         }
 
     override fun onReferentialChanged(refData: ReferentialData) {
@@ -568,6 +569,12 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 centerOnPosition()
             }
         }
+    }
+
+    private fun rememberScaleRatio() {
+        val mapView = mapView ?: return
+        val currentScaleRatio = mapView.scale * 100f / mapViewViewModel.getMaxScale()
+        mapViewEventBus.rememberMapState(currentScaleRatio.toInt())
     }
 
     private fun removeCurrentMapView() {

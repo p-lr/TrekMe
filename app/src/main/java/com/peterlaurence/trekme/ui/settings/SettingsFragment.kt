@@ -10,8 +10,10 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
+import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Global app settings are managed here.
@@ -21,6 +23,9 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by viewModels()
+
+    @Inject
+    lateinit var mapViewEventBus: MapViewEventBus
 
     private var startOnPref: ListPreference? = null
     private var measurementSystemPref: ListPreference? = null
@@ -153,6 +158,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         rotationModePref = preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
         defineScaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_change_scale_when_centering_key))
         scaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_zoom_when_centered_key))
+
+        val currentScaleRatioInfo = mapViewEventBus.scaleRatio?.let {
+            " " + getString(R.string.preference_zoom_when_centered_compl, it.toString())
+        } ?: ""
+        scaleCenteredPref?.title = getString(R.string.preference_zoom_when_centered) + currentScaleRatioInfo
 
         rootFolderPref?.setOnPreferenceChangeListener { _, newValue ->
             val newPath = newValue as String

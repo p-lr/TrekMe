@@ -81,10 +81,10 @@ class MapViewViewModel @Inject constructor(
             return billing.getIgnLicensePurchase()?.let {
                 persistenceStrategy.persist(LicenseInfo(it.purchaseTime))
                 true
-            } ?: {
+            } ?: run {
                 _ignLicenseEvents.tryEmit(ErrorIgnLicenseEvent(map))
                 false
-            }()
+            }
         }
 
         return withContext(Dispatchers.IO) {
