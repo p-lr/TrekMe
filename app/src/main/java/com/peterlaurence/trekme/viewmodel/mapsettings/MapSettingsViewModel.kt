@@ -20,6 +20,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
+import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import javax.inject.Inject
@@ -156,6 +157,17 @@ class MapSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             mapLoader.saveMap(map)
         }
+    }
+
+    suspend fun computeMapSize(map: Map): Long? = withContext(Dispatchers.IO) {
+        runCatching {
+            val size = map.directory.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
+            withContext(Dispatchers.Main) {
+                map.setSizeInBytes(size)
+                saveMapAsync(map)
+            }
+            size
+        }.getOrNull()
     }
 }
 

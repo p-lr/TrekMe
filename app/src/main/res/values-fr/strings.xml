@@ -282,4 +282,7 @@
     <string name="mapreate_warning_vps">Nous ne parvenons pas à récupérer certaines données. Si votre connexion internet fonctionne normalement, l\'infrastructure de TrekMe est peut-être impactée.</string>
     <string name="location_disabled_warning">La localisation doit être activée sur votre appareil pour lancer un enregistrement.</string>
     <string name="preference_zoom_when_centered_compl">(actuel : %1$s)</string>
+    <string name="map_size_string">Taille</string>
+    <string name="map_size_compute_string">Calcul de la taille</string>
+    <string name="map_size_computing">Calcul en cours..</string>
 </resources>

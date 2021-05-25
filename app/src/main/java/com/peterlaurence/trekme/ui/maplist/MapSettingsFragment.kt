@@ -20,9 +20,12 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.maplist.events.MapImageImportResult
+import com.peterlaurence.trekme.util.isFrench
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 /**
@@ -98,6 +101,9 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
                 getString(R.string.preference_map_title_key))
         val calibrationButton = preferenceManager.findPreference<Preference>(
                 getString(R.string.preference_calibration_button_key))
+        val sizePreference = preferenceManager.findPreference<Preference>(
+                getString(R.string.preference_size_button_key)
+        )
         val saveButton = preferenceManager.findPreference<Preference>(
                 getString(R.string.preference_save_button_key))
         changeImageButton?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
@@ -116,6 +122,14 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
             setListPreferenceSummaryAndValue(calibrationListPreference, projectionName)
             setListPreferenceSummaryAndValue(calibrationPointsNumberPreference, map.calibrationPointsNumber.toString())
             setEditTextPreferenceSummaryAndValue(mapNamePreference, map.name)
+
+            val mapSize = map.sizeInBytes
+            if (mapSize != null) {
+                sizePreference?.title = getString(R.string.map_size_string)
+                sizePreference?.summary = mapSize.formatSize()
+            } else {
+                sizePreference?.title = getString(R.string.map_size_compute_string)
+            }
         }
         calibrationButton?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             val direction = MapSettingsFragmentDirections.actionMapSettingsFragmentToMapCalibrationFragment()
@@ -158,6 +172,18 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
                 false
             }
         }
+        sizePreference?.onPreferenceClickListener = Preference.OnPreferenceClickListener { pref ->
+            val map = this.map ?: return@OnPreferenceClickListener false
+            if (map.sizeInBytes != null) return@OnPreferenceClickListener false
+            pref.title = getString(R.string.map_size_computing)
+            lifecycleScope.launchWhenStarted {
+                viewModel.computeMapSize(map)?.also { sizeInBytes ->
+                    pref.summary = sizeInBytes.formatSize()
+                    pref.title = getString(R.string.map_size_string)
+                }
+            }
+            true
+        }
         saveButton?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             val context = context ?: return@OnPreferenceClickListener true
             val builder = AlertDialog.Builder(requireActivity())
@@ -187,6 +213,39 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         super.onPause()
         preferenceScreen.sharedPreferences
                 .unregisterOnSharedPreferenceChangeListener(this)
+    }
+
+    /**
+     * Converts a quantity expected to be in bytes into a [String]. For example:
+     * 12_500 -> "12.5 Ko" (in French), or "12.5 KB" (in English)
+     */
+    private fun Long.formatSize(): String {
+        val ctx = this@MapSettingsFragment.context ?: return this.toString()
+        val byteStr = if (isFrench(ctx)) {
+            "o"
+        } else {
+            "B"
+        }
+        var divider = 1.0
+        val prefix = when {
+            this < 1000 -> {
+                ""
+            }
+            this < 500_000 -> {
+                divider = 1000.0
+                "K"
+            }
+            this < 500_000_000 -> {
+                divider = 1000_000.0
+                "M"
+            }
+            else -> {
+                divider = 1_000_000_000.0
+                "G"
+            }
+        }
+        val number = BigDecimal(this / divider).setScale(2, RoundingMode.HALF_EVEN)
+        return "$number $prefix$byteStr"
     }
 
     private val mapSaveResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

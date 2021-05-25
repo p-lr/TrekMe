@@ -33,6 +33,7 @@ public class MapGson {
     public Provider provider;
     public MapSize size;
     public Calibration calibration;
+    public Long sizeInBytes;
 
 
     public MapGson() {

@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.core.map;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.peterlaurence.trekme.core.map.gson.Landmark;
@@ -120,6 +121,16 @@ public class Map {
     @Nullable
     MapBounds getMapBounds() {
         return mMapBounds;
+    }
+
+    public
+    @Nullable
+    Long getSizeInBytes() {
+        return mMapGson.sizeInBytes;
+    }
+
+    public void setSizeInBytes(@NonNull Long size) {
+        mMapGson.sizeInBytes = size;
     }
 
     /**
