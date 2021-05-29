@@ -332,8 +332,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private var routes: List<RouteGson.Route> = listOf()
     private var routeWithActiveDistance: RouteGson.Route? = null
     private var barycenterToRoute: kotlin.collections.Map<Barycenter, RouteGson.Route>? = null
-    private val scrollUpdateChannel = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    private val distanceCalculateChannel = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val scrollUpdateFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val distanceCalculateFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val infoForRoute: MutableMap<RouteGson.Route, Info> = mutableMapOf()
     private val grab1 = MarkerGrab(mapView.context, 50.px)
     private val grab2 = MarkerGrab(mapView.context, 50.px)
@@ -368,7 +368,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
             field = value
             firstTouchMoveListener?.onReferentialChanged(value)
             secondTouchMoveListener?.onReferentialChanged(value)
-            scrollUpdateChannel.tryEmit(Unit)
+            scrollUpdateFlow.tryEmit(Unit)
         }
 
     override fun onReferentialChanged(refData: ReferentialData) {
@@ -378,14 +378,14 @@ private class DistanceOnRouteController(private val pathView: PathView,
     fun enable() {
         isActive = true
         activeRouteLookupJob = scope.launch {
-            scrollUpdateChannel.sample(32).collect {
+            scrollUpdateFlow.sample(32).collect {
                 updateActiveRoute()
             }
         }
-        scrollUpdateChannel.tryEmit(Unit)  // Trigger the first computation
+        scrollUpdateFlow.tryEmit(Unit)  // Trigger the first computation
 
         distanceCalculationJob = scope.launch {
-            distanceCalculateChannel.sample(32).collect {
+            distanceCalculateFlow.sample(32).collect {
                 updateDistance()
             }
         }
@@ -483,7 +483,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                 render()
 
                 /* And trigger the first distance calculation */
-                distanceCalculateChannel.tryEmit(Unit)
+                distanceCalculateFlow.tryEmit(Unit)
             }
         }
     }
@@ -506,7 +506,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                             markerIndexed.marker.getRelativeX(map),
                             markerIndexed.marker.getRelativeY(map))
                     infoForRoute[route]?.index1 = markerIndexed.index
-                    distanceCalculateChannel.tryEmit(Unit)
+                    distanceCalculateFlow.tryEmit(Unit)
                     pathView.invalidate()
                 }
             }
@@ -521,7 +521,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
                             markerIndexed.marker.getRelativeX(map),
                             markerIndexed.marker.getRelativeY(map))
                     infoForRoute[route]?.index2 = markerIndexed.index
-                    distanceCalculateChannel.tryEmit(Unit)
+                    distanceCalculateFlow.tryEmit(Unit)
                     pathView.invalidate()
                 }
             }
