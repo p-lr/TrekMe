@@ -228,7 +228,7 @@
         ailleurs que sur votre appareil.</string>
     <string name="solution_title">Solution</string>
     <string name="service_download_already_running">Un téléchargement est déjà en cours. Veuillez attendre la fin du téléchargement avant d\'en lancer un autre.</string>
-    <string name="ign_license_check_pending">Vérification de du module…</string>
+    <string name="ign_license_check_pending">Vérification du module…</string>
     <string name="track_visibility_btn">Visibilité de la trace</string>
     <string name="track_color_btn">Coleur de la trace</string>
     <string name="color_picker_title">Sélectionnez une couleur</string>

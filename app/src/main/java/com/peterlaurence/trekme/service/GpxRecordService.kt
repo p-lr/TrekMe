@@ -34,6 +34,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+import kotlin.random.Random.Default.nextInt
 
 
 /**
@@ -128,6 +129,10 @@ class GpxRecordService : Service() {
      * [THREAD_NAME] thread.
      */
     private fun createGpx() {
+        fun generateTrackId(dateStr: String): String {
+            return dateStr + '-' + nextInt(0, 1000)
+        }
+
         serviceHandler?.post {
             val trkSegList = ArrayList<TrackSegment>()
             val trackPoints = eventsGpx.liveRouteFlow.replayCache.mapNotNull {
@@ -139,8 +144,9 @@ class GpxRecordService : Service() {
             val date = Date()
             val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH'h'mm-ss's'", Locale.ENGLISH)
             val trackName = "track-" + dateFormat.format(date)
+            val id = generateTrackId(trackName)
 
-            val track = Track(trkSegList, trackName)
+            val track = Track(trkSegList, trackName, id = id)
             track.statistics = trackStatCalculator?.getStatistics()
 
             /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the

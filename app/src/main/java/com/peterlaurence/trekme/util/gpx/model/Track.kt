@@ -10,5 +10,6 @@ import com.peterlaurence.trekme.core.track.TrackStatistics
 data class Track @JvmOverloads constructor(
         val trackSegments: List<TrackSegment>,
         val name: String = "",
+        val id: String? = null, // introduced in 2.7.7
         var statistics: TrackStatistics? = null
 )

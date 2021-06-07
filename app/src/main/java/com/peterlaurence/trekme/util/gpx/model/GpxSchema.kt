@@ -50,3 +50,5 @@ const val ATTR_TRK_STAT_ELE_UP_STACK = "eleUpStack"
 const val ATTR_TRK_STAT_ELE_DOWN_STACK = "eleDownStack"
 const val ATTR_TRK_STAT_DURATION = "duration"
 const val ATTR_TRK_STAT_AVG_SPEED = "avgSpeed"
+
+const val TAG_TRK_ID = "trekmeId"

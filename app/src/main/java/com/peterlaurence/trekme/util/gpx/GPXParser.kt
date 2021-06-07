@@ -115,7 +115,7 @@ private fun readRoute(parser: XmlPullParser): Track {
     val points = ArrayList<TrackPoint>()
     parser.require(XmlPullParser.START_TAG, null, TAG_ROUTE)
     var trackName = ""
-    var trackStatistics: TrackStatistics? = null
+    var trkExtensions: TrackExtensions? = null
     while (parser.next() != XmlPullParser.END_TAG) {
         if (parser.eventType != XmlPullParser.START_TAG) {
             continue
@@ -123,14 +123,15 @@ private fun readRoute(parser: XmlPullParser): Track {
         when (parser.name) {
             TAG_NAME -> trackName = readName(parser)
             TAG_RTE_POINT -> points.add(readPoint(parser, tag = TAG_RTE_POINT))
-            TAG_EXTENSIONS -> trackStatistics = readTrackExtensions(parser)
+            TAG_EXTENSIONS -> trkExtensions = readTrackExtensions(parser)
             else -> skip(parser)
         }
     }
     parser.require(XmlPullParser.END_TAG, null, TAG_ROUTE)
 
     segments.add(TrackSegment(points))
-    return Track(trackSegments = segments, name = trackName, statistics = trackStatistics)
+    return Track(trackSegments = segments, name = trackName, id = trkExtensions?.id,
+            statistics = trkExtensions?.stats)
 }
 
 /**
@@ -144,7 +145,7 @@ private fun readTrack(parser: XmlPullParser): Track {
     val segments = ArrayList<TrackSegment>()
     parser.require(XmlPullParser.START_TAG, null, TAG_TRACK)
     var trackName = ""
-    var trackStatistics: TrackStatistics? = null
+    var trkExtensions: TrackExtensions? = null
     while (parser.next() != XmlPullParser.END_TAG) {
         if (parser.eventType != XmlPullParser.START_TAG) {
             continue
@@ -152,30 +153,33 @@ private fun readTrack(parser: XmlPullParser): Track {
         when (parser.name) {
             TAG_NAME -> trackName = readName(parser)
             TAG_SEGMENT -> segments.add(readSegment(parser))
-            TAG_EXTENSIONS -> trackStatistics = readTrackExtensions(parser)
+            TAG_EXTENSIONS -> trkExtensions = readTrackExtensions(parser)
             else -> skip(parser)
         }
     }
     parser.require(XmlPullParser.END_TAG, null, TAG_TRACK)
 
-    return Track(trackSegments = segments, name = trackName, statistics = trackStatistics)
+    return Track(trackSegments = segments, name = trackName, id = trkExtensions?.id,
+            statistics = trkExtensions?.stats)
 }
 
 @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
-private fun readTrackExtensions(parser: XmlPullParser): TrackStatistics? {
+private fun readTrackExtensions(parser: XmlPullParser): TrackExtensions {
     parser.require(XmlPullParser.START_TAG, null, TAG_EXTENSIONS)
     var trackStatistics: TrackStatistics? = null
+    var trackId: String? = null
     while (parser.next() != XmlPullParser.END_TAG) {
         if (parser.eventType != XmlPullParser.START_TAG) {
             continue
         }
         when (parser.name) {
             TAG_TRACK_STATISTICS -> trackStatistics = readTrackStatistics(parser)
+            TAG_TRK_ID -> trackId = readText(parser)
             else -> skip(parser)
         }
     }
     parser.require(XmlPullParser.END_TAG, null, TAG_EXTENSIONS)
-    return trackStatistics
+    return TrackExtensions(trackId, trackStatistics)
 }
 
 @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
@@ -329,3 +333,5 @@ private val DATE_PARSER: SimpleDateFormat
     get() = DATE_PARSER_tl.getOrSet {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
     }
+
+private data class TrackExtensions(val id: String?, val stats: TrackStatistics?)

@@ -70,8 +70,9 @@ class GPXTest {
                     assertEquals(ElevationSource.GPS, eleSource.elevationSource)
                     assertEquals(20, eleSource.sampling)
 
-                    val (trackSegmentList, name, statistics) = trackList[0]
+                    val (trackSegmentList, name, id, statistics) = trackList[0]
                     assertEquals("Example track", name)
+                    assertEquals("12345", id)
                     assertEquals(1, trackSegmentList.size)
                     val (trackPointList) = trackSegmentList[0]
                     assertEquals(7, trackPointList.size)
@@ -152,8 +153,9 @@ class GPXTest {
             assertEquals(ElevationSource.GPS, eleSource.elevationSource)
             assertEquals(20, eleSource.sampling)
 
-            val (trackSegmentList, name, statistics) = trackList[0]
+            val (trackSegmentList, name, id, statistics) = trackList[0]
             assertEquals("Example track", name)
+            assertEquals("12345", id)
             assertEquals(1, trackSegmentList.size)
             val (trackPointList) = trackSegmentList[0]
             assertEquals(7, trackPointList.size)
@@ -164,20 +166,8 @@ class GPXTest {
             assertEquals(getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(), time!!.toDouble())
             assertNotNull(statistics)
             assertEquals(statistics.distance, 102.0)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            fail()
-        } catch (e: ParserConfigurationException) {
-            e.printStackTrace()
-            fail()
-        } catch (e: TransformerException) {
-            e.printStackTrace()
-            fail()
-        } catch (e: ParseException) {
-            e.printStackTrace()
-            fail()
-        } catch (e: XmlPullParserException) {
-            e.printStackTrace()
+        } catch (t: Throwable) {
+            t.printStackTrace()
             fail()
         }
     }

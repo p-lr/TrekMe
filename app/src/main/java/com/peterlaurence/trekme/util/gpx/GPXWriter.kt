@@ -108,10 +108,20 @@ private fun addTrackToNode(trk: Track, n: Node, doc: Document) {
         addTrackSegmentToNode(ts, trkNode, doc)
     }
 
-    /* Track statistics */
-    if (trk.statistics != null) {
+    /* Optional data */
+    val trkStats = trk.statistics
+    val trkId = trk.id
+    if (trkStats != null || trkId != null) {
         val nodeExtensions = doc.createElement(TAG_EXTENSIONS)
-        addTrackStatisticsToNode(trk.statistics!!, nodeExtensions, doc)
+        if (trkStats != null) {
+            addTrackStatisticsToNode(trkStats, nodeExtensions, doc)
+        }
+        if (trkId != null) {
+            val nodeId = doc.createElement(TAG_TRK_ID)
+            nodeId.appendChild(doc.createTextNode(trkId))
+            nodeExtensions.appendChild(nodeId)
+        }
+
         trkNode.appendChild(nodeExtensions)
     }
     n.appendChild(trkNode)
