@@ -359,7 +359,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
      */
     fun getState(): DistOnRouteState {
         return infoForRoute.map {
-            it.key.id to Pair(it.value.index1, it.value.index2)
+            it.key.compositeId to Pair(it.value.index1, it.value.index2)
         }.toMap()
     }
 
@@ -448,7 +448,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         /* Restore from the former state */
         state?.forEach { (id, pair) ->
             val route = routes.firstOrNull {
-                it.id == id
+                it.compositeId == id
             }
             if (route != null) {
                 infoForRoute[route] = Info(pair.first, pair.second)
@@ -664,6 +664,6 @@ private class DistanceOnRouteController(private val pathView: PathView,
 class RouteLayerState(val distOnRouteState: DistOnRouteState,
                       val wasDistanceOnTrackActive: Boolean) : Parcelable
 
-typealias DistOnRouteState = kotlin.collections.Map<Int, Pair<Int, Int>>
+typealias DistOnRouteState = kotlin.collections.Map<String, Pair<Int, Int>>
 
 private const val TAG = "RouteLayer"

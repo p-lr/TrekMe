@@ -150,6 +150,9 @@ class TrackImporter {
             "$defaultName#$index"
         }
 
+        /* The route id is the track id */
+        route.id = track.id
+
         /* The route should be visible by default */
         route.visible = true
 

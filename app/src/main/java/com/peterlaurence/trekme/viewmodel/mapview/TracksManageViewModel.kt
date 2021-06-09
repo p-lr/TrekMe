@@ -95,8 +95,8 @@ class TracksManageViewModel @Inject constructor(
         mapViewEventBus.postTrackNameChange()
     }
 
-    fun changeRouteColor(routeId: Int, color: String) {
-        val route = map?.routes?.firstOrNull { it.id == routeId }
+    fun changeRouteColor(routeId: String, color: String) {
+        val route = map?.routes?.firstOrNull { it.compositeId == routeId }
         if (route != null) {
             route.color = color
             saveChanges()

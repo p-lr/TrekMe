@@ -32,7 +32,7 @@ class TrackAdapter(
     private var previousSelectedRouteIndex = -1
     private val diffCallback: DiffUtil.ItemCallback<Route> = object : DiffUtil.ItemCallback<Route>() {
         override fun areItemsTheSame(oldItem: Route, newItem: Route): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem.compositeId == newItem.compositeId
         }
 
         override fun areContentsTheSame(oldItem: Route, newItem: Route): Boolean {

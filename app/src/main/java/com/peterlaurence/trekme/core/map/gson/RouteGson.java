@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.map.gson;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
@@ -18,8 +19,14 @@ public class RouteGson {
 
     public static class Route implements Serializable {
         public String name;
+
+        /** Legacy routes don't have an id. For a non null id, use getCompositeId() */
+        @Nullable
+        public String id;
+
         @Nullable
         public String color; // In the form "#RRGGBB" or "#AARRGGBB"
+
         public boolean visible = true;
         private List<MarkerGson.Marker> route_markers;
         private transient Object mData;
@@ -61,6 +68,7 @@ public class RouteGson {
 
         public void copyRoute(Route route) {
             name = route.name;
+            id = route.id;
             visible = route.visible;
             route_markers = route.route_markers;
             elevationTrusted = route.elevationTrusted;
@@ -70,13 +78,19 @@ public class RouteGson {
             visible = !visible;
         }
 
-        public int getId() {
-            return name.hashCode() + 31 * route_markers.size();
+        @NotNull
+        public String getCompositeId() {
+            if (id != null) return id;
+            // Fallback to a non ideal id generation
+            return name + route_markers.size();
         }
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof Route && ((Route) o).getId() == getId();
+            if (!(o instanceof Route)) return false;
+            Route r = (Route) o;
+            if (id != null) return id.equals(r.id);
+            return r.name.equals(name) && r.route_markers.size() == route_markers.size();
         }
 
         @Override

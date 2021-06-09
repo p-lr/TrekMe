@@ -29,7 +29,7 @@ class ColorSelectDialog : DialogFragment() {
     private val paletteBundleKey = "palette"
     private val selectedBundleKey = "selected"
     private var paletteVariant = PaletteVariant.NORMAL
-    private var routeId: Int? = null
+    private var routeId: String? = null
     private var selectedIndex = -1
 
     private val normalPalette = listOf("#f44336", "#9c27b0", "#2196f3", "#4caf50",
@@ -60,10 +60,10 @@ class ColorSelectDialog : DialogFragment() {
         private const val COLOR_ID = "colorId"
 
         @JvmStatic
-        fun newInstance(routeId: Int, color: String?): ColorSelectDialog {
+        fun newInstance(routeId: String, color: String?): ColorSelectDialog {
             val fragment = ColorSelectDialog()
             val args = Bundle()
-            args.putInt(ROUTE_ID, routeId)
+            args.putString(ROUTE_ID, routeId)
             args.putString(COLOR_ID, color)
             fragment.arguments = args
             return fragment
@@ -86,7 +86,7 @@ class ColorSelectDialog : DialogFragment() {
             } else -1
         }
 
-        routeId = arguments?.getInt(ROUTE_ID)
+        routeId = arguments?.getString(ROUTE_ID)
         colorViews.forEachIndexed { index: Int, selectableColor: SelectableColor ->
             selectableColor.setOnClickListener {
                 selectableColor.isSelected = !selectableColor.isSelected
