@@ -129,42 +129,47 @@ class MapLoader(
         val markerFile = File(map.directory, MAP_MARKER_FILENAME)
         if (!markerFile.exists()) return@withContext false
 
-        val jsonString: String
-        return@withContext try {
-            jsonString = FileUtils.getStringFromFile(markerFile)
-            val markerGson: MarkerGson = gson.fromJson(jsonString, MarkerGson::class.java)
-            map.markerGson = markerGson
-            true
-        } catch (e: Exception) {
-            /* Error while decoding the json file */
-            Log.e(TAG, e.message, e)
-            false
+        val markerGson = runCatching {
+            val jsonString = FileUtils.getStringFromFile(markerFile)
+            gson.fromJson(jsonString, MarkerGson::class.java)
+        }.onFailure {
+            Log.e(TAG, it.message, it)
+        }.getOrNull()
+
+        /* Update the map on the main thread */
+        withContext(mainDispatcher) {
+            if (markerGson != null) {
+                map.markerGson = markerGson
+                true
+            } else false
         }
     }
 
     /**
      * Launch a task which reads the routes.json file.
-     * The [mapRouteImportTask] is called off UI thread. Right after, on the calling thread (which
-     * should be the UI thread), the result (a nullable instance of [RouteGson]) is set on the [Map]
-     * given as parameter.
+     * The [mapRouteImportTask] is called off UI thread to get a nullable instance of [RouteGson].
+     * Right after, if the result is not null, we update the [Map] on the main thread.
      */
     suspend fun importRoutesForMap(map: Map) = withContext(ioDispatcher) {
         mapRouteImportTask(map, gson, MAP_ROUTE_FILENAME)
     }?.let { routeGson ->
-        map.routeGson = routeGson
+        withContext(mainDispatcher) {
+            map.routeGson = routeGson
+        }
     }
 
     /**
      * Launch a task which reads the landmarks.json file.
-     * The [mapLandmarkImportTask] is called off UI thread. Right after, on the calling thread (which
-     * should be the UI thread), the result (a nullable instance of [LandmarkGson]) is set on the [Map]
-     * given as parameter.
+     * The [mapLandmarkImportTask] is called off UI thread to get a nullable instance of [LandmarkGson].
+     * Right after, if the result is not null, we update the [Map] on the main thread.
      */
     suspend fun getLandmarksForMap(map: Map) =
             withContext(defaultDispatcher) {
                 mapLandmarkImportTask(map, gson, MAP_LANDMARK_FILENAME)
             }?.let { landmarkGson ->
-                map.landmarkGson = landmarkGson
+                withContext(mainDispatcher) {
+                    map.landmarkGson = landmarkGson
+                }
             }
 
     /**
@@ -324,12 +329,12 @@ class MapLoader(
 
     /**
      * Renaming a map involves two steps:
-     * 1. Immediately change the name that appears in map.json, in the context of the caller,
+     * 1. Immediately change the name that appears in map.json, in the main thread,
      * 2. Rename the directory containing files, using [ioDispatcher],
      * 3. Update the map's directory, if the rename succeeded.
      * After that call, the map.json isn't updated. To update it, invoke [saveMap].
      */
-    suspend fun renameMap(map: Map, newName: String) {
+    suspend fun renameMap(map: Map, newName: String) = withContext(mainDispatcher) {
         map.name = newName
         val newDirectory = File(map.directory.parentFile, newName)
         val renameOk = withContext(ioDispatcher) {

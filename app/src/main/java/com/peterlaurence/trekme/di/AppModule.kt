@@ -87,7 +87,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindMapLoader(): MapLoader = MapLoader(Dispatchers.Main, Dispatchers.Default, Dispatchers.IO)
+    fun bindMapLoader(): MapLoader = MapLoader(Dispatchers.Main.immediate, Dispatchers.Default, Dispatchers.IO)
 
     @Singleton
     @Provides
