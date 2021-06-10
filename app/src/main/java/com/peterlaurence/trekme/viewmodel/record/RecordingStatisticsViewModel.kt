@@ -149,12 +149,7 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     fun getRecordingUri(recordingData: RecordingData): Uri? {
-        val gpxFile = getGpxFileForId(recordingData.id)
-        return if (gpxFile != null) TrekmeFilesProvider.generateUri(gpxFile) else null
-    }
-
-    private fun getGpxFileForId(id: Int): File? {
-        return recordings.firstOrNull { it.id() == id }
+        return TrekmeFilesProvider.generateUri(recordingData.gpxFile)
     }
 
     /**
@@ -184,8 +179,8 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     fun onRequestDeleteRecordings(recordingDataList: List<RecordingData>) = viewModelScope.launch {
-        val ids = recordingDataList.map { it.id }
-        val recordingsToDelete = recordings.filter { it.id() in ids }
+        val gpxFiles = recordingDataList.map { it.gpxFile }
+        val recordingsToDelete = gpxFiles.filter { it in recordings }
         var success = true
         supervisorScope {
             with(recordingsToData.iterator()) {
@@ -219,16 +214,14 @@ class RecordingStatisticsViewModel @Inject constructor(
     fun onRequestShowElevation(recordingData: RecordingData) = viewModelScope.launch {
         /* If we already computed elevation data for this same gpx file, no need to continue */
         val gpxForElevation = gpxRepository.gpxForElevation.replayCache.firstOrNull()
-        if (gpxForElevation != null && gpxForElevation.id == recordingData.id) return@launch
+        if (gpxForElevation != null && gpxForElevation.gpxFile == recordingData.gpxFile) return@launch
 
         /* Notify the repo that we're about to submit new data, invalidating the existing one */
         gpxRepository.resetGpxForElevation()
 
         withContext(Dispatchers.IO) {
-            val gpxFile = getGpxFileForId(recordingData.id)
-            val gpx = gpxFile?.let {
-                parseGpxSafely(FileInputStream(it))
-            }
+            val gpxFile = recordingData.gpxFile
+            val gpx = parseGpxSafely(FileInputStream(gpxFile))
             if (gpx != null) {
                 gpxRepository.setGpxForElevation(gpx, gpxFile)
             }
@@ -282,7 +275,7 @@ class RecordingStatisticsViewModel @Inject constructor(
 
     private fun makeRecordingData(gpxFile: File, gpx: Gpx? = null): RecordingData {
         return RecordingData(
-                gpxFile.id(),
+                gpxFile,
                 FileUtils.getFileNameWithoutExtention(gpxFile),
                 gpx?.tracks?.firstOrNull()?.statistics,
                 gpx?.metadata?.time
@@ -326,4 +319,4 @@ private const val TAG = "RecordingStatisticsVM"
  * A [RecordingData] is just wrapper on the [File] and its corresponding [TrackStatistics] data and
  * timestamp. The timestamp is used to sort visual elements.
  */
-data class RecordingData(val id: Int, val name: String, val statistics: TrackStatistics? = null, val time: Long? = null)
+data class RecordingData(val gpxFile: File, val name: String, val statistics: TrackStatistics? = null, val time: Long? = null)

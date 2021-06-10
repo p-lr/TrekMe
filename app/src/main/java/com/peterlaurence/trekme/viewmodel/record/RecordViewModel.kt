@@ -17,7 +17,6 @@ import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.core.track.id
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.service.GpxRecordService
@@ -127,7 +126,7 @@ class RecordViewModel @Inject constructor(
         val map = mapLoader.getMap(mapId) ?: return
 
         val recordingData = recordingsSelected.firstOrNull() ?: return
-        val recording = gpxRepository.recordings?.firstOrNull { it.id() == recordingData.id }
+        val recording = gpxRepository.recordings?.firstOrNull { it == recordingData.gpxFile }
                 ?: return
 
         viewModelScope.launch {
