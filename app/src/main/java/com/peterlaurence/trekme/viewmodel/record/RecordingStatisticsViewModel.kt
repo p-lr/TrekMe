@@ -274,10 +274,12 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     private fun makeRecordingData(gpxFile: File, gpx: Gpx? = null): RecordingData {
+        val firstTrk = gpx?.tracks?.firstOrNull()
         return RecordingData(
                 gpxFile,
                 FileUtils.getFileNameWithoutExtention(gpxFile),
-                gpx?.tracks?.firstOrNull()?.statistics,
+                firstTrk?.statistics,
+                firstTrk?.id,
                 gpx?.metadata?.time
         )
     }
@@ -316,7 +318,10 @@ class RecordingStatisticsViewModel @Inject constructor(
 private const val TAG = "RecordingStatisticsVM"
 
 /**
- * A [RecordingData] is just wrapper on the [File] and its corresponding [TrackStatistics] data and
- * timestamp. The timestamp is used to sort visual elements.
+ * A [RecordingData] is a wrapper on the [File] and various other data such as the [TrackStatistics]
+ * data, the id of the track (if any), and timestamp. The timestamp is used to sort visual elements.
  */
-data class RecordingData(val gpxFile: File, val name: String, val statistics: TrackStatistics? = null, val time: Long? = null)
+data class RecordingData(val gpxFile: File, val name: String,
+                         val statistics: TrackStatistics? = null,
+                         val trkId: String? = null,
+                         val time: Long? = null)
