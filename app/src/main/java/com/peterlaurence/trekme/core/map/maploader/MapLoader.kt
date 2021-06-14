@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -325,6 +326,21 @@ class MapLoader(
         }
 
         saveLandmarks(map)
+    }
+
+    /**
+     * Delete a list of [RouteGson.Route], given their ids. If a route doesn't have an id (typically
+     * because it's a legacy route), it isn't deleted.
+     */
+    suspend fun deleteRoutes(ids: List<String>) = withContext(mainDispatcher) {
+        for (map in mapList) {
+            launch {
+                map.routeGson.routes = map.routeGson.routes.filter {
+                    it.id == null || it.id !in ids
+                }
+                saveRoutes(map)
+            }
+        }
     }
 
     /**

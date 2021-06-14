@@ -15,6 +15,7 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
+import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.*
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.repositories.recording.GpxRepository
@@ -54,6 +55,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RecordingStatisticsViewModel @Inject constructor(
+        private val mapLoader: MapLoader,
         private val gpxRecordEvents: GpxRecordEvents,
         private val gpxRepository: GpxRepository,
         private val appEventBus: AppEventBus,
@@ -171,7 +173,7 @@ class RecordingStatisticsViewModel @Inject constructor(
                         remove()
                         recordingsToData[newFile] = newData
                     }
-                    updateLiveData()
+                    updateRecordings()
                     return
                 }
             }
@@ -179,35 +181,40 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     fun onRequestDeleteRecordings(recordingDataList: List<RecordingData>) = viewModelScope.launch {
-        val gpxFiles = recordingDataList.map { it.gpxFile }
-        val recordingsToDelete = gpxFiles.filter { it in recordings }
-        var success = true
-        supervisorScope {
-            with(recordingsToData.iterator()) {
-                forEach {
-                    val file = it.key
-                    if (file in recordingsToDelete) {
-                        launch(Dispatchers.IO) {
-                            runCatching {
-                                if (file.exists()) {
-                                    if (!file.delete()) success = false
-                                }
-                            }.onFailure {
-                                success = false
+        /* Remove GPX files */
+        launch {
+            val gpxFiles = recordingDataList.map { it.gpxFile }
+            val recordingsToDelete = gpxFiles.filter { it in recordings }
+            var success = true
+            val iter = recordingsToData.iterator()
+            iter.forEach {
+                val file = it.key
+                if (file in recordingsToDelete) {
+                    launch(Dispatchers.IO) {
+                        runCatching {
+                            if (file.exists()) {
+                                if (!file.delete()) success = false
                             }
+                        }.onFailure {
+                            success = false
                         }
-                        /* Immediately remove the element, even if the real removal is pending */
-                        remove()
                     }
+                    /* Immediately remove the element, even if the real removal is pending */
+                    iter.remove()
                 }
             }
+            updateRecordings()
 
-            updateLiveData()
+            /* If only one removal failed, notify the user */
+            if (!success) {
+                eventBus.postRecordingDeletionFailed()
+            }
         }
 
-        /* If only one removal failed, notify the user */
-        if (!success) {
-            eventBus.postRecordingDeletionFailed()
+        /* Remove corresponding tracks on existing maps */
+        launch {
+            val trkIds = recordingDataList.mapNotNull { it.trkId }
+            mapLoader.deleteRoutes(trkIds)
         }
     }
 
@@ -235,10 +242,10 @@ class RecordingStatisticsViewModel @Inject constructor(
         }
 
         setTrackStatistics(gpx)
-        updateLiveData()
+        updateRecordings()
     }
 
-    private fun updateLiveData() {
+    private fun updateRecordings() {
         /* Transform a defensive copy of the original Map - the view uses DiffUtils, which performs
          * background calculations on the given data structure. */
         val data = recordingsToData.toMap().values.sortedByDescending {
@@ -254,7 +261,7 @@ class RecordingStatisticsViewModel @Inject constructor(
      */
     private fun initDataSet() = viewModelScope.launch {
         updateRecordingsToGpxMap()
-        updateLiveData()
+        updateRecordings()
     }
 
     /**
