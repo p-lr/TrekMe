@@ -335,10 +335,14 @@ class MapLoader(
     suspend fun deleteRoutes(ids: List<String>) = withContext(mainDispatcher) {
         for (map in mapList) {
             launch {
-                map.routeGson.routes = map.routeGson.routes.filter {
+                val oldCnt = map.routeGson.routes.size
+                val filtered = map.routeGson.routes.filter {
                     it.id == null || it.id !in ids
                 }
-                saveRoutes(map)
+                if (filtered.size != oldCnt) {
+                    map.routeGson.routes = filtered
+                    saveRoutes(map)
+                }
             }
         }
     }
