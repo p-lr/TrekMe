@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -52,6 +53,22 @@ class RecordFragment : Fragment() {
 
     @Inject
     lateinit var appEventBus: AppEventBus
+
+    private val importRecordingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri = result.data?.data
+            val uriList = if (uri != null) {
+                /* One file selected */
+                listOf(uri)
+            } else {
+                val clipData = result.data?.clipData ?: return@registerForActivityResult
+                (0 until clipData.itemCount).map {
+                    clipData.getItemAt(it).uri
+                }
+            }
+            statViewModel.importRecordings(uriList)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,7 +127,7 @@ class RecordFragment : Fragment() {
         binding.recordListView.setListener(object : RecordListView.RecordListViewListener {
             override fun onRequestShareRecording(dataList: List<RecordingData>) {
                 val activity = activity ?: return
-                val intentBuilder = ShareCompat.IntentBuilder.from(activity)
+                val intentBuilder = ShareCompat.IntentBuilder(activity)
                         .setType("text/plain")
                 dataList.forEach {
                     try {
@@ -161,7 +178,7 @@ class RecordFragment : Fragment() {
 
                 /* Search for all documents available via installed storage providers */
                 intent.type = "*/*"
-                startActivityForResult(intent, IMPORT_RECORDINGS_CODE)
+                importRecordingsLauncher.launch(intent)
             }
         })
     }
@@ -171,22 +188,6 @@ class RecordFragment : Fragment() {
 
         recordingData?.value?.let {
             updateRecordingData(it)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
-        if (requestCode == IMPORT_RECORDINGS_CODE && resultCode == Activity.RESULT_OK) {
-            val uri = resultData?.data
-            val uriList = if (uri != null) {
-                /* One file selected */
-                listOf(uri)
-            } else {
-                val clipData = resultData?.clipData ?: return
-                (0 until clipData.itemCount).map {
-                    clipData.getItemAt(it).uri
-                }
-            }
-            statViewModel.importRecordings(uriList)
         }
     }
 
@@ -217,6 +218,5 @@ class RecordFragment : Fragment() {
 
     companion object {
         const val TAG = "RecordFragment"
-        private const val IMPORT_RECORDINGS_CODE = 6843
     }
 }

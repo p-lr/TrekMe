@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
@@ -47,6 +48,19 @@ class MapImportFragment : Fragment() {
     private lateinit var data: List<MapImportViewModel.ItemData>
     private var itemSelected: MapImportViewModel.ItemData? = null
     private val viewModel: MapImportViewModel by viewModels()
+
+    private val mapImportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                lifecycleScope.launch {
+                    showProgressBar()
+                    binding.buttonImport.isEnabled = false
+                    val zipDocs = listZipDocs(uri)
+                    viewModel.updateUriList(zipDocs)
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,7 +111,7 @@ class MapImportFragment : Fragment() {
 
         binding.buttonImport.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            startActivityForResult(intent, MAP_IMPORT_CODE)
+            mapImportLauncher.launch(intent)
         }
 
         val recyclerViewMapImport = binding.recyclerViewMapImport
@@ -134,21 +148,6 @@ class MapImportFragment : Fragment() {
             dividerItemDecoration.setDrawable(divider)
         }
         recyclerViewMapImport.addItemDecoration(dividerItemDecoration)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (resultCode == Activity.RESULT_OK) {
-            data?.data?.let { uri ->
-                lifecycleScope.launch {
-                    showProgressBar()
-                    binding.buttonImport.isEnabled = false
-                    val zipDocs = listZipDocs(uri)
-                    viewModel.updateUriList(zipDocs)
-                }
-            }
-        }
     }
 
     private suspend fun listZipDocs(uri: Uri): List<DocumentFile> = withContext(Dispatchers.IO) {
@@ -213,5 +212,3 @@ class MapImportFragment : Fragment() {
         private const val CREATE_FROM_SCREEN_ROTATE = "create"
     }
 }
-
-private const val MAP_IMPORT_CODE = 5847
