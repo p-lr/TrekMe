@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.*
 import android.widget.EditText
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.DialogFragment
@@ -129,39 +130,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
-        /* Check if the request code is the one we are interested in */
-        if (requestCode == TRACK_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val ctx = context ?: return
-            val uri = resultData?.data ?: return
-
-            if (!viewModel.isFileSupported(uri)) {
-                val builder = AlertDialog.Builder(ctx)
-                builder.setView(View.inflate(context, R.layout.track_warning, null))
-                builder.setCancelable(false)
-                        .setPositiveButton(getString(R.string.ok_dialog), null)
-                val alert = builder.create()
-                alert.show()
-            }
-
-            /* Import the file */
-            // TODO: this shouldn't be done inside the lifecycleScope of this fragment, and events
-            // should be emitted in case of error as global messages (the activity listens to such message events)
-            lifecycleScope.launch {
-                try {
-                    val result = viewModel.applyGpxUri(uri)
-                    if (result is TrackImporter.GpxImportResult.GpxImportOk) {
-                        onGpxParseResult(result)
-                    }
-                } catch (e: FileNotFoundException) {
-                    onError(e.message ?: "")
-                } catch (e: TrackImporter.GpxParseException) {
-                    onError("Error with GPX file with uri $uri")
-                }
-            }
-        }
-    }
-
     private fun onGpxParseResult(event: TrackImporter.GpxImportResult.GpxImportOk) {
         /* Display to the user a recap of how many tracks and waypoints were imported */
         val activity = activity
@@ -267,13 +235,45 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         trackRenameMenuItem?.isVisible = routeCnt > 0 && selectedInRange
     }
 
+    private val chooseTrackLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val ctx = context ?: return@registerForActivityResult
+            val uri = result?.data?.data ?: return@registerForActivityResult
+
+            if (!viewModel.isFileSupported(uri)) {
+                val builder = AlertDialog.Builder(ctx)
+                builder.setView(View.inflate(context, R.layout.track_warning, null))
+                builder.setCancelable(false)
+                        .setPositiveButton(getString(R.string.ok_dialog), null)
+                val alert = builder.create()
+                alert.show()
+            }
+
+            /* Import the file */
+            // TODO: this shouldn't be done inside the lifecycleScope of this fragment, and events
+            // should be emitted in case of error as global messages (the activity listens to such message events)
+            lifecycleScope.launch {
+                try {
+                    val importResult = viewModel.applyGpxUri(uri)
+                    if (importResult is TrackImporter.GpxImportResult.GpxImportOk) {
+                        onGpxParseResult(importResult)
+                    }
+                } catch (e: FileNotFoundException) {
+                    onError(e.message ?: "")
+                } catch (e: TrackImporter.GpxParseException) {
+                    onError("Error with GPX file with uri $uri")
+                }
+            }
+        }
+    }
+
     private fun onCreateTrack() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
 
         /* Search for all documents available via installed storage providers */
         intent.type = "*/*"
-        startActivityForResult(intent, TRACK_REQUEST_CODE)
+        chooseTrackLauncher.launch(intent)
     }
 
     interface TrackChangeListener {
@@ -338,7 +338,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     companion object {
         const val TAG = "TracksManageFragment"
-        private const val TRACK_REQUEST_CODE = 1337
         private const val ROUTE_INDEX = "routeIndex"
     }
 }
