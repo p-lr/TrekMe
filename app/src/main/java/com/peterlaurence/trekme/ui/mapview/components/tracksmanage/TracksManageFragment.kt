@@ -30,8 +30,9 @@ import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.viewmodel.mapview.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.io.FileNotFoundException
 import javax.inject.Inject
 
 /**
@@ -98,6 +99,14 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
                 trackAdapter?.notifyDataSetChanged()
             }
         }
+
+        eventBus.trackImportEvent.map {
+            if (it is TrackImporter.GpxImportResult.GpxImportOk) {
+                onGpxParseResult(it)
+            } else {
+                onError("Error importing GPX file")
+            }
+        }.launchIn(lifecycleScope)
 
         return binding.root
     }
@@ -250,20 +259,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             }
 
             /* Import the file */
-            // TODO: this shouldn't be done inside the lifecycleScope of this fragment, and events
-            // should be emitted in case of error as global messages (the activity listens to such message events)
-            lifecycleScope.launch {
-                try {
-                    val importResult = viewModel.applyGpxUri(uri)
-                    if (importResult is TrackImporter.GpxImportResult.GpxImportOk) {
-                        onGpxParseResult(importResult)
-                    }
-                } catch (e: FileNotFoundException) {
-                    onError(e.message ?: "")
-                } catch (e: TrackImporter.GpxParseException) {
-                    onError("Error with GPX file with uri $uri")
-                }
-            }
+            viewModel.applyGpxUri(uri)
         }
     }
 

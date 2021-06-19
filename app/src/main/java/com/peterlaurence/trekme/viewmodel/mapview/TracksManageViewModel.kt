@@ -15,10 +15,7 @@ import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import java.io.FileNotFoundException
 import javax.inject.Inject
 
 /**
@@ -62,15 +59,8 @@ class TracksManageViewModel @Inject constructor(
 
     /**
      * The business logic of parsing a GPX file (given as an [Uri]).
-     * It is wrapped in a child [CoroutineScope] because we use an `async` call, which by default
-     * defers Exception handling to the calling code. If an unhandled Exception is thrown, it leads
-     * to a failure of the parent scope **even if those Exceptions are caught**. We don't want the
-     * whole scope of this fragment to fail, hence the child [CoroutineScope].
-     *
-     * @throws FileNotFoundException
-     * @throws TrackImporter.GpxParseException
      */
-    suspend fun applyGpxUri(uri: Uri): TrackImporter.GpxImportResult? = coroutineScope {
+    fun applyGpxUri(uri: Uri) = viewModelScope.launch {
         map?.let {
             trackImporter.applyGpxUriToMap(uri, app.applicationContext.contentResolver, it, mapLoader).let { result ->
                 if (result is TrackImporter.GpxImportResult.GpxImportOk) {
@@ -78,7 +68,7 @@ class TracksManageViewModel @Inject constructor(
                 }
                 /* Notify the rest of the app */
                 appEventBus.postGpxImportResult(result)
-                result
+                mapViewEventBus.postTrackImportEvent(result)
             }
         }
     }

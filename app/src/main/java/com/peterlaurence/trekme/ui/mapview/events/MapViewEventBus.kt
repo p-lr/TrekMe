@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.ui.mapview.events
 
+import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.events.TrackColorChangeEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,6 +25,13 @@ class MapViewEventBus {
     val trackColorChangeEvent = _trackColorChangeEvent.asSharedFlow()
 
     fun postTrackColorChange(event: TrackColorChangeEvent) = _trackColorChangeEvent.tryEmit(event)
+
+    /**********************************************************************************************/
+
+    private val _trackImportEvent = MutableSharedFlow<TrackImporter.GpxImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
+    val trackImportEvent = _trackImportEvent.asSharedFlow()
+
+    fun postTrackImportEvent(event: TrackImporter.GpxImportResult) = _trackImportEvent.tryEmit(event)
 
     /**********************************************************************************************/
 

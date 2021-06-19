@@ -31,8 +31,9 @@ class TrackImporter {
     /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
-    suspend fun applyGpxUriToMap(uri: Uri, contentResolver: ContentResolver, map: Map,
-                                 mapLoader: MapLoader): GpxImportResult {
+    suspend fun applyGpxUriToMap(
+            uri: Uri, contentResolver: ContentResolver, map: Map, mapLoader: MapLoader
+    ): GpxImportResult {
         return runCatching {
             val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
             parcelFileDescriptor?.use {
@@ -112,8 +113,6 @@ class TrackImporter {
             GpxImportResult.GpxImportError
         }
     }
-
-    class GpxParseException : Exception()
 
     private suspend fun setRoutesAndMarkersToMap(map: Map, routes: List<RouteGson.Route>,
                                                  wayPoints: List<MarkerGson.Marker>,
