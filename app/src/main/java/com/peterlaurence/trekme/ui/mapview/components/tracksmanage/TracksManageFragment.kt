@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.EditText
 import android.widget.TextView
@@ -29,10 +28,8 @@ import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.dialogs.Color
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.viewmodel.mapview.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -87,24 +84,20 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             onCreateTrack()
         }
 
-        lifecycleScope.launch {
-            eventBus.trackNameChangeSignal.collect {
-                trackAdapter?.notifyDataSetChanged()
-            }
-        }
+        eventBus.trackNameChangeSignal.map {
+            trackAdapter?.notifyDataSetChanged()
+        }.launchIn(lifecycleScope)
 
-        lifecycleScope.launch {
-            eventBus.trackColorChangeEvent.collect {
-                viewModel.changeRouteColor(it.routeId, it.color)
-                trackAdapter?.notifyDataSetChanged()
-            }
-        }
+        eventBus.trackColorChangeEvent.map {
+            viewModel.changeRouteColor(it.routeId, it.color)
+            trackAdapter?.notifyDataSetChanged()
+        }.launchIn(lifecycleScope)
 
         eventBus.trackImportEvent.map {
             if (it is TrackImporter.GpxImportResult.GpxImportOk) {
                 onGpxParseResult(it)
             } else {
-                onError("Error importing GPX file")
+                onImportError()
             }
         }.launchIn(lifecycleScope)
 
@@ -206,10 +199,9 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
-    private fun onError(message: String) {
+    private fun onImportError() {
         val view = view ?: return
         Snackbar.make(view, R.string.gpx_import_error_msg, Snackbar.LENGTH_LONG).show()
-        Log.e(TAG, message)
     }
 
     override fun onTrackSelected() {
