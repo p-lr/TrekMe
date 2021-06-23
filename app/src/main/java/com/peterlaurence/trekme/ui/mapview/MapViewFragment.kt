@@ -118,7 +118,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         shouldCenterOnFirstLocation = savedInstanceState == null
 
         /* Observe location changes */
-        locationSource.locationFlow.collectWhileStarted(this) {
+        locationSource.locationFlow.collectWhileResumed(this) {
             onLocationReceived(it)
         }
 

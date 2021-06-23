@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 /**
  * Utility extension function to start collecting a flow when the lifecycle is started,
@@ -41,7 +42,7 @@ class ObserverWhileStartedImpl<T>(
     private var job: Job? = null
 
     override fun onStart(owner: LifecycleOwner) {
-        job = owner.lifecycleScope.launchWhenStarted {
+        job = owner.lifecycleScope.launch {
             flow.collect {
                 collector(it)
             }
@@ -74,7 +75,7 @@ class ObserverWhileResumedImpl<T>(
     private var job: Job? = null
 
     override fun onResume(owner: LifecycleOwner) {
-        job = owner.lifecycleScope.launchWhenResumed {
+        job = owner.lifecycleScope.launch {
             flow.collect {
                 collector(it)
             }

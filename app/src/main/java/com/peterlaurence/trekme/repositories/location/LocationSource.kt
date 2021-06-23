@@ -12,7 +12,9 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 interface LocationSource {
     // TODO: change to SharedFlow when https://github.com/Kotlin/kotlinx.coroutines/issues/2408 is fixed
@@ -38,8 +40,8 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
     private val locationRequest = LocationRequest.create().apply {
         interval = 2000
-        fastestInterval = 2000
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        maxWaitTime = 5000  // 5s
     }
     private val looper = Looper.getMainLooper()
 
@@ -80,6 +82,13 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
                     /* In case of error, close the flow, so that the next subscription will trigger
                      * a new flow creation. */
                     close(it)
+                }
+            }
+
+            launch {
+                while (true) {
+                    delay(2000)
+                    fusedLocationClient.flushLocations()
                 }
             }
 
