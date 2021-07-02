@@ -37,7 +37,9 @@ class AboutFragment : Fragment() {
         binding.userManualBtn.setOnClickListener {
             val url = getString(R.string.help_url)
             val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(browserIntent)
+            runCatching {
+                startActivity(browserIntent)
+            }
         }
 
         /* In case of positive feedback, ask for app rating */
@@ -60,7 +62,9 @@ class AboutFragment : Fragment() {
                     .setPositiveButton(getString(R.string.ok_dialog)) { _, _ ->
                         val emailIntent = Intent(Intent.ACTION_SENDTO,
                                 Uri.fromParts("mailto", getString(R.string.email_support), null))
-                        startActivity(emailIntent)
+                        runCatching {
+                            startActivity(emailIntent)
+                        }
                     }
                     .setNegativeButton(getString(R.string.cancel_dialog_string)) { d, _ ->
                         d.cancel()
