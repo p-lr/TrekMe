@@ -32,7 +32,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
@@ -228,7 +227,9 @@ class RecordingStatisticsViewModel @Inject constructor(
 
         withContext(Dispatchers.IO) {
             val gpxFile = recordingData.gpxFile
-            val gpx = parseGpxSafely(FileInputStream(gpxFile))
+            val inputStream = runCatching { FileInputStream(gpxFile) }.getOrNull()
+                    ?: return@withContext
+            val gpx = parseGpxSafely(inputStream)
             if (gpx != null) {
                 gpxRepository.setGpxForElevation(gpx, gpxFile)
             }
