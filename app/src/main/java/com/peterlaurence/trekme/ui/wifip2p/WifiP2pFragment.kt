@@ -178,7 +178,7 @@ class WifiP2pFragment : Fragment() {
 
     private fun onError(error: Errors) {
         when (error) {
-            ServiceAlreadyStarted -> binding.status.editableText.append("Service already started")
+            ServiceAlreadyStarted -> _binding?.status?.editableText?.append("Service already started")
         }
     }
 
