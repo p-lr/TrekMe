@@ -17,8 +17,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 interface LocationSource {
-    // TODO: change to SharedFlow when https://github.com/Kotlin/kotlinx.coroutines/issues/2408 is fixed
-    val locationFlow: Flow<Location>
+    val locationFlow: SharedFlow<Location>
 }
 
 /**
@@ -46,16 +45,17 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
     private val looper = Looper.getMainLooper()
 
     /**
-     * A conflated [SharedFlow] of [Location]s, with a replay of 1.
+     * A [SharedFlow] of [Location]s, with a replay of 1.
      * Automatically un-registers underlying callback when there are no collectors.
-     * TODO: Revert conflate and shareIn when #2408 is fixed
+     * N.B: This shared flow used to be conflated, using a trick reported in
+     * https://github.com/Kotlin/kotlinx.coroutines/issues/2408 is fixed
      */
-    override val locationFlow: Flow<Location> by lazy {
+    override val locationFlow: SharedFlow<Location> by lazy {
         makeFlow(applicationContext).shareIn(
                 ProcessLifecycleOwner.get().lifecycleScope,
                 SharingStarted.WhileSubscribed(),
                 1
-        ).conflate()
+        )
     }
 
     private fun makeFlow(context: Context): Flow<Location> {

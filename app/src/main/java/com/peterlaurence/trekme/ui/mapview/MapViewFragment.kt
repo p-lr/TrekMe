@@ -25,7 +25,6 @@ import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.util.collectWhileResumed
-import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -523,8 +522,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     }
 
     private fun onLocationReceived(location: Location) {
-        if (isHidden) return
-
         presenter?.setGpsData(location)
 
         /* If there is no MapView, no need to go further */
