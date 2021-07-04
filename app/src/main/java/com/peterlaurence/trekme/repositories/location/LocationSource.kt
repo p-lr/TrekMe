@@ -14,7 +14,9 @@ import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 interface LocationSource {
     val locationFlow: SharedFlow<Location>
@@ -73,17 +75,27 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
                 }
             }
 
-            if (permission) {
-                fusedLocationClient.requestLocationUpdates(
-                        locationRequest,
-                        callback,
-                        looper
-                ).addOnFailureListener {
-                    /* In case of error, close the flow, so that the next subscription will trigger
-                     * a new flow creation. */
-                    close(it)
+            /* Request location updates, with a retry in case of failure */
+            fun requestLocationUpdates(): Result<Unit> = runCatching {
+                if (permission) {
+                    fusedLocationClient.requestLocationUpdates(
+                            locationRequest,
+                            callback,
+                            looper
+                    ).addOnFailureListener {
+                        /* In case of error, re-subscribe after a delay */
+                        runBlocking { delay(4000) }
+                        if (isActive) {
+                            runCatching {
+                                fusedLocationClient.removeLocationUpdates(callback)
+                            }
+                            requestLocationUpdates()
+                        }
+                    }
                 }
             }
+
+            requestLocationUpdates()
 
             launch {
                 while (true) {
