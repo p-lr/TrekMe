@@ -19,7 +19,7 @@ import com.peterlaurence.trekme.core.sensors.OrientationSensor
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackStatistics
-import com.peterlaurence.trekme.repositories.location.Location
+import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
@@ -545,7 +545,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
 
         /* If the user wants to see the speed */
-        speedListener?.onSpeed(location.speed)
+        location.speed?.run {
+            speedListener?.onSpeed(this)
+        }
     }
 
     /**

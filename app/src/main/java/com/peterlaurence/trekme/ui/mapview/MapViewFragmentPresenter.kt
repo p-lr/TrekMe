@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.databinding.FragmentMapViewBinding
-import com.peterlaurence.trekme.repositories.location.Location
+import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import ovh.plrapps.mapview.MapView
@@ -130,7 +130,7 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
     private fun updateGpsDataPanel(location: Location) {
         binding.latValue.text = UnitFormatter.formatLatLon(location.latitude)
         binding.lonValue.text = UnitFormatter.formatLatLon(location.longitude)
-        binding.eleValue.text = UnitFormatter.formatElevation(location.altitude)
+        binding.eleValue.text = UnitFormatter.formatElevation(location.altitude ?: 0.0)
     }
 
     interface PositionTouchListener {

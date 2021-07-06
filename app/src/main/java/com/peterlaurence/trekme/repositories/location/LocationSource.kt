@@ -11,6 +11,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.peterlaurence.trekme.core.model.Location
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -21,15 +22,6 @@ import kotlinx.coroutines.runBlocking
 interface LocationSource {
     val locationFlow: SharedFlow<Location>
 }
-
-/**
- * [latitude] and [longitude] are in decimal degrees.
- * [altitude] is in meters.
- * [speed] is in meters per second.
- * [time] is the UTC time in milliseconds since January 1, 1970
- */
-data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float = 0f,
-                    val altitude: Double = 0.0, val time: Long = 0)
 
 /**
  * A [LocationSource] which uses Google's fused location provider. It combines all possible sources
@@ -70,7 +62,9 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
             val callback = object : com.google.android.gms.location.LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult?) {
                     for (loc in locationResult?.locations ?: listOf()) {
-                        trySend(Location(loc.latitude, loc.longitude, loc.speed, loc.altitude, loc.time))
+                        val speed = if (loc.speed != 0f) loc.speed else null
+                        val altitude = if (loc.altitude != 0.0) loc.altitude else null
+                        trySend(Location(loc.latitude, loc.longitude, speed, altitude, loc.time))
                     }
                 }
             }

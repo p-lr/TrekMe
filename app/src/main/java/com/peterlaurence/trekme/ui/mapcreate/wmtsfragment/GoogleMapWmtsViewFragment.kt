@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
-import com.peterlaurence.trekme.repositories.location.Location
+import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialog

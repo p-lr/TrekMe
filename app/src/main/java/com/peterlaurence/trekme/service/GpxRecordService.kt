@@ -20,7 +20,7 @@ import com.peterlaurence.trekme.core.track.DistanceCalculatorImpl
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
-import com.peterlaurence.trekme.repositories.location.Location
+import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
@@ -112,9 +112,8 @@ class GpxRecordService : Service() {
             return
         }
 
-        val altitude = if (location.altitude != 0.0) location.altitude else null
         val trackPoint = TrackPoint(location.latitude,
-                location.longitude, altitude, location.time, "")
+                location.longitude, location.altitude, location.time, "")
         eventsGpx.addTrackPoint(trackPoint)
         trackStatCalculator?.addTrackPoint(trackPoint)
         trackStatCalculator?.getStatistics()?.also { stats ->
