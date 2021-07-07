@@ -3,8 +3,8 @@ package com.peterlaurence.trekme.lib.nmea
 import org.junit.Test
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class NmeaParserTest {
     private val calendar = GregorianCalendar(TimeZone.getTimeZone("UTC"))
@@ -15,14 +15,14 @@ class NmeaParserTest {
         val loc = parseNmeaLocationSentence(gga)
 
         assertNotNull(loc)
+        assertIs<NmeaGGA>(loc)
         calendar.timeInMillis = loc.time
         assertEquals(12, calendar.get(Calendar.HOUR_OF_DAY))
         assertEquals(35, calendar.get(Calendar.MINUTE))
         assertEquals(19, calendar.get(Calendar.SECOND))
         assertEquals(48.1173, loc.latitude)
         assertEquals(11.522066667, loc.longitude, 1E-8)
-        assertEquals(545.4, loc.altitude)
-        assertNull(loc.speed)
+        assertEquals(545.4, loc.elevation)
     }
 
     @Test
@@ -31,6 +31,7 @@ class NmeaParserTest {
         val loc = parseNmeaLocationSentence(rmc)
 
         assertNotNull(loc)
+        assertIs<NmeaRMC>(loc)
         calendar.timeInMillis = loc.time
         assertEquals(22, calendar.get(Calendar.HOUR_OF_DAY))
         assertEquals(54, calendar.get(Calendar.MINUTE))
@@ -38,6 +39,6 @@ class NmeaParserTest {
         assertEquals(49.274166667, loc.latitude, 1E-8)
         assertEquals(-123.185333333, loc.longitude, 1E-8)
         assertNotNull(loc.speed)
-        assertEquals(6.37911056f, loc.speed!!, 1E-6f)
+        assertEquals(6.37911056f, loc.speed, 1E-6f)
     }
 }

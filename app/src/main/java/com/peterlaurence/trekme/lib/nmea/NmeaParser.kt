@@ -1,14 +1,13 @@
 package com.peterlaurence.trekme.lib.nmea
 
 import android.util.Log
-import com.peterlaurence.trekme.core.model.Location
 import java.util.*
 
 /**
  * Parses the two NMEA 0183 sentences which are commonly emitted by GPS units.
  * @see https://gpsd.gitlab.io/gpsd/NMEA.html#_gtd_geographic_location_in_time_differences
  */
-fun parseNmeaLocationSentence(st: String): Location? {
+fun parseNmeaLocationSentence(st: String): NmeaData? {
     return when {
         st.isGGA() -> {
             parseGGA(st)
@@ -20,6 +19,10 @@ fun parseNmeaLocationSentence(st: String): Location? {
     }
 }
 
+sealed class NmeaData
+data class NmeaGGA(val latitude: Double, val longitude: Double, val elevation: Double, val time: Long): NmeaData()
+data class NmeaRMC(val latitude: Double, val longitude: Double, val speed: Float, val time: Long): NmeaData()
+
 private fun String.isGGA(): Boolean {
     return substring(3, 6) == GGA
 }
@@ -28,7 +31,7 @@ private fun String.isRMC(): Boolean {
     return substring(3, 6) == RMC
 }
 
-private fun parseGGA(line: String): Location? {
+private fun parseGGA(line: String): NmeaData? {
     val fields = line.split(',')
 
     val epoch = parseHour(fields[1]) ?: run {
@@ -45,10 +48,10 @@ private fun parseGGA(line: String): Location? {
     }
     val ele = parseElevation(fields[9])
 
-    return Location(lat, lon, altitude = ele, time = epoch)
+    return NmeaGGA(lat, lon, elevation = ele, time = epoch)
 }
 
-private fun parseRMC(line: String): Location? {
+private fun parseRMC(line: String): NmeaData? {
     val fields = line.split(',')
 
     val epoch = parseHour(fields[1]) ?: run {
@@ -64,7 +67,7 @@ private fun parseRMC(line: String): Location? {
         return null
     }
     val speed = parseGroundSpeed(fields[7])
-    return Location(lat, lon, speed = speed, time = epoch)
+    return NmeaRMC(lat, lon, speed = speed, time = epoch)
 }
 
 
