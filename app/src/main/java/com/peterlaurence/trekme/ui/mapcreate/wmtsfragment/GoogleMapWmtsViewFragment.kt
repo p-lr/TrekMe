@@ -21,12 +21,12 @@ import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
+import com.peterlaurence.trekme.core.model.Location
+import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
-import com.peterlaurence.trekme.core.model.Location
-import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialog
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialogIgn

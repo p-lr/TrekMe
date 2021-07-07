@@ -16,12 +16,12 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
+import com.peterlaurence.trekme.core.model.Location
+import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.track.DistanceCalculatorImpl
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
-import com.peterlaurence.trekme.core.model.Location
-import com.peterlaurence.trekme.repositories.location.LocationSource
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.util.gpx.model.*

@@ -1,42 +1,26 @@
 package com.peterlaurence.trekme.repositories.location
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Looper
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
 import com.peterlaurence.trekme.core.model.Location
+import com.peterlaurence.trekme.core.model.LocationProducer
+import com.peterlaurence.trekme.core.model.LocationSource
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-
-interface LocationSource {
-    val locationFlow: SharedFlow<Location>
-}
 
 /**
- * A [LocationSource] which uses Google's fused location provider. It combines all possible sources
- * of location data.
- *
- * @author P.Laurence on 26/11/20
+ * This [LocationSource] uses two [LocationProducer]s. One called "internal" corresponds to
+ * the device's GPS antenna. The other called "external" corresponds to whatever external bluetooth
+ * or wifi connected GPS.
  */
-class GoogleLocationSource(private val applicationContext: Context) : LocationSource {
-    private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
-    private val locationRequest = LocationRequest.create().apply {
-        interval = 2000
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        maxWaitTime = 5000  // 5s
-    }
-    private val looper = Looper.getMainLooper()
+class LocationSourceImpl(
+        mode: LocationSource.Mode,
+        private val internalProducer: LocationProducer,
+        private val externalProducer: LocationProducer
+) : LocationSource {
+    val state = MutableStateFlow(mode)
 
     /**
      * A [SharedFlow] of [Location]s, with a replay of 1.
@@ -45,62 +29,66 @@ class GoogleLocationSource(private val applicationContext: Context) : LocationSo
      * https://github.com/Kotlin/kotlinx.coroutines/issues/2408 is fixed
      */
     override val locationFlow: SharedFlow<Location> by lazy {
-        makeFlow(applicationContext).shareIn(
+        callbackFlow {
+            val producer = ProducersController(state, internalProducer, externalProducer)
+            producer.locationFlow.map {
+                trySend(it)
+            }.launchIn(this)
+
+            awaitClose {
+                producer.stop()
+            }
+        }.shareIn(
                 ProcessLifecycleOwner.get().lifecycleScope,
                 SharingStarted.WhileSubscribed(),
                 1
         )
     }
 
-    private fun makeFlow(context: Context): Flow<Location> {
-        val permission = ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
+    override fun setMode(mode: LocationSource.Mode) {
+        state.value = mode
+    }
+}
 
-        return callbackFlow {
-            val callback = object : com.google.android.gms.location.LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult?) {
-                    for (loc in locationResult?.locations ?: listOf()) {
-                        val speed = if (loc.speed != 0f) loc.speed else null
-                        val altitude = if (loc.altitude != 0.0) loc.altitude else null
-                        trySend(Location(loc.latitude, loc.longitude, speed, altitude, loc.time))
-                    }
-                }
+private class ProducersController(
+        state: StateFlow<LocationSource.Mode>,
+        private val internalProducer: LocationProducer,
+        private val externalProducer: LocationProducer
+) {
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var internalJob: Job? = null
+    private var externalJob: Job? = null
+
+    val _locationFlow = MutableSharedFlow<Location>(
+            extraBufferCapacity = 256,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val locationFlow: SharedFlow<Location> = _locationFlow.asSharedFlow()
+
+    init {
+        state.map { mode ->
+            when (mode) {
+                LocationSource.Mode.INTERNAL -> startInternal()
+                LocationSource.Mode.EXTERNAL -> startExternal()
             }
+        }.launchIn(scope)
+    }
 
-            /* Request location updates, with a retry in case of failure */
-            fun requestLocationUpdates(): Result<Unit> = runCatching {
-                if (permission) {
-                    fusedLocationClient.requestLocationUpdates(
-                            locationRequest,
-                            callback,
-                            looper
-                    ).addOnFailureListener {
-                        /* In case of error, re-subscribe after a delay */
-                        runBlocking { delay(4000) }
-                        if (isActive) {
-                            runCatching {
-                                fusedLocationClient.removeLocationUpdates(callback)
-                            }
-                            requestLocationUpdates()
-                        }
-                    }
-                }
-            }
+    fun stop() = scope.cancel()
 
-            requestLocationUpdates()
+    private fun startInternal() {
+        externalJob?.run { cancel() }
+        internalJob = collectProducer(internalProducer)
+    }
 
-            launch {
-                while (true) {
-                    delay(2000)
-                    fusedLocationClient.flushLocations()
-                }
-            }
+    private fun startExternal() {
+        internalJob?.run { cancel() }
+        externalJob = collectProducer(externalProducer)
+    }
 
-            awaitClose {
-                fusedLocationClient.removeLocationUpdates(callback)
-            }
-        }
+    private fun collectProducer(producer: LocationProducer): Job {
+        return producer.locationFlow.map {
+            _locationFlow.tryEmit(it)
+        }.launchIn(scope)
     }
 }

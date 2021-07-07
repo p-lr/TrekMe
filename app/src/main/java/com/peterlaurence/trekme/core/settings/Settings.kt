@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import java.io.File
 import javax.inject.Inject
@@ -31,6 +32,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
     private val scaleRatioCentered = "scaleRatioCentered"
     private val measurementSystem = "measurementSystem"
     private val locationDisclaimer = "locationDisclaimer"
+    private val locationSourceMode = "locationSourceMode"
 
     /**
      * Get the current application directory as [File].
@@ -214,6 +216,18 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
     fun discardLocationDisclaimer() {
         sharedPref.edit {
             putBoolean(locationDisclaimer, false)
+        }
+    }
+
+    fun getLocationSourceMode(): LocationSource.Mode {
+        return sharedPref.getString(locationSourceMode, null)?.let {
+            LocationSource.Mode.valueOf(it)
+        } ?: LocationSource.Mode.INTERNAL
+    }
+
+    fun setLocationSourceMode(mode: LocationSource.Mode) {
+        sharedPref.edit {
+            putString(locationSourceMode, mode.name)
         }
     }
 }
