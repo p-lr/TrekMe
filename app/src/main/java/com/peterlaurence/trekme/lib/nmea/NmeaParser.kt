@@ -14,7 +14,7 @@ fun parseNmeaLocationSentence(st: String): Location? {
             parseGGA(st)
         }
         st.isRMC() -> {
-            parseRMC()
+            parseRMC(st)
         }
         else -> null // Unknown NMEA sentence
     }
@@ -35,19 +35,36 @@ private fun parseGGA(line: String): Location? {
         Log.e(TAG, "Failed to parse epoch in $line")
         return null
     }
-    val lat = parseLatitude(fields) ?: run {
+    val lat = parseLatitude(fields.subList(2, 4)) ?: run {
         Log.e(TAG, "Failed to parse lat in $line")
         return null
     }
-    val lon = parseLongitude(fields) ?: run {
+    val lon = parseLongitude(fields.subList(4, 6)) ?: run {
         Log.e(TAG, "Failed to parse lon in $line")
         return null
     }
-    return Location(lat, lon, time = epoch)
+    val ele = parseElevation(fields[9])
+
+    return Location(lat, lon, altitude = ele, time = epoch)
 }
 
-private fun parseRMC(): Location? {
-    TODO()
+private fun parseRMC(line: String): Location? {
+    val fields = line.split(',')
+
+    val epoch = parseHour(fields[1]) ?: run {
+        Log.e(TAG, "Failed to parse epoch in $line")
+        return null
+    }
+    val lat = parseLatitude(fields.subList(3, 5)) ?: run {
+        Log.e(TAG, "Failed to parse lat in $line")
+        return null
+    }
+    val lon = parseLongitude(fields.subList(5, 7)) ?: run {
+        Log.e(TAG, "Failed to parse lon in $line")
+        return null
+    }
+    val speed = parseGroundSpeed(fields[7])
+    return Location(lat, lon, speed = speed, time = epoch)
 }
 
 
@@ -60,8 +77,8 @@ private fun parseHour(field: String): Long? = runCatching {
 }.getOrNull()
 
 private fun parseLatitude(fields: List<String>): Double? = runCatching {
-    val latField = fields[2]
-    val northOrSouth = fields[3]
+    val latField = fields[0]
+    val northOrSouth = fields[1]
     val entireDegrees = latField.substring(0, 2).toDouble()
     val minutes = latField.substring(2).toDouble() / 60
     val sign = if (northOrSouth.lowercase() == "n") 1 else -1
@@ -69,14 +86,25 @@ private fun parseLatitude(fields: List<String>): Double? = runCatching {
 }.getOrNull()
 
 private fun parseLongitude(fields: List<String>): Double? = runCatching {
-    val lonField = fields[4]
-    val eastOrWest = fields[5]
+    val lonField = fields[0]
+    val eastOrWest = fields[1]
     val entireDegrees = lonField.substring(0, 3).toDouble()
     val minutes = lonField.substring(3).toDouble() / 60
     val sign = if (eastOrWest.lowercase() == "e") 1 else -1
     (entireDegrees + minutes) * sign
 }.getOrNull()
 
+private fun parseElevation(field: String): Double {
+    return field.toDouble()
+}
+
+/**
+ * The speed is expected to be expressed in knots.
+ * @return The speed in meters per second
+ */
+private fun parseGroundSpeed(field: String): Float {
+    return field.toFloat() * KNOTS_TO_METERS_PER_S
+}
 
 private fun getEpoch(hour: Int, minutes: Int, seconds: Int): Long {
     val currentYear = calendar.get(Calendar.YEAR)
@@ -89,5 +117,6 @@ private fun getEpoch(hour: Int, minutes: Int, seconds: Int): Long {
 private val calendar by lazy { GregorianCalendar(TimeZone.getTimeZone("UTC")) }
 private const val GGA = "GGA"
 private const val RMC = "RMC"
+private const val KNOTS_TO_METERS_PER_S = 0.514444444f
 
 private const val TAG = "NMEA_parser"
