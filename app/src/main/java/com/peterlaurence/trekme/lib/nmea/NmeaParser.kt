@@ -48,18 +48,21 @@ private fun parseGGA(line: String): NmeaGGA? {
     val fields = line.split(',')
 
     val epoch = parseHour(fields[1]) ?: run {
-        Log.e(TAG, "Failed to parse epoch in $line")
+        logErr("epoch", line)
         return null
     }
     val lat = parseLatitude(fields.subList(2, 4)) ?: run {
-        Log.e(TAG, "Failed to parse lat in $line")
+        logErr("lat", line)
         return null
     }
     val lon = parseLongitude(fields.subList(4, 6)) ?: run {
-        Log.e(TAG, "Failed to parse lon in $line")
+        logErr("lon", line)
         return null
     }
-    val ele = parseElevation(fields[9])
+    val ele = parseElevation(fields[9]) ?: run {
+        logErr("elevation", line)
+        return null
+    }
 
     return NmeaGGA(lat, lon, elevation = ele, time = epoch)
 }
@@ -68,18 +71,21 @@ private fun parseRMC(line: String): NmeaRMC? {
     val fields = line.split(',')
 
     val epoch = parseHour(fields[1]) ?: run {
-        Log.e(TAG, "Failed to parse epoch in $line")
+        logErr("epoch", line)
         return null
     }
     val lat = parseLatitude(fields.subList(3, 5)) ?: run {
-        Log.e(TAG, "Failed to parse lat in $line")
+        logErr("lat", line)
         return null
     }
     val lon = parseLongitude(fields.subList(5, 7)) ?: run {
-        Log.e(TAG, "Failed to parse lon in $line")
+        logErr("lon", line)
         return null
     }
-    val speed = parseGroundSpeed(fields[7])
+    val speed = parseGroundSpeed(fields[7]) ?: run {
+        logErr("speed", line)
+        return null
+    }
     return NmeaRMC(lat, lon, speed = speed, time = epoch)
 }
 
@@ -87,10 +93,13 @@ private fun parseVTG(line: String): NmeaVTG? {
     val fields = line.split(',')
 
     val bearing = fields[1].toFloatOrNull() ?: run {
-        Log.e(TAG, "Failed to parse bearing in $line")
+        logErr("bearing", line)
         return null
     }
-    val speed = parseGroundSpeed(fields[5])
+    val speed = parseGroundSpeed(fields[5]) ?: run {
+        logErr("speed", line)
+        return null
+    }
 
     return NmeaVTG(speed, bearing)
 }
@@ -121,17 +130,17 @@ private fun parseLongitude(fields: List<String>): Double? = runCatching {
     (entireDegrees + minutes) * sign
 }.getOrNull()
 
-private fun parseElevation(field: String): Double {
-    return field.toDouble()
-}
+private fun parseElevation(field: String): Double? = runCatching {
+    field.toDouble()
+}.getOrNull()
 
 /**
  * The speed is expected to be expressed in knots.
  * @return The speed in meters per second
  */
-private fun parseGroundSpeed(field: String): Float {
-    return field.toFloat() * KNOTS_TO_METERS_PER_S
-}
+private fun parseGroundSpeed(field: String): Float? = runCatching {
+    field.toFloat() * KNOTS_TO_METERS_PER_S
+}.getOrNull()
 
 private fun getEpoch(hour: Int, minutes: Int, seconds: Int): Long {
     val currentYear = calendar.get(Calendar.YEAR)
@@ -139,6 +148,10 @@ private fun getEpoch(hour: Int, minutes: Int, seconds: Int): Long {
     val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
     calendar.set(currentYear, currentMonth, dayOfMonth, hour, minutes, seconds)
     return calendar.timeInMillis
+}
+
+private fun logErr(fieldName:String, line: String) {
+    Log.e(TAG, "Failed to parse $fieldName in $line")
 }
 
 private val calendar by lazy { GregorianCalendar(TimeZone.getTimeZone("UTC")) }
