@@ -41,4 +41,15 @@ class NmeaParserTest {
         assertNotNull(loc.speed)
         assertEquals(6.37911056f, loc.speed, 1E-6f)
     }
+
+    @Test
+    fun should_parse_VTG_sentences() {
+        val vtg = "\$GPVTG,054.7,T,034.4,M,005.5,N,010.2,K"
+        val data = parseNmeaLocationSentence(vtg)
+
+        assertNotNull(data)
+        assertIs<NmeaVTG>(data)
+        assertEquals(54.7f, data.bearing)
+        assertEquals(2.82944442f, data.speed, 1E-6f)
+    }
 }

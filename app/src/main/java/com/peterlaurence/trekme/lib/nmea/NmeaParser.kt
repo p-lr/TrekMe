@@ -15,13 +15,22 @@ fun parseNmeaLocationSentence(st: String): NmeaData? {
         st.isRMC() -> {
             parseRMC(st)
         }
+        st.isVTG() -> {
+            parseVTG(st)
+        }
         else -> null // Unknown NMEA sentence
     }
 }
 
 sealed class NmeaData
-data class NmeaGGA(val latitude: Double, val longitude: Double, val elevation: Double, val time: Long): NmeaData()
-data class NmeaRMC(val latitude: Double, val longitude: Double, val speed: Float, val time: Long): NmeaData()
+data class NmeaGGA(val latitude: Double, val longitude: Double, val elevation: Double, val time: Long) : NmeaData()
+data class NmeaRMC(val latitude: Double, val longitude: Double, val speed: Float, val time: Long) : NmeaData()
+
+/**
+ * @param speed in meters per seconds
+ * @param bearing in decimal degrees
+ */
+data class NmeaVTG(val speed: Float, val bearing: Float) : NmeaData()
 
 private fun String.isGGA(): Boolean {
     return substring(3, 6) == GGA
@@ -31,7 +40,11 @@ private fun String.isRMC(): Boolean {
     return substring(3, 6) == RMC
 }
 
-private fun parseGGA(line: String): NmeaData? {
+private fun String.isVTG(): Boolean {
+    return substring(3, 6) == VTG
+}
+
+private fun parseGGA(line: String): NmeaGGA? {
     val fields = line.split(',')
 
     val epoch = parseHour(fields[1]) ?: run {
@@ -51,7 +64,7 @@ private fun parseGGA(line: String): NmeaData? {
     return NmeaGGA(lat, lon, elevation = ele, time = epoch)
 }
 
-private fun parseRMC(line: String): NmeaData? {
+private fun parseRMC(line: String): NmeaRMC? {
     val fields = line.split(',')
 
     val epoch = parseHour(fields[1]) ?: run {
@@ -70,6 +83,17 @@ private fun parseRMC(line: String): NmeaData? {
     return NmeaRMC(lat, lon, speed = speed, time = epoch)
 }
 
+private fun parseVTG(line: String): NmeaVTG? {
+    val fields = line.split(',')
+
+    val bearing = fields[1].toFloatOrNull() ?: run {
+        Log.e(TAG, "Failed to parse bearing in $line")
+        return null
+    }
+    val speed = parseGroundSpeed(fields[5])
+
+    return NmeaVTG(speed, bearing)
+}
 
 private fun parseHour(field: String): Long? = runCatching {
     val hour = field.substring(0, 2).toInt()
@@ -120,6 +144,7 @@ private fun getEpoch(hour: Int, minutes: Int, seconds: Int): Long {
 private val calendar by lazy { GregorianCalendar(TimeZone.getTimeZone("UTC")) }
 private const val GGA = "GGA"
 private const val RMC = "RMC"
+private const val VTG = "VTG"
 private const val KNOTS_TO_METERS_PER_S = 0.514444444f
 
 private const val TAG = "NMEA_parser"
