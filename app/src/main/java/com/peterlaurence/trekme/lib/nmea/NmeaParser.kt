@@ -18,6 +18,9 @@ fun parseNmeaLocationSentence(st: String): NmeaData? {
         st.isVTG() -> {
             parseVTG(st)
         }
+        st.isGLL() -> {
+            parseGLL(st)
+        }
         else -> null // Unknown NMEA sentence
     }
 }
@@ -31,18 +34,12 @@ data class NmeaRMC(val latitude: Double, val longitude: Double, val speed: Float
  * @param bearing in decimal degrees
  */
 data class NmeaVTG(val speed: Float, val bearing: Float) : NmeaData()
+data class NmeaGLL(val latitude: Double, val longitude: Double): NmeaData()
 
-private fun String.isGGA(): Boolean {
-    return substring(3, 6) == GGA
-}
-
-private fun String.isRMC(): Boolean {
-    return substring(3, 6) == RMC
-}
-
-private fun String.isVTG(): Boolean {
-    return substring(3, 6) == VTG
-}
+private fun String.isGGA(): Boolean = substring(3, 6) == GGA
+private fun String.isRMC(): Boolean = substring(3, 6) == RMC
+private fun String.isVTG(): Boolean = substring(3, 6) == VTG
+private fun String.isGLL(): Boolean = substring(3, 6) == GLL
 
 private fun parseGGA(line: String): NmeaGGA? {
     val fields = line.split(',')
@@ -104,6 +101,20 @@ private fun parseVTG(line: String): NmeaVTG? {
     return NmeaVTG(speed, bearing)
 }
 
+private fun parseGLL(line: String): NmeaGLL? {
+    val fields = line.split(',')
+
+    val lat = parseLatitude(fields.subList(1, 3)) ?: run {
+        logErr("lat", line)
+        return null
+    }
+    val lon = parseLongitude(fields.subList(3, 5)) ?: run {
+        logErr("lon", line)
+        return null
+    }
+    return NmeaGLL(lat, lon)
+}
+
 private fun parseHour(field: String): Long? = runCatching {
     val hour = field.substring(0, 2).toInt()
     val minutes = field.substring(2, 4).toInt()
@@ -158,6 +169,8 @@ private val calendar by lazy { GregorianCalendar(TimeZone.getTimeZone("UTC")) }
 private const val GGA = "GGA"
 private const val RMC = "RMC"
 private const val VTG = "VTG"
+private const val GLL = "GLL"
+
 private const val KNOTS_TO_METERS_PER_S = 0.514444444f
 
 private const val TAG = "NMEA_parser"

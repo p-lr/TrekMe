@@ -52,4 +52,15 @@ class NmeaParserTest {
         assertEquals(54.7f, data.bearing)
         assertEquals(2.82944442f, data.speed, 1E-6f)
     }
+
+    @Test
+    fun should_parse_GLL_sentences() {
+        val gll = "\$GPGLL,4916.45,N,12311.12,W,225444,A"
+        val data = parseNmeaLocationSentence(gll)
+
+        assertNotNull(data)
+        assertIs<NmeaGLL>(data)
+        assertEquals(49.274166667, data.latitude, 1E-9)
+        assertEquals(-123.185333333, data.longitude, 1E-9)
+    }
 }
