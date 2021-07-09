@@ -11,6 +11,7 @@
     <string name="select_map_menu_title">My maps</string>
     <string name="create_menu_title">Create</string>
     <string name="record_menu_title">Gpx Record</string>
+    <string name="gps_plus_menu_title">GPS+</string>
     <string name="track_stats_menu_title">Recording stats</string>
     <string name="import_menu_title">Import a map</string>
     <string name="share_menu_title">Receive or send</string>
