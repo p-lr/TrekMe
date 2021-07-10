@@ -380,4 +380,7 @@
         to any third parties.</string>
     <string name="thumb_up_button" translatable="false">Thumb-up button</string>
     <string name="thumb_down_button" translatable="false">Thumb-down button</string>
+
+    <!-- GpsPro UI -->
+    <string name="paired_devices_title">Paired devices</string>
 </resources>

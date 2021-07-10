@@ -286,4 +286,5 @@
     <string name="map_size_compute_string">Calcul de la taille</string>
     <string name="map_size_computing">Calcul en cours..</string>
     <string name="gps_plus_menu_title">GPS+</string>
+    <string name="paired_devices_title">Appareils appairés</string>
 </resources>

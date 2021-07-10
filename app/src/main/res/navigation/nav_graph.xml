@@ -133,4 +133,8 @@
             android:name="wmtsSourceBundle"
             app:argType="com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle" />
     </fragment>
+    <fragment
+        android:id="@+id/gpsProFragment"
+        android:name="com.peterlaurence.trekme.ui.gpspro.GpsProFragment"
+        android:label="GpsProFragment" /><action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProFragment"/>
 </navigation>

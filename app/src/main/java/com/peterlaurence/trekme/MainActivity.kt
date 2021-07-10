@@ -328,6 +328,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_select_map -> showMapListFragment()
             R.id.nav_create -> showMapCreateFragment()
             R.id.nav_record -> showRecordFragment()
+            R.id.nav_gps_plus -> showGpsProFragment()
             R.id.nav_import -> showMapImportFragment()
             R.id.nav_share -> showWifiP2pFragment()
             R.id.nav_settings -> showSettingsFragment()
@@ -385,6 +386,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun showRecordFragment() {
         navController.navigate(R.id.action_global_recordFragment)
+    }
+
+    private fun showGpsProFragment() {
+        navController.navigate(R.id.action_global_gpsProFragment)
     }
 
     private fun showSettingsFragment() {
