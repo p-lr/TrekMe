@@ -128,8 +128,8 @@
     <string name="projected_y_short">N</string>
 
     <!-- MapImport fragment -->
-    <string name="import_title">Import</string>
-    <string name="import_from_folder_btn">Import from folder</string>
+    <string name="import_title">Import from archives</string>
+    <string name="import_folder_select_btn">Select archives folder</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Map creation</string>
     <string name="imported_new_map">Imported and created a new map</string>
@@ -202,6 +202,7 @@
     <string name="show_map_action">Show map</string>
 
     <!-- Record GPX fragment -->
+    <string name="recording_frgmt_title">GPX recording</string>
     <string name="control_card_title">Control</string>
     <string name="control_card_subtitle">Start or stop recording</string>
     <string name="location_disabled_warning">Location is currently disabled. Please enable it on your device.</string>
@@ -278,6 +279,7 @@
     <string name="place_outside_of_covered_area">The place is outside of the area covered by this map.</string>
 
     <!-- MapCreateFragment -->
+    <string name="mapcreate_title">Map creation</string>
     <string name="mapcreate_define_area">Choose area</string>
     <string name="mapcreate_define_layer">Choose layer</string>
     <string name="mapcreate_overlay_layers">Overlay layers</string>
@@ -353,6 +355,7 @@
     <string name="preference_zoom_when_centered_compl">(current: %1$s)</string>
 
     <!-- WifiP2pFragment -->
+    <string name="wifip2p_title">Map sharing</string>
     <string name="wifip2p_stop_btn">Stop</string>
     <string name="wifip2p_rcv_btn">Receive</string>
     <string name="wifip2p_send_btn">Send</string>
@@ -382,5 +385,5 @@
     <string name="thumb_down_button" translatable="false">Thumb-down button</string>
 
     <!-- GpsPro UI -->
-    <string name="paired_devices_title">Paired devices</string>
+    <string name="select_bt_devices_title">Select active GPS</string>
 </resources>

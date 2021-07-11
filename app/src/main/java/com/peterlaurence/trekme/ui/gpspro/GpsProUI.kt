@@ -19,28 +19,28 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.viewmodel.gpspro.DeviceFound
-import com.peterlaurence.trekme.viewmodel.gpspro.DeviceSearchState
-import com.peterlaurence.trekme.viewmodel.gpspro.GpsProViewModel
-import com.peterlaurence.trekme.viewmodel.gpspro.Searching
+import com.peterlaurence.trekme.viewmodel.gpspro.*
 
 
 @Composable
 fun GpsProUI(
-        deviceSearchState: DeviceSearchState,
+        bluetoothState: BluetoothState,
+        onStartSearch: () -> Unit
 ) {
     Column {
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-                stringResource(id = R.string.paired_devices_title),
+                stringResource(id = R.string.select_bt_devices_title),
                 color = colorResource(id = R.color.colorAccent),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 style = TextStyle(textIndent = TextIndent(14.sp))
         )
-        when (deviceSearchState) {
+        when (bluetoothState) {
             is Searching -> Text("Searching")
-            is DeviceFound -> TODO()
+            is PairedDeviceList -> TODO()
+            BtDisabled -> TODO("show rationale (bt is disabled)")
+            BtNotSupported -> TODO("show rationale (bt not supported on this device)")
         }
     }
 }
@@ -56,7 +56,7 @@ class GpsProUIView @JvmOverloads constructor(
         val viewModel: GpsProViewModel = viewModel()
 
         TrekMeTheme {
-            GpsProUI(viewModel.searchState)
+            GpsProUI(viewModel.bluetoothState, {})
         }
     }
 }

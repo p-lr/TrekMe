@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -18,6 +19,7 @@ import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -59,7 +61,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var binding: ActivityMainBinding
 
     private val navController: NavController by lazy {
-        findNavController(R.id.nav_host_fragment)
+        findNavController(R.id.nav_host_fragment).apply {
+            /* A nice way to control the action-bar depending on the destination */
+            addOnDestinationChangedListener { _, destination, _ ->
+                val title = when (destination.id) {
+                    R.id.gpsProFragment -> getString(R.string.select_bt_devices_title)
+                    R.id.wifiP2pFragment -> getString(R.string.wifip2p_title)
+                    R.id.mapCreateFragment -> getString(R.string.mapcreate_title)
+                    R.id.recordFragment -> getString(R.string.recording_frgmt_title)
+                    R.id.mapImportFragment -> getString(R.string.import_title)
+                    R.id.mapViewFragment -> ""
+                    R.id.markerManageFragment -> ""
+                    R.id.googleMapWmtsViewFragment -> ""
+                    else -> getString(R.string.app_name)
+                }
+                supportActionBar?.title = title
+            }
+        }
     }
 
     @Inject
@@ -279,6 +297,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             requestBackgroundLocationPermission(this@MainActivity)
         }
 
+        appEventBus.requestBluetoothEnableFlow.collectWhileStarted(this) {
+            bluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+        }
+
         downloadRepository.downloadEvent.collectWhileStarted(this) {
             onMapDownloadEvent(it)
         }
@@ -415,6 +437,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         /* In the case of storage perm, we should restart the app (only applicable for Android < 10) */
         if (requestCode == REQUEST_STORAGE) {
             /* If Android >= 10 we don't need to restart the activity as we don't request write permission */
@@ -508,5 +531,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 .setProgress(0, 0, false)
         notifyMgr?.notify(event.mapId, builder.build())
         Snackbar.make(binding.navView, archiveOkMsg, Snackbar.LENGTH_SHORT).show()
+    }
+
+    private val bluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_OK -> appEventBus.bluetoothEnabled(true)
+            Activity.RESULT_CANCELED -> appEventBus.bluetoothEnabled(false)
+        }
     }
 }

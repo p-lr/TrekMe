@@ -6,7 +6,6 @@ import android.os.Parcelable
 import android.text.method.LinkMovementMethod
 import android.view.*
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
@@ -185,10 +184,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        /* Hide the app title */
-        val actionBar = (activity as AppCompatActivity).supportActionBar
-        actionBar?.setDisplayShowTitleEnabled(false)
-
         /* Clear the existing action menu */
         menu.clear()
 

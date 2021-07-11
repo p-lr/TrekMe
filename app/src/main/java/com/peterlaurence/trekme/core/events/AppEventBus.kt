@@ -31,4 +31,18 @@ class AppEventBus {
     val gpxImportEvent = _gpxImportEvent.asSharedFlow()
 
     fun postGpxImportResult(event: TrackImporter.GpxImportResult) = _gpxImportEvent.tryEmit(event)
+
+    /**********************************************************************************************/
+
+    private val _requestBluetoothEnableFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val requestBluetoothEnableFlow = _requestBluetoothEnableFlow.asSharedFlow()
+
+    fun requestBluetoothEnable() = _requestBluetoothEnableFlow.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
+    private val _bluetoothEnableFlow = MutableSharedFlow<Boolean>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val bluetoothEnabledFlow = _bluetoothEnableFlow.asSharedFlow()
+
+    fun bluetoothEnabled(enabled: Boolean) = _bluetoothEnableFlow.tryEmit(enabled)
 }

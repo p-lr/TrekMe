@@ -6,7 +6,6 @@ import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.view.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -60,7 +59,7 @@ class WifiP2pFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentWifip2pBinding.inflate(inflater, container, false)
         setHasOptionsMenu(true)
 
@@ -84,10 +83,6 @@ class WifiP2pFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        /* Hide the app title */
-        val actionBar = (activity as AppCompatActivity).supportActionBar
-        actionBar?.setDisplayShowTitleEnabled(false)
-
         /* Clear the existing action menu */
         menu.clear()
 

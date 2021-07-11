@@ -23,7 +23,7 @@
     <string name="calibration_projection_saved_ok">Projection changée</string>
     <string name="ok_dialog">OK</string>
     <string name="import_menu_title">Importer une carte</string>
-    <string name="import_from_folder_btn">Importer depuis un dossier</string>
+    <string name="import_folder_select_btn">Sélection du dossier d\'archives</string>
     <string name="extraction_lbl">Extraction</string>
     <string name="map_created_lbl">Création de la carte</string>
     <string name="map_manage_btn_string">Modifier</string>
@@ -183,7 +183,7 @@
     <string name="ign_buy_license_unknown">Imposible de vérifier le module</string>
     <string name="preference_zoom_when_centered">Zoom quand centré</string>
     <string name="preference_change_scale_when_centering">Définir échelle quand centré</string>
-    <string name="import_title">Importer</string>
+    <string name="import_title">Importer depuis des archives</string>
     <string name="ordnance_survey_source_description">Carte de Grande-Bretagne</string>
     <string name="map_import_error">Erreur: le format de la carte n\'est pas reconnu.</string>
     <string name="storage_perm_denied">Veuillez activer la permission de stockage</string>
@@ -286,5 +286,8 @@
     <string name="map_size_compute_string">Calcul de la taille</string>
     <string name="map_size_computing">Calcul en cours..</string>
     <string name="gps_plus_menu_title">GPS+</string>
-    <string name="paired_devices_title">Appareils appairés</string>
+    <string name="select_bt_devices_title">Sélection du GPS actif</string>
+    <string name="wifip2p_title">Partage de carte</string>
+    <string name="mapcreate_title">Création de carte</string>
+    <string name="recording_frgmt_title">Enregistrement GPX</string>
 </resources>

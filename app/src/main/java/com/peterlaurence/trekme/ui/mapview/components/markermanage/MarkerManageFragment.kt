@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.*
 import android.view.View.GONE
 import android.view.inputmethod.InputMethodManager
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -85,7 +84,7 @@ class MarkerManageFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
 
         _binding = FragmentMarkerManageBinding.inflate(inflater, container, false)
 
@@ -134,10 +133,6 @@ class MarkerManageFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        /* Hide the app title */
-        val actionBar = (activity as AppCompatActivity).supportActionBar
-        actionBar?.setDisplayShowTitleEnabled(false)
-
         /* Clear the existing action menu */
         menu.clear()
 
