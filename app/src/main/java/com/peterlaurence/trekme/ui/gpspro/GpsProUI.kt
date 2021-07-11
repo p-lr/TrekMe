@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.ui.gpspro.components.IconCircle
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.gpspro.*
 
@@ -29,6 +31,7 @@ fun GpsProUI(
 ) {
     Column {
         Spacer(modifier = Modifier.height(16.dp))
+        IconCircle(backgroundColor = Color(0xFF4CAF50), R.drawable.bluetooth)
         Text(
                 stringResource(id = R.string.select_bt_devices_title),
                 color = colorResource(id = R.color.colorAccent),
