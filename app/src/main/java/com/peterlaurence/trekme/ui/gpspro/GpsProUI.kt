@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -33,11 +32,11 @@ fun GpsProUI(
         Spacer(modifier = Modifier.height(16.dp))
         IconCircle(backgroundColor = Color(0xFF4CAF50), R.drawable.bluetooth)
         Text(
-                stringResource(id = R.string.select_bt_devices_title),
-                color = colorResource(id = R.color.colorAccent),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                style = TextStyle(textIndent = TextIndent(14.sp))
+                stringResource(id = R.string.previously_connected_bt_devices),
+                color = Color(0xFF808080),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.W500,
+                style = TextStyle(textIndent = TextIndent(25.sp), letterSpacing = 1.sp * 0.8)
         )
         when (bluetoothState) {
             is Searching -> Text("Searching")

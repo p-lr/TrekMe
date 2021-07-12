@@ -286,7 +286,7 @@
     <string name="map_size_compute_string">Calcul de la taille</string>
     <string name="map_size_computing">Calcul en cours..</string>
     <string name="gps_plus_menu_title">GPS+</string>
-    <string name="select_bt_devices_title">Sélection du GPS actif</string>
+    <string name="previously_connected_bt_devices">APPAREILS CONNECTÉS PRÉCÉDEMMENT</string>
     <string name="wifip2p_title">Partage de carte</string>
     <string name="mapcreate_title">Création de carte</string>
     <string name="recording_frgmt_title">Enregistrement GPX</string>

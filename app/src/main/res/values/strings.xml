@@ -385,5 +385,5 @@
     <string name="thumb_down_button" translatable="false">Thumb-down button</string>
 
     <!-- GpsPro UI -->
-    <string name="select_bt_devices_title">Select active GPS</string>
+    <string name="previously_connected_bt_devices">PREVIOUSLY CONNECTED DEVICES</string>
 </resources>
