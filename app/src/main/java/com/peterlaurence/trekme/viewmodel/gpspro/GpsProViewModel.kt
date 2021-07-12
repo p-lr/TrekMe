@@ -20,6 +20,7 @@ class GpsProViewModel @Inject constructor(
         private val appEventBus: AppEventBus
 ) : ViewModel() {
     var bluetoothState by mutableStateOf<BluetoothState>(Searching)
+    var isHostSelected by mutableStateOf(false)
 
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
@@ -29,6 +30,14 @@ class GpsProViewModel @Inject constructor(
         } else {
             startUpProcedure(bluetoothAdapter)
         }
+    }
+
+    fun onHostSelected() {
+        isHostSelected = !isHostSelected
+    }
+
+    fun onBtDeviceSelection(device: BluetoothDeviceStub) {
+        device.isActive = !device.isActive
     }
 
     private fun startUpProcedure(bluetoothAdapter: BluetoothAdapter) {
@@ -49,14 +58,18 @@ class GpsProViewModel @Inject constructor(
 
     private fun queryPairedDevices() {
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
-        pairedDevices?.forEach { device ->
-            println("${device.name} : ${device.address}")
-        }
+        bluetoothState = PairedDeviceList(pairedDevices?.map {
+            BluetoothDeviceStub(it.name, it.address)
+        } ?: listOf())
     }
+}
+
+data class BluetoothDeviceStub(val name: String, val address: String) {
+    var isActive by mutableStateOf(false)
 }
 
 sealed class BluetoothState
 object BtNotSupported : BluetoothState()
 object BtDisabled : BluetoothState()
 object Searching : BluetoothState()
-data class PairedDeviceList(val deviceList: List<String>) : BluetoothState()
+data class PairedDeviceList(val deviceList: List<BluetoothDeviceStub>) : BluetoothState()
