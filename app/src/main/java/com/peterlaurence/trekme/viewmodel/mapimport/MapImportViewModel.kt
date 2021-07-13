@@ -14,6 +14,7 @@ import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel.ItemData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -63,7 +64,7 @@ class MapImportViewModel @Inject constructor(
     fun unarchiveAsync(item: ItemData) {
         viewModelScope.launch(Dispatchers.IO) {
             val inputStream = app.contentResolver.openInputStream(item.uri) ?: return@launch
-            val rootFolder = settings.getAppDir() ?: return@launch
+            val rootFolder = settings.getAppDir().firstOrNull() ?: return@launch
             val outputFolder = File(rootFolder, "imported")
 
             unarchive(inputStream, outputFolder, item.name, item.length,

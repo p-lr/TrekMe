@@ -88,7 +88,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        viewModel.scaleCentered.observe(this) {
+        viewModel.scaleRatioCentered.observe(this) {
             it?.let {
                 updateScaleRatioCentered(it)
             }

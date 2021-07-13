@@ -4,9 +4,15 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.SharedPreferencesMigration
+import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.preferencesDataStore
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.units.MeasurementSystem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,22 +23,31 @@ import javax.inject.Singleton
  * This class internally uses [SharedPreferences].
  */
 @Singleton
-class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app: Application) {
+class Settings @Inject constructor(private val trekMeContext: TrekMeContext, private val app: Application) {
     private val sharedPref: SharedPreferences = app.applicationContext.getSharedPreferences(settingsFile, Context.MODE_PRIVATE)
-    private val appDirKey = "appDir"
-    private val startOnPolicy = "startOnPolicy"
-    private val favoriteMaps = "favoriteMaps"
-    private val rotationMode = "rotationMode"
-    private val speedVisibility = "speedVisibility"
-    private val gpsDataVisibility = "gpsDataVisibility"
-    private val magnifyingFactor = "magnifyingFactor"
-    private val maxScale = "maxScale"
-    private val lastMapId = "lastMapId"
-    private val defineScaleWhenCentered = "defineScaleWhenCentered"
-    private val scaleRatioCentered = "scaleRatioCentered"
-    private val measurementSystem = "measurementSystem"
-    private val locationDisclaimer = "locationDisclaimer"
-    private val locationSourceMode = "locationSourceMode"
+
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+            name = "settings",
+            produceMigrations = { listOf(SharedPreferencesMigration({ sharedPref })) }
+    )
+
+    private val dataStore: DataStore<Preferences>
+        get() = app.applicationContext.dataStore
+
+    private val appDirKey = stringPreferencesKey("appDir")
+    private val startOnPolicy = stringPreferencesKey("startOnPolicy")
+    private val favoriteMaps = stringSetPreferencesKey("favoriteMaps")
+    private val rotationMode = stringPreferencesKey("rotationMode")
+    private val speedVisibility = booleanPreferencesKey("speedVisibility")
+    private val gpsDataVisibility = booleanPreferencesKey("gpsDataVisibility")
+    private val magnifyingFactor = intPreferencesKey("magnifyingFactor")
+    private val maxScale = floatPreferencesKey("maxScale")
+    private val lastMapId = intPreferencesKey("lastMapId")
+    private val defineScaleWhenCentered = booleanPreferencesKey("defineScaleWhenCentered")
+    private val scaleRatioCentered = floatPreferencesKey("scaleRatioCentered")
+    private val measurementSystem = stringPreferencesKey("measurementSystem")
+    private val locationDisclaimer = booleanPreferencesKey("locationDisclaimer")
+    private val locationSourceMode = stringPreferencesKey("locationSourceMode")
 
     /**
      * Get the current application directory as [File].
@@ -41,20 +56,21 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
      * if the path isn't among the list of possible paths.
      * It's also a security in the case the application directories change across versions.
      */
-    fun getAppDir(): File? {
-        return sharedPref.getString(appDirKey, null)?.let {
-            if (checkAppPath(it)) File(it) else null
-        } ?: trekMeContext.defaultAppDir
+    fun getAppDir(): Flow<File?> {
+        return dataStore.data.map { pref ->
+            pref[appDirKey]?.let { if (checkAppPath(it)) File(it) else null }
+                    ?: trekMeContext.defaultAppDir
+        }
     }
 
     /**
      * Set the application directory - the folder in which new maps are downloaded and also the
      * folder walked on app startup to fetch the list of maps.
      */
-    fun setAppDir(file: File) {
+    suspend fun setAppDir(file: File) {
         if (checkAppPath(file.absolutePath)) {
-            sharedPref.edit {
-                putString(appDirKey, file.absolutePath)
+            dataStore.edit { settings ->
+                settings[appDirKey] = file.absolutePath
             }
         }
     }
@@ -68,87 +84,73 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
     /**
      * The [StartOnPolicy] defines whether TrekMe should boot on the map list or on the last map.
      */
-    fun getStartOnPolicy(): StartOnPolicy {
-        return sharedPref.getString(startOnPolicy, null)?.let {
-            StartOnPolicy.valueOf(it)
-        } ?: StartOnPolicy.MAP_LIST
-    }
-
-    fun setStartOnPolicy(policy: StartOnPolicy) {
-        sharedPref.edit {
-            putString(startOnPolicy, policy.name)
+    fun getStartOnPolicy(): Flow<StartOnPolicy> {
+        return dataStore.data.map { pref ->
+            pref[startOnPolicy]?.let { StartOnPolicy.valueOf(it) } ?: StartOnPolicy.MAP_LIST
         }
     }
 
-    fun setMagnifyingFactor(factor: Int) {
-        sharedPref.edit {
-            putInt(magnifyingFactor, factor)
+    suspend fun setStartOnPolicy(policy: StartOnPolicy) {
+        dataStore.edit { settings ->
+            settings[startOnPolicy] = policy.name
         }
     }
 
-    fun getMagnifyingFactor(): Int = sharedPref.getInt(magnifyingFactor, 0)
+    fun getMagnifyingFactor(): Flow<Int> = dataStore.data.map { it[magnifyingFactor] ?: 0 }
 
-    fun getMaxScale(): Float {
-        return sharedPref.getFloat(maxScale, 2f)
+    suspend fun setMagnifyingFactor(factor: Int) {
+        dataStore.edit {
+            it[magnifyingFactor] = factor
+        }
     }
 
-    fun setMaxScale(scale: Float) {
-        sharedPref.edit {
-            putFloat(maxScale, scale)
+    fun getMaxScale(): Flow<Float> = dataStore.data.map { it[maxScale] ?: 2f }
+
+    suspend fun setMaxScale(scale: Float) {
+        dataStore.edit {
+            it[maxScale] = scale
         }
     }
 
     /**
      * Get the rotation behavior when viewing a map.
      */
-    fun getRotationMode(): RotationMode {
-        return sharedPref.getString(rotationMode, null)?.let {
-            RotationMode.valueOf(it)
-        } ?: RotationMode.NONE
-    }
-
-    fun setRotationMode(mode: RotationMode) {
-        sharedPref.edit {
-            putString(rotationMode, mode.name)
+    fun getRotationMode(): Flow<RotationMode> {
+        return dataStore.data.map { pref ->
+            pref[rotationMode]?.let { RotationMode.valueOf(it) } ?: RotationMode.NONE
         }
     }
 
-    fun getSpeedVisibility(): Boolean {
-        return sharedPref.getBoolean(speedVisibility, false)
-    }
-
-    fun setSpeedVisibility(v: Boolean) {
-        sharedPref.edit {
-            putBoolean(speedVisibility, v)
+    suspend fun setRotationMode(mode: RotationMode) {
+        dataStore.edit {
+            it[rotationMode] = mode.name
         }
     }
 
-    fun getGpsDataVisibility(): Boolean {
-        return sharedPref.getBoolean(gpsDataVisibility, false)
-    }
+    fun getSpeedVisibility(): Flow<Boolean> = dataStore.data.map { it[speedVisibility] ?: false }
 
-    fun setGpsDataVisibility(v: Boolean) {
-        sharedPref.edit {
-            putBoolean(gpsDataVisibility, v)
+    suspend fun setSpeedVisibility(v: Boolean) {
+        dataStore.edit {
+            it[speedVisibility] = v
         }
     }
 
-    fun setDefineScaleCentered(defined: Boolean) {
-        sharedPref.edit {
-            putBoolean(defineScaleWhenCentered, defined)
+    fun getGpsDataVisibility(): Flow<Boolean> = dataStore.data.map { it[gpsDataVisibility] ?: false }
+
+    suspend fun setGpsDataVisibility(v: Boolean) {
+        dataStore.edit {
+            it[gpsDataVisibility] =  v
         }
     }
 
     /**
      * If `true`, [scaleCentered] is accounted for. Otherwise, [scaleCentered] is ignored.
      */
-    fun getDefineScaleCentered(): Boolean {
-        return sharedPref.getBoolean(defineScaleWhenCentered, true)
-    }
+    fun getDefineScaleCentered(): Flow<Boolean> = dataStore.data.map { it[defineScaleWhenCentered] ?: true }
 
-    fun setScaleRatioCentered(scale: Float) {
-        sharedPref.edit {
-            putFloat(scaleRatioCentered, scale)
+    suspend fun setDefineScaleCentered(defined: Boolean) {
+        dataStore.edit {
+            it[defineScaleWhenCentered] = defined
         }
     }
 
@@ -157,77 +159,90 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, app
      * when centering on the current position.
      * By default, the max scale is 2f and the scale ratio is 50f.
      */
-    fun getScaleRatioCentered(): Float {
-        return sharedPref.getFloat(scaleRatioCentered, 50f)
-    }
-
-    fun getMeasurementSystem(): MeasurementSystem {
-        return when (sharedPref.getString(measurementSystem, null)) {
-            MeasurementSystem.METRIC.name -> MeasurementSystem.METRIC
-            MeasurementSystem.IMPERIAL.name -> MeasurementSystem.IMPERIAL
-            else -> MeasurementSystem.METRIC
+    fun getScaleRatioCentered(): Flow<Float> {
+        return dataStore.data.map {
+            it[scaleRatioCentered] ?: 50f
         }
     }
 
-    fun setMeasurementSystem(system: MeasurementSystem) {
-        sharedPref.edit {
-            putString(measurementSystem, system.name)
+    suspend fun setScaleRatioCentered(scale: Float) {
+        dataStore.edit {
+            it[scaleRatioCentered] = scale
         }
     }
 
-    fun setFavoriteMapIds(ids: List<Int>) {
-        sharedPref.edit {
-            putStringSet(favoriteMaps, ids.map { id -> id.toString() }.toSet())
+    fun getMeasurementSystem(): Flow<MeasurementSystem> {
+        return dataStore.data.map { pref ->
+            pref[measurementSystem]?.let {
+                when (it) {
+                    MeasurementSystem.METRIC.name -> MeasurementSystem.METRIC
+                    MeasurementSystem.IMPERIAL.name -> MeasurementSystem.IMPERIAL
+                    else -> MeasurementSystem.METRIC
+                }
+            } ?: MeasurementSystem.METRIC
+        }
+    }
+
+    suspend fun setMeasurementSystem(system: MeasurementSystem) {
+        dataStore.edit {
+            it[measurementSystem] = system.name
         }
     }
 
     /**
      * The ids of maps which are marked as favorites.
      */
-    fun getFavoriteMapIds(): List<Int> {
-        return sharedPref.getStringSet(favoriteMaps, null)?.let {
-            it.map { id -> id.toInt() }
-        } ?: listOf()
+    fun getFavoriteMapIds(): Flow<List<Int>> {
+        return dataStore.data.map { pref ->
+            pref[favoriteMaps]?.let { it.map { id -> id.toInt() } } ?: listOf()
+        }
+    }
+
+    suspend fun setFavoriteMapIds(ids: List<Int>) {
+        dataStore.edit { settings ->
+            settings[favoriteMaps] = ids.map { id -> id.toString() }.toSet()
+        }
     }
 
     /**
      * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
      * empty.
      */
-    fun getLastMapId(): Int? {
-        return sharedPref.getInt(lastMapId, -1).let { id ->
-            if (id != -1) id else null
+    fun getLastMapId(): Flow<Int?> {
+        return dataStore.data.map { pref ->
+            pref[lastMapId]?.let { id -> if (id != -1) id else null }
         }
     }
 
     /**
      * Set and saves the last map id, for further use.
      */
-    fun setLastMapId(id: Int) {
-        sharedPref.edit {
-            putInt(lastMapId, id)
+    suspend fun setLastMapId(id: Int) {
+        dataStore.edit {
+            it[lastMapId] = id
         }
     }
 
-    fun isShowingLocationDisclaimer(): Boolean {
-        return sharedPref.getBoolean(locationDisclaimer, true)
+    fun isShowingLocationDisclaimer(): Flow<Boolean> {
+        return dataStore.data.map { it[locationDisclaimer] ?: true }
     }
 
-    fun discardLocationDisclaimer() {
-        sharedPref.edit {
-            putBoolean(locationDisclaimer, false)
+    suspend fun discardLocationDisclaimer() {
+        dataStore.edit {
+            it[locationDisclaimer] = false
         }
     }
 
-    fun getLocationSourceMode(): LocationSource.Mode {
-        return sharedPref.getString(locationSourceMode, null)?.let {
-            LocationSource.Mode.valueOf(it)
-        } ?: LocationSource.Mode.INTERNAL
+    fun getLocationSourceMode(): Flow<LocationSource.Mode> {
+        return dataStore.data.map { pref ->
+            pref[locationSourceMode]?.let { LocationSource.Mode.valueOf(it) } ?: LocationSource.Mode.INTERNAL
+
+        }
     }
 
-    fun setLocationSourceMode(mode: LocationSource.Mode) {
-        sharedPref.edit {
-            putString(locationSourceMode, mode.name)
+    suspend fun setLocationSourceMode(mode: LocationSource.Mode) {
+        dataStore.edit {
+            it[locationSourceMode] = mode.name
         }
     }
 }

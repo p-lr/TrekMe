@@ -40,6 +40,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -229,12 +230,13 @@ class DownloadService : Service() {
         postProcess(request.mapSpec, source, request.layer)
     }
 
-    private fun createDestDir(): File? {
+    private suspend fun createDestDir(): File? {
         /* Create a new folder */
         val date = Date()
         val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
         val folderName = "map-" + dateFormat.format(date)
-        val appDir = settings.getAppDir() ?: error("App dir should be defined")
+
+        val appDir = settings.getAppDir().firstOrNull() ?: error("App dir should be defined")
         val destFolder = File(appDir, folderName)
 
         return if (destFolder.mkdirs()) {

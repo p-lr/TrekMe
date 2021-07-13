@@ -10,8 +10,7 @@ import com.peterlaurence.trekme.repositories.map.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -44,26 +43,30 @@ class MapViewViewModel @Inject constructor(
         return map
     }
 
-    fun getMagnifyingFactor(): Int = settings.getMagnifyingFactor()
+    fun getMagnifyingFactor(): Flow<Int> = settings.getMagnifyingFactor()
 
-    fun getMaxScale(): Float = settings.getMaxScale()
+    fun getMaxScale(): Flow<Float> = settings.getMaxScale()
 
-    fun getRotationMode(): RotationMode = settings.getRotationMode()
+    fun getRotationMode(): Flow<RotationMode> = settings.getRotationMode()
 
-    fun getDefineScaleCentered(): Boolean = settings.getDefineScaleCentered()
+    fun getDefineScaleCentered(): Flow<Boolean> = settings.getDefineScaleCentered()
 
-    fun getScaleCentered(): Float {
-        return settings.getScaleRatioCentered() * getMaxScale() / 100f
+    fun getScaleCentered(): Flow<Float> {
+        return settings.getScaleRatioCentered().combine(getMaxScale()) { scaleRatio, maxScale ->
+            scaleRatio * maxScale / 100f
+        }
     }
 
-    fun getSpeedVisibility(): Boolean = settings.getSpeedVisibility()
+    fun getSpeedVisibility(): Flow<Boolean> = settings.getSpeedVisibility()
 
-    fun setSpeedVisibility(v: Boolean) = settings.setSpeedVisibility(v)
+    fun setSpeedVisibility(v: Boolean) = viewModelScope.launch {
+        settings.setSpeedVisibility(v)
+    }
 
-    fun getGpsDataVisibility(): Boolean = settings.getGpsDataVisibility()
+    fun getGpsDataVisibility(): Flow<Boolean> = settings.getGpsDataVisibility()
 
-    fun toggleGpsDataVisibility(): Boolean {
-        val v = !getGpsDataVisibility()
+    suspend fun toggleGpsDataVisibility(): Boolean {
+        val v = !getGpsDataVisibility().first()
         settings.setGpsDataVisibility(v)
         return v
     }

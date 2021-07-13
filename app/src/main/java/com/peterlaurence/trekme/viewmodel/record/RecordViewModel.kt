@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
@@ -137,7 +138,7 @@ class RecordViewModel @Inject constructor(
         }
     }
 
-    private fun onRequestStartEvent() {
+    private suspend fun onRequestStartEvent() {
         /* Check location service. If disabled, no need to go further. */
         if (!isLocationEnabled()) {
             val msg = WarningMessage(
@@ -160,7 +161,7 @@ class RecordViewModel @Inject constructor(
         /* The background location permission is asked after the dialog is closed. But it doesn't
          * matter that the recording is already started - it works even when the permission is
          * granted during the recording. */
-        if (settings.isShowingLocationDisclaimer()) {
+        if (settings.isShowingLocationDisclaimer().first()) {
             eventBus.showLocationDisclaimer()
         } else {
             /* If the disclaimer is discarded, ask for the permission anyway */

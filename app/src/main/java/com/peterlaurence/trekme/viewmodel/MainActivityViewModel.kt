@@ -14,8 +14,7 @@ import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -68,12 +67,12 @@ class MainActivityViewModel @Inject constructor(
             }
 
             /* Get user-pref about metric or imperial system */
-            UnitFormatter.system = settings.getMeasurementSystem()
+            UnitFormatter.system = settings.getMeasurementSystem().first()
 
-            when (settings.getStartOnPolicy()) {
+            when (settings.getStartOnPolicy().first()) {
                 StartOnPolicy.MAP_LIST -> _showMapListSignal.emit(Unit)
                 StartOnPolicy.LAST_MAP -> {
-                    val id = settings.getLastMapId()
+                    val id = settings.getLastMapId().firstOrNull()
                     val found = id?.let {
                         val map = mapLoader.getMap(id)
                         map?.let {

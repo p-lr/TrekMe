@@ -25,7 +25,6 @@ data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val
  */
 interface LocationSource {
     val locationFlow: SharedFlow<Location>
-    fun setMode(mode: Mode)
 
     enum class Mode {
         INTERNAL, EXTERNAL

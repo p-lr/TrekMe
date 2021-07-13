@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,7 +31,7 @@ class MapListViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             mapLoader.mapListUpdateEventFlow.collect {
-                val favList = settings.getFavoriteMapIds()
+                val favList = settings.getFavoriteMapIds().first()
                 updateMapListInFragment(favList)
             }
         }
@@ -41,7 +42,9 @@ class MapListViewModel @Inject constructor(
         mapRepository.setCurrentMap(map)
 
         // 2- Remember this map in the case use wants to open TrekMe directly on this map
-        settings.setLastMapId(map.id)
+        viewModelScope.launch {
+            settings.setLastMapId(map.id)
+        }
     }
 
     fun toggleFavorite(map: Map) {
@@ -52,7 +55,9 @@ class MapListViewModel @Inject constructor(
         updateMapListInFragment(ids)
 
         /* Remember this setting */
-        settings.setFavoriteMapIds(ids)
+        viewModelScope.launch {
+            settings.setFavoriteMapIds(ids)
+        }
     }
 
     fun deleteMap(mapId: Int) {

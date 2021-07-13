@@ -16,12 +16,10 @@ import kotlinx.coroutines.flow.*
  * or wifi connected GPS.
  */
 class LocationSourceImpl(
-        mode: LocationSource.Mode,
+        mode: Flow<LocationSource.Mode>,
         private val internalProducer: LocationProducer,
         private val externalProducer: LocationProducer
 ) : LocationSource {
-    val state = MutableStateFlow(mode)
-
     /**
      * A [SharedFlow] of [Location]s, with a replay of 1.
      * Automatically un-registers underlying callback when there are no collectors.
@@ -30,7 +28,7 @@ class LocationSourceImpl(
      */
     override val locationFlow: SharedFlow<Location> by lazy {
         callbackFlow {
-            val producer = ProducersController(state, internalProducer, externalProducer)
+            val producer = ProducersController(mode, internalProducer, externalProducer)
             producer.locationFlow.map {
                 trySend(it)
             }.launchIn(this)
@@ -44,14 +42,10 @@ class LocationSourceImpl(
                 1
         )
     }
-
-    override fun setMode(mode: LocationSource.Mode) {
-        state.value = mode
-    }
 }
 
 private class ProducersController(
-        state: StateFlow<LocationSource.Mode>,
+        state: Flow<LocationSource.Mode>,
         private val internalProducer: LocationProducer,
         private val externalProducer: LocationProducer
 ) {

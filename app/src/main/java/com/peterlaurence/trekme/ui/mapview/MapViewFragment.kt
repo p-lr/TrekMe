@@ -27,11 +27,9 @@ import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapview.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.first
 import ovh.plrapps.mapview.MapView
 import ovh.plrapps.mapview.MapViewConfiguration
 import ovh.plrapps.mapview.ReferentialData
@@ -69,16 +67,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
     private var lockView = false
 
     /* Map settings */
-    private val rotationMode: RotationMode
-        get() = mapViewViewModel.getRotationMode()
-    private val defineScaleCentered
-        get() = mapViewViewModel.getDefineScaleCentered()
-    private val scaleCentered
-        get() = mapViewViewModel.getScaleCentered()
-    private val magnifyingFactor: Int
-        get() = mapViewViewModel.getMagnifyingFactor()
-    private val maxScale: Float
-        get() = mapViewViewModel.getMaxScale()
+    private var lastRotationMode: RotationMode? = null
     private var shouldCenterOnFirstLocation = false
 
     private var orientationSensor: OrientationSensor? = null
@@ -162,8 +151,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         compassView = presenter.view.compassView
 
         compassView?.setOnClickListener {
-            if (rotationMode == RotationMode.FREE) {
-                animateMapViewToNorth()
+            lifecycleScope.launchWhenResumed {
+                if (getRotationMode() == RotationMode.FREE) {
+                    animateMapViewToNorth()
+                }
             }
         }
 
@@ -203,27 +194,29 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter.setMapView(it)
         }
 
-        /* Apply the Map to the current MapView */
-        getAndApplyMap()
+        lifecycleScope.launch {
+            /* Apply the Map to the current MapView */
+            getAndApplyMap()
 
-        /* Eventually restore the distance layer if it was visible before device rotation */
-        val distanceLayerState = mergedState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
-        if (distanceLayerState != null && distanceLayerState.visible) {
-            presenter.view.distanceIndicator.showDistance()
-            distanceLayer?.show(distanceLayerState)
-        }
+            /* Eventually restore the distance layer if it was visible before device rotation */
+            val distanceLayerState = mergedState?.getParcelable<DistanceLayer.State>(DISTANCE_LAYER_STATE)
+            if (distanceLayerState != null && distanceLayerState.visible) {
+                presenter.view.distanceIndicator.showDistance()
+                distanceLayer?.show(distanceLayerState)
+            }
 
-        /* Restore speed visibility */
-        speedListener?.setSpeedVisible(mapViewViewModel.getSpeedVisibility())
+            /* Restore speed visibility */
+            speedListener?.setSpeedVisible(mapViewViewModel.getSpeedVisibility().first())
 
-        /* Restore GPS data visibility */
-        presenter.setGpsDataVisible(mapViewViewModel.getGpsDataVisibility())
+            /* Restore GPS data visibility */
+            presenter.setGpsDataVisible(mapViewViewModel.getGpsDataVisibility().first())
 
-        /* In free-rotating mode, show the compass right from the start */
-        if (rotationMode == RotationMode.FREE) {
-            compassView?.visibility = View.VISIBLE
-        } else {
-            compassView?.visibility = View.GONE
+            /* In free-rotating mode, show the compass right from the start */
+            if (getRotationMode() == RotationMode.FREE) {
+                compassView?.visibility = View.VISIBLE
+            } else {
+                compassView?.visibility = View.GONE
+            }
         }
 
         /**
@@ -233,9 +226,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
          * angle restored even if the new rotation mode doesn't permit it. As a workaround, we
          * enforce an angle of 0 after the fragment is started (if we attempt to do this earlier in
          * the life-cycle, it's overridden by the angle restore mechanism of MapView). */
-        if (mergedState != null) {
-            if (mergedState.getBoolean(WAS_ROTATED) && rotationMode == RotationMode.NONE) {
-                lifecycleScope.launchWhenStarted {
+        lifecycleScope.launchWhenStarted {
+            if (mergedState != null) {
+                if (mergedState.getBoolean(WAS_ROTATED) && getRotationMode() == RotationMode.NONE) {
                     mapView?.disableRotation(0f)
                 }
             }
@@ -261,21 +254,27 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         mapView = null
     }
 
+    private suspend fun getRotationMode(): RotationMode {
+        val rotMode =  mapViewViewModel.getRotationMode().first()
+        lastRotationMode = rotMode
+        return rotMode
+    }
+
     /**
      * When the [OrientationSensor] is started or stopped, this function should be called.
      */
-    private fun onOrientationSensorChanged() {
-        val orientationSensor = orientationSensor ?: return
+    private fun onOrientationSensorChanged() = lifecycleScope.launchWhenResumed {
+        val orientationSensor = orientationSensor ?: return@launchWhenResumed
         if (orientationSensor.isStarted) {
             positionMarker?.onOrientationEnable()
-            if (rotationMode != RotationMode.NONE) {
+            if (getRotationMode() != RotationMode.NONE) {
                 compassView?.visibility = View.VISIBLE
             }
 
             orientationJob = lifecycleScope.launch {
                 orientationSensor.getAzimuthFlow().collect { azimuth ->
                     positionMarker?.onOrientation(azimuth)
-                    if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
+                    if (getRotationMode() == RotationMode.FOLLOW_ORIENTATION) {
                         mapView?.setAngle(-azimuth)
                     }
                 }
@@ -285,9 +284,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             orientationJob?.cancel()
             /* Set the MapView like it was before: North-oriented */
             orientationJob?.invokeOnCompletion {
-                if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
-                    animateMapViewToNorth()
-                    compassView?.visibility = View.GONE
+                lifecycleScope.launchWhenResumed {
+                    if (getRotationMode() == RotationMode.FOLLOW_ORIENTATION) {
+                        animateMapViewToNorth()
+                        compassView?.visibility = View.GONE
+                    }
                 }
             }
         }
@@ -313,7 +314,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    private fun getAndApplyMap() {
+    private suspend fun getAndApplyMap() {
         val map = mapViewViewModel.getMap()
         if (map != null) applyMap(map)
     }
@@ -327,7 +328,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* .. and restore some checkable state */
         val itemSpeed = menu.findItem(R.id.speedometer_id)
-        itemSpeed.isChecked = mapViewViewModel.getSpeedVisibility()
+        lifecycleScope.launch {
+            itemSpeed.isChecked = mapViewViewModel.getSpeedVisibility().first()
+        }
 
         val itemDistance = menu.findItem(R.id.distancemeter_id)
         itemDistance.isChecked = distanceLayer?.isVisible ?: false
@@ -342,7 +345,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         itemLockOnPosition.isChecked = lockView
 
         val itemGpsData = menu.findItem(R.id.gps_data_enable_id)
-        itemGpsData.isChecked = mapViewViewModel.getGpsDataVisibility()
+        lifecycleScope.launch {
+            itemGpsData.isChecked = mapViewViewModel.getGpsDataVisibility().first()
+        }
 
         super.onCreateOptionsMenu(menu, inflater)
     }
@@ -394,9 +399,11 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
                 return true
             }
             R.id.gps_data_enable_id -> {
-                val newVisi = mapViewViewModel.toggleGpsDataVisibility()
-                item.isChecked = newVisi
-                presenter?.setGpsDataVisible(newVisi)
+                lifecycleScope.launchWhenResumed {
+                    val newVisi = mapViewViewModel.toggleGpsDataVisibility()
+                    item.isChecked = newVisi
+                    presenter?.setGpsDataVisible(newVisi)
+                }
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -466,7 +473,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      * Once we get a [Map], a [MapView] instance is created, so layers can be
      * updated.
      */
-    private fun applyMap(map: Map) {
+    private suspend fun applyMap(map: Map) {
         mapView?.also {
             configureMapView(it, map)
         }
@@ -569,9 +576,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    private fun rememberScaleRatio() {
-        val mapView = mapView ?: return
-        val currentScaleRatio = mapView.scale * 100f / mapViewViewModel.getMaxScale()
+    private fun rememberScaleRatio() = lifecycleScope.launch {
+        val mapView = mapView ?: return@launch
+        val currentScaleRatio = mapView.scale * 100f / mapViewViewModel.getMaxScale().first()
         mapViewEventBus.rememberMapState(currentScaleRatio.toInt())
     }
 
@@ -593,7 +600,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      *
      * @param map The new [Map] object
      */
-    private fun configureMapView(mapView: MapView, map: Map) {
+    private suspend fun configureMapView(mapView: MapView, map: Map) {
         mMap = map
         val tileSize = map.levelList.firstOrNull()?.tile_size?.x ?: return
 
@@ -602,6 +609,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             presenter?.showMessage(requireContext().getString(R.string.unknown_map_source))
             return
         }
+        val magnifyingFactor = mapViewViewModel.getMagnifyingFactor().first()
+        val maxScale = mapViewViewModel.getMaxScale().first()
         val config = MapViewConfiguration(
                 map.levelList.size, map.widthPx, map.heightPx, tileSize, tileStreamProvider)
                 .setMaxScale(maxScale)
@@ -636,7 +645,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             }
         })
 
-        when (rotationMode) {
+        when (getRotationMode()) {
             RotationMode.FREE -> mapView.enableRotation(true)
             RotationMode.FOLLOW_ORIENTATION -> mapView.enableRotation(false)
             RotationMode.NONE -> {
@@ -646,8 +655,10 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         mapView.addReferentialListener(this)
     }
 
-    private fun centerOnPosition() {
-        val positionMarker = positionMarker ?: return
+    private fun centerOnPosition() = lifecycleScope.launchWhenResumed {
+        val positionMarker = positionMarker ?: return@launchWhenResumed
+        val scaleCentered = mapViewViewModel.getScaleCentered().first()
+        val defineScaleCentered = mapViewViewModel.getDefineScaleCentered().first()
         if (defineScaleCentered) {
             mapView?.moveToMarker(positionMarker, scaleCentered, true)
         } else {
@@ -672,7 +683,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         routeLayer?.also {
             bundle.putParcelable(ROUTE_LAYER_STATE, it.getState())
         }
-        bundle.putBoolean(WAS_ROTATED, rotationMode != RotationMode.NONE)
+        bundle.putBoolean(WAS_ROTATED, RotationMode.NONE == lastRotationMode)
         return bundle
     }
 
