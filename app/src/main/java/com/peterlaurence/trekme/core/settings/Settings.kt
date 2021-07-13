@@ -3,16 +3,19 @@ package com.peterlaurence.trekme.core.settings
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.core.content.edit
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.model.LocationProducerInfo
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,10 +27,10 @@ import javax.inject.Singleton
  */
 @Singleton
 class Settings @Inject constructor(private val trekMeContext: TrekMeContext, private val app: Application) {
-    private val sharedPref: SharedPreferences = app.applicationContext.getSharedPreferences(settingsFile, Context.MODE_PRIVATE)
+    private val sharedPref: SharedPreferences = app.applicationContext.getSharedPreferences(oldSettingsFile, Context.MODE_PRIVATE)
 
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-            name = "settings",
+            name = settings,
             produceMigrations = { listOf(SharedPreferencesMigration({ sharedPref })) }
     )
 
@@ -48,6 +51,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val measurementSystem = stringPreferencesKey("measurementSystem")
     private val locationDisclaimer = booleanPreferencesKey("locationDisclaimer")
     private val locationSourceMode = stringPreferencesKey("locationSourceMode")
+    private val locationProducerInfo = stringPreferencesKey("locationProducerInfo")
 
     /**
      * Get the current application directory as [File].
@@ -245,6 +249,22 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
             it[locationSourceMode] = mode.name
         }
     }
+
+    fun getLocationProducerInfo(): Flow<LocationProducerInfo?> {
+        return dataStore.data.map { pref ->
+            pref[locationProducerInfo]?.let {
+                runCatching {
+                    Json.decodeFromString<LocationProducerInfo>(it)
+                }.getOrNull()
+            }
+        }
+    }
+
+    suspend fun setLocationProducerInfo(info: LocationProducerInfo) {
+        dataStore.edit {
+            it[locationProducerInfo] = Json.encodeToString(info)
+        }
+    }
 }
 
 enum class StartOnPolicy {
@@ -255,4 +275,5 @@ enum class RotationMode {
     NONE, FOLLOW_ORIENTATION, FREE
 }
 
-private const val settingsFile = "trekmeSettings"
+private const val oldSettingsFile = "trekmeSettings"
+private const val settings = "settings"

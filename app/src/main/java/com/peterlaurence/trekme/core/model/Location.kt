@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.core.model
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.serialization.Serializable
 
 /**
  * [latitude] and [longitude] are in decimal degrees.
@@ -37,3 +38,15 @@ interface LocationSource {
 interface LocationProducer {
     val locationFlow: Flow<Location>
 }
+
+/**
+ * Base class for all concrete types which hold information about external location producers.
+ */
+@Serializable
+sealed class LocationProducerInfo
+
+/**
+ * Contains all the data which can be used to identify a paired bluetooth device.
+ */
+@Serializable
+data class LocationProducerBtInfo(val name: String, val macAddress: String): LocationProducerInfo()
