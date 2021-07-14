@@ -23,7 +23,12 @@ import javax.inject.Singleton
 
 /**
  * Holds global settings of TrekMe and exposes public methods to read/update those settings.
- * This class internally uses [SharedPreferences].
+ * This class internally uses the Jetpack DataStore. Getters expose [Flow]s while setters are
+ * suspending functions. When a [Flow] is being collected (either explicitly or when turned to a
+ * LiveData), if we invoke the corresponding setter the collector will receive the new value.
+ *
+ * N.B: It's important that this class (which encapsulates the DataStore) acts as a singleton - as
+ * multiple instances of DataStore using the same file name would break.
  */
 @Singleton
 class Settings @Inject constructor(private val trekMeContext: TrekMeContext, private val app: Application) {

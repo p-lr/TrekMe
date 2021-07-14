@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
- * Global app settings are managed here.
+ * Global app settings user interface.
  *
  * @author P.Laurence on 05/05/19
  */
@@ -172,8 +172,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         startOnPref?.setOnPreferenceChangeListener { _, newValue ->
-            startOnPref?.setSummaryAndValue(newValue as String)
-            val policy = when (newValue) {
+            val policy = when (newValue as String) {
                 getString(R.string.preference_starton_maplist) -> StartOnPolicy.MAP_LIST
                 getString(R.string.preference_starton_lastmap) -> StartOnPolicy.LAST_MAP
                 else -> StartOnPolicy.MAP_LIST
@@ -183,8 +182,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         measurementSystemPref?.setOnPreferenceChangeListener { _, newValue ->
-            measurementSystemPref?.setSummaryAndValue(newValue as String)
-            val system = when (newValue) {
+            val system = when (newValue as String) {
                 getString(R.string.metric_system) -> MeasurementSystem.METRIC
                 getString(R.string.imperial_system) -> MeasurementSystem.IMPERIAL
                 else -> MeasurementSystem.METRIC
@@ -194,24 +192,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         maxScalePref?.setOnPreferenceChangeListener { _, newValue ->
-            val strValue = newValue as String
-            maxScalePref?.setSummaryAndValue(strValue)
-            val scale = strValue.toFloat()
+            val scale = (newValue as String).toFloat()
             viewModel.setMaxScale(scale)
             true
         }
 
         magnifyingPref?.setOnPreferenceChangeListener { _, newValue ->
-            val strValue = newValue as String
-            magnifyingPref?.setSummaryAndValue(strValue)
-            val factor = strValue.toInt()
+            val factor = (newValue as String).toInt()
             viewModel.setMagnifyingFactor(factor)
             true
         }
 
         rotationModePref?.setOnPreferenceChangeListener { _, newValue ->
-            rotationModePref?.setSummaryAndValue(newValue as String)
-            val rotationMode = when (newValue) {
+            val rotationMode = when (newValue as String) {
                 getString(R.string.preference_rotate_with_orientation) -> RotationMode.FOLLOW_ORIENTATION
                 getString(R.string.preference_rotate_none) -> RotationMode.NONE
                 getString(R.string.preference_rotate_free) -> RotationMode.FREE
@@ -225,7 +218,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         defineScaleCenteredPref?.setOnPreferenceChangeListener { _, v ->
             val checked = v as Boolean
             viewModel.setDefineScaleCentered(checked)
-            scaleCenteredPref?.isVisible = checked
             true
         }
 
