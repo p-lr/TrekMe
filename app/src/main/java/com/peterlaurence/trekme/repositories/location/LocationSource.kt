@@ -2,9 +2,7 @@ package com.peterlaurence.trekme.repositories.location
 
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.peterlaurence.trekme.core.model.Location
-import com.peterlaurence.trekme.core.model.LocationProducer
-import com.peterlaurence.trekme.core.model.LocationSource
+import com.peterlaurence.trekme.core.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
@@ -16,7 +14,7 @@ import kotlinx.coroutines.flow.*
  * or wifi connected GPS.
  */
 class LocationSourceImpl(
-        mode: Flow<LocationSource.Mode>,
+        mode: Flow<LocationProducerInfo>,
         private val internalProducer: LocationProducer,
         private val externalProducer: LocationProducer
 ) : LocationSource {
@@ -45,7 +43,7 @@ class LocationSourceImpl(
 }
 
 private class ProducersController(
-        state: Flow<LocationSource.Mode>,
+        state: Flow<LocationProducerInfo>,
         private val internalProducer: LocationProducer,
         private val externalProducer: LocationProducer
 ) {
@@ -62,8 +60,8 @@ private class ProducersController(
     init {
         state.map { mode ->
             when (mode) {
-                LocationSource.Mode.INTERNAL -> startInternal()
-                LocationSource.Mode.EXTERNAL -> startExternal()
+                InternalGps -> startInternal()
+                is LocationProducerBtInfo -> startExternal()
             }
         }.launchIn(scope)
     }

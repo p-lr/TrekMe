@@ -9,13 +9,20 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.model.InternalGps
+import com.peterlaurence.trekme.core.model.LocationProducerBtInfo
+import com.peterlaurence.trekme.core.model.LocationProducerInfo
+import com.peterlaurence.trekme.core.settings.Settings
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class GpsProViewModel @Inject constructor(
+        private val settings: Settings,
         val app: Application,
         private val appEventBus: AppEventBus
 ) : ViewModel() {
@@ -28,19 +35,46 @@ class GpsProViewModel @Inject constructor(
         if (bluetoothAdapter == null) {
             bluetoothState = BtNotSupported
         } else {
-            startUpProcedure(bluetoothAdapter)
+            viewModelScope.launch {
+                startUpProcedure(bluetoothAdapter)
+            }
         }
+
+        /* When we're notified of a new active location producer, we update our internal states
+         * accordingly. */
+        settings.getLocationProducerInfo().map { info ->
+            when (info) {
+                InternalGps -> {
+                    isHostSelected = true
+                    val btState = bluetoothState
+                    if (btState is PairedDeviceList) {
+                        btState.deviceList.forEach {
+                            it.isActive = false
+                        }
+                    }
+                }
+                is LocationProducerBtInfo -> {
+                    isHostSelected = false
+                    val btState = bluetoothState
+                    if (btState is PairedDeviceList) {
+                        btState.deviceList.forEach {
+                            it.setIsActive(info)
+                        }
+                    }
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
-    fun onHostSelected() {
-        isHostSelected = !isHostSelected
+    fun onHostSelected() = viewModelScope.launch {
+        settings.setLocationProducerInfo(InternalGps)
     }
 
-    fun onBtDeviceSelection(device: BluetoothDeviceStub) {
-        device.isActive = !device.isActive
+    fun onBtDeviceSelection(device: BluetoothDeviceStub) = viewModelScope.launch {
+        settings.setLocationProducerInfo(LocationProducerBtInfo(device.name, device.address))
     }
 
-    private fun startUpProcedure(bluetoothAdapter: BluetoothAdapter) {
+    private suspend fun startUpProcedure(bluetoothAdapter: BluetoothAdapter) {
         if (!bluetoothAdapter.isEnabled) {
             appEventBus.bluetoothEnabledFlow.map { enabled ->
                 if (enabled) {
@@ -56,11 +90,27 @@ class GpsProViewModel @Inject constructor(
         }
     }
 
-    private fun queryPairedDevices() {
+    /**
+     * When we get the list of paired devices, we check if one of them is the active location
+     * producer.
+     */
+    private suspend fun queryPairedDevices() {
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
+        val producerInfo = settings.getLocationProducerInfo().first()
         bluetoothState = PairedDeviceList(pairedDevices?.map {
-            BluetoothDeviceStub(it.name, it.address)
+            BluetoothDeviceStub(it.name, it.address).apply {
+                setIsActive(producerInfo)
+            }
         } ?: listOf())
+    }
+
+    /**
+     * Use the mac address to uniquely identify a producer.
+     */
+    private fun BluetoothDeviceStub.setIsActive(producerInfo: LocationProducerInfo) {
+        if (producerInfo is LocationProducerBtInfo) {
+            isActive = address == producerInfo.macAddress
+        }
     }
 }
 

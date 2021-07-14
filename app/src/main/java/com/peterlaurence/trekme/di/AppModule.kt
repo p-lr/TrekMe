@@ -95,7 +95,7 @@ object AppModule {
     @Singleton
     @Provides
     fun bindLocationSource(@ApplicationContext context: Context, settings: Settings): LocationSource {
-        val mode = settings.getLocationSourceMode()
+        val mode = settings.getLocationProducerInfo()
         val googleLocationProducer = GoogleLocationProducer(context)
         val externalLocationProducer = ExternalLocationProducer()
         return LocationSourceImpl(mode, googleLocationProducer, externalLocationProducer)

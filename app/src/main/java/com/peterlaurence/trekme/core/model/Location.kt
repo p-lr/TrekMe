@@ -26,10 +26,6 @@ data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val
  */
 interface LocationSource {
     val locationFlow: SharedFlow<Location>
-
-    enum class Mode {
-        INTERNAL, EXTERNAL
-    }
 }
 
 /**
@@ -40,10 +36,13 @@ interface LocationProducer {
 }
 
 /**
- * Base class for all concrete types which hold information about external location producers.
+ * Base class for all concrete types which hold information about location producers.
  */
 @Serializable
 sealed class LocationProducerInfo
+
+@Serializable
+object InternalGps : LocationProducerInfo()
 
 /**
  * Contains all the data which can be used to identify a paired bluetooth device.

@@ -8,8 +8,8 @@ import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.model.InternalGps
 import com.peterlaurence.trekme.core.model.LocationProducerInfo
-import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -55,7 +55,6 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val scaleRatioCentered = floatPreferencesKey("scaleRatioCentered")
     private val measurementSystem = stringPreferencesKey("measurementSystem")
     private val locationDisclaimer = booleanPreferencesKey("locationDisclaimer")
-    private val locationSourceMode = stringPreferencesKey("locationSourceMode")
     private val locationProducerInfo = stringPreferencesKey("locationProducerInfo")
 
     /**
@@ -144,18 +143,22 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 
-    fun getGpsDataVisibility(): Flow<Boolean> = dataStore.data.map { it[gpsDataVisibility] ?: false }
+    fun getGpsDataVisibility(): Flow<Boolean> = dataStore.data.map {
+        it[gpsDataVisibility] ?: false
+    }
 
     suspend fun setGpsDataVisibility(v: Boolean) {
         dataStore.edit {
-            it[gpsDataVisibility] =  v
+            it[gpsDataVisibility] = v
         }
     }
 
     /**
      * If `true`, [scaleCentered] is accounted for. Otherwise, [scaleCentered] is ignored.
      */
-    fun getDefineScaleCentered(): Flow<Boolean> = dataStore.data.map { it[defineScaleWhenCentered] ?: true }
+    fun getDefineScaleCentered(): Flow<Boolean> = dataStore.data.map {
+        it[defineScaleWhenCentered] ?: true
+    }
 
     suspend fun setDefineScaleCentered(defined: Boolean) {
         dataStore.edit {
@@ -242,29 +245,19 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 
-    fun getLocationSourceMode(): Flow<LocationSource.Mode> {
-        return dataStore.data.map { pref ->
-            pref[locationSourceMode]?.let { LocationSource.Mode.valueOf(it) } ?: LocationSource.Mode.INTERNAL
-
-        }
-    }
-
-    suspend fun setLocationSourceMode(mode: LocationSource.Mode) {
-        dataStore.edit {
-            it[locationSourceMode] = mode.name
-        }
-    }
-
-    fun getLocationProducerInfo(): Flow<LocationProducerInfo?> {
+    fun getLocationProducerInfo(): Flow<LocationProducerInfo> {
         return dataStore.data.map { pref ->
             pref[locationProducerInfo]?.let {
                 runCatching {
                     Json.decodeFromString<LocationProducerInfo>(it)
                 }.getOrNull()
-            }
+            } ?: InternalGps
         }
     }
 
+    /**
+     * Set the active location producer.
+     */
     suspend fun setLocationProducerInfo(info: LocationProducerInfo) {
         dataStore.edit {
             it[locationProducerInfo] = Json.encodeToString(info)
