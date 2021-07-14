@@ -43,24 +43,14 @@ class GpsProViewModel @Inject constructor(
         /* When we're notified of a new active location producer, we update our internal states
          * accordingly. */
         settings.getLocationProducerInfo().map { info ->
-            when (info) {
-                InternalGps -> {
-                    isHostSelected = true
-                    val btState = bluetoothState
-                    if (btState is PairedDeviceList) {
-                        btState.deviceList.forEach {
-                            it.isActive = false
-                        }
-                    }
-                }
-                is LocationProducerBtInfo -> {
-                    isHostSelected = false
-                    val btState = bluetoothState
-                    if (btState is PairedDeviceList) {
-                        btState.deviceList.forEach {
-                            it.setIsActive(info)
-                        }
-                    }
+            /* Internal GPS */
+            isHostSelected = info is InternalGps
+
+            /* Bluetooth devices */
+            val btState = bluetoothState
+            if (btState is PairedDeviceList) {
+                btState.deviceList.forEach {
+                    it.setIsActive(info)
                 }
             }
         }.launchIn(viewModelScope)
@@ -108,8 +98,10 @@ class GpsProViewModel @Inject constructor(
      * Use the mac address to uniquely identify a producer.
      */
     private fun BluetoothDeviceStub.setIsActive(producerInfo: LocationProducerInfo) {
-        if (producerInfo is LocationProducerBtInfo) {
-            isActive = address == producerInfo.macAddress
+        isActive = if (producerInfo is LocationProducerBtInfo) {
+            address == producerInfo.macAddress
+        } else {
+            false
         }
     }
 }
