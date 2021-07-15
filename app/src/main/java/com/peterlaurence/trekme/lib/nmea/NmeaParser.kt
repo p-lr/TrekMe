@@ -4,7 +4,7 @@ import android.util.Log
 import java.util.*
 
 /**
- * Parses the two NMEA 0183 sentences which are commonly emitted by GPS units.
+ * Parses NMEA 0183 sentences which are commonly emitted by GPS units.
  * @see https://gpsd.gitlab.io/gpsd/NMEA.html#_gtd_geographic_location_in_time_differences
  */
 fun parseNmeaLocationSentence(st: String): NmeaData? {
