@@ -23,7 +23,7 @@ class NmeaAggregatorTest {
             emit(NmeaGLL(12.2, 5.5))
             emit(NmeaRMC(12.3, 5.6, 2.7f, 458764))
             delay(2500) // simulate a long pause
-            emit(NmeaVTG(2.8f, 0f))  // that shouldn't result in emitting a new Location
+            emit(NmeaVTG(2.8f))  // that shouldn't result in emitting a new Location
             emit(NmeaGLL(11.2, 5.4))
             delay(1500)
             emit(NmeaGGA(14.7, 5.1, 487.8, 98463))

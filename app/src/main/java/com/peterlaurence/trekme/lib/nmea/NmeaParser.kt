@@ -26,15 +26,14 @@ fun parseNmeaLocationSentence(st: String): NmeaData? {
 }
 
 sealed class NmeaData
-data class NmeaGGA(val latitude: Double, val longitude: Double, val elevation: Double, val time: Long) : NmeaData()
-data class NmeaRMC(val latitude: Double, val longitude: Double, val speed: Float, val time: Long) : NmeaData()
+data class NmeaGGA(val latitude: Double, val longitude: Double, val elevation: Double? = null, val time: Long) : NmeaData()
+data class NmeaRMC(val latitude: Double, val longitude: Double, val speed: Float? = null, val time: Long) : NmeaData()
 
 /**
  * @param speed in meters per seconds
- * @param bearing in decimal degrees
  */
-data class NmeaVTG(val speed: Float, val bearing: Float) : NmeaData()
-data class NmeaGLL(val latitude: Double, val longitude: Double): NmeaData()
+data class NmeaVTG(val speed: Float) : NmeaData()
+data class NmeaGLL(val latitude: Double, val longitude: Double) : NmeaData()
 
 private fun String.isGGA(): Boolean = substring(3, 6) == GGA
 private fun String.isRMC(): Boolean = substring(3, 6) == RMC
@@ -56,10 +55,14 @@ private fun parseGGA(line: String): NmeaGGA? {
         logErr("lon", line)
         return null
     }
-    val ele = parseElevation(fields[9]) ?: run {
-        logErr("elevation", line)
-        return null
-    }
+
+    val eleField = fields[9]
+    val ele = if (eleField.isNotBlank()) {
+        parseElevation(eleField) ?: run {
+            logErr("elevation", line)
+            null
+        }
+    } else null
 
     return NmeaGGA(lat, lon, elevation = ele, time = epoch)
 }
@@ -79,26 +82,26 @@ private fun parseRMC(line: String): NmeaRMC? {
         logErr("lon", line)
         return null
     }
-    val speed = parseGroundSpeed(fields[7]) ?: run {
-        logErr("speed", line)
-        return null
-    }
+
+    val speedField = fields[7]
+    val speed = if (speedField.isNotBlank()) {
+        parseGroundSpeed(speedField) ?: run {
+            logErr("speed", line)
+            return null
+        }
+    } else null
     return NmeaRMC(lat, lon, speed = speed, time = epoch)
 }
 
 private fun parseVTG(line: String): NmeaVTG? {
     val fields = line.split(',')
 
-    val bearing = fields[1].toFloatOrNull() ?: run {
-        logErr("bearing", line)
-        return null
-    }
     val speed = parseGroundSpeed(fields[5]) ?: run {
         logErr("speed", line)
         return null
     }
 
-    return NmeaVTG(speed, bearing)
+    return NmeaVTG(speed)
 }
 
 private fun parseGLL(line: String): NmeaGLL? {
@@ -161,7 +164,7 @@ private fun getEpoch(hour: Int, minutes: Int, seconds: Int): Long {
     return calendar.timeInMillis
 }
 
-private fun logErr(fieldName:String, line: String) {
+private fun logErr(fieldName: String, line: String) {
     Log.e(TAG, "Failed to parse $fieldName in $line")
 }
 

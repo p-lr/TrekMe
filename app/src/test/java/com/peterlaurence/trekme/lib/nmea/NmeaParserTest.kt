@@ -39,7 +39,7 @@ class NmeaParserTest {
         assertEquals(49.274166667, loc.latitude, 1E-8)
         assertEquals(-123.185333333, loc.longitude, 1E-8)
         assertNotNull(loc.speed)
-        assertEquals(6.37911056f, loc.speed, 1E-6f)
+        assertEquals(6.37911056f, loc.speed!!, 1E-6f)
     }
 
     @Test
@@ -49,7 +49,6 @@ class NmeaParserTest {
 
         assertNotNull(data)
         assertIs<NmeaVTG>(data)
-        assertEquals(54.7f, data.bearing)
         assertEquals(2.82944442f, data.speed, 1E-6f)
     }
 

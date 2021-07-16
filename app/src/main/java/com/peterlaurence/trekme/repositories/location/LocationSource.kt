@@ -15,8 +15,7 @@ import kotlinx.coroutines.flow.*
  */
 class LocationSourceImpl(
         mode: Flow<LocationProducerInfo>,
-        private val internalProducer: LocationProducer,
-        private val externalProducer: LocationProducer
+        flowSelector: (LocationProducerInfo) -> Flow<Location>
 ) : LocationSource {
     /**
      * A [SharedFlow] of [Location]s, with a replay of 1.
@@ -26,7 +25,7 @@ class LocationSourceImpl(
      */
     override val locationFlow: SharedFlow<Location> by lazy {
         callbackFlow {
-            val producer = ProducersController(mode, internalProducer, externalProducer)
+            val producer = ProducersController(mode, flowSelector)
             producer.locationFlow.map {
                 trySend(it)
             }.launchIn(this)
@@ -44,8 +43,7 @@ class LocationSourceImpl(
 
 private class ProducersController(
         state: Flow<LocationProducerInfo>,
-        private val internalProducer: LocationProducer,
-        private val externalProducer: LocationProducer
+        private val flowSelector: (LocationProducerInfo) -> Flow<Location>
 ) {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var internalJob: Job? = null
@@ -59,27 +57,28 @@ private class ProducersController(
 
     init {
         state.map { mode ->
+            val flow = flowSelector(mode)
             when (mode) {
-                InternalGps -> startInternal()
-                is LocationProducerBtInfo -> startExternal()
+                InternalGps -> startInternal(flow)
+                is LocationProducerBtInfo -> startExternal(flow)
             }
         }.launchIn(scope)
     }
 
     fun stop() = scope.cancel()
 
-    private fun startInternal() {
+    private fun startInternal(flow: Flow<Location>) {
         externalJob?.run { cancel() }
-        internalJob = collectProducer(internalProducer)
+        internalJob = collectProducer(flow)
     }
 
-    private fun startExternal() {
+    private fun startExternal(flow: Flow<Location>) {
         internalJob?.run { cancel() }
-        externalJob = collectProducer(externalProducer)
+        externalJob = collectProducer(flow)
     }
 
-    private fun collectProducer(producer: LocationProducer): Job {
-        return producer.locationFlow.map {
+    private fun collectProducer(locationFlow: Flow<Location>): Job {
+        return locationFlow.map {
             _locationFlow.tryEmit(it)
         }.launchIn(scope)
     }

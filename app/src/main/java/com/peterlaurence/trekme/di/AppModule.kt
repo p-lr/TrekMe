@@ -7,6 +7,9 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.model.InternalGps
+import com.peterlaurence.trekme.core.model.LocationProducerBtInfo
+import com.peterlaurence.trekme.core.model.LocationProducerInfo
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
@@ -14,9 +17,9 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
-import com.peterlaurence.trekme.repositories.location.producers.ExternalLocationProducer
-import com.peterlaurence.trekme.repositories.location.producers.GoogleLocationProducer
 import com.peterlaurence.trekme.repositories.location.LocationSourceImpl
+import com.peterlaurence.trekme.repositories.location.producers.GoogleLocationProducer
+import com.peterlaurence.trekme.repositories.location.producers.NmeaOverBluetoothProducer
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
@@ -96,8 +99,12 @@ object AppModule {
     @Provides
     fun bindLocationSource(@ApplicationContext context: Context, settings: Settings): LocationSource {
         val mode = settings.getLocationProducerInfo()
-        val googleLocationProducer = GoogleLocationProducer(context)
-        val externalLocationProducer = ExternalLocationProducer()
-        return LocationSourceImpl(mode, googleLocationProducer, externalLocationProducer)
+        val flowSelector = { info: LocationProducerInfo ->
+            when (info) {
+                InternalGps -> GoogleLocationProducer(context).locationFlow
+                is LocationProducerBtInfo -> NmeaOverBluetoothProducer(info.macAddress).locationFlow
+            }
+        }
+        return LocationSourceImpl(mode, flowSelector)
     }
 }
