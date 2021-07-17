@@ -105,7 +105,7 @@ object AppModule {
                 InternalGps -> GoogleLocationProducer(context).locationFlow
                 is LocationProducerBtInfo -> {
                     val connLostMsg = context.getString(R.string.connection_bt_lost_msg)
-                    NmeaOverBluetoothProducer(connLostMsg, mode.macAddress, appEventBus).locationFlow
+                    NmeaOverBluetoothProducer(connLostMsg, mode, appEventBus).locationFlow
                 }
             }
         }

@@ -31,11 +31,10 @@ class NmeaAggregatorTest {
             emit(NmeaGLL(14.8, 5.2))
         }
 
-        val locations = mutableListOf<Location>()
-        val aggr = NmeaAggregator(dataFlow, timeoutMillis = 2000) {
-            locations.add(it)
-        }
-        aggr.run()
+        val locations = mutableListOf<LocationData>()
+        NmeaAggregator(dataFlow, timeoutMillis = 2000) { lat, lon, speed, altitude, time ->
+            locations.add(LocationData(lat, lon, speed, altitude, time))
+        }.run()
 
         assertEquals(5, locations.size)
         assertNull(locations[0].speed)
@@ -48,3 +47,6 @@ class NmeaAggregatorTest {
         assertNull(locations[4].speed)  // the last emitted speed was discarded (timeout)
     }
 }
+
+private class LocationData(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float? = null,
+                           val altitude: Double? = null, val time: Long = 0L)

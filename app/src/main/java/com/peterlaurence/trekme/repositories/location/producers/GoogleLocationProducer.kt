@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
+import com.peterlaurence.trekme.core.model.InternalGps
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationProducer
 import kotlinx.coroutines.channels.awaitClose
@@ -47,7 +48,7 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
                     for (loc in locationResult?.locations ?: listOf()) {
                         val speed = if (loc.speed != 0f) loc.speed else null
                         val altitude = if (loc.altitude != 0.0) loc.altitude else null
-                        trySend(Location(loc.latitude, loc.longitude, speed, altitude, loc.time))
+                        trySend(Location(loc.latitude, loc.longitude, speed, altitude, loc.time, InternalGps))
                     }
                 }
             }

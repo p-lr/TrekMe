@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationProducer
+import com.peterlaurence.trekme.core.model.LocationProducerBtInfo
 import com.peterlaurence.trekme.lib.nmea.NmeaAggregator
 import com.peterlaurence.trekme.lib.nmea.parseNmeaLocationSentence
 import kotlinx.coroutines.*
@@ -25,7 +26,7 @@ import java.util.concurrent.Executors
  */
 class NmeaOverBluetoothProducer(
         private val connectionLostMsg: String,
-        private val macAddress: String,
+        private val mode: LocationProducerBtInfo,
         private val appEventBus: AppEventBus
 ) : LocationProducer {
 
@@ -57,7 +58,7 @@ class NmeaOverBluetoothProducer(
     private suspend fun ProducerScope<Location>.connectAndRead(): Pair<BluetoothSocket, Job> {
         val socket = withContext(connectionDispatcher) {
             val uuid = UUID.fromString(SPP_UUID)
-            BluetoothAdapter.getDefaultAdapter().getRemoteDevice(macAddress).createRfcommSocketToServiceRecord(uuid)
+            BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mode.macAddress).createRfcommSocketToServiceRecord(uuid)
         }
 
         val job = launch(connectionDispatcher) {
@@ -81,8 +82,8 @@ class NmeaOverBluetoothProducer(
                             }
                         }
                     }
-                    val nmeaAggregator = NmeaAggregator(nmeaDataFlow) {
-                        trySend(it)
+                    val nmeaAggregator = NmeaAggregator(nmeaDataFlow) { lat, lon, speed, altitude, time ->
+                        trySend(Location(lat, lon, speed, altitude, time, mode))
                     }
                     nmeaAggregator.run()
                 }

@@ -1,15 +1,14 @@
 package com.peterlaurence.trekme.lib.nmea
 
-import com.peterlaurence.trekme.core.model.Location
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 
 /**
- * Aggregates data coming from NMEA sentences and emits [Location]s when it has enough information.
+ * Aggregates data coming from NMEA sentences and emits location data when it has enough information.
  * [timeoutMillis] defines how long a received data is considered valid.
  */
 class NmeaAggregator(private val input: Flow<NmeaData>, timeoutMillis: Int = 2000,
-                     val onLocation: (Location) -> Unit) {
+                     val onLocationData: (lat: Double, lon: Double, speed: Float?, altitude: Double?, time: Long) -> Unit) {
     private val timeoutNanos = timeoutMillis * 1_000_000
     private var latLonTimed = LatLonTimedData()
     private var altitude = SingleTimedData<Double>()
@@ -80,7 +79,7 @@ class NmeaAggregator(private val input: Flow<NmeaData>, timeoutMillis: Int = 200
                 now - it < timeoutNanos
             } ?: false
         }
-        onLocation(Location(lat, lon, speed, altitude, time))
+        onLocationData(lat, lon, speed, altitude, time)
     }
 }
 

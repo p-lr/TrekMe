@@ -9,9 +9,11 @@ import kotlinx.serialization.Serializable
  * [altitude] is in meters. Is null when this location doesn't have this information.
  * [speed] is in meters per second. Is null when this location doesn't have this information.
  * [time] is the UTC time in milliseconds since January 1, 1970
+ * [locationProducerInfo] contains producer's metadata
  */
 data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float? = null,
-                    val altitude: Double? = null, val time: Long = 0L)
+                    val altitude: Double? = null, val time: Long = 0L,
+                    val locationProducerInfo: LocationProducerInfo)
 
 /**
  * The [LocationSource] has two possible modes.
