@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.*
  * or wifi connected GPS.
  */
 class LocationSourceImpl(
-        mode: Flow<LocationProducerInfo>,
+        modeFlow: Flow<LocationProducerInfo>,
         flowSelector: (LocationProducerInfo) -> Flow<Location>
 ) : LocationSource {
     /**
@@ -25,7 +25,7 @@ class LocationSourceImpl(
      */
     override val locationFlow: SharedFlow<Location> by lazy {
         callbackFlow {
-            val producer = ProducersController(mode, flowSelector)
+            val producer = ProducersController(modeFlow, flowSelector)
             producer.locationFlow.map {
                 trySend(it)
             }.launchIn(this)

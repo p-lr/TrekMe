@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.di
 
 import android.app.Application
 import android.content.Context
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.ign.Billing
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
@@ -97,14 +98,17 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindLocationSource(@ApplicationContext context: Context, settings: Settings): LocationSource {
-        val mode = settings.getLocationProducerInfo()
-        val flowSelector = { info: LocationProducerInfo ->
-            when (info) {
+    fun bindLocationSource(@ApplicationContext context: Context, settings: Settings, appEventBus: AppEventBus): LocationSource {
+        val modeFlow = settings.getLocationProducerInfo()
+        val flowSelector = { mode: LocationProducerInfo ->
+            when (mode) {
                 InternalGps -> GoogleLocationProducer(context).locationFlow
-                is LocationProducerBtInfo -> NmeaOverBluetoothProducer(info.macAddress).locationFlow
+                is LocationProducerBtInfo -> {
+                    val connLostMsg = context.getString(R.string.connection_bt_lost_msg)
+                    NmeaOverBluetoothProducer(connLostMsg, mode.macAddress, appEventBus).locationFlow
+                }
             }
         }
-        return LocationSourceImpl(mode, flowSelector)
+        return LocationSourceImpl(modeFlow, flowSelector)
     }
 }

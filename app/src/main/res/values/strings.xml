@@ -388,4 +388,5 @@
     <string name="select_bt_devices_title">Select active GPS</string>
     <string name="previously_connected_bt_devices">PREVIOUSLY CONNECTED DEVICES</string>
     <string name="internal_gps">Internal GPS</string>
+    <string name="connection_bt_lost_msg">Blutooth GPS connection lost. Will retry..</string>
 </resources>
