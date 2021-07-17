@@ -67,83 +67,12 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.peterlaurence.trekme.ui.mapview.components.GpsDataOverlayView
             android:id="@+id/gps_data_panel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/colorIndicatorOverlay"
-            android:padding="8dp"
-            android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@id/stats_panel"
-            app:layout_constraintLeft_toLeftOf="parent">
-
-            <TextView
-                android:id="@+id/lat_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="monospace"
-                android:text="@string/latitude_short"
-                android:textColor="@color/colorPrimaryTextWhite"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="Lat" />
-
-            <TextView
-                android:id="@+id/lat_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:fontFamily="monospace"
-                android:textColor="@color/colorPrimaryTextWhite"
-                app:layout_constraintStart_toEndOf="@id/lat_label"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="48.77474°" />
-
-            <TextView
-                android:id="@+id/lon_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="monospace"
-                android:text="@string/longitude_short"
-                android:textColor="@color/colorPrimaryTextWhite"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/lat_label"
-                tools:text="Lon" />
-
-            <TextView
-                android:id="@+id/lon_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:fontFamily="monospace"
-                android:textColor="@color/colorPrimaryTextWhite"
-                app:layout_constraintStart_toEndOf="@id/lon_label"
-                app:layout_constraintTop_toBottomOf="@id/lat_label"
-                tools:text="2.30250°" />
-
-            <TextView
-                android:id="@+id/ele_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="monospace"
-                android:text="@string/elevation_short"
-                android:textColor="@color/colorPrimaryTextWhite"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/lon_label"
-                tools:text="Ele" />
-
-            <TextView
-                android:id="@+id/ele_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:fontFamily="monospace"
-                android:textColor="@color/colorPrimaryTextWhite"
-                app:layout_constraintStart_toEndOf="@id/ele_label"
-                app:layout_constraintTop_toBottomOf="@id/lon_label"
-                tools:text="92 m" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
+            app:layout_constraintLeft_toLeftOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <data>
