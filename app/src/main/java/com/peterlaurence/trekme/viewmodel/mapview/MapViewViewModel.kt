@@ -2,10 +2,17 @@ package com.peterlaurence.trekme.viewmodel.mapview
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.billing.ign.*
+import com.peterlaurence.trekme.billing.AccessDeniedLicenseOutdated
+import com.peterlaurence.trekme.billing.AccessGranted
+import com.peterlaurence.trekme.billing.Billing
+import com.peterlaurence.trekme.billing.GracePeriod
+import com.peterlaurence.trekme.billing.ign.LicenseInfo
+import com.peterlaurence.trekme.billing.ign.PersistenceStrategy
+import com.peterlaurence.trekme.billing.ign.PurchaseVerifierIgn
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.di.IGN
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +31,7 @@ import javax.inject.Inject
 class MapViewViewModel @Inject constructor(
         private val persistenceStrategy: PersistenceStrategy,
         private val settings: Settings,
-        private val billing: Billing,
+        @IGN private val billing: Billing,
         private val mapRepository: MapRepository
 ) : ViewModel() {
     private val _ignLicenseEvents = MutableSharedFlow<IgnLicenseEvent>(0, 1, BufferOverflow.DROP_OLDEST)
@@ -81,7 +88,7 @@ class MapViewViewModel @Inject constructor(
          */
         suspend fun onFailureToReadFile(): Boolean {
             // missing license or something else wrong
-            return billing.getIgnLicensePurchase()?.let {
+            return billing.getPurchase()?.let {
                 persistenceStrategy.persist(LicenseInfo(it.purchaseTime))
                 true
             } ?: run {
@@ -92,7 +99,8 @@ class MapViewViewModel @Inject constructor(
 
         return withContext(Dispatchers.IO) {
             persistenceStrategy.getLicenseInfo()?.let {
-                when (val accessState = checkTime(it.purchaseTimeMillis)) {
+                val verifier = PurchaseVerifierIgn()
+                when (val accessState = verifier.checkTime(it.purchaseTimeMillis)) {
                     is AccessGranted -> true
                     is GracePeriod -> {
                         _ignLicenseEvents.tryEmit(GracePeriodIgnEvent(map, accessState.remainingDays))

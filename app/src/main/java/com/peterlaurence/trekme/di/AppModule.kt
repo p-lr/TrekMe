@@ -3,7 +3,8 @@ package com.peterlaurence.trekme.di
 import android.app.Application
 import android.content.Context
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.billing.ign.Billing
+import com.peterlaurence.trekme.billing.Billing
+import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.events.AppEventBus
@@ -30,6 +31,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 /**
@@ -49,9 +51,10 @@ object AppModule {
      * A single instance of [Billing] is used across the app. This object isn't expensive to create.
      */
     @Singleton
+    @IGN
     @Provides
     fun bindBilling(application: Application): Billing {
-        return Billing(application)
+        return buildIgnBilling(application)
     }
 
     @Singleton
@@ -112,3 +115,7 @@ object AppModule {
         return LocationSourceImpl(modeFlow, flowSelector)
     }
 }
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class IGN

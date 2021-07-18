@@ -1,27 +1,31 @@
-package com.peterlaurence.trekme.billing.ign
+package com.peterlaurence.trekme.billing
 
 import android.app.Application
 import android.util.Log
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode.*
-import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseDetails
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.delay
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-const val IGN_LICENSE_ONETIME_SKU = "ign_license"
-const val IGN_LICENSE_SUBSCRIPTION_SKU = "ign_license_sub"
 typealias PurchaseAcknowledgedCallback = () -> Unit
 typealias PurchasePendingCallback = () -> Unit
 
 /**
- * Manages the licensing for IGN maps.
+ * Manages a subscription along with a one-time purchase.
+ * To access some functionality, a user should have an active subscription, or a valid one-time
+ * purchase.
  *
  * @author P.Laurence on 06/08/2019
  */
-class Billing(val application: Application) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
+class Billing(
+        val application: Application,
+        private val oneTimeSku: String,
+        private val subSku: String,
+        private val purchaseVerifier: PurchaseVerifier
+) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
 
     private val billingClient = BillingClient.newBuilder(application).setListener(this).enablePendingPurchases().build()
 
@@ -61,11 +65,11 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
             purchases?.forEach {
                 if (
                         it.skus.any { sku ->
-                            sku == IGN_LICENSE_ONETIME_SKU || sku == IGN_LICENSE_SUBSCRIPTION_SKU
+                            sku == oneTimeSku || sku == subSku
                         }
                 ) {
                     if (it.purchaseState == Purchase.PurchaseState.PURCHASED && !it.isAcknowledged) {
-                        acknowledgeIgnLicense(it)
+                        acknowledgePurchase(it)
                     } else if (it.purchaseState == Purchase.PurchaseState.PENDING) {
                         if (this::purchasePendingCallback.isInitialized) {
                             purchasePendingCallback()
@@ -82,7 +86,7 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         }
     }
 
-    private fun acknowledgeIgnLicense(purchase: Purchase) {
+    private fun acknowledgePurchase(purchase: Purchase) {
         /* Approve the payment */
         val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
                 .setPurchaseToken(purchase.purchaseToken)
@@ -90,8 +94,8 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         billingClient.acknowledgePurchase(acknowledgePurchaseParams, this)
     }
 
-    private fun shouldAcknowledgeIgnLicense(purchase: Purchase): Boolean {
-        return (purchase.skus.any { it == IGN_LICENSE_SUBSCRIPTION_SKU || it == IGN_LICENSE_ONETIME_SKU })
+    private fun shouldAcknowledgePurchase(purchase: Purchase): Boolean {
+        return (purchase.skus.any { it == subSku || it == oneTimeSku })
                 && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
     }
 
@@ -109,29 +113,30 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
     }
 
     /**
-     * This is one of the first things to do. If the IGN module is among the purchases, check if it
-     * should be acknowledged. This call is required when the acknowledgement wasn't done right after
-     * a billing flow (typically when the payment method is slow and the user didn't wait the end of
-     * the procedure with the [onPurchasesUpdated] call). So we can end up with a purchase which is
-     * in [Purchase.PurchaseState.PURCHASED] state but not acknowledged.
+     * This is one of the first things to do. If either the one-time or the subscription are among
+     * the purchases, check if it should be acknowledged. This call is required when the
+     * acknowledgement wasn't done right after a billing flow (typically when the payment method is
+     * slow and the user didn't wait the end of the procedure with the [onPurchasesUpdated] call).
+     * So we can end up with a purchase which is in [Purchase.PurchaseState.PURCHASED] state but not
+     * acknowledged.
      * This is why the acknowledgement is also made here.
      */
-    suspend fun acknowledgeIgnLicense(purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback): Boolean {
+    suspend fun acknowledgePurchase(purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback): Boolean {
         runCatching { awaitConnect() }.onFailure { return false }
 
-        val inAppPurchases = queryPurchasesAsync(BillingClient.SkuType.SUBS)
-        val oneTimeAck = inAppPurchases.second.getIgnLicenseOneTime()?.let {
+        val inAppPurchases = queryPurchasesAsync(BillingClient.SkuType.INAPP)
+        val oneTimeAck = inAppPurchases.second.getOneTimePurchase()?.let {
             this.purchaseAcknowledgedCallback = purchaseAcknowledgedCallback
-            if (shouldAcknowledgeIgnLicense(it)) {
-                acknowledgeIgnLicense(it)
+            if (shouldAcknowledgePurchase(it)) {
+                acknowledgePurchase(it)
                 true
             } else false
         } ?: false
 
         val subs = queryPurchasesAsync(BillingClient.SkuType.SUBS)
-        val subAck = subs.second.getIgnLicenseSub()?.let {
-            if (shouldAcknowledgeIgnLicense(it)) {
-                acknowledgeIgnLicense(it)
+        val subAck = subs.second.getSubPurchase()?.let {
+            if (shouldAcknowledgePurchase(it)) {
+                acknowledgePurchase(it)
                 true
             } else false
         } ?: false
@@ -139,48 +144,40 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         return oneTimeAck || subAck
     }
 
-    suspend fun getIgnLicensePurchase(): Purchase? {
+    suspend fun getPurchase(): Purchase? {
         runCatching { awaitConnect() }.onFailure { return null }
 
         val inAppPurchases = queryPurchasesAsync(BillingClient.SkuType.INAPP)
-        val oneTimeLicense = inAppPurchases.second.getValidIgnLicenseOneTime()?.let {
-            if (checkTime(it.purchaseTime) !is AccessGranted) {
-                it.consumeIgnLicense()
+        val oneTimeLicense = inAppPurchases.second.getValidOneTimePurchase()?.let {
+            if (purchaseVerifier.checkTime(it.purchaseTime) !is AccessGranted) {
+                consume(it.purchaseToken)
                 null
             } else it
         }
 
         if (oneTimeLicense == null) {
             val subs = queryPurchasesAsync(BillingClient.SkuType.SUBS)
-            /* The user might have cancelled the subscription. However, he still has the license
-             * until the end of the year (plus the grace period). */
-            return subs.second.getValidIgnLicenseSub()
+            return subs.second.getValidSubPurchase()
         }
         return oneTimeLicense
     }
 
-    private fun List<Purchase>.getIgnLicenseOneTime(): Purchase? {
-        return firstOrNull { it.skus.any { sku -> sku == IGN_LICENSE_ONETIME_SKU } }
+    private fun List<Purchase>.getOneTimePurchase(): Purchase? {
+        return firstOrNull { it.skus.any { sku -> sku == oneTimeSku } }
     }
 
-    private fun List<Purchase>.getIgnLicenseSub(): Purchase? {
-        return firstOrNull { it.skus.any { sku -> sku == IGN_LICENSE_SUBSCRIPTION_SKU } }
+    private fun List<Purchase>.getSubPurchase(): Purchase? {
+        return firstOrNull { it.skus.any { sku -> sku == subSku } }
     }
 
-    private fun List<Purchase>.getValidIgnLicenseOneTime(): Purchase? {
-        return firstOrNull { it.skus.any { sku -> sku == IGN_LICENSE_ONETIME_SKU } && it.isAcknowledged }
+    private fun List<Purchase>.getValidOneTimePurchase(): Purchase? {
+        return firstOrNull { it.skus.any { sku -> sku == oneTimeSku } && it.isAcknowledged }
     }
 
-    private fun List<Purchase>.getValidIgnLicenseSub(): Purchase? {
+    private fun List<Purchase>.getValidSubPurchase(): Purchase? {
         return firstOrNull {
-            it.skus.any { sku -> sku == IGN_LICENSE_SUBSCRIPTION_SKU } &&
+            it.skus.any { sku -> sku == subSku } &&
                     it.isAcknowledged
-        }
-    }
-
-    private fun Purchase.consumeIgnLicense() {
-        if (skus.any { it == IGN_LICENSE_ONETIME_SKU || it == IGN_LICENSE_SUBSCRIPTION_SKU }) {
-            consume(purchaseToken)
         }
     }
 
@@ -192,14 +189,15 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
     }
 
     /**
-     * Get the details of the IGN annual subscription.
+     * Get the details of the subscription.
+     * @throws [ProductNotFoundException], [NotSupportedException], [IllegalStateException]
      */
-    suspend fun getIgnLicenseDetails(): IgnLicenseDetails {
+    suspend fun getSubDetails(): SubscriptionDetails {
         awaitConnect()
-        val (billingResult, skuDetailsList) = queryIgnLicenseDetails()
+        val (billingResult, skuDetailsList) = querySubDetails()
         return when (billingResult.responseCode) {
-            OK -> skuDetailsList.find { it.sku == IGN_LICENSE_SUBSCRIPTION_SKU }?.let {
-                IgnLicenseDetails(it)
+            OK -> skuDetailsList.find { it.sku == subSku }?.let {
+                SubscriptionDetails(it)
             } ?: throw ProductNotFoundException()
             FEATURE_NOT_SUPPORTED -> throw NotSupportedException()
             SERVICE_DISCONNECTED -> error("should retry")
@@ -225,9 +223,9 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
         }
     }
 
-    private suspend fun queryIgnLicenseDetails(): SkuQueryResult = suspendCoroutine {
+    private suspend fun querySubDetails(): SkuQueryResult = suspendCoroutine {
         val skuList = ArrayList<String>()
-        skuList.add(IGN_LICENSE_SUBSCRIPTION_SKU)
+        skuList.add(subSku)
         val params = SkuDetailsParams.newBuilder()
         params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS)
         billingClient.querySkuDetailsAsync(params.build()) { billingResult, skuDetailsList ->
@@ -256,5 +254,10 @@ class Billing(val application: Application) : PurchasesUpdatedListener, Acknowle
 
 data class BillingParams(val billingClient: BillingClient, val flowParams: BillingFlowParams)
 
-private const val TAG = "ign.Billing.kt"
+data class SubscriptionDetails(val skuDetails: SkuDetails) {
+    val price: String
+        get() = skuDetails.price
+}
+
+private const val TAG = "Billing.kt"
 

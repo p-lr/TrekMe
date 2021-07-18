@@ -61,7 +61,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
             }
         }
 
-        viewModel.getIgnLicenseDetails().observe(this) {
+        viewModel.getSubscriptionDetails().observe(this) {
             it?.also {
                 ignLicensePrice = it.price
                 showPriceIGN()
