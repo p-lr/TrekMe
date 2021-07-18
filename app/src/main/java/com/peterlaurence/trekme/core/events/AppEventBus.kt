@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.events
 
+import com.peterlaurence.trekme.billing.BillingParams
 import com.peterlaurence.trekme.core.track.TrackImporter
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -45,4 +46,11 @@ class AppEventBus {
     val bluetoothEnabledFlow = _bluetoothEnableFlow.asSharedFlow()
 
     fun bluetoothEnabled(enabled: Boolean) = _bluetoothEnableFlow.tryEmit(enabled)
+
+    /**********************************************************************************************/
+
+    private val _billingFLow = MutableSharedFlow<BillingParams>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val billingFlow = _billingFLow.asSharedFlow()
+
+    fun startBillingFlow(billingParams: BillingParams) = _billingFLow.tryEmit(billingParams)
 }

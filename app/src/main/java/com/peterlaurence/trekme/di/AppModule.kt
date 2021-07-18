@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.Billing
+import com.peterlaurence.trekme.billing.gpspro.buildGpsProBilling
 import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
@@ -50,11 +51,21 @@ object AppModule {
     /**
      * A single instance of [Billing] is used across the app. This object isn't expensive to create.
      */
-    @Singleton
     @IGN
+    @Singleton
     @Provides
-    fun bindBilling(application: Application): Billing {
+    fun bindIgnBilling(application: Application): Billing {
         return buildIgnBilling(application)
+    }
+
+    /**
+     * A single instance of [Billing] is used across the app. This object isn't expensive to create.
+     */
+    @GpsPro
+    @Singleton
+    @Provides
+    fun bindGpsProBilling(application: Application): Billing {
+        return buildGpsProBilling(application)
     }
 
     @Singleton
@@ -119,3 +130,7 @@ object AppModule {
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class IGN
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class GpsPro

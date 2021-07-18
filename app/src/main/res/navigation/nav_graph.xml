@@ -137,4 +137,8 @@
         android:id="@+id/gpsProFragment"
         android:name="com.peterlaurence.trekme.ui.gpspro.GpsProFragment"
         android:label="GpsProFragment" /><action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProFragment"/>
+    <fragment
+        android:id="@+id/gpsProPurchaseFragment"
+        android:name="com.peterlaurence.trekme.ui.gpspro.GpsProPurchaseFragment"
+        android:label="GpsProPurchaseFragment" /><action android:id="@+id/action_global_gpsProPurchaseFragment" app:destination="@id/gpsProPurchaseFragment"/>
 </navigation>

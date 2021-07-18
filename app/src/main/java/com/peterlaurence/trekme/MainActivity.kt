@@ -44,6 +44,7 @@ import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.service.event.*
+import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import com.peterlaurence.trekme.ui.maplist.events.*
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
@@ -85,6 +86,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Inject
     lateinit var downloadRepository: DownloadRepository
+
+    @Inject
+    lateinit var gpsProEvents: GpsProEvents
 
     @Inject
     lateinit var appEventBus: AppEventBus
@@ -301,6 +305,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             bluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
         }
 
+        appEventBus.billingFlow.collectWhileStarted(this) {
+            it.billingClient.launchBillingFlow(this, it.flowParams)
+        }
+
+        gpsProEvents.requestShowGpsProFragment.collectWhileStarted(this) {
+            showGpsProFragmentAfterPurchase()
+        }
+
         downloadRepository.downloadEvent.collectWhileStarted(this) {
             onMapDownloadEvent(it)
         }
@@ -350,7 +362,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_select_map -> showMapListFragment()
             R.id.nav_create -> showMapCreateFragment()
             R.id.nav_record -> showRecordFragment()
-            R.id.nav_gps_plus -> showGpsProFragment()
+            R.id.nav_gps_plus -> showGpsProPurchaseFragment()
             R.id.nav_import -> showMapImportFragment()
             R.id.nav_share -> showWifiP2pFragment()
             R.id.nav_settings -> showSettingsFragment()
@@ -410,7 +422,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navController.navigate(R.id.action_global_recordFragment)
     }
 
-    private fun showGpsProFragment() {
+    private fun showGpsProPurchaseFragment() {
+        navController.navigate(R.id.action_global_gpsProPurchaseFragment)
+    }
+
+    private fun showGpsProFragmentAfterPurchase() {
+        navController.popBackStack(R.id.gpsProPurchaseFragment, true)
         navController.navigate(R.id.action_global_gpsProFragment)
     }
 

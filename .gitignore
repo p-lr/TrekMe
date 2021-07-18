@@ -13,3 +13,4 @@ build
 /app/release
 /mapview-debug/*
 install-release.sh
+*.hprof

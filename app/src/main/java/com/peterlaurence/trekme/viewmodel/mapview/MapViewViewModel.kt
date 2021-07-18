@@ -6,9 +6,9 @@ import com.peterlaurence.trekme.billing.AccessDeniedLicenseOutdated
 import com.peterlaurence.trekme.billing.AccessGranted
 import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.billing.GracePeriod
+import com.peterlaurence.trekme.billing.common.AnnualWithGracePeriodVerifier
 import com.peterlaurence.trekme.billing.ign.LicenseInfo
 import com.peterlaurence.trekme.billing.ign.PersistenceStrategy
-import com.peterlaurence.trekme.billing.ign.PurchaseVerifierIgn
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
@@ -99,7 +99,7 @@ class MapViewViewModel @Inject constructor(
 
         return withContext(Dispatchers.IO) {
             persistenceStrategy.getLicenseInfo()?.let {
-                val verifier = PurchaseVerifierIgn()
+                val verifier = AnnualWithGracePeriodVerifier()
                 when (val accessState = verifier.checkTime(it.purchaseTimeMillis)) {
                     is AccessGranted -> true
                     is GracePeriod -> {

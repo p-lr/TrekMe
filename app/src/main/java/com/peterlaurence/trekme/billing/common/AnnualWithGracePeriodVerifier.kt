@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.billing.ign
+package com.peterlaurence.trekme.billing.common
 
 import com.peterlaurence.trekme.billing.*
 import java.util.*
@@ -8,7 +8,7 @@ import kotlin.math.abs
 const val gracePeriodDays = 15 // number of days the user is allowed to use the app despite expired license
 const val p = 350 // validity duration in days (365 - 15)
 
-class PurchaseVerifierIgn : PurchaseVerifier {
+class AnnualWithGracePeriodVerifier : PurchaseVerifier {
     /**
      * The billing API uses a purchase time in milliseconds since the epoch (Jan 1, 1970), which is
      * exactly the same as what we get with [Date.getTime].
