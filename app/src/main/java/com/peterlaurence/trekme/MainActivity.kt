@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             /* A nice way to control the action-bar depending on the destination */
             addOnDestinationChangedListener { _, destination, _ ->
                 val title = when (destination.id) {
+                    R.id.gpsProPurchaseFragment -> getString(R.string.gps_pro_name)
                     R.id.gpsProFragment -> getString(R.string.select_bt_devices_title)
                     R.id.wifiP2pFragment -> getString(R.string.wifip2p_title)
                     R.id.mapCreateFragment -> getString(R.string.mapcreate_title)

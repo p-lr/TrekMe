@@ -385,6 +385,13 @@
     <string name="thumb_down_button" translatable="false">Thumb-down button</string>
 
     <!-- GpsPro UI -->
+    <string name="gps_pro_name" translatable="false">GPS Pro</string>
+    <string name="gps_pro_pres_p1_title">Connect your external GPS in Bluetooth</string>
+    <string name="gps_pro_pres_content">If you have an external GPS with bluetooth, you can connect it to TrekMe and use it instead of
+    the internal GPS of your device. This is especially useful when your activity (aeronautic, professional topography, ..) requires better
+    precision and updating your position at a higher frequency than every second.</string>
+    <string name="gps_pro_pres_p2_title">Compatible devices</string>
+    <string name="gps_pro_pres_ending">This list isn\'t exhaustive. All GPS emitting NMEA 0183 sentences over Bluetooth are supported.</string>
     <string name="select_bt_devices_title">Select active GPS</string>
     <string name="previously_connected_bt_devices">PREVIOUSLY CONNECTED DEVICES</string>
     <string name="internal_gps">Internal GPS</string>

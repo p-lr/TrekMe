@@ -19,6 +19,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
@@ -40,6 +42,7 @@ fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Un
     Column(modifier = Modifier.fillMaxSize()) {
         Column(Modifier
                 .weight(1f)
+                .padding(start = 24.dp, end = 24.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
@@ -50,6 +53,18 @@ fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Un
                     painter = painterResource(id = R.drawable.gps_ext),
                     contentScale = ContentScale.Inside,
                     contentDescription = null)
+            Text(stringResource(id = R.string.gps_pro_pres_p1_title), fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(stringResource(id = R.string.gps_pro_pres_content), textAlign = TextAlign.Justify)
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(stringResource(id = R.string.gps_pro_pres_p2_title), fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text("• GARMIN GLO2")
+            Text("• Dual XGPS150A & SkyPro XGPS160")
+            Text("• Bad Elf Flex, GNSS Surveyor, GPS Pro+")
+            Text("• Juniper Systems Geode")
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(stringResource(id = R.string.gps_pro_pres_ending), textAlign = TextAlign.Justify)
         }
         Button(onClick = buyCb, modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Text("${stringResource(id = R.string.buy_btn)} $price")
