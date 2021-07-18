@@ -2,11 +2,11 @@ package com.peterlaurence.trekme.viewmodel.gpspro
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.model.InternalGps
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.gpspro.GpsProPurchaseRepo
-import com.peterlaurence.trekme.repositories.gpspro.GpsProPurchaseState
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -26,11 +26,11 @@ class GpsProPurchaseViewModel @Inject constructor(
     init {
         purchaseFlow.map { state ->
             when(state) {
-                GpsProPurchaseState.ACCESS_GRANTED -> {
+                PurchaseState.PURCHASED -> {
                     /* As soon as we're granted access, navigate to the feature fragment */
                     gpsProEvents.requestShowGpsProFragment()
                 }
-                GpsProPurchaseState.ACCESS_DENIED -> {
+                PurchaseState.NOT_PURCHASED -> {
                     /* If denied, switch back to internal GPS */
                     settings.setLocationProducerInfo(InternalGps)
                 }

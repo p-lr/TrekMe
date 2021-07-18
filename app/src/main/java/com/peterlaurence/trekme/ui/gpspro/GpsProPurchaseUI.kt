@@ -22,21 +22,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.repositories.gpspro.GpsProPurchaseState
+import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.gpspro.GpsProPurchaseViewModel
 
 @Composable
-fun GpsProPurchaseUI(purchaseState: GpsProPurchaseState, price: String?, buyCb: () -> Unit) {
+fun GpsProPurchaseUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Unit) {
     when(purchaseState) {
-        GpsProPurchaseState.CHECKING -> Text(text = "Checking..")
-        GpsProPurchaseState.ACCESS_DENIED, GpsProPurchaseState.UNKNOWN -> AccessDeniedUI(purchaseState, price, buyCb)
+        PurchaseState.CHECK_PENDING -> Text(text = "Checking..")
+        PurchaseState.NOT_PURCHASED, PurchaseState.UNKNOWN -> AccessDeniedUI(purchaseState, price, buyCb)
         else -> { /* Nothing to do */ }
     }
 }
 
 @Composable
-fun AccessDeniedUI(purchaseState: GpsProPurchaseState, price: String?, buyCb: () -> Unit) {
+fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(Modifier
                 .weight(1f)

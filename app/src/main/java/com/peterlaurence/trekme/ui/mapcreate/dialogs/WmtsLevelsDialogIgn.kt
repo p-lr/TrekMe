@@ -8,10 +8,10 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
 import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
-import com.peterlaurence.trekme.viewmodel.mapcreate.LicenseStatus
 
 
 /**
@@ -49,14 +49,14 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         viewModel.getIgnLicenseStatus().observe(this) {
             it?.also {
                 when (it) {
-                    LicenseStatus.CHECK_PENDING -> showCheckPending()
-                    LicenseStatus.PURCHASED -> {
+                    PurchaseState.CHECK_PENDING -> showCheckPending()
+                    PurchaseState.PURCHASED -> {
                         hidePriceIGN()
                         setDownloadEnabled(true)
                     }
-                    LicenseStatus.NOT_PURCHASED -> viewModel.getIgnLicenseInfo()
-                    LicenseStatus.PURCHASE_PENDING -> showPending()
-                    LicenseStatus.UNKNOWN -> showUnknown()
+                    PurchaseState.NOT_PURCHASED -> viewModel.getIgnLicenseInfo()
+                    PurchaseState.PURCHASE_PENDING -> showPending()
+                    PurchaseState.UNKNOWN -> showUnknown()
                 }
             }
         }

@@ -4,6 +4,7 @@ import android.util.Log
 import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.billing.BillingParams
 import com.peterlaurence.trekme.billing.SubscriptionDetails
+import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.di.GpsPro
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
@@ -23,7 +24,7 @@ class GpsProPurchaseRepo @Inject constructor(
 ) {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())
 
-    private val _purchaseFlow = MutableStateFlow(GpsProPurchaseState.CHECKING)
+    private val _purchaseFlow = MutableStateFlow(PurchaseState.CHECK_PENDING)
     val purchaseFlow = _purchaseFlow.asStateFlow()
 
     private val _subDetailsFlow = MutableStateFlow<SubscriptionDetails?>(null)
@@ -39,10 +40,10 @@ class GpsProPurchaseRepo @Inject constructor(
             if (!ackDone) {
                 val p = billing.getPurchase()
                 val result = if (p != null) {
-                    GpsProPurchaseState.ACCESS_GRANTED
+                    PurchaseState.PURCHASED
                 } else {
                     getSubscriptionInfo()
-                    GpsProPurchaseState.ACCESS_DENIED
+                    PurchaseState.NOT_PURCHASED
                 }
                 _purchaseFlow.value = result
             }
@@ -56,11 +57,11 @@ class GpsProPurchaseRepo @Inject constructor(
                 _subDetailsFlow.value = subDetails
             } catch (e: ProductNotFoundException) {
                 // Something wrong on our side
-                _purchaseFlow.value = GpsProPurchaseState.ACCESS_GRANTED
+                _purchaseFlow.value = PurchaseState.PURCHASED
             } catch (e: IllegalStateException) {
                 // Can't check license info
                 Log.e(TAG, e.message ?: Log.getStackTraceString(e))
-                _purchaseFlow.value = GpsProPurchaseState.UNKNOWN
+                _purchaseFlow.value = PurchaseState.UNKNOWN
             } catch (e: NotSupportedException) {
                 // TODO: alert the user that it can't buy the license and should ask for refund
             }
@@ -75,18 +76,12 @@ class GpsProPurchaseRepo @Inject constructor(
     }
 
     private fun onPurchasePending() {
-        _purchaseFlow.value = GpsProPurchaseState.PURCHASE_PENDING
+        _purchaseFlow.value = PurchaseState.PURCHASE_PENDING
     }
 
     private fun onPurchaseAcknowledged() {
-        _purchaseFlow.value = GpsProPurchaseState.ACCESS_GRANTED
+        _purchaseFlow.value = PurchaseState.PURCHASED
     }
-}
-
-// TODO: remove this type and use a common type with LicenseStatus (put it in core.billing.common)
-// and call it PurchaseState
-enum class GpsProPurchaseState {
-    CHECKING, ACCESS_GRANTED, ACCESS_DENIED, PURCHASE_PENDING, UNKNOWN
 }
 
 private const val TAG = "GpsProPurchaseRepo"

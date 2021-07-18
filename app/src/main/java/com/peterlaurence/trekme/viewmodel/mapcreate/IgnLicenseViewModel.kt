@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.billing.BillingParams
 import com.peterlaurence.trekme.billing.SubscriptionDetails
+import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.billing.ign.*
 import com.peterlaurence.trekme.di.IGN
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,13 +22,13 @@ class IgnLicenseViewModel @Inject constructor(
         @IGN private val billing: Billing,
         private val persistenceStrategy: PersistenceStrategy
 ) : ViewModel() {
-    private val ignLicenseStatus = MutableLiveData<LicenseStatus>()
+    private val ignLicenseStatus = MutableLiveData<PurchaseState>()
     private val ignSubscriptionDetails = MutableLiveData<SubscriptionDetails>()
 
     fun getIgnLicensePurchaseStatus() {
         viewModelScope.launch {
             /* Indicate that the license check is pending */
-            ignLicenseStatus.value = LicenseStatus.CHECK_PENDING
+            ignLicenseStatus.value = PurchaseState.CHECK_PENDING
 
             /* Check if we just need to acknowledge the purchase */
             val ackDone = billing.acknowledgePurchase(this@IgnLicenseViewModel::onPurchaseAcknowledged)
@@ -35,7 +36,7 @@ class IgnLicenseViewModel @Inject constructor(
             /* Otherwise, do normal checks */
             if (!ackDone) {
                 billing.getPurchase().also {
-                    ignLicenseStatus.postValue(if (it != null) LicenseStatus.PURCHASED else LicenseStatus.NOT_PURCHASED)
+                    ignLicenseStatus.postValue(if (it != null) PurchaseState.PURCHASED else PurchaseState.NOT_PURCHASED)
                 }
             }
         }
@@ -48,11 +49,11 @@ class IgnLicenseViewModel @Inject constructor(
                 ignSubscriptionDetails.postValue(licenseDetails)
             } catch (e: ProductNotFoundException) {
                 // Something wrong on our side
-                ignLicenseStatus.postValue(LicenseStatus.PURCHASED)
+                ignLicenseStatus.postValue(PurchaseState.PURCHASED)
             } catch (e: IllegalStateException) {
                 // Can't check license info
                 Log.e(TAG, e.message ?: Log.getStackTraceString(e))
-                ignLicenseStatus.postValue(LicenseStatus.UNKNOWN)
+                ignLicenseStatus.postValue(PurchaseState.UNKNOWN)
             } catch (e: NotSupportedException) {
                 // TODO: alert the user that it can't buy the license and should ask for refund
             }
@@ -67,7 +68,7 @@ class IgnLicenseViewModel @Inject constructor(
     }
 
     private fun onPurchasePending() {
-        ignLicenseStatus.postValue(LicenseStatus.PURCHASE_PENDING)
+        ignLicenseStatus.postValue(PurchaseState.PURCHASE_PENDING)
     }
 
     /**
@@ -75,13 +76,13 @@ class IgnLicenseViewModel @Inject constructor(
      */
     private fun onPurchaseAcknowledged() {
         /* It's assumed that if this is called, it's a success */
-        ignLicenseStatus.postValue(LicenseStatus.PURCHASED)
+        ignLicenseStatus.postValue(PurchaseState.PURCHASED)
 
         /* Remember when (it's not exact but it doesn't matter) the license was bought */
         persistLicense(LicenseInfo(Date().time))
     }
 
-    fun getIgnLicenseStatus(): LiveData<LicenseStatus> {
+    fun getIgnLicenseStatus(): LiveData<PurchaseState> {
         return ignLicenseStatus
     }
 
@@ -100,10 +101,6 @@ class IgnLicenseViewModel @Inject constructor(
             persistenceStrategy.persist(licenseInfo)
         }
     }
-}
-
-enum class LicenseStatus {
-    CHECK_PENDING, PURCHASED, NOT_PURCHASED, PURCHASE_PENDING, UNKNOWN
 }
 
 class NotSupportedException : Exception()
