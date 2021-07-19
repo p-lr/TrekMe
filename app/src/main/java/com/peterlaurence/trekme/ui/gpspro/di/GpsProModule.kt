@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.ui.gpspro.di
 import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.di.GpsPro
 import com.peterlaurence.trekme.repositories.gpspro.GpsProPurchaseRepo
-import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,8 +18,4 @@ object GpsProModule {
     fun providesRepo(@GpsPro billing: Billing): GpsProPurchaseRepo {
         return GpsProPurchaseRepo(Dispatchers.Main, billing)
     }
-
-    @ActivityRetainedScoped
-    @Provides
-    fun bindGpsProEvents(): GpsProEvents = GpsProEvents()
 }

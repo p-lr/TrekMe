@@ -9,4 +9,11 @@ class GpsProEvents {
     val requestShowGpsProFragment = _requestShowGpsProFragment.asSharedFlow()
 
     fun requestShowGpsProFragment() = _requestShowGpsProFragment.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
+    private val _nmeaSentencesFlow = MutableSharedFlow<String>(extraBufferCapacity = 50, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val nmeaSentencesFlow = _nmeaSentencesFlow.asSharedFlow()
+
+    fun postNmeaSentence(sentence: String) = _nmeaSentencesFlow.tryEmit(sentence)
 }

@@ -31,7 +31,7 @@ import com.peterlaurence.trekme.viewmodel.gpspro.GpsProPurchaseViewModel
 @Composable
 fun GpsProPurchaseUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Unit) {
     when(purchaseState) {
-        PurchaseState.CHECK_PENDING -> Text(text = "Checking..")
+        PurchaseState.CHECK_PENDING -> Text(text = "Checking..") // TODO: Indeterminate progress bar
         PurchaseState.NOT_PURCHASED, PurchaseState.UNKNOWN -> AccessDeniedUI(purchaseState, price, buyCb)
         else -> { /* Nothing to do */ }
     }

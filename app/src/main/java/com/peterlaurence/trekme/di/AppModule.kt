@@ -26,11 +26,13 @@ import com.peterlaurence.trekme.repositories.location.producers.NmeaOverBluetoot
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
+import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -47,6 +49,11 @@ object AppModule {
     @Singleton
     @Provides
     fun bindTrekMeContext(): TrekMeContext = TrekMeContextAndroid()
+
+    @Singleton
+    @IoDispatcher
+    @Provides
+    fun bindIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     /**
      * A single instance of [Billing] is used across the app. This object isn't expensive to create.
@@ -90,6 +97,10 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun bindGpsProEvents(): GpsProEvents = GpsProEvents()
+
+    @Singleton
+    @Provides
     fun bindDownloadRepository(): DownloadRepository = DownloadRepository()
 
     @Singleton
@@ -112,14 +123,14 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindLocationSource(@ApplicationContext context: Context, settings: Settings, appEventBus: AppEventBus): LocationSource {
+    fun bindLocationSource(@ApplicationContext context: Context, settings: Settings, appEventBus: AppEventBus, gpsProEvents: GpsProEvents): LocationSource {
         val modeFlow = settings.getLocationProducerInfo()
         val flowSelector = { mode: LocationProducerInfo ->
             when (mode) {
                 InternalGps -> GoogleLocationProducer(context).locationFlow
                 is LocationProducerBtInfo -> {
                     val connLostMsg = context.getString(R.string.connection_bt_lost_msg)
-                    NmeaOverBluetoothProducer(connLostMsg, mode, appEventBus).locationFlow
+                    NmeaOverBluetoothProducer(connLostMsg, mode, appEventBus, gpsProEvents).locationFlow
                 }
             }
         }
@@ -134,3 +145,7 @@ annotation class IGN
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class GpsPro
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class IoDispatcher

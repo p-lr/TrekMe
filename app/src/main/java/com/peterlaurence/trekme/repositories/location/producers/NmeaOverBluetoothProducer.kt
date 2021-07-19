@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.model.LocationProducer
 import com.peterlaurence.trekme.core.model.LocationProducerBtInfo
 import com.peterlaurence.trekme.lib.nmea.NmeaAggregator
 import com.peterlaurence.trekme.lib.nmea.parseNmeaLocationSentence
+import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
@@ -27,7 +28,8 @@ import java.util.concurrent.Executors
 class NmeaOverBluetoothProducer(
         private val connectionLostMsg: String,
         private val mode: LocationProducerBtInfo,
-        private val appEventBus: AppEventBus
+        private val appEventBus: AppEventBus,
+        private val gpsProEvents: GpsProEvents
 ) : LocationProducer {
 
     private val connectionDispatcher by lazy {
@@ -70,11 +72,11 @@ class NmeaOverBluetoothProducer(
                     val nmeaDataFlow = flow {
                         reader.use {
                             while (isActive) {
-                                val line = try {
+                                val line = runCatching {
                                     reader.readLine()
-                                } catch (t: Throwable) {
-                                    throw ConnectionLostException()
-                                }
+                                }.getOrNull() ?: throw ConnectionLostException()
+
+                                gpsProEvents.postNmeaSentence(line)
                                 val nmeaData = parseNmeaLocationSentence(line)
                                 if (nmeaData != null) {
                                     emit(nmeaData)
