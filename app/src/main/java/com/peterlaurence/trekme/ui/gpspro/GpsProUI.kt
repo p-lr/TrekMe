@@ -3,11 +3,16 @@ package com.peterlaurence.trekme.ui.gpspro
 import android.content.Context
 import android.util.AttributeSet
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,6 +106,22 @@ fun DeviceLine(device: BluetoothDeviceStub, onSelection: (BluetoothDeviceStub) -
         IconCircle(backgroundColor = color, R.drawable.bluetooth)
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = device.name)
+        if (device.isActive) {
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                    modifier = Modifier
+                            .size(1.dp, 24.dp)
+                            .background(color = Color.LightGray)
+            )
+            Icon(imageVector = Icons.Outlined.Settings,
+                    contentDescription = null,
+                    modifier = Modifier
+                            .clickable {
+                                // TODO: navigate to device settings fragment
+                            }
+                            .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+                    tint = MaterialTheme.colors.secondary)
+        }
     }
 }
 
