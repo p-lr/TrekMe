@@ -74,13 +74,18 @@ class GpsProViewModel @Inject constructor(
         settings.setLocationProducerInfo(LocationProducerBtInfo(device.name, device.address))
     }
 
+    fun onShowBtDeviceSettings() {
+        gpsProEvents.requestShowBtDeviceSettingsFragment()
+    }
+
     private suspend fun startUpProcedure(bluetoothAdapter: BluetoothAdapter) {
         if (!bluetoothAdapter.isEnabled) {
             appEventBus.bluetoothEnabledFlow.map { enabled ->
                 if (enabled) {
                     queryPairedDevices()
                 } else {
-                    println("Can't query paired devices")
+                    bluetoothState = BtDisabled
+                    onHostSelected()
                 }
             }.launchIn(viewModelScope)
 

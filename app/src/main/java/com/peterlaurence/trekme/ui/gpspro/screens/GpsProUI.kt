@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro
+package com.peterlaurence.trekme.ui.gpspro.screens
 
 import android.content.Context
 import android.util.AttributeSet
@@ -36,16 +36,21 @@ fun GpsProUI(
         bluetoothState: BluetoothState,
         isHostSelected: Boolean,
         onHostSelection: () -> Unit,
-        onBtDeviceSelection: (BluetoothDeviceStub) -> Unit
+        onBtDeviceSelection: (BluetoothDeviceStub) -> Unit,
+        onShowSettings: () -> Unit
 ) {
     Column {
         HostDeviceLine(name = stringResource(id = R.string.internal_gps), isHostSelected, onHostSelection)
-        BluetoothUI(bluetoothState, onBtDeviceSelection)
+        BluetoothUI(bluetoothState, onBtDeviceSelection, onShowSettings)
     }
 }
 
 @Composable
-fun BluetoothUI(bluetoothState: BluetoothState, onBtDeviceSelection: (BluetoothDeviceStub) -> Unit) {
+fun BluetoothUI(
+        bluetoothState: BluetoothState,
+        onBtDeviceSelection: (BluetoothDeviceStub) -> Unit,
+        onShowSettings: () -> Unit
+) {
     Text(
             stringResource(id = R.string.previously_connected_bt_devices),
             color = Color(0xFF808080),
@@ -57,13 +62,13 @@ fun BluetoothUI(bluetoothState: BluetoothState, onBtDeviceSelection: (BluetoothD
         is Searching -> Text("Searching")
         is PairedDeviceList -> Column {
             for (device in bluetoothState.deviceList) {
-                DeviceLine(device) {
+                DeviceLine(device, onShowSettings) {
                     onBtDeviceSelection(it)
                 }
             }
         }
-        BtDisabled -> TODO("show rationale (bt is disabled)")
-        BtNotSupported -> TODO("show rationale (bt not supported on this device)")
+        BtDisabled -> Text("Bt disabled") // TODO("show more elaborate UI")
+        BtNotSupported -> Text("Bt disabled") // TODO("show rationale (bt not supported on this device)")
     }
 }
 
@@ -89,7 +94,11 @@ fun HostDeviceLine(name: String, isSelected: Boolean, onSelection: () -> Unit) {
 }
 
 @Composable
-fun DeviceLine(device: BluetoothDeviceStub, onSelection: (BluetoothDeviceStub) -> Unit) {
+fun DeviceLine(
+        device: BluetoothDeviceStub,
+        onShowSettings: () -> Unit,
+        onSelection: (BluetoothDeviceStub) -> Unit,
+) {
     val color = Color(0xFF4CAF50)
     Row(Modifier
             .fillMaxWidth()
@@ -116,9 +125,7 @@ fun DeviceLine(device: BluetoothDeviceStub, onSelection: (BluetoothDeviceStub) -
             Icon(imageVector = Icons.Outlined.Settings,
                     contentDescription = null,
                     modifier = Modifier
-                            .clickable {
-                                // TODO: navigate to device settings fragment
-                            }
+                            .clickable{ onShowSettings() }
                             .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
                     tint = MaterialTheme.colors.secondary)
         }
@@ -137,7 +144,9 @@ class GpsProUIView @JvmOverloads constructor(
 
         TrekMeTheme {
             GpsProUI(viewModel.bluetoothState, viewModel.isHostSelected,
-                    viewModel::onHostSelected, viewModel::onBtDeviceSelection)
+                    viewModel::onHostSelected, viewModel::onBtDeviceSelection,
+                    viewModel::onShowBtDeviceSettings
+            )
         }
     }
 }

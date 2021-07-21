@@ -310,8 +310,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             it.billingClient.launchBillingFlow(this, it.flowParams)
         }
 
-        gpsProEvents.requestShowGpsProFragment.collectWhileStarted(this) {
+        gpsProEvents.showGpsProFragmentSignal.collectWhileStarted(this) {
             showGpsProFragmentAfterPurchase()
+        }
+
+        gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
+            showBtDeviceSettingsFragment()
         }
 
         downloadRepository.downloadEvent.collectWhileStarted(this) {
@@ -430,6 +434,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun showGpsProFragmentAfterPurchase() {
         navController.popBackStack(R.id.gpsProPurchaseFragment, true)
         navController.navigate(R.id.action_global_gpsProFragment)
+    }
+
+    private fun showBtDeviceSettingsFragment() {
+        navController.navigate(R.id.action_gpsProFragment_to_btDeviceSettingsFragment)
     }
 
     private fun showSettingsFragment() {

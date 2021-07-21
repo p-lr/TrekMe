@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro
+package com.peterlaurence.trekme.ui.gpspro.screens
 
 import android.os.Bundle
 import android.view.LayoutInflater
