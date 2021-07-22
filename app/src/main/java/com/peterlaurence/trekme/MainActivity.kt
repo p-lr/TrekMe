@@ -68,6 +68,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val title = when (destination.id) {
                     R.id.gpsProPurchaseFragment -> getString(R.string.gps_pro_name)
                     R.id.gpsProFragment -> getString(R.string.select_bt_devices_title)
+                    R.id.btDeviceSettingsFragment -> getString(R.string.bt_device_frgmt_title)
                     R.id.wifiP2pFragment -> getString(R.string.wifip2p_title)
                     R.id.mapCreateFragment -> getString(R.string.mapcreate_title)
                     R.id.recordFragment -> getString(R.string.recording_frgmt_title)

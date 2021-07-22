@@ -292,11 +292,12 @@
     <string name="recording_frgmt_title">Enregistrement GPX</string>
     <string name="select_bt_devices_title">Sélection du GPS actif</string>
     <string name="internal_gps">GPS interne</string>
-    <string name="connection_bt_lost_msg">Connection au GPS Blutooth perdue, tentative de re-connection…</string>
+    <string name="connection_bt_lost_msg">Connection au GPS Bluetooth perdue, tentative de re-connection…</string>
     <string name="gps_pro_pres_p1_title">Connectez votre GPS externe en Bluetooth</string>
     <string name="gps_pro_pres_content">Si vous avez un GPS externe ayant la fonctionnalité bluetooth, vous pouvez le connecter à TrekMe et l\'utiliser à la place du GPS interne
         de votre apparail.\nCertaines activités comme l\'aéronautique et la topographie professionnelle requièrent une meilleure précision et un taux de rafraîchissement
         de la position supérieur à une fois par seconde (ce qui est la limite de ce que peut fournir le GPS interne des appareils Android).</string>
     <string name="gps_pro_pres_p2_title">Appareils compatibles</string>
     <string name="gps_pro_pres_ending">Cette liste n\'est pas exhaustive. Les GPS compatibles sont tous ceux émettant des trames NMEA 0183 en Bluetooth.</string>
+    <string name="bt_device_frgmt_title">Paramètres de l\'appareil</string>
 </resources>

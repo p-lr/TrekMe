@@ -87,7 +87,7 @@ fun HostDeviceLine(name: String, isSelected: Boolean, onSelection: () -> Unit) {
             .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
     ) {
-        IconCircle(backgroundColor = color, R.drawable.phone)
+        IconCircle(backgroundColor = color, 40.dp, R.drawable.phone)
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = name)
     }
@@ -112,7 +112,7 @@ fun DeviceLine(
             .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
     ) {
-        IconCircle(backgroundColor = color, R.drawable.bluetooth)
+        IconCircle(backgroundColor = color, 40.dp, R.drawable.bluetooth)
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = device.name)
         if (device.isActive) {
