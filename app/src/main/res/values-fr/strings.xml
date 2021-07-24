@@ -299,5 +299,8 @@
         de la position supérieur à une fois par seconde (ce qui est la limite de ce que peut fournir le GPS interne des appareils Android).</string>
     <string name="gps_pro_pres_p2_title">Appareils compatibles</string>
     <string name="gps_pro_pres_ending">Cette liste n\'est pas exhaustive. Les GPS compatibles sont tous ceux émettant des trames NMEA 0183 en Bluetooth.</string>
-    <string name="bt_device_frgmt_title">Paramètres de l\'appareil</string>
+    <string name="bt_device_frgmt_title">Paramètres du GPS</string>
+    <string name="bt_device_frgmt_record">Générer un diagnostic du GPS</string>
+    <string name="bt_device_frgmt_diag_title">Diagnostic du GPS</string>
+    <string name="start_dialog_string">Lancer</string>
 </resources>

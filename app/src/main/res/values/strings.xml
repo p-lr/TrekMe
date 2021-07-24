@@ -27,6 +27,8 @@
     <string name="storage_read_only">Your SD card is only accessible as read-only. This means we can\'t write to it and TrekMe won\'t be able to download maps or save changes.</string>
     <string name="storage_perm_denied">Please enable storage permission from settings</string>
     <string name="close_dialog">Close</string>
+    <string name="cancel_dialog_string">Cancel</string>
+    <string name="start_dialog_string">Start</string>
     <string name="understood_dialog">I understand</string>
     <string name="delayed_button_desc">Start / Strop a GPX recording</string>
 
@@ -99,7 +101,6 @@
     <string name="map_size_computing">Computing..</string>
     <string name="map_save_string">Save</string>
     <string name="map_delete_question">Are you sure to delete this map?</string>
-    <string name="cancel_dialog_string">Cancel</string>
 
     <string name="projection_none">None</string>
     <string name="wgs84_instead_of_projected">You entered WGS84 lat/lon instead of projected values</string>
@@ -397,4 +398,6 @@
     <string name="internal_gps">Internal GPS</string>
     <string name="connection_bt_lost_msg">Bluetooth GPS connection lost. Will retry..</string>
     <string name="bt_device_frgmt_title">Settings for device</string>
+    <string name="bt_device_frgmt_record">Generate GPS diagnostic</string>
+    <string name="bt_device_frgmt_diag_title">GPS diagnostic</string>
 </resources>
