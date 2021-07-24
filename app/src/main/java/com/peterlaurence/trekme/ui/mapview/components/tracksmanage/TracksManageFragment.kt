@@ -13,7 +13,6 @@ import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,8 +27,6 @@ import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.dialogs.Color
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.viewmodel.mapview.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
@@ -55,6 +52,23 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        eventBus.trackNameChangeSignal.map {
+            trackAdapter?.notifyDataSetChanged()
+        }.collectWhileResumedIn(this)
+
+        eventBus.trackColorChangeEvent.map {
+            viewModel.changeRouteColor(it.routeId, it.color)
+            trackAdapter?.notifyDataSetChanged()
+        }.collectWhileResumedIn(this)
+
+        eventBus.trackImportEvent.map {
+            if (it is TrackImporter.GpxImportResult.GpxImportOk) {
+                onGpxParseResult(it)
+            } else {
+                onImportError()
+            }
+        }.collectWhileResumedIn(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -83,23 +97,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         binding.floatingActionButton.setOnClickListener {
             onCreateTrack()
         }
-
-        eventBus.trackNameChangeSignal.map {
-            trackAdapter?.notifyDataSetChanged()
-        }.launchIn(lifecycleScope)
-
-        eventBus.trackColorChangeEvent.map {
-            viewModel.changeRouteColor(it.routeId, it.color)
-            trackAdapter?.notifyDataSetChanged()
-        }.launchIn(lifecycleScope)
-
-        eventBus.trackImportEvent.map {
-            if (it is TrackImporter.GpxImportResult.GpxImportOk) {
-                onGpxParseResult(it)
-            } else {
-                onImportError()
-            }
-        }.launchIn(lifecycleScope)
 
         return binding.root
     }
