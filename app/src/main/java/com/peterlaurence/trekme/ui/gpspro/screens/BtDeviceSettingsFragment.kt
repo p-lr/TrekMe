@@ -10,7 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class BtDeviceSettingsFragment : Fragment() {
-    var binding: FragmentBtDeviceSettingsBinding? = null
+    private var binding: FragmentBtDeviceSettingsBinding? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentBtDeviceSettingsBinding.inflate(inflater, container, false)

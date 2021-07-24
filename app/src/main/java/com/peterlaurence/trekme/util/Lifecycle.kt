@@ -66,6 +66,16 @@ inline fun <reified T> Flow<T>.collectWhileResumed(
     ObserverWhileResumedImpl(lifecycleOwner, this, collector)
 }
 
+/**
+ * Utility extension function on [Flow] to start collecting a flow when the lifecycle is resumed,
+ * and *cancel* the collection on stop.
+ */
+inline fun <reified T> Flow<T>.collectWhileResumedIn(
+        lifecycleOwner: LifecycleOwner
+) {
+    ObserverWhileResumedImpl(lifecycleOwner, this, {})
+}
+
 class ObserverWhileResumedImpl<T>(
         lifecycleOwner: LifecycleOwner,
         private val flow: Flow<T>,

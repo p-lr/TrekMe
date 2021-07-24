@@ -398,6 +398,9 @@
     <string name="internal_gps">Internal GPS</string>
     <string name="connection_bt_lost_msg">Bluetooth GPS connection lost. Will retry..</string>
     <string name="bt_device_frgmt_title">Settings for device</string>
-    <string name="bt_device_frgmt_record">Generate GPS diagnostic</string>
-    <string name="bt_device_frgmt_diag_title">GPS diagnostic</string>
+    <string name="bt_device_frgmt_record">Generate GPS diagnosis</string>
+    <string name="bt_device_frgmt_diag_title">GPS diagnosis</string>
+    <string name="bt_device_frgmt_diag_content">Your GPS emissions will be recorded for 10s.\nThis is useful when the connection with TrekMe isn\'t working
+    properly, as it contains information that will further help making TrekMe compatible with your GPS.\n\nYou\'ll be asked for saving the diagnosis on your
+    device. Then, please send it at plr.devs@gmail.com - I\'ll have a look and give you feedback.</string>
 </resources>

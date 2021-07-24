@@ -303,4 +303,7 @@
     <string name="bt_device_frgmt_record">Générer un diagnostic du GPS</string>
     <string name="bt_device_frgmt_diag_title">Diagnostic du GPS</string>
     <string name="start_dialog_string">Lancer</string>
+    <string name="bt_device_frgmt_diag_content">Le diagnostic va enregistrer les émissions du GPS pendant 10s.\nC\'est utile quand la connexion avec TrekMe ne fonctionne
+        pas, car le diagnostic peut fournir des informations permettant de rendre TrekMe compatible avec votre GPS.\n\nIl vous sera proposé d\'enregistrer le diagnostic sur votre
+        appareil, sous forme de fichier texte. Ensuite, veuillez envoyer ce fichier à plr.devs@gmail.com afin que j\'étudie le cas particulier de votre GPS.</string>
 </resources>

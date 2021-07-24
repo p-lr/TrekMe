@@ -125,7 +125,7 @@ fun DeviceLine(
             Icon(imageVector = Icons.Outlined.Settings,
                     contentDescription = null,
                     modifier = Modifier
-                            .clickable{ onShowSettings() }
+                            .clickable { onShowSettings() }
                             .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
                     tint = MaterialTheme.colors.secondary)
         }

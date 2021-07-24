@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -72,13 +73,15 @@ private fun RecordButton() {
 private fun ShowDialog(openDialog: MutableState<Boolean>) {
     AlertDialog(
             onDismissRequest = { openDialog.value = false },
-            title = { Text(text = stringResource(id = R.string.bt_device_frgmt_diag_title)) },
+            title = { Text(stringResource(id = R.string.bt_device_frgmt_diag_title)) },
             text = {
-                Text("Here is a text ")
+                Text(
+                        text = stringResource(id = R.string.bt_device_frgmt_diag_content),
+                        textAlign = TextAlign.Justify)
             },
             confirmButton = {
                 OutlinedButton(
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor =  colorResource(id = R.color.colorGreen)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = colorResource(id = R.color.colorGreen)),
                         onClick = {
                             openDialog.value = false
                         }) {
