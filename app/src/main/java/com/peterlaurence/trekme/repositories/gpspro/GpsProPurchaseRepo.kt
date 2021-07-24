@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.billing.BillingParams
 import com.peterlaurence.trekme.billing.SubscriptionDetails
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.di.GpsPro
+import com.peterlaurence.trekme.di.MainDispatcher
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,7 +20,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GpsProPurchaseRepo @Inject constructor(
-        mainDispatcher: CoroutineDispatcher,
+        @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @GpsPro private val billing: Billing
 ) {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())

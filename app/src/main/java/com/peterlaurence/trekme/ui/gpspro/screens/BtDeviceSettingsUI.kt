@@ -5,10 +5,7 @@ import android.util.AttributeSet
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,13 +26,15 @@ import com.peterlaurence.trekme.viewmodel.gpspro.PairedDeviceList
 
 
 @Composable
-fun BtDeviceSettingsUI(btDeviceStub: BluetoothDeviceStub) {
+fun BtDeviceSettingsUI(btDeviceStub: BluetoothDeviceStub,
+                       isDiagnosisRunning: Boolean,
+                       onStartDiagnosis: () -> Unit
+) {
     val color = Color(0xFF4CAF50)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Header(name = btDeviceStub.name, color)
-        RecordButton()
+        RecordButton(isDiagnosisRunning, onStartDiagnosis)
     }
-
 }
 
 @Composable
@@ -49,20 +48,29 @@ private fun Header(name: String, color: Color) {
 }
 
 @Composable
-private fun RecordButton() {
+private fun RecordButton(isDiagnosisRunning: Boolean, onStartDiagnosis: () -> Unit) {
     val openDialog = remember { mutableStateOf(false) }
     Row(Modifier
             .fillMaxWidth()
-            .clickable {
+            .clickable(enabled = !isDiagnosisRunning) {
                 openDialog.value = true
             }
     ) {
-        Text(
+        if (isDiagnosisRunning) {
+            Text(
+                    text = stringResource(id = R.string.bt_device_frgmt_record_running),
+                    color = colorResource(id = R.color.colorGrey),
+                    modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp)
+            )
+        } else {
+            Text(
                 text = stringResource(id = R.string.bt_device_frgmt_record),
-                modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp),
-        )
+                modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp)
+            )
+        }
+
         if (openDialog.value) {
-            ShowDialog(openDialog)
+            ShowDialog(openDialog, onStartDiagnosis)
         }
     }
 
@@ -70,7 +78,7 @@ private fun RecordButton() {
 }
 
 @Composable
-private fun ShowDialog(openDialog: MutableState<Boolean>) {
+private fun ShowDialog(openDialog: MutableState<Boolean>, onStartPressed: () -> Unit) {
     AlertDialog(
             onDismissRequest = { openDialog.value = false },
             title = { Text(stringResource(id = R.string.bt_device_frgmt_diag_title)) },
@@ -84,6 +92,7 @@ private fun ShowDialog(openDialog: MutableState<Boolean>) {
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = colorResource(id = R.color.colorGreen)),
                         onClick = {
                             openDialog.value = false
+                            onStartPressed()
                         }) {
                     Text(stringResource(id = R.string.start_dialog_string))
                 }
@@ -114,8 +123,10 @@ class BtDeviceSettingsUI @JvmOverloads constructor(
             else -> null
         } ?: return
 
+        val isDiagnosisRunning by viewModel.isDiagnosisRunning.collectAsState()
+
         TrekMeTheme {
-            BtDeviceSettingsUI(selectedDevice)
+            BtDeviceSettingsUI(selectedDevice, isDiagnosisRunning, viewModel::generateReport)
         }
     }
 }

@@ -55,6 +55,11 @@ object AppModule {
     @Provides
     fun bindIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
+    @Singleton
+    @MainDispatcher
+    @Provides
+    fun bindMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
+
     /**
      * A single instance of [Billing] is used across the app. This object isn't expensive to create.
      */
@@ -145,6 +150,10 @@ annotation class IGN
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class GpsPro
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class MainDispatcher
 
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
