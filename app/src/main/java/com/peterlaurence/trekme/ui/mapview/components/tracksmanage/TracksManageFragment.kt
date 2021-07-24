@@ -43,8 +43,7 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
-    private var _binding: FragmentTracksManageBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentTracksManageBinding? = null
 
     private var trackRenameMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
@@ -61,7 +60,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
 
-        _binding = FragmentTracksManageBinding.inflate(inflater, container, false)
+        val binding = FragmentTracksManageBinding.inflate(inflater, container, false)
+        this.binding = binding
 
         initViews()
 
@@ -107,7 +107,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     override fun onDestroyView() {
         super.onDestroyView()
 
-        _binding = null
+        binding = null
         trackAdapter = null
         trackRenameMenuItem = null
     }
@@ -158,7 +158,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     private fun initViews() {
         val ctx = context ?: return
-        val recyclerView = binding.recyclerView
+        val recyclerView = binding?.recyclerView ?: return
         recyclerView.setHasFixedSize(false)
 
         /* All cards are laid out vertically */
@@ -223,6 +223,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     /* Show or hide the panel indicating that there is no routes */
     private fun updateEmptyRoutePanelVisibility() {
+        val binding = this.binding ?: return
         val itemCount = viewModel.tracks.value?.size ?: 0
         if (itemCount > 0) {
             binding.emptyRoutePanel.visibility = View.GONE
