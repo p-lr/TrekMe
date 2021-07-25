@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.repositories.gpspro.*
 import com.peterlaurence.trekme.ui.gpspro.components.IconCircle
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.gpspro.BluetoothDeviceStub
@@ -27,13 +28,13 @@ import com.peterlaurence.trekme.viewmodel.gpspro.PairedDeviceList
 
 @Composable
 fun BtDeviceSettingsUI(btDeviceStub: BluetoothDeviceStub,
-                       isDiagnosisRunning: Boolean,
-                       onStartDiagnosis: () -> Unit
+                       diagnosisState: DiagnosisState,
+                       intents: BtDeviceSettingsIntents
 ) {
     val color = Color(0xFF4CAF50)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Header(name = btDeviceStub.name, color)
-        RecordButton(isDiagnosisRunning, onStartDiagnosis)
+        RecordButton(diagnosisState, intents)
     }
 }
 
@@ -48,29 +49,69 @@ private fun Header(name: String, color: Color) {
 }
 
 @Composable
-private fun RecordButton(isDiagnosisRunning: Boolean, onStartDiagnosis: () -> Unit) {
+private fun RecordButton(diagnosisState: DiagnosisState, intents: BtDeviceSettingsIntents) {
     val openDialog = remember { mutableStateOf(false) }
     Row(Modifier
             .fillMaxWidth()
-            .clickable(enabled = !isDiagnosisRunning) {
+            .padding(end = 16.dp, bottom = 8.dp)
+            .clickable(enabled = diagnosisState is Ready || diagnosisState is DiagnosisEmpty) {
                 openDialog.value = true
             }
     ) {
-        if (isDiagnosisRunning) {
-            Text(
-                    text = stringResource(id = R.string.bt_device_frgmt_record_running),
-                    color = colorResource(id = R.color.colorGrey),
-                    modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp)
-            )
-        } else {
-            Text(
-                text = stringResource(id = R.string.bt_device_frgmt_record),
-                modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp)
-            )
+        when (diagnosisState) {
+            Ready -> {
+                Text(
+                    text = stringResource(id = R.string.bt_device_frgmt_record),
+                    modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp))
+            }
+            DiagnosisRunning -> {
+                Text(
+                        text = stringResource(id = R.string.bt_device_frgmt_record_running),
+                        color = colorResource(id = R.color.colorGrey),
+                        modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp)
+                )
+            }
+            DiagnosisEmpty -> {
+                Column(Modifier.fillMaxWidth()) {
+                    Text(
+                            text = stringResource(id = R.string.bt_device_frgmt_record),
+                            modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 16.dp))
+                    Text(
+                            text = stringResource(id = R.string.bt_device_settings_diagnostic_empty),
+                            modifier = Modifier.padding(start = 74.dp, top = 0.dp, bottom = 24.dp),
+                            color = colorResource(id = R.color.colorGrey))
+                }
+
+            }
+            is DiagnosisAwaitingSave -> {
+                Column(Modifier.fillMaxWidth()) {
+                    Text(
+                            text = stringResource(id = R.string.bt_device_settings_diagnostic_done).format(diagnosisState.nbSentences),
+                            modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp))
+                    Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.Bottom
+                    ) {
+                        OutlinedButton(
+                                onClick = { intents.onCancelDiagnosisSave() }
+                        ) {
+                            Text(stringResource(id = R.string.cancel_dialog_string))
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedButton(
+                                onClick = { intents.onSaveDiagnosis() },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = colorResource(id = R.color.colorGreen))
+                        ) {
+                            Text(stringResource(id = R.string.save_action))
+                        }
+                    }
+                }
+            }
         }
 
         if (openDialog.value) {
-            ShowDialog(openDialog, onStartDiagnosis)
+            ShowDialog(openDialog, intents::onGenerateReport)
         }
     }
 
@@ -108,7 +149,7 @@ private fun ShowDialog(openDialog: MutableState<Boolean>, onStartPressed: () -> 
     )
 }
 
-class BtDeviceSettingsUI @JvmOverloads constructor(
+class BtDeviceSettingsView @JvmOverloads constructor(
         context: Context,
         attrs: AttributeSet? = null,
         defStyle: Int = 0
@@ -123,10 +164,28 @@ class BtDeviceSettingsUI @JvmOverloads constructor(
             else -> null
         } ?: return
 
-        val isDiagnosisRunning by viewModel.isDiagnosisRunning.collectAsState()
+        val diagnosisState by viewModel.isDiagnosisRunning.collectAsState()
+
+        val intents = object : BtDeviceSettingsIntents {
+            override fun onGenerateReport() {
+                viewModel.generateDiagnosis()
+            }
+
+            override fun onCancelDiagnosisSave() = viewModel.cancelDiagnosis()
+
+            override fun onSaveDiagnosis() {
+                viewModel.saveDiagnosis()
+            }
+        }
 
         TrekMeTheme {
-            BtDeviceSettingsUI(selectedDevice, isDiagnosisRunning, viewModel::generateReport)
+            BtDeviceSettingsUI(selectedDevice, diagnosisState, intents)
         }
     }
+}
+
+interface BtDeviceSettingsIntents {
+    fun onGenerateReport()
+    fun onCancelDiagnosisSave()
+    fun onSaveDiagnosis()
 }

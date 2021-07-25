@@ -307,4 +307,6 @@
         pas, car le diagnostic peut fournir des informations permettant de rendre TrekMe compatible avec votre GPS.\n\nIl vous sera proposé d\'enregistrer le diagnostic sur votre
         appareil, sous forme de fichier texte. Ensuite, veuillez envoyer ce fichier à plr.devs@gmail.com afin que j\'étudie le cas particulier de votre GPS.</string>
     <string name="bt_device_frgmt_record_running">Le diagnosis est en cours…</string>
+    <string name="bt_device_settings_diagnostic_done">Diagnotic terminé. Reçu %1$d phrases.\nSauvegarder le ficher?</string>
+    <string name="bt_device_settings_diagnostic_empty">Le précédent diagnostic n\'a détecté aucune activité du GPS.</string>
 </resources>

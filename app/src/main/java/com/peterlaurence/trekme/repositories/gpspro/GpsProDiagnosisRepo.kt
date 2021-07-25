@@ -7,6 +7,7 @@ import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
@@ -25,22 +26,24 @@ class GpsProDiagnosisRepo @Inject constructor(
 ) {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())
 
-    private val _diagnosisRunningStateFlow = MutableStateFlow(false)
-    val diagnosisRunningStateFlow = _diagnosisRunningStateFlow.asStateFlow()
+    private val _diagnosisRunningStateFlow = MutableStateFlow<DiagnosisState>(Ready)
+    val diagnosisRunningStateFlow: StateFlow<DiagnosisState> = _diagnosisRunningStateFlow.asStateFlow()
 
     /**
      * Generates a txt report which the user is later invited to save somewhere on its device.
      * TODO: safe guard: check if a job isn't already running
      */
-    fun generateReport() = scope.launch {
-        _diagnosisRunningStateFlow.value = true
+    fun generateDiagnosis() = scope.launch {
+        _diagnosisRunningStateFlow.value = DiagnosisRunning
         /* The LocationSource requires at least one collector to work, so we're temporarily creating one*/
         val job = launch { locationSource.locationFlow.collect() }
         val sentences = getNmeaSentencesSample(10_000) // listen for 10s
         // TODO: do something with the sentences
         println("Received ${sentences.size} sentences")
         job.cancel()
-        _diagnosisRunningStateFlow.value = false
+        _diagnosisRunningStateFlow.value = if(sentences.isNotEmpty()) {
+            DiagnosisAwaitingSave(sentences.size)
+        } else DiagnosisEmpty
     }
 
     private suspend fun getNmeaSentencesSample(timeout: Long): List<String> = withContext(ioDispatcher) {
@@ -52,4 +55,14 @@ class GpsProDiagnosisRepo @Inject constructor(
         }
         sentences
     }
+
+    fun cancelDiagnosis() {
+        _diagnosisRunningStateFlow.value = Ready
+    }
 }
+
+sealed interface DiagnosisState
+object Ready : DiagnosisState
+object DiagnosisRunning : DiagnosisState
+object DiagnosisEmpty : DiagnosisState
+data class DiagnosisAwaitingSave(val nbSentences: Int) : DiagnosisState

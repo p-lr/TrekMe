@@ -115,7 +115,13 @@ class GpsProViewModel @Inject constructor(
         }
     }
 
-    fun generateReport() = diagnosisRepo.generateReport()
+    fun generateDiagnosis() = diagnosisRepo.generateDiagnosis()
+
+    fun cancelDiagnosis() = diagnosisRepo.cancelDiagnosis()
+
+    fun saveDiagnosis() {
+
+    }
 }
 
 data class BluetoothDeviceStub(val name: String, val address: String) {
