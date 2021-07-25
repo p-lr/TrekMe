@@ -113,7 +113,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         priceValue.visibility = View.GONE
         buyBtn.visibility = View.GONE
         priceInformation.visibility = View.VISIBLE
-        priceInformation.text = getString(R.string.ign_license_check_pending)
+        priceInformation.text = getString(R.string.module_check_pending)
     }
 
     private fun showPriceIGN() {

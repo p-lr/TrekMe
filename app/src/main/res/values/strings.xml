@@ -294,7 +294,7 @@
     <string name="ign_license_explanation">You have a 7 days of free trial. You can cancel your subscription anytime in the
         Google Play > Subscriptions > TrekMe > Cancel.\nThe IGN module is valid for one year. It allows you to create maps
         without any restrictions.</string>
-    <string name="ign_license_check_pending">Checking module..</string>
+    <string name="module_check_pending">Checking module..</string>
     <string name="ign_buy_license_pending">Please wait a few minutes, payment is pending</string>
     <string name="ign_buy_license_unknown">Unable to check your module</string>
     <string name="buy_btn">Purchase</string>

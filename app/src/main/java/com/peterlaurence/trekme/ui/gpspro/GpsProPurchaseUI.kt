@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,10 +31,23 @@ import com.peterlaurence.trekme.viewmodel.gpspro.GpsProPurchaseViewModel
 
 @Composable
 fun GpsProPurchaseUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Unit) {
-    when(purchaseState) {
-        PurchaseState.CHECK_PENDING -> Text(text = "Checking..") // TODO: Indeterminate progress bar
+    when (purchaseState) {
+        PurchaseState.CHECK_PENDING -> PendingScreen()
         PurchaseState.NOT_PURCHASED, PurchaseState.UNKNOWN -> AccessDeniedUI(purchaseState, price, buyCb)
         else -> { /* Nothing to do */ }
+    }
+}
+
+@Composable
+fun PendingScreen() {
+    Column(Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LinearProgressIndicator()
+        Text(
+                text = stringResource(id = R.string.module_check_pending),
+                Modifier.padding(top = 16.dp))
     }
 }
 
