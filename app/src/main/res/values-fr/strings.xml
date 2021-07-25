@@ -180,7 +180,7 @@
     <string name="wifip2p_warning_wifi">Vous devez activer la Wifi pour profiter de cette fonctionnalité. La communican avec l\'autre appareil se fait directement en Wifi.</string>
     <string name="wifip2p_help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.fr.md#partage-de-carte</string>
     <string name="mapview_measure_distance_on_track">Distance sur trace</string>
-    <string name="ign_buy_license_unknown">Imposible de vérifier le module</string>
+    <string name="module_check_unknown">Imposible de vérifier le module</string>
     <string name="preference_zoom_when_centered">Zoom quand centré</string>
     <string name="preference_change_scale_when_centering">Définir échelle quand centré</string>
     <string name="import_title">Importer depuis des archives</string>

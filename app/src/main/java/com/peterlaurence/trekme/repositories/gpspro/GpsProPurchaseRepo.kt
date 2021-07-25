@@ -64,7 +64,7 @@ class GpsProPurchaseRepo @Inject constructor(
                 Log.e(TAG, e.message ?: Log.getStackTraceString(e))
                 _purchaseFlow.value = PurchaseState.UNKNOWN
             } catch (e: NotSupportedException) {
-                // TODO: alert the user that it can't buy the license and should ask for refund
+                // TODO: alert the user that it can't buy the module
             }
         }
     }

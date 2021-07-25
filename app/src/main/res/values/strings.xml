@@ -296,7 +296,7 @@
         without any restrictions.</string>
     <string name="module_check_pending">Checking module..</string>
     <string name="ign_buy_license_pending">Please wait a few minutes, payment is pending</string>
-    <string name="ign_buy_license_unknown">Unable to check your module</string>
+    <string name="module_check_unknown">Unable to check your module</string>
     <string name="buy_btn">Purchase</string>
     <string name="download">Download</string>
     <string name="download_confirm">Download started. See the status in your notifications.</string>

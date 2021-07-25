@@ -140,7 +140,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
 
     private fun showUnknown() {
         priceInformation.visibility = View.VISIBLE
-        priceInformation.text = getString(R.string.ign_buy_license_unknown)
+        priceInformation.text = getString(R.string.module_check_unknown)
         buyBtn.visibility = View.GONE
     }
 

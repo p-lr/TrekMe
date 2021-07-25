@@ -33,7 +33,9 @@ import com.peterlaurence.trekme.viewmodel.gpspro.GpsProPurchaseViewModel
 fun GpsProPurchaseUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Unit) {
     when (purchaseState) {
         PurchaseState.CHECK_PENDING -> PendingScreen()
-        PurchaseState.NOT_PURCHASED, PurchaseState.UNKNOWN -> AccessDeniedUI(purchaseState, price, buyCb)
+        PurchaseState.NOT_PURCHASED,
+        PurchaseState.PURCHASE_PENDING,
+        PurchaseState.UNKNOWN -> AccessDeniedUI(purchaseState, price, buyCb)
         else -> { /* Nothing to do */ }
     }
 }
@@ -80,10 +82,25 @@ fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Un
             Spacer(modifier = Modifier.padding(8.dp))
             Text(stringResource(id = R.string.gps_pro_pres_ending), textAlign = TextAlign.Justify)
         }
-        Button(onClick = buyCb, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text("${stringResource(id = R.string.buy_btn)} $price")
+        Row(Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+        ) {
+            when (purchaseState) {
+                PurchaseState.NOT_PURCHASED -> {
+                    Button(onClick = buyCb) {
+                        Text("${stringResource(id = R.string.buy_btn)} $price")
+                    }
+                }
+                PurchaseState.PURCHASE_PENDING -> {
+                    LinearProgressIndicator()
+                }
+                PurchaseState.UNKNOWN -> {
+                    Text(stringResource(id = R.string.module_check_unknown))
+                }
+                else -> { /* Nothing to do */ }
+            }
         }
-        Text(purchaseState.name)
     }
 }
 
