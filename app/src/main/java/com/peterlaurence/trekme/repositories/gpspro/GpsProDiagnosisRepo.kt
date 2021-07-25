@@ -29,21 +29,30 @@ class GpsProDiagnosisRepo @Inject constructor(
     private val _diagnosisRunningStateFlow = MutableStateFlow<DiagnosisState>(Ready)
     val diagnosisRunningStateFlow: StateFlow<DiagnosisState> = _diagnosisRunningStateFlow.asStateFlow()
 
+    private var diagnosisJob: Job? = null
+
     /**
      * Generates a txt report which the user is later invited to save somewhere on its device.
-     * TODO: safe guard: check if a job isn't already running
+     * The "diagnosis" file content is just the concatenation of the device name and all NMEA
+     * sentences.
      */
-    fun generateDiagnosis() = scope.launch {
-        _diagnosisRunningStateFlow.value = DiagnosisRunning
-        /* The LocationSource requires at least one collector to work, so we're temporarily creating one*/
-        val job = launch { locationSource.locationFlow.collect() }
-        val sentences = getNmeaSentencesSample(10_000) // listen for 10s
-        // TODO: do something with the sentences
-        println("Received ${sentences.size} sentences")
-        job.cancel()
-        _diagnosisRunningStateFlow.value = if(sentences.isNotEmpty()) {
-            DiagnosisAwaitingSave(sentences.size)
-        } else DiagnosisEmpty
+    fun generateDiagnosis(deviceName: String) {
+        if (diagnosisJob?.isActive == true) return
+
+        diagnosisJob = scope.launch {
+            _diagnosisRunningStateFlow.value = DiagnosisRunning
+
+            /* The LocationSource requires at least one collector to work, so we're temporarily creating one*/
+            val job = launch { locationSource.locationFlow.collect() }
+            val sentences = getNmeaSentencesSample(10_000) // listen for 10s
+            job.cancel()
+
+            /* Recording done, now update the state */
+            _diagnosisRunningStateFlow.value = if (sentences.isNotEmpty()) {
+                val fileContent = "${deviceName}\n" + sentences.joinToString("\n")
+                DiagnosisAwaitingSave(sentences.size, fileContent)
+            } else DiagnosisEmpty
+        }
     }
 
     private suspend fun getNmeaSentencesSample(timeout: Long): List<String> = withContext(ioDispatcher) {
@@ -59,10 +68,20 @@ class GpsProDiagnosisRepo @Inject constructor(
     fun cancelDiagnosis() {
         _diagnosisRunningStateFlow.value = Ready
     }
+
+    fun saveDiagnosis() {
+        val state = _diagnosisRunningStateFlow.value
+        if (state is DiagnosisAwaitingSave) {
+            gpsProEvents.writeDiagnosisFile(state.fileContent)
+        }
+
+        /* Whatever the outcome, go back to ready state */
+        _diagnosisRunningStateFlow.value = Ready
+    }
 }
 
 sealed interface DiagnosisState
 object Ready : DiagnosisState
 object DiagnosisRunning : DiagnosisState
 object DiagnosisEmpty : DiagnosisState
-data class DiagnosisAwaitingSave(val nbSentences: Int) : DiagnosisState
+data class DiagnosisAwaitingSave(val nbSentences: Int, val fileContent: String) : DiagnosisState

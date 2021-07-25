@@ -23,4 +23,11 @@ class GpsProEvents {
     val nmeaSentencesFlow = _nmeaSentencesFlow.asSharedFlow()
 
     fun postNmeaSentence(sentence: String) = _nmeaSentencesFlow.tryEmit(sentence)
+
+    /**********************************************************************************************/
+
+    private val _writeDiagnosisFileFlow = MutableSharedFlow<String>(extraBufferCapacity = 50, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val writeDiagnosisFileFlow = _writeDiagnosisFileFlow.asSharedFlow()
+
+    fun writeDiagnosisFile(fileContent: String) = _writeDiagnosisFileFlow.tryEmit(fileContent)
 }

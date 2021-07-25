@@ -115,18 +115,26 @@ class GpsProViewModel @Inject constructor(
         }
     }
 
-    fun generateDiagnosis() = diagnosisRepo.generateDiagnosis()
+    fun generateDiagnosis() {
+        /* The name of the current selected device. At this point, it shouldn't be null */
+        val name = bluetoothState.selectedDevice?.name ?: return
+        diagnosisRepo.generateDiagnosis(name)
+    }
 
     fun cancelDiagnosis() = diagnosisRepo.cancelDiagnosis()
 
-    fun saveDiagnosis() {
-
-    }
+    fun saveDiagnosis() = diagnosisRepo.saveDiagnosis()
 }
 
 data class BluetoothDeviceStub(val name: String, val address: String) {
     var isActive by mutableStateOf(false)
 }
+
+val BluetoothState.selectedDevice: BluetoothDeviceStub?
+    get() = when (this) {
+        is PairedDeviceList -> deviceList.firstOrNull { it.isActive }
+        else -> null
+    }
 
 sealed class BluetoothState
 object BtNotSupported : BluetoothState()

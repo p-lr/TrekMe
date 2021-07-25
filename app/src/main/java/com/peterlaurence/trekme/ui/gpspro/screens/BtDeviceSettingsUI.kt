@@ -23,7 +23,7 @@ import com.peterlaurence.trekme.ui.gpspro.components.IconCircle
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.gpspro.BluetoothDeviceStub
 import com.peterlaurence.trekme.viewmodel.gpspro.GpsProViewModel
-import com.peterlaurence.trekme.viewmodel.gpspro.PairedDeviceList
+import com.peterlaurence.trekme.viewmodel.gpspro.selectedDevice
 
 
 @Composable
@@ -159,11 +159,7 @@ class BtDeviceSettingsView @JvmOverloads constructor(
     override fun Content() {
         val viewModel: GpsProViewModel = viewModel()
 
-        val selectedDevice = when (val state = viewModel.bluetoothState) {
-            is PairedDeviceList -> state.deviceList.firstOrNull { it.isActive }
-            else -> null
-        } ?: return
-
+        val selectedDevice = viewModel.bluetoothState.selectedDevice ?: return
         val diagnosisState by viewModel.isDiagnosisRunning.collectAsState()
 
         val intents = object : BtDeviceSettingsIntents {
