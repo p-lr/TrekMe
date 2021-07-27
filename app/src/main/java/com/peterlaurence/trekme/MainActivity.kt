@@ -566,4 +566,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Activity.RESULT_CANCELED -> appEventBus.bluetoothEnabled(false)
         }
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putString(ACTIONBAR_TITLE, supportActionBar?.title?.toString())
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        savedInstanceState.getString(ACTIONBAR_TITLE)?.also {
+            supportActionBar?.title = it
+        }
+    }
 }
+
+private const val ACTIONBAR_TITLE = "actionBarTitle"
