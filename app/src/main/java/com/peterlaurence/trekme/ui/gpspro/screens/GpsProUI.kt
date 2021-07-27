@@ -2,13 +2,11 @@ package com.peterlaurence.trekme.ui.gpspro.screens
 
 import android.content.Context
 import android.util.AttributeSet
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -51,19 +49,31 @@ fun BluetoothUI(
         onBtDeviceSelection: (BluetoothDeviceStub) -> Unit,
         onShowSettings: () -> Unit
 ) {
-    Text(
-            stringResource(id = R.string.previously_connected_bt_devices),
-            color = Color(0xFF808080),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.W500,
-            style = TextStyle(textIndent = TextIndent(25.sp), letterSpacing = 1.sp * 0.8)
-    )
     when (bluetoothState) {
-        is Searching -> Text("Searching")
-        is PairedDeviceList -> Column {
-            for (device in bluetoothState.deviceList) {
-                DeviceLine(device, onShowSettings) {
-                    onBtDeviceSelection(it)
+        is Searching -> Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            LinearProgressIndicator()
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = stringResource(id = R.string.searching_bt_devices))
+        }
+        is PairedDeviceList -> {
+            Text(
+                    stringResource(id = R.string.previously_connected_bt_devices),
+                    modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
+                    color = Color(0xFF808080),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.W500,
+                    style = TextStyle(textIndent = TextIndent(25.sp), letterSpacing = 1.sp * 0.8)
+            )
+            val listState = rememberScrollState()
+            Column(Modifier.verticalScroll(listState)) {
+                for (device in bluetoothState.deviceList) {
+                    DeviceLine(device, onShowSettings) {
+                        onBtDeviceSelection(it)
+                    }
                 }
             }
         }
@@ -102,7 +112,7 @@ fun DeviceLine(
     val color = Color(0xFF4CAF50)
     Row(Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(start = 8.dp, bottom = 4.dp, end = 8.dp)
             .clickable { onSelection(device) }
             .then(
                     if (device.isActive) {

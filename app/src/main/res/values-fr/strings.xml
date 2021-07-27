@@ -311,5 +311,6 @@
     <string name="bt_device_frgmt_record_error">Erreur pendant l\'écriture du fichier</string>
     <string name="bt_device_settings_diagnostic_done">Diagnotic terminé. Reçu %1$d phrases.\nSauvegarder le ficher?</string>
     <string name="bt_device_settings_diagnostic_empty">Le précédent diagnostic n\'a détecté aucune activité du GPS.</string>
+    <string name="searching_bt_devices">Recherche d\'appareils bluetooth</string>
     <string name="diagnosis">diagnostic</string>
 </resources>
