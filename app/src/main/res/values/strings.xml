@@ -394,6 +394,8 @@
     <string name="gps_pro_pres_p2_title">Compatible devices</string>
     <string name="gps_pro_pres_ending">This list isn\'t exhaustive. All GPS emitting NMEA 0183 sentences over Bluetooth are supported.</string>
     <string name="searching_bt_devices">Searching bluetooth devices</string>
+    <string name="gps_pro_bt_disabled">Bluetooth is disabled</string>
+    <string name="gps_pro_bt_notsupported">Bluetooth isn\'t supported on this device</string>
     <string name="select_bt_devices_title">Select active GPS</string>
     <string name="previously_connected_bt_devices">PREVIOUSLY CONNECTED DEVICES</string>
     <string name="internal_gps">Internal GPS</string>

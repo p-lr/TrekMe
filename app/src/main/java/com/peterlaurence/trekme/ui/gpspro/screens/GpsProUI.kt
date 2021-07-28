@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -50,15 +51,7 @@ fun BluetoothUI(
         onShowSettings: () -> Unit
 ) {
     when (bluetoothState) {
-        is Searching -> Column(
-                Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LinearProgressIndicator()
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = stringResource(id = R.string.searching_bt_devices))
-        }
+        is Searching -> SearchingScreen()
         is PairedDeviceList -> {
             Text(
                     stringResource(id = R.string.previously_connected_bt_devices),
@@ -77,8 +70,21 @@ fun BluetoothUI(
                 }
             }
         }
-        BtDisabled -> Text("Bt disabled") // TODO("show more elaborate UI")
-        BtNotSupported -> Text("Bt disabled") // TODO("show rationale (bt not supported on this device)")
+        BtDisabled -> ErrorScreen(stringResource(id = R.string.gps_pro_bt_disabled))
+        BtNotSupported -> ErrorScreen(stringResource(id = R.string.gps_pro_bt_notsupported))
+    }
+}
+
+@Composable
+fun SearchingScreen() {
+    Column(
+            Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LinearProgressIndicator()
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = stringResource(id = R.string.searching_bt_devices))
     }
 }
 
@@ -139,6 +145,18 @@ fun DeviceLine(
                             .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
                     tint = MaterialTheme.colors.secondary)
         }
+    }
+}
+
+@Composable
+fun ErrorScreen(message: String) {
+    Column(Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(painter = painterResource(id = R.drawable.ic_emoji_disappointed_face_1f61e),
+                contentDescription = null)
+        Text(text = message)
     }
 }
 
