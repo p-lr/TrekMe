@@ -161,14 +161,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         /* Create the instance of the OrientationSensor */
         orientationSensor = OrientationSensor(requireActivity())
 
-        if (mergedState != null) {
-            val shouldDisplayOrientation = mergedState.getBoolean(WAS_DISPLAYING_ORIENTATION)
-            if (shouldDisplayOrientation) {
-                orientationSensor?.start()
-                onOrientationSensorChanged()
-            }
-        }
-
         /* Create the marker layer */
         markerLayer = MarkerLayer(mapLoader, lifecycleScope)
 
@@ -207,6 +199,14 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
             /* Restore speed visibility */
             speedListener?.setSpeedVisible(mapViewViewModel.getSpeedVisibility().first())
+
+            /* Restore orientation visibility */
+            mapViewViewModel.getOrientationVisibility().first().also { visible ->
+                orientationSensor?.takeIf { visible }?.apply {
+                    start()
+                    onOrientationSensorChanged()
+                }
+            }
 
             /* Restore GPS data visibility */
             presenter.setGpsDataVisible(mapViewViewModel.getGpsDataVisibility().first())
@@ -265,6 +265,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      */
     private fun onOrientationSensorChanged() = lifecycleScope.launchWhenResumed {
         val orientationSensor = orientationSensor ?: return@launchWhenResumed
+        mapViewViewModel.setOrientationVisibility(orientationSensor.isStarted)
+
         if (orientationSensor.isStarted) {
             positionMarker?.onOrientationEnable()
             if (getRotationMode() != RotationMode.NONE) {
@@ -339,7 +341,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         itemDistanceOnTrack.isChecked = routeLayer?.isDistanceOnTrackActive ?: false
 
         val itemOrientation = menu.findItem(R.id.orientation_enable_id)
-        itemOrientation.isChecked = orientationSensor?.isStarted ?: false
+        lifecycleScope.launch {
+            itemOrientation.isChecked = mapViewViewModel.getOrientationVisibility().first()
+        }
 
         val itemLockOnPosition = menu.findItem(R.id.lock_on_position_id)
         itemLockOnPosition.isChecked = lockView
@@ -676,7 +680,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private fun saveState(): Bundle {
         val bundle = Bundle()
-        bundle.putBoolean(WAS_DISPLAYING_ORIENTATION, orientationSensor?.isStarted ?: false)
         distanceLayer?.also {
             bundle.putParcelable(DISTANCE_LAYER_STATE, it.state)
         }
@@ -718,7 +721,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     companion object {
         const val TAG = "MapViewFragment"
-        private const val WAS_DISPLAYING_ORIENTATION = "wasDisplayingOrientation"
         private const val DISTANCE_LAYER_STATE = "distanceLayerState"
         private const val ROUTE_LAYER_STATE = "routeLayerState"
         private const val WAS_ROTATED = "wasRotated"

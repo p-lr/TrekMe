@@ -70,6 +70,12 @@ class MapViewViewModel @Inject constructor(
         settings.setSpeedVisibility(v)
     }
 
+    fun getOrientationVisibility(): Flow<Boolean> = settings.getOrientationVisibility()
+
+    fun setOrientationVisibility(v: Boolean) = viewModelScope.launch {
+        settings.setOrientationVisibility(v)
+    }
+
     fun getGpsDataVisibility(): Flow<Boolean> = settings.getGpsDataVisibility()
 
     suspend fun toggleGpsDataVisibility(): Boolean {

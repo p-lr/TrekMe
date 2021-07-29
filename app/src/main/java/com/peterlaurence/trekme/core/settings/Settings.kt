@@ -47,6 +47,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val favoriteMaps = stringSetPreferencesKey("favoriteMaps")
     private val rotationMode = stringPreferencesKey("rotationMode")
     private val speedVisibility = booleanPreferencesKey("speedVisibility")
+    private val orientationVisibility = booleanPreferencesKey("orientationVisibility")
     private val gpsDataVisibility = booleanPreferencesKey("gpsDataVisibility")
     private val magnifyingFactor = intPreferencesKey("magnifyingFactor")
     private val maxScale = floatPreferencesKey("maxScale")
@@ -141,6 +142,16 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         dataStore.edit {
             it[speedVisibility] = v
         }
+    }
+
+    suspend fun setOrientationVisibility(v: Boolean) {
+        dataStore.edit {
+            it[orientationVisibility] = v
+        }
+    }
+
+    fun getOrientationVisibility(): Flow<Boolean> = dataStore.data.map {
+        it[orientationVisibility] ?: false
     }
 
     fun getGpsDataVisibility(): Flow<Boolean> = dataStore.data.map {
