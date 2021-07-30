@@ -85,13 +85,13 @@ unless you have specific needs like heavy loads for your organization.
 From the "Create map" option menu, you get to choose between available providers:
 
 <p align="center">
-<img src="doc/tuto/wmts-providers.jpg" width="300">
+<img src="doc/images/wmts-providers.jpg" width="300">
 </p>
 
 When you've made your choice, the map appears shortly.
 
 <p align="center">
-<img src="doc/tuto/select-area.jpg" width="300">
+<img src="doc/images/select-area.jpg" width="300">
 </p>
 
 From there, you can zoom into the area in the world you want to capture. Or, you can search for a 
@@ -107,7 +107,7 @@ When you're done, press the download button, at the bottom right. Except for Fra
  an annual subscription is required, you'll see this configuration menu:
 
 <p align="center">
-<img src="doc/tuto/map-configuration.jpg" width="300">
+<img src="doc/images/map-configuration.jpg" width="300">
 </p>
 
 WMTS map providers have different zoom levels, generally from 1 to 18. In most cases, you don't want
@@ -182,7 +182,7 @@ This is an option from the top-right menu while viewing a map:
 Adjust the distance by dragging two blue circles.
 
 <p align="center">
-<img src="doc/tuto/distance.jpg" width="300">
+<img src="doc/images/distance.jpg" width="300">
 </p>
 
 *Along track distance*
@@ -197,7 +197,7 @@ screen. The portion of the track between the two blue circles is highlighted in 
 distance is shown.
 
 <p align="center">
-<img src="doc/tuto/dist-on-track.jpg" width="300">
+<img src="doc/images/dist-on-track.jpg" width="300">
 </p>
 
 The distance accounts for elevation *only if* the track contains elevation data for each point.
@@ -208,7 +208,7 @@ The speed indicator overlays the speed in km/h at the top of the screen. Note th
 seconds before the speed can be displayed.
 
 <p align="center">
-<img src="doc/tuto/speed.jpg" width="300">
+<img src="doc/images/speed.jpg" width="300">
 </p>
 Then choose "Show the speed". If your screen is large enough, there is an icon to directly access it.
 
@@ -217,7 +217,7 @@ Then choose "Show the speed". If your screen is large enough, there is an icon t
 Press the marker button to add a new marker at the center of the screen:
 
 <p align="center">
-<img src="doc/tuto/new-marker.jpg" width="300">
+<img src="doc/images/new-marker.jpg" width="300">
 </p>
 
 With its reds arrows turning around it, its shows that it can be moved by dragging the blue circle.
@@ -227,7 +227,7 @@ static form.
 Tapping a marker displays a popup:
 
 <p align="center">
-<img src="doc/tuto/marker-popup2.jpg" width="300">
+<img src="doc/images/marker-popup2.jpg" width="300">
 </p>
 
 From here you can:
@@ -239,7 +239,7 @@ From here you can:
 Here is the marker edition view:
 
 <p align="center">
-<img src="doc/tuto/marker-edit.jpg" width="300">
+<img src="doc/images/marker-edit.jpg" width="300">
 </p>
 
 Nothing is changed until you save your changes.
@@ -251,13 +251,13 @@ A landmark is a specific marker. A purple line is drawn between it and your curr
 To add a landmark, it is the same logic as for markers. But this time we use the lighthouse icon.
 
 <p align="center">
-<img src="doc/tuto/landmark-1.jpg" width="300">
+<img src="doc/images/landmark-1.jpg" width="300">
 </p>
 
 Often, we want to display our orientation in the same time. We can also add several landmarks:
 
 <p align="center">
-<img src="doc/tuto/landmark-2.jpg" width="300">
+<img src="doc/images/landmark-2.jpg" width="300">
 </p>
 
 ### <a name="TOC-Lock-view"></a>Lock the view on current position
@@ -265,7 +265,7 @@ Often, we want to display our orientation in the same time. We can also add seve
 Sometimes, you want the view to automatically follow your position. To do that, use the menu as shown bellow:
 
 <p align="center">
-<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
+<img src="doc/images/menu-map-view-highlight.jpg" width="300">
 </p>
 
 Then select "Lock on position". Now, everytime the application gets a location update (approximately every second), the view centers on this new location.
@@ -278,7 +278,7 @@ It appears as a yellow route.
 Even if you close TrekMe, you will find your live route the next time you open it, until you stop the recording.
 
 <p align="center">
-<img src="doc/tuto/live-route.jpg" width="300">
+<img src="doc/images/live-route.jpg" width="300">
 </p>
 
 ### <a name="TOC-GPX-track-import"></a>Import a GPX track
@@ -286,13 +286,13 @@ Even if you close TrekMe, you will find your live route the next time you open i
 While viewing a map, press the button below on the upper right corner :
 
 <p align="center">
-<img src="doc/tuto/manage-tracks.jpg" width="300">
+<img src="doc/images/manage-tracks.jpg" width="300">
 </p>
 
 Then, a list of currently available tracks opens up: 
 
 <p align="center">
-<img src="doc/tuto/track-list.jpg" width="300">
+<img src="doc/images/track-list.jpg" width="300">
 </p>
 
 Here you can:
@@ -309,7 +309,7 @@ with other people.
 From the "GPX Record" option menu, you get the following interface:
 
 <p align="center">
-<img src="doc/tuto/gpx-recordings-en.jpg" width="300">
+<img src="doc/images/gpx-recordings-en.jpg" width="300">
 </p>
 
 The recording can be started or stopped from the control panel. When recording, the location service
@@ -337,7 +337,7 @@ To revert back to single selection mode, long press again somewhere in the list.
 
 Whatever the selection mode, the share button below is available:
 <p align="center">
-<img src="doc/tuto/share-recording.jpg" width="300">
+<img src="doc/images/share-recording.jpg" width="300">
 </p>
 
 **Delete a recording**
@@ -358,7 +358,7 @@ The elevation profile allows you to know the elevation at any point of the trek.
 minimum and maximum elevations.
 
 <p align="center">
-<img src="doc/tuto/ele-profile-en.jpg" width="300">
+<img src="doc/images/ele-profile-en.jpg" width="300">
 </p>
 
 ## <a name="TOC-Settings"></a>Settings
@@ -370,7 +370,7 @@ Settings are accessible from the main menu > Settings.
 By default, TrekMe starts on the list of maps. But it's possible to start on the last viewed map. In the "General" section > "Start TrekMe on"
 
 <p align="center">
-<img src="doc/tuto/start_on.jpg" width="300">
+<img src="doc/images/start_on.jpg" width="300">
 </p>
 
 
@@ -386,7 +386,7 @@ However, as a workaround, you can save a map and move the resulting zip archive 
 In the "Download" section > "Download folder", you can chose between to directories if you have an SD card. Otherwise, you don't have the choice but to use the internal memory:
 
 <p align="center">
-<img src="doc/tuto/download_dir.jpg" width="300">
+<img src="doc/images/download_dir.jpg" width="300">
 </p>
 
 The first directory always corresponds to the internal memory. The second, if available, corresponds to a directory on the SD card. This directory is `Android/data/com.peterlaurence.trekme/downloaded`.
@@ -411,7 +411,7 @@ the map is aligned to the North and the compass disappears. Also note that in th
 compass has no effect. An example:
 
 <p align="center">
-<img src="doc/tuto/rotation-oriented.jpg" width="300">
+<img src="doc/images/rotation-oriented.jpg" width="300">
 </p>
 
 *Free rotation*
@@ -429,7 +429,7 @@ of TrekMe. You'll be able to restore your maps if you e.g change for a new devic
 To create an archive, go to the list of maps and press the "EDIT" button at the bottom left:
 
 <p align="center">
-<img src="doc/tuto/reunion-en.png" width="300">
+<img src="doc/images/reunion-en.png" width="300">
 </p>
 
 You land on a bunch of options related to the selected map. The last option is a "Save" button - press

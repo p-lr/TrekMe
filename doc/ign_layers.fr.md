@@ -4,7 +4,7 @@ Lors de la création de carte IGN, il est possible de changer de couche principa
 couche principale, utilisez le bouton en forme de losange :
 
 <p align="center">
-<img src="tuto/main-layer-button-fr.jpg" width="300">
+<img src="images/main-layer-button-fr.jpg" width="300">
 </p>
 
 Les couches principales disponibles sont :

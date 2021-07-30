@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<img src="doc/tuto/map-list.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/tuto/trekme-example.jpg" width="200">
+<img src="doc/images/map-list.jpg" width="200"> &nbsp&nbsp&nbsp <img src="doc/images/trekme-example.jpg" width="200">
 </p>
 
 ## <a name="TOC-Summary"></a>Sommaire
@@ -85,13 +85,13 @@ Depuis le menu principal, choisissez "Créer une carte". Un menu vous donne alor
 sources suivantes : 
 
 <p align="center">
-<img src="doc/tuto/wmts-providers-fr.jpg" width="300">
+<img src="doc/images/wmts-providers-fr.jpg" width="300">
 </p>
 
 Quand vous avez fait votre choix, la carte s'affiche après un délai de quelques secondes.
 
 <p align="center">
-<img src="doc/tuto/select-area.jpg" width="300">
+<img src="doc/images/select-area.jpg" width="300">
 </p>
 
 Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse, ou bien rechercher un lieu
@@ -108,7 +108,7 @@ que l'Espagne, etc.
 A l'exception de l'IGN France, qui nécessite un abonnement annuel, le menu suivant s'affiche :
 
 <p align="center">
-<img src="doc/tuto/map-configuration.jpg" width="300">
+<img src="doc/images/map-configuration.jpg" width="300">
 </p>
 
 Les fournisseurs de carte proposent différents niveaux de zoom, allant de 1 (niveau globe) à 18 
@@ -193,7 +193,7 @@ C'est une option en haut à droite alors qu'une carte est affichée: "Mesurer un
 Ajuster la mesure en déplaçant les deux ronds bleus.
 
 <p align="center">
-<img src="doc/tuto/distance.jpg" width="300">
+<img src="doc/images/distance.jpg" width="300">
 </p>
 
 *Distance le long d'une trace*
@@ -207,7 +207,7 @@ Lorsque activée, deux rond bleus appraissent sur la trace la plus proche du cen
 portion de la trace entre les deux ronds est en rouge et sa longueur est indiquée:
 
 <p align="center">
-<img src="doc/tuto/dist-on-track.jpg" width="300">
+<img src="doc/images/dist-on-track.jpg" width="300">
 </p>
 
 La distance affichée tient compte du dénivellé *si* la trace contient l'information d'altitude pour
@@ -219,7 +219,7 @@ C'est une option en haut à droite alors qu'une carte est affichée.
 La vitesse s'affiche en km/h au bout de quelques secondes.
 
 <p align="center">
-<img src="doc/tuto/speed.jpg" width="300">
+<img src="doc/images/speed.jpg" width="300">
 </p>
 
 Selon la taille de votre écran, un bouton peut rendre cette fonctionnalité directement accessible.
@@ -230,7 +230,7 @@ Utilisez le bouton d'ajout de marqueur, ce qui affiche un nouveau marqueur au ce
 comme celui-ci :
 
 <p align="center">
-<img src="doc/tuto/new-marker.jpg" width="300">
+<img src="doc/images/new-marker.jpg" width="300">
 </p>
 
 Avec ses flèches rouge qui tournent autour, il indique qu'il peut être déplacé. Pour cela appuyez 
@@ -241,7 +241,7 @@ de forme et la zone bleue disparaît. Cela indique que le marqueur est désormai
 Si on appuie sur le marqueur, une bulle comme celle-ci s'affiche :
 
 <p align="center">
-<img src="doc/tuto/marker-popup2.jpg" width="300">
+<img src="doc/images/marker-popup2.jpg" width="300">
 </p>
 
 On peut alors :
@@ -254,7 +254,7 @@ déplacé)
 Voici un exemple de fiche d'un marqueur :
 
 <p align="center">
-<img src="doc/tuto/marker-edit.jpg" width="300">
+<img src="doc/images/marker-edit.jpg" width="300">
 </p>
 
 La plupart du temps, on se contente de modifier seulement le nom ou le commentaire.
@@ -270,13 +270,13 @@ Pour ajouter un point de repère, c'est le même principe que pour les marqueurs
 l'icone de phare (comme un amer en navigation maritime).
 
 <p align="center">
-<img src="doc/tuto/landmark-1.jpg" width="300">
+<img src="doc/images/landmark-1.jpg" width="300">
 </p>
 
 En général, on affiche en même temps l'orientation. On peut aussi en ajouter plusieurs :
 
 <p align="center">
-<img src="doc/tuto/landmark-2.jpg" width="300">
+<img src="doc/images/landmark-2.jpg" width="300">
 </p>
 
 ### <a name="TOC-Lock-view"></a>Verrouiller la vue sur la position courante
@@ -286,7 +286,7 @@ de l'écran). Pour cela, il faut activer le verrouillage sur la position. Utilis
 comme ci-dessous :
 
 <p align="center">
-<img src="doc/tuto/menu-map-view-highlight.jpg" width="300">
+<img src="doc/images/menu-map-view-highlight.jpg" width="300">
 </p>
 
 Puis sélectionnez "Verrouiller sur la position". Dans ce mode, à chaque fois que l'application reçoit
@@ -302,7 +302,7 @@ l'enregistrement.
 Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre carte, tant que l'enregistrement est en cours.
 
 <p align="center">
-<img src="doc/tuto/live-route.jpg" width="300">
+<img src="doc/images/live-route.jpg" width="300">
 </p>
 
 ### <a name="TOC-GPX-track-import"></a>Import d'un fichier GPX
@@ -310,20 +310,20 @@ Même si vous quittez TrekMe, vous retrouverez la trace en temps réel sur votre
 Alors que vous visionnez une carte, utilisez le menu en haut à droite :
 
 <p align="center">
-<img src="doc/tuto/upper-right-menu-fr.jpg" width="300">
+<img src="doc/images/upper-right-menu-fr.jpg" width="300">
 </p>
 
 Puis, sélectionnez "Gérer les traces":
 
 <p align="center">
-<img src="doc/tuto/manage-tracks-fr.jpg" width="300">
+<img src="doc/images/manage-tracks-fr.jpg" width="300">
 </p>
 
 La liste des traces disponibles pour votre carte s'affiche alors (il est possible à ce stade qu'il y 
 en ait aucune) :
 
 <p align="center">
-<img src="doc/tuto/track-list-fr.jpg" width="300">
+<img src="doc/images/track-list-fr.jpg" width="300">
 </p>
 
 Vous pouvez alors :
@@ -341,7 +341,7 @@ Depuis le menu principal allez à "Enregistrement GPX". Vous arrivez à une inte
  celle-ci :
 
 <p align="center">
-<img src="doc/tuto/gpx-recordings-fr.jpg" width="300">
+<img src="doc/images/gpx-recordings-fr.jpg" width="300">
 </p>
 
 Un enregistrement peut être démarré ou arrêté depuis le panneau "Commandes". 
@@ -370,7 +370,7 @@ Pour revenir au mode de sélection normal, appuyez à nouveau deux secondes sur 
 
 Que vous soyez en mode de sélection simple ou multiple, le bouton de partage est disponible :
 <p align="center">
-<img src="doc/tuto/share-recording.jpg" width="300">
+<img src="doc/images/share-recording.jpg" width="300">
 </p>
 
 **Supprimer un enregistrement**
@@ -392,7 +392,7 @@ Le profil altimétrique vous permet de connaître l'altitude en tout point du pa
 les altitudes min, max, et le dénivelé (non-cumulé).
 
 <p align="center">
-<img src="doc/tuto/ele-profile-fr.jpg" width="300">
+<img src="doc/images/ele-profile-fr.jpg" width="300">
 </p>
 
 ## <a name="TOC-Settings"></a>Paramètres
@@ -405,7 +405,7 @@ Par défaut, TrekMe démarre sur la liste des cartes. Mais vous pouvez aussi dé
 carte visitée. Dans la section "Général" > "Lancer TrekMe sur" :
 
 <p align="center">
-<img src="doc/tuto/start_on_fr.jpg" width="300">
+<img src="doc/images/start_on_fr.jpg" width="300">
 </p>
 
 
@@ -426,7 +426,7 @@ Dans la section Téléchargment > "Répertoire de téléchargement", vous avez l
  si vous avez une carte SD. Sinon, vous n'avez d'autre choix que d'utiliser la mémoire interne.
 
 <p align="center">
-<img src="doc/tuto/download_dir.jpg" width="300">
+<img src="doc/images/download_dir.jpg" width="300">
 </p>
 
 Le premier répertoire correspond toujours à la mémoire interne. Le second, s'il y en a un, à la carte 
@@ -454,7 +454,7 @@ le Nord et la boussole disparaît. A noter que dans ce mode, appuyer sur la bous
 Par exemple:
 
 <p align="center">
-<img src="doc/tuto/rotation-oriented.jpg" width="300">
+<img src="doc/images/rotation-oriented.jpg" width="300">
 </p>
 
 *Rotation libre*
@@ -472,7 +472,7 @@ intégrée à TrekMe. Cela vous permettra de restaurer vos cartes si vous change
 Pour créer une archive, depuis la liste des cartes, utilisez le bouton "MODIFIER", en bas à gauche :
 
 <p align="center">
-<img src="doc/tuto/bali-fr.jpg" width="300">
+<img src="doc/images/bali-fr.jpg" width="300">
 </p>
 
 Vous arrivez alors dans les options pour cette carte. Tout en bas, il y a un bouton "Sauvegarder".
