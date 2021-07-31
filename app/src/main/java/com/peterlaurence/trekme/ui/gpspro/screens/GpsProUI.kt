@@ -23,7 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.findFragment
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.gpspro.components.IconCircle
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
@@ -168,7 +170,13 @@ class GpsProUIView @JvmOverloads constructor(
 
     @Composable
     override fun Content() {
-        val viewModel: GpsProViewModel = viewModel()
+        /* Get a view-model scoped to the GpsProFragment in the nav graph. Once the GpsProFragment
+         * is popped from the backstack, the view-model is cleared */
+        val f =  findFragment<GpsProFragment>()
+        val viewModel: GpsProViewModel = viewModel(
+                f.findNavController().getBackStackEntry(R.id.gpsProFragment),
+                factory = f.defaultViewModelProviderFactory
+        )
 
         TrekMeTheme {
             GpsProUI(viewModel.bluetoothState, viewModel.isHostSelected,

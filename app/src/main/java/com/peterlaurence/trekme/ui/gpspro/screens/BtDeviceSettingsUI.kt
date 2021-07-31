@@ -16,7 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.findFragment
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.repositories.gpspro.*
 import com.peterlaurence.trekme.ui.gpspro.components.IconCircle
@@ -157,7 +159,13 @@ class BtDeviceSettingsView @JvmOverloads constructor(
 
     @Composable
     override fun Content() {
-        val viewModel: GpsProViewModel = viewModel()
+        /* Get a view-model scoped to the GpsProFragment in the nav graph. Once the GpsProFragment
+         * is popped from the backstack, the view-model is cleared */
+        val f = findFragment<BtDeviceSettingsFragment>()
+        val viewModel: GpsProViewModel = viewModel(
+                f.findNavController().getBackStackEntry(R.id.gpsProFragment),
+                factory = f.defaultViewModelProviderFactory
+        )
 
         val selectedDevice = viewModel.bluetoothState.selectedDevice ?: return
         val diagnosisState by viewModel.isDiagnosisRunning.collectAsState()
