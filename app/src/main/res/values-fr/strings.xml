@@ -315,4 +315,5 @@
     <string name="diagnosis">diagnostic</string>
     <string name="gps_pro_bt_disabled">Le bluetooth est désactivé</string>
     <string name="gps_pro_bt_notsupported">Cet appareil n\'a pas la fonctionnalité bluetooth</string>
+    <string name="gps_pro_help_url">https://github.com/peterLaurence/TrekMe/blob/master/doc/gpspro/doc_fr.md</string>
 </resources>

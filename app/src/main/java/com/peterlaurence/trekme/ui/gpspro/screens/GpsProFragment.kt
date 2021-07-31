@@ -36,8 +36,7 @@ class GpsProFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.help_gpspro_id -> {
-                //TODO: set url
-                val url = "" //getString(R.string.wifip2p_help_url)
+                val url = getString(R.string.gps_pro_help_url)
                 val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 startActivity(browserIntent)
                 true
