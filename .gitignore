@@ -12,5 +12,6 @@ build
 /captures
 /app/release
 /mapview-debug/*
-install-release.sh
+deploy-release.sh
+compile_sign_and_run.sh
 *.hprof

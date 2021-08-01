@@ -1,14 +1,15 @@
 package com.peterlaurence.trekme.viewmodel.maplist
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.ui.maplist.MapListFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
@@ -25,8 +26,9 @@ class MapListViewModel @Inject constructor(
         private val mapRepository: MapRepository,
         private val mapLoader: MapLoader
 ) : ViewModel() {
-    private val _maps = MutableLiveData<List<Map>>()
-    val maps: LiveData<List<Map>> = _maps
+
+    private val _mapState: MutableState<List<Map>> = mutableStateOf(listOf(), policy = referentialEqualityPolicy())
+    val mapState: State<List<Map>> = _mapState
 
     init {
         viewModelScope.launch {
@@ -69,6 +71,10 @@ class MapListViewModel @Inject constructor(
         }
     }
 
+    fun onMapSettings(map: Map) {
+        mapRepository.setSettingsMap(map)
+    }
+
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
         val mapList = mapLoader.maps
 
@@ -82,6 +88,6 @@ class MapListViewModel @Inject constructor(
             }
         } else mapList
 
-        _maps.postValue(mapListSorted)
+        _mapState.value = mapListSorted  // update with a copy of the list
     }
 }
