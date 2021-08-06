@@ -57,6 +57,7 @@
 
     <!-- Map list fragment -->
     <string name="fragment_map_list" translatable="false">MapListFragment</string>
+    <string name="loading_maps">Loading maps…</string>
     <string name="no_maps_found_warning">You haven\'t created any map yet</string>
     <string name="go_to_map_creation_btn">Create a map</string>
     <string name="ok_dialog">OK</string>

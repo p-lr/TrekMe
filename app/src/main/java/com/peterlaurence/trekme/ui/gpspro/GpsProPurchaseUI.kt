@@ -41,7 +41,7 @@ fun GpsProPurchaseUI(purchaseState: PurchaseState, price: String?, buyCb: () -> 
 }
 
 @Composable
-fun PendingScreen() {
+private fun PendingScreen() {
     Column(Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -54,7 +54,7 @@ fun PendingScreen() {
 }
 
 @Composable
-fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Unit) {
+private fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(Modifier
                 .weight(1f)

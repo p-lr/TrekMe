@@ -9,11 +9,7 @@ import com.peterlaurence.trekme.databinding.FragmentMapListBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * Show the list of maps.
- *
- * TODO: just like former view-based fragment:
- * * Display an indeterminate progressbar at startup,
- * * Show message and button to create a map when the map list is empty
+ * Shows the list of maps.
  */
 @AndroidEntryPoint
 class MapListFragment : Fragment() {

@@ -30,13 +30,25 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
 import com.peterlaurence.trekme.ui.maplist.MapListFragmentDirections
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.viewmodel.maplist.Loading
+import com.peterlaurence.trekme.viewmodel.maplist.MapList
+import com.peterlaurence.trekme.viewmodel.maplist.MapListState
 import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
 
 @Composable
-fun MapListUI(mapList: List<Map>, intents: MapListIntents) {
-    LazyColumn(contentPadding = PaddingValues(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(mapList) { map ->
-            MapCard(map, intents)
+fun MapListUI(state: MapListState, intents: MapListIntents) {
+    when (state) {
+        is Loading -> PendingScreen()
+        is MapList -> {
+            if (state.mapList.isNotEmpty()) {
+                LazyColumn(contentPadding = PaddingValues(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(state.mapList) { map ->
+                        MapCard(map, intents)
+                    }
+                }
+            } else {
+                GoToMapCreationScreen(intents::navigateToMapCreate)
+            }
         }
     }
 }
@@ -160,6 +172,34 @@ private fun ShowDialog(openDialog: MutableState<Boolean>, onDeletePressed: () ->
     )
 }
 
+@Composable
+private fun PendingScreen() {
+    Column(Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LinearProgressIndicator()
+        Text(
+                text = stringResource(id = R.string.loading_maps),
+                Modifier.padding(top = 16.dp))
+    }
+}
+
+@Composable
+private fun GoToMapCreationScreen(onButtonCLick: () -> Unit) {
+    Column(Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+                text = stringResource(id = R.string.no_maps_found_warning),
+                Modifier.padding(bottom = 16.dp))
+        Button(onClick = onButtonCLick) {
+            Text(text = stringResource(id = R.string.go_to_map_creation_btn))
+        }
+    }
+}
+
 class MapListView @JvmOverloads constructor(
         context: Context,
         attrs: AttributeSet? = null,
@@ -195,11 +235,16 @@ class MapListView @JvmOverloads constructor(
             override fun onMapDelete(mapId: Int) {
                 viewModel.deleteMap(mapId)
             }
+
+            override fun navigateToMapCreate() {
+                val navController = findNavController()
+                navController.navigate(R.id.action_global_mapCreateFragment)
+            }
         }
 
-        val mapList by viewModel.mapState
+        val mapListState by viewModel.mapState
         TrekMeTheme {
-            MapListUI(mapList, intents)
+            MapListUI(mapListState, intents)
         }
     }
 }
@@ -209,5 +254,5 @@ interface MapListIntents {
     fun onMapFavorite(map: Map)
     fun onMapSettings(map: Map)
     fun onMapDelete(mapId: Int)
-
+    fun navigateToMapCreate()
 }

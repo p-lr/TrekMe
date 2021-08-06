@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * This view-model is intended to be used by the [MapListFragment], which displays the list of [Map].
+ * This view-model is intended to be used by the map list UI, which displays the list of [Map].
  * Handles map selection, map deletion, and setting a map as favorite.
  */
 @HiltViewModel
@@ -27,8 +27,8 @@ class MapListViewModel @Inject constructor(
         private val mapLoader: MapLoader
 ) : ViewModel() {
 
-    private val _mapState: MutableState<List<Map>> = mutableStateOf(listOf(), policy = referentialEqualityPolicy())
-    val mapState: State<List<Map>> = _mapState
+    private val _mapState: MutableState<MapListState> = mutableStateOf(Loading, policy = referentialEqualityPolicy())
+    val mapState: State<MapListState> = _mapState
 
     init {
         viewModelScope.launch {
@@ -88,6 +88,10 @@ class MapListViewModel @Inject constructor(
             }
         } else mapList
 
-        _mapState.value = mapListSorted  // update with a copy of the list
+        _mapState.value = MapList(mapListSorted)  // update with a copy of the list
     }
 }
+
+sealed interface MapListState
+object Loading : MapListState
+data class MapList(val mapList: List<Map>) : MapListState
