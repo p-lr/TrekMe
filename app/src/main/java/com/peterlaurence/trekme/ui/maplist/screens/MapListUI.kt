@@ -15,6 +15,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -108,9 +109,21 @@ private fun ImagePlaceHolder(mapStub: MapStub, onSetMapImage: (Int, Uri) -> Unit
         } else {
             OutlinedButton(modifier = Modifier.size(pxToDp(256).dp),
                     onClick = { addImageDialogState.value = true },
-                    shape = RoundedCornerShape(10.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(0.dp)
             ) {
-                // TODO: add content
+                Box(contentAlignment = Alignment.Center) {
+                    Image(modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .alpha(0.5f),
+                            painter = painterResource(id = R.drawable.ancient_map_squared),
+                            contentDescription = null)
+                    Icon(painter = painterResource(id = R.drawable.add_circle),
+                            modifier = Modifier.size(50.dp),
+                            tint = colorResource(id = R.color.colorDarkGrey),
+                            contentDescription = null)
+                }
+
             }
         }
     }
