@@ -23,7 +23,7 @@ import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
-import com.peterlaurence.trekme.util.px
+import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.viewmodel.mapview.LiveRoute
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
@@ -335,8 +335,8 @@ private class DistanceOnRouteController(private val pathView: PathView,
     private val scrollUpdateFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val distanceCalculateFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val infoForRoute: MutableMap<RouteGson.Route, Info> = mutableMapOf()
-    private val grab1 = MarkerGrab(mapView.context, 50.px)
-    private val grab2 = MarkerGrab(mapView.context, 50.px)
+    private val grab1 = MarkerGrab(mapView.context, dpToPx(50f).toInt())
+    private val grab2 = MarkerGrab(mapView.context, dpToPx(50f).toInt())
     private var firstTouchMoveListener: TouchMoveListener? = null
     private var secondTouchMoveListener: TouchMoveListener? = null
     private var activeRouteLookupJob: Job? = null

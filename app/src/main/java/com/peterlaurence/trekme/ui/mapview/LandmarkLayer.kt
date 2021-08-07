@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.MovableLandmark
 import com.peterlaurence.trekme.ui.mapview.controller.positionCallout
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
-import com.peterlaurence.trekme.util.px
+import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapview.MapView
@@ -219,10 +219,10 @@ class LandmarkLayer(
                 landmarkCallout.setSubTitle(it.lat, it.lon)
             }
 
-            val calloutHeight = 140.px
-            val markerHeight = 48.px // The view height is 48dp, but only the top half is used to draw the marker.
-            val calloutWidth = 100.px
-            val markerWidth = 24.px
+            val calloutHeight = dpToPx(140f).toInt()
+            val markerHeight = dpToPx(48f).toInt() // The view height is 48dp, but only the top half is used to draw the marker.
+            val calloutWidth = dpToPx(100f).toInt()
+            val markerWidth = dpToPx(24f).toInt()
 
             val pos = positionCallout(mapView, calloutWidth, calloutHeight, relativeX, relativeY, markerWidth, markerHeight)
 

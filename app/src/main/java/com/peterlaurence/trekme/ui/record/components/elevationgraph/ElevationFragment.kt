@@ -14,8 +14,8 @@ import com.peterlaurence.trekme.databinding.FragmentElevationBinding
 import com.peterlaurence.trekme.repositories.recording.Calculating
 import com.peterlaurence.trekme.repositories.recording.ElePoint
 import com.peterlaurence.trekme.repositories.recording.ElevationData
+import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.util.gpx.model.ElevationSource
-import com.peterlaurence.trekme.util.px
 import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +48,7 @@ class ElevationFragment : Fragment() {
 
         /* Compute the usable size of the graph. We know that we use the entire screen width, so
          * the usable size is screen_width minus padding. */
-        val graphUsableWidth = resources.configuration.screenWidthDp.px - b.elevationGraphView.getDrawingPadding()
+        val graphUsableWidth = dpToPx(resources.configuration.screenWidthDp.toFloat()) - b.elevationGraphView.getDrawingPadding()
 
         lifecycleScope.launchWhenResumed {
             viewModel.elevationPoints.collect { config ->
@@ -57,7 +57,7 @@ class ElevationFragment : Fragment() {
                         if (config.points.isNotEmpty()) {
                             lifecycleScope.launchWhenStarted {
                                 val points = withContext(Dispatchers.Default) {
-                                    config.points.subSample(graphUsableWidth)
+                                    config.points.subSample(graphUsableWidth.toInt())
                                 }
                                 b.showGraph(true)
                                 b.elevationGraphView.setPoints(points, config.eleMin, config.eleMax)

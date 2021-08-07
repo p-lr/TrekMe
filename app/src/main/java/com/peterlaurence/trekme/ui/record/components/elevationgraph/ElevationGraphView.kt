@@ -10,7 +10,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatElevation
 import com.peterlaurence.trekme.repositories.recording.ElePoint
-import com.peterlaurence.trekme.util.px
+import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.parcelize.Parcelize
 
 
@@ -18,14 +18,14 @@ class ElevationGraphView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
     private val axisPaint = Paint().apply {
-        strokeWidth = 2.px.toFloat()
+        strokeWidth = dpToPx(2f)
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
         color = context.getColor(R.color.colorDarkGrey)
     }
 
     private val linePaint = Paint().apply {
-        strokeWidth = 2.px.toFloat()
+        strokeWidth = dpToPx(2f)
         style = Paint.Style.STROKE
         isAntiAlias = true
         strokeCap = Paint.Cap.ROUND
@@ -33,7 +33,7 @@ class ElevationGraphView @JvmOverloads constructor(
     }
 
     private val areaPaint = Paint().apply {
-        strokeWidth = 2.px.toFloat()
+        strokeWidth = dpToPx(2f)
         style = Paint.Style.FILL
         isAntiAlias = true
         color = context.getColor(R.color.colorAccent)
@@ -42,7 +42,7 @@ class ElevationGraphView @JvmOverloads constructor(
 
     private val elevationTextPaint = Paint().apply {
         color = Color.WHITE
-        textSize = 12.px.toFloat()
+        textSize = dpToPx(12f)
         isAntiAlias = true
         style = Paint.Style.FILL
     }
@@ -61,29 +61,29 @@ class ElevationGraphView @JvmOverloads constructor(
     }
 
     private val greyLinePaint = Paint().apply {
-        strokeWidth = 1.px.toFloat()
+        strokeWidth = dpToPx(1f)
         style = Paint.Style.STROKE
         color = context.getColor(R.color.colorDarkGrey)
     }
 
     private val distancePaint = Paint().apply {
-        textSize = 12.px.toFloat()
+        textSize = dpToPx(12f)
         style = Paint.Style.FILL
         isAntiAlias = true
         color = context.getColor(R.color.colorDarkGrey)
     }
 
-    private val paddingLeft = 8.px.toFloat()
+    private val paddingLeft = dpToPx(8f)
     private val paddingRight = paddingLeft
-    private val paddingTop = 8.px.toFloat()
-    private val paddingBottom = 16.px.toFloat()
-    private val minElevationMargin = 16.px.toFloat()
-    private val maxElevationMargin = 16.px.toFloat()
-    private val maxDistanceMargin = 16.px.toFloat()
-    private val highlightEleTxtPadding = 4.px.toFloat()
+    private val paddingTop = dpToPx(8f)
+    private val paddingBottom = dpToPx(16f)
+    private val minElevationMargin = dpToPx(16f)
+    private val maxElevationMargin = dpToPx(16f)
+    private val maxDistanceMargin = dpToPx(16f)
+    private val highlightEleTxtPadding = dpToPx(4f)
     private var highlightEleTxtOffsetX = 0f
-    private val highlightEleTxtOffsetY = 10.px.toFloat()
-    private val pointRadius = 4.px.toFloat()
+    private val highlightEleTxtOffsetY = dpToPx(10f)
+    private val pointRadius = dpToPx(4f)
     private var distTextOffsetX = 0f
     private var distTextOffsetY = 0f
 
@@ -288,7 +288,7 @@ class ElevationGraphView @JvmOverloads constructor(
             (r.left - r.right) / 2f
         }
 
-        distTextOffsetY = r.bottom - r.top + 2.px.toFloat()
+        distTextOffsetY = r.bottom - r.top + dpToPx(2f)
     }
 
     override fun onSaveInstanceState(): Parcelable {

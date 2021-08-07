@@ -6,7 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
-import com.peterlaurence.trekme.util.px
+import com.peterlaurence.trekme.util.dpToPx
 
 /**
  * A circle view. When selected, it grows with a dark-grey stroke.
@@ -18,8 +18,8 @@ class SelectableColor @JvmOverloads constructor(
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
-    private val radiusNormal: Int = 18.px
-    private val radiusSelected: Int = 24.px
+    private val radiusNormal: Int = dpToPx(18f).toInt()
+    private val radiusSelected: Int = dpToPx(24f).toInt()
     private var radius: Int = radiusNormal
     private val paint: Paint = Paint()
     private val strokePaint = Paint()
@@ -30,7 +30,7 @@ class SelectableColor @JvmOverloads constructor(
         strokePaint.isAntiAlias = true
         strokePaint.style = Paint.Style.STROKE
         strokePaint.color = Color.parseColor("#424242")
-        strokePaint.strokeWidth = 4.px.toFloat()
+        strokePaint.strokeWidth = dpToPx(4f)
     }
 
     fun setColor(color: Int) {

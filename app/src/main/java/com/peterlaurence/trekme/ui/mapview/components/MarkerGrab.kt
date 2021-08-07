@@ -8,7 +8,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
-import com.peterlaurence.trekme.util.px
+import com.peterlaurence.trekme.util.dpToPx
 
 /**
  * A marker with a circle shape, and which offers [morphIn] and [morphOut] methods to respectively
@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.util.px
  *
  * @author P.Laurence on 18/05/2020
  */
-class MarkerGrab @JvmOverloads constructor(context: Context, private val fullSized: Int = 100.px) : View(context) {
+class MarkerGrab @JvmOverloads constructor(context: Context, private val fullSized: Int = dpToPx(100f).toInt()) : View(context) {
     private var paint: Paint = Paint().apply {
         color = Color.parseColor("#55448AFF")
         isAntiAlias = true

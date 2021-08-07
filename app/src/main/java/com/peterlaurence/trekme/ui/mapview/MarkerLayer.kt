@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.ui.mapview.controller.positionCallout
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener.ClickCallback
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener.MarkerMoveAgent
-import com.peterlaurence.trekme.util.px
+import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapview.MapView
@@ -51,10 +51,12 @@ class MarkerLayer(
         val marker = view.marker
         markerCallout.setTitle(marker.name)
         markerCallout.setSubTitle(marker.lat, marker.lon)
-        val calloutHeight = 120.px
-        val markerHeight = 48.px // The view height is 48dp, but only the top half is used to draw the marker.
-        val calloutWidth = 200.px
-        val markerWidth = 24.px
+
+        val calloutHeight = dpToPx(120f).toInt()
+        val markerHeight = dpToPx(48f).toInt() // The view height is 48dp, but only the top half is used to draw the marker.
+        val calloutWidth = dpToPx(200f).toInt()
+        val markerWidth = dpToPx(24f).toInt()
+
         val (relativeAnchorTop, absoluteAnchorTop, relativeAnchorLeft,
                 absoluteAnchorLeft) = positionCallout(mapView, calloutWidth, calloutHeight,
                 view.relativeX, view.relativeY, markerWidth, markerHeight)
