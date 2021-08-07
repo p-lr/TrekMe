@@ -46,7 +46,9 @@ class MapSettingsViewModel @Inject constructor(
      * Changes the thumbnail of a [Map].
      * Compression of the file defined by the [uri] is done off UI-thread.
      */
-    fun setMapImage(map: Map, uri: Uri) = viewModelScope.launch {
+    fun setMapImage(mapId: Int, uri: Uri) = viewModelScope.launch {
+        val map = mapLoader.getMap(mapId) ?: return@launch
+
         try {
             val thumbnail = withContext(Dispatchers.Default) {
                 val outputStream = map.imageOutputStream

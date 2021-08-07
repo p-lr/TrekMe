@@ -1,7 +1,10 @@
 package com.peterlaurence.trekme.ui.maplist.screens
 
 import android.content.Context
+import android.net.Uri
 import android.util.AttributeSet
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.colorResource
@@ -26,14 +30,12 @@ import androidx.fragment.app.findFragment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.ui.maplist.MapListFragment
 import com.peterlaurence.trekme.ui.maplist.MapListFragmentDirections
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.viewmodel.maplist.Loading
-import com.peterlaurence.trekme.viewmodel.maplist.MapList
-import com.peterlaurence.trekme.viewmodel.maplist.MapListState
-import com.peterlaurence.trekme.viewmodel.maplist.MapListViewModel
+import com.peterlaurence.trekme.util.pxToDp
+import com.peterlaurence.trekme.viewmodel.maplist.*
+import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 
 @Composable
 fun MapListUI(state: MapListState, intents: MapListIntents) {
@@ -54,30 +56,30 @@ fun MapListUI(state: MapListState, intents: MapListIntents) {
 }
 
 @Composable
-private fun MapCard(map: Map, intents: MapListIntents) {
+private fun MapCard(mapStub: MapStub, intents: MapListIntents) {
     Card {
         Box(Modifier
                 .fillMaxWidth()
                 .height(155.dp)
-                .clickable { intents.onMapClicked(map) }
+                .clickable { intents.onMapClicked(mapStub.mapId) }
         ) {
             Row {
                 Column(Modifier
                         .padding(start = 16.dp, top = 16.dp)
                         .weight(1f)) {
                     Text(
-                            text = map.name,
+                            text = mapStub.title,
                             fontSize = 24.sp,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                     )
                 }
-                ImagePlaceHolder(map)
+                ImagePlaceHolder(mapStub, intents::onSetMapImage)
             }
-            ButtonRow(Modifier.align(Alignment.BottomStart), map.isFavorite,
-                    { intents::onMapSettings.invoke(map) },
-                    { intents::onMapDelete.invoke(map.id) },
-                    { intents::onMapFavorite.invoke(map) }
+            ButtonRow(Modifier.align(Alignment.BottomStart), mapStub.isFavorite,
+                    { intents::onMapSettings.invoke(mapStub.mapId) },
+                    { intents::onMapDelete.invoke(mapStub.mapId) },
+                    { intents::onMapFavorite.invoke(mapStub.mapId) }
             )
         }
 
@@ -85,16 +87,40 @@ private fun MapCard(map: Map, intents: MapListIntents) {
 }
 
 @Composable
-private fun ImagePlaceHolder(map: Map) {
-    Box(modifier = Modifier) {
-        if (map.image != null) {
+private fun ImagePlaceHolder(mapStub: MapStub, onSetMapImage: (Int, Uri) -> Unit) {
+    val addImageDialogState = remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            onSetMapImage(mapStub.mapId, uri)
+        }
+    }
+
+    Box(modifier = Modifier.padding(top = 16.dp, end = 16.dp)) {
+        val image = mapStub.image
+        if (image != null) {
             Image(modifier = Modifier
-                    .padding(top = 16.dp, end = 16.dp)
                     .clip(RoundedCornerShape(10.dp)),
-                    bitmap = map.image.asImageBitmap(),
+                    bitmap = image.asImageBitmap(),
                     contentDescription = null
             )
+        } else {
+            OutlinedButton(modifier = Modifier.size(pxToDp(256).dp),
+                    onClick = { addImageDialogState.value = true },
+                    shape = RoundedCornerShape(10.dp)
+            ) {
+                // TODO: add content
+            }
         }
+    }
+
+    if (addImageDialogState.value) {
+        ConfirmDialog(addImageDialogState, { launcher.launch("image/*") },
+                contentText = stringResource(id = R.string.choose_map_thumbnail),
+                confirmButtonText = stringResource(id = R.string.ok_dialog),
+                cancelButtonText = stringResource(id = R.string.cancel_dialog_string)
+        )
     }
 }
 
@@ -104,7 +130,7 @@ private fun ButtonRow(modifier: Modifier, isFavorite: Boolean,
                       onDelete: () -> Unit,
                       onMapFavorite: () -> Unit
 ) {
-    val openDialog = remember { mutableStateOf(false) }
+    val deleteDialogState = remember { mutableStateOf(false) }
 
     Row(modifier.padding(start = 8.dp, end = 0.dp, bottom = 0.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -129,7 +155,7 @@ private fun ButtonRow(modifier: Modifier, isFavorite: Boolean,
             }
         }
         IconButton(onClick = {
-            openDialog.value = true
+            deleteDialogState.value = true
         }) {
             Icon(painter = painterResource(id = R.drawable.ic_delete_forever_black_24dp),
                     tint = color,
@@ -137,36 +163,48 @@ private fun ButtonRow(modifier: Modifier, isFavorite: Boolean,
         }
     }
 
-    if (openDialog.value) {
-        ShowDialog(openDialog, onDelete)
+    if (deleteDialogState.value) {
+        ConfirmDialog(deleteDialogState, onDelete,
+                contentText = stringResource(id = R.string.map_delete_question),
+                confirmButtonText = stringResource(id = R.string.delete_dialog),
+                cancelButtonText = stringResource(id = R.string.cancel_dialog_string),
+                confirmColor = colorResource(id = R.color.colorAccentRed)
+        )
     }
 }
 
 @Composable
-private fun ShowDialog(openDialog: MutableState<Boolean>, onDeletePressed: () -> Unit) {
+private fun ConfirmDialog(
+        openState: MutableState<Boolean>,
+        onConfirmPressed: () -> Unit,
+        contentText: String,
+        confirmButtonText: String,
+        cancelButtonText: String,
+        confirmColor: Color = colorResource(id = R.color.colorAccent)
+) {
     AlertDialog(
-            onDismissRequest = { openDialog.value = false },
+            onDismissRequest = { openState.value = false },
             text = {
                 Text(
-                        text = stringResource(id = R.string.map_delete_question),
+                        text = contentText,
                         textAlign = TextAlign.Justify)
             },
             confirmButton = {
                 OutlinedButton(
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = colorResource(id = R.color.colorAccentRed)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = confirmColor),
                         onClick = {
-                            openDialog.value = false
-                            onDeletePressed()
+                            openState.value = false
+                            onConfirmPressed()
                         }) {
-                    Text(stringResource(id = R.string.delete_dialog))
+                    Text(confirmButtonText)
                 }
             },
             dismissButton = {
                 OutlinedButton(
                         onClick = {
-                            openDialog.value = false
+                            openState.value = false
                         }) {
-                    Text(stringResource(id = R.string.cancel_dialog_string))
+                    Text(cancelButtonText)
                 }
             }
     )
@@ -209,27 +247,32 @@ class MapListView @JvmOverloads constructor(
     @Composable
     override fun Content() {
         val viewModel: MapListViewModel = viewModel(findFragment<MapListFragment>().requireActivity())
+        val settingsViewModel: MapSettingsViewModel = viewModel()
 
         val intents = object : MapListIntents {
-            override fun onMapClicked(map: Map) {
+            override fun onMapClicked(mapId: Int) {
                 val navController = findNavController()
                 if (navController.currentDestination?.id == R.id.mapListFragment) {
-                    viewModel.setMap(map)
+                    viewModel.setMap(mapId)
                     val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
                     navController.navigate(action)
                 }
             }
 
-            override fun onMapFavorite(map: Map) {
-                viewModel.toggleFavorite(map)
+            override fun onMapFavorite(mapId: Int) {
+                viewModel.toggleFavorite(mapId)
             }
 
-            override fun onMapSettings(map: Map) {
-                viewModel.onMapSettings(map)
+            override fun onMapSettings(mapId: Int) {
+                viewModel.onMapSettings(mapId)
 
                 /* Navigate to the MapSettingsFragment*/
-                val action = MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(map.id)
+                val action = MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(mapId)
                 findNavController().navigate(action)
+            }
+
+            override fun onSetMapImage(mapId: Int, uri: Uri) {
+                settingsViewModel.setMapImage(mapId, uri)
             }
 
             override fun onMapDelete(mapId: Int) {
@@ -250,9 +293,10 @@ class MapListView @JvmOverloads constructor(
 }
 
 interface MapListIntents {
-    fun onMapClicked(map: Map)
-    fun onMapFavorite(map: Map)
-    fun onMapSettings(map: Map)
+    fun onMapClicked(mapId: Int)
+    fun onMapFavorite(mapId: Int)
+    fun onMapSettings(mapId: Int)
+    fun onSetMapImage(mapId: Int, uri: Uri)
     fun onMapDelete(mapId: Int)
     fun navigateToMapCreate()
 }

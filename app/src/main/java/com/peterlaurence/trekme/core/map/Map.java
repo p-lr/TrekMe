@@ -52,7 +52,6 @@ public class Map {
     private File mConfigFile;
     private Bitmap mImage;
     private MapBounds mMapBounds;
-    private boolean isFavorite = false;
     /* The Java Object corresponding to the json configuration file */
     private final MapGson mMapGson;
     /* The Java Object corresponding to the json file of markers */
@@ -437,14 +436,6 @@ public class Map {
         return mConfigFile;
     }
 
-    public void setFavorite(boolean isFavorite) {
-        this.isFavorite = isFavorite;
-    }
-
-    public boolean isFavorite() {
-        return isFavorite;
-    }
-
     /**
      * For instance, the {@link MapLoader} is designed so that two different maps can't have the
      * same config file path.
@@ -492,11 +483,6 @@ public class Map {
             }
         }
         return false;
-    }
-
-    public boolean equals(Map map) {
-        if (map == null) return false;
-        return mConfigFile.equals(map.getConfigFile());
     }
 
     /**

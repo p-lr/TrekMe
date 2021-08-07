@@ -1,9 +1,7 @@
 package com.peterlaurence.trekme.viewmodel.maplist
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.referentialEqualityPolicy
+import android.graphics.Bitmap
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
@@ -27,7 +25,7 @@ class MapListViewModel @Inject constructor(
         private val mapLoader: MapLoader
 ) : ViewModel() {
 
-    private val _mapState: MutableState<MapListState> = mutableStateOf(Loading, policy = referentialEqualityPolicy())
+    private val _mapState: MutableState<MapListState> = mutableStateOf(Loading, policy = structuralEqualityPolicy())
     val mapState: State<MapListState> = _mapState
 
     init {
@@ -39,26 +37,37 @@ class MapListViewModel @Inject constructor(
         }
     }
 
-    fun setMap(map: Map) {
+    fun setMap(mapId: Int) {
+        val map = mapLoader.getMap(mapId) ?: return
+
         // 1- Sets the map to the main entity responsible for this
         mapRepository.setCurrentMap(map)
 
         // 2- Remember this map in the case use wants to open TrekMe directly on this map
         viewModelScope.launch {
-            settings.setLastMapId(map.id)
+            settings.setLastMapId(mapId)
         }
     }
 
-    fun toggleFavorite(map: Map) {
-        /* Toggle, then trigger a view refresh */
-        map.isFavorite = !map.isFavorite
-        val maps = mapLoader.maps
-        val ids = maps.filter { it.isFavorite }.map { it.id }
-        updateMapListInFragment(ids)
+    /**
+     * Toggle the favorite flag on the [MapStub], then trigger UI update while saving favorites in
+     * the settings.
+     */
+    fun toggleFavorite(mapId: Int) {
+        val state = _mapState.value
+        if (state is MapList) {
+            val stub = state.mapList.firstOrNull { it.mapId == mapId }
+            stub?.apply {
+                isFavorite = !isFavorite
+            }
 
-        /* Remember this setting */
-        viewModelScope.launch {
-            settings.setFavoriteMapIds(ids)
+            val ids = state.mapList.filter { it.isFavorite }.map { it.mapId }
+            updateMapListInFragment(ids)
+
+            /* Remember this setting */
+            viewModelScope.launch {
+                settings.setFavoriteMapIds(ids)
+            }
         }
     }
 
@@ -71,7 +80,8 @@ class MapListViewModel @Inject constructor(
         }
     }
 
-    fun onMapSettings(map: Map) {
+    fun onMapSettings(mapId: Int) {
+        val map = mapLoader.getMap(mapId) ?: return
         mapRepository.setSettingsMap(map)
     }
 
@@ -79,19 +89,50 @@ class MapListViewModel @Inject constructor(
         val mapList = mapLoader.maps
 
         /* Order map list with favorites first */
-        val mapListSorted = if (favoriteMapIds.isNotEmpty()) {
-            mapList.sortedByDescending { map ->
-                if (favoriteMapIds.contains(map.id)) {
-                    map.isFavorite = true
-                    1
-                } else -1
-            }
-        } else mapList
+        val stubList = mapList.map { it.toMapStub() }.let {
+            if (favoriteMapIds.isNotEmpty()) {
+                it.sortedByDescending { stub ->
+                    if (favoriteMapIds.contains(stub.mapId)) {
+                        stub.isFavorite = true
+                        1
+                    } else -1
+                }
+            } else it
+        }
 
-        _mapState.value = MapList(mapListSorted)  // update with a copy of the list
+        _mapState.value = MapList(stubList)  // update with a copy of the list
+    }
+
+    private fun Map.toMapStub(): MapStub {
+        return MapStub(id).apply {
+            title = name
+            image = this@toMapStub.image
+        }
     }
 }
 
 sealed interface MapListState
 object Loading : MapListState
-data class MapList(val mapList: List<Map>) : MapListState
+data class MapList(val mapList: List<MapStub>) : MapListState
+
+class MapStub(val mapId: Int) {
+    var isFavorite: Boolean by mutableStateOf(false)
+    var title: String by mutableStateOf("")
+    var image: Bitmap? by mutableStateOf(null)
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is MapStub) return false
+        return mapId == other.mapId
+                && isFavorite == other.isFavorite
+                && title == other.title
+                && image == other.image
+    }
+
+    override fun hashCode(): Int {
+        var result = mapId
+        result = 31 * result + isFavorite.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + (image?.hashCode() ?: 0)
+        return result
+    }
+}

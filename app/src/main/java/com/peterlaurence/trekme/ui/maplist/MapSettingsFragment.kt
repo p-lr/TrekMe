@@ -267,7 +267,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
             val uri = result.data?.data
             val map = this.map
             if (uri != null && map != null) {
-                viewModel.setMapImage(map, uri)
+                viewModel.setMapImage(map.id, uri)
             }
         }
     }

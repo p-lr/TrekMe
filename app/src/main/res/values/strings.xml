@@ -65,7 +65,8 @@
     <string name="map_manage_btn_string">Edit</string>
     <string name="download_map_dialog_title">Map download</string>
     <string name="download_map_dialog_msg">Downloading %s…</string>
-    <string name="menu_sample_map">Download sample map</string>
+    <string name="map_delete_question">Are you sure to delete this map?</string>
+    <string name="choose_map_thumbnail">You can choose a thumbnail image to illustrate your map, it\'ll be prettier!\nContinue?</string>
 
     <!-- Map Settings fragment -->
     <string name="map_image_import_ok">Image set successfully</string>
@@ -101,7 +102,6 @@
     <string name="map_size_compute_string">Compute size</string>
     <string name="map_size_computing">Computing..</string>
     <string name="map_save_string">Save</string>
-    <string name="map_delete_question">Are you sure to delete this map?</string>
 
     <string name="projection_none">None</string>
     <string name="wgs84_instead_of_projected">You entered WGS84 lat/lon instead of projected values</string>

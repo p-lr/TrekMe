@@ -65,7 +65,6 @@
     <string name="archive_notification_title">Archivage</string>
     <string name="download_map_dialog_title">Téléchargement</string>
     <string name="download_map_dialog_msg">Téléchargement de la carte %s…</string>
-    <string name="menu_sample_map">Télécharger carte du monde</string>
     <string name="confirm_import">Vous pouvez maintenant importer la carte</string>
     <string name="service_gpx_record_action">Enregistrement GPX</string>
     <string name="record_menu_title">Enregistrement GPX</string>
@@ -317,4 +316,5 @@
     <string name="gps_pro_bt_notsupported">Cet appareil n\'a pas la fonctionnalité bluetooth</string>
     <string name="gps_pro_help_url">https://github.com/peterLaurence/TrekMe/blob/master/doc/gpspro/doc_fr.md</string>
     <string name="loading_maps">Chargement des cartes…</string>
+    <string name="choose_map_thumbnail">Vous pouvez choisir une image pour illustrer votre carte. Ce sera plus joli.\nContinuer ?</string>
 </resources>
