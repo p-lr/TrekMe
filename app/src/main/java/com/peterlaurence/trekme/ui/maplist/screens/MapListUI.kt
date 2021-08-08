@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -198,9 +197,7 @@ private fun ConfirmDialog(
     AlertDialog(
             onDismissRequest = { openState.value = false },
             text = {
-                Text(
-                        text = contentText,
-                        textAlign = TextAlign.Justify)
+                Text(contentText)
             },
             confirmButton = {
                 OutlinedButton(
