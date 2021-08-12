@@ -26,11 +26,13 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImpo
 import com.peterlaurence.trekme.ui.record.components.dialogs.TrackFileNameEdit
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.collectWhileResumed
+import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
@@ -103,11 +105,9 @@ class RecordFragment : Fragment() {
          * Observe the changes in the [GpxRecordService] status, and update child views accordingly.
          */
         val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
-        gpxRecordServiceViewModel.status.observe(this) {
-            it?.let { isActive ->
-                dispatchGpxRecordServiceStatus(isActive)
-            }
-        }
+        gpxRecordServiceViewModel.status.map { isActive ->
+            dispatchGpxRecordServiceStatus(isActive)
+        }.collectWhileResumedIn(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -209,10 +209,8 @@ class RecordFragment : Fragment() {
     private fun dispatchGpxRecordServiceStatus(isActive: Boolean) {
         if (isActive) {
             binding.statusView.onServiceStarted()
-            binding.actionsView.onServiceStarted()
         } else {
             binding.statusView.onServiceStopped()
-            binding.actionsView.onServiceStopped()
         }
     }
 

@@ -1,12 +1,14 @@
 package com.peterlaurence.trekme.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.service.GpxRecordService
+import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -16,7 +18,27 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class GpxRecordServiceViewModel @Inject constructor(
-        gpxRecordEvents: GpxRecordEvents
+        private val gpxRecordEvents: GpxRecordEvents,
+        private val recordEvents: RecordEventBus
 ) : ViewModel() {
-    val status: LiveData<Boolean> = gpxRecordEvents.serviceState.asLiveData(viewModelScope.coroutineContext)
+    val status: StateFlow<Boolean> = gpxRecordEvents.serviceState
+
+    private var isButtonEnabled = true
+
+    fun onStartStopClicked() {
+        if (!isButtonEnabled) return
+
+        viewModelScope.launch {
+            isButtonEnabled = false
+            if (gpxRecordEvents.serviceState.value) {
+                recordEvents.stopGpxRecording()
+            } else {
+                recordEvents.startGpxRecording()
+            }
+            delay(START_STOP_DISABLE_TIMEOUT.toLong())
+            isButtonEnabled = true
+        }
+    }
 }
+
+const val START_STOP_DISABLE_TIMEOUT = 2000

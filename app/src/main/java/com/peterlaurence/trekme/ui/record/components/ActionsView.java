@@ -6,10 +6,6 @@ import android.util.AttributeSet;
 import androidx.cardview.widget.CardView;
 
 import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.ui.record.components.widgets.DelayedButton;
-import com.peterlaurence.trekme.ui.record.events.RecordEventBus;
-
-import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -20,11 +16,6 @@ import dagger.hilt.android.AndroidEntryPoint;
  */
 @AndroidEntryPoint
 public class ActionsView extends CardView {
-
-    @Inject
-    public RecordEventBus mEventBus;
-
-    private DelayedButton mButton;
 
     public ActionsView(Context context) {
         this(context, null);
@@ -39,45 +30,7 @@ public class ActionsView extends CardView {
         init(context);
     }
 
-
     private void init(Context context) {
         inflate(context, R.layout.record_actions_layout, this);
-
-        mButton = getRootView().findViewById(R.id.delayedButton);
-        mButton.setListener(new DelayedButton.PlayStopListener() {
-            @Override
-            public void onPlay() {
-                requestStart();
-            }
-
-            @Override
-            public void onStop() {
-                requestStop();
-            }
-        });
-    }
-
-    public void onServiceStarted() {
-        mButton.setMode(DelayedButton.State.STOP);
-    }
-
-    public void onServiceStopped() {
-        mButton.setMode(DelayedButton.State.PLAY);
-    }
-
-    /**
-     * The containing {@link com.peterlaurence.trekme.ui.record.RecordFragment} will catch
-     * this event and stop the service.
-     */
-    private void requestStop() {
-        mEventBus.stopGpxRecording();
-    }
-
-    /**
-     * The containing {@link com.peterlaurence.trekme.ui.record.RecordFragment} will catch
-     * this event and start the service.
-     */
-    private void requestStart() {
-        mEventBus.startGpxRecording();
     }
 }
