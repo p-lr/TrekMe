@@ -316,5 +316,5 @@
     <string name="gps_pro_bt_notsupported">Cet appareil n\'a pas la fonctionnalité bluetooth</string>
     <string name="gps_pro_help_url">https://github.com/peterLaurence/TrekMe/blob/master/doc/gpspro/doc_fr.md</string>
     <string name="loading_maps">Chargement des cartes…</string>
-    <string name="choose_map_thumbnail">Vous pouvez choisir une image pour illustrer votre carte. Ce sera plus joli.\nContinuer ?</string>
+    <string name="choose_map_thumbnail">Vous pouvez choisir une image pour illustrer votre carte.\nContinuer ?</string>
 </resources>

@@ -80,11 +80,11 @@ fun StartStopButton(
                 targetValue = 1f
         )
     }
-    var playTime by remember { mutableStateOf(0L) }
-    var timeOutProgress by remember { mutableStateOf(0f) }
+
+    var progress by remember { mutableStateOf(0f) }
 
     /**
-     * Everytime the button is composed, the timeout animation should stop and restart. This is
+     * Everytime the state [stopped] changes, the timeout animation should stop and restart. This is
      * exactly the purpose of [LaunchedEffect].
      * There's an exception though. When the button is composed for the first time, we don't want to
      * see the timeout animation.
@@ -99,9 +99,9 @@ fun StartStopButton(
             val startTime = withFrameNanos { it }
 
             do {
-                playTime = withFrameNanos { it } - startTime
-                timeOutProgress = anim.getValueFromNanos(playTime)
-            } while (timeOutProgress < 1f)
+                val playTime = withFrameNanos { it } - startTime
+                progress = anim.getValueFromNanos(playTime)
+            } while (progress < 1f)
         }
     }
 
@@ -114,7 +114,7 @@ fun StartStopButton(
                 modifier = modifier,
                 backgroundColor,
                 strokeColor,
-                t = timeOutProgress
+                t = progress
         )
         StartStopShape(
                 modifier = modifier,
