@@ -10,9 +10,9 @@ android {
     compileSdkVersion 30
 
     buildFeatures {
-        dataBinding = true
-        viewBinding = true
-        compose = true
+        dataBinding true
+        viewBinding true
+        compose true
     }
 
     composeOptions {
@@ -23,8 +23,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 140
-        versionName "2.8.0"
+        versionCode 141
+        versionName "2.8.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

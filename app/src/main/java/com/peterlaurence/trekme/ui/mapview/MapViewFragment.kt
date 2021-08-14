@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
@@ -456,21 +455,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private fun onIgnLicenseEvent(event: LicenseEvent) = when (event) {
         is FreeLicense, ValidIgnLicense -> { /* Nothing to do */ }
-        is OutdatedIgnLicenseEvent -> {
-            clearMap()
-            presenter?.showMessage(getString(R.string.expired_ign_license))
-        }
         is ErrorIgnLicenseEvent -> {
             clearMap()
             presenter?.showMessage(getString(R.string.missing_ign_license))
-        }
-        is GracePeriodIgnEvent -> {
-            val view = view
-            if (view != null) {
-                val msg = getString(R.string.grace_period_ign_license).format(event.remainingDays)
-                val snackBar = Snackbar.make(view, msg, Snackbar.LENGTH_INDEFINITE)
-                snackBar.show()
-            } else null
         }
     }
 

@@ -2,11 +2,7 @@ package com.peterlaurence.trekme.viewmodel.mapview
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.billing.AccessDeniedLicenseOutdated
-import com.peterlaurence.trekme.billing.AccessGranted
 import com.peterlaurence.trekme.billing.Billing
-import com.peterlaurence.trekme.billing.GracePeriod
-import com.peterlaurence.trekme.billing.common.AnnualWithGracePeriodVerifier
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
@@ -14,7 +10,10 @@ import com.peterlaurence.trekme.di.IGN
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -86,16 +85,7 @@ class MapViewViewModel @Inject constructor(
 
         return withContext(Dispatchers.IO) {
             billing.getPurchase()?.let {
-                val verifier = AnnualWithGracePeriodVerifier()
-                when (val accessState = verifier.checkTime(it.purchaseTime)) {
-                    is AccessGranted -> ValidIgnLicense
-                    is GracePeriod -> {
-                       GracePeriodIgnEvent(map, accessState.remainingDays)
-                    }
-                    is AccessDeniedLicenseOutdated -> {
-                        OutdatedIgnLicenseEvent(map)
-                    }
-                }
+                ValidIgnLicense
             } ?: ErrorIgnLicenseEvent(map)
         }
     }
@@ -104,7 +94,5 @@ class MapViewViewModel @Inject constructor(
 sealed interface LicenseEvent
 object FreeLicense : LicenseEvent
 object ValidIgnLicense : LicenseEvent
-data class OutdatedIgnLicenseEvent(val map: Map) : LicenseEvent
 data class ErrorIgnLicenseEvent(val map: Map) : LicenseEvent
-data class GracePeriodIgnEvent(val map: Map, val remainingDays: Int) : LicenseEvent
 

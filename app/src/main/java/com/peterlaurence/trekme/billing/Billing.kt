@@ -6,7 +6,11 @@ import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode.*
 import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
 import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -233,11 +237,19 @@ class Billing(
         }
     }
 
-    private suspend fun queryPurchasesAsync(skuType: String): Pair<BillingResult, List<Purchase>> = suspendCoroutine {
-        billingClient.queryPurchasesAsync(skuType) { r, p->
-            it.resume(Pair(r, p))
+    /**
+     * Using a [callbackFlow] instead of [suspendCancellableCoroutine], as we have no way to remove
+     * the provided callback given to [BillingClient.queryPurchasesAsync] - so creating a memory
+     * leak.
+     * By collecting a [callbackFlow], the real collector is on a different call stack. So the
+     * [BillingClient] has no reference on the collector.
+     */
+    private suspend fun queryPurchasesAsync(skuType: String): Pair<BillingResult, List<Purchase>> = callbackFlow {
+        billingClient.queryPurchasesAsync(skuType) { r, p ->
+            trySend(Pair(r, p))
         }
-    }
+        awaitClose { /* We can't do anything, but it doesn't matter */ }
+    }.first()
 
     data class SkuQueryResult(val billingResult: BillingResult, val skuDetailsList: List<SkuDetails>)
 
