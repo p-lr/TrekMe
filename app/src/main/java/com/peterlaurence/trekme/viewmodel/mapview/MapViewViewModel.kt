@@ -7,8 +7,6 @@ import com.peterlaurence.trekme.billing.AccessGranted
 import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.billing.GracePeriod
 import com.peterlaurence.trekme.billing.common.AnnualWithGracePeriodVerifier
-import com.peterlaurence.trekme.billing.ign.LicenseInfo
-import com.peterlaurence.trekme.billing.ign.PersistenceStrategy
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
@@ -16,7 +14,6 @@ import com.peterlaurence.trekme.di.IGN
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,25 +26,25 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MapViewViewModel @Inject constructor(
-        private val persistenceStrategy: PersistenceStrategy,
         private val settings: Settings,
         @IGN private val billing: Billing,
         private val mapRepository: MapRepository
 ) : ViewModel() {
-    private val _ignLicenseEvents = MutableSharedFlow<IgnLicenseEvent>(0, 1, BufferOverflow.DROP_OLDEST)
-    val ignLicenseEvent = _ignLicenseEvents.asSharedFlow()
+
+    fun getMap(): Map? = mapRepository.getCurrentMap()
 
     /**
-     * @return a [Map] instance, or null if there is none or there's a license issue
+     * Get the license specific to the current map at the moment of this call. As a side note: in
+     * this case, a cold flow is preferable to a shared flow as we want to make sure that the
+     * returned flow is specific to the caller.
      */
-    fun getMap(): Map? {
-        val map = mapRepository.getCurrentMap()
-        if (map != null) {
-            viewModelScope.launch {
-                checkForIgnLicense(map)
+    fun getLicenseFlow(): Flow<LicenseEvent> {
+        return flow {
+            val map = mapRepository.getCurrentMap()
+            if (map != null) {
+                emit(getLicense(map))
             }
         }
-        return map
     }
 
     fun getMagnifyingFactor(): Flow<Int> = settings.getMagnifyingFactor()
@@ -84,46 +81,30 @@ class MapViewViewModel @Inject constructor(
         return v
     }
 
-    private suspend fun checkForIgnLicense(map: Map): Boolean {
-        if (map.origin != Map.MapOrigin.IGN_LICENSED) return true
-
-        /**
-         * If the persistence file doesn't exists and the license is proven to be purchased
-         * and still valid, create the persistence file.
-         * Otherwise, warn the user that the license is either missing or expired.
-         */
-        suspend fun onFailureToReadFile(): Boolean {
-            // missing license or something else wrong
-            return billing.getPurchase()?.let {
-                persistenceStrategy.persist(LicenseInfo(it.purchaseTime))
-                true
-            } ?: run {
-                _ignLicenseEvents.tryEmit(ErrorIgnLicenseEvent(map))
-                false
-            }
-        }
+    private suspend fun getLicense(map: Map): LicenseEvent {
+        if (map.origin != Map.MapOrigin.IGN_LICENSED) return FreeLicense
 
         return withContext(Dispatchers.IO) {
-            persistenceStrategy.getLicenseInfo()?.let {
+            billing.getPurchase()?.let {
                 val verifier = AnnualWithGracePeriodVerifier()
-                when (val accessState = verifier.checkTime(it.purchaseTimeMillis)) {
-                    is AccessGranted -> true
+                when (val accessState = verifier.checkTime(it.purchaseTime)) {
+                    is AccessGranted -> ValidIgnLicense
                     is GracePeriod -> {
-                        _ignLicenseEvents.tryEmit(GracePeriodIgnEvent(map, accessState.remainingDays))
-                        true
+                       GracePeriodIgnEvent(map, accessState.remainingDays)
                     }
                     is AccessDeniedLicenseOutdated -> {
-                        _ignLicenseEvents.tryEmit(OutdatedIgnLicenseEvent(map))
-                        false
+                        OutdatedIgnLicenseEvent(map)
                     }
                 }
-            } ?: onFailureToReadFile()
+            } ?: ErrorIgnLicenseEvent(map)
         }
     }
 }
 
-sealed class IgnLicenseEvent
-data class OutdatedIgnLicenseEvent(val map: Map) : IgnLicenseEvent()
-data class ErrorIgnLicenseEvent(val map: Map) : IgnLicenseEvent()
-data class GracePeriodIgnEvent(val map: Map, val remainingDays: Int) : IgnLicenseEvent()
+sealed interface LicenseEvent
+object FreeLicense : LicenseEvent
+object ValidIgnLicense : LicenseEvent
+data class OutdatedIgnLicenseEvent(val map: Map) : LicenseEvent
+data class ErrorIgnLicenseEvent(val map: Map) : LicenseEvent
+data class GracePeriodIgnEvent(val map: Map, val remainingDays: Int) : LicenseEvent
 

@@ -146,7 +146,8 @@
         cartes IGN pendant un an.</string>
     <string name="buy_btn">Acheter</string>
     <string name="expired_ign_license">Votre module IGN a expiré :(\n\nL\'achat du module se fait au moment de créer une nouvelle carte IGN.\nLe module est valable un an.</string>
-    <string name="missing_ign_license">Votre module IGN est introuvable.\n\nSi vous l\'avez déjà achetée il y a moins d\'un an, vous pouvez la récupérer en créant une nouvelle carte IGN.</string>
+    <string name="missing_ign_license">Votre module IGN est introuvable.\n\nSi vous avec supprimé le cache du playstore, veuillez rouvrir le playstore et consulter
+        vos abonnements pour réactualiser le cache. Vous devez avoir du réseau pour que cette opération fonctionne.</string>
     <string name="grace_period_ign_license">Votre module IGN a expiré ou est introuvable. Vous avez %1$d jours pour l\'acheter et repartir pour un an.</string>
     <string name="ign_legal_notice_btn">mentions légales</string>
     <string name="ign_legal_notice">L\'offre intègre des Données et/ou Géoservices pour lesquels, soit l\'IGN détient les droits de propriété intellectuelle, soit dispose de l\'accord nécessaire des ayants droits.\n

@@ -189,8 +189,9 @@
     <string name="no_track_message">You haven\'t created nor imported any track yet.
         You can import a gpx track downloaded from a website (or a recording of your own) using the import button below.</string>
     <string name="expired_ign_license">"Your IGN module has expired :(\n\nTo buy it for this year, go to map creation and create an IGN map."</string>
-    <string name="missing_ign_license">"Your IGN module is missing.\n\nTo retrieve it, go to map creation and create an IGN map."</string>
-    <string name="grace_period_ign_license">"You IGN module has expired. You have %1$d days to buy it for this year."</string>
+    <string name="missing_ign_license">"Your IGN module can\'t be checked.\n\nIf you cleared the cache of the playstore, please open the playstore and consult your
+        subscriptions to refresh the cache. While doing this, you need network connectivity."</string>
+    <string name="grace_period_ign_license">"Your IGN module is about to expire. You have %1$d days to buy it for this year."</string>
     <string name="unknown_map_source">Unknown map source. The map configuration is incorrect.</string>
     <string name="center_on_position_btn_desc" translatable="false">Center on position button</string>
 

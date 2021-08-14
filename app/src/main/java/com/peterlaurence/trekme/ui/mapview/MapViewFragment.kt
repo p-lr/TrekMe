@@ -117,7 +117,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
             routeLayer?.onTrackVisibilityChanged()
         }
 
-        mapViewViewModel.ignLicenseEvent.collectWhileResumed(this) {
+        mapViewViewModel.getLicenseFlow().collectWhileResumed(this) {
             onIgnLicenseEvent(it)
         }
     }
@@ -454,7 +454,8 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         }
     }
 
-    private fun onIgnLicenseEvent(event: IgnLicenseEvent) = when (event) {
+    private fun onIgnLicenseEvent(event: LicenseEvent) = when (event) {
+        is FreeLicense, ValidIgnLicense -> { /* Nothing to do */ }
         is OutdatedIgnLicenseEvent -> {
             clearMap()
             presenter?.showMessage(getString(R.string.expired_ign_license))
