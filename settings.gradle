@@ -1,2 +1,3 @@
 include ':app'
+include ':mapcompose-debug'
 //include ':mapview-debug'

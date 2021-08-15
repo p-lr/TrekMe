@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.viewmodel.mapcreate
 
 import android.app.Application
 import android.content.Intent
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.BoundingBox
@@ -14,7 +15,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
-import com.peterlaurence.trekme.core.providers.stream.createTileStreamProvider
+import com.peterlaurence.trekme.core.providers.stream.newTileStreamProvider
 import com.peterlaurence.trekme.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
@@ -23,12 +24,18 @@ import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
+import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.ui.layout.Fit
+import ovh.plrapps.mapcompose.ui.layout.Forced
+import ovh.plrapps.mapcompose.ui.state.MapState
 import java.net.URL
 import javax.inject.Inject
 
@@ -48,6 +55,9 @@ class GoogleMapWmtsViewModel @Inject constructor(
         private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
         private val layerOverlayRepository: LayerOverlayRepository
 ) : ViewModel() {
+    private val states_ = MutableStateFlow<WmtsState>(Loading)
+    val state: StateFlow<WmtsState> = states_.asStateFlow()
+
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
 
@@ -70,6 +80,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                             BoundingBox(-17.945, -17.46, -149.97, -149.1), // Tahiti
                     ))),
             WmtsSource.OPEN_STREET_MAP to listOf(
+                    ScaleLimitsConfig(maxScale = 0.25f),
                     BoundariesConfig(listOf(
                             BoundingBox(-80.0, 83.0, -180.0, 180.0)        // World
                     ))
@@ -114,6 +125,55 @@ class GoogleMapWmtsViewModel @Inject constructor(
             WmtsSource.IGN to defaultIgnLayer
     )
 
+    fun setWmtsSource(wmtsSource: WmtsSource) {
+        viewModelScope.launch {
+            val tileStreamProvider = runCatching {
+                createTileStreamProvider(wmtsSource)
+            }.onFailure {
+                // TODO: Couldn't fetch API key. The VPS might be down.
+                // Do the equivalent of former showVpsFailureMessage() on the fragment
+            }.getOrNull() ?: return@launch
+
+            val mapState = MapState(
+                    19, mapSize, mapSize,
+                    tileStreamProvider = tileStreamProvider.toMapComposeTileStreamProvider(),
+                    workerCount = 16
+            )
+
+            /* Apply configuration */
+            val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
+            mapConfiguration?.forEach { conf ->
+                when(conf) {
+                    is ScaleLimitsConfig -> {
+                        val minScale = conf.minScale
+                        if (minScale == null) {
+                            mapState.minimumScaleMode = Fit
+                            mapState.scale = 0f
+                        } else {
+                            mapState.minimumScaleMode = Forced(minScale)
+                        }
+                        conf.maxScale?.also { maxScale -> mapState.maxScale = maxScale }
+                    }
+                    is InitScaleAndScrollConfig -> {
+                        mapState.scale = conf.scale
+                        mapState.scroll = Offset(conf.scrollX.toFloat(), conf.scrollY.toFloat())
+                    }
+                    else -> { /* Nothing to do */ }
+                }
+            }
+
+            // TODO: add magnifying factor api to MapCompose
+            if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
+                // mapState.setMagnifyingFactor(1)
+            }
+
+            /* Shutdown the previous MapState, if any */
+            (state.value as? MapReady)?.mapState?.shutdown()
+
+            states_.value = MapReady(mapState)
+        }
+    }
+
     fun getScaleAndScrollConfig(wmtsSource: WmtsSource): List<Config>? {
         return scaleAndScrollInitConfig[wmtsSource]
     }
@@ -131,10 +191,18 @@ class GoogleMapWmtsViewModel @Inject constructor(
      */
     fun getPrimaryLayerForSource(wmtsSource: WmtsSource): Layer? {
         return when (wmtsSource) {
-            WmtsSource.IGN -> activeLayerForSource[wmtsSource] ?: defaultIgnLayer
-            WmtsSource.OPEN_STREET_MAP -> activeLayerForSource[wmtsSource] ?: defaultOsmLayer
+            WmtsSource.IGN -> getIgnPrimaryLayer()
+            WmtsSource.OPEN_STREET_MAP -> getOsmPrimaryLayer()
             else -> null
         }
+    }
+
+    private fun getIgnPrimaryLayer(): Layer {
+        return activeLayerForSource[WmtsSource.IGN] ?: defaultIgnLayer
+    }
+
+    private fun getOsmPrimaryLayer(): Layer {
+        return activeLayerForSource[WmtsSource.OPEN_STREET_MAP] ?: defaultOsmLayer
     }
 
     fun setLayerForSourceFromId(wmtsSource: WmtsSource, layerId: String) {
@@ -155,34 +223,32 @@ class GoogleMapWmtsViewModel @Inject constructor(
      * Creates the [TileStreamProvider] for the given source. If we couldn't fetch the API key (when
      * we should have been able to do so), an [IllegalStateException] is thrown.
      */
-    @Throws(IllegalStateException::class)
-    suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider? {
+    @Throws(ApiFetchError::class)
+    suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider {
         val mapSourceData = when (wmtsSource) {
             WmtsSource.IGN -> {
-                val layer = getPrimaryLayerForSource(wmtsSource)!!
+                val layer = getIgnPrimaryLayer()
                 val overlays = getOverlayLayersForSource(wmtsSource)
-                val ignApi = ignApiRepository.getApi() ?: throw IllegalStateException()
+                val ignApi = ignApiRepository.getApi() ?: throw ApiFetchError()
                 IgnSourceData(ignApi, layer, overlays)
             }
             WmtsSource.ORDNANCE_SURVEY -> {
-                val api = ordnanceSurveyApiRepository.getApi() ?: throw IllegalStateException()
+                val api = ordnanceSurveyApiRepository.getApi() ?: throw ApiFetchError()
                 OrdnanceSurveyData(api)
             }
             WmtsSource.OPEN_STREET_MAP -> {
-                val layer = getPrimaryLayerForSource(wmtsSource)!!
+                val layer = getOsmPrimaryLayer()
                 OsmSourceData(layer)
             }
-            else -> NoData
+            WmtsSource.SWISS_TOPO -> SwissTopoData
+            WmtsSource.USGS -> UsgsData
+            WmtsSource.IGN_SPAIN -> IgnSpainData
         }
-        return try {
-            createTileStreamProvider(wmtsSource, mapSourceData).also {
-                /* Don't test the stream provider if it has overlays */
-                if (it !is TileStreamProviderOverlay) {
-                    checkTileAccessibility(wmtsSource, it)
-                }
+        return newTileStreamProvider(mapSourceData).also {
+            /* Don't test the stream provider if it has overlays */
+            if (it !is TileStreamProviderOverlay) {
+                checkTileAccessibility(wmtsSource, it)
             }
-        } catch (e: Exception) {
-            null
         }
     }
 
@@ -238,6 +304,9 @@ class GoogleMapWmtsViewModel @Inject constructor(
     }
 }
 
+/* Size of level 18 (levels are 0-based) */
+private const val mapSize = 67108864
+
 sealed class Config
 data class InitScaleAndScrollConfig(val scale: Float, val scrollX: Int, val scrollY: Int) : Config()
 data class ScaleForZoomOnPositionConfig(val scale: Float) : Config()
@@ -248,3 +317,9 @@ data class BoundariesConfig(val boundingBoxList: List<BoundingBox>) : Config()
 fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
     return any { it.contains(latitude, longitude) }
 }
+
+private class ApiFetchError : Exception()
+
+sealed interface WmtsState
+object Loading : WmtsState
+data class MapReady(val mapState: MapState) : WmtsState

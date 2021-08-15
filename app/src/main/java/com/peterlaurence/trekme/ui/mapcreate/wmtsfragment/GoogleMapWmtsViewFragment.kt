@@ -128,7 +128,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         wmtsSource = arguments?.let {
             GoogleMapWmtsViewFragmentArgs.fromBundle(it)
-        }?.wmtsSourceBundle?.wmtsSource
+        }?.wmtsSourceBundle?.wmtsSource?.also {
+            viewModel.setWmtsSource(it)
+        }
 
         setHasOptionsMenu(true)
         shouldCenterOnFirstLocation = savedInstanceState == null
@@ -177,8 +179,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fragmentWmtWarningLink.movementMethod = LinkMovementMethod.getInstance()
 
         initPlaceRecyclerView()
-        setMapView(MapView(requireContext()))
-        checkThenConfigureMapView()
+//        setMapView(MapView(requireContext()))
+//        checkThenConfigureMapView()
 
         return _binding!!.root
     }
@@ -356,8 +358,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
         mapView?.destroy()
 
         /* Create and configure a new MapView */
-        setMapView(MapView(requireContext()))
-        checkThenConfigureMapView()
+//        setMapView(MapView(requireContext()))
+//        checkThenConfigureMapView()
 
         /* Restore the scale and scroll */
         if (previousScale != null && previousScrollX != null && previousScrollY != null) {

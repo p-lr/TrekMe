@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.core.map.TileStream
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import java.io.File
 import java.io.FileInputStream
-import java.io.InputStream
+import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamProvider
 import ovh.plrapps.mapview.core.TileStreamProvider as MapViewTileStreamProvider
 
 
@@ -33,11 +33,16 @@ fun makeMapViewTileStreamProvider(map: Map): MapViewTileStreamProvider? {
 }
 
 fun TileStreamProvider.toMapViewTileStreamProvider(): MapViewTileStreamProvider {
-    return object : MapViewTileStreamProvider {
-        override fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream? {
-            val tileResult = this@toMapViewTileStreamProvider.getTileStream(row, col, zoomLvl)
-            return (tileResult as? TileStream)?.tileStream
-        }
+    return ovh.plrapps.mapview.core.TileStreamProvider { row, col, zoomLvl ->
+        val tileResult = this@toMapViewTileStreamProvider.getTileStream(row, col, zoomLvl)
+        (tileResult as? TileStream)?.tileStream
+    }
+}
+
+fun TileStreamProvider.toMapComposeTileStreamProvider(): MapComposeTileStreamProvider {
+    return MapComposeTileStreamProvider { row, col, zoomLvl ->
+        val tileResult = this@toMapComposeTileStreamProvider.getTileStream(row, col, zoomLvl)
+        (tileResult as? TileStream)?.tileStream
     }
 }
 

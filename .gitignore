@@ -12,6 +12,7 @@ build
 /captures
 /app/release
 /mapview-debug/*
+/mapcompose-debug/*
 deploy-release.sh
 compile_sign_and_run.sh
 *.hprof

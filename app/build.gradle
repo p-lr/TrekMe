@@ -59,6 +59,7 @@ dependencies {
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 //    implementation project(":mapview-debug")
+    implementation project(":mapcompose-debug")
     implementation 'ovh.plrapps:mapview:3.1.0'
     implementation 'com.android.billingclient:billing:4.0.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
