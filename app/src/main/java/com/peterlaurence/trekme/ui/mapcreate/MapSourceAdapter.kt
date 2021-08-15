@@ -150,6 +150,6 @@ class MapSourceAdapter(private val wmtsSourceSet: Array<WmtsSource>, private val
     }
 
     interface MapSourceSelectionListener {
-        fun onMapSourceSelected(m: WmtsSource)
+        fun onMapSourceSelected(source: WmtsSource)
     }
 }

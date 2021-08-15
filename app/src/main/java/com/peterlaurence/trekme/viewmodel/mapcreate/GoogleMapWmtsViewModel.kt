@@ -21,15 +21,14 @@ import com.peterlaurence.trekme.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
+import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
@@ -52,6 +51,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
         private val app: Application,
         private val downloadRepository: DownloadRepository,
         private val ignApiRepository: IgnApiRepository,
+        private val wmtsSourceRepository: WmtsSourceRepository,
         private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
         private val layerOverlayRepository: LayerOverlayRepository
 ) : ViewModel() {
@@ -125,8 +125,20 @@ class GoogleMapWmtsViewModel @Inject constructor(
             WmtsSource.IGN to defaultIgnLayer
     )
 
-    fun setWmtsSource(wmtsSource: WmtsSource) {
+    init {
+        wmtsSourceRepository.wmtsSourceState.map { source ->
+            source?.also { setWmtsSource(source) }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun setWmtsSource(wmtsSource: WmtsSource) {
         viewModelScope.launch {
+            /* Shutdown the previous MapState, if any */
+            (state.value as? MapReady)?.mapState?.shutdown()
+
+            /* Display the loading screen while building the new MapState */
+            states_.value = Loading
+
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
             }.onFailure {
@@ -143,7 +155,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
             /* Apply configuration */
             val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
             mapConfiguration?.forEach { conf ->
-                when(conf) {
+                when (conf) {
                     is ScaleLimitsConfig -> {
                         val minScale = conf.minScale
                         if (minScale == null) {
@@ -156,9 +168,12 @@ class GoogleMapWmtsViewModel @Inject constructor(
                     }
                     is InitScaleAndScrollConfig -> {
                         mapState.scale = conf.scale
-                        mapState.scroll = Offset(conf.scrollX.toFloat(), conf.scrollY.toFloat())
+                        launch {
+                            mapState.setScroll(Offset(conf.scrollX.toFloat(), conf.scrollY.toFloat()))
+                        }
                     }
-                    else -> { /* Nothing to do */ }
+                    else -> { /* Nothing to do */
+                    }
                 }
             }
 
@@ -166,9 +181,6 @@ class GoogleMapWmtsViewModel @Inject constructor(
             if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
                 // mapState.setMagnifyingFactor(1)
             }
-
-            /* Shutdown the previous MapState, if any */
-            (state.value as? MapReady)?.mapState?.shutdown()
 
             states_.value = MapReady(mapState)
         }
@@ -187,21 +199,21 @@ class GoogleMapWmtsViewModel @Inject constructor(
     }
 
     /**
-     * Returns the active primary layer for the given source.
+     * Returns the active layer for the given source.
      */
-    fun getPrimaryLayerForSource(wmtsSource: WmtsSource): Layer? {
+    fun getLayerForSource(wmtsSource: WmtsSource): Layer? {
         return when (wmtsSource) {
-            WmtsSource.IGN -> getIgnPrimaryLayer()
-            WmtsSource.OPEN_STREET_MAP -> getOsmPrimaryLayer()
+            WmtsSource.IGN -> getIgnLayer()
+            WmtsSource.OPEN_STREET_MAP -> getOsmLayer()
             else -> null
         }
     }
 
-    private fun getIgnPrimaryLayer(): Layer {
+    private fun getIgnLayer(): Layer {
         return activeLayerForSource[WmtsSource.IGN] ?: defaultIgnLayer
     }
 
-    private fun getOsmPrimaryLayer(): Layer {
+    private fun getOsmLayer(): Layer {
         return activeLayerForSource[WmtsSource.OPEN_STREET_MAP] ?: defaultOsmLayer
     }
 
@@ -227,7 +239,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
     suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider {
         val mapSourceData = when (wmtsSource) {
             WmtsSource.IGN -> {
-                val layer = getIgnPrimaryLayer()
+                val layer = getIgnLayer()
                 val overlays = getOverlayLayersForSource(wmtsSource)
                 val ignApi = ignApiRepository.getApi() ?: throw ApiFetchError()
                 IgnSourceData(ignApi, layer, overlays)
@@ -237,7 +249,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 OrdnanceSurveyData(api)
             }
             WmtsSource.OPEN_STREET_MAP -> {
-                val layer = getOsmPrimaryLayer()
+                val layer = getOsmLayer()
                 OsmSourceData(layer)
             }
             WmtsSource.SWISS_TOPO -> SwissTopoData
@@ -273,7 +285,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         viewModelScope.launch {
             val tileStreamProvider = createTileStreamProvider(wmtsSource) ?: return@launch
-            val layer = getPrimaryLayerForSource(wmtsSource)
+            val layer = getLayerForSource(wmtsSource)
             val request = DownloadMapRequest(wmtsSource, layer, mapSpec, tileCount, tileStreamProvider)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)

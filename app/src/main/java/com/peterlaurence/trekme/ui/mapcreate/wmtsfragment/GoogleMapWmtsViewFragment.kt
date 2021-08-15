@@ -126,11 +126,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // TODO: remove wmtsSource from this fragment and nav arg
         wmtsSource = arguments?.let {
             GoogleMapWmtsViewFragmentArgs.fromBundle(it)
-        }?.wmtsSourceBundle?.wmtsSource?.also {
-            viewModel.setWmtsSource(it)
-        }
+        }?.wmtsSourceBundle?.wmtsSource
 
         setHasOptionsMenu(true)
         shouldCenterOnFirstLocation = savedInstanceState == null
@@ -252,7 +251,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
                     val title = getString(R.string.ign_select_layer_title)
                     val layers = viewModel.getAvailablePrimaryLayersForSource(wmtsSource)
                             ?: return@also
-                    val activeLayer = viewModel.getPrimaryLayerForSource(wmtsSource) ?: return@also
+                    val activeLayer = viewModel.getLayerForSource(wmtsSource) ?: return@also
                     val ids = layers.map { it.id }
                     val values = layers.mapNotNull { translateLayerName(it) }
                     val selectedValue = translateLayerName(activeLayer) ?: return@also

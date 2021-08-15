@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.ui.mapcreate
 
-import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,38 +14,25 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
+import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.ui.mapcreate.MapSourceAdapter.MapSourceSelectionListener
 import com.peterlaurence.trekme.util.isEnglish
 import com.peterlaurence.trekme.util.isFrench
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * This fragment is used for displaying available WMTS map sources.
  *
  * @author P.Laurence on 08/04/18
  */
+@AndroidEntryPoint
 class MapCreateFragment : Fragment(), MapSourceSelectionListener {
-    private lateinit var wmtsSourceSet: Array<WmtsSource>
-
     private var _binding: FragmentMapCreateBinding? = null
     private val binding get() = _binding!!
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        /**
-         * When the app is in english, put [WmtsSource.USGS] in front.
-         * When in french, put [WmtsSource.IGN] in front.
-         */
-        wmtsSourceSet = WmtsSource.values().sortedBy {
-            if (isEnglish(context) && it == WmtsSource.USGS) {
-                -1
-            } else if (isFrench(context) && it == WmtsSource.IGN) {
-                -1
-            } else {
-                0
-            }
-        }.toTypedArray()
-    }
+    @Inject
+    lateinit var wmtsSourceRepository: WmtsSourceRepository
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -62,10 +48,25 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         _binding = null
     }
 
+    /**
+     * When the app is in english, put [WmtsSource.USGS] in front.
+     * When in french, put [WmtsSource.IGN] in front.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         val viewManager = LinearLayoutManager(context)
+        val wmtsSourceSet = WmtsSource.values().sortedBy {
+            if (isEnglish(requireContext()) && it == WmtsSource.USGS) {
+                -1
+            } else if (isFrench(requireContext()) && it == WmtsSource.IGN) {
+                -1
+            } else {
+                0
+            }
+        }.toTypedArray()
+
         val viewAdapter = MapSourceAdapter(
                 wmtsSourceSet, this, context?.getColor(R.color.colorAccent)
                 ?: Color.BLUE,
@@ -95,13 +96,15 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
     private fun showWmtsViewFragment(wmtsSource: WmtsSource) {
         val navController = findNavController()
         if (navController.currentDestination?.id == R.id.mapCreateFragment) {
+            // TODO: remove that bundle - just navigate to the destination without passing arg
             val bundle = WmtsSourceBundle(wmtsSource)
             val action = MapCreateFragmentDirections.actionMapCreateFragmentToGoogleMapWmtsViewFragment(bundle)
             navController.navigate(action)
         }
     }
 
-    override fun onMapSourceSelected(m: WmtsSource) {
-        showWmtsViewFragment(m)
+    override fun onMapSourceSelected(source: WmtsSource) {
+        showWmtsViewFragment(source)
+        wmtsSourceRepository.setMapSource(source)
     }
 }

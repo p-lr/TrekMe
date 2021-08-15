@@ -25,6 +25,7 @@ import com.peterlaurence.trekme.repositories.location.producers.GoogleLocationPr
 import com.peterlaurence.trekme.repositories.location.producers.NmeaOverBluetoothProducer
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
+import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.Module
@@ -95,6 +96,10 @@ object AppModule {
     @Singleton
     @Provides
     fun bindOrdnanceSurveyApiRepository(): OrdnanceSurveyApiRepository = OrdnanceSurveyApiRepository()
+
+    @Singleton
+    @Provides
+    fun bindWmtsSourceRepository(): WmtsSourceRepository = WmtsSourceRepository()
 
     @Singleton
     @Provides
