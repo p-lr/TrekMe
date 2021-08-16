@@ -121,7 +121,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
             )
     )
 
-    private val activeLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
+    private val activePrimaryLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
             WmtsSource.IGN to defaultIgnLayer
     )
 
@@ -193,7 +193,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
     fun getAvailablePrimaryLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
         return when (wmtsSource) {
             WmtsSource.IGN -> ignLayersPrimary
-            WmtsSource.OPEN_STREET_MAP -> osmLayers
+            WmtsSource.OPEN_STREET_MAP -> osmLayersPrimary
             else -> null
         }
     }
@@ -201,26 +201,26 @@ class GoogleMapWmtsViewModel @Inject constructor(
     /**
      * Returns the active layer for the given source.
      */
-    fun getLayerForSource(wmtsSource: WmtsSource): Layer? {
+    fun getActivePrimaryLayerForSource(wmtsSource: WmtsSource): Layer? {
         return when (wmtsSource) {
-            WmtsSource.IGN -> getIgnLayer()
-            WmtsSource.OPEN_STREET_MAP -> getOsmLayer()
+            WmtsSource.IGN -> getActivePrimaryIgnLayer()
+            WmtsSource.OPEN_STREET_MAP -> getActivePrimaryOsmLayer()
             else -> null
         }
     }
 
-    private fun getIgnLayer(): Layer {
-        return activeLayerForSource[WmtsSource.IGN] ?: defaultIgnLayer
+    private fun getActivePrimaryIgnLayer(): Layer {
+        return activePrimaryLayerForSource[WmtsSource.IGN] ?: defaultIgnLayer
     }
 
-    private fun getOsmLayer(): Layer {
-        return activeLayerForSource[WmtsSource.OPEN_STREET_MAP] ?: defaultOsmLayer
+    private fun getActivePrimaryOsmLayer(): Layer {
+        return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] ?: defaultOsmLayer
     }
 
-    fun setLayerForSourceFromId(wmtsSource: WmtsSource, layerId: String) {
-        val layer = getLayer(layerId)
+    fun setPrimaryLayerForSourceFromId(wmtsSource: WmtsSource, layerId: String) {
+        val layer = getPrimaryLayer(layerId)
         if (layer != null) {
-            activeLayerForSource[wmtsSource] = layer
+            activePrimaryLayerForSource[wmtsSource] = layer
         }
     }
 
@@ -239,7 +239,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
     suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider {
         val mapSourceData = when (wmtsSource) {
             WmtsSource.IGN -> {
-                val layer = getIgnLayer()
+                val layer = getActivePrimaryIgnLayer()
                 val overlays = getOverlayLayersForSource(wmtsSource)
                 val ignApi = ignApiRepository.getApi() ?: throw ApiFetchError()
                 IgnSourceData(ignApi, layer, overlays)
@@ -249,7 +249,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 OrdnanceSurveyData(api)
             }
             WmtsSource.OPEN_STREET_MAP -> {
-                val layer = getOsmLayer()
+                val layer = getActivePrimaryOsmLayer()
                 OsmSourceData(layer)
             }
             WmtsSource.SWISS_TOPO -> SwissTopoData
@@ -284,9 +284,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
         val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2)
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         viewModelScope.launch {
-            val tileStreamProvider = createTileStreamProvider(wmtsSource) ?: return@launch
-            val layer = getLayerForSource(wmtsSource)
-            val request = DownloadMapRequest(wmtsSource, layer, mapSpec, tileCount, tileStreamProvider)
+            val tileStreamProvider = runCatching {
+                createTileStreamProvider(wmtsSource)
+            }.getOrNull() ?: return@launch
+            val request = DownloadMapRequest(wmtsSource, mapSpec, tileCount, tileStreamProvider)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)

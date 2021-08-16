@@ -6,10 +6,9 @@ import com.peterlaurence.trekme.core.map.gson.MapGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
-import com.peterlaurence.trekme.core.providers.layers.Layer
 import java.io.File
 
-fun buildMap(mapSpec: MapSpec, layer: Layer?, mapOrigin: Map.MapOrigin,
+fun buildMap(mapSpec: MapSpec, mapOrigin: Map.MapOrigin,
              source: WmtsSource, folder: File, imageExtension: String = ".jpg"): Map {
     val mapGson = MapGson()
 
@@ -26,7 +25,6 @@ fun buildMap(mapSpec: MapSpec, layer: Layer?, mapOrigin: Map.MapOrigin,
     mapGson.provider = MapGson.Provider().apply {
         generated_by = mapOrigin
         wmts_source = source
-        layer_real_name = layer?.wmtsName
         image_extension = imageExtension
     }
 

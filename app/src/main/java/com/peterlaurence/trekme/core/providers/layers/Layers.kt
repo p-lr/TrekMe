@@ -37,9 +37,9 @@ const val osmStreet = "osmStreet"
 const val openTopoMap = "openTopoMap"
 
 /* All supported OSM layers */
-val osmLayers: List<OsmLayer> = listOf(WorldStreetMap, WorldTopoMap, OpenTopoMap)
+val osmLayersPrimary: List<OsmLayer> = listOf(WorldStreetMap, WorldTopoMap, OpenTopoMap)
 
-fun getLayer(id: String): Layer? {
+fun getPrimaryLayer(id: String): Layer? {
     return when (id) {
         ignPlanv2 -> PlanIgnV2
         ignScanExpressStd -> ScanExpressStandard

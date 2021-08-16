@@ -251,7 +251,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
                     val title = getString(R.string.ign_select_layer_title)
                     val layers = viewModel.getAvailablePrimaryLayersForSource(wmtsSource)
                             ?: return@also
-                    val activeLayer = viewModel.getLayerForSource(wmtsSource) ?: return@also
+                    val activeLayer = viewModel.getActivePrimaryLayerForSource(wmtsSource) ?: return@also
                     val ids = layers.map { it.id }
                     val values = layers.mapNotNull { translateLayerName(it) }
                     val selectedValue = translateLayerName(activeLayer) ?: return@also
@@ -347,7 +347,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val wmtsSource = wmtsSource ?: return
 
         /* Update the layer preference */
-        viewModel.setLayerForSourceFromId(wmtsSource, layerId)
+        viewModel.setPrimaryLayerForSourceFromId(wmtsSource, layerId)
 
         /* Remove the existing the MapView, while remembering scale and scroll */
         removeMapView()

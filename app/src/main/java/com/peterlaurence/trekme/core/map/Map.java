@@ -319,18 +319,6 @@ public class Map {
     }
 
     /**
-     * Returns the real name of the layer
-     */
-    @Nullable
-    public String getLayer() {
-        try {
-            return mMapGson.provider.layer_real_name;
-        } catch (NullPointerException e) {
-            return null;
-        }
-    }
-
-    /**
      * Get the number of calibration that should be defined.
      */
     public int getCalibrationPointsNumber() {

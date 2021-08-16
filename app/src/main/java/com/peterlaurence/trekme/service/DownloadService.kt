@@ -29,7 +29,6 @@ import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
-import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.service.event.*
@@ -227,7 +226,7 @@ class DownloadService : Service() {
         /* Specific to OSM, don't use more than 2 workers */
         val effectiveWorkerCount = if (source == WmtsSource.OPEN_STREET_MAP) 2 else workerCount
         launchDownloadTask(effectiveWorkerCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
-        postProcess(request.mapSpec, source, request.layer)
+        postProcess(request.mapSpec, source)
     }
 
     private suspend fun createDestDir(): File? {
@@ -270,7 +269,7 @@ class DownloadService : Service() {
         repository.postDownloadEvent(progressEvent)
     }
 
-    private fun postProcess(mapSpec: MapSpec, source: WmtsSource, layer: Layer?) {
+    private fun postProcess(mapSpec: MapSpec, source: WmtsSource) {
         val calibrationPoints = mapSpec.calibrationPoints
 
         /* Calibrate */
@@ -287,7 +286,7 @@ class DownloadService : Service() {
             Map.MapOrigin.WMTS
         }
 
-        val map = buildMap(mapSpec, layer, mapOrigin, source, destDir)
+        val map = buildMap(mapSpec, mapOrigin, source, destDir)
 
         scope.launch {
             calibrate(map)

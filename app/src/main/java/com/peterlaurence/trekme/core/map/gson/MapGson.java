@@ -98,7 +98,6 @@ public class MapGson {
     public static class Provider {
         public Map.MapOrigin generated_by;
         public WmtsSource wmts_source;
-        public String layer_real_name;
         public String image_extension;
     }
 }
