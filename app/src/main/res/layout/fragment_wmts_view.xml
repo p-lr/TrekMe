@@ -6,6 +6,7 @@
     android:layout_height="match_parent">
 
     <com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.GoogleMapWmtsUiView
+        android:id="@+id/google_map_wmts_ui_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintStart_toStartOf="parent"

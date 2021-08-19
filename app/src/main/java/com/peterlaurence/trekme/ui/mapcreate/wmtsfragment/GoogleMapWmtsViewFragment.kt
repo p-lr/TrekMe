@@ -35,11 +35,13 @@ import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaLayer
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaListener
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
 import com.peterlaurence.trekme.util.collectWhileResumed
+import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.parcelize.Parcelize
 import ovh.plrapps.mapview.MapView
@@ -234,6 +236,15 @@ class GoogleMapWmtsViewFragment : Fragment() {
                 moveToPlace(it)
             }
         }
+
+        /* A mdf hack to circumvent a nasty bug causing the AbstractComposeView to be not responsive
+         * to touch events at certain state transitions */
+        viewModel.state.map {
+            _binding?.googleMapWmtsUiView?.also {
+                it.disposeComposition()
+                it.createComposition()
+            }
+        }.collectWhileResumedIn(this)
 
         super.onCreateOptionsMenu(menu, inflater)
     }

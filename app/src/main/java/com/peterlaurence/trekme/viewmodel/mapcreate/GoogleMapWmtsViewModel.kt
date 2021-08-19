@@ -173,12 +173,12 @@ class GoogleMapWmtsViewModel @Inject constructor(
     }
 
     private fun updateMapState(wmtsSource: WmtsSource, formerProperties: FormerProperties? = null) {
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch {
             /* Shutdown the previous MapState, if any */
             state.value.getMapState()?.shutdown()
 
             /* Display the loading screen while building the new MapState */
-            states_.emit(Loading)
+            states_.value = Loading
 
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
@@ -236,7 +236,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 // mapState.setMagnifyingFactor(1)
             }
 
-            states_.emit(MapReady(mapState))
+            states_.value = MapReady(mapState)
         }
     }
 
