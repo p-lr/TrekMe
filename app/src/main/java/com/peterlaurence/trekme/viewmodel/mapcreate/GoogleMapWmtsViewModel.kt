@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
+import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaUiController
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
@@ -49,12 +50,13 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class GoogleMapWmtsViewModel @Inject constructor(
-        private val app: Application,
-        private val downloadRepository: DownloadRepository,
-        private val ignApiRepository: IgnApiRepository,
-        private val wmtsSourceRepository: WmtsSourceRepository,
-        private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
-        private val layerOverlayRepository: LayerOverlayRepository
+    private val app: Application,
+    private val downloadRepository: DownloadRepository,
+    private val ignApiRepository: IgnApiRepository,
+    private val wmtsSourceRepository: WmtsSourceRepository,
+    private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
+    private val layerOverlayRepository: LayerOverlayRepository,
+    mapCreateEventBus: MapCreateEventBus
 ) : ViewModel() {
     private val states_ = MutableStateFlow<WmtsState>(Loading)
     val state: StateFlow<WmtsState> = states_.asStateFlow()
@@ -68,69 +70,87 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val areaController = AreaUiController()
 
     private val scaleAndScrollInitConfig = mapOf(
-            WmtsSource.IGN to listOf(
-                    ScaleLimitsConfig(maxScale = 0.5f),
-                    ScaleForZoomOnPositionConfig(scale = 0.125f),
-                    LevelLimitsConfig(levelMax = 17),
-                    BoundariesConfig(listOf(
-                            BoundingBox(41.21, 51.05, -4.92, 8.37),        // France
-                            BoundingBox(-21.39, -20.86, 55.20, 55.84),     // La Réunion
-                            BoundingBox(2.07, 5.82, -54.66, -51.53),       // Guyane
-                            BoundingBox(15.82, 16.54, -61.88, -60.95),     // Guadeloupe
-                            BoundingBox(18.0, 18.135, -63.162, -62.965),   // St Martin
-                            BoundingBox(17.856, 17.988, -62.957, -62.778), // St Barthélemy
-                            BoundingBox(14.35, 14.93, -61.31, -60.75),     // Martinique
-                            BoundingBox(-17.945, -17.46, -149.97, -149.1), // Tahiti
-                    ))),
-            WmtsSource.OPEN_STREET_MAP to listOf(
-                    ScaleLimitsConfig(maxScale = 0.25f),
-                    BoundariesConfig(listOf(
-                            BoundingBox(-80.0, 83.0, -180.0, 180.0)        // World
-                    ))
-            ),
-            WmtsSource.USGS to listOf(
-                    ScaleLimitsConfig(maxScale = 0.25f),
-                    ScaleForZoomOnPositionConfig(scale = 0.125f),
-                    LevelLimitsConfig(levelMax = 16),
-                    BoundariesConfig(listOf(
-                            BoundingBox(24.69, 49.44, -124.68, -66.5)
-                    ))
-            ),
-            WmtsSource.SWISS_TOPO to listOf(
-                    InitScaleAndScrollConfig(0.0006149545f, 21064, 13788),
-                    ScaleLimitsConfig(minScale = 0.0006149545f, maxScale = 0.5f),
-                    ScaleForZoomOnPositionConfig(scale = 0.125f),
-                    LevelLimitsConfig(levelMax = 17),
-                    BoundariesConfig(listOf(
-                            BoundingBox(45.78, 47.838, 5.98, 10.61)
-                    ))
-            ),
-            WmtsSource.IGN_SPAIN to listOf(
-                    InitScaleAndScrollConfig(0.0003546317f, 11127, 8123),
-                    ScaleLimitsConfig(minScale = 0.0003546317f, maxScale = 0.5f),
-                    ScaleForZoomOnPositionConfig(scale = 0.125f),
-                    LevelLimitsConfig(levelMax = 17),
-                    BoundariesConfig(listOf(
-                            BoundingBox(35.78, 43.81, -9.55, 3.32)
-                    ))
-            ),
-            WmtsSource.ORDNANCE_SURVEY to listOf(InitScaleAndScrollConfig(0.000830759f, 27011, 17261),
-                    ScaleLimitsConfig(minScale = 0.000830759f, maxScale = 0.25f),
-                    LevelLimitsConfig(7, 16),
-                    ScaleForZoomOnPositionConfig(scale = 0.125f),
-                    BoundariesConfig(listOf(
-                            BoundingBox(49.8, 61.08, -8.32, 2.04)
-                    ))
+        WmtsSource.IGN to listOf(
+            ScaleLimitsConfig(maxScale = 0.5f),
+            ScaleForZoomOnPositionConfig(scale = 0.125f),
+            LevelLimitsConfig(levelMax = 17),
+            BoundariesConfig(
+                listOf(
+                    BoundingBox(41.21, 51.05, -4.92, 8.37),        // France
+                    BoundingBox(-21.39, -20.86, 55.20, 55.84),     // La Réunion
+                    BoundingBox(2.07, 5.82, -54.66, -51.53),       // Guyane
+                    BoundingBox(15.82, 16.54, -61.88, -60.95),     // Guadeloupe
+                    BoundingBox(18.0, 18.135, -63.162, -62.965),   // St Martin
+                    BoundingBox(17.856, 17.988, -62.957, -62.778), // St Barthélemy
+                    BoundingBox(14.35, 14.93, -61.31, -60.75),     // Martinique
+                    BoundingBox(-17.945, -17.46, -149.97, -149.1), // Tahiti
+                )
             )
+        ),
+        WmtsSource.OPEN_STREET_MAP to listOf(
+            ScaleLimitsConfig(maxScale = 0.25f),
+            BoundariesConfig(
+                listOf(
+                    BoundingBox(-80.0, 83.0, -180.0, 180.0)        // World
+                )
+            )
+        ),
+        WmtsSource.USGS to listOf(
+            ScaleLimitsConfig(maxScale = 0.25f),
+            ScaleForZoomOnPositionConfig(scale = 0.125f),
+            LevelLimitsConfig(levelMax = 16),
+            BoundariesConfig(
+                listOf(
+                    BoundingBox(24.69, 49.44, -124.68, -66.5)
+                )
+            )
+        ),
+        WmtsSource.SWISS_TOPO to listOf(
+            InitScaleAndScrollConfig(0.0006149545f, 21064, 13788),
+            ScaleLimitsConfig(minScale = 0.0006149545f, maxScale = 0.5f),
+            ScaleForZoomOnPositionConfig(scale = 0.125f),
+            LevelLimitsConfig(levelMax = 17),
+            BoundariesConfig(
+                listOf(
+                    BoundingBox(45.78, 47.838, 5.98, 10.61)
+                )
+            )
+        ),
+        WmtsSource.IGN_SPAIN to listOf(
+            InitScaleAndScrollConfig(0.0003546317f, 11127, 8123),
+            ScaleLimitsConfig(minScale = 0.0003546317f, maxScale = 0.5f),
+            ScaleForZoomOnPositionConfig(scale = 0.125f),
+            LevelLimitsConfig(levelMax = 17),
+            BoundariesConfig(
+                listOf(
+                    BoundingBox(35.78, 43.81, -9.55, 3.32)
+                )
+            )
+        ),
+        WmtsSource.ORDNANCE_SURVEY to listOf(
+            InitScaleAndScrollConfig(0.000830759f, 27011, 17261),
+            ScaleLimitsConfig(minScale = 0.000830759f, maxScale = 0.25f),
+            LevelLimitsConfig(7, 16),
+            ScaleForZoomOnPositionConfig(scale = 0.125f),
+            BoundariesConfig(
+                listOf(
+                    BoundingBox(49.8, 61.08, -8.32, 2.04)
+                )
+            )
+        )
     )
 
     private val activePrimaryLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
-            WmtsSource.IGN to defaultIgnLayer
+        WmtsSource.IGN to defaultIgnLayer
     )
 
     init {
         wmtsSourceRepository.wmtsSourceState.map { source ->
-            source?.also { setWmtsSource(source) }
+            source?.also { updateMapState(source) }
+        }.launchIn(viewModelScope)
+
+        mapCreateEventBus.layerSelectEvent.map {
+            onPrimaryLayerDefined(it)
         }.launchIn(viewModelScope)
     }
 
@@ -152,13 +172,13 @@ class GoogleMapWmtsViewModel @Inject constructor(
         }
     }
 
-    private fun setWmtsSource(wmtsSource: WmtsSource) {
-        viewModelScope.launch {
+    private fun updateMapState(wmtsSource: WmtsSource, formerProperties: FormerProperties? = null) {
+        viewModelScope.launch(Dispatchers.Default) {
             /* Shutdown the previous MapState, if any */
-            (state.value as? MapReady)?.mapState?.shutdown()
+            state.value.getMapState()?.shutdown()
 
             /* Display the loading screen while building the new MapState */
-            states_.value = Loading
+            states_.emit(Loading)
 
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
@@ -168,9 +188,9 @@ class GoogleMapWmtsViewModel @Inject constructor(
             }.getOrNull() ?: return@launch
 
             val mapState = MapState(
-                    19, mapSize, mapSize,
-                    tileStreamProvider = tileStreamProvider.toMapComposeTileStreamProvider(),
-                    workerCount = 16
+                19, mapSize, mapSize,
+                tileStreamProvider = tileStreamProvider.toMapComposeTileStreamProvider(),
+                workerCount = 16
             )
 
             /* Apply configuration */
@@ -190,11 +210,24 @@ class GoogleMapWmtsViewModel @Inject constructor(
                     is InitScaleAndScrollConfig -> {
                         mapState.scale = conf.scale
                         launch {
-                            mapState.setScroll(Offset(conf.scrollX.toFloat(), conf.scrollY.toFloat()))
+                            mapState.setScroll(
+                                Offset(
+                                    conf.scrollX.toFloat(),
+                                    conf.scrollY.toFloat()
+                                )
+                            )
                         }
                     }
                     else -> { /* Nothing to do */
                     }
+                }
+            }
+
+            /* Apply former settings, if any */
+            if (formerProperties != null) {
+                mapState.scale = formerProperties.scale
+                launch {
+                    mapState.setScroll(formerProperties.scroll)
                 }
             }
 
@@ -203,7 +236,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 // mapState.setMagnifyingFactor(1)
             }
 
-            states_.value = MapReady(mapState)
+            states_.emit(MapReady(mapState))
         }
     }
 
@@ -236,6 +269,18 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     private fun getActivePrimaryOsmLayer(): Layer {
         return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] ?: defaultOsmLayer
+    }
+
+    private fun onPrimaryLayerDefined(layerId: String) {
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+        setPrimaryLayerForSourceFromId(wmtsSource, layerId)
+
+        val formerProperties = state.value.getMapState()?.let {
+            FormerProperties(it.scale, it.scroll)
+        }
+        updateMapState(wmtsSource, formerProperties)
+
+        // TODO: restore the previous location
     }
 
     fun setPrimaryLayerForSourceFromId(wmtsSource: WmtsSource, layerId: String) {
@@ -300,8 +345,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
      * relevant repository before the service is started.
      * The service then process the request when it starts.
      */
-    fun onDownloadFormConfirmed(wmtsSource: WmtsSource,
-                                p1: Point, p2: Point, minLevel: Int, maxLevel: Int) {
+    fun onDownloadFormConfirmed(
+        wmtsSource: WmtsSource,
+        p1: Point, p2: Point, minLevel: Int, maxLevel: Int
+    ) {
         val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2)
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
         viewModelScope.launch {
@@ -318,7 +365,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
     /**
      * Simple check whether we are able to download tiles or not.
      */
-    private fun checkTileAccessibility(wmtsSource: WmtsSource, tileStreamProvider: TileStreamProvider) {
+    private fun checkTileAccessibility(
+        wmtsSource: WmtsSource,
+        tileStreamProvider: TileStreamProvider
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             _wmtsSourceAccessibility.value = when (wmtsSource) {
                 WmtsSource.IGN -> {
@@ -358,3 +408,13 @@ sealed interface WmtsState
 object Loading : WmtsState
 data class MapReady(val mapState: MapState) : WmtsState
 data class AreaSelection(val mapState: MapState, val areaUiController: AreaUiController) : WmtsState
+
+private fun WmtsState.getMapState(): MapState? {
+    return when (this) {
+        is AreaSelection -> mapState
+        Loading -> null
+        is MapReady -> mapState
+    }
+}
+
+private data class FormerProperties(val scale: Float, val scroll: Offset)
