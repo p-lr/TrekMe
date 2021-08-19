@@ -25,6 +25,7 @@ import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaUiController
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -63,6 +64,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     private val _wmtsSourceAccessibility = MutableStateFlow(true)
     val wmtsSourceAccessibility = _wmtsSourceAccessibility.asStateFlow()
+
+    private val areaController = AreaUiController()
 
     private val scaleAndScrollInitConfig = mapOf(
             WmtsSource.IGN to listOf(
@@ -129,6 +132,24 @@ class GoogleMapWmtsViewModel @Inject constructor(
         wmtsSourceRepository.wmtsSourceState.map { source ->
             source?.also { setWmtsSource(source) }
         }.launchIn(viewModelScope)
+    }
+
+    fun toggleArea() {
+        viewModelScope.launch {
+            val nextState = when (val st = state.value) {
+                is AreaSelection -> {
+                    areaController.removeArea(st.mapState)
+                    MapReady(st.mapState)
+                }
+                Loading -> null
+                is MapReady -> {
+                    areaController.addArea(st.mapState)
+                    AreaSelection(st.mapState, areaController)
+                }
+            } ?: return@launch
+
+            states_.value = nextState
+        }
     }
 
     private fun setWmtsSource(wmtsSource: WmtsSource) {
@@ -336,3 +357,4 @@ private class ApiFetchError : Exception()
 sealed interface WmtsState
 object Loading : WmtsState
 data class MapReady(val mapState: MapState) : WmtsState
+data class AreaSelection(val mapState: MapState, val areaUiController: AreaUiController) : WmtsState

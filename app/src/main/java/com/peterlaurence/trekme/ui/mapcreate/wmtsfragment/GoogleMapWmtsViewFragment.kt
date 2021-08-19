@@ -242,9 +242,10 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.map_area_widget_id -> {
-                areaLayer?.detach()
-                addAreaLayer()
-                _binding?.fabSave?.visibility = View.VISIBLE
+                viewModel.toggleArea()
+//                areaLayer?.detach()
+//                addAreaLayer()
+//                _binding?.fabSave?.visibility = View.VISIBLE
             }
             R.id.map_layer_menu_id -> {
                 wmtsSource?.also { wmtsSource ->
