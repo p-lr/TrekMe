@@ -80,9 +80,6 @@
         android:id="@+id/googleMapWmtsViewFragment"
         android:name="com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment"
         android:label="@string/google_map_wmts_label">
-        <argument
-            android:name="wmtsSourceBundle"
-            app:argType="com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle" />
         <action
             android:id="@+id/action_googleMapWmtsViewFragment_to_layerOverlayFragment"
             app:destination="@id/layerOverlayFragment" />
@@ -131,7 +128,7 @@
         android:label="LayerOverlayFragment" >
         <argument
             android:name="wmtsSourceBundle"
-            app:argType="com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle" />
+            app:argType="com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerOverlayDataBundle" />
     </fragment>
     <fragment
         android:id="@+id/gpsProFragment"

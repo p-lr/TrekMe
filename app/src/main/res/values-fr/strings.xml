@@ -317,4 +317,5 @@
     <string name="gps_pro_help_url">https://github.com/peterLaurence/TrekMe/blob/master/doc/gpspro/doc_fr.md</string>
     <string name="loading_maps">Chargement des cartes…</string>
     <string name="choose_map_thumbnail">Vous pouvez choisir une image pour illustrer votre carte.\nContinuer ?</string>
+    <string name="validate_area">Valider</string>
 </resources>

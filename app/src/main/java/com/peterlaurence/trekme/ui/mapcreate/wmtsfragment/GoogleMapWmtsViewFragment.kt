@@ -19,16 +19,14 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
-import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
-import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialog
-import com.peterlaurence.trekme.ui.mapcreate.dialogs.WmtsLevelsDialogIgn
+import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
+import com.peterlaurence.trekme.ui.mapcreate.dialogs.*
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaLayer
@@ -36,7 +34,7 @@ import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaListene
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileResumedIn
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapViewTileStreamProvider
+import com.peterlaurence.trekme.util.collectWhileStartedIn
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -45,7 +43,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.parcelize.Parcelize
 import ovh.plrapps.mapview.MapView
-import ovh.plrapps.mapview.MapViewConfiguration
 import ovh.plrapps.mapview.api.*
 import javax.inject.Inject
 
@@ -90,6 +87,9 @@ class GoogleMapWmtsViewFragment : Fragment() {
     @Inject
     lateinit var locationSource: LocationSource
 
+    @Inject
+    lateinit var wmtsSourceRepository: WmtsSourceRepository
+
     private var wmtsSource: WmtsSource? = null
     private var mapView: MapView? = null
     private var areaLayer: AreaLayer? = null
@@ -107,12 +107,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
     /* Size of level 18 (levels are 0-based) */
     private val mapSize = 67108864
 
-    private val tileSize = 256
-    private val x0 = -20037508.3427892476320267
-    private val y0 = -x0
-    private val x1 = -x0
-    private val y1 = x0
-
     private val layerIdToResId = mapOf(
             ignPlanv2 to R.string.layer_ign_plan_v2,
             ignScanExpressStd to R.string.layer_ign_scan_express_std,
@@ -128,10 +122,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // TODO: remove wmtsSource from this fragment and nav arg
-        wmtsSource = arguments?.let {
-            GoogleMapWmtsViewFragmentArgs.fromBundle(it)
-        }?.wmtsSourceBundle?.wmtsSource
+        wmtsSource = wmtsSourceRepository.wmtsSourceState.value
 
         setHasOptionsMenu(true)
         shouldCenterOnFirstLocation = savedInstanceState == null
@@ -237,7 +228,11 @@ class GoogleMapWmtsViewFragment : Fragment() {
             }
         }
 
-        /* A mdf hack to circumvent a nasty bug causing the AbstractComposeView to be not responsive
+        eventBus.showDownloadFormEvent.map {
+            showDownloadForm(it)
+        }.collectWhileStartedIn(this)
+
+        /* A hack to circumvent a nasty bug causing the AbstractComposeView to be not responsive
          * to touch events at certain state transitions */
         viewModel.state.map {
             _binding?.googleMapWmtsUiView?.also {
@@ -277,7 +272,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
             }
             R.id.overlay_layers_id -> {
                 wmtsSource?.also {
-                    val bundle = WmtsSourceBundle(it)
+                    val bundle = LayerOverlayDataBundle(it)
                     val action = GoogleMapWmtsViewFragmentDirections.actionGoogleMapWmtsViewFragmentToLayerOverlayFragment(bundle)
                     findNavController().navigate(action)
                 }
@@ -472,31 +467,31 @@ class GoogleMapWmtsViewFragment : Fragment() {
     }
 
     private fun configureMapView(tileStreamProvider: TileStreamProvider, mapConfig: List<Config>? = null) {
-        if (_binding == null) return
-        val mapView = mapView ?: return
-
-        val config = MapViewConfiguration(
-                19, mapSize, mapSize, tileSize,
-                tileStreamProvider.toMapViewTileStreamProvider()
-        ).setWorkerCount(16).apply {
-            /* If we're provided a config, apply it */
-            mapConfig?.also {
-                it.filterIsInstance<ScaleLimitsConfig>().firstOrNull().also { conf ->
-                    conf?.minScale?.also { minScale -> setMinScale(minScale) }
-                    conf?.maxScale?.also { maxScale -> setMaxScale(maxScale) }
-                }
-            }
-        }
-
-        /* OSM maps renders too small text. As a workaround, we set the magnifying factor to 1. */
-        if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
-            config.setMagnifyingFactor(1)
-        }
-
-        mapView.configure(config)
-
-        /* Map calibration */
-        mapView.defineBounds(x0, y0, x1, y1)
+//        if (_binding == null) return
+//        val mapView = mapView ?: return
+//
+//        val config = MapViewConfiguration(
+//                19, mapSize, mapSize, tileSize,
+//                tileStreamProvider.toMapViewTileStreamProvider()
+//        ).setWorkerCount(16).apply {
+//            /* If we're provided a config, apply it */
+//            mapConfig?.also {
+//                it.filterIsInstance<ScaleLimitsConfig>().firstOrNull().also { conf ->
+//                    conf?.minScale?.also { minScale -> setMinScale(minScale) }
+//                    conf?.maxScale?.also { maxScale -> setMaxScale(maxScale) }
+//                }
+//            }
+//        }
+//
+//        /* OSM maps renders too small text. As a workaround, we set the magnifying factor to 1. */
+//        if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
+//            config.setMagnifyingFactor(1)
+//        }
+//
+//        mapView.configure(config)
+//
+//        /* Map calibration */
+//        mapView.defineBounds(x0, y0, x1, y1)
     }
 
     private fun setMapView(mapView: MapView) {
@@ -537,39 +532,49 @@ class GoogleMapWmtsViewFragment : Fragment() {
      * Called when the user validates his area by clicking on the floating action button.
      */
     private fun validateArea() {
-        if (this::area.isInitialized) {
-            val fm = activity?.supportFragmentManager
-            if (fm != null) {
-                wmtsSource?.let {
-                    val mapConfiguration = viewModel.getScaleAndScrollConfig(it)
+//        if (this::area.isInitialized) {
+//            val fm = activity?.supportFragmentManager
+//            if (fm != null) {
+//                wmtsSource?.let {
+//                    val mapConfiguration = viewModel.getScaleAndScrollConfig(it)
+//
+//                    /* Specifically for Cadastre IGN layer, set the startMaxLevel to 17 */
+//                    val hasCadastreOverlay = viewModel.getOverlayLayersForSource(it).any { layerProp ->
+//                        layerProp.layer is Cadastre
+//                    }
+//                    val startMaxLevel = if (hasCadastreOverlay) 17 else null
+//
+//                    /* Otherwise, honor the level limits configuration for this source, if any. */
+//                    val levelConf = mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
+//
+//                    val mapSourceBundle = if (levelConf != null) {
+//                        if (startMaxLevel != null) {
+//                            WmtsSourceBundle(it, levelConf.levelMin, levelConf.levelMax, startMaxLevel)
+//                        } else {
+//                            WmtsSourceBundle(it, levelConf.levelMin, levelConf.levelMax)
+//                        }
+//                    } else {
+//                        WmtsSourceBundle(it)
+//                    }
+//                    val wmtsLevelsDialog = if (it == WmtsSource.IGN) {
+//                        WmtsLevelsDialogIgn.newInstance(area, mapSourceBundle)
+//                    } else {
+//                        WmtsLevelsDialog.newInstance(area, mapSourceBundle)
+//                    }
+//                    wmtsLevelsDialog.show(fm, "fragment")
+//                }
+//            }
+//        }
+    }
 
-                    /* Specifically for Cadastre IGN layer, set the startMaxLevel to 17 */
-                    val hasCadastreOverlay = viewModel.getOverlayLayersForSource(it).any { layerProp ->
-                        layerProp.layer is Cadastre
-                    }
-                    val startMaxLevel = if (hasCadastreOverlay) 17 else null
-
-                    /* Otherwise, honor the level limits configuration for this source, if any. */
-                    val levelConf = mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
-
-                    val mapSourceBundle = if (levelConf != null) {
-                        if (startMaxLevel != null) {
-                            WmtsSourceBundle(it, levelConf.levelMin, levelConf.levelMax, startMaxLevel)
-                        } else {
-                            WmtsSourceBundle(it, levelConf.levelMin, levelConf.levelMax)
-                        }
-                    } else {
-                        WmtsSourceBundle(it)
-                    }
-                    val wmtsLevelsDialog = if (it == WmtsSource.IGN) {
-                        WmtsLevelsDialogIgn.newInstance(area, mapSourceBundle)
-                    } else {
-                        WmtsLevelsDialog.newInstance(area, mapSourceBundle)
-                    }
-                    wmtsLevelsDialog.show(fm, "fragment")
-                }
-            }
+    private fun showDownloadForm(data: DownloadFormDataBundle) {
+        val fm = activity?.supportFragmentManager ?: return
+        val wmtsLevelsDialog = if (data.wmtsSource == WmtsSource.IGN) {
+            WmtsLevelsDialogIgn.newInstance(data)
+        } else {
+            WmtsLevelsDialog.newInstance(data)
         }
+        wmtsLevelsDialog.show(fm, "fragment")
     }
 
     private fun onLocationReceived(location: Location) {

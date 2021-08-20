@@ -9,7 +9,6 @@ import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
 import com.peterlaurence.trekme.core.mapsource.*
-import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.providers.bitmap.*
@@ -24,9 +23,12 @@ import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
+import com.peterlaurence.trekme.ui.mapcreate.dialogs.DownloadFormDataBundle
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaUiController
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.Point
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.toDomain
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -56,10 +58,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val wmtsSourceRepository: WmtsSourceRepository,
     private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
     private val layerOverlayRepository: LayerOverlayRepository,
-    mapCreateEventBus: MapCreateEventBus
+    private val mapCreateEventBus: MapCreateEventBus
 ) : ViewModel() {
-    private val states_ = MutableStateFlow<WmtsState>(Loading)
-    val state: StateFlow<WmtsState> = states_.asStateFlow()
+    private val _states = MutableStateFlow<WmtsState>(Loading)
+    val state: StateFlow<WmtsState> = _states.asStateFlow()
 
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
@@ -168,7 +170,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 }
             } ?: return@launch
 
-            states_.value = nextState
+            _states.value = nextState
         }
     }
 
@@ -178,7 +180,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
             state.value.getMapState()?.shutdown()
 
             /* Display the loading screen while building the new MapState */
-            states_.value = Loading
+            _states.value = Loading
 
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
@@ -236,7 +238,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 // mapState.setMagnifyingFactor(1)
             }
 
-            states_.value = MapReady(mapState)
+            _states.value = MapReady(mapState)
         }
     }
 
@@ -293,7 +295,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
     /**
      * Returns the active overlay layers for the given source.
      */
-    fun getOverlayLayersForSource(wmtsSource: WmtsSource): List<LayerProperties> {
+    private fun getOverlayLayersForSource(wmtsSource: WmtsSource): List<LayerProperties> {
         return layerOverlayRepository.getLayerProperties(wmtsSource)
     }
 
@@ -340,6 +342,49 @@ class GoogleMapWmtsViewModel @Inject constructor(
         }.getOrNull()
     }
 
+    fun onValidateArea() {
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+        val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
+
+        /* Specifically for Cadastre IGN layer, set the startMaxLevel to 17 */
+        val hasCadastreOverlay = getOverlayLayersForSource(wmtsSource).any { layerProp ->
+            layerProp.layer is Cadastre
+        }
+        val startMaxLevel = if (hasCadastreOverlay) 17 else null
+
+        /* Otherwise, honor the level limits configuration for this source, if any. */
+        val levelConf = mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
+
+        /* At this point, the current state should be AreaSelection */
+        val areaSelectionState = _states.value as? AreaSelection ?: return
+
+        fun interpolate(t: Double, min: Double, max: Double) = min + t * (max - min)
+        val p1 = with(areaSelectionState.areaUiController) {
+            Point(
+                interpolate(p1x, x0, x1),
+                interpolate(p1y, y0, y1)
+            )
+        }
+        val p2 = with(areaSelectionState.areaUiController) {
+            Point(
+                interpolate(p2x, x0, x1),
+                interpolate(p2y, y0, y1)
+            )
+        }
+
+        val mapSourceBundle = if (levelConf != null) {
+            if (startMaxLevel != null) {
+                DownloadFormDataBundle(wmtsSource, p1, p2, levelConf.levelMin, levelConf.levelMax, startMaxLevel)
+            } else {
+                DownloadFormDataBundle(wmtsSource, p1, p2, levelConf.levelMin, levelConf.levelMax)
+            }
+        } else {
+            DownloadFormDataBundle(wmtsSource, p1, p2)
+        }
+
+        mapCreateEventBus.showDownloadForm(mapSourceBundle)
+    }
+
     /**
      * We start the download with the [DownloadService]. The download request is posted to the
      * relevant repository before the service is started.
@@ -349,8 +394,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
         wmtsSource: WmtsSource,
         p1: Point, p2: Point, minLevel: Int, maxLevel: Int
     ) {
-        val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2)
-        val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
+        val mapSpec = getMapSpec(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
+        val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
@@ -390,6 +435,11 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
 /* Size of level 18 (levels are 0-based) */
 private const val mapSize = 67108864
+
+private const val x0 = -20037508.3427892476320267
+private const val y0 = -x0
+private const val x1 = -x0
+private const val y1 = x0
 
 sealed class Config
 data class InitScaleAndScrollConfig(val scale: Float, val scrollX: Int, val scrollY: Int) : Config()

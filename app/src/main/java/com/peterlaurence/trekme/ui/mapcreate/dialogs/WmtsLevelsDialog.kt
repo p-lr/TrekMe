@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.ui.mapcreate.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
@@ -13,13 +14,13 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
-import com.peterlaurence.trekme.core.mapsource.wmts.Point
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
 import com.peterlaurence.trekme.core.mapsource.wmts.toTransactionsNumber
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.Area
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.Point
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.toDomain
 import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
+import kotlinx.parcelize.Parcelize
 import java.text.NumberFormat
 
 
@@ -41,22 +42,20 @@ open class WmtsLevelsDialog : DialogFragment() {
 
     private lateinit var transactionsTextView: TextView
     private lateinit var mapSizeTextView: TextView
-    private var wmtsSourceBundle: WmtsSourceBundle? = null
+    private var downloadFormDataBundle: DownloadFormDataBundle? = null
     private val wmtsSource: WmtsSource?
-        get() = wmtsSourceBundle?.wmtsSource
+        get() = downloadFormDataBundle?.wmtsSource
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
 
     companion object {
         const val ARG_WMTS_SOURCE = "WmtsLevelsDialog_wmtsSource"
-        const val ARG_AREA = "WmtsLevelsDialog_area"
 
-        fun newInstance(area: Area, wmtsSourceBundle: WmtsSourceBundle): WmtsLevelsDialog {
+        fun newInstance(downloadFormDataBundle: DownloadFormDataBundle): WmtsLevelsDialog {
             val f = WmtsLevelsDialog()
 
             // Supply num input as an argument.
             val args = Bundle()
-            args.putParcelable(ARG_AREA, area)
-            args.putParcelable(ARG_WMTS_SOURCE, wmtsSourceBundle)
+            args.putParcelable(ARG_WMTS_SOURCE, downloadFormDataBundle)
             f.arguments = args
 
             return f
@@ -66,8 +65,8 @@ open class WmtsLevelsDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.dialog_wmts, null)
-        wmtsSourceBundle = arguments?.getParcelable(ARG_WMTS_SOURCE)
-        wmtsSourceBundle?.also {
+        downloadFormDataBundle = arguments?.getParcelable(ARG_WMTS_SOURCE)
+        downloadFormDataBundle?.also {
             minLevel = it.levelMin
             maxLevel = it.levelMax
             startMaxLevel = it.startMaxLevel
@@ -172,7 +171,7 @@ open class WmtsLevelsDialog : DialogFragment() {
     fun updateTransactionCount() {
         val (p1, p2) = getPointsOfArea()
 
-        val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1, p2)
+        val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1.toDomain(), p2.toDomain())
 
         val numberOfTransactions = tileCount.toTransactionsNumber()
 
@@ -203,9 +202,19 @@ open class WmtsLevelsDialog : DialogFragment() {
     }
 
     private fun getPointsOfArea(): Pair<Point, Point> {
-        val area = arguments?.get(ARG_AREA) as Area
-        val p1 = Point(area.relativeX1, area.relativeY1)
-        val p2 = Point(area.relativeX2, area.relativeY2)
+        val data = arguments?.get(ARG_WMTS_SOURCE) as DownloadFormDataBundle
+        val p1 = data.p1
+        val p2 = data.p2
         return Pair(p1, p2)
     }
 }
+
+@Parcelize
+data class DownloadFormDataBundle(
+    val wmtsSource: WmtsSource,
+    val p1: Point,
+    val p2: Point,
+    val levelMin: Int = 1,
+    val levelMax: Int = 18,
+    val startMaxLevel: Int = 16
+) : Parcelable

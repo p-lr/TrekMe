@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.mapsource.WmtsSourceBundle
 import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.ui.mapcreate.MapSourceAdapter.MapSourceSelectionListener
@@ -93,18 +92,16 @@ class MapCreateFragment : Fragment(), MapSourceSelectionListener {
         }
     }
 
-    private fun showWmtsViewFragment(wmtsSource: WmtsSource) {
+    private fun showWmtsViewFragment() {
         val navController = findNavController()
         if (navController.currentDestination?.id == R.id.mapCreateFragment) {
-            // TODO: remove that bundle - just navigate to the destination without passing arg
-            val bundle = WmtsSourceBundle(wmtsSource)
-            val action = MapCreateFragmentDirections.actionMapCreateFragmentToGoogleMapWmtsViewFragment(bundle)
+            val action = MapCreateFragmentDirections.actionMapCreateFragmentToGoogleMapWmtsViewFragment()
             navController.navigate(action)
         }
     }
 
     override fun onMapSourceSelected(source: WmtsSource) {
-        showWmtsViewFragment(source)
+        showWmtsViewFragment()
         wmtsSourceRepository.setMapSource(source)
     }
 }
