@@ -104,9 +104,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
     private lateinit var area: Area
 
-    /* Size of level 18 (levels are 0-based) */
-    private val mapSize = 67108864
-
     private val layerIdToResId = mapOf(
             ignPlanv2 to R.string.layer_ign_plan_v2,
             ignScanExpressStd to R.string.layer_ign_scan_express_std,
@@ -130,7 +127,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
         /* Listen to position update */
         locationSource.locationFlow.collectWhileResumed(this) { loc ->
-            onLocationReceived(loc)
+            viewModel.onLocationReceived(loc)
         }
 
         /* Listen to places search results */
@@ -441,6 +438,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         return getString(res)
     }
 
+    // TODO: move this on Compose side
     private fun showVpsFailureMessage() {
         val binding = _binding ?: return
         binding.fragmentWmtWarning.visibility = View.VISIBLE
@@ -448,6 +446,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         binding.fragmentWmtWarning.text = getText(R.string.mapreate_warning_vps)
     }
 
+    // TODO: move this on Compose side
     private fun showWarningMessage() {
         val binding = _binding ?: return
         binding.fragmentWmtWarning.visibility = View.VISIBLE

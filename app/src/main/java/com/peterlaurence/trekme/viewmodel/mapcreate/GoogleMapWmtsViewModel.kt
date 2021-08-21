@@ -11,6 +11,9 @@ import com.peterlaurence.trekme.core.map.contains
 import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
+import com.peterlaurence.trekme.core.model.Location
+import com.peterlaurence.trekme.core.model.LocationSource
+import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
@@ -23,10 +26,12 @@ import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
+import com.peterlaurence.trekme.ui.common.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.DownloadFormDataBundle
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaUiController
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.Point
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.toDomain
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
@@ -58,7 +63,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val wmtsSourceRepository: WmtsSourceRepository,
     private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
     private val layerOverlayRepository: LayerOverlayRepository,
-    private val mapCreateEventBus: MapCreateEventBus
+    private val mapCreateEventBus: MapCreateEventBus,
+    private val locationSource: LocationSource
 ) : ViewModel() {
     private val _states = MutableStateFlow<WmtsState>(Loading)
     val state: StateFlow<WmtsState> = _states.asStateFlow()
@@ -145,6 +151,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val activePrimaryLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
         WmtsSource.IGN to defaultIgnLayer
     )
+
+    private val projection = MercatorProjection()
 
     init {
         wmtsSourceRepository.wmtsSourceState.map { source ->
@@ -239,6 +247,9 @@ class GoogleMapWmtsViewModel @Inject constructor(
             }
 
             _states.value = MapReady(mapState)
+
+            /* Restore the location marker right now - even if subsequent updates will do it anyway. */
+            updatePositionOneTime()
         }
     }
 
@@ -282,7 +293,14 @@ class GoogleMapWmtsViewModel @Inject constructor(
         }
         updateMapState(wmtsSource, formerProperties)
 
-        // TODO: restore the previous location
+        /* Restore the location marker right now - even if subsequent updates will do it anyway. */
+        updatePositionOneTime()
+    }
+
+    private fun updatePositionOneTime() {
+        locationSource.locationFlow.take(1).map {
+            onLocationReceived(it)
+        }.launchIn(viewModelScope)
     }
 
     fun setPrimaryLayerForSourceFromId(wmtsSource: WmtsSource, layerId: String) {
@@ -353,7 +371,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
         val startMaxLevel = if (hasCadastreOverlay) 17 else null
 
         /* Otherwise, honor the level limits configuration for this source, if any. */
-        val levelConf = mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
+        val levelConf =
+            mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
 
         /* At this point, the current state should be AreaSelection */
         val areaSelectionState = _states.value as? AreaSelection ?: return
@@ -374,7 +393,14 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
         val mapSourceBundle = if (levelConf != null) {
             if (startMaxLevel != null) {
-                DownloadFormDataBundle(wmtsSource, p1, p2, levelConf.levelMin, levelConf.levelMax, startMaxLevel)
+                DownloadFormDataBundle(
+                    wmtsSource,
+                    p1,
+                    p2,
+                    levelConf.levelMin,
+                    levelConf.levelMax,
+                    startMaxLevel
+                )
             } else {
                 DownloadFormDataBundle(wmtsSource, p1, p2, levelConf.levelMin, levelConf.levelMax)
             }
@@ -431,7 +457,63 @@ class GoogleMapWmtsViewModel @Inject constructor(
             }
         }
     }
+
+    fun onLocationReceived(location: Location) {
+        /* If there is no MapState, no need to go further */
+        val mapState = _states.value.getMapState() ?: return
+
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+
+        viewModelScope.launch {
+            /* Project lat/lon off UI thread */
+            val projectedValues = withContext(Dispatchers.Default) {
+                projection.doProjection(location.latitude, location.longitude)
+            }
+
+            /* Update the position */
+            if (projectedValues != null) {
+                updatePosition(mapState, projectedValues[0], projectedValues[1])
+//                if (shouldCenterOnFirstLocation) {
+//                    val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
+//                    val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
+//                    boundaryConf?.boundingBoxList?.also { boxes ->
+//                        if (boxes.contains(location.latitude, location.longitude)) {
+//                            centerOnPosition()
+//                        }
+//                    }
+//
+//                    shouldCenterOnFirstLocation = false
+//                }
+            }
+        }
+    }
+
+    /**
+     * Update the position on the map. The first time we update the position, we add the
+     * [PositionMarker].
+     *
+     * @param X the projected X coordinate
+     * @param Y the projected Y coordinate
+     */
+    private fun updatePosition(mapState: MapState, X: Double, Y: Double) {
+        val x = normalize(X, x0, x1)
+        val y = normalize(Y, y0, y1)
+
+        if (mapState.hasMarker(positionMarkerId)) {
+            mapState.moveMarker(positionMarkerId, x, y)
+        } else {
+            mapState.addMarker(positionMarkerId, x, y, relativeOffset = Offset(-0.5f, -0.5f)) {
+                PositionMarker()
+            }
+        }
+    }
+
+    private fun normalize(t: Double, min: Double, max: Double): Double {
+        return (t - min) / (max - min)
+    }
 }
+
+private const val positionMarkerId = "position"
 
 /* Size of level 18 (levels are 0-based) */
 private const val mapSize = 67108864
