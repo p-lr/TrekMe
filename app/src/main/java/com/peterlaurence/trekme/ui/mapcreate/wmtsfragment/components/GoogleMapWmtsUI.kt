@@ -4,12 +4,8 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -27,6 +23,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas
 import ovh.plrapps.mapcompose.api.fullSize
 import ovh.plrapps.mapcompose.api.scale
@@ -39,15 +36,11 @@ import kotlin.math.min
 fun GoogleMapWmtsUI(
     modifier: Modifier,
     wmtsState: WmtsState,
-    onToggleArea: () -> Unit,
     onValidateArea: () -> Unit
 ) {
     when (wmtsState) {
         is MapReady -> {
-            Box(modifier) {
-                MapUI(state = wmtsState.mapState)
-                FabAreaSelection(Modifier.padding(16.dp), onToggleArea)
-            }
+            MapUI(state = wmtsState.mapState)
         }
         is Loading -> {
 
@@ -81,8 +74,8 @@ fun GoogleMapWmtsUI(
                         .align(Alignment.BottomEnd)
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
+                        .height(56.dp)
                 ) {
-                    FabAreaSelection(Modifier.padding(end = 16.dp), onToggleArea)
                     Button(
                         onClick = onValidateArea,
                         modifier = Modifier
@@ -98,11 +91,9 @@ fun GoogleMapWmtsUI(
 
 
 @Composable
-private fun BoxScope.FabAreaSelection(modifier: Modifier, onToggleArea: () -> Unit) {
+private fun FabAreaSelection(onToggleArea: () -> Unit) {
     FloatingActionButton(
         onClick = onToggleArea,
-        modifier = modifier
-            .align(Alignment.BottomEnd)
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_crop_free_white_24dp),
@@ -150,13 +141,42 @@ class GoogleMapWmtsUiView @JvmOverloads constructor(
             viewModel(findFragment<GoogleMapWmtsViewFragment>().requireActivity())
         val state by viewModel.state.collectAsState()
 
+        val errors = viewModel.errorListState.toList()
+        val scaffoldState: ScaffoldState = rememberScaffoldState()
+        val scope = rememberCoroutineScope()
+
         TrekMeTheme {
-            GoogleMapWmtsUI(
+
+            if (errors.isNotEmpty()) {
+                val ok = stringResource(id = R.string.ok)
+                val message = when (val err = errors.first()) {
+                    is ApiError -> "Api error ${err.data}"
+                    VpnError -> "Vpn error"
+                }
+                SideEffect {
+                    scope.launch {
+                        scaffoldState.snackbarHostState
+                            .showSnackbar(message, actionLabel = ok)
+                    }
+                    viewModel.acknowledgeError()
+                }
+            }
+
+            Scaffold(
                 Modifier.fillMaxSize(),
-                state,
-                viewModel::toggleArea,
-                viewModel::onValidateArea
-            )
+                scaffoldState = scaffoldState,
+                floatingActionButton = {
+                    if (state is MapReady || state is AreaSelection) {
+                        FabAreaSelection(viewModel::toggleArea)
+                    }
+                },
+            ) {
+                GoogleMapWmtsUI(
+                    Modifier.fillMaxSize(),
+                    state,
+                    viewModel::onValidateArea,
+                )
+            }
         }
     }
 }

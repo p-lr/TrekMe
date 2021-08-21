@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.viewmodel.mapcreate
 
 import android.app.Application
 import android.content.Intent
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -68,6 +69,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
 ) : ViewModel() {
     private val _states = MutableStateFlow<WmtsState>(Loading)
     val state: StateFlow<WmtsState> = _states.asStateFlow()
+
+    val errorListState = mutableStateListOf<WmtsError>()
 
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
@@ -180,6 +183,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
             _states.value = nextState
         }
+    }
+
+    fun acknowledgeError() {
+        errorListState.removeFirstOrNull()
     }
 
     private fun updateMapState(wmtsSource: WmtsSource, formerProperties: FormerProperties? = null) {
@@ -471,17 +478,6 @@ class GoogleMapWmtsViewModel @Inject constructor(
             /* Update the position */
             if (projectedValues != null) {
                 updatePosition(mapState, projectedValues[0], projectedValues[1])
-//                if (shouldCenterOnFirstLocation) {
-//                    val mapConfiguration = viewModel.getScaleAndScrollConfig(wmtsSource)
-//                    val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
-//                    boundaryConf?.boundingBoxList?.also { boxes ->
-//                        if (boxes.contains(location.latitude, location.longitude)) {
-//                            centerOnPosition()
-//                        }
-//                    }
-//
-//                    shouldCenterOnFirstLocation = false
-//                }
             }
         }
     }
@@ -562,6 +558,10 @@ fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
 }
 
 private class ApiFetchError : Exception()
+
+sealed interface WmtsError
+object VpnError : WmtsError
+data class ApiError(val data: String) : WmtsError
 
 sealed interface WmtsState
 object Loading : WmtsState
