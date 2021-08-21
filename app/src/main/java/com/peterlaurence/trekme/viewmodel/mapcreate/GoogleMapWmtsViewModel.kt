@@ -462,8 +462,6 @@ class GoogleMapWmtsViewModel @Inject constructor(
         /* If there is no MapState, no need to go further */
         val mapState = _states.value.getMapState() ?: return
 
-        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
-
         viewModelScope.launch {
             /* Project lat/lon off UI thread */
             val projectedValues = withContext(Dispatchers.Default) {
@@ -510,6 +508,35 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     private fun normalize(t: Double, min: Double, max: Double): Double {
         return (t - min) / (max - min)
+    }
+
+    fun zoomOnPosition() {
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+
+        locationSource.locationFlow.take(1).map { location ->
+            val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
+            val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
+            boundaryConf?.boundingBoxList?.also { boxes ->
+                if (boxes.contains(location.latitude, location.longitude)) {
+                    centerOnPosition()
+                }
+            }
+            // TODO: if we're out of bounds, show a snackbar
+        }.launchIn(viewModelScope)
+    }
+
+    private fun centerOnPosition() {
+        val mapState = _states.value.getMapState() ?: return
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+
+        val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
+        val scaleConf =
+            mapConfiguration?.filterIsInstance<ScaleForZoomOnPositionConfig>()?.firstOrNull()
+
+        viewModelScope.launch {
+            /* If we have conf, use it. Otherwise, use 1f - the scale is caped by the max scale anyway */
+            mapState.centerOnMarker(positionMarkerId, scaleConf?.scale ?: 1f)
+        }
     }
 }
 

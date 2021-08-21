@@ -9,12 +9,13 @@
     <item
         android:id="@+id/map_layer_menu_id"
         android:icon="@drawable/layer"
-        android:title="@string/mapcreate_define_area"
+        android:title="@string/mapcreate_define_layer"
         app:showAsAction="always" />
     <item
-        android:id="@+id/map_area_widget_id"
-        android:icon="@drawable/ic_crop_free_white_24dp"
-        android:title="@string/mapcreate_define_area"
+        android:id="@+id/zoom_on_position_id"
+        android:icon="@drawable/ic_gps_fixed_24dp"
+        app:iconTint="@android:color/white"
+        android:title="@string/mapcreate_zoom_on_position"
         app:showAsAction="always" />
     <item
         android:id="@+id/overlay_layers_id"

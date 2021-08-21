@@ -187,7 +187,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         val layerOverlayMenu = menu.findItem(R.id.overlay_layers_id)
         layerOverlayMenu?.isVisible = shouldShowLayerOverlayMenu()
 
-        val areaWidget = menu.findItem(R.id.map_area_widget_id)
+        val zoomOnPosItem = menu.findItem(R.id.zoom_on_position_id)
 
         val searchItem = menu.findItem(R.id.search) ?: return
         val searchView = searchItem.actionView as SearchView
@@ -209,7 +209,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
         searchView.setOnQueryTextListener(queryListener)
         searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
-            areaWidget?.isVisible = !hasFocus
+            zoomOnPosItem?.isVisible = !hasFocus
             layerMenu?.isVisible = if (hasFocus) false else shouldShowLayerMenu()
             mapView?.visibility = if (hasFocus) View.GONE else View.VISIBLE
             _binding?.placesRecyclerView?.visibility = if (hasFocus) View.VISIBLE else View.GONE
@@ -244,11 +244,8 @@ class GoogleMapWmtsViewFragment : Fragment() {
     @SuppressLint("RestrictedApi")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.map_area_widget_id -> {
-                viewModel.toggleArea()
-//                areaLayer?.detach()
-//                addAreaLayer()
-//                _binding?.fabSave?.visibility = View.VISIBLE
+            R.id.zoom_on_position_id -> {
+                viewModel.zoomOnPosition()
             }
             R.id.map_layer_menu_id -> {
                 wmtsSource?.also { wmtsSource ->

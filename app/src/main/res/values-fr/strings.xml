@@ -81,7 +81,7 @@
     <string name="ign_source">IGN</string>
     <string name="ign_source_description">France et ses territoires</string>
     <string name="open_street_map_source_description">Cartes libres</string>
-    <string name="mapcreate_define_area">Définir une zone</string>
+    <string name="mapcreate_zoom_on_position">Zoom sur la position</string>
     <string name="min_zoom">Zoom minimum</string>
     <string name="wmts_settings_dialog">Configuration de la carte</string>
     <string name="max_zoom">Zoom maximum</string>

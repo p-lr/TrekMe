@@ -282,7 +282,7 @@
 
     <!-- GoogleMapWmtsFragment -->
     <string name="mapcreate_title">Map creation</string>
-    <string name="mapcreate_define_area">Choose area</string>
+    <string name="mapcreate_zoom_on_position">Zoom on location</string>
     <string name="mapcreate_define_layer">Choose layer</string>
     <string name="mapcreate_overlay_layers">Overlay layers</string>
     <string name="wmts_settings_dialog">Map configuration</string>
