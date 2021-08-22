@@ -70,7 +70,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val _states = MutableStateFlow<WmtsState>(Loading)
     val state: StateFlow<WmtsState> = _states.asStateFlow()
 
-    val errorListState = mutableStateListOf<WmtsError>()
+    val eventListState = mutableStateListOf<WmtsEvent>()
 
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
@@ -174,7 +174,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                     areaController.removeArea(st.mapState)
                     MapReady(st.mapState)
                 }
-                Loading -> null
+                Loading, is WmtsError -> null
                 is MapReady -> {
                     areaController.addArea(st.mapState)
                     AreaSelection(st.mapState, areaController)
@@ -186,7 +186,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
     }
 
     fun acknowledgeError() {
-        errorListState.removeFirstOrNull()
+        eventListState.removeFirstOrNull()
     }
 
     private fun updateMapState(wmtsSource: WmtsSource, formerProperties: FormerProperties? = null) {
@@ -515,9 +515,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
             boundaryConf?.boundingBoxList?.also { boxes ->
                 if (boxes.contains(location.latitude, location.longitude)) {
                     centerOnPosition()
+                } else {
+                    eventListState.add(WmtsEvent.OUT_OF_BOUNDS)
                 }
             }
-            // TODO: if we're out of bounds, show a snackbar
         }.launchIn(viewModelScope)
     }
 
@@ -559,20 +560,24 @@ fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
 
 private class ApiFetchError : Exception()
 
-sealed interface WmtsError
-object VpnError : WmtsError
-data class ApiError(val data: String) : WmtsError
+enum class WmtsEvent {
+    OUT_OF_BOUNDS
+}
 
 sealed interface WmtsState
 object Loading : WmtsState
 data class MapReady(val mapState: MapState) : WmtsState
 data class AreaSelection(val mapState: MapState, val areaUiController: AreaUiController) : WmtsState
+enum class WmtsError : WmtsState {
+    VPS_FAIL, IGN_OUTAGE, PROVIDER_OUTAGE
+}
 
 private fun WmtsState.getMapState(): MapState? {
     return when (this) {
         is AreaSelection -> mapState
         Loading -> null
         is MapReady -> mapState
+        is WmtsError -> null
     }
 }
 

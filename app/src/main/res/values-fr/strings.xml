@@ -318,4 +318,5 @@
     <string name="loading_maps">Chargement des cartes…</string>
     <string name="choose_map_thumbnail">Vous pouvez choisir une image pour illustrer votre carte.\nContinuer ?</string>
     <string name="validate_area">Valider</string>
+    <string name="mapcreate_out_of_bounds">Vous êtes hors des limites supportées pour cette carte</string>
 </resources>

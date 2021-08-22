@@ -86,6 +86,7 @@ fun GoogleMapWmtsUI(
                 }
             }
         }
+        is WmtsError -> { /* TODO */ }
     }
 }
 
@@ -141,18 +142,18 @@ class GoogleMapWmtsUiView @JvmOverloads constructor(
             viewModel(findFragment<GoogleMapWmtsViewFragment>().requireActivity())
         val state by viewModel.state.collectAsState()
 
-        val errors = viewModel.errorListState.toList()
+        val events = viewModel.eventListState.toList()
         val scaffoldState: ScaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
 
         TrekMeTheme {
 
-            if (errors.isNotEmpty()) {
+            if (events.isNotEmpty()) {
                 val ok = stringResource(id = R.string.ok)
-                val message = when (val err = errors.first()) {
-                    is ApiError -> "Api error ${err.data}"
-                    VpnError -> "Vpn error"
+                val message = when (events.first()) {
+                    WmtsEvent.OUT_OF_BOUNDS -> stringResource(id = R.string.mapcreate_out_of_bounds)
                 }
+
                 SideEffect {
                     scope.launch {
                         scaffoldState.snackbarHostState

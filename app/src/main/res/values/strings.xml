@@ -302,6 +302,7 @@
     <string name="download">Download</string>
     <string name="download_confirm">Download started. See the status in your notifications.</string>
     <string name="mapcreate_warning_ign">It looks like there\'s an issue with either IGN servers or your internet connection :(</string>
+    <string name="mapcreate_out_of_bounds">Your location is out of supported bounds for this map</string>
     <string name="mapcreate_warning_others">Please check your internet connection. Another explanation is a temporary outage of the provider, due to an intense use.</string>
     <string name="mapreate_warning_vps">We\'re having trouble fetching required data. If your internet connection is working properly, we\'ll hopefully fix the outage soon.</string>
     <string name="mapcreate_btn_nav_credentials">Fix my credentials</string>
