@@ -86,7 +86,13 @@ fun GoogleMapWmtsUI(
                 }
             }
         }
-        is WmtsError -> { /* TODO */
+        is WmtsError -> {
+            val message = when (wmtsState) {
+                WmtsError.IGN_OUTAGE -> stringResource(id = R.string.mapcreate_warning_ign)
+                WmtsError.VPS_FAIL -> stringResource(id = R.string.mapreate_warning_vps)
+                WmtsError.PROVIDER_OUTAGE -> stringResource(id = R.string.mapcreate_warning_others)
+            }
+            ErrorScreen(message)
         }
     }
 }
@@ -128,6 +134,24 @@ private fun Area(
             strokeColor, topLeft = topLeft, size = Size(abs(p2.x - p1.x), abs(p2.y - p1.y)),
             style = Stroke(width = 1.dp.toPx() / mapState.scale)
         )
+    }
+}
+
+@Composable
+fun ErrorScreen(message: String) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_emoji_disappointed_face_1f61e),
+            contentDescription = null,
+            modifier = Modifier.size(100.dp).padding(16.dp)
+        )
+        Text(text = message)
     }
 }
 

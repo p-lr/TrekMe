@@ -200,9 +200,17 @@ class GoogleMapWmtsViewModel @Inject constructor(
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
             }.onFailure {
-                // TODO: Couldn't fetch API key. The VPS might be down.
-                // Do the equivalent of former showVpsFailureMessage() on the fragment
-            }.getOrNull() ?: return@launch
+                _states.value = WmtsError.VPS_FAIL
+            }.getOrNull()
+
+            if (tileStreamProvider == null) {
+                _states.value = if (wmtsSource == WmtsSource.IGN) {
+                    WmtsError.IGN_OUTAGE
+                } else {
+                    WmtsError.PROVIDER_OUTAGE
+                }
+                return@launch
+            }
 
             val mapState = MapState(
                 19, mapSize, mapSize,

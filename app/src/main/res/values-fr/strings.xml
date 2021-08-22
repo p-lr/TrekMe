@@ -125,8 +125,8 @@
     <string name="storage_read_only">Votre carte SD est en lecture seule. TrekMe ne peut télécharger des cartes ou fonctionner normalement dans ces conditions.</string>
     <string name="warning_title">Attention</string>
     <string name="service_download_bad_storage">TrekMe ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekMe dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
-    <string name="mapcreate_warning_ign">Il semble y a voir un souci avec les serveurs de l\'IGN, ou bien avec votre connection internet :(</string>
-    <string name="mapcreate_warning_others">Veuillez vérifier votre connexion internet. Une autre cause est l\'indisponibilité temporaire du fournisseur, car surchargé.</string>
+    <string name="mapcreate_warning_ign">Il y a un souci avec les serveurs de l\'IGN. Les indisponibilités ne durent en général que quelques heures.</string>
+    <string name="mapcreate_warning_others">Il y a un souci avec les serveurs du fournisseur de cette carte. Les indisponibilités ne durent en général que quelques heures.</string>
     <string name="general_help_link"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#que-faire-si">Besoin d\'aide ?</a></string>
     <string name="mapcreate_btn_nav_credentials">Corriger mes identifiants</string>
     <string name="mapview_add_landmark">Ajouter un repère</string>
