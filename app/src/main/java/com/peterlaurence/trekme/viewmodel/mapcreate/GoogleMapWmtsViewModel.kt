@@ -74,9 +74,6 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
 
-    private val _wmtsSourceAccessibility = MutableStateFlow(true)
-    val wmtsSourceAccessibility = _wmtsSourceAccessibility.asStateFlow()
-
     private val areaController = AreaUiController()
 
     private val scaleAndScrollInitConfig = mapOf(
@@ -204,16 +201,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 createTileStreamProvider(wmtsSource)
             }.onFailure {
                 _states.value = WmtsError.VPS_FAIL
-            }.getOrNull()
-
-            if (tileStreamProvider == null) {
-                _states.value = if (wmtsSource == WmtsSource.IGN) {
-                    WmtsError.IGN_OUTAGE
-                } else {
-                    WmtsError.PROVIDER_OUTAGE
-                }
-                return@launch
-            }
+            }.getOrNull() ?: return@launch
 
             val mapState = MapState(
                 19, mapSize, mapSize,
@@ -268,10 +256,12 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
             /* Restore the location marker right now - even if subsequent updates will do it anyway. */
             updatePositionOneTime()
+
+            // TODO: Restore the last place position
         }
     }
 
-    fun getScaleAndScrollConfig(wmtsSource: WmtsSource): List<Config>? {
+    private fun getScaleAndScrollConfig(wmtsSource: WmtsSource): List<Config>? {
         return scaleAndScrollInitConfig[wmtsSource]
     }
 
@@ -461,7 +451,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
         tileStreamProvider: TileStreamProvider
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            _wmtsSourceAccessibility.value = when (wmtsSource) {
+            val success = when (wmtsSource) {
                 WmtsSource.IGN -> {
                     try {
                         checkIgnProvider(tileStreamProvider)
@@ -474,6 +464,14 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 WmtsSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
                 WmtsSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
                 WmtsSource.ORDNANCE_SURVEY -> checkOrdnanceSurveyProvider(tileStreamProvider)
+            }
+            if (!success) {
+                val errorState = if (wmtsSource == WmtsSource.IGN) {
+                    WmtsError.IGN_OUTAGE
+                } else {
+                    WmtsError.PROVIDER_OUTAGE
+                }
+                _states.emit(errorState)
             }
         }
     }
