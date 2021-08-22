@@ -211,15 +211,16 @@ class GoogleMapWmtsViewFragment : Fragment() {
         searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
             zoomOnPosItem?.isVisible = !hasFocus
             layerMenu?.isVisible = if (hasFocus) false else shouldShowLayerMenu()
-            mapView?.visibility = if (hasFocus) View.GONE else View.VISIBLE
+//            mapView?.visibility = if (hasFocus) View.GONE else View.VISIBLE
             _binding?.placesRecyclerView?.visibility = if (hasFocus) View.VISIBLE else View.GONE
+            viewModel.onGeocodingSearchFocusChange(hasFocus)
         }
 
         /* React to place selection */
         lifecycleScope.launch {
-            eventBus.paceSelectEvent.collect {
+            eventBus.placeSelectEvent.collect {
                 searchItem.collapseActionView()
-                mapView?.visibility = View.VISIBLE
+//                mapView?.visibility = View.VISIBLE
                 _binding?.placesRecyclerView?.visibility = View.GONE
                 moveToPlace(it)
             }

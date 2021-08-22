@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
@@ -32,20 +33,18 @@ import com.peterlaurence.trekme.ui.mapcreate.dialogs.DownloadFormDataBundle
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaUiController
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PlaceMarker
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.Point
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.toDomain
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
-import java.net.URL
 import javax.inject.Inject
 
 /**
@@ -165,6 +164,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
         mapCreateEventBus.layerSelectEvent.map {
             onPrimaryLayerDefined(it)
         }.launchIn(viewModelScope)
+
+        mapCreateEventBus.placeSelectEvent.map {
+            moveToPlace(it)
+        }.launchIn(viewModelScope)
     }
 
     fun toggleArea() {
@@ -174,7 +177,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                     areaController.removeArea(st.mapState)
                     MapReady(st.mapState)
                 }
-                Loading, is WmtsError -> null
+                Loading, is Hidden, is WmtsError -> null
                 is MapReady -> {
                     areaController.addArea(st.mapState)
                     AreaSelection(st.mapState, areaController)
@@ -365,14 +368,16 @@ class GoogleMapWmtsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getApi(urlStr: String): String? = withContext(Dispatchers.IO) {
-        runCatching {
-            val url = URL(urlStr)
-            val connection = url.openConnection()
-            connection.getInputStream().bufferedReader().use {
-                it.readText()
-            }
-        }.getOrNull()
+    /**
+     * This is a temporary public function while the search-bar is still part of the fragment.
+     */
+    fun onGeocodingSearchFocusChange(hasFocus: Boolean) {
+        if (hasFocus) {
+            _states.value = Hidden(_states.value)
+        } else {
+            val curState = _states.value
+            if (curState is Hidden) _states.value = curState.previousState
+        }
     }
 
     fun onValidateArea() {
@@ -524,7 +529,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 if (boxes.contains(location.latitude, location.longitude)) {
                     centerOnPosition()
                 } else {
-                    eventListState.add(WmtsEvent.OUT_OF_BOUNDS)
+                    eventListState.add(WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
                 }
             }
         }.launchIn(viewModelScope)
@@ -543,9 +548,60 @@ class GoogleMapWmtsViewModel @Inject constructor(
             mapState.centerOnMarker(positionMarkerId, scaleConf?.scale ?: 1f)
         }
     }
+
+    private fun moveToPlace(place: GeoPlace) {
+        /* First, we check that this place is in the bounds of the map */
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+
+        /* Go back to previous state right now */
+        val currentState = _states.value
+        if (currentState is Hidden) {
+            _states.value = currentState.previousState
+        }
+
+        val mapState = _states.value.getMapState() ?: return
+
+        val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
+        val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
+        boundaryConf?.boundingBoxList?.also { boxes ->
+            if (!boxes.contains(place.lat, place.lon)) {
+                eventListState.add(WmtsEvent.PLACE_OUT_OF_BOUNDS)
+                return
+            }
+        }
+
+        /* If it's in the bounds, add a marker */
+        val projected = projection.doProjection(place.lat, place.lon) ?: return
+
+        updatePlacePosition(mapState, projected[0], projected[1])
+        viewModelScope.launch {
+            mapState.centerOnMarker(placeMarkerId, 0.25f)
+        }
+    }
+
+    /**
+     * Update the position on the map. The first time we update the position, we add the
+     * [PositionMarker].
+     *
+     * @param X the projected X coordinate
+     * @param Y the projected Y coordinate
+     */
+    private fun updatePlacePosition(mapState: MapState, X: Double, Y: Double) {
+        val x = normalize(X, x0, x1)
+        val y = normalize(Y, y0, y1)
+
+        if (mapState.hasMarker(placeMarkerId)) {
+            mapState.moveMarker(placeMarkerId, x, y)
+        } else {
+            mapState.addMarker(placeMarkerId, x, y, relativeOffset = Offset(-0.5f, -1f)) {
+                PlaceMarker()
+            }
+        }
+    }
 }
 
 private const val positionMarkerId = "position"
+private const val placeMarkerId = "place"
 
 /* Size of level 18 (levels are 0-based) */
 private const val mapSize = 67108864
@@ -569,11 +625,15 @@ fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
 private class ApiFetchError : Exception()
 
 enum class WmtsEvent {
-    OUT_OF_BOUNDS
+    CURRENT_LOCATION_OUT_OF_BOUNDS, PLACE_OUT_OF_BOUNDS
 }
 
 sealed interface WmtsState
 object Loading : WmtsState
+data class Hidden(
+    val previousState: WmtsState
+) : WmtsState  // This state is temporary (UI isn't fully in Compose yet)
+
 data class MapReady(val mapState: MapState) : WmtsState
 data class AreaSelection(val mapState: MapState, val areaUiController: AreaUiController) : WmtsState
 enum class WmtsError : WmtsState {
@@ -583,9 +643,8 @@ enum class WmtsError : WmtsState {
 private fun WmtsState.getMapState(): MapState? {
     return when (this) {
         is AreaSelection -> mapState
-        Loading -> null
+        Loading, is Hidden, is WmtsError -> null
         is MapReady -> mapState
-        is WmtsError -> null
     }
 }
 

@@ -45,6 +45,7 @@ fun GoogleMapWmtsUI(
         is Loading -> {
 
         }
+        is Hidden -> { }
         is AreaSelection -> {
             Box(modifier) {
                 MapUI(state = wmtsState.mapState) {
@@ -149,7 +150,9 @@ fun ErrorScreen(message: String) {
         Image(
             painter = painterResource(id = R.drawable.ic_emoji_disappointed_face_1f61e),
             contentDescription = null,
-            modifier = Modifier.size(100.dp).padding(16.dp)
+            modifier = Modifier
+                .size(100.dp)
+                .padding(16.dp)
         )
         Text(text = message)
     }
@@ -175,7 +178,8 @@ class GoogleMapWmtsUiView @JvmOverloads constructor(
             if (events.isNotEmpty()) {
                 val ok = stringResource(id = R.string.ok)
                 val message = when (events.first()) {
-                    WmtsEvent.OUT_OF_BOUNDS -> stringResource(id = R.string.mapcreate_out_of_bounds)
+                    WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> stringResource(id = R.string.mapcreate_out_of_bounds)
+                    WmtsEvent.PLACE_OUT_OF_BOUNDS -> stringResource(id = R.string.place_outside_of_covered_area)
                 }
 
                 SideEffect {

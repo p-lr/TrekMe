@@ -13,7 +13,7 @@ class MapCreateEventBus {
     fun postLayerSelectEvent(layer: String) = _layerSelectEvent.tryEmit(layer)
 
     private val _placeSelectEvent = MutableSharedFlow<GeoPlace>(0, 1, BufferOverflow.DROP_OLDEST)
-    val paceSelectEvent = _placeSelectEvent.asSharedFlow()
+    val placeSelectEvent = _placeSelectEvent.asSharedFlow()
 
     fun postPlaceSelectEvent(place: GeoPlace) = _placeSelectEvent.tryEmit(place)
 
