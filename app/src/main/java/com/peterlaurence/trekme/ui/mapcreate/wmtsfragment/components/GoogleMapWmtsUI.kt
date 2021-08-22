@@ -86,7 +86,8 @@ fun GoogleMapWmtsUI(
                 }
             }
         }
-        is WmtsError -> { /* TODO */ }
+        is WmtsError -> { /* TODO */
+        }
     }
 }
 
@@ -142,12 +143,11 @@ class GoogleMapWmtsUiView @JvmOverloads constructor(
             viewModel(findFragment<GoogleMapWmtsViewFragment>().requireActivity())
         val state by viewModel.state.collectAsState()
 
-        val events = viewModel.eventListState.toList()
         val scaffoldState: ScaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
 
         TrekMeTheme {
-
+            val events = viewModel.eventListState.toList()
             if (events.isNotEmpty()) {
                 val ok = stringResource(id = R.string.ok)
                 val message = when (events.first()) {
@@ -156,6 +156,9 @@ class GoogleMapWmtsUiView @JvmOverloads constructor(
 
                 SideEffect {
                     scope.launch {
+                        /* Dismiss the currently showing snackbar, if any */
+                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+
                         scaffoldState.snackbarHostState
                             .showSnackbar(message, actionLabel = ok)
                     }
