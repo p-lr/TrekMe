@@ -208,7 +208,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
             val mapState = MapState(
                 19, mapSize, mapSize,
                 tileStreamProvider = tileStreamProvider.toMapComposeTileStreamProvider(),
-                workerCount = 16
+                workerCount = 16,
+                magnifyingFactor = if (wmtsSource == WmtsSource.OPEN_STREET_MAP) 1 else 0
             )
 
             /* Apply configuration */
@@ -247,11 +248,6 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 launch {
                     mapState.setScroll(formerProperties.scroll)
                 }
-            }
-
-            // TODO: add magnifying factor api to MapCompose
-            if (wmtsSource == WmtsSource.OPEN_STREET_MAP) {
-                // mapState.setMagnifyingFactor(1)
             }
 
             _state.value = MapReady(mapState)
@@ -316,7 +312,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun setPrimaryLayerForSourceFromId(wmtsSource: WmtsSource, layerId: String) {
+    private fun setPrimaryLayerForSourceFromId(wmtsSource: WmtsSource, layerId: String) {
         val layer = getPrimaryLayer(layerId)
         if (layer != null) {
             activePrimaryLayerForSource[wmtsSource] = layer
