@@ -66,8 +66,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val mapCreateEventBus: MapCreateEventBus,
     private val locationSource: LocationSource
 ) : ViewModel() {
-    private val _states = MutableStateFlow<WmtsState>(Loading)
-    val state: StateFlow<WmtsState> = _states.asStateFlow()
+    private val _state = MutableStateFlow<WmtsState>(Loading)
+    val state: StateFlow<WmtsState> = _state.asStateFlow()
 
     val eventListState = mutableStateListOf<WmtsEvent>()
 
@@ -181,7 +181,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 }
             } ?: return@launch
 
-            _states.value = nextState
+            _state.value = nextState
         }
     }
 
@@ -191,16 +191,18 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     private fun updateMapState(wmtsSource: WmtsSource, formerProperties: FormerProperties? = null) {
         viewModelScope.launch {
+            val previousMapState = state.value.getMapState()
+
             /* Shutdown the previous MapState, if any */
-            state.value.getMapState()?.shutdown()
+            previousMapState?.shutdown()
 
             /* Display the loading screen while building the new MapState */
-            _states.value = Loading
+            _state.value = Loading
 
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
             }.onFailure {
-                _states.value = WmtsError.VPS_FAIL
+                _state.value = WmtsError.VPS_FAIL
             }.getOrNull() ?: return@launch
 
             val mapState = MapState(
@@ -252,12 +254,15 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 // mapState.setMagnifyingFactor(1)
             }
 
-            _states.value = MapReady(mapState)
+            _state.value = MapReady(mapState)
 
             /* Restore the location marker right now - even if subsequent updates will do it anyway. */
             updatePositionOneTime()
 
-            // TODO: Restore the last place position
+            /* Restore the location of the place marker */
+            previousMapState?.getMarkerInfo(placeMarkerId)?.also { markerInfo ->
+                updatePlacePosition(mapState, markerInfo.x, markerInfo.y)
+            }
         }
     }
 
@@ -363,10 +368,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
      */
     fun onGeocodingSearchFocusChange(hasFocus: Boolean) {
         if (hasFocus) {
-            _states.value = Hidden(_states.value)
+            _state.value = Hidden(_state.value)
         } else {
-            val curState = _states.value
-            if (curState is Hidden) _states.value = curState.previousState
+            val curState = _state.value
+            if (curState is Hidden) _state.value = curState.previousState
         }
     }
 
@@ -385,7 +390,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
             mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
 
         /* At this point, the current state should be AreaSelection */
-        val areaSelectionState = _states.value as? AreaSelection ?: return
+        val areaSelectionState = _state.value as? AreaSelection ?: return
 
         fun interpolate(t: Double, min: Double, max: Double) = min + t * (max - min)
         val p1 = with(areaSelectionState.areaUiController) {
@@ -471,14 +476,14 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 } else {
                     WmtsError.PROVIDER_OUTAGE
                 }
-                _states.emit(errorState)
+                _state.emit(errorState)
             }
         }
     }
 
     fun onLocationReceived(location: Location) {
         /* If there is no MapState, no need to go further */
-        val mapState = _states.value.getMapState() ?: return
+        val mapState = _state.value.getMapState() ?: return
 
         viewModelScope.launch {
             /* Project lat/lon off UI thread */
@@ -534,7 +539,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
     }
 
     private fun centerOnPosition() {
-        val mapState = _states.value.getMapState() ?: return
+        val mapState = _state.value.getMapState() ?: return
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
 
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
@@ -552,12 +557,12 @@ class GoogleMapWmtsViewModel @Inject constructor(
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
 
         /* Go back to previous state right now */
-        val currentState = _states.value
+        val currentState = _state.value
         if (currentState is Hidden) {
-            _states.value = currentState.previousState
+            _state.value = currentState.previousState
         }
 
-        val mapState = _states.value.getMapState() ?: return
+        val mapState = _state.value.getMapState() ?: return
 
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
         val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
@@ -571,23 +576,22 @@ class GoogleMapWmtsViewModel @Inject constructor(
         /* If it's in the bounds, add a marker */
         val projected = projection.doProjection(place.lat, place.lon) ?: return
 
-        updatePlacePosition(mapState, projected[0], projected[1])
+        val x = normalize(projected[0], x0, x1)
+        val y = normalize(projected[1], y0, y1)
+        updatePlacePosition(mapState, x, y)
+
         viewModelScope.launch {
             mapState.centerOnMarker(placeMarkerId, 0.25f)
         }
     }
 
     /**
-     * Update the position on the map. The first time we update the position, we add the
-     * [PositionMarker].
+     * Update the position of the place marker on the map. This method expects normalized coordinates.
      *
-     * @param X the projected X coordinate
-     * @param Y the projected Y coordinate
+     * @param x the normalized x coordinate
+     * @param y the normalized y coordinate
      */
-    private fun updatePlacePosition(mapState: MapState, X: Double, Y: Double) {
-        val x = normalize(X, x0, x1)
-        val y = normalize(Y, y0, y1)
-
+    private fun updatePlacePosition(mapState: MapState, x: Double, y: Double) {
         if (mapState.hasMarker(placeMarkerId)) {
             mapState.moveMarker(placeMarkerId, x, y)
         } else {
