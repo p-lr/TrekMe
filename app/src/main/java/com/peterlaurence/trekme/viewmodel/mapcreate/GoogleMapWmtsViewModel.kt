@@ -155,7 +155,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     init {
         wmtsSourceRepository.wmtsSourceState.map { source ->
-            source?.also { updateMapState(source) }
+            source?.also { updateMapState(source, null) }
         }.launchIn(viewModelScope)
 
         mapCreateEventBus.layerSelectEvent.map {
@@ -189,10 +189,8 @@ class GoogleMapWmtsViewModel @Inject constructor(
         eventListState.removeFirstOrNull()
     }
 
-    private fun updateMapState(wmtsSource: WmtsSource, formerProperties: FormerProperties? = null) {
+    private fun updateMapState(wmtsSource: WmtsSource, previousMapState: MapState?) {
         viewModelScope.launch {
-            val previousMapState = state.value.getMapState()
-
             /* Shutdown the previous MapState, if any */
             previousMapState?.shutdown()
 
@@ -243,10 +241,14 @@ class GoogleMapWmtsViewModel @Inject constructor(
             }
 
             /* Apply former settings, if any */
-            if (formerProperties != null) {
-                mapState.scale = formerProperties.scale
+            if (previousMapState != null) {
+                mapState.scale = previousMapState.scale
                 launch {
-                    mapState.setScroll(formerProperties.scroll)
+                    mapState.setScroll(previousMapState.scroll)
+                }
+                /* Restore the location of the place marker */
+                previousMapState.getMarkerInfo(placeMarkerId)?.also { markerInfo ->
+                    updatePlacePosition(mapState, markerInfo.x, markerInfo.y)
                 }
             }
 
@@ -254,11 +256,6 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
             /* Restore the location marker right now - even if subsequent updates will do it anyway. */
             updatePositionOneTime()
-
-            /* Restore the location of the place marker */
-            previousMapState?.getMarkerInfo(placeMarkerId)?.also { markerInfo ->
-                updatePlacePosition(mapState, markerInfo.x, markerInfo.y)
-            }
         }
     }
 
@@ -297,10 +294,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
         setPrimaryLayerForSourceFromId(wmtsSource, layerId)
 
-        val formerProperties = state.value.getMapState()?.let {
-            FormerProperties(it.scale, it.scroll)
-        }
-        updateMapState(wmtsSource, formerProperties)
+        updateMapState(wmtsSource, state.value.getMapState())
 
         /* Restore the location marker right now - even if subsequent updates will do it anyway. */
         updatePositionOneTime()
@@ -645,5 +639,3 @@ private fun WmtsState.getMapState(): MapState? {
         is MapReady -> mapState
     }
 }
-
-private data class FormerProperties(val scale: Float, val scroll: Offset)
