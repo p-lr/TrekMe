@@ -155,7 +155,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     init {
         wmtsSourceRepository.wmtsSourceState.map { source ->
-            source?.also { updateMapState(source, null) }
+            source?.also { updateMapState(source, false) }
         }.launchIn(viewModelScope)
 
         mapCreateEventBus.layerSelectEvent.map {
@@ -171,12 +171,12 @@ class GoogleMapWmtsViewModel @Inject constructor(
         viewModelScope.launch {
             val nextState = when (val st = state.value) {
                 is AreaSelection -> {
-                    areaController.removeArea(st.mapState)
+                    areaController.detach(st.mapState)
                     MapReady(st.mapState)
                 }
                 Loading, is Hidden, is WmtsError -> null
                 is MapReady -> {
-                    areaController.addArea(st.mapState)
+                    areaController.attachAndInit(st.mapState)
                     AreaSelection(st.mapState, areaController)
                 }
             } ?: return@launch
@@ -189,8 +189,11 @@ class GoogleMapWmtsViewModel @Inject constructor(
         eventListState.removeFirstOrNull()
     }
 
-    private fun updateMapState(wmtsSource: WmtsSource, previousMapState: MapState?) {
+    private fun updateMapState(wmtsSource: WmtsSource, restorePrevious: Boolean = true) {
         viewModelScope.launch {
+            val previousState = _state.value
+            val previousMapState = previousState.getMapState()
+
             /* Shutdown the previous MapState, if any */
             previousMapState?.shutdown()
 
@@ -241,7 +244,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
             }
 
             /* Apply former settings, if any */
-            if (previousMapState != null) {
+            if (restorePrevious && previousMapState != null) {
                 mapState.scale = previousMapState.scale
                 launch {
                     mapState.setScroll(previousMapState.scroll)
@@ -252,7 +255,11 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 }
             }
 
-            _state.value = MapReady(mapState)
+            /* If we were in area selection, restore it */
+            _state.value = if (previousState is AreaSelection) {
+                previousState.areaUiController.attach(mapState)
+                AreaSelection(mapState, previousState.areaUiController)
+            } else MapReady(mapState)
 
             /* Restore the location marker right now - even if subsequent updates will do it anyway. */
             updatePositionOneTime()
@@ -294,7 +301,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
         setPrimaryLayerForSourceFromId(wmtsSource, layerId)
 
-        updateMapState(wmtsSource, state.value.getMapState())
+        updateMapState(wmtsSource, true)
 
         /* Restore the location marker right now - even if subsequent updates will do it anyway. */
         updatePositionOneTime()

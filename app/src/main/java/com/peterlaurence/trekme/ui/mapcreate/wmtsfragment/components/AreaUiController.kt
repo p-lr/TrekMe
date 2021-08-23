@@ -32,7 +32,10 @@ class AreaUiController {
     private var pcx by mutableStateOf(0.0)
     private var pcy by mutableStateOf(0.0)
 
-    suspend fun addArea(state: MapState) {
+    /**
+     * Attach and initialize points positions.
+     */
+    suspend fun attachAndInit(state: MapState) {
         val box = state.visibleBoundingBox()
 
         /* Initial positions */
@@ -43,6 +46,13 @@ class AreaUiController {
         pcx = (p1x + p2x) / 2
         pcy = (p1y + p2y) / 2
 
+        attach(state)
+    }
+
+    /**
+     * Attach but keep previous configuration.
+     */
+    fun attach(state: MapState) {
         state.addMarker(m1, p1x, p1y, Offset(-0.5f, -0.5f)) {
             Box(
                 modifier = Modifier
@@ -89,7 +99,7 @@ class AreaUiController {
         }
     }
 
-    fun removeArea(state: MapState) {
+    fun detach(state: MapState) {
         state.removeMarker(m1)
         state.removeMarker(m2)
         state.removeMarker(central)
