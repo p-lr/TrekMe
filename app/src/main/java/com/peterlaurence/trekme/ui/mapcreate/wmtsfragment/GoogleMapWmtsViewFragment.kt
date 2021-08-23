@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.*
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
@@ -20,7 +19,6 @@ import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.*
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaLayer
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.util.collectWhileStartedIn
@@ -29,8 +27,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
-import kotlinx.parcelize.Parcelize
-import ovh.plrapps.mapview.MapView
 import ovh.plrapps.mapview.api.*
 import javax.inject.Inject
 
@@ -79,7 +75,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
     lateinit var wmtsSourceRepository: WmtsSourceRepository
 
     private var wmtsSource: WmtsSource? = null
-    private var lastPlacePosition: PlacePosition? = null
 
     private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
     private val geocodingViewModel: GeocodingViewModel by viewModels()
@@ -102,7 +97,6 @@ class GoogleMapWmtsViewFragment : Fragment() {
         wmtsSource = wmtsSourceRepository.wmtsSourceState.value
 
         setHasOptionsMenu(true)
-        lastPlacePosition = savedInstanceState?.getParcelable(BUNDLE_LAST_PLACE_POS)
 
         /* Listen to position update */
         locationSource.locationFlow.collectWhileResumed(this) { loc ->
@@ -277,14 +271,5 @@ class GoogleMapWmtsViewFragment : Fragment() {
         }
         wmtsLevelsDialog.show(fm, "fragment")
     }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putParcelable(BUNDLE_LAST_PLACE_POS, lastPlacePosition)
-    }
 }
 
-@Parcelize
-private data class PlacePosition(val X: Double, val Y: Double) : Parcelable
-
-private const val BUNDLE_LAST_PLACE_POS = "lastPlacePos"
