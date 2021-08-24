@@ -23,8 +23,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 141
-        versionName "2.8.1"
+        versionCode 142
+        versionName "2.9.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -58,8 +58,9 @@ dependencies {
     def lifecycle_version = '2.3.1'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-//    implementation project(":mapview-debug")
-    implementation project(":mapcompose-debug")
+//    implementation project(":mapview-debug")     // for dev purposes
+//    implementation project(":mapcompose-debug")  // for dev purposes
+    implementation 'ovh.plrapps:mapcompose:1.0.2'
     implementation 'ovh.plrapps:mapview:3.1.0'
     implementation 'com.android.billingclient:billing:4.0.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
