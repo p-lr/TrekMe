@@ -43,57 +43,62 @@ fun GoogleMapWmtsUI(
             MapUI(state = wmtsState.mapState)
         }
         is Loading -> {
-
+            LoadingScreen()
         }
-        is Hidden -> { }
+        is Hidden -> {
+        }
         is AreaSelection -> {
-            Box(modifier) {
-                MapUI(state = wmtsState.mapState) {
-                    val mapState = wmtsState.mapState
-                    Area(
-                        modifier = Modifier,
-                        mapState = mapState,
-                        backgroundColor = colorResource(id = R.color.colorBackgroundAreaView),
-                        strokeColor = colorResource(id = R.color.colorStrokeAreaView),
-                        p1 = with(wmtsState.areaUiController) {
-                            Offset(
-                                (p1x * mapState.fullSize.width).toFloat(),
-                                (p1y * mapState.fullSize.height).toFloat()
-                            )
-                        },
-                        p2 = with(wmtsState.areaUiController) {
-                            Offset(
-                                (p2x * mapState.fullSize.width).toFloat(),
-                                (p2y * mapState.fullSize.height).toFloat()
-                            )
-                        }
-                    )
-                }
-
-                Box(
-                    Modifier
-                        .align(Alignment.BottomEnd)
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                        .height(56.dp)
-                ) {
-                    Button(
-                        onClick = onValidateArea,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                    ) {
-                        Text(text = stringResource(id = R.string.validate_area).uppercase())
-                    }
-                }
-            }
+            AreaSelectionScreen(modifier, wmtsState, onValidateArea)
         }
         is WmtsError -> {
-            val message = when (wmtsState) {
-                WmtsError.IGN_OUTAGE -> stringResource(id = R.string.mapcreate_warning_ign)
-                WmtsError.VPS_FAIL -> stringResource(id = R.string.mapreate_warning_vps)
-                WmtsError.PROVIDER_OUTAGE -> stringResource(id = R.string.mapcreate_warning_others)
+            ErrorScreen(wmtsState)
+        }
+    }
+}
+
+@Composable
+private fun AreaSelectionScreen(
+    modifier: Modifier,
+    state: AreaSelection,
+    onValidateArea: () -> Unit
+) {
+    Box(modifier) {
+        MapUI(state = state.mapState) {
+            val mapState = state.mapState
+            Area(
+                modifier = Modifier,
+                mapState = mapState,
+                backgroundColor = colorResource(id = R.color.colorBackgroundAreaView),
+                strokeColor = colorResource(id = R.color.colorStrokeAreaView),
+                p1 = with(state.areaUiController) {
+                    Offset(
+                        (p1x * mapState.fullSize.width).toFloat(),
+                        (p1y * mapState.fullSize.height).toFloat()
+                    )
+                },
+                p2 = with(state.areaUiController) {
+                    Offset(
+                        (p2x * mapState.fullSize.width).toFloat(),
+                        (p2y * mapState.fullSize.height).toFloat()
+                    )
+                }
+            )
+        }
+
+        Box(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+                .height(56.dp)
+        ) {
+            Button(
+                onClick = onValidateArea,
+                modifier = Modifier
+                    .align(Alignment.Center)
+            ) {
+                Text(text = stringResource(id = R.string.validate_area).uppercase())
             }
-            ErrorScreen(message)
         }
     }
 }
@@ -139,7 +144,17 @@ private fun Area(
 }
 
 @Composable
-fun ErrorScreen(message: String) {
+private fun ErrorScreen(state: WmtsError) {
+    val message = when (state) {
+        WmtsError.IGN_OUTAGE -> stringResource(id = R.string.mapcreate_warning_ign)
+        WmtsError.VPS_FAIL -> stringResource(id = R.string.mapreate_warning_vps)
+        WmtsError.PROVIDER_OUTAGE -> stringResource(id = R.string.mapcreate_warning_others)
+    }
+    Error(message)
+}
+
+@Composable
+private fun Error(message: String) {
     Column(
         Modifier
             .fillMaxSize()
@@ -155,6 +170,17 @@ fun ErrorScreen(message: String) {
                 .padding(16.dp)
         )
         Text(text = message)
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    Box(Modifier.fillMaxSize()) {
+        LinearProgressIndicator(
+            Modifier
+                .align(Alignment.Center)
+                .width(100.dp)
+        )
     }
 }
 
