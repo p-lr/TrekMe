@@ -78,20 +78,13 @@ private fun AreaSelectionScreen(
             )
         }
 
-        Box(
-            Modifier
-                .align(Alignment.BottomEnd)
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-                .height(56.dp)
+        Button(
+            onClick = onValidateArea,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 26.dp)
         ) {
-            Button(
-                onClick = onValidateArea,
-                modifier = Modifier
-                    .align(Alignment.Center)
-            ) {
-                Text(text = stringResource(id = R.string.validate_area).uppercase())
-            }
+            Text(text = stringResource(id = R.string.validate_area).uppercase())
         }
     }
 }
