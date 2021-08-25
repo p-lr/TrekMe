@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.SearchView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -19,6 +20,8 @@ import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.*
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.GoogleMapWmts
+import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.util.collectWhileStartedIn
@@ -122,10 +125,23 @@ class GoogleMapWmtsViewFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentWmtsViewBinding.inflate(inflater, container, false)
+        val binding = FragmentWmtsViewBinding.inflate(inflater, container, false)
+        _binding = binding
+        binding.googleMapWmtsComposeView.apply {
+            setViewCompositionStrategy(
+                ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
+            )
+
+            setContent {
+                TrekMeTheme {
+                    GoogleMapWmts(viewModel)
+                }
+            }
+        }
+
         initPlaceRecyclerView()
 
-        return _binding!!.root
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -184,7 +200,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         /* A hack to circumvent a nasty bug causing the AbstractComposeView to be not responsive
          * to touch events at certain state transitions */
         viewModel.state.map {
-            _binding?.googleMapWmtsUiView?.also {
+            _binding?.googleMapWmtsComposeView?.also {
                 it.disposeComposition()
                 it.createComposition()
             }
