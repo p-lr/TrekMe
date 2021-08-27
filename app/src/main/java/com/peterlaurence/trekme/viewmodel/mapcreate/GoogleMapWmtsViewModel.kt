@@ -2,8 +2,11 @@ package com.peterlaurence.trekme.viewmodel.mapcreate
 
 import android.app.Application
 import android.content.Intent
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
@@ -23,6 +26,7 @@ import com.peterlaurence.trekme.core.providers.stream.newTileStreamProvider
 import com.peterlaurence.trekme.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.repositories.mapcreate.GeocodingRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
@@ -51,7 +55,7 @@ import javax.inject.Inject
  * View-model for [GoogleMapWmtsViewFragment]. It takes care of:
  * * storing the predefined init scale and position for each [WmtsSource]
  * * keeping track of the layer (as to each [WmtsSource] may correspond multiple layers)
- * * providing a [TileStreamProvider] for the fragment
+ * * exposes [UiState] and [TopBarState] for the view made mostly in Compose
  *
  * @author P.Laurence on 09/11/19
  */
@@ -64,10 +68,18 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
     private val layerOverlayRepository: LayerOverlayRepository,
     private val mapCreateEventBus: MapCreateEventBus,
-    private val locationSource: LocationSource
+    private val locationSource: LocationSource,
+    private val geocodingRepository: GeocodingRepository
 ) : ViewModel() {
-    private val _state = MutableStateFlow<WmtsState>(Loading)
-    val state: StateFlow<WmtsState> = _state.asStateFlow()
+
+    private val _uiState = MutableStateFlow<UiState>(Wmts(Loading))
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    private val _topBarState = MutableStateFlow<TopBarState>(Empty)
+    val topBarState: StateFlow<TopBarState> = _topBarState.asStateFlow()
+
+    private val _wmtsState = MutableStateFlow<WmtsState>(Loading)
+    val wmtsState: StateFlow<WmtsState> = _wmtsState.asStateFlow()
 
     val eventListState = mutableStateListOf<WmtsEvent>()
 
@@ -75,6 +87,10 @@ class GoogleMapWmtsViewModel @Inject constructor(
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
 
     private val areaController = AreaUiController()
+
+    private val searchFieldState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
+    private var topBarLayersEnabled = false
+    private var topBarOverflowMenuEnabled = false
 
     private val scaleAndScrollInitConfig = mapOf(
         WmtsSource.IGN to listOf(
@@ -162,26 +178,32 @@ class GoogleMapWmtsViewModel @Inject constructor(
             onPrimaryLayerDefined(it)
         }.launchIn(viewModelScope)
 
-        mapCreateEventBus.placeSelectEvent.map {
-            moveToPlace(it)
+        geocodingRepository.geoPlaceFlow.map { places ->
+            if (places != null && _uiState.value is GeoplaceList) {
+                _uiState.value = GeoplaceList(places)
+            }
+        }.launchIn(viewModelScope)
+
+        _wmtsState.map {
+            _uiState.value = Wmts(it)
         }.launchIn(viewModelScope)
     }
 
     fun toggleArea() {
         viewModelScope.launch {
-            val nextState = when (val st = state.value) {
+            val nextState = when (val st = _wmtsState.value) {
                 is AreaSelection -> {
                     areaController.detach(st.mapState)
                     MapReady(st.mapState)
                 }
-                Loading, is Hidden, is WmtsError -> null
+                Loading, is WmtsError -> null
                 is MapReady -> {
                     areaController.attachAndInit(st.mapState)
                     AreaSelection(st.mapState, areaController)
                 }
             } ?: return@launch
 
-            _state.value = nextState
+            _wmtsState.value = nextState
         }
     }
 
@@ -191,19 +213,20 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     private fun updateMapState(wmtsSource: WmtsSource, restorePrevious: Boolean = true) {
         viewModelScope.launch {
-            val previousState = _state.value
+            val previousState = _wmtsState.value
             val previousMapState = previousState.getMapState()
 
             /* Shutdown the previous MapState, if any */
             previousMapState?.shutdown()
 
             /* Display the loading screen while building the new MapState */
-            _state.value = Loading
+            _wmtsState.value = Loading
+            _topBarState.value = Empty
 
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
             }.onFailure {
-                _state.value = WmtsError.VPS_FAIL
+                _wmtsState.value = WmtsError.VPS_FAIL
             }.getOrNull() ?: return@launch
 
             val mapState = MapState(
@@ -255,11 +278,19 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 }
             }
 
+            /* The top bar configuration depends on the wmtsSource */
+            updateTopBarConfig(wmtsSource)
+
             /* If we were in area selection, restore it */
-            _state.value = if (previousState is AreaSelection) {
+            _wmtsState.value = if (previousState is AreaSelection) {
                 previousState.areaUiController.attach(mapState)
                 AreaSelection(mapState, previousState.areaUiController)
             } else MapReady(mapState)
+
+            _topBarState.value = Collapsed(
+                hasLayers = topBarLayersEnabled,
+                hasOverflowMenu = topBarOverflowMenuEnabled
+            )
 
             /* Restore the location marker right now - even if subsequent updates will do it anyway. */
             updatePositionOneTime()
@@ -268,6 +299,35 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     private fun getScaleAndScrollConfig(wmtsSource: WmtsSource): List<Config>? {
         return scaleAndScrollInitConfig[wmtsSource]
+    }
+
+    private fun updateTopBarConfig(wmtsSource: WmtsSource) {
+        when (wmtsSource) {
+            WmtsSource.IGN -> {
+                topBarLayersEnabled = true
+                topBarOverflowMenuEnabled = true
+            }
+            WmtsSource.SWISS_TOPO -> {
+                topBarLayersEnabled = false
+                topBarOverflowMenuEnabled = false
+            }
+            WmtsSource.OPEN_STREET_MAP -> {
+                topBarLayersEnabled = true
+                topBarOverflowMenuEnabled = false
+            }
+            WmtsSource.USGS -> {
+                topBarLayersEnabled = false
+                topBarOverflowMenuEnabled = false
+            }
+            WmtsSource.IGN_SPAIN -> {
+                topBarLayersEnabled = false
+                topBarOverflowMenuEnabled = false
+            }
+            WmtsSource.ORDNANCE_SURVEY -> {
+                topBarLayersEnabled = false
+                topBarOverflowMenuEnabled = false
+            }
+        }
     }
 
     fun getAvailablePrimaryLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
@@ -360,18 +420,6 @@ class GoogleMapWmtsViewModel @Inject constructor(
         }
     }
 
-    /**
-     * This is a temporary public function while the search-bar is still part of the fragment.
-     */
-    fun onGeocodingSearchFocusChange(hasFocus: Boolean) {
-        if (hasFocus) {
-            _state.value = Hidden(_state.value)
-        } else {
-            val curState = _state.value
-            if (curState is Hidden) _state.value = curState.previousState
-        }
-    }
-
     fun onValidateArea() {
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
@@ -387,7 +435,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
             mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
 
         /* At this point, the current state should be AreaSelection */
-        val areaSelectionState = _state.value as? AreaSelection ?: return
+        val areaSelectionState = _wmtsState.value as? AreaSelection ?: return
 
         fun interpolate(t: Double, min: Double, max: Double) = min + t * (max - min)
         val p1 = with(areaSelectionState.areaUiController) {
@@ -473,14 +521,14 @@ class GoogleMapWmtsViewModel @Inject constructor(
                 } else {
                     WmtsError.PROVIDER_OUTAGE
                 }
-                _state.emit(errorState)
+                _wmtsState.emit(errorState)
             }
         }
     }
 
     fun onLocationReceived(location: Location) {
         /* If there is no MapState, no need to go further */
-        val mapState = _state.value.getMapState() ?: return
+        val mapState = _wmtsState.value.getMapState() ?: return
 
         viewModelScope.launch {
             /* Project lat/lon off UI thread */
@@ -536,7 +584,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
     }
 
     private fun centerOnPosition() {
-        val mapState = _state.value.getMapState() ?: return
+        val mapState = _wmtsState.value.getMapState() ?: return
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
 
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
@@ -549,17 +597,14 @@ class GoogleMapWmtsViewModel @Inject constructor(
         }
     }
 
-    private fun moveToPlace(place: GeoPlace) {
+    fun moveToPlace(place: GeoPlace) {
         /* First, we check that this place is in the bounds of the map */
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
 
-        /* Go back to previous state right now */
-        val currentState = _state.value
-        if (currentState is Hidden) {
-            _state.value = currentState.previousState
-        }
+        /* Collapse the top bar right now */
+        onCloseSearch()
 
-        val mapState = _state.value.getMapState() ?: return
+        val mapState = _wmtsState.value.getMapState() ?: return
 
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
         val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
@@ -597,6 +642,28 @@ class GoogleMapWmtsViewModel @Inject constructor(
             }
         }
     }
+
+    fun onSearchClick() {
+        _topBarState.value = SearchMode(searchFieldState)
+        _uiState.value = GeoplaceList(listOf())
+    }
+
+    fun onQueryTextSubmit(query: String) {
+        if (query.isNotEmpty()) {
+            geocodingRepository.search(query)
+        }
+    }
+
+    fun onCloseSearch() {
+        /* Go back to map view */
+        _uiState.value = Wmts(_wmtsState.value)
+
+        /* Collapse the top bar */
+        _topBarState.value = Collapsed(
+            hasLayers = topBarLayersEnabled,
+            hasOverflowMenu = topBarOverflowMenuEnabled
+        )
+    }
 }
 
 private const val positionMarkerId = "position"
@@ -627,12 +694,12 @@ enum class WmtsEvent {
     CURRENT_LOCATION_OUT_OF_BOUNDS, PLACE_OUT_OF_BOUNDS
 }
 
+sealed interface UiState
+data class Wmts(val wmtsState: WmtsState) : UiState
+data class GeoplaceList(val geoPlaceList: List<GeoPlace>) : UiState
+
 sealed interface WmtsState
 object Loading : WmtsState
-data class Hidden(
-    val previousState: WmtsState
-) : WmtsState  // This state is temporary (UI isn't fully in Compose yet)
-
 data class MapReady(val mapState: MapState) : WmtsState
 data class AreaSelection(val mapState: MapState, val areaUiController: AreaUiController) : WmtsState
 enum class WmtsError : WmtsState {
@@ -642,7 +709,12 @@ enum class WmtsError : WmtsState {
 private fun WmtsState.getMapState(): MapState? {
     return when (this) {
         is AreaSelection -> mapState
-        Loading, is Hidden, is WmtsError -> null
+        Loading, is WmtsError -> null
         is MapReady -> mapState
     }
 }
+
+sealed interface TopBarState
+object Empty : TopBarState
+data class Collapsed(val hasLayers: Boolean, val hasOverflowMenu: Boolean) : TopBarState
+data class SearchMode(val textValueState: MutableState<TextFieldValue>) : TopBarState

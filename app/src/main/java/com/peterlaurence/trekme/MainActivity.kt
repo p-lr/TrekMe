@@ -47,11 +47,13 @@ import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import com.peterlaurence.trekme.ui.maplist.events.*
 import com.peterlaurence.trekme.util.collectWhileStarted
+import com.peterlaurence.trekme.util.collectWhileStartedIn
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.net.InetAddress
 import javax.inject.Inject
@@ -63,22 +65,51 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private val navController: NavController by lazy {
         findNavController(R.id.nav_host_fragment).apply {
-            /* A nice way to control the action-bar depending on the destination */
+            /* While Compose migration isn't complete, explicitly set action-bar properties here,
+             * depending on the destination */
             addOnDestinationChangedListener { _, destination, _ ->
-                val title = when (destination.id) {
-                    R.id.gpsProPurchaseFragment -> getString(R.string.gps_pro_name)
-                    R.id.gpsProFragment -> getString(R.string.select_bt_devices_title)
-                    R.id.btDeviceSettingsFragment -> getString(R.string.bt_device_frgmt_title)
-                    R.id.wifiP2pFragment -> getString(R.string.wifip2p_title)
-                    R.id.mapCreateFragment -> getString(R.string.mapcreate_title)
-                    R.id.recordFragment -> getString(R.string.recording_frgmt_title)
-                    R.id.mapImportFragment -> getString(R.string.import_title)
-                    R.id.mapViewFragment -> ""
-                    R.id.markerManageFragment -> ""
-                    R.id.googleMapWmtsViewFragment -> ""
-                    else -> getString(R.string.app_name)
+                when (destination.id) {
+                    R.id.gpsProPurchaseFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.gps_pro_name)
+                    }
+                    R.id.gpsProFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.select_bt_devices_title)
+                    }
+                    R.id.btDeviceSettingsFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.bt_device_frgmt_title)
+                    }
+                    R.id.wifiP2pFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.wifip2p_title)
+                    }
+                    R.id.mapCreateFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.mapcreate_title)
+                    }
+                    R.id.recordFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.recording_frgmt_title)
+                    }
+                    R.id.mapImportFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.import_title)
+                    }
+                    R.id.mapViewFragment, R.id.markerManageFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = ""
+                    }
+                    R.id.googleMapWmtsViewFragment -> {
+                        supportActionBar?.hide()
+                        supportActionBar?.title = ""
+                    }
+                    else -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.app_name)
+                    }
                 }
-                supportActionBar?.title = title
             }
         }
     }
@@ -311,6 +342,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             it.billingClient.launchBillingFlow(this, it.flowParams)
         }
 
+        appEventBus.openDrawerFlow.map { openDrawer() }.collectWhileStartedIn(this)
+
         gpsProEvents.showGpsProFragmentSignal.collectWhileStarted(this) {
             showGpsProFragmentAfterPurchase()
         }
@@ -379,6 +412,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         drawer?.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private fun openDrawer() {
+        println("xxx open")
+        val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+        if (drawer != null && !drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.openDrawer(GravityCompat.START)
+        }
     }
 
     private fun showMapViewFragment() {
@@ -571,6 +612,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onSaveInstanceState(outState)
 
         outState.putString(ACTIONBAR_TITLE, supportActionBar?.title?.toString())
+        outState.putBoolean(ACTIONBAR_VISIBLE, supportActionBar?.isShowing ?: false)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -579,7 +621,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         savedInstanceState.getString(ACTIONBAR_TITLE)?.also {
             supportActionBar?.title = it
         }
+        if (savedInstanceState.getBoolean(ACTIONBAR_VISIBLE)) {
+            supportActionBar?.show()
+        } else {
+            supportActionBar?.hide()
+        }
     }
 }
 
 private const val ACTIONBAR_TITLE = "actionBarTitle"
+private const val ACTIONBAR_VISIBLE = "actionBarVisible"

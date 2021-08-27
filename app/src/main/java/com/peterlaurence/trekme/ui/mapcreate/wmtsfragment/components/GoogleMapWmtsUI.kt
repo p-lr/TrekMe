@@ -1,20 +1,37 @@
 package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas
@@ -37,8 +54,6 @@ fun GoogleMapWmtsUI(
         }
         is Loading -> {
             LoadingScreen()
-        }
-        is Hidden -> {
         }
         is AreaSelection -> {
             AreaSelectionScreen(modifier, wmtsState, onValidateArea)
@@ -171,13 +186,207 @@ fun LoadingScreen() {
 }
 
 @Composable
-fun GoogleMapWmts(viewModel: GoogleMapWmtsViewModel) {
-    val state by viewModel.state.collectAsState()
+fun SearchAppBar(
+    state: TopBarState,
+    onSearchClick: () -> Unit,
+    onCloseSearch: () -> Unit,
+    onMenuClick: () -> Unit,
+    onQueryTextSubmit: (String) -> Unit,
+    onLayerSelection: () -> Unit,
+    onZoomOnPosition: () -> Unit,
+    onShowLayerOverlay: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
 
+    TopAppBar(
+        title = {
+        },
+        navigationIcon = if (state is SearchMode) {
+            {
+                IconButton(onClick = onCloseSearch) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                }
+            }
+        } else {
+            {
+                IconButton(onClick = onMenuClick) {
+                    Icon(Icons.Filled.Menu, contentDescription = "")
+                }
+            }
+        },
+        actions = {
+            when (state) {
+                is Empty -> {
+                }
+                is Collapsed -> {
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(onClick = onSearchClick) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_baseline_search_24),
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                    if (state.hasLayers) {
+                        IconButton(onClick = onLayerSelection) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.layer),
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+                    }
+                    IconButton(onClick = onZoomOnPosition) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_gps_fixed_24dp),
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                    if (state.hasOverflowMenu) {
+                        IconButton(
+                            onClick = { expanded = true },
+                            modifier = Modifier.width(36.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+                        Box(
+                            Modifier
+                                .height(24.dp)
+                                .wrapContentSize(Alignment.BottomEnd, true)
+                        ) {
+                            DropdownMenu(
+                                modifier = Modifier.wrapContentSize(Alignment.TopEnd),
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                offset = DpOffset(0.dp, 0.dp)
+                            ) {
+                                DropdownMenuItem(onClick = onShowLayerOverlay) {
+                                    Text(stringResource(id = R.string.mapcreate_overlay_layers))
+                                }
+                            }
+                        }
+                    }
+                }
+                is SearchMode -> {
+                    SearchView(state.textValueState, onQueryTextSubmit)
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Unit) {
+    val focusRequester = remember { FocusRequester() }
+
+    TextField(
+        value = state.value,
+        onValueChange = { value ->
+            state.value = value
+            onTextChange(value.text)
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
+        textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
+        placeholder = {
+            Text(
+                text = "Search…",
+                fontSize = 18.sp,
+                color = Color.White,
+                modifier = Modifier.alpha(0.5f)
+            )
+        },
+        trailingIcon = {
+            if (state.value != TextFieldValue("")) {
+                IconButton(
+                    onClick = {
+                        state.value =
+                            TextFieldValue("") // Remove text from TextField when you press the 'X' icon
+                    }
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .padding(15.dp)
+                            .size(24.dp)
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = RectangleShape, // The TextFiled has rounded corners top left and right by default
+        colors = TextFieldDefaults.textFieldColors(
+            textColor = Color.White,
+            cursorColor = Color.White,
+            leadingIconColor = Color.White,
+            trailingIconColor = Color.White,
+            backgroundColor = colorResource(id = R.color.colorPrimary),
+//            focusedIndicatorColor = Color.Transparent,
+//            unfocusedIndicatorColor = Color.Transparent,
+//            disabledIndicatorColor = Color.Transparent
+        )
+
+    )
+
+    DisposableEffect(Unit) {
+        focusRequester.requestFocus()
+        onDispose { }
+    }
+}
+
+@Composable
+fun GoogleMapWmts(
+    viewModel: GoogleMapWmtsViewModel, onLayerSelection: () -> Unit, onShowLayerOverlay: () -> Unit,
+    onMenuClick: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val topBarState by viewModel.topBarState.collectAsState()
+
+    val events = viewModel.eventListState.toList()
+
+    MyScaffold(
+        events,
+        topBarState,
+        uiState,
+        viewModel::acknowledgeError,
+        viewModel::toggleArea,
+        viewModel::onValidateArea,
+        onMenuClick,
+        viewModel::onSearchClick,
+        viewModel::onCloseSearch,
+        viewModel::onQueryTextSubmit,
+        viewModel::moveToPlace,
+        onLayerSelection,
+        viewModel::zoomOnPosition,
+        onShowLayerOverlay
+    )
+}
+
+@Composable
+fun MyScaffold(
+    events: List<WmtsEvent>, topBarState: TopBarState, uiState: UiState,
+    onAckError: () -> Unit,
+    onToggleArea: () -> Unit,
+    onValidateArea: () -> Unit,
+    onMenuClick: () -> Unit,
+    onSearchClick: () -> Unit, onCloseSearch: () -> Unit,
+    onQueryTextSubmit: (String) -> Unit,
+    onGeoPlaceSelection: (GeoPlace) -> Unit,
+    onLayerSelection: () -> Unit,
+    onZoomOnPosition: () -> Unit,
+    onShowLayerOverlay: () -> Unit
+) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
 
-    val events = viewModel.eventListState.toList()
+
     if (events.isNotEmpty()) {
         val ok = stringResource(id = R.string.ok)
         val message = when (events.first()) {
@@ -193,23 +402,60 @@ fun GoogleMapWmts(viewModel: GoogleMapWmtsViewModel) {
                 scaffoldState.snackbarHostState
                     .showSnackbar(message, actionLabel = ok)
             }
-            viewModel.acknowledgeError()
+            onAckError()
         }
     }
 
     Scaffold(
         Modifier.fillMaxSize(),
         scaffoldState = scaffoldState,
+        topBar = {
+            SearchAppBar(
+                topBarState,
+                onSearchClick,
+                onCloseSearch,
+                onMenuClick,
+                onQueryTextSubmit,
+                onLayerSelection,
+                onZoomOnPosition,
+                onShowLayerOverlay
+            )
+        },
         floatingActionButton = {
-            if (state is MapReady || state is AreaSelection) {
-                FabAreaSelection(viewModel::toggleArea)
+            when (uiState) {
+                is GeoplaceList -> {
+                }
+                is Wmts -> {
+                    if (uiState.wmtsState is MapReady || uiState.wmtsState is AreaSelection) {
+                        FabAreaSelection(onToggleArea)
+                    }
+                }
             }
         },
     ) {
-        GoogleMapWmtsUI(
-            Modifier.fillMaxSize(),
-            state,
-            viewModel::onValidateArea,
-        )
+        when (uiState) {
+            is GeoplaceList -> {
+                LazyColumn {
+                    items(uiState.geoPlaceList) { place ->
+                        Column(Modifier.clickable { onGeoPlaceSelection(place) }) {
+                            Text(
+                                text = place.name,
+                                Modifier.padding(start = 24.dp, top = 8.dp),
+                                fontSize = 17.sp
+                            )
+                            Text(text = place.locality, Modifier.padding(start = 24.dp, top = 4.dp))
+                            Divider(Modifier.padding(top = 8.dp))
+                        }
+                    }
+                }
+            }
+            is Wmts -> {
+                GoogleMapWmtsUI(
+                    Modifier.fillMaxSize(),
+                    uiState.wmtsState,
+                    onValidateArea,
+                )
+            }
+        }
     }
 }

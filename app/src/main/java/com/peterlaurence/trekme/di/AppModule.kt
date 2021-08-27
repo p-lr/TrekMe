@@ -34,7 +34,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -60,6 +62,14 @@ object AppModule {
     @MainDispatcher
     @Provides
     fun bindMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
+
+    @Singleton // Provide always the same instance
+    @ApplicationScope
+    @Provides
+    fun providesCoroutineScope(): CoroutineScope {
+        // Run this code when providing an instance of CoroutineScope
+        return CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    }
 
     /**
      * A single instance of [Billing] is used across the app. This object isn't expensive to create.
@@ -163,3 +173,7 @@ annotation class MainDispatcher
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class IoDispatcher
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class ApplicationScope
