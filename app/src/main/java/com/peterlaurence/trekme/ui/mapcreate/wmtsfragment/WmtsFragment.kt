@@ -77,7 +77,7 @@ class WmtsFragment : Fragment() {
 
     private var wmtsSource: WmtsSource? = null
 
-    private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
+    private val viewModel: WmtsViewModel by activityViewModels()
 
     private val layerIdToResId = mapOf(
         ignPlanv2 to R.string.layer_ign_plan_v2,

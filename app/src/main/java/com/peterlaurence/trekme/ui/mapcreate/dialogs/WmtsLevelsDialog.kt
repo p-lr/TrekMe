@@ -19,7 +19,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
 import com.peterlaurence.trekme.core.mapsource.wmts.toTransactionsNumber
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.Point
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.toDomain
-import com.peterlaurence.trekme.viewmodel.mapcreate.GoogleMapWmtsViewModel
+import com.peterlaurence.trekme.viewmodel.mapcreate.WmtsViewModel
 import kotlinx.parcelize.Parcelize
 import java.text.NumberFormat
 
@@ -45,7 +45,7 @@ open class WmtsLevelsDialog : DialogFragment() {
     private var downloadFormDataBundle: DownloadFormDataBundle? = null
     private val wmtsSource: WmtsSource?
         get() = downloadFormDataBundle?.wmtsSource
-    private val viewModel: GoogleMapWmtsViewModel by activityViewModels()
+    private val viewModel: WmtsViewModel by activityViewModels()
 
     companion object {
         const val ARG_WMTS_SOURCE = "WmtsLevelsDialog_wmtsSource"

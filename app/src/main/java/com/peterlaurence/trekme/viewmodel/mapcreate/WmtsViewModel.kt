@@ -38,7 +38,6 @@ import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.WmtsFragment
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaUiController
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PlaceMarker
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.Point
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.toDomain
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
@@ -60,7 +59,7 @@ import javax.inject.Inject
  * @author P.Laurence on 09/11/19
  */
 @HiltViewModel
-class GoogleMapWmtsViewModel @Inject constructor(
+class WmtsViewModel @Inject constructor(
     private val app: Application,
     private val downloadRepository: DownloadRepository,
     private val ignApiRepository: IgnApiRepository,
@@ -545,7 +544,7 @@ class GoogleMapWmtsViewModel @Inject constructor(
 
     /**
      * Update the position on the map. The first time we update the position, we add the
-     * [PositionMarker].
+     * position marker.
      *
      * @param X the projected X coordinate
      * @param Y the projected Y coordinate

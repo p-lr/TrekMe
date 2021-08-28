@@ -6,28 +6,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
@@ -186,164 +174,8 @@ fun LoadingScreen() {
 }
 
 @Composable
-fun SearchAppBar(
-    state: TopBarState,
-    onSearchClick: () -> Unit,
-    onCloseSearch: () -> Unit,
-    onMenuClick: () -> Unit,
-    onQueryTextSubmit: (String) -> Unit,
-    onLayerSelection: () -> Unit,
-    onZoomOnPosition: () -> Unit,
-    onShowLayerOverlay: () -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    TopAppBar(
-        title = {
-        },
-        navigationIcon = if (state is SearchMode) {
-            {
-                IconButton(onClick = onCloseSearch) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "")
-                }
-            }
-        } else {
-            {
-                IconButton(onClick = onMenuClick) {
-                    Icon(Icons.Filled.Menu, contentDescription = "")
-                }
-            }
-        },
-        actions = {
-            when (state) {
-                is Empty -> {
-                }
-                is Collapsed -> {
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = onSearchClick) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_baseline_search_24),
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                    }
-                    if (state.hasLayers) {
-                        IconButton(onClick = onLayerSelection) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.layer),
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                        }
-                    }
-                    IconButton(onClick = onZoomOnPosition) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_gps_fixed_24dp),
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                    }
-                    if (state.hasOverflowMenu) {
-                        IconButton(
-                            onClick = { expanded = true },
-                            modifier = Modifier.width(36.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                        }
-                        Box(
-                            Modifier
-                                .height(24.dp)
-                                .wrapContentSize(Alignment.BottomEnd, true)
-                        ) {
-                            DropdownMenu(
-                                modifier = Modifier.wrapContentSize(Alignment.TopEnd),
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                                offset = DpOffset(0.dp, 0.dp)
-                            ) {
-                                DropdownMenuItem(onClick = onShowLayerOverlay) {
-                                    Text(stringResource(id = R.string.mapcreate_overlay_layers))
-                                }
-                            }
-                        }
-                    }
-                }
-                is SearchMode -> {
-                    SearchView(state.textValueState, onQueryTextSubmit)
-                }
-            }
-        }
-    )
-}
-
-@Composable
-fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Unit) {
-    val focusRequester = remember { FocusRequester() }
-
-    TextField(
-        value = state.value,
-        onValueChange = { value ->
-            state.value = value
-            onTextChange(value.text)
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester),
-        textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
-        placeholder = {
-            Text(
-                text = "Search…",
-                fontSize = 18.sp,
-                color = Color.White,
-                modifier = Modifier.alpha(0.5f)
-            )
-        },
-        trailingIcon = {
-            if (state.value != TextFieldValue("")) {
-                IconButton(
-                    onClick = {
-                        state.value =
-                            TextFieldValue("") // Remove text from TextField when you press the 'X' icon
-                    }
-                ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "",
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .size(24.dp)
-                    )
-                }
-            }
-        },
-        singleLine = true,
-        shape = RectangleShape, // The TextFiled has rounded corners top left and right by default
-        colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.White,
-            cursorColor = Color.White,
-            leadingIconColor = Color.White,
-            trailingIconColor = Color.White,
-            backgroundColor = colorResource(id = R.color.colorPrimary),
-//            focusedIndicatorColor = Color.Transparent,
-//            unfocusedIndicatorColor = Color.Transparent,
-//            disabledIndicatorColor = Color.Transparent
-        )
-
-    )
-
-    DisposableEffect(Unit) {
-        focusRequester.requestFocus()
-        onDispose { }
-    }
-}
-
-@Composable
 fun WmtsWrapper(
-    viewModel: GoogleMapWmtsViewModel, onLayerSelection: () -> Unit, onShowLayerOverlay: () -> Unit,
+    viewModel: WmtsViewModel, onLayerSelection: () -> Unit, onShowLayerOverlay: () -> Unit,
     onMenuClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
