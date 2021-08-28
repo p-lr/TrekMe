@@ -1,10 +1,7 @@
 package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +14,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
@@ -267,19 +263,7 @@ fun WmtsScaffold(
     ) {
         when (uiState) {
             is GeoplaceList -> {
-                LazyColumn {
-                    items(uiState.geoPlaceList) { place ->
-                        Column(Modifier.clickable { onGeoPlaceSelection(place) }) {
-                            Text(
-                                text = place.name,
-                                Modifier.padding(start = 24.dp, top = 8.dp),
-                                fontSize = 17.sp
-                            )
-                            Text(text = place.locality, Modifier.padding(start = 24.dp, top = 4.dp))
-                            Divider(Modifier.padding(top = 8.dp))
-                        }
-                    }
-                }
+                GeoPlaceListUI(uiState, onGeoPlaceSelection)
             }
             is Wmts -> {
                 WmtsUI(

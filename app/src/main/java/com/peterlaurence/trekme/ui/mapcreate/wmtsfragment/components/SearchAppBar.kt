@@ -29,6 +29,14 @@ import com.peterlaurence.trekme.viewmodel.mapcreate.Empty
 import com.peterlaurence.trekme.viewmodel.mapcreate.SearchMode
 import com.peterlaurence.trekme.viewmodel.mapcreate.TopBarState
 
+/**
+ * This top app bar implements [material design](https://material.io/components/app-bars-top).
+ * It includes a search mode triggered when "search" button is clicked. In search mode, the
+ * text input field occupies all horizontal space (other buttons are hidden). The search can be left
+ * using the navigation icon.
+ *
+ * @author P.Laurence on 2021/08/28
+ */
 @Composable
 fun SearchAppBar(
     state: TopBarState,
@@ -150,8 +158,7 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
             if (state.value != TextFieldValue("")) {
                 IconButton(
                     onClick = {
-                        state.value =
-                            TextFieldValue("") // Remove text from TextField when you press the 'X' icon
+                        state.value = TextFieldValue("")
                     }
                 ) {
                     Icon(
@@ -165,7 +172,7 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
             }
         },
         singleLine = true,
-        shape = RectangleShape, // The TextFiled has rounded corners top left and right by default
+        shape = RectangleShape,
         colors = TextFieldDefaults.textFieldColors(
             textColor = Color.White,
             cursorColor = Color.White,
