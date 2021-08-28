@@ -12,11 +12,11 @@ import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
-import com.peterlaurence.trekme.databinding.FragmentWmtsViewBinding
+import com.peterlaurence.trekme.databinding.FragmentWmtsBinding
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.*
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.GoogleMapWmts
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.WmtsWrapper
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileResumedIn
@@ -58,10 +58,10 @@ import javax.inject.Inject
  * @author P.Laurence on 11/05/18
  */
 @AndroidEntryPoint
-class GoogleMapWmtsViewFragment : Fragment() {
+class WmtsFragment : Fragment() {
     /* We don't provide a non-null equivalent because we use suspend functions which can access this
      * property when it's null */
-    private var _binding: FragmentWmtsViewBinding? = null
+    private var _binding: FragmentWmtsBinding? = null
 
     @Inject
     lateinit var appEventBus: AppEventBus
@@ -122,7 +122,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentWmtsViewBinding.inflate(inflater, container, false)
+        val binding = FragmentWmtsBinding.inflate(inflater, container, false)
         _binding = binding
         binding.googleMapWmtsComposeView.apply {
             setViewCompositionStrategy(
@@ -131,7 +131,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
 
             setContent {
                 TrekMeTheme {
-                    GoogleMapWmts(
+                    WmtsWrapper(
                         viewModel,
                         ::showPrimaryLayerSelection,
                         ::showLayerOverlay,
@@ -167,7 +167,7 @@ class GoogleMapWmtsViewFragment : Fragment() {
         wmtsSource?.also {
             val bundle = LayerOverlayDataBundle(it)
             val action =
-                GoogleMapWmtsViewFragmentDirections.actionGoogleMapWmtsViewFragmentToLayerOverlayFragment(
+                WmtsFragmentDirections.actionGoogleMapWmtsViewFragmentToLayerOverlayFragment(
                     bundle
                 )
             findNavController().navigate(action)

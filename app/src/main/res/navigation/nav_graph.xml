@@ -72,13 +72,13 @@
         android:label="MapCreateFragment" >
         <action
             android:id="@+id/action_mapCreateFragment_to_googleMapWmtsViewFragment"
-            app:destination="@id/googleMapWmtsViewFragment" />
+            app:destination="@id/wmtsViewFragment" />
     </fragment>
     <action android:id="@+id/action_global_mapCreateFragment"
         app:destination="@id/mapCreateFragment"/>
     <fragment
-        android:id="@+id/googleMapWmtsViewFragment"
-        android:name="com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment"
+        android:id="@+id/wmtsViewFragment"
+        android:name="com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.WmtsFragment"
         android:label="@string/google_map_wmts_label">
         <action
             android:id="@+id/action_googleMapWmtsViewFragment_to_layerOverlayFragment"

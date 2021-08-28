@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         supportActionBar?.show()
                         supportActionBar?.title = ""
                     }
-                    R.id.googleMapWmtsViewFragment -> {
+                    R.id.wmtsViewFragment -> {
                         supportActionBar?.hide()
                         supportActionBar?.title = ""
                     }

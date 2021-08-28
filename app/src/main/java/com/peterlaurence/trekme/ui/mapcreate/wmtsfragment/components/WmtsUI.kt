@@ -43,7 +43,7 @@ import kotlin.math.abs
 import kotlin.math.min
 
 @Composable
-fun GoogleMapWmtsUI(
+fun WmtsUI(
     modifier: Modifier,
     wmtsState: WmtsState,
     onValidateArea: () -> Unit
@@ -342,7 +342,7 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
 }
 
 @Composable
-fun GoogleMapWmts(
+fun WmtsWrapper(
     viewModel: GoogleMapWmtsViewModel, onLayerSelection: () -> Unit, onShowLayerOverlay: () -> Unit,
     onMenuClick: () -> Unit
 ) {
@@ -351,7 +351,7 @@ fun GoogleMapWmts(
 
     val events = viewModel.eventListState.toList()
 
-    MyScaffold(
+    WmtsScaffold(
         events,
         topBarState,
         uiState,
@@ -370,7 +370,7 @@ fun GoogleMapWmts(
 }
 
 @Composable
-fun MyScaffold(
+fun WmtsScaffold(
     events: List<WmtsEvent>, topBarState: TopBarState, uiState: UiState,
     onAckError: () -> Unit,
     onToggleArea: () -> Unit,
@@ -450,7 +450,7 @@ fun MyScaffold(
                 }
             }
             is Wmts -> {
-                GoogleMapWmtsUI(
+                WmtsUI(
                     Modifier.fillMaxSize(),
                     uiState.wmtsState,
                     onValidateArea,

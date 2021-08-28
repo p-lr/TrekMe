@@ -35,7 +35,7 @@ import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.common.PositionMarker
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.DownloadFormDataBundle
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.GoogleMapWmtsViewFragment
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.WmtsFragment
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaUiController
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PlaceMarker
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PositionMarker
@@ -52,7 +52,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import javax.inject.Inject
 
 /**
- * View-model for [GoogleMapWmtsViewFragment]. It takes care of:
+ * View-model for [WmtsFragment]. It takes care of:
  * * storing the predefined init scale and position for each [WmtsSource]
  * * keeping track of the layer (as to each [WmtsSource] may correspond multiple layers)
  * * exposes [UiState] and [TopBarState] for the view made mostly in Compose
