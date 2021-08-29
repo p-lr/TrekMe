@@ -14,18 +14,18 @@ import java.io.File
  *
  * This should be called off UI thread.
  *
- * @return A [RouteGson] instance if it succeeded, null otherwise.
+ * @return A list of [RouteGson.Route] if it succeeded, null otherwise.
  *
  * @author P.Laurence on 13/05/17 -- Converted to Kotlin on 17/02/2019
  */
-fun mapRouteImportTask(map: Map, gson: Gson, fileName: String): RouteGson? {
+fun mapRouteImportTask(map: Map, gson: Gson, fileName: String): List<RouteGson.Route>? {
     val routeFile = File(map.directory, fileName)
     if (!routeFile.exists()) return null
 
     return try {
         val jsonString = FileUtils.getStringFromFile(routeFile)
         val routeGson = gson.fromJson(jsonString, RouteGson::class.java)
-        routeGson
+        routeGson.routes
     } catch (e: Exception) {
         /* Error while decoding the json file */
         Log.e(TAG, e.message, e)

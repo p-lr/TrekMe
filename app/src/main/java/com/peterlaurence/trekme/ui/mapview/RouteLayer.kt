@@ -135,7 +135,7 @@ class RouteLayer(
         createPathView()
         isInitialized = true
 
-        if (this.map.areRoutesDefined()) {
+        if (this.map.routes != null) {
             drawStaticRoutes()
         } else {
             acquireThenDrawRoutes(this.map)

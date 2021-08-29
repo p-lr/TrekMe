@@ -56,8 +56,7 @@ public class Map {
     private final MapGson mMapGson;
     /* The Java Object corresponding to the json file of markers */
     private MarkerGson mMarkerGson;
-    /* The Java Object corresponding to the json file of routes */
-    private RouteGson mRouteGson;
+    private List<RouteGson.Route> mRouteList;
     /* The Java Object corresponding to the json file of landmarks */
     private LandmarkGson mLandmarkGson;
     private CalibrationStatus mCalibrationStatus = CalibrationStatus.NONE;
@@ -75,7 +74,6 @@ public class Map {
         mMapGson = mapGson;
         mMarkerGson = new MarkerGson();
         mLandmarkGson = new LandmarkGson(new ArrayList<>());
-        mRouteGson = new RouteGson();
         mConfigFile = jsonFile;
         mImage = getBitmapFromFile(thumbnail);
     }
@@ -237,8 +235,8 @@ public class Map {
      * Add a new route to the map.
      */
     public void addRoute(RouteGson.Route route) {
-        if (mRouteGson != null) {
-            mRouteGson.routes.add(route);
+        if (mRouteList != null) {
+            mRouteList.add(route);
         }
     }
 
@@ -376,14 +374,6 @@ public class Map {
         mMarkerGson = markerGson;
     }
 
-    public final RouteGson getRouteGson() {
-        return mRouteGson;
-    }
-
-    public void setRouteGson(RouteGson routeGson) {
-        mRouteGson = routeGson;
-    }
-
     public final LandmarkGson getLandmarkGson() {
         return mLandmarkGson;
     }
@@ -400,10 +390,6 @@ public class Map {
         return mLandmarkGson != null && mLandmarkGson.getLandmarks().size() > 0;
     }
 
-    public boolean areRoutesDefined() {
-        return mRouteGson != null && mRouteGson.routes.size() > 0;
-    }
-
     @Nullable
     public List<MarkerGson.Marker> getMarkers() {
         if (mMarkerGson != null) {
@@ -414,10 +400,11 @@ public class Map {
 
     @Nullable
     public List<RouteGson.Route> getRoutes() {
-        if (mRouteGson != null) {
-            return mRouteGson.routes;
-        }
-        return null;
+        return mRouteList;
+    }
+
+    public void setRoutes(List<RouteGson.Route> routes) {
+        mRouteList = routes;
     }
 
     public final File getConfigFile() {

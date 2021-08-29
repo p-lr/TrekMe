@@ -153,9 +153,9 @@ class MapLoader(
      */
     suspend fun importRoutesForMap(map: Map) = withContext(ioDispatcher) {
         mapRouteImportTask(map, gson, MAP_ROUTE_FILENAME)
-    }?.let { routeGson ->
+    }?.let { routeList ->
         withContext(mainDispatcher) {
-            map.routeGson = routeGson
+            map.routes = routeList
         }
     }
 
@@ -277,7 +277,7 @@ class MapLoader(
      * @param map The [Map] to save.
      */
     suspend fun saveRoutes(map: Map) = withContext(mainDispatcher) {
-        val jsonString = gson.toJson(map.routeGson)
+        val jsonString = gson.toJson(RouteGson().apply { routes = map.routes })
 
         withContext(ioDispatcher) {
             val routeFile = File(map.directory, MAP_ROUTE_FILENAME)
@@ -335,12 +335,13 @@ class MapLoader(
     suspend fun deleteRoutes(ids: List<String>) = withContext(mainDispatcher) {
         for (map in mapList) {
             launch {
-                val oldCnt = map.routeGson.routes.size
-                val filtered = map.routeGson.routes.filter {
+                val routes = map.routes ?: return@launch
+                val oldCnt = routes.size
+                val filtered = routes.filter {
                     it.id == null || it.id !in ids
                 }
                 if (filtered.size != oldCnt) {
-                    map.routeGson.routes = filtered
+                    map.routes = filtered
                     saveRoutes(map)
                 }
             }
@@ -349,7 +350,7 @@ class MapLoader(
 
     /**
      * Renaming a map involves two steps:
-     * 1. Immediately change the name that appears in map.json, in the main thread,
+     * 1. Immediately change the name in memory, in the main thread,
      * 2. Rename the directory containing files, using [ioDispatcher],
      * 3. Update the map's directory, if the rename succeeded.
      * After that call, the map.json isn't updated. To update it, invoke [saveMap].
