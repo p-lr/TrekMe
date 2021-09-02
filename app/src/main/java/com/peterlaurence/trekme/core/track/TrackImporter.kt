@@ -4,8 +4,8 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
-import com.peterlaurence.trekme.core.map.gson.RouteGson
+import com.peterlaurence.trekme.core.map.domain.Route
+import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.model.*
@@ -70,7 +70,7 @@ class TrackImporter {
     }
 
     sealed class GpxImportResult {
-        data class GpxImportOk(val map: Map, val routes: List<RouteGson.Route>, val wayPoints: List<MarkerGson.Marker>,
+        data class GpxImportOk(val map: Map, val routes: List<Route>, val wayPoints: List<Marker>,
                                val newRouteCount: Int, val newMarkersCount: Int) : GpxImportResult()
 
         object GpxImportError : GpxImportResult()
@@ -88,7 +88,7 @@ class TrackImporter {
     /**
      * Converts a [Gpx] instance into view-specific types.
      */
-    private suspend fun convertGpx(gpx: Gpx, map: Map, defaultName: String = "track"): Pair<List<RouteGson.Route>, List<MarkerGson.Marker>> = withContext(Dispatchers.Default) {
+    private suspend fun convertGpx(gpx: Gpx, map: Map, defaultName: String = "track"): Pair<List<Route>, List<Marker>> = withContext(Dispatchers.Default) {
         val routes = gpx.tracks.mapIndexed { index, track ->
             gpxTrackToRoute(map, track, gpx.hasTrustedElevations(), index, defaultName)
         }
@@ -114,8 +114,8 @@ class TrackImporter {
         }
     }
 
-    private suspend fun setRoutesAndMarkersToMap(map: Map, routes: List<RouteGson.Route>,
-                                                 wayPoints: List<MarkerGson.Marker>,
+    private suspend fun setRoutesAndMarkersToMap(map: Map, routes: List<Route>,
+                                                 wayPoints: List<Marker>,
                                                  mapLoader: MapLoader): GpxImportResult {
         return try {
             /* At that point, routes for that map might not have been imported.
@@ -134,60 +134,56 @@ class TrackImporter {
     }
 
     /**
-     * Converts a [Track] into a [RouteGson.Route].
+     * Converts a [Track] into a [Route].
      * A single [Track] may contain several [TrackSegment].
      * This should be invoked off UI thread.
      */
-    private fun gpxTrackToRoute(map: Map, track: Track, elevationTrusted: Boolean, index: Int, defaultName: String): RouteGson.Route {
-        /* Create a new route */
-        val route = RouteGson.Route()
+    private fun gpxTrackToRoute(map: Map, track: Track, elevationTrusted: Boolean, index: Int, defaultName: String): Route {
 
         /* The route name is the track name if it has one. Otherwise we take the default name */
-        route.name = if (track.name.isNotEmpty()) {
+        val name = if (track.name.isNotEmpty()) {
             track.name
         } else {
             "$defaultName#$index"
         }
 
-        /* The route id is the track id */
-        route.id = track.id
-
-        /* The route should be visible by default */
-        route.visible = true
-
         /* All track segments are concatenated */
         val trackSegmentList = track.trackSegments
+        val routePoints = mutableListOf<Marker>()
         for (trackSegment in trackSegmentList) {
             val trackPointList = trackSegment.trackPoints
             for (trackPoint in trackPointList) {
-                val marker = trackPoint.toMarker(map)
-                route.routeMarkers.add(marker)
+                val pt = trackPoint.toMarker(map)
+                routePoints.add(pt)
             }
         }
-        route.elevationTrusted = elevationTrusted
-        return route
+
+        return Route(
+            track.id, /* The route id is the track id */
+            name,
+            routeMarkers = routePoints,
+            visible = true, /* The route should be visible by default */
+            elevationTrusted = elevationTrusted)
     }
 
-    private fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): MarkerGson.Marker {
-        val marker = wpt.toMarker(map)
-
-        marker.name = if (wpt.name?.isNotEmpty() == true) {
-            wpt.name
-        } else {
-            "$defaultName-wpt${index + 1}"
+    private fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): Marker {
+        return wpt.toMarker(map).apply {
+            name = if (wpt.name?.isNotEmpty() == true) {
+                wpt.name ?: ""
+            } else {
+                "$defaultName-wpt${index + 1}"
+            }
         }
-
-        return marker
     }
 }
 
 /**
  * A [TrackPoint] is a raw point that we make right after a location api callback.
- * To be drawn relatively to a [Map], it must be converted to a [MarkerGson.Marker].
+ * To be drawn relatively to a [Map], it must be converted to a [Marker].
  * This should be called off UI thread.
  */
-fun TrackPoint.toMarker(map: Map): MarkerGson.Marker {
-    val marker = MarkerGson.Marker()
+fun TrackPoint.toMarker(map: Map): Marker {
+    val marker = Marker(lat = latitude, lon = longitude, elevation = elevation)
 
     /* If the map uses a projection, store projected values */
     val projectedValues: DoubleArray?
@@ -200,12 +196,6 @@ fun TrackPoint.toMarker(map: Map): MarkerGson.Marker {
         }
     }
 
-    /* In any case, we store the wgs84 coordinates */
-    marker.lat = latitude
-    marker.lon = longitude
-
-    /* If we have elevation information, store it */
-    marker.elevation = elevation
     return marker
 }
 

@@ -48,6 +48,12 @@ public class RouteGson {
             }
         }
 
+        public void setRouteMarkers(List<MarkerGson.Marker> markers) {
+            synchronized (this) {
+                route_markers = markers;
+            }
+        }
+
         public void addMarker(MarkerGson.Marker marker) {
             synchronized (this) {
                 route_markers.add(marker);

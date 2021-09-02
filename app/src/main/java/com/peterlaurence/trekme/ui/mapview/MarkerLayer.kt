@@ -5,7 +5,9 @@ import android.animation.AnimatorListenerAdapter
 import android.view.View
 import androidx.navigation.Navigation
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MarkerGson.Marker
+import com.peterlaurence.trekme.core.map.domain.Marker
+import com.peterlaurence.trekme.core.map.getRelativeX
+import com.peterlaurence.trekme.core.map.getRelativeY
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.mapview.components.MarkerCallout
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
@@ -76,7 +78,7 @@ class MarkerLayer(
     fun init(map: Map, mapView: MapView) {
         this.map = map
         this.mapView = mapView
-        if (map.areMarkersDefined()) {
+        if (map.markers != null) {
             updateMarkers()
         } else {
             scope.launch {
@@ -96,14 +98,8 @@ class MarkerLayer(
         if (markers == null) return
         map.markers?.forEach { marker ->
             val movableMarker = MovableMarker(mapView.context, true, marker)
-            if (map.projection == null) {
-                movableMarker.relativeX = marker.lon
-                movableMarker.relativeY = marker.lat
-            } else {
-                /* Take proj values, and fallback to lat-lon if they are null */
-                movableMarker.relativeX = if (marker.proj_x != null) marker.proj_x else marker.lon
-                movableMarker.relativeY = if (marker.proj_y != null) marker.proj_y else marker.lat
-            }
+            movableMarker.relativeX = marker.getRelativeX(map)
+            movableMarker.relativeY = marker.getRelativeY(map)
             movableMarker.initStatic()
             mapView.addMarker(movableMarker, movableMarker.relativeX, movableMarker.relativeY, -0.5f, -0.5f, 0f, 0f)
         }
@@ -125,7 +121,7 @@ class MarkerLayer(
         val movableMarker: MovableMarker
 
         /* Create a new marker and add it to the map */
-        val newMarker = Marker()
+        val newMarker = Marker(0.0, 0.0)
         if (map.projection == null) {
             newMarker.lat = relativeY
             newMarker.lon = relativeX
@@ -176,7 +172,7 @@ class MarkerLayer(
      * It does the following :
      *  * Morph the [MovableMarker] into its static form
      *  * Animate out and remove the [MarkerGrab] which help the user to move the [MovableMarker]
-     *  * Update the [MarkerGson.Marker] associated with the relative coordinates of the
+     *  * Update the [Marker] associated with the relative coordinates of the
      * [MovableMarker]. Depending on the [Map] using a projection or not, those
      * relative coordinates are wgs84 or projected values.
      */
@@ -201,12 +197,16 @@ class MarkerLayer(
         /* The view has been moved, update the associated model object */
         val marker = movableMarker.marker
         if (map.projection == null) {
-            marker.lon = movableMarker.relativeX
             marker.lat = movableMarker.relativeY
+            marker.lon = movableMarker.relativeX
         } else {
-            marker.proj_x = movableMarker.relativeX
-            marker.proj_y = movableMarker.relativeY
-            val wgs84Coords: DoubleArray? = map.projection?.undoProjection(marker.proj_x, marker.proj_y)
+            val projX = movableMarker.relativeX
+            val projY = movableMarker.relativeY
+            marker.proj_x = projX
+            marker.proj_y = projY
+            val wgs84Coords: DoubleArray? =
+                map.projection?.undoProjection(projX, projY)
+
             if (wgs84Coords != null) {
                 marker.lon = wgs84Coords[0]
                 marker.lat = wgs84Coords[1]

@@ -4,10 +4,13 @@ import android.content.Context;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 
-import com.peterlaurence.trekme.R;
-import com.peterlaurence.trekme.core.map.gson.MarkerGson;
-
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.content.ContextCompat;
+
+import com.peterlaurence.trekme.R;
+import com.peterlaurence.trekme.core.map.domain.Marker;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This {@link android.widget.ImageView} has two states :
@@ -21,13 +24,13 @@ import androidx.appcompat.widget.AppCompatImageView;
  * @author P.Laurence on 08/04/17.
  */
 public class MovableMarker extends AppCompatImageView {
-    private AnimatedVectorDrawable mRounded;
-    private Drawable mStatic;
-    private AnimatedVectorDrawable mStaticToDynamic;
-    private AnimatedVectorDrawable mDynamicToStatic;
+    private final AnimatedVectorDrawable mRounded;
+    private final Drawable mStatic;
+    private final AnimatedVectorDrawable mStaticToDynamic;
+    private final AnimatedVectorDrawable mDynamicToStatic;
 
     /* The model object that this view represents */
-    private MarkerGson.Marker mMarker;
+    private final Marker mMarker;
     private boolean mIsStatic;
 
     /* The relative coordinates are kept here. Although this shouldn't be a concern of this object,
@@ -44,13 +47,13 @@ public class MovableMarker extends AppCompatImageView {
      * The {@code mStatic} drawable is the end state of the {@code mDynamicToStatic}
      * {@link AnimatedVectorDrawable}. <br>
      */
-    public MovableMarker(Context context, boolean staticForm, MarkerGson.Marker marker) {
+    public MovableMarker(Context context, boolean staticForm, Marker marker) {
         super(context);
 
-        mRounded = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_marker_rounded);
-        mStatic = context.getDrawable(R.drawable.vd_marker_location_rounded);
-        mStaticToDynamic = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_marker_location_rounded);
-        mDynamicToStatic = (AnimatedVectorDrawable) context.getDrawable(R.drawable.avd_marker_rounded_location);
+        mRounded = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_marker_rounded);
+        mStatic = ContextCompat.getDrawable(context, R.drawable.vd_marker_location_rounded);
+        mStaticToDynamic = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_marker_location_rounded);
+        mDynamicToStatic = (AnimatedVectorDrawable) ContextCompat.getDrawable(context, R.drawable.avd_marker_rounded_location);
 
         /* Keep a reference on the model object */
         mMarker = marker;
@@ -115,7 +118,8 @@ public class MovableMarker extends AppCompatImageView {
         this.relativeY = relativeY;
     }
 
-    public MarkerGson.Marker getMarker() {
+    @NotNull
+    public Marker getMarker() {
         return mMarker;
     }
 

@@ -8,19 +8,16 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
+import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.databinding.FragmentMarkerManageBinding
-import com.peterlaurence.trekme.viewmodel.markermanage.GeographicCoords
 import com.peterlaurence.trekme.viewmodel.markermanage.MakerManageViewModel
-import com.peterlaurence.trekme.viewmodel.markermanage.ProjectedCoords
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -53,7 +50,7 @@ class MarkerManageFragment : Fragment() {
     private val args: MarkerManageFragmentArgs by navArgs()
 
     private var map: Map? = null
-    private var marker: MarkerGson.Marker? = null
+    private var marker: Marker? = null
 
     /*
      * Be VERY careful not to break the logic of those flags, since their purpose is to prevent
@@ -66,7 +63,7 @@ class MarkerManageFragment : Fragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
-        viewModel.getGeographicLiveData().observe(this, Observer<GeographicCoords> {
+        viewModel.getGeographicLiveData().observe(this, {
             it?.let {
                 binding.markerLonId.setText("${it.lon}")
                 binding.markerLatId.setText("${it.lat}")
@@ -74,7 +71,7 @@ class MarkerManageFragment : Fragment() {
             infiniteLoopGuardGeo = false
         })
 
-        viewModel.getProjectedLiveData().observe(this, Observer<ProjectedCoords> {
+        viewModel.getProjectedLiveData().observe(this, {
             it?.let {
                 binding.markerProjXId.setText("${it.X}")
                 binding.markerProjYId.setText("${it.Y}")
@@ -83,8 +80,10 @@ class MarkerManageFragment : Fragment() {
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
 
         _binding = FragmentMarkerManageBinding.inflate(inflater, container, false)
 
@@ -92,35 +91,35 @@ class MarkerManageFragment : Fragment() {
         marker = map?.markers?.firstOrNull { it == args.marker }
 
         binding.markerLatId.addTextChangedListener(
-                onTextChanged = { _, _, _, _ ->
-                    if (!infiniteLoopGuardGeo) {
-                        onGeographicCoordsChanged()
-                    }
+            onTextChanged = { _, _, _, _ ->
+                if (!infiniteLoopGuardGeo) {
+                    onGeographicCoordsChanged()
                 }
+            }
         )
 
         binding.markerLonId.addTextChangedListener(
-                onTextChanged = { _, _, _, _ ->
-                    if (!infiniteLoopGuardGeo) {
-                        onGeographicCoordsChanged()
-                    }
+            onTextChanged = { _, _, _, _ ->
+                if (!infiniteLoopGuardGeo) {
+                    onGeographicCoordsChanged()
                 }
+            }
         )
 
         binding.markerProjXId.addTextChangedListener(
-                onTextChanged = { _, _, _, _ ->
-                    if (!infiniteLoopGuardProj) {
-                        onProjectedCoordsChanged()
-                    }
+            onTextChanged = { _, _, _, _ ->
+                if (!infiniteLoopGuardProj) {
+                    onProjectedCoordsChanged()
                 }
+            }
         )
 
         binding.markerProjYId.addTextChangedListener(
-                onTextChanged = { _, _, _, _ ->
-                    if (!infiniteLoopGuardProj) {
-                        onProjectedCoordsChanged()
-                    }
+            onTextChanged = { _, _, _, _ ->
+                if (!infiniteLoopGuardProj) {
+                    onProjectedCoordsChanged()
                 }
+            }
         )
 
         updateView()
@@ -238,7 +237,8 @@ class MarkerManageFragment : Fragment() {
         hideSoftKeyboard()
 
         /* Show a snackbar to confirm the changes and offer to show the map */
-        val snackbar = Snackbar.make(binding.root, R.string.marker_changes_saved, Snackbar.LENGTH_SHORT)
+        val snackbar =
+            Snackbar.make(binding.root, R.string.marker_changes_saved, Snackbar.LENGTH_SHORT)
         snackbar.setAction(R.string.show_map_action) {
             findNavController().navigate(R.id.mapViewFragment)
         }

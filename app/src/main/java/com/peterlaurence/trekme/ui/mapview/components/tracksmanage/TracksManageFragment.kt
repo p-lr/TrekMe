@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.RouteGson
+import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.dialogs.ColorSelectDialog
@@ -207,11 +207,11 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         trackRenameMenuItem?.isVisible = true
     }
 
-    override fun onColorButtonClicked(route: RouteGson.Route) {
+    override fun onColorButtonClicked(route: Route) {
         ColorSelectDialog.newInstance(route.compositeId, route.color).show(requireActivity().supportFragmentManager, "ColorSelectDialog")
     }
 
-    override fun onVisibilityToggle(route: RouteGson.Route) {
+    override fun onVisibilityToggle(route: Route) {
         viewModel.saveChanges()
     }
 
@@ -266,15 +266,15 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     interface TrackChangeListener {
         /**
-         * When new [RouteGson.Route] are added or modified, this method is called.
+         * When new [Route] are added or modified, this method is called.
          *
          * @param map       the [Map] associated with the change
-         * @param routeList a list of [RouteGson.Route]
+         * @param routeList a list of [Route]
          */
-        fun onTrackChanged(map: Map, routeList: List<RouteGson.Route>)
+        fun onTrackChanged(map: Map, routeList: List<Route>)
 
         /**
-         * When the visibility of a [RouteGson.Route] is changed, this method is called.
+         * When the visibility of a [Route] is changed, this method is called.
          */
         fun onTrackVisibilityChanged()
     }
@@ -287,7 +287,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             const val ROUTE_KEY = "route"
             const val MAP_ID = "mapId"
 
-            fun newInstance(mapId: Int, route: RouteGson.Route): ChangeRouteNameFragment {
+            fun newInstance(mapId: Int, route: Route): ChangeRouteNameFragment {
                 val bundle = Bundle()
                 bundle.putInt(MAP_ID, mapId)
                 bundle.putSerializable(ROUTE_KEY, route)
@@ -302,7 +302,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             val view = View.inflate(context, R.layout.change_trackname_fragment, null)
             val editText = view.findViewById<View>(R.id.track_name_edittext) as EditText
 
-            val route = arguments?.get(ROUTE_KEY) as? RouteGson.Route
+            val route = arguments?.get(ROUTE_KEY) as? Route
             val mapId = arguments?.get(MAP_ID) as? Int
 
             if (route != null) {

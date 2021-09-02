@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.RouteGson
+import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.map.MapRepository
@@ -33,8 +33,8 @@ class TracksManageViewModel @Inject constructor(
         private val mapViewEventBus: MapViewEventBus,
         private val mapLoader: MapLoader
 ) : ViewModel() {
-    private val _tracks = MutableLiveData<List<RouteGson.Route>>()
-    val tracks: LiveData<List<RouteGson.Route>> = _tracks
+    private val _tracks = MutableLiveData<List<Route>>()
+    val tracks: LiveData<List<Route>> = _tracks
 
     val map: Map?
         get() = mapRepository.getCurrentMap()
@@ -45,7 +45,7 @@ class TracksManageViewModel @Inject constructor(
         }
     }
 
-    fun removeRoute(route: RouteGson.Route) {
+    fun removeRoute(route: Route) {
         map?.also { map ->
             map.routes?.let { routes ->
                 routes.remove(route)
@@ -77,7 +77,7 @@ class TracksManageViewModel @Inject constructor(
         return gpxRepository.isFileSupported(uri, app.applicationContext.contentResolver)
     }
 
-    fun renameRoute(route: RouteGson.Route, newName: String) {
+    fun renameRoute(route: Route, newName: String) {
         route.name = newName
         saveChanges()
 

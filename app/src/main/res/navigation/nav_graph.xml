@@ -64,7 +64,7 @@
             app:argType="integer" />
         <argument
             android:name="marker"
-            app:argType="com.peterlaurence.trekme.core.map.gson.MarkerGson$Marker" />
+            app:argType="com.peterlaurence.trekme.core.map.domain.Marker" />
     </fragment>
     <fragment
         android:id="@+id/mapCreateFragment"

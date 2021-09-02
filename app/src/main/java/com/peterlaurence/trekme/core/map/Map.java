@@ -6,11 +6,11 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.peterlaurence.trekme.core.map.domain.Marker;
+import com.peterlaurence.trekme.core.map.domain.Route;
 import com.peterlaurence.trekme.core.map.gson.Landmark;
 import com.peterlaurence.trekme.core.map.gson.LandmarkGson;
 import com.peterlaurence.trekme.core.map.gson.MapGson;
-import com.peterlaurence.trekme.core.map.gson.MarkerGson;
-import com.peterlaurence.trekme.core.map.gson.RouteGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.mapsource.WmtsSource;
 import com.peterlaurence.trekme.core.projection.Projection;
@@ -54,16 +54,17 @@ public class Map {
     private MapBounds mMapBounds;
     /* The Java Object corresponding to the json configuration file */
     private final MapGson mMapGson;
-    /* The Java Object corresponding to the json file of markers */
-    private MarkerGson mMarkerGson;
-    private List<RouteGson.Route> mRouteList;
+
     /* The Java Object corresponding to the json file of landmarks */
     private LandmarkGson mLandmarkGson;
+
+    private List<Marker> mMarkerList;
+    private List<Route> mRouteList;
+
     private CalibrationStatus mCalibrationStatus = CalibrationStatus.NONE;
 
     /**
      * To create a {@link Map}, three parameters are needed. <br>
-     * The {@link MarkerGson} is set later when the user wants to see the map.
      *
      * @param mapGson   the {@link MapGson} object that includes informations relative to levels,
      *                  the tile size, the name of the map, etc.
@@ -72,7 +73,6 @@ public class Map {
      */
     public Map(MapGson mapGson, File jsonFile, File thumbnail) {
         mMapGson = mapGson;
-        mMarkerGson = new MarkerGson();
         mLandmarkGson = new LandmarkGson(new ArrayList<>());
         mConfigFile = jsonFile;
         mImage = getBitmapFromFile(thumbnail);
@@ -216,10 +216,6 @@ public class Map {
         mMapGson.name = newName;
     }
 
-    public String getDescription() {
-        return "";
-    }
-
     /**
      * The calibration status is either : <ul>
      * <li>{@link CalibrationStatus#OK}</li>
@@ -234,17 +230,27 @@ public class Map {
     /**
      * Add a new route to the map.
      */
-    public void addRoute(RouteGson.Route route) {
+    public void addRoute(Route route) {
         if (mRouteList != null) {
             mRouteList.add(route);
+        }
+    }
+
+    public void replaceRoute(@NonNull Route from, @NonNull Route to) {
+        int i = mRouteList.indexOf(from);
+        if (i != -1) {
+            mRouteList.remove(i);
+            mRouteList.add(i, to);
+        } else {
+            mRouteList.add(to);
         }
     }
 
     /**
      * Add a new marker.
      */
-    public void addMarker(MarkerGson.Marker marker) {
-        mMarkerGson.markers.add(marker);
+    public void addMarker(Marker marker) {
+        mMarkerList.add(marker);
     }
 
     /**
@@ -366,12 +372,8 @@ public class Map {
         return mMapGson;
     }
 
-    public final MarkerGson getMarkerGson() {
-        return mMarkerGson;
-    }
-
-    public void setMarkerGson(MarkerGson markerGson) {
-        mMarkerGson = markerGson;
+    public void setMarkers(List<Marker> markers) {
+        mMarkerList = markers;
     }
 
     public final LandmarkGson getLandmarkGson() {
@@ -382,28 +384,27 @@ public class Map {
         mLandmarkGson = landmarkGson;
     }
 
-    public boolean areMarkersDefined() {
-        return mMarkerGson != null && mMarkerGson.markers.size() > 0;
-    }
-
     public boolean areLandmarksDefined() {
         return mLandmarkGson != null && mLandmarkGson.getLandmarks().size() > 0;
     }
 
+    /**
+     * Markers are lazily loaded.
+     */
     @Nullable
-    public List<MarkerGson.Marker> getMarkers() {
-        if (mMarkerGson != null) {
-            return mMarkerGson.markers;
-        }
-        return null;
+    public List<Marker> getMarkers() {
+        return mMarkerList;
     }
 
+    /**
+     * Routes are lazily loaded.
+     */
     @Nullable
-    public List<RouteGson.Route> getRoutes() {
+    public List<Route> getRoutes() {
         return mRouteList;
     }
 
-    public void setRoutes(List<RouteGson.Route> routes) {
+    public void setRoutes(List<Route> routes) {
         mRouteList = routes;
     }
 

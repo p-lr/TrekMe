@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.RouteGson
+import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.track.toMarker
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
@@ -76,9 +76,9 @@ private class RouteBuilder(val map: Map) {
 
     fun add(point: TrackPoint) {
         val marker = point.toMarker(map)
-        liveRoute.addMarker(marker)
+        liveRoute.routeMarkers.add(marker)
     }
 }
 
 /* A LiveRoute is just one particular route */
-typealias LiveRoute = RouteGson.Route
+typealias LiveRoute = Route

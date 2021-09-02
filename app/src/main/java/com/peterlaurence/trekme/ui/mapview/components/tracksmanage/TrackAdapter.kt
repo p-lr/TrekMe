@@ -11,12 +11,12 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.gson.RouteGson.Route
+import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.ui.mapview.colorRoute
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TrackAdapter.TrackViewHolder
 
 /**
- * Adapter to provide access to the data set (here a list of [RouteGson.Route]).
+ * Adapter to provide access to the data set (here a list of [Route]).
  *
  * @author P.Laurence on 01/03/17 -- Converted to Kotlin on 25/09/20
  */

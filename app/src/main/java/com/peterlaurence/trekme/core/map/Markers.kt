@@ -1,11 +1,11 @@
 package com.peterlaurence.trekme.core.map
 
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
+import com.peterlaurence.trekme.core.map.domain.Marker
 
-fun MarkerGson.Marker.getRelativeX(map: Map): Double {
-    return if (map.projection != null) proj_x else lon
+fun Marker.getRelativeX(map: Map): Double {
+    return if (map.projection != null) proj_x ?: lon else lon
 }
 
-fun MarkerGson.Marker.getRelativeY(map: Map): Double {
-    return if (map.projection != null) proj_y else lat
+fun Marker.getRelativeY(map: Map): Double {
+    return if (map.projection != null) proj_y ?: lat else lat
 }

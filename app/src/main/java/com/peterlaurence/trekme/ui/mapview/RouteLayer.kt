@@ -12,9 +12,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.getRelativeX
 import com.peterlaurence.trekme.core.map.getRelativeY
-import com.peterlaurence.trekme.core.map.gson.RouteGson
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.route.Barycenter
 import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
@@ -43,7 +43,7 @@ import kotlin.math.min
 import kotlin.math.pow
 
 /**
- * All [RouteGson.Route] are managed here.
+ * All [Route] are managed here.
  * This object is intended to be used exclusively by the [MapViewFragment].
  * After being created, the method [init] has to be called.
  *
@@ -60,7 +60,7 @@ class RouteLayer(
     private lateinit var mapView: MapView
     private lateinit var map: Map
     private var pathView: PathView? = null
-    private var previousRoutes: List<RouteGson.Route>? = null
+    private var previousRoutes: List<Route>? = null
     private val liveRouteView: PathView by lazy {
         val context = mapView.context
         val view = PathView(context)
@@ -109,13 +109,13 @@ class RouteLayer(
     }
 
     /**
-     * When a track file has been parsed, this method is called. At this stage, the new
-     * [RouteGson.Route] are added to the [Map].
+     * When a track file has been parsed, this method is called. At this stage, the new [Route] are
+     * added to the [Map].
      *
      * @param map       the [Map] associated with the change
-     * @param routeList a list of [RouteGson.Route]
+     * @param routeList a list of [Route]
      */
-    override fun onTrackChanged(map: Map, routeList: List<RouteGson.Route>) {
+    override fun onTrackChanged(map: Map, routeList: List<Route>) {
         Log.d(TAG, routeList.size.toString() + " new route received for map " + map.name)
 
         /* At this stage, all routes might have already been drawn */
@@ -231,7 +231,7 @@ class RouteLayer(
         }
 
         coroutineScope.launch {
-            val processedStaticRoutes = mutableListOf<RouteGson.Route>()
+            val processedStaticRoutes = mutableListOf<Route>()
             staticRouteFlow.collect {
                 processedStaticRoutes.add(it)
                 pathView?.updatePaths(processedStaticRoutes.map { route ->
@@ -255,8 +255,8 @@ class RouteLayer(
     /**
      * Returns a [Flow] which concurrently compute [PathView.DrawablePath] for each route.
      */
-    private fun getRouteFlow(routeList: List<RouteGson.Route>,
-                             action: (RouteGson.Route, FloatArray) -> RouteGson.Route): Flow<RouteGson.Route> {
+    private fun getRouteFlow(routeList: List<Route>,
+                             action: (Route, FloatArray) -> Route): Flow<Route> {
         return routeList.asFlow().map { route ->
             flow {
                 val path = route.toPath(mapView)
@@ -272,10 +272,10 @@ class RouteLayer(
     }
 
     /**
-     * Convert a [RouteGson.Route] to a [FloatArray] which is the drawable data structure expected
+     * Convert a [Route] to a [FloatArray] which is the drawable data structure expected
      * by the view that will represent it.
      */
-    private fun RouteGson.Route.toPath(mapView: MapView): FloatArray? {
+    private fun Route.toPath(mapView: MapView): FloatArray? {
         val markerList = routeMarkers ?: listOf()
         /* If there is only one marker, the path has no sense */
         if (markerList.size < 2) return null
@@ -329,12 +329,12 @@ private class DistanceOnRouteController(private val pathView: PathView,
     var isActive: Boolean = false
         private set
     private var map: Map? = null
-    private var routes: List<RouteGson.Route> = listOf()
-    private var routeWithActiveDistance: RouteGson.Route? = null
-    private var barycenterToRoute: kotlin.collections.Map<Barycenter, RouteGson.Route>? = null
+    private var routes: List<Route> = listOf()
+    private var routeWithActiveDistance: Route? = null
+    private var barycenterToRoute: kotlin.collections.Map<Barycenter, Route>? = null
     private val scrollUpdateFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val distanceCalculateFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    private val infoForRoute: MutableMap<RouteGson.Route, Info> = mutableMapOf()
+    private val infoForRoute: MutableMap<Route, Info> = mutableMapOf()
     private val grab1 = MarkerGrab(mapView.context, dpToPx(50f).toInt())
     private val grab2 = MarkerGrab(mapView.context, dpToPx(50f).toInt())
     private var firstTouchMoveListener: TouchMoveListener? = null
@@ -435,7 +435,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
      * It immediately triggers an internal computation of each chunk's barycenter (off UI thread).
      * If the provided state is non-null, it restores relevant structures.
      */
-    suspend fun setRoutes(routeList: List<RouteGson.Route>, map: Map, state: DistOnRouteState?) {
+    suspend fun setRoutes(routeList: List<Route>, map: Map, state: DistOnRouteState?) {
         this.map = map
         routes = routeList
 
@@ -456,7 +456,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }
     }
 
-    private fun computeBarycenter(route: RouteGson.Route, map: Map): Barycenter {
+    private fun computeBarycenter(route: Route, map: Map): Barycenter {
         var sumX = 0.0
         var sumY = 0.0
         for (point in route.routeMarkers) {
@@ -488,7 +488,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }
     }
 
-    private fun setRouteWithActiveDistance(route: RouteGson.Route, map: Map) {
+    private fun setRouteWithActiveDistance(route: Route, map: Map) {
         routeWithActiveDistance = route
 
         val info = infoForRoute[route]
@@ -540,7 +540,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         }
     }
 
-    private fun positionGrabMarkers(map: Map, route: RouteGson.Route, index1: Int, index2: Int) {
+    private fun positionGrabMarkers(map: Map, route: Route, index1: Int, index2: Int) {
         val firstMarker = route.routeMarkers[index1]
         if (firstMarker != null) {
             val relX = firstMarker.getRelativeX(map)
@@ -643,7 +643,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         mapView.moveMarker(distMarker, x, y)
     }
 
-    private suspend fun computeDistance(route: RouteGson.Route, info: Info): Double = withContext(Dispatchers.Default) {
+    private suspend fun computeDistance(route: Route, info: Info): Double = withContext(Dispatchers.Default) {
         val iMin = min(info.index1, info.index2)
         val iMax = max(info.index1, info.index2)
         val iterator = route.routeMarkers.listIterator(iMin)

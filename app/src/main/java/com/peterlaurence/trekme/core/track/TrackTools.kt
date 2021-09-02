@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.track
 
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
-import com.peterlaurence.trekme.core.map.gson.RouteGson
+import com.peterlaurence.trekme.core.map.domain.Route
+import com.peterlaurence.trekme.core.map.domain.Marker
 import java.io.File
 import java.util.*
 
@@ -19,25 +19,26 @@ object TrackTools {
     }
 
     /**
-     * Add new [RouteGson.Route]s to a [Map].
+     * Add new [Route]s to a [Map].
      *
-     * @return the number of [RouteGson.Route] that have been appended to the list.
+     * @return the number of [Route] that have been appended to the list.
      */
-    fun updateRouteList(map: Map, newRouteList: List<RouteGson.Route>?): Int {
+    fun updateRouteList(map: Map, newRouteList: List<Route>?): Int {
         if (newRouteList == null) return 0
-        val hashMap = HashMap<String, RouteGson.Route>()
+        val hashMap = HashMap<String, Route>()
         val routeList = map.routes
         if (routeList != null) {
             for (route in routeList) {
-                hashMap[route.name] = route
+                hashMap[route.compositeId] = route
             }
         }
 
         var newRouteCount = 0
         for (route in newRouteList) {
-            if (hashMap.containsKey(route.name)) {
-                val existingRoute = hashMap[route.name]
-                existingRoute?.copyRoute(route)
+            if (hashMap.containsKey(route.compositeId)) {
+                hashMap[route.compositeId]?.also { existing ->
+                    map.replaceRoute(existing, route)
+                }
             } else {
                 map.addRoute(route)
                 newRouteCount++
@@ -47,7 +48,7 @@ object TrackTools {
         return newRouteCount
     }
 
-    fun updateMarkerList(map: Map, newMarkerList: List<MarkerGson.Marker>): Int {
+    fun updateMarkerList(map: Map, newMarkerList: List<Marker>): Int {
         val toBeAdded = newMarkerList.toMutableList()
         val existing = map.markers
         existing?.let {

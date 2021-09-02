@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.core.map.gson.*
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
@@ -32,18 +33,18 @@ import kotlin.coroutines.resume
  * The MapLoader acts as central point for most operations related to maps.
  * It uses the following tasks defined in [com.peterlaurence.trekme.core.map.maploader.tasks]:
  *
- * * [mapCreationTask] -> create instances of [Map]
- * * [MapDeleteTask] -> delete a [Map]
- * * [MapMarkerImportTask] -> Import the markers of a [Map]
+ * * Create instances of [Map]
+ * * Deletion a [Map]
+ * * Import the markers of a [Map]
  * * [mapRouteImportTask] -> Import the list of routes for a given [Map]
  * * [MapArchiveSearchTask] -> Get the list of [MapArchive]
  *
  * @author P.Laurence -- converted to Kotlin on 16/02/2019
  */
 class MapLoader(
-        private val mainDispatcher: CoroutineDispatcher,
-        private val defaultDispatcher: CoroutineDispatcher,
-        private val ioDispatcher: CoroutineDispatcher
+    private val mainDispatcher: CoroutineDispatcher,
+    private val defaultDispatcher: CoroutineDispatcher,
+    private val ioDispatcher: CoroutineDispatcher
 ) {
     /**
      * All [Projection]s are registered here.
@@ -58,7 +59,8 @@ class MapLoader(
     private val gson: Gson
     private val mapList: MutableList<Map> = mutableListOf()
 
-    private val _mapListUpdateEventFlow = MutableSharedFlow<MapListUpdateEvent>(0, 1, BufferOverflow.DROP_OLDEST)
+    private val _mapListUpdateEventFlow =
+        MutableSharedFlow<MapListUpdateEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val mapListUpdateEventFlow = _mapListUpdateEventFlow.asSharedFlow()
 
     /**
@@ -68,16 +70,19 @@ class MapLoader(
         get() = mapList
 
     /**
-     * Create once for all the [Gson] object, that is used to serialize/deserialize json content.
+     * Create once for all the Gson object, that is used to serialize/deserialize json content.
      * Register all [Projection] types, depending on their name.
      */
     init {
         val factory = RuntimeTypeAdapterFactory.of(
-                Projection::class.java, "projection_name")
+            Projection::class.java, "projection_name"
+        )
         for ((key, value) in projectionHashMap) {
             factory.registerSubtype(value, key)
         }
-        gson = GsonBuilder().serializeNulls().setPrettyPrinting().registerTypeAdapterFactory(factory).create()
+        gson =
+            GsonBuilder().serializeNulls().setPrettyPrinting().registerTypeAdapterFactory(factory)
+                .create()
     }
 
     /**
@@ -124,7 +129,7 @@ class MapLoader(
     }
 
     /**
-     * Launch a [MapMarkerImportTask] which reads the markers.json file.
+     * Reads the markers.json file.
      */
     suspend fun getMarkersForMap(map: Map): Boolean = withContext(ioDispatcher) {
         val markerFile = File(map.directory, MAP_MARKER_FILENAME)
@@ -140,7 +145,7 @@ class MapLoader(
         /* Update the map on the main thread */
         withContext(mainDispatcher) {
             if (markerGson != null) {
-                map.markerGson = markerGson
+                map.markers = markerGson.markers.map { it.toDomain() }
                 true
             } else false
         }
@@ -165,13 +170,13 @@ class MapLoader(
      * Right after, if the result is not null, we update the [Map] on the main thread.
      */
     suspend fun getLandmarksForMap(map: Map) =
-            withContext(defaultDispatcher) {
-                mapLandmarkImportTask(map, gson, MAP_LANDMARK_FILENAME)
-            }?.let { landmarkGson ->
-                withContext(mainDispatcher) {
-                    map.landmarkGson = landmarkGson
-                }
+        withContext(defaultDispatcher) {
+            mapLandmarkImportTask(map, gson, MAP_LANDMARK_FILENAME)
+        }?.let { landmarkGson ->
+            withContext(mainDispatcher) {
+                map.landmarkGson = landmarkGson
             }
+        }
 
     /**
      * Launch a task which gets the list of [MapArchive].
@@ -181,19 +186,21 @@ class MapLoader(
      * TODO: Remove this along with MapArchiveSearchTask class. This logic isn't used anymore.
      */
     @Suppress("unused")
-    suspend fun getMapArchiveList(dirs: List<File>): List<MapArchive> = suspendCancellableCoroutine { cont ->
-        val task = MapArchiveSearchTask(dirs, MAP_FILENAME, object : MapArchiveListUpdateListener {
-            override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
-                cont.resume(mapArchiveList)
+    suspend fun getMapArchiveList(dirs: List<File>): List<MapArchive> =
+        suspendCancellableCoroutine { cont ->
+            val task =
+                MapArchiveSearchTask(dirs, MAP_FILENAME, object : MapArchiveListUpdateListener {
+                    override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
+                        cont.resume(mapArchiveList)
+                    }
+                })
+
+            cont.invokeOnCancellation {
+                task.cancel()
             }
-        })
 
-        cont.invokeOnCancellation {
-            task.cancel()
+            task.start()
         }
-
-        task.start()
-    }
 
     /**
      * Add a [Map] to the internal list and generate the json file. Then, saves the [Map].
@@ -245,7 +252,9 @@ class MapLoader(
      * @param map The [Map] to save.
      */
     suspend fun saveMarkers(map: Map) = withContext(mainDispatcher) {
-        val jsonString = gson.toJson(map.markerGson)
+        val markerGson =
+            MarkerGson().apply { markers = map.markers?.map { it.toEntity() } ?: listOf() }
+        val jsonString = gson.toJson(markerGson)
 
         withContext(ioDispatcher) {
             val markerFile = File(map.directory, MAP_MARKER_FILENAME)
@@ -277,7 +286,8 @@ class MapLoader(
      * @param map The [Map] to save.
      */
     suspend fun saveRoutes(map: Map) = withContext(mainDispatcher) {
-        val jsonString = gson.toJson(RouteGson().apply { routes = map.routes })
+        val entities = map.routes?.map { it.toEntity() } ?: listOf()
+        val jsonString = gson.toJson(RouteGson().apply { routes = entities })
 
         withContext(ioDispatcher) {
             val routeFile = File(map.directory, MAP_ROUTE_FILENAME)
@@ -308,7 +318,7 @@ class MapLoader(
     /**
      * Delete a [MarkerGson.Marker] from a [Map].
      */
-    suspend fun deleteMarker(map: Map, marker: MarkerGson.Marker) {
+    suspend fun deleteMarker(map: Map, marker: Marker) {
         withContext(mainDispatcher) {
             val markerList = map.markers
             markerList?.remove(marker)

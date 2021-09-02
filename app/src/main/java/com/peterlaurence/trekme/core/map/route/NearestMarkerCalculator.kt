@@ -1,32 +1,33 @@
 package com.peterlaurence.trekme.core.map.route
 
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.Marker
+import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.getRelativeX
 import com.peterlaurence.trekme.core.map.getRelativeY
-import com.peterlaurence.trekme.core.map.gson.MarkerGson
-import com.peterlaurence.trekme.core.map.gson.RouteGson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 
-class NearestMarkerCalculator(val route: RouteGson.Route, val map: Map) {
+class NearestMarkerCalculator(val route: Route, val map: Map) {
 
     private val chunkSize = sqrt(route.routeMarkers.size / 3.0).toInt()
     private var chunker: Chunker? = null
 
 
-    suspend fun findNearest(x: Double, y: Double): MarkerIndexed? = withContext(Dispatchers.Default) {
-        findNearestPointOnRoute(x, y)
-    }
+    suspend fun findNearest(x: Double, y: Double): MarkerIndexed? =
+        withContext(Dispatchers.Default) {
+            findNearestPointOnRoute(x, y)
+        }
 
     private fun findNearestPointOnRoute(x: Double, y: Double): MarkerIndexed? {
         val chunker = getOrMakeChunker()
         val markers = chunker.getMarkersInVicinity(x, y)
 
         var distMin = Double.MAX_VALUE
-        var nearestMarker: MarkerGson.Marker? = null
+        var nearestMarker: Marker? = null
         for (markerList in markers) {
             for (marker in markerList) {
                 val d = computeDistSquared(x, y, marker.getRelativeX(map), marker.getRelativeY(map))
@@ -50,8 +51,8 @@ class NearestMarkerCalculator(val route: RouteGson.Route, val map: Map) {
     }
 }
 
-private class Chunker(val map: Map, val points: List<MarkerGson.Marker>, chunkSize: Int) {
-    private val chunksByBarycenter: kotlin.collections.Map<Barycenter, List<MarkerGson.Marker>>
+private class Chunker(val map: Map, val points: List<Marker>, chunkSize: Int) {
+    private val chunksByBarycenter: kotlin.collections.Map<Barycenter, List<Marker>>
     private val barycenters: List<Barycenter>
 
     init {
@@ -62,7 +63,7 @@ private class Chunker(val map: Map, val points: List<MarkerGson.Marker>, chunkSi
         barycenters = chunksByBarycenter.keys.toList()
     }
 
-    fun getMarkersInVicinity(x: Double, y: Double): List<List<MarkerGson.Marker>> {
+    fun getMarkersInVicinity(x: Double, y: Double): List<List<Marker>> {
         val barycenter = getNearestBarycenter(x, y)
         val index = barycenters.indexOf(barycenter)
         val previous = if (index > 0) {
@@ -77,7 +78,7 @@ private class Chunker(val map: Map, val points: List<MarkerGson.Marker>, chunkSi
         }
     }
 
-    private fun get2DBarycenter(points: List<MarkerGson.Marker>): Barycenter {
+    private fun get2DBarycenter(points: List<Marker>): Barycenter {
         var sumX = 0.0
         var sumY = 0.0
         for (point in points) {
@@ -99,6 +100,6 @@ private class Chunker(val map: Map, val points: List<MarkerGson.Marker>, chunkSi
 }
 
 /**
- * A [MarkerGson.Marker] which also bundles the index of this marker on the corresponding route.
+ * A [Marker] which also bundles the index of this marker on the corresponding route.
  */
-data class MarkerIndexed(val marker: MarkerGson.Marker, val index: Int)
+data class MarkerIndexed(val marker: Marker, val index: Int)
