@@ -15,7 +15,7 @@ import ovh.plrapps.mapview.MapView;
 import ovh.plrapps.mapview.MapViewConfiguration;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
-import com.peterlaurence.trekme.core.map.gson.MapGson;
+import com.peterlaurence.trekme.core.map.entity.MapGson;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.repositories.map.MapRepository;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;

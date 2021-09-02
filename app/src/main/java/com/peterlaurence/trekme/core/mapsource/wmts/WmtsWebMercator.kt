@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.mapsource.wmts
 
-import com.peterlaurence.trekme.core.map.gson.MapGson.Calibration.CalibrationPoint
+import com.peterlaurence.trekme.core.map.entity.MapGson.Calibration.CalibrationPoint
 import kotlin.math.*
 
 data class Tile(val level: Int, val row: Int, val col: Int, val indexLevel: Int, val indexRow: Int,

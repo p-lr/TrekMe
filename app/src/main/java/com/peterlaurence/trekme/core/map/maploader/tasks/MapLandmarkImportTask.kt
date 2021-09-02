@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.core.map.maploader.tasks
 import android.util.Log
 import com.google.gson.Gson
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.LandmarkGson
+import com.peterlaurence.trekme.core.map.entity.LandmarkGson
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 

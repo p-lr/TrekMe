@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.gson;
+package com.peterlaurence.trekme.core.map.entity;
 
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.mapsource.WmtsSource;

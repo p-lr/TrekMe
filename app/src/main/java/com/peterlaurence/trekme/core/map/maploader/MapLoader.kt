@@ -6,7 +6,7 @@ import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.core.map.gson.*
+import com.peterlaurence.trekme.core.map.entity.*
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.gson;
+package com.peterlaurence.trekme.core.map.entity;
 
 import java.io.Serializable;
 import java.util.ArrayList;

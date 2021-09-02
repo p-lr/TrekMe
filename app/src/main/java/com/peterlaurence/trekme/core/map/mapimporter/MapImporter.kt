@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.createNomediaFile
-import com.peterlaurence.trekme.core.map.gson.MapGson
+import com.peterlaurence.trekme.core.map.entity.MapGson
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.LibvipsMapSeeker
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.importFromFile
 import com.peterlaurence.trekme.core.map.maploader.MapLoader

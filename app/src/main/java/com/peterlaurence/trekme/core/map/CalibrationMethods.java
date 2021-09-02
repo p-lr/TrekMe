@@ -2,9 +2,10 @@ package com.peterlaurence.trekme.core.map;
 
 import androidx.annotation.Nullable;
 
-import com.peterlaurence.trekme.core.map.gson.MapGson;
+import com.peterlaurence.trekme.core.map.entity.MapGson;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * The {@link CalibrationMethods} provides different methods to obtain a {@link Map.MapBounds} from multiple
@@ -65,7 +66,7 @@ public class CalibrationMethods {
         MapGson.Calibration.CalibrationPoint[] points = {calibrationPointA, calibrationPointB, calibrationPointC};
 
         /* Find the greatest difference in x */
-        Arrays.sort(points, (p1, p2) -> p1.x > p2.x ? 1 : -1);
+        Arrays.sort(points, Comparator.comparingDouble(p -> p.x));
         double delta_x = points[2].x - points[0].x;
         double delta_projectionX = points[2].proj_x - points[0].proj_x;
 
@@ -75,7 +76,7 @@ public class CalibrationMethods {
         double projectionX1 = points[2].proj_x + delta_projectionX / delta_x * (1 - points[2].x);
 
         /* Find the greatest difference in y */
-        Arrays.sort(points, (p1, p2) -> p1.y > p2.y ? 1 : -1);
+        Arrays.sort(points, Comparator.comparingDouble(p -> p.y));
         double delta_y = points[2].y - points[0].y;
         double delta_projectionY = points[2].proj_y - points[0].proj_y;
 
@@ -105,7 +106,7 @@ public class CalibrationMethods {
                 calibrationPointC, calibrationPointD};
 
         /* Sort by ascending x */
-        Arrays.sort(points, (p1, p2) -> p1.x > p2.x ? 1 : -1);
+        Arrays.sort(points, Comparator.comparingDouble(p -> p.x));
         double delta_x1 = points[3].x - points[0].x;
         double delta_x2 = points[2].x - points[0].x;
         double delta_x3 = points[1].x - points[0].x;
@@ -122,7 +123,7 @@ public class CalibrationMethods {
         double projectionX1 = points[2].proj_x + alpha_x * (1 - points[2].x);
 
         /* Sort by ascending y */
-        Arrays.sort(points, (p1, p2) -> p1.y > p2.y ? 1 : -1);
+        Arrays.sort(points, Comparator.comparingDouble(p -> p.y));
         double delta_y1 = points[3].y - points[0].y;
         double delta_y2 = points[2].y - points[0].y;
         double delta_y3 = points[1].y - points[0].y;

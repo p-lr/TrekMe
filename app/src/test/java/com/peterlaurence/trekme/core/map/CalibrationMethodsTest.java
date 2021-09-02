@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.map;
 
-import com.peterlaurence.trekme.core.map.gson.MapGson;
+import com.peterlaurence.trekme.core.map.entity.MapGson;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.gson
+package com.peterlaurence.trekme.core.map.entity
 
 data class LandmarkGson(val landmarks: MutableList<Landmark>)
 

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.gson;
+package com.peterlaurence.trekme.core.map.entity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

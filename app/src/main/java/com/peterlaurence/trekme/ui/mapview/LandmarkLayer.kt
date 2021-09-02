@@ -5,7 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.view.View
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.Landmark
+import com.peterlaurence.trekme.core.map.entity.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.ui.mapview.components.LandmarkCallout

@@ -4,7 +4,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.gson.MapGson
+import com.peterlaurence.trekme.core.map.entity.MapGson
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 

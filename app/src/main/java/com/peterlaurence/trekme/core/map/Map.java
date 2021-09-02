@@ -8,9 +8,9 @@ import androidx.annotation.Nullable;
 
 import com.peterlaurence.trekme.core.map.domain.Marker;
 import com.peterlaurence.trekme.core.map.domain.Route;
-import com.peterlaurence.trekme.core.map.gson.Landmark;
-import com.peterlaurence.trekme.core.map.gson.LandmarkGson;
-import com.peterlaurence.trekme.core.map.gson.MapGson;
+import com.peterlaurence.trekme.core.map.entity.Landmark;
+import com.peterlaurence.trekme.core.map.entity.LandmarkGson;
+import com.peterlaurence.trekme.core.map.entity.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.mapsource.WmtsSource;
 import com.peterlaurence.trekme.core.projection.Projection;
