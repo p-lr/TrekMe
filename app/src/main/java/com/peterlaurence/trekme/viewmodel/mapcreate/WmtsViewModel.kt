@@ -14,8 +14,7 @@ import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
 import com.peterlaurence.trekme.core.mapsource.*
-import com.peterlaurence.trekme.core.mapsource.wmts.getMapSpec
-import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
+import com.peterlaurence.trekme.core.mapsource.wmts.*
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.projection.MercatorProjection
@@ -439,14 +438,14 @@ class WmtsViewModel @Inject constructor(
         fun interpolate(t: Double, min: Double, max: Double) = min + t * (max - min)
         val p1 = with(areaSelectionState.areaUiController) {
             Point(
-                interpolate(p1x, x0, x1),
-                interpolate(p1y, y0, y1)
+                interpolate(p1x, X0, X1),
+                interpolate(p1y, Y0, Y1)
             )
         }
         val p2 = with(areaSelectionState.areaUiController) {
             Point(
-                interpolate(p2x, x0, x1),
-                interpolate(p2y, y0, y1)
+                interpolate(p2x, X0, X1),
+                interpolate(p2y, Y0, Y1)
             )
         }
 
@@ -550,8 +549,8 @@ class WmtsViewModel @Inject constructor(
      * @param Y the projected Y coordinate
      */
     private fun updatePosition(mapState: MapState, X: Double, Y: Double) {
-        val x = normalize(X, x0, x1)
-        val y = normalize(Y, y0, y1)
+        val x = normalize(X, X0, X1)
+        val y = normalize(Y, Y0, Y1)
 
         if (mapState.hasMarker(positionMarkerId)) {
             mapState.moveMarker(positionMarkerId, x, y)
@@ -617,8 +616,8 @@ class WmtsViewModel @Inject constructor(
         /* If it's in the bounds, add a marker */
         val projected = projection.doProjection(place.lat, place.lon) ?: return
 
-        val x = normalize(projected[0], x0, x1)
-        val y = normalize(projected[1], y0, y1)
+        val x = normalize(projected[0], X0, X1)
+        val y = normalize(projected[1], Y0, Y1)
         updatePlacePosition(mapState, x, y)
 
         viewModelScope.launch {
@@ -670,11 +669,6 @@ private const val placeMarkerId = "place"
 
 /* Size of level 18 (levels are 0-based) */
 private const val mapSize = 67108864
-
-private const val x0 = -20037508.3427892476320267
-private const val y0 = -x0
-private const val x1 = -x0
-private const val y1 = x0
 
 sealed class Config
 data class InitScaleAndScrollConfig(val scale: Float, val scrollX: Int, val scrollY: Int) : Config()

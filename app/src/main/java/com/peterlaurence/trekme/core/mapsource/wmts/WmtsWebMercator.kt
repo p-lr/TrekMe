@@ -31,7 +31,7 @@ data class MapSpec(
  *    |                        |
  *    |                        |
  *    |                        |
- *    |         IGN map        |
+ *    |        WMTS map        |
  *    |                        |
  *    |                        |
  *    |                        |
@@ -223,8 +223,7 @@ private fun getCalibrationPoints(
     YTop: Double,
     XRight: Double,
     YBottom: Double
-):
-        Pair<CalibrationPoint, CalibrationPoint> {
+): Pair<CalibrationPoint, CalibrationPoint> {
     val (colLeft, rowTop, colRight, rowBottom) = getLevelArea(level, XLeft, YTop, XRight, YBottom)
     val tileSize = getTileInMetersForZoom(level)
 
@@ -272,6 +271,9 @@ private fun getTileInMetersForZoom(level: Int): Double {
 
 const val X0 = -20037508.3427892476
 const val Y0 = -X0
+const val X1 = -X0
+const val Y1 = -Y0
+
 const val TILES_PER_TRANSACTION = 15.981973 // only meaningful for France IGN
 const val TILE_SIZE_IN_MO = 0.0169
 const val TILE_SIZE_PX = 256

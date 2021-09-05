@@ -46,15 +46,6 @@ public class MercatorProjection implements Projection {
      */
     @Override
     public double[] undoProjection(double mercatorX, double mercatorY) {
-        if (Math.abs(mercatorX) < 180 && Math.abs(mercatorY) < 90) {
-            //Mercator coordinates not in permissive range (too small)
-            return null;
-        }
-        if (Math.abs(mercatorX) > 20037508.3427892 || Math.abs(mercatorY) > 20037508.3427892) {
-            //Mercator coordinates not in permissive range (too high)
-            return null;
-        }
-
         double num3 = mercatorX / 6378137.0;
         double num4 = num3 * 57.295779513082323d;
         double num5 = Math.floor((num4 + 180) / 360.0f);
