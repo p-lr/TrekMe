@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.createNomediaFile
-import com.peterlaurence.trekme.core.map.entity.MapGson
+import com.peterlaurence.trekme.core.map.domain.*
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.LibvipsMapSeeker
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.importFromFile
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -100,12 +100,15 @@ object MapImporter {
             NOT_A_DIRECTORY,
             NO_PARENT_FOLDER_FOUND,
             NO_LEVEL_FOUND,
-            MAP_SIZE_INCORRECT
+            MAP_SIZE_INCORRECT,
+            NO_IMAGES
         }
     }
 
-    private suspend fun parseMap(mapSeeker: MapSeeker, mDir: File,
-                                 mapLoader: MapLoader): MapImportResult = withContext(Dispatchers.IO) {
+    private suspend fun parseMap(
+        mapSeeker: MapSeeker, mDir: File,
+        mapLoader: MapLoader
+    ): MapImportResult = withContext(Dispatchers.IO) {
         val map = mapSeeker.seek(mDir, mapLoader)
         MapImportResult(map, mapSeeker.status)
     }
@@ -129,11 +132,12 @@ object MapImporter {
             }
 
             /* Find the first image */
-            val imageFile = findFirstImage(file, 0, 5)
+            val imageFile = findFirstImage(file, 0, 5) ?: throw
+            MapParseException(MapParseException.Issue.NO_IMAGES)
 
             /* .. use it to deduce the parent folder */
             val parentFolder = findParentFolder(imageFile)
-                    ?: throw MapParseException(MapParseException.Issue.NO_PARENT_FOLDER_FOUND)
+                ?: throw MapParseException(MapParseException.Issue.NO_PARENT_FOLDER_FOUND)
 
             /* Check whether there is already a map.json file or not */
             val existingJsonFile = File(parentFolder, MAP_FILENAME)
@@ -149,20 +153,18 @@ object MapImporter {
             }
 
             /* Create levels */
-            val levelList = ArrayList<MapGson.Level>()
+            val levelList = ArrayList<Level>()
             val maxLevel = getMaxLevel(parentFolder)
             var levelDir: File? = null
-            var lastLevelTileSize: MapGson.Level.TileSize? = null  // used later, for the map size
+            var lastLevelTileSize: Size? = null  // used later, for the map size
             for (i in 0..maxLevel) {
                 levelDir = File(parentFolder, i.toString())
                 if (levelDir.exists()) {
-                    val tileSize = getTileSize(levelDir)
+                    val tileSize = getTileSize(levelDir) ?: continue
                     lastLevelTileSize = tileSize
-                    val level = MapGson.Level()
-                    level.level = i
-                    level.tile_size = tileSize
+                    val level = Level(i, tileSize)
                     levelList.add(level)
-                    Log.d(TAG, "creating level " + i + " tileSize " + tileSize!!.x)
+                    Log.d(TAG, "creating level $i tileSize $tileSize")
                 }
             }
 
@@ -170,40 +172,37 @@ object MapImporter {
                 throw MapParseException(MapParseException.Issue.NO_LEVEL_FOUND)
             }
 
-            val mapGson = MapGson()
-            mapGson.levels = levelList
-
             /* Create provider */
-            val provider = MapGson.Provider()
-            provider.generated_by = Map.MapOrigin.VIPS
-            provider.image_extension = getImageExtension(imageFile!!)
-            mapGson.provider = provider
+            val mapOrigin = Vips
+            val imageExtension = getImageExtension(imageFile) ?: throw MapParseException(
+                MapParseException.Issue.NO_IMAGES
+            )
 
             /* Map size */
             if (lastLevelTileSize == null) {
                 throw MapParseException(MapParseException.Issue.NO_LEVEL_FOUND)
             }
-            mapGson.size = computeMapSize(levelDir, lastLevelTileSize)
-            if (mapGson.size == null) {
-                throw MapParseException(MapParseException.Issue.MAP_SIZE_INCORRECT)
-            }
+            val size = computeMapSize(levelDir, lastLevelTileSize) ?: throw MapParseException(
+                MapParseException.Issue.MAP_SIZE_INCORRECT
+            )
 
-            /* Find a thumnail */
-            val thumbnail = getThumbnail(parentFolder)
-            mapGson.thumbnail = thumbnail?.name
+            /* Find a thumbnail */
+            val thumbnailFile = getThumbnail(parentFolder)
 
             /* Set the map name to the parent folder name */
-            mapGson.name = parentFolder.name
+            val name = parentFolder.name
 
-            /* Set default calibration */
-            mapGson.calibration.calibration_method = MapLoader.CalibrationMethod.SIMPLE_2_POINTS.name
+            val mapConfig = MapConfig(
+                name, thumbnail = thumbnailFile?.name, levelList, mapOrigin,
+                size, imageExtension, calibration = null, sizeInBytes = null
+            )
 
             /* The json file */
             val jsonFile = File(parentFolder, MAP_FILENAME)
 
             status = MapParserStatus.NEW_MAP
 
-            val map = Map(mapGson, jsonFile, thumbnail)
+            val map = Map(mapConfig, jsonFile, thumbnailFile)
             map.createNomediaFile()
             mapLoader.addMap(map)
             return map
@@ -273,7 +272,7 @@ object MapImporter {
         }
 
         /* We assume that the tile size is constant at a given zoom level */
-        private fun getTileSize(levelDir: File): MapGson.Level.TileSize? {
+        private fun getTileSize(levelDir: File): Size? {
             val lineDirList = levelDir.listFiles(DIR_FILTER)
             if (lineDirList.isNullOrEmpty()) {
                 return null
@@ -285,10 +284,7 @@ object MapImporter {
             if (imageFiles != null && imageFiles.isNotEmpty()) {
                 val anImage = imageFiles[0]
                 BitmapFactory.decodeFile(anImage.path, options)
-                val tileSize = MapGson.Level.TileSize()
-                tileSize.x = options.outWidth
-                tileSize.y = options.outHeight
-                return tileSize
+                return Size(options.outWidth, options.outHeight)
             }
 
             return null
@@ -311,7 +307,9 @@ object MapImporter {
                 BitmapFactory.decodeFile(imageFile.path, options)
                 if (options.outWidth == THUMBNAIL_ACCEPT_SIZE && options.outHeight == THUMBNAIL_ACCEPT_SIZE) {
                     val locale = Locale.getDefault()
-                    if (!imageFile.name.lowercase(locale).contains(THUMBNAIL_EXCLUDE_NAME.lowercase(locale))) {
+                    if (!imageFile.name.lowercase(locale)
+                            .contains(THUMBNAIL_EXCLUDE_NAME.lowercase(locale))
+                    ) {
                         return imageFile
                     }
                 }
@@ -319,7 +317,7 @@ object MapImporter {
             return null
         }
 
-        private fun computeMapSize(lastLevel: File, lastLevelTileSize: MapGson.Level.TileSize): MapGson.MapSize? {
+        private fun computeMapSize(lastLevel: File, lastLevelTileSize: Size): Size? {
             val lineDirList = lastLevel.listFiles(DIR_FILTER)
             if (lineDirList == null || lineDirList.isEmpty()) {
                 return null
@@ -329,10 +327,10 @@ object MapImporter {
             val imageFiles = lineDirList[0].listFiles(IMAGE_FILTER)
             val columnCount = imageFiles?.size ?: return null
 
-            val mapSize = MapGson.MapSize()
-            mapSize.x = columnCount * lastLevelTileSize.x
-            mapSize.y = rowCount * lastLevelTileSize.y
-            return mapSize
+            return Size(
+                width = columnCount * lastLevelTileSize.width,
+                height = rowCount * lastLevelTileSize.height
+            )
         }
 
         companion object {

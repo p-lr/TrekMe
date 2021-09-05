@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.maplist.events.*
 import com.peterlaurence.trekme.util.ZipProgressionListener
@@ -20,7 +21,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
-import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import javax.inject.Inject
@@ -136,10 +136,10 @@ class MapSettingsViewModel @Inject constructor(
 
     fun setCalibrationPointsNumber(map: Map, numberStr: String?) {
         when (numberStr) {
-            "2" -> map.calibrationMethod = MapLoader.CalibrationMethod.SIMPLE_2_POINTS
-            "3" -> map.calibrationMethod = MapLoader.CalibrationMethod.CALIBRATION_3_POINTS
-            "4" -> map.calibrationMethod = MapLoader.CalibrationMethod.CALIBRATION_4_POINTS
-            else -> map.calibrationMethod = MapLoader.CalibrationMethod.SIMPLE_2_POINTS
+            "2" -> map.calibrationMethod = CalibrationMethod.SIMPLE_2_POINTS
+            "3" -> map.calibrationMethod = CalibrationMethod.CALIBRATION_3_POINTS
+            "4" -> map.calibrationMethod = CalibrationMethod.CALIBRATION_4_POINTS
+            else -> map.calibrationMethod = CalibrationMethod.SIMPLE_2_POINTS
         }
         saveMapAsync(map)
     }

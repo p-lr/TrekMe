@@ -9,6 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.File
+import kotlin.test.assertNotNull
 
 /**
  * Unit tests for maps's json file parsing.
@@ -41,11 +42,15 @@ class MapParserTest {
 
             val marker1 = markers[0]
             assertEquals("marker1", marker1.name)
-            assertEquals(6198798.5047565, marker1.proj_x, 0.0)
+            val projX = marker1.proj_x
+            assertNotNull(projX)
+            assertEquals(6198798.5047565, projX, 0.0)
 
             val marker2 = markers[1]
             assertEquals("marker2", marker2.name)
-            assertEquals(-2418744.7142449305, marker2.proj_y, 0.0)
+            val projY = marker2.proj_y
+            assertNotNull(projY)
+            assertEquals(-2418744.7142449305, projY, 0.0)
         }
     }
 

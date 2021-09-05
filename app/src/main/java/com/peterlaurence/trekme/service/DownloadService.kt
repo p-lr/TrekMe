@@ -22,6 +22,8 @@ import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.createNomediaFile
+import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
+import com.peterlaurence.trekme.core.map.domain.Wmts
 import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
@@ -275,18 +277,14 @@ class DownloadService : Service() {
         /* Calibrate */
         fun calibrate(map: Map) {
             map.projection = MercatorProjection()
-            map.calibrationMethod = MapLoader.CalibrationMethod.SIMPLE_2_POINTS
+            map.calibrationMethod = CalibrationMethod.SIMPLE_2_POINTS
             map.calibrationPoints = calibrationPoints.toList()
             map.calibrate()
         }
 
-        val mapOrigin = if (source == WmtsSource.IGN) {
-            Map.MapOrigin.IGN_LICENSED
-        } else {
-            Map.MapOrigin.WMTS
-        }
+        val mapOrigin = Wmts(licensed = source == WmtsSource.IGN)
 
-        val map = buildMap(mapSpec, mapOrigin, source, destDir)
+        val map = buildMap(mapSpec, mapOrigin, destDir)
 
         scope.launch {
             calibrate(map)

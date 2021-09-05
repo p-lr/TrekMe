@@ -1,15 +1,23 @@
 package com.peterlaurence.trekme.core.mapsource.wmts
 
-import com.peterlaurence.trekme.core.map.entity.MapGson.Calibration.CalibrationPoint
+import com.peterlaurence.trekme.core.map.domain.CalibrationPoint
 import kotlin.math.*
 
-data class Tile(val level: Int, val row: Int, val col: Int, val indexLevel: Int, val indexRow: Int,
-                val indexCol: Int)
+data class Tile(
+    val level: Int, val row: Int, val col: Int, val indexLevel: Int, val indexRow: Int,
+    val indexCol: Int
+)
 
 data class Point(val X: Double, val Y: Double)
-data class MapSpec(val levelMin: Int, val levelMax: Int, val mapWidthPx: Int, val mapHeightPx: Int,
-                   val tileSequence: Sequence<Tile>, val calibrationPoints: Pair<CalibrationPoint, CalibrationPoint>,
-                   val tileSize: Int)
+data class MapSpec(
+    val levelMin: Int,
+    val levelMax: Int,
+    val mapWidthPx: Int,
+    val mapHeightPx: Int,
+    val tileSequence: Sequence<Tile>,
+    val calibrationPoints: Pair<CalibrationPoint, CalibrationPoint>,
+    val tileSize: Int
+)
 
 /**
  * At level 0, a WMTS map (which use WebMercator projection) is contained in a single tile of
@@ -57,7 +65,15 @@ fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point): MapS
     val calibrationPoints = getCalibrationPoints(levelMin, XLeft, YTop, XRight, YBottom)
     val mapSize = getMapSize(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 
-    return MapSpec(levelMin, levelMax, mapSize.widthPx, mapSize.heightPx, tileSequence, calibrationPoints, TILE_SIZE_PX)
+    return MapSpec(
+        levelMin,
+        levelMax,
+        mapSize.widthPx,
+        mapSize.heightPx,
+        tileSequence,
+        calibrationPoints,
+        TILE_SIZE_PX
+    )
 }
 
 fun getNumberOfTiles(levelMin: Int, levelMax: Int, point1: Point, point2: Point): Long {
@@ -82,7 +98,12 @@ fun Long.toSizeInMo(): Long {
 }
 
 
-private data class TopLeftToBottomRight(val XLeft: Double, val YTop: Double, val XRight: Double, val YBottom: Double)
+private data class TopLeftToBottomRight(
+    val XLeft: Double,
+    val YTop: Double,
+    val XRight: Double,
+    val YBottom: Double
+)
 
 @Suppress("LocalVariableName")
 private fun orderCoordinates(point1: Point, point2: Point): TopLeftToBottomRight {
@@ -101,7 +122,14 @@ private fun orderCoordinates(point1: Point, point2: Point): TopLeftToBottomRight
  * * the projected coordinates of the corners of the desired visible area
  * Each level is represented by a [LevelArea].
  */
-private class LevelBuilder(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double) {
+private class LevelBuilder(
+    levelMin: Int,
+    levelMax: Int,
+    XLeft: Double,
+    YTop: Double,
+    XRight: Double,
+    YBottom: Double
+) {
     private val levelAreaMap = mutableMapOf<Int, LevelArea>()
 
     init {
@@ -123,7 +151,14 @@ private class LevelBuilder(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Do
     }
 }
 
-private fun getTileSequence(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): Sequence<Tile> {
+private fun getTileSequence(
+    levelMin: Int,
+    levelMax: Int,
+    XLeft: Double,
+    YTop: Double,
+    XRight: Double,
+    YBottom: Double
+): Sequence<Tile> {
     val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 
     return Sequence {
@@ -141,7 +176,14 @@ private fun getTileSequence(levelMin: Int, levelMax: Int, XLeft: Double, YTop: D
     }
 }
 
-private fun getNumberOfTiles(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): Long {
+private fun getNumberOfTiles(
+    levelMin: Int,
+    levelMax: Int,
+    XLeft: Double,
+    YTop: Double,
+    XRight: Double,
+    YBottom: Double
+): Long {
     val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 
     var count = 0L
@@ -157,7 +199,14 @@ private fun getNumberOfTiles(levelMin: Int, levelMax: Int, XLeft: Double, YTop: 
  * The size of a map is by convention the size in pixels of the maximum level.
  * Beware that we still need the minimum level as input, because of the way [LevelBuilder] works.
  */
-private fun getMapSize(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): MapSize {
+private fun getMapSize(
+    levelMin: Int,
+    levelMax: Int,
+    XLeft: Double,
+    YTop: Double,
+    XRight: Double,
+    YBottom: Double
+): MapSize {
     val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 
     val levelMaxArea = levelBuilder.getLevelAreaForLevel(levelMax) ?: return MapSize(0, 0)
@@ -168,29 +217,42 @@ private fun getMapSize(levelMin: Int, levelMax: Int, XLeft: Double, YTop: Double
 
 private data class MapSize(val widthPx: Int, val heightPx: Int)
 
-private fun getCalibrationPoints(level: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double):
+private fun getCalibrationPoints(
+    level: Int,
+    XLeft: Double,
+    YTop: Double,
+    XRight: Double,
+    YBottom: Double
+):
         Pair<CalibrationPoint, CalibrationPoint> {
     val (colLeft, rowTop, colRight, rowBottom) = getLevelArea(level, XLeft, YTop, XRight, YBottom)
     val tileSize = getTileInMetersForZoom(level)
 
-    val topLeftCalibrationPoint = CalibrationPoint()
-    topLeftCalibrationPoint.x = 0.0
-    topLeftCalibrationPoint.y = 0.0
-    topLeftCalibrationPoint.proj_x = colLeft * tileSize + X0
-    topLeftCalibrationPoint.proj_y = Y0 - rowTop * tileSize
+    val topLeftCalibrationPoint = CalibrationPoint(
+        0.0, 0.0, colLeft * tileSize + X0, Y0 - rowTop * tileSize
+    )
 
-    val bottomRightCalibrationPoint = CalibrationPoint()
-    bottomRightCalibrationPoint.x = 1.0
-    bottomRightCalibrationPoint.y = 1.0
-    bottomRightCalibrationPoint.proj_x = (colRight + 1) * tileSize + X0
-    bottomRightCalibrationPoint.proj_y = Y0 - (rowBottom + 1) * tileSize
+    val bottomRightCalibrationPoint = CalibrationPoint(
+        1.0, 1.0, (colRight + 1) * tileSize + X0, Y0 - (rowBottom + 1) * tileSize
+    )
 
     return Pair(topLeftCalibrationPoint, bottomRightCalibrationPoint)
 }
 
-private data class LevelArea(val colLeft: Int, val rowTop: Int, val colRight: Int, val rowBottom: Int)
+private data class LevelArea(
+    val colLeft: Int,
+    val rowTop: Int,
+    val colRight: Int,
+    val rowBottom: Int
+)
 
-private fun getLevelArea(level: Int, XLeft: Double, YTop: Double, XRight: Double, YBottom: Double): LevelArea {
+private fun getLevelArea(
+    level: Int,
+    XLeft: Double,
+    YTop: Double,
+    XRight: Double,
+    YBottom: Double
+): LevelArea {
     val tileSize = getTileInMetersForZoom(level)
     val colLeft = floor((XLeft - X0) / tileSize).toInt()
     val rowTop = floor((Y0 - YTop) / tileSize).toInt()

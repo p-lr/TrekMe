@@ -1,18 +1,24 @@
 package com.peterlaurence.trekme.core.map;
 
+import static com.peterlaurence.trekme.core.map.ConstantsKt.MAP_FILENAME;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.peterlaurence.trekme.core.map.domain.Calibration;
+import com.peterlaurence.trekme.core.map.domain.CalibrationMethod;
+import com.peterlaurence.trekme.core.map.domain.CalibrationPoint;
+import com.peterlaurence.trekme.core.map.domain.Level;
+import com.peterlaurence.trekme.core.map.domain.MapConfig;
+import com.peterlaurence.trekme.core.map.domain.MapOrigin;
 import com.peterlaurence.trekme.core.map.domain.Marker;
 import com.peterlaurence.trekme.core.map.domain.Route;
 import com.peterlaurence.trekme.core.map.entity.Landmark;
 import com.peterlaurence.trekme.core.map.entity.LandmarkGson;
-import com.peterlaurence.trekme.core.map.entity.MapGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.core.mapsource.WmtsSource;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.util.ZipProgressionListener;
 import com.peterlaurence.trekme.util.ZipTaskKt;
@@ -24,11 +30,10 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import static com.peterlaurence.trekme.core.map.ConstantsKt.MAP_FILENAME;
 
 /**
  * A {@code Map} contains all the information that defines a map. That includes :
@@ -53,7 +58,7 @@ public class Map {
     private Bitmap mImage;
     private MapBounds mMapBounds;
     /* The Java Object corresponding to the json configuration file */
-    private final MapGson mMapGson;
+    private final MapConfig mMapConfig;
 
     /* The Java Object corresponding to the json file of landmarks */
     private LandmarkGson mLandmarkGson;
@@ -66,13 +71,13 @@ public class Map {
     /**
      * To create a {@link Map}, three parameters are needed. <br>
      *
-     * @param mapGson   the {@link MapGson} object that includes informations relative to levels,
+     * @param mapConfig the {@link MapConfig} object that includes informations relative to levels,
      *                  the tile size, the name of the map, etc.
      * @param jsonFile  the {@link File} for serialization.
      * @param thumbnail the {@link File} image for map customization.
      */
-    public Map(MapGson mapGson, File jsonFile, File thumbnail) {
-        mMapGson = mapGson;
+    public Map(MapConfig mapConfig, File jsonFile, File thumbnail) {
+        mMapConfig = mapConfig;
         mLandmarkGson = new LandmarkGson(new ArrayList<>());
         mConfigFile = jsonFile;
         mImage = getBitmapFromFile(thumbnail);
@@ -91,8 +96,10 @@ public class Map {
     public
     @Nullable
     String getProjectionName() {
-        if (mMapGson.calibration != null && mMapGson.calibration.projection != null) {
-            return mMapGson.calibration.projection.getName();
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal != null) {
+            Projection proj = cal.getProjection();
+            if (proj != null) return proj.getName();
         }
         return null;
     }
@@ -101,14 +108,18 @@ public class Map {
     @Nullable
     Projection getProjection() {
         try {
-            return mMapGson.calibration.projection;
+            return mMapConfig.getCalibration().getProjection();
         } catch (NullPointerException e) {
             return null;
         }
     }
 
     public void setProjection(Projection projection) {
-        mMapGson.calibration.projection = projection;
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal != null) {
+            Calibration newCal = cal.copy(projection, cal.getCalibrationMethod(), cal.getCalibrationPoints());
+            mMapConfig.setCalibration(newCal);
+        }
     }
 
     /**
@@ -123,11 +134,11 @@ public class Map {
     public
     @Nullable
     Long getSizeInBytes() {
-        return mMapGson.sizeInBytes;
+        return mMapConfig.getSizeInBytes();
     }
 
     public void setSizeInBytes(@NonNull Long size) {
-        mMapGson.sizeInBytes = size;
+        mMapConfig.setSizeInBytes(size);
     }
 
     /**
@@ -146,13 +157,16 @@ public class Map {
     }
 
     public void calibrate() {
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal == null) return;
+
         /* Init the projection */
-        if (mMapGson.calibration.projection != null) {
-            mMapGson.calibration.projection.init();
+        Projection projection = cal.getProjection();
+        if (projection != null) {
+            projection.init();
         }
 
-        List<MapGson.Calibration.CalibrationPoint> calibrationPoints = mMapGson.calibration.getCalibrationPoints();
-        if (calibrationPoints == null) return;
+        List<CalibrationPoint> calibrationPoints = cal.getCalibrationPoints();
         switch (getCalibrationMethod()) {
             case SIMPLE_2_POINTS:
                 if (calibrationPoints.size() >= 2) {
@@ -187,7 +201,8 @@ public class Map {
 
     private void setCalibrationStatus() {
         // TODO : implement the detection of an erroneous calibration
-        if (mMapGson.calibration.getCalibrationPoints().size() >= 2) {
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal != null && cal.getCalibrationPoints().size() >= 2) {
             mCalibrationStatus = CalibrationStatus.OK;
         } else {
             mCalibrationStatus = CalibrationStatus.NONE;
@@ -209,11 +224,11 @@ public class Map {
     }
 
     public String getName() {
-        return mMapGson.name;
+        return mMapConfig.getName();
     }
 
     public void setName(String newName) {
-        mMapGson.name = newName;
+        mMapConfig.setName(newName);
     }
 
     /**
@@ -279,44 +294,32 @@ public class Map {
 
     public void setImage(Bitmap thumbnail) {
         mImage = thumbnail;
-        mMapGson.thumbnail = THUMBNAIL_NAME;
+        mMapConfig.setThumbnail(THUMBNAIL_NAME);
     }
 
-    public List<MapGson.Level> getLevelList() {
-        return mMapGson.levels;
+    public List<Level> getLevelList() {
+        return mMapConfig.getLevels();
     }
 
-    public MapLoader.CalibrationMethod getCalibrationMethod() {
-        return MapLoader.CalibrationMethod.Companion.fromCalibrationName(
-                mMapGson.calibration.calibration_method);
+    @Nullable
+    public CalibrationMethod getCalibrationMethod() {
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal != null) return cal.getCalibrationMethod();
+        return null;
     }
 
-    public void setCalibrationMethod(MapLoader.CalibrationMethod method) {
-        mMapGson.calibration.calibration_method = method.name();
+    public void setCalibrationMethod(CalibrationMethod method) {
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal != null) {
+            Calibration newCal = cal.copy(cal.getProjection(), method, cal.getCalibrationPoints());
+            mMapConfig.setCalibration(newCal);
+        }
     }
 
     @Nullable
     public MapOrigin getOrigin() {
         try {
-            return mMapGson.provider.generated_by;
-        } catch (NullPointerException e) {
-            return null;
-        }
-    }
-
-    /**
-     * A map can have several origins. Like it can come from a WMTS source, or produced using libvips.
-     */
-    public enum MapOrigin {
-        IGN_LICENSED,  // special IGN WMTS source
-        WMTS,
-        VIPS,   // Custom map
-    }
-
-    @Nullable
-    public WmtsSource getWmtsSource() {
-        try {
-            return mMapGson.provider.wmts_source;
+            return mMapConfig.getOrigin();
         } catch (NullPointerException e) {
             return null;
         }
@@ -326,7 +329,10 @@ public class Map {
      * Get the number of calibration that should be defined.
      */
     public int getCalibrationPointsNumber() {
-        switch (getCalibrationMethod()) {
+        CalibrationMethod method = getCalibrationMethod();
+        if (method == null) return 0;
+
+        switch (method) {
             case SIMPLE_2_POINTS:
                 return 2;
             case CALIBRATION_3_POINTS:
@@ -343,33 +349,49 @@ public class Map {
      * This returns only a copy to ensure that no modification is made to the calibration points
      * through this call.
      */
-    public List<MapGson.Calibration.CalibrationPoint> getCalibrationPoints() {
-        return mMapGson.calibration.getCalibrationPoints();
+    public List<CalibrationPoint> getCalibrationPoints() {
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal != null) {
+            return cal.getCalibrationPoints();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
-    public void addCalibrationPoint(MapGson.Calibration.CalibrationPoint point) {
-        mMapGson.calibration.addCalibrationPoint(point);
+    public void addCalibrationPoint(CalibrationPoint point) {
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal != null) {
+            List<CalibrationPoint> newPoints = new ArrayList<>(cal.getCalibrationPoints());
+            newPoints.add(point);
+            Calibration newCal = cal.copy(cal.getProjection(), cal.getCalibrationMethod(),
+                    newPoints);
+            mMapConfig.setCalibration(newCal);
+        }
     }
 
-    public void setCalibrationPoints(List<MapGson.Calibration.CalibrationPoint> points) {
-        mMapGson.calibration.setCalibrationPoints(points);
+    public void setCalibrationPoints(List<CalibrationPoint> points) {
+        Calibration cal = mMapConfig.getCalibration();
+        if (cal != null) {
+            Calibration newCal = cal.copy(cal.getProjection(), cal.getCalibrationMethod(), points);
+            mMapConfig.setCalibration(newCal);
+        }
     }
 
     public String getImageExtension() {
-        return mMapGson.provider.image_extension;
+        return mMapConfig.getImageExtension();
     }
 
     public int getWidthPx() {
-        return mMapGson.size.x;
+        return mMapConfig.getSize().getWidth();
     }
 
     public int getHeightPx() {
-        return mMapGson.size.y;
+        return mMapConfig.getSize().getHeight();
     }
 
-    //TODO: Remove this. mMapGson should be private
-    public final MapGson getMapGson() {
-        return mMapGson;
+    public final MapConfig getConfigSnapshot() {
+        // TODO: make a defensive copy
+        return mMapConfig;
     }
 
     public void setMarkers(List<Marker> markers) {

@@ -15,7 +15,7 @@ import ovh.plrapps.mapview.MapView;
 import ovh.plrapps.mapview.MapViewConfiguration;
 import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
-import com.peterlaurence.trekme.core.map.entity.MapGson;
+import com.peterlaurence.trekme.core.map.domain.CalibrationPoint;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.repositories.map.MapRepository;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
@@ -135,7 +135,7 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         int lvlCnt = map.getLevelList().size();
         int tileSize;
         if (lvlCnt > 0) {
-            tileSize = map.getLevelList().get(0).tile_size.x;
+            tileSize = map.getLevelList().get(0).getTileSize().getWidth();
         } else return;
 
         MapViewConfiguration config = new MapViewConfiguration(lvlCnt, map.getWidthPx(), map.getHeightPx(), tileSize,
@@ -219,11 +219,11 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         /* Get the calibration points */
         Map map = mMapWeakReference.get();
         if (map == null) return;
-        List<MapGson.Calibration.CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
+        List<CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
 
         if (calibrationPointList != null && calibrationPointList.size() > calibrationPointNumber) {
-            MapGson.Calibration.CalibrationPoint calibrationPoint = calibrationPointList.get(calibrationPointNumber);
-            moveCalibrationMarker(mapView, mCalibrationMarker, calibrationPoint.x, calibrationPoint.y);
+            CalibrationPoint calibrationPoint = calibrationPointList.get(calibrationPointNumber);
+            moveCalibrationMarker(mapView, mCalibrationMarker, calibrationPoint.getNormalizedX(), calibrationPoint.getNormalizedY());
         } else {
             /* No calibration point defined */
             moveCalibrationMarker(mapView, mCalibrationMarker, relativeX, relativeY);
@@ -251,21 +251,21 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         /* Get the calibration points */
         Map map = mMapWeakReference.get();
         if (map == null) return;
-        List<MapGson.Calibration.CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
+        List<CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
 
-        MapGson.Calibration.CalibrationPoint calibrationPoint;
+        CalibrationPoint calibrationPoint;
         if (calibrationPointList.size() > mCurrentCalibrationPoint) {
             calibrationPoint = calibrationPointList.get(mCurrentCalibrationPoint);
         } else {
-            calibrationPoint = new MapGson.Calibration.CalibrationPoint();
+            calibrationPoint = new CalibrationPoint(0.0, 0.0, 0.0, 0.0);
             map.addCalibrationPoint(calibrationPoint);
         }
         Projection projection = map.getProjection();
         if (rootView.isWgs84() && projection != null) {
             double[] projectedValues = projection.doProjection(y, x);
             if (projectedValues != null) {
-                calibrationPoint.proj_x = projectedValues[0];
-                calibrationPoint.proj_y = projectedValues[1];
+                calibrationPoint.setAbsoluteX(projectedValues[0]);
+                calibrationPoint.setAbsoluteY(projectedValues[1]);
             } else {
                 displayErrorMessage(R.string.projected_instead_of_wgs84);
                 return;
@@ -273,8 +273,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         } else {
             /* If no projection is defined or no mistake is detected, we continue */
             if (projection == null || projection.undoProjection(x, y) != null) {
-                calibrationPoint.proj_x = x;
-                calibrationPoint.proj_y = y;
+                calibrationPoint.setAbsoluteX(x);
+                calibrationPoint.setAbsoluteY(y);
             } else {
                 /* ..else, show error message and stop */
                 displayErrorMessage(R.string.wgs84_instead_of_projected);
@@ -283,8 +283,8 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         }
 
         /* Save relative position */
-        calibrationPoint.x = mCalibrationMarker.getRelativeX();
-        calibrationPoint.y = mCalibrationMarker.getRelativeY();
+        calibrationPoint.setNormalizedX(mCalibrationMarker.getRelativeX());
+        calibrationPoint.setNormalizedY(mCalibrationMarker.getRelativeY());
 
         /* Update calibration */
         map.calibrate();
@@ -301,18 +301,18 @@ public class MapCalibrationFragment extends Fragment implements CalibrationModel
         /* Get the calibration points */
         Map map = mMapWeakReference.get();
         if (map == null) return;
-        List<MapGson.Calibration.CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
+        List<CalibrationPoint> calibrationPointList = map.getCalibrationPoints();
 
         if (calibrationPointList != null && calibrationPointList.size() > calibrationPointNumber) {
-            MapGson.Calibration.CalibrationPoint calibrationPoint = calibrationPointList.get(calibrationPointNumber);
+            CalibrationPoint calibrationPoint = calibrationPointList.get(calibrationPointNumber);
             Projection projection = mMapWeakReference.get().getProjection();
             if (rootView.isWgs84() && projection != null) {
-                double[] wgs84 = projection.undoProjection(calibrationPoint.proj_x, calibrationPoint.proj_y);
+                double[] wgs84 = projection.undoProjection(calibrationPoint.getAbsoluteX(), calibrationPoint.getAbsoluteY());
                 if (wgs84 != null && wgs84.length == 2) {
                     rootView.updateCoordinateFields(wgs84[0], wgs84[1]);
                 }
             } else {
-                rootView.updateCoordinateFields(calibrationPoint.proj_x, calibrationPoint.proj_y);
+                rootView.updateCoordinateFields(calibrationPoint.getAbsoluteX(), calibrationPoint.getAbsoluteY());
             }
         }
     }

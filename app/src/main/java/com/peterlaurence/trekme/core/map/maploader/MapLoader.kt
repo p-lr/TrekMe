@@ -12,6 +12,8 @@ import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapLandmarkImportTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapRouteImportTask
+import com.peterlaurence.trekme.core.map.mappers.toDomain
+import com.peterlaurence.trekme.core.map.mappers.toEntity
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
@@ -71,7 +73,7 @@ class MapLoader(
 
     /**
      * Create once for all the Gson object, that is used to serialize/deserialize json content.
-     * Register all [Projection] types, depending on their name.
+     * Register all projection types, depending on their name.
      */
     init {
         val factory = RuntimeTypeAdapterFactory.of(
@@ -232,7 +234,7 @@ class MapLoader(
      * @param map The [Map] to save.
      */
     suspend fun saveMap(map: Map) = withContext(mainDispatcher) {
-        val jsonString = gson.toJson(map.mapGson)
+        val jsonString = gson.toJson(map.configSnapshot.toEntity())
 
         withContext(ioDispatcher) {
             val configFile = map.configFile
@@ -402,26 +404,6 @@ class MapLoader(
 
     private fun notifyMapListUpdateListeners() {
         _mapListUpdateEventFlow.tryEmit(MapListUpdateEvent(maps.isNotEmpty()))
-    }
-
-    enum class CalibrationMethod {
-        SIMPLE_2_POINTS,
-        CALIBRATION_3_POINTS,
-        CALIBRATION_4_POINTS,
-        UNKNOWN;
-
-        companion object {
-            fun fromCalibrationName(name: String?): CalibrationMethod {
-                if (name != null) {
-                    for (method in values()) {
-                        if (name.equals(method.toString(), ignoreCase = true)) {
-                            return method
-                        }
-                    }
-                }
-                return UNKNOWN
-            }
-        }
     }
 
     interface MapArchiveListUpdateListener {

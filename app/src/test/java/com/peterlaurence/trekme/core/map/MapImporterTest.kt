@@ -54,8 +54,8 @@ class MapImporterTest {
                         assertEquals(expectedParentFolder, map.directory)
                         assertEquals("mapname", map.name)
 
-                        assertEquals(4, map.mapGson.levels.size.toLong())
-                        assertEquals(256, map.mapGson.levels[0].tile_size.x.toLong())
+                        assertEquals(4, map.configSnapshot.levels.size.toLong())
+                        assertEquals(256, map.configSnapshot.levels[0].tileSize.width.toLong())
                         assertEquals(".jpg", map.imageExtension)
                         assertEquals(true, File(expectedParentFolder, ".nomedia").exists())
                         assertNull(map.image)
@@ -77,7 +77,7 @@ class MapImporterTest {
                         val res = MapImporter.importFromFile(libVipsMapDir, mapLoader)
                         val map = assertNotNull(res.map)
                         assertEquals("La Réunion - Est", map.name)
-                        assertEquals(3, map.mapGson.levels.size.toLong())
+                        assertEquals(3, map.configSnapshot.levels.size.toLong())
                         val expectedParentFolder = File(libVipsMapDir, "reunion-est")
                         assertEquals(true, File(expectedParentFolder, ".nomedia").exists())
                     } catch (e: MapImporter.MapParseException) {

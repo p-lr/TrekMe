@@ -2,42 +2,27 @@ package com.peterlaurence.trekme.core.map.mapbuilder
 
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.entity.MapGson
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.map.domain.*
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import java.io.File
 
-fun buildMap(mapSpec: MapSpec, mapOrigin: Map.MapOrigin,
-             source: WmtsSource, folder: File, imageExtension: String = ".jpg"): Map {
-    val mapGson = MapGson()
+fun buildMap(
+    mapSpec: MapSpec, mapOrigin: MapOrigin, folder: File, imageExtension: String = ".jpg"
+): Map {
 
-    mapGson.levels = (mapSpec.levelMin..mapSpec.levelMax).map {
-        MapGson.Level().apply {
-            level = it - mapSpec.levelMin
-            tile_size = MapGson.Level.TileSize().apply {
-                x = mapSpec.tileSize
-                y = mapSpec.tileSize
-            }
-        }
+    val levels = (mapSpec.levelMin..mapSpec.levelMax).map {
+        Level(it - mapSpec.levelMin, tileSize = Size(mapSpec.tileSize, mapSpec.tileSize))
     }
 
-    mapGson.provider = MapGson.Provider().apply {
-        generated_by = mapOrigin
-        wmts_source = source
-        image_extension = imageExtension
-    }
+    val size = Size(mapSpec.mapWidthPx, mapSpec.mapHeightPx)
 
-    mapGson.size = MapGson.MapSize().apply {
-        x = mapSpec.mapWidthPx
-        y = mapSpec.mapHeightPx
-    }
+    val calibration = Calibration(null, CalibrationMethod.SIMPLE_2_POINTS, listOf())
 
-    mapGson.name = folder.name
-
-    mapGson.calibration.calibration_method = MapLoader.CalibrationMethod.SIMPLE_2_POINTS.name
-
+    val mapConfig = MapConfig(
+        name = folder.name, thumbnail = null, levels, mapOrigin, size, imageExtension,
+        calibration, sizeInBytes = null
+    )
     val jsonFile = File(folder, MAP_FILENAME)
 
-    return Map(mapGson, jsonFile, null)
+    return Map(mapConfig, jsonFile, null)
 }

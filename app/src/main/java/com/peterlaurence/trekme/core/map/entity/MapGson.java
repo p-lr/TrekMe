@@ -1,7 +1,5 @@
 package com.peterlaurence.trekme.core.map.entity;
 
-import com.peterlaurence.trekme.core.map.Map;
-import com.peterlaurence.trekme.core.mapsource.WmtsSource;
 import com.peterlaurence.trekme.core.projection.Projection;
 
 import java.util.ArrayList;
@@ -96,8 +94,16 @@ public class MapGson {
     }
 
     public static class Provider {
-        public Map.MapOrigin generated_by;
-        public WmtsSource wmts_source;
+        public MapSource generated_by;
         public String image_extension;
+    }
+
+    /**
+     * A map can have several origins. Like it can come from a WMTS source, or produced using libvips.
+     */
+    public enum MapSource {
+        IGN_LICENSED,  // special IGN WMTS source
+        WMTS,
+        VIPS,   // Custom map
     }
 }

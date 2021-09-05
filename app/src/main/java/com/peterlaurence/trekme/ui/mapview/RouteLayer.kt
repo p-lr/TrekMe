@@ -276,7 +276,7 @@ class RouteLayer(
      * by the view that will represent it.
      */
     private fun Route.toPath(mapView: MapView): FloatArray? {
-        val markerList = routeMarkers ?: listOf()
+        val markerList = routeMarkers
         /* If there is only one marker, the path has no sense */
         if (markerList.size < 2) return null
 
@@ -354,7 +354,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
     }
 
     /**
-     * The state is only the correspondence between each [RouteGson.Route]'s ids and the indexes of
+     * The state is only the correspondence between each [Route]'s ids and the indexes of
      * the two [MarkerGrab]s.
      */
     fun getState(): DistOnRouteState {
@@ -541,7 +541,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
     }
 
     private fun positionGrabMarkers(map: Map, route: Route, index1: Int, index2: Int) {
-        val firstMarker = route.routeMarkers[index1]
+        val firstMarker = route.routeMarkers.getOrNull(index1)
         if (firstMarker != null) {
             val relX = firstMarker.getRelativeX(map)
             val relY = firstMarker.getRelativeY(map)
@@ -552,7 +552,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
             }
         }
 
-        val secondMarker = route.routeMarkers[index2]
+        val secondMarker = route.routeMarkers.getOrNull(index2)
         if (secondMarker != null) {
             val relX = secondMarker.getRelativeX(map)
             val relY = secondMarker.getRelativeY(map)

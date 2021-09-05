@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.Wmts
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.di.IGN
@@ -81,7 +82,8 @@ class MapViewViewModel @Inject constructor(
     }
 
     private suspend fun getLicense(map: Map): LicenseEvent {
-        if (map.origin != Map.MapOrigin.IGN_LICENSED) return FreeLicense
+        val origin = map.origin
+        if (origin !is Wmts || !origin.licensed) return FreeLicense
 
         return withContext(Dispatchers.IO) {
             billing.getPurchase()?.let {

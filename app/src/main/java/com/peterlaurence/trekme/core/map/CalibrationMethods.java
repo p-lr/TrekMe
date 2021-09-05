@@ -2,21 +2,21 @@ package com.peterlaurence.trekme.core.map;
 
 import androidx.annotation.Nullable;
 
-import com.peterlaurence.trekme.core.map.entity.MapGson;
+import com.peterlaurence.trekme.core.map.domain.CalibrationPoint;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
 /**
  * The {@link CalibrationMethods} provides different methods to obtain a {@link Map.MapBounds} from multiple
- * {@link MapGson.Calibration.CalibrationPoint} objects.
+ * {@link CalibrationPoint} objects.
  *
  * @author P.Laurence
  */
 public class CalibrationMethods {
     /**
      * This method calculates the {@link Map.MapBounds} by extrapolating the projected values of
-     * the two {@link MapGson.Calibration.CalibrationPoint} provided, so the returned {@link Map.MapBounds} contains
+     * the two {@link CalibrationPoint} provided, so the returned {@link Map.MapBounds} contains
      * the projected values for the exact top left and bottom right corners of the map.
      * <p/>
      * Note : Although the doc says that the calibration point A should be at top left corner and
@@ -29,22 +29,22 @@ public class CalibrationMethods {
      */
     public static
     @Nullable
-    Map.MapBounds simple2PointsCalibration(MapGson.Calibration.CalibrationPoint calibrationPointA,
-                                           MapGson.Calibration.CalibrationPoint calibrationPointB) {
-        double delta_x = calibrationPointB.x - calibrationPointA.x;
-        double delta_y = calibrationPointB.y - calibrationPointA.y;
+    Map.MapBounds simple2PointsCalibration(CalibrationPoint calibrationPointA,
+                                           CalibrationPoint calibrationPointB) {
+        double delta_x = calibrationPointB.getNormalizedX() - calibrationPointA.getNormalizedX();
+        double delta_y = calibrationPointB.getNormalizedY() - calibrationPointA.getNormalizedY();
 
         if (delta_x == 0 || delta_y == 0) {
             /* Incorrect calibration points */
             return null;
         }
 
-        double delta_projectionX = calibrationPointB.proj_x - calibrationPointA.proj_x;
-        double delta_projectionY = calibrationPointB.proj_y - calibrationPointA.proj_y;
-        double projectionX0 = calibrationPointA.proj_x - delta_projectionX / delta_x * calibrationPointA.x;
-        double projectionY0 = calibrationPointA.proj_y - delta_projectionY / delta_y * calibrationPointA.y;
-        double projectionX1 = calibrationPointB.proj_x + delta_projectionX / delta_x * (1 - calibrationPointB.x);
-        double projectionY1 = calibrationPointB.proj_y + delta_projectionY / delta_y * (1 - calibrationPointB.y);
+        double delta_projectionX = calibrationPointB.getAbsoluteX() - calibrationPointA.getAbsoluteX();
+        double delta_projectionY = calibrationPointB.getAbsoluteY() - calibrationPointA.getAbsoluteY();
+        double projectionX0 = calibrationPointA.getAbsoluteX() - delta_projectionX / delta_x * calibrationPointA.getNormalizedX();
+        double projectionY0 = calibrationPointA.getAbsoluteY() - delta_projectionY / delta_y * calibrationPointA.getNormalizedY();
+        double projectionX1 = calibrationPointB.getAbsoluteX() + delta_projectionX / delta_x * (1 - calibrationPointB.getNormalizedX());
+        double projectionY1 = calibrationPointB.getAbsoluteY() + delta_projectionY / delta_y * (1 - calibrationPointB.getNormalizedY());
 
         return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
     }
@@ -59,31 +59,31 @@ public class CalibrationMethods {
      */
     public static
     @Nullable
-    Map.MapBounds calibrate3Points(MapGson.Calibration.CalibrationPoint calibrationPointA,
-                                   MapGson.Calibration.CalibrationPoint calibrationPointB,
-                                   MapGson.Calibration.CalibrationPoint calibrationPointC) {
+    Map.MapBounds calibrate3Points(CalibrationPoint calibrationPointA,
+                                   CalibrationPoint calibrationPointB,
+                                   CalibrationPoint calibrationPointC) {
 
-        MapGson.Calibration.CalibrationPoint[] points = {calibrationPointA, calibrationPointB, calibrationPointC};
+        CalibrationPoint[] points = {calibrationPointA, calibrationPointB, calibrationPointC};
 
         /* Find the greatest difference in x */
-        Arrays.sort(points, Comparator.comparingDouble(p -> p.x));
-        double delta_x = points[2].x - points[0].x;
-        double delta_projectionX = points[2].proj_x - points[0].proj_x;
+        Arrays.sort(points, Comparator.comparingDouble(CalibrationPoint::getNormalizedX));
+        double delta_x = points[2].getNormalizedX() - points[0].getNormalizedX();
+        double delta_projectionX = points[2].getAbsoluteX() - points[0].getAbsoluteX();
 
         if (delta_x == 0) return null;
 
-        double projectionX0 = points[0].proj_x - delta_projectionX / delta_x * points[0].x;
-        double projectionX1 = points[2].proj_x + delta_projectionX / delta_x * (1 - points[2].x);
+        double projectionX0 = points[0].getAbsoluteX() - delta_projectionX / delta_x * points[0].getNormalizedX();
+        double projectionX1 = points[2].getAbsoluteX() + delta_projectionX / delta_x * (1 - points[2].getNormalizedX());
 
         /* Find the greatest difference in y */
-        Arrays.sort(points, Comparator.comparingDouble(p -> p.y));
-        double delta_y = points[2].y - points[0].y;
-        double delta_projectionY = points[2].proj_y - points[0].proj_y;
+        Arrays.sort(points, Comparator.comparingDouble(CalibrationPoint::getNormalizedY));
+        double delta_y = points[2].getNormalizedY() - points[0].getNormalizedY();
+        double delta_projectionY = points[2].getAbsoluteY() - points[0].getAbsoluteY();
 
         if (delta_y == 0) return null;
 
-        double projectionY0 = points[0].proj_y - delta_projectionY / delta_y * points[0].y;
-        double projectionY1 = points[2].proj_y + delta_projectionY / delta_y * (1 - points[2].y);
+        double projectionY0 = points[0].getAbsoluteY() - delta_projectionY / delta_y * points[0].getNormalizedY();
+        double projectionY1 = points[2].getAbsoluteY() + delta_projectionY / delta_y * (1 - points[2].getNormalizedY());
 
         return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
     }
@@ -97,47 +97,47 @@ public class CalibrationMethods {
      */
     public static
     @Nullable
-    Map.MapBounds calibrate4Points(MapGson.Calibration.CalibrationPoint calibrationPointA,
-                                   MapGson.Calibration.CalibrationPoint calibrationPointB,
-                                   MapGson.Calibration.CalibrationPoint calibrationPointC,
-                                   MapGson.Calibration.CalibrationPoint calibrationPointD) {
+    Map.MapBounds calibrate4Points(CalibrationPoint calibrationPointA,
+                                   CalibrationPoint calibrationPointB,
+                                   CalibrationPoint calibrationPointC,
+                                   CalibrationPoint calibrationPointD) {
 
-        MapGson.Calibration.CalibrationPoint[] points = {calibrationPointA, calibrationPointB,
+        CalibrationPoint[] points = {calibrationPointA, calibrationPointB,
                 calibrationPointC, calibrationPointD};
 
         /* Sort by ascending x */
-        Arrays.sort(points, Comparator.comparingDouble(p -> p.x));
-        double delta_x1 = points[3].x - points[0].x;
-        double delta_x2 = points[2].x - points[0].x;
-        double delta_x3 = points[1].x - points[0].x;
-        double delta_projectionX1 = points[3].proj_x - points[0].proj_x;
-        double delta_projectionX2 = points[2].proj_x - points[0].proj_x;
-        double delta_projectionX3 = points[1].proj_x - points[0].proj_x;
+        Arrays.sort(points, Comparator.comparingDouble(CalibrationPoint::getNormalizedX));
+        double delta_x1 = points[3].getNormalizedX() - points[0].getNormalizedX();
+        double delta_x2 = points[2].getNormalizedX() - points[0].getNormalizedX();
+        double delta_x3 = points[1].getNormalizedX() - points[0].getNormalizedX();
+        double delta_projectionX1 = points[3].getAbsoluteX() - points[0].getAbsoluteX();
+        double delta_projectionX2 = points[2].getAbsoluteX() - points[0].getAbsoluteX();
+        double delta_projectionX3 = points[1].getAbsoluteX() - points[0].getAbsoluteX();
 
         /* Barycentric medium */
         if (delta_x1 + delta_x2 + delta_x3 == 0) return null;
         double alpha_x = (delta_projectionX1 + delta_projectionX2 + delta_projectionX3) / (delta_x1 +
                 delta_x2 + delta_x3);
 
-        double projectionX0 = points[0].proj_x - alpha_x * points[0].x;
-        double projectionX1 = points[2].proj_x + alpha_x * (1 - points[2].x);
+        double projectionX0 = points[0].getAbsoluteX() - alpha_x * points[0].getNormalizedX();
+        double projectionX1 = points[2].getAbsoluteX() + alpha_x * (1 - points[2].getNormalizedX());
 
         /* Sort by ascending y */
-        Arrays.sort(points, Comparator.comparingDouble(p -> p.y));
-        double delta_y1 = points[3].y - points[0].y;
-        double delta_y2 = points[2].y - points[0].y;
-        double delta_y3 = points[1].y - points[0].y;
-        double delta_projectionY1 = points[3].proj_y - points[0].proj_y;
-        double delta_projectionY2 = points[2].proj_y - points[0].proj_y;
-        double delta_projectionY3 = points[1].proj_y - points[0].proj_y;
+        Arrays.sort(points, Comparator.comparingDouble(CalibrationPoint::getNormalizedY));
+        double delta_y1 = points[3].getNormalizedY() - points[0].getNormalizedY();
+        double delta_y2 = points[2].getNormalizedY() - points[0].getNormalizedY();
+        double delta_y3 = points[1].getNormalizedY() - points[0].getNormalizedY();
+        double delta_projectionY1 = points[3].getAbsoluteY() - points[0].getAbsoluteY();
+        double delta_projectionY2 = points[2].getAbsoluteY() - points[0].getAbsoluteY();
+        double delta_projectionY3 = points[1].getAbsoluteY() - points[0].getAbsoluteY();
 
         /* Barycentric medium */
         if (delta_y1 + delta_y2 + delta_y3 == 0) return null;
         double alpha_y = (delta_projectionY1 + delta_projectionY2 + delta_projectionY3) / (delta_y1 +
                 delta_y2 + delta_y3);
 
-        double projectionY0 = points[0].proj_y - alpha_y * points[0].y;
-        double projectionY1 = points[2].proj_y + alpha_y * (1 - points[2].y);
+        double projectionY0 = points[0].getAbsoluteY() - alpha_y * points[0].getNormalizedY();
+        double projectionY1 = points[2].getAbsoluteY() + alpha_y * (1 - points[2].getNormalizedY());
 
         return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
     }
@@ -145,10 +145,10 @@ public class CalibrationMethods {
     /**
      * x and y values are expected to be between 0 and 1 : they respectively represent the position
      * in percent of the calibration point relatively to the map width and height. <br>
-     * This method can change the {@link MapGson.Calibration.CalibrationPoint}.
+     * This method can change the {@link CalibrationPoint}.
      */
-    static void sanityCheck2PointsCalibration(MapGson.Calibration.CalibrationPoint calibrationPointA,
-                                              MapGson.Calibration.CalibrationPoint calibrationPointB) {
+    static void sanityCheck2PointsCalibration(CalibrationPoint calibrationPointA,
+                                              CalibrationPoint calibrationPointB) {
         /* Check whether one of the two points is apparently ok */
         boolean okA = checkPercentPositionBounds(calibrationPointA);
         boolean okB = checkPercentPositionBounds(calibrationPointB);
@@ -163,27 +163,29 @@ public class CalibrationMethods {
         }
     }
 
-    private static boolean checkPercentPositionBounds(MapGson.Calibration.CalibrationPoint calibrationPoint) {
-        return !(calibrationPoint.x < 0 || calibrationPoint.x > 1 || calibrationPoint.y < 0 ||
-                calibrationPoint.y > 1);
+    private static boolean checkPercentPositionBounds(CalibrationPoint calibrationPoint) {
+        return !(calibrationPoint.getNormalizedX() < 0 || calibrationPoint.getNormalizedX() > 1
+                || calibrationPoint.getNormalizedY() < 0 ||
+                calibrationPoint.getNormalizedY() > 1);
     }
 
-    private static boolean checkPercentPositionDifferent(MapGson.Calibration.CalibrationPoint calibrationPointA,
-                                                         MapGson.Calibration.CalibrationPoint calibrationPointB) {
-        return calibrationPointA.x != calibrationPointB.x && calibrationPointA.y != calibrationPointB.y;
+    private static boolean checkPercentPositionDifferent(CalibrationPoint calibrationPointA,
+                                                         CalibrationPoint calibrationPointB) {
+        return calibrationPointA.getNormalizedX() != calibrationPointB.getNormalizedX()
+                && calibrationPointA.getNormalizedY() != calibrationPointB.getNormalizedY();
     }
 
-    private static void init2Points(MapGson.Calibration.CalibrationPoint calibrationPointA,
-                                    MapGson.Calibration.CalibrationPoint calibrationPointB) {
-        calibrationPointA.x = 0;
-        calibrationPointA.y = 0;
-        calibrationPointB.x = 1;
-        calibrationPointB.y = 1;
+    private static void init2Points(CalibrationPoint calibrationPointA,
+                                    CalibrationPoint calibrationPointB) {
+        calibrationPointA.setNormalizedX(0);
+        calibrationPointA.setNormalizedY(0);
+        calibrationPointB.setNormalizedX(1);
+        calibrationPointB.setNormalizedY(1);
     }
 
-    private static void reposition2PointCalibration(MapGson.Calibration.CalibrationPoint calibrationPointWrong,
-                                                    MapGson.Calibration.CalibrationPoint calibrationPointRef) {
-        calibrationPointWrong.x = 1 - calibrationPointRef.x;
-        calibrationPointWrong.y = 1 - calibrationPointRef.y;
+    private static void reposition2PointCalibration(CalibrationPoint calibrationPointWrong,
+                                                    CalibrationPoint calibrationPointRef) {
+        calibrationPointWrong.setNormalizedX(1 - calibrationPointRef.getNormalizedX());
+        calibrationPointWrong.setNormalizedY(1 - calibrationPointRef.getNormalizedY());
     }
 }

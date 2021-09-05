@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.entity.MapGson
+import com.peterlaurence.trekme.core.map.mappers.toDomain
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 
@@ -66,11 +67,14 @@ fun mapCreationTask(mGson: Gson, mapFileName: String, vararg dirs: File): List<M
             /* json deserialization */
             val mapGson = mGson.fromJson(jsonString, MapGson::class.java)
 
+            /* Convert to domain type */
+            val mapConfig = mapGson.toDomain() ?: continue
+
             /* Map creation */
             val map = if (mapGson.thumbnail == null)
-                Map(mapGson, f, null)
+                Map(mapConfig, f, null)
             else
-                Map(mapGson, f, File(f.parent, mapGson.thumbnail))
+                Map(mapConfig, f, File(f.parent, mapGson.thumbnail))
 
             /* Calibration */
             map.calibrate()

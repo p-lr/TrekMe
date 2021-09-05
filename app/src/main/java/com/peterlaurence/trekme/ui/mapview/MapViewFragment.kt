@@ -594,7 +594,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
      */
     private suspend fun configureMapView(mapView: MapView, map: Map) {
         mMap = map
-        val tileSize = map.levelList.firstOrNull()?.tile_size?.x ?: return
+        val tileSize = map.levelList.firstOrNull()?.tileSize?.width ?: return
 
         val tileStreamProvider = makeMapViewTileStreamProvider(map)
         if (tileStreamProvider == null) {

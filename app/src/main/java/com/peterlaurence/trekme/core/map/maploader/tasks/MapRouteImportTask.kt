@@ -5,7 +5,7 @@ import com.google.gson.Gson
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.entity.RouteGson
-import com.peterlaurence.trekme.core.map.entity.toDomain
+import com.peterlaurence.trekme.core.map.mappers.toDomain
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 
