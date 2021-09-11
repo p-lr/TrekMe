@@ -1,140 +1,95 @@
-package com.peterlaurence.trekme.core.map;
+package com.peterlaurence.trekme.core.map
 
-import static com.peterlaurence.trekme.core.map.ConstantsKt.MAP_FILENAME;
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.peterlaurence.trekme.core.map.domain.Calibration;
-import com.peterlaurence.trekme.core.map.domain.CalibrationMethod;
-import com.peterlaurence.trekme.core.map.domain.CalibrationPoint;
-import com.peterlaurence.trekme.core.map.domain.Landmark;
-import com.peterlaurence.trekme.core.map.domain.Level;
-import com.peterlaurence.trekme.core.map.domain.MapConfig;
-import com.peterlaurence.trekme.core.map.domain.MapOrigin;
-import com.peterlaurence.trekme.core.map.domain.Marker;
-import com.peterlaurence.trekme.core.map.domain.Route;
-import com.peterlaurence.trekme.core.map.maploader.MapLoader;
-import com.peterlaurence.trekme.core.projection.Projection;
-import com.peterlaurence.trekme.util.ZipProgressionListener;
-import com.peterlaurence.trekme.util.ZipTaskKt;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import com.peterlaurence.trekme.util.zipTask
+import android.graphics.Bitmap
+import com.peterlaurence.trekme.util.ZipProgressionListener
+import android.graphics.BitmapFactory
+import com.peterlaurence.trekme.core.map.domain.*
+import com.peterlaurence.trekme.core.projection.Projection
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.OutputStream
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
- * A {@code Map} contains all the information that defines a map. That includes :
- * <ul>
- * <li>The name that will appear in the map choice list </li>
- * <li>The directory that contains image data and configuration file </li>
- * <li>The calibration method along with calibration points </li>
- * <li>Points of interest </li>
- * ...
- * </ul>
+ * A map contains all the information that defines a map. That includes :
  *
- * <b>Warning</b>: This class isn't thread-safe. It's advised to thread-confine the use of this
+ *  * The name that will appear in the map choice list
+ *  * The directory that contains image data and configuration file
+ *  * The calibration method along with calibration points
+ *  * Points of interest
+ * ...
+ *
+ * **Warning**: This class isn't thread-safe. It's advised to thread-confine the use of this
  * class to the main thread.
+ *
+ * To create a map, three parameters are needed:
+ *
+ * @param config the [MapConfig] object that includes information relative to levels,
+ * the tile size, the name of the map, etc.
+ * @param configFile the [File] for serialization.
+ * @param thumbnail the [File] image for map customization.
  *
  * @author P.Laurence
  */
-public class Map {
-    private static final int THUMBNAIL_SIZE = 256;
-    private static final String THUMBNAIL_NAME = "image.jpg";
-    /* The configuration file of the map, named map.json */
-    private File mConfigFile;
-    private Bitmap mImage;
-    private MapBounds mMapBounds;
-    /* The Java Object corresponding to the json configuration file */
-    private final MapConfig mMapConfig;
+class Map(
+    private val config: MapConfig,
+    var configFile: File,
+    thumbnail: File?
+) {
+    val configSnapshot: MapConfig
+        get() = config.copy()
 
-    private List<Landmark> mLandmarks;
-    private List<Marker> mMarkerList;
-    private List<Route> mRouteList;
+    val thumbnailSize = 256
 
-    private CalibrationStatus mCalibrationStatus = CalibrationStatus.NONE;
+    private var mImage: Bitmap? = getBitmapFromFile(thumbnail)
 
     /**
-     * To create a {@link Map}, three parameters are needed. <br>
-     *
-     * @param mapConfig the {@link MapConfig} object that includes informations relative to levels,
-     *                  the tile size, the name of the map, etc.
-     * @param jsonFile  the {@link File} for serialization.
-     * @param thumbnail the {@link File} image for map customization.
+     * Get the bounds the map. See [MapBounds].
      */
-    public Map(MapConfig mapConfig, File jsonFile, File thumbnail) {
-        mMapConfig = mapConfig;
-        mConfigFile = jsonFile;
-        mImage = getBitmapFromFile(thumbnail);
-    }
-
-    private static
-    @Nullable
-    Bitmap getBitmapFromFile(File file) {
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        if (file != null) {
-            return BitmapFactory.decodeFile(file.getAbsolutePath(), bmOptions);
-        }
-        return null;
-    }
-
-    public
-    @Nullable
-    String getProjectionName() {
-        Calibration cal = mMapConfig.getCalibration();
-        if (cal != null) {
-            Projection proj = cal.getProjection();
-            if (proj != null) return proj.getName();
-        }
-        return null;
-    }
-
-    public
-    @Nullable
-    Projection getProjection() {
-        try {
-            return mMapConfig.getCalibration().getProjection();
-        } catch (NullPointerException e) {
-            return null;
-        }
-    }
-
-    public void setProjection(Projection projection) {
-        Calibration cal = mMapConfig.getCalibration();
-        if (cal != null) {
-            Calibration newCal = cal.copy(projection, cal.getCalibrationMethod(), cal.getCalibrationPoints());
-            mMapConfig.setCalibration(newCal);
-        }
-    }
+    var mapBounds: MapBounds? = null
+        private set
+    private var _landmarks: MutableList<Landmark>? = null
+    private var _markerList: MutableList<Marker>? = null
+    private var _routeList: MutableList<Route>? = null
 
     /**
-     * Get the bounds the map. See {@link MapBounds}.
+     * The calibration status is either :
+     *  * [CalibrationStatus.OK]
+     *  * [CalibrationStatus.NONE]
+     *  * [CalibrationStatus.ERROR]
      */
-    public
-    @Nullable
-    MapBounds getMapBounds() {
-        return mMapBounds;
-    }
+    var calibrationStatus = CalibrationStatus.NONE
+        private set
 
-    public
-    @Nullable
-    Long getSizeInBytes() {
-        return mMapConfig.getSizeInBytes();
-    }
+    val projectionName: String?
+        get() {
+            val cal = config.calibration
+            if (cal != null) {
+                val proj = cal.projection
+                if (proj != null) return proj.name
+            }
+            return null
+        }
 
-    public void setSizeInBytes(@NonNull Long size) {
-        mMapConfig.setSizeInBytes(size);
+    var projection: Projection?
+        get() = config.calibration?.projection
+        set(projection) {
+            val cal = config.calibration
+            if (cal != null) {
+                val newCal = cal.copy(projection = projection)
+                config.calibration = newCal
+            }
+        }
+
+    val sizeInBytes: Long?
+        get() = config.sizeInBytes
+
+    fun setSizeInBytes(size: Long) {
+        config.sizeInBytes = size
     }
 
     /**
@@ -144,372 +99,286 @@ public class Map {
      * @param x a projected coordinate, or longitude
      * @param y a projected coordinate, or latitude
      */
-    public boolean containsLocation(double x, double y) {
-        if (mMapBounds != null) {
-            return x >= mMapBounds.X0 && x <= mMapBounds.X1 && y <= mMapBounds.Y0 && y >= mMapBounds.Y1;
+    fun containsLocation(x: Double, y: Double): Boolean {
+        val mapBounds = this.mapBounds
+        return if (mapBounds != null) {
+            x >= mapBounds.X0 && x <= mapBounds.X1 && y <= mapBounds.Y0 && y >= mapBounds.Y1
         } else {
-            return false;
+            false
         }
     }
 
-    public void calibrate() {
-        Calibration cal = mMapConfig.getCalibration();
-        if (cal == null) return;
+    fun calibrate() {
+        val (projection, _, calibrationPoints) = config.calibration ?: return
 
         /* Init the projection */
-        Projection projection = cal.getProjection();
-        if (projection != null) {
-            projection.init();
-        }
-
-        List<CalibrationPoint> calibrationPoints = cal.getCalibrationPoints();
-        switch (getCalibrationMethod()) {
-            case SIMPLE_2_POINTS:
-                if (calibrationPoints.size() >= 2) {
-                    /* Correct points if necessary */
-                    CalibrationMethods.sanityCheck2PointsCalibration(calibrationPoints.get(0),
-                            calibrationPoints.get(1));
-
-                    mMapBounds = CalibrationMethods.simple2PointsCalibration(calibrationPoints.get(0),
-                            calibrationPoints.get(1));
-                }
-                break;
-            case CALIBRATION_3_POINTS:
-                if (calibrationPoints.size() >= 3) {
-                    mMapBounds = CalibrationMethods.calibrate3Points(calibrationPoints.get(0),
-                            calibrationPoints.get(1), calibrationPoints.get(2));
-                }
-                break;
-            case CALIBRATION_4_POINTS:
-                if (calibrationPoints.size() == 4) {
-                    mMapBounds = CalibrationMethods.calibrate4Points(calibrationPoints.get(0),
-                            calibrationPoints.get(1), calibrationPoints.get(2),
-                            calibrationPoints.get(3));
-                }
-                break;
-            default:
-                // don't care
+        projection?.init()
+        when (calibrationMethod) {
+            CalibrationMethod.SIMPLE_2_POINTS -> if (calibrationPoints.size >= 2) {
+                /* Correct points if necessary */
+                CalibrationMethods.sanityCheck2PointsCalibration(
+                    calibrationPoints[0],
+                    calibrationPoints[1]
+                )
+                mapBounds = CalibrationMethods.simple2PointsCalibration(
+                    calibrationPoints[0],
+                    calibrationPoints[1]
+                )
+            }
+            CalibrationMethod.CALIBRATION_3_POINTS -> if (calibrationPoints.size >= 3) {
+                mapBounds = CalibrationMethods.calibrate3Points(
+                    calibrationPoints[0],
+                    calibrationPoints[1], calibrationPoints[2]
+                )
+            }
+            CalibrationMethod.CALIBRATION_4_POINTS -> if (calibrationPoints.size == 4) {
+                mapBounds = CalibrationMethods.calibrate4Points(
+                    calibrationPoints[0],
+                    calibrationPoints[1], calibrationPoints[2],
+                    calibrationPoints[3]
+                )
+            }
+            else -> {
+            }
         }
 
         /* Update the calibration status */
-        setCalibrationStatus();
+        setCalibrationStatus()
     }
 
-    private void setCalibrationStatus() {
+    private fun setCalibrationStatus() {
         // TODO : implement the detection of an erroneous calibration
-        Calibration cal = mMapConfig.getCalibration();
-        if (cal != null && cal.getCalibrationPoints().size() >= 2) {
-            mCalibrationStatus = CalibrationStatus.OK;
+        val cal = config.calibration
+        calibrationStatus = if (cal != null && cal.calibrationPoints.size >= 2) {
+            CalibrationStatus.OK
         } else {
-            mCalibrationStatus = CalibrationStatus.NONE;
+            CalibrationStatus.NONE
         }
     }
 
     /**
-     * @return the {@link File} which is the folder containing the map.
-     */
-    public final File getDirectory() {
-        return mConfigFile.getParentFile();
-    }
-
-    /**
+     * The [File] which is the folder containing the map.
      * When the directory changed (after e.g a rename), the config file must be updated.
      */
-    public void setDirectory(File dir) {
-        mConfigFile = new File(dir, MAP_FILENAME);
-    }
+    var directory: File?
+        get() = configFile.parentFile
+        set(dir) {
+            configFile = File(dir, MAP_FILENAME)
+        }
 
-    public String getName() {
-        return mMapConfig.getName();
-    }
-
-    public void setName(String newName) {
-        mMapConfig.setName(newName);
-    }
-
-    /**
-     * The calibration status is either : <ul>
-     * <li>{@link CalibrationStatus#OK}</li>
-     * <li>{@link CalibrationStatus#NONE}</li>
-     * <li>{@link CalibrationStatus#ERROR}</li>
-     * </ul>.
-     */
-    public CalibrationStatus getCalibrationStatus() {
-        return mCalibrationStatus;
-    }
+    var name: String
+        get() = config.name
+        set(newName) {
+            config.name = newName
+        }
 
     /**
      * Markers are lazily loaded.
      */
-    @Nullable
-    public List<Marker> getMarkers() {
-        return mMarkerList;
+    val markers: List<Marker>?
+        get() = _markerList
+
+    fun setMarkers(markers: List<Marker>) {
+        _markerList = markers.toMutableList()
     }
 
-    public void setMarkers(List<Marker> markers) {
-        mMarkerList = markers;
+    fun addMarker(marker: Marker) {
+        _markerList?.add(marker)
     }
 
-    public void addMarker(Marker marker) {
-        mMarkerList.add(marker);
+    fun deleteMarker(marker: Marker) {
+        _markerList?.remove(marker)
     }
 
-    @Nullable
-    public final List<Landmark> getLandmarks() {
-        return mLandmarks;
+    val landmarks: List<Landmark>?
+        get() = _landmarks
+
+    fun setLandmarks(landmarks: List<Landmark>) {
+        _landmarks = landmarks.toMutableList()
     }
 
-    public void setLandmarks(List<Landmark> landmarks) {
-        mLandmarks = landmarks;
+    fun addLandmark(landmark: Landmark) {
+        _landmarks?.add(landmark)
     }
 
-    public void addLandmark(Landmark landmark) {
-        mLandmarks.add(landmark);
+    fun deleteLandmark(landmark: Landmark) {
+        _landmarks?.remove(landmark)
     }
 
-    public void deleteLandmark(Landmark landmark) {
-        mLandmarks.remove(landmark);
-    }
-
-    public boolean areLandmarksDefined() {
-        return mLandmarks != null && mLandmarks.size() > 0;
+    fun areLandmarksDefined(): Boolean {
+        return _landmarks?.let { it.size > 0 } ?: false
     }
 
     /**
      * Routes are lazily loaded.
      */
-    @Nullable
-    public List<Route> getRoutes() {
-        return mRouteList;
-    }
+    val routes: List<Route>?
+        get() = _routeList
 
-    public void setRoutes(List<Route> routes) {
-        mRouteList = routes;
+    fun setRoutes(routes: List<Route>) {
+        _routeList = routes.toMutableList()
     }
 
     /**
      * Add a new route to the map.
      */
-    public void addRoute(Route route) {
-        if (mRouteList != null) {
-            mRouteList.add(route);
+    fun addRoute(route: Route) {
+        _routeList?.add(route)
+    }
+
+    fun replaceRoute(from: Route, to: Route) {
+        _routeList?.indexOf(from)?.also { i ->
+            if (i != -1) {
+                _routeList?.removeAt(i)
+                _routeList?.add(i, to)
+            } else {
+                _routeList?.add(to)
+            }
         }
     }
 
-    public void replaceRoute(@NonNull Route from, @NonNull Route to) {
-        int i = mRouteList.indexOf(from);
-        if (i != -1) {
-            mRouteList.remove(i);
-            mRouteList.add(i, to);
-        } else {
-            mRouteList.add(to);
+    fun deleteRoute(route: Route) {
+        _routeList?.remove(route)
+    }
+
+    var image: Bitmap?
+        get() = mImage
+        set(thumbnail) {
+            mImage = thumbnail
+            config.thumbnail = THUMBNAIL_NAME
         }
-    }
 
-    public Bitmap getImage() {
-        return mImage;
-    }
-
-    public int getThumbnailSize() {
-        return THUMBNAIL_SIZE;
-    }
-
-    public OutputStream getImageOutputStream() {
-        File targetFile = new File(getDirectory(), THUMBNAIL_NAME);
-        try {
-            return new FileOutputStream(targetFile);
-        } catch (FileNotFoundException e) {
-            return null;
+    val imageOutputStream: OutputStream?
+        get() {
+            val targetFile = File(directory, THUMBNAIL_NAME)
+            return try {
+                FileOutputStream(targetFile)
+            } catch (e: FileNotFoundException) {
+                null
+            }
         }
-    }
 
-    public void setImage(Bitmap thumbnail) {
-        mImage = thumbnail;
-        mMapConfig.setThumbnail(THUMBNAIL_NAME);
-    }
+    val levelList: List<Level>
+        get() = config.levels
 
-    public List<Level> getLevelList() {
-        return mMapConfig.getLevels();
-    }
-
-    @Nullable
-    public CalibrationMethod getCalibrationMethod() {
-        Calibration cal = mMapConfig.getCalibration();
-        if (cal != null) return cal.getCalibrationMethod();
-        return null;
-    }
-
-    public void setCalibrationMethod(CalibrationMethod method) {
-        Calibration cal = mMapConfig.getCalibration();
-        if (cal != null) {
-            Calibration newCal = cal.copy(cal.getProjection(), method, cal.getCalibrationPoints());
-            mMapConfig.setCalibration(newCal);
+    var calibrationMethod: CalibrationMethod?
+        get() {
+            val cal = config.calibration
+            return cal?.calibrationMethod
         }
-    }
-
-    @Nullable
-    public MapOrigin getOrigin() {
-        try {
-            return mMapConfig.getOrigin();
-        } catch (NullPointerException e) {
-            return null;
+        set(method) {
+            if (method == null) return
+            val cal = config.calibration
+            if (cal != null) {
+                val newCal = cal.copy(calibrationMethod = method)
+                config.calibration = newCal
+            }
         }
-    }
+
+    val origin: MapOrigin
+        get() = config.origin
 
     /**
      * Get the number of calibration that should be defined.
      */
-    public int getCalibrationPointsNumber() {
-        CalibrationMethod method = getCalibrationMethod();
-        if (method == null) return 0;
-
-        switch (method) {
-            case SIMPLE_2_POINTS:
-                return 2;
-            case CALIBRATION_3_POINTS:
-                return 3;
-            case CALIBRATION_4_POINTS:
-                return 4;
-            default:
-                return 0;
+    val calibrationPointsNumber: Int
+        get() {
+            val method = calibrationMethod ?: return 0
+            return when (method) {
+                CalibrationMethod.SIMPLE_2_POINTS -> 2
+                CalibrationMethod.CALIBRATION_3_POINTS -> 3
+                CalibrationMethod.CALIBRATION_4_POINTS -> 4
+            }
         }
-    }
 
     /**
-     * Get a copy of the calibration points. <br>
+     * Get a copy of the calibration points.
      * This returns only a copy to ensure that no modification is made to the calibration points
      * through this call.
      */
-    public List<CalibrationPoint> getCalibrationPoints() {
-        Calibration cal = mMapConfig.getCalibration();
+    var calibrationPoints: List<CalibrationPoint>
+        get() {
+            val cal = config.calibration
+            return cal?.calibrationPoints ?: emptyList()
+        }
+        set(points) {
+            val cal = config.calibration
+            if (cal != null) {
+                val newCal = cal.copy(calibrationPoints = points)
+                config.calibration = newCal
+            }
+        }
+
+    fun addCalibrationPoint(point: CalibrationPoint) {
+        val cal = config.calibration
         if (cal != null) {
-            return cal.getCalibrationPoints();
-        } else {
-            return Collections.emptyList();
+            val newPoints: MutableList<CalibrationPoint> = ArrayList(cal.calibrationPoints)
+            newPoints.add(point)
+            val newCal = cal.copy(calibrationPoints = newPoints)
+            config.calibration = newCal
         }
     }
 
-    public void addCalibrationPoint(CalibrationPoint point) {
-        Calibration cal = mMapConfig.getCalibration();
-        if (cal != null) {
-            List<CalibrationPoint> newPoints = new ArrayList<>(cal.getCalibrationPoints());
-            newPoints.add(point);
-            Calibration newCal = cal.copy(cal.getProjection(), cal.getCalibrationMethod(),
-                    newPoints);
-            mMapConfig.setCalibration(newCal);
-        }
-    }
-
-    public void setCalibrationPoints(List<CalibrationPoint> points) {
-        Calibration cal = mMapConfig.getCalibration();
-        if (cal != null) {
-            Calibration newCal = cal.copy(cal.getProjection(), cal.getCalibrationMethod(), points);
-            mMapConfig.setCalibration(newCal);
-        }
-    }
-
-    public String getImageExtension() {
-        return mMapConfig.getImageExtension();
-    }
-
-    public int getWidthPx() {
-        return mMapConfig.getSize().getWidth();
-    }
-
-    public int getHeightPx() {
-        return mMapConfig.getSize().getHeight();
-    }
-
-    public final MapConfig getConfigSnapshot() {
-        // TODO: make a defensive copy
-        return mMapConfig;
-    }
-
-    public final File getConfigFile() {
-        return mConfigFile;
-    }
+    val imageExtension: String
+        get() = config.imageExtension
+    val widthPx: Int
+        get() = config.size.width
+    val heightPx: Int
+        get() = config.size.height
 
     /**
-     * For instance, the {@link MapLoader} is designed so that two different maps can't have the
-     * same config file path.
-     *
-     * @return the unique id that identifies the {@link Map}. It can later be used to retrieve the
-     * {@link Map} instance from the {@link MapLoader}.
+     * The unique id that identifies the [Map]. It can later be used to retrieve the
+     * [Map] instance from the map loader.
      */
-    public int getId() {
-        return mConfigFile.getPath().hashCode();
-    }
+    val id: Int
+        get() = configFile.path.hashCode()
 
     /**
-     * Archives the map. <p>
-     * Creates a zip file named with this {@link Map} name and the date. This file is placed in the
-     * parent folder of the {@link Map}.
+     * Archives the map.
+     *
+     * Creates a zip file named with this [Map] name and the date. This file is placed in the
+     * parent folder of the [Map].
      * Beware that this is a blocking call and should be executed from inside a background thread.
      */
-    public void zip(ZipProgressionListener listener, OutputStream outputStream) {
-        File mapFolder = mConfigFile.getParentFile();
+    fun zip(listener: ZipProgressionListener, outputStream: OutputStream) {
+        val mapFolder = configFile.parentFile
         if (mapFolder != null) {
-            ZipTaskKt.zipTask(mConfigFile.getParentFile(), outputStream, listener);
+            zipTask(mapFolder, outputStream, listener)
         }
     }
 
-    public String generateNewNameWithDate() {
-        Date date = new Date();
-        DateFormat dateFormat = new SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH);
-        return getName() + "-" + dateFormat.format(date);
+    fun generateNewNameWithDate(): String {
+        val date = Date()
+        val dateFormat: DateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
+        return name + "-" + dateFormat.format(date)
     }
 
-    public enum CalibrationStatus {
+    enum class CalibrationStatus {
         OK, NONE, ERROR
     }
 
     /**
-     * Two {@link Map} are considered identical if they have the same configuration file.
+     * Two [Map] are considered identical if they have the same configuration file.
      */
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (obj == null) return false;
-        if (obj instanceof Map) {
-            Map objMap = (Map) obj;
-            if (mConfigFile != null && objMap.getConfigFile() != null) {
-                return objMap.getConfigFile().equals(getConfigFile());
-            }
+    override fun equals(other: Any?): Boolean {
+        if (other == null) return false
+        if (other is Map) {
+            return other.configFile == configFile
         }
-        return false;
+        return false
     }
 
-    /**
-     * A MapBounds object holds the bounds coordinates of :
-     * <ul>
-     * <li>The top-left corner of the map : (projectionX0, projectionY0) or (lon0, lat0) depending
-     * on the map using a projection or not. </li>
-     * <li>The bottom-right corner of the map : (projectionX1, projectionY1) or (lon1, lat1) </li>
-     * </ul>
-     */
-    public static class MapBounds {
-        static double DELTA = 0.0000001;
-        public double X0;
-        public double Y0;
-        public double X1;
-        public double Y1;
+    override fun hashCode(): Int {
+        return configFile.hashCode()
+    }
 
-        public MapBounds(double x0, double y0, double x1, double y1) {
-            X0 = x0;
-            Y0 = y0;
-            X1 = x1;
-            Y1 = y1;
-        }
-
-        private static boolean doubleIsEqual(double d1, double d2, double delta) {
-            if (Double.compare(d1, d2) == 0) {
-                return true;
-            }
-            return (Math.abs(d1 - d2) <= delta);
-        }
-
-        public boolean compareTo(double x0, double y0, double x1, double y1) {
-            return doubleIsEqual(X0, x0, DELTA) && doubleIsEqual(Y0, y0, DELTA) &&
-                    doubleIsEqual(X1, x1, DELTA) && doubleIsEqual(Y1, y1, DELTA);
+    companion object {
+        private const val THUMBNAIL_NAME = "image.jpg"
+        private fun getBitmapFromFile(file: File?): Bitmap? {
+            val bmOptions = BitmapFactory.Options()
+            return if (file != null) {
+                BitmapFactory.decodeFile(file.absolutePath, bmOptions)
+            } else null
         }
     }
 }

@@ -26,7 +26,7 @@ import java.io.OutputStream
 import javax.inject.Inject
 
 /**
- * The view-model for the [MapSettingsFragment].
+ * The view-model for the MapSettingsFragment.
  *
  * @author P.Laurence on 14/08/20
  */
@@ -163,7 +163,7 @@ class MapSettingsViewModel @Inject constructor(
 
     suspend fun computeMapSize(map: Map): Long? = withContext(Dispatchers.IO) {
         runCatching {
-            val size = map.directory.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
+            val size = map.directory!!.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
             withContext(Dispatchers.Main) {
                 map.setSizeInBytes(size)
                 saveMapAsync(map)

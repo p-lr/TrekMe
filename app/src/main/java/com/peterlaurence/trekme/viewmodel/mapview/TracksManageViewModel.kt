@@ -47,8 +47,8 @@ class TracksManageViewModel @Inject constructor(
 
     fun removeRoute(route: Route) {
         map?.also { map ->
+            map.deleteRoute(route)
             map.routes?.let { routes ->
-                routes.remove(route)
                 _tracks.value = routes
                 saveChanges()
                 /* Notify other views */

@@ -526,7 +526,8 @@ class WifiP2pService : Service() {
         outputStream.writeLong(size)
 
         /* Finally comes the compressed stream */
-        zipTask(map.directory, outputStream, object : ZipProgressionListener {
+        val directory = map.directory ?: return
+        zipTask(directory, outputStream, object : ZipProgressionListener {
             override fun fileListAcquired() {
                 wifiP2pState = Loading(0)
             }

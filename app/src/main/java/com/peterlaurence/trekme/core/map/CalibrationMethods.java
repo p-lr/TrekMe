@@ -8,15 +8,15 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- * The {@link CalibrationMethods} provides different methods to obtain a {@link Map.MapBounds} from multiple
+ * The {@link CalibrationMethods} provides different methods to obtain a {@link MapBounds} from multiple
  * {@link CalibrationPoint} objects.
  *
  * @author P.Laurence
  */
 public class CalibrationMethods {
     /**
-     * This method calculates the {@link Map.MapBounds} by extrapolating the projected values of
-     * the two {@link CalibrationPoint} provided, so the returned {@link Map.MapBounds} contains
+     * This method calculates the {@link MapBounds} by extrapolating the projected values of
+     * the two {@link CalibrationPoint} provided, so the returned {@link MapBounds} contains
      * the projected values for the exact top left and bottom right corners of the map.
      * <p/>
      * Note : Although the doc says that the calibration point A should be at top left corner and
@@ -25,11 +25,11 @@ public class CalibrationMethods {
      *
      * @param calibrationPointA The calibration point at (approximately) top left corner
      * @param calibrationPointB The calibration point at (approximately) bottom right corner
-     * @return The {@link Map.MapBounds} object or null if calibration is not possible.
+     * @return The {@link MapBounds} object or null if calibration is not possible.
      */
     public static
     @Nullable
-    Map.MapBounds simple2PointsCalibration(CalibrationPoint calibrationPointA,
+    MapBounds simple2PointsCalibration(CalibrationPoint calibrationPointA,
                                            CalibrationPoint calibrationPointB) {
         double delta_x = calibrationPointB.getNormalizedX() - calibrationPointA.getNormalizedX();
         double delta_y = calibrationPointB.getNormalizedY() - calibrationPointA.getNormalizedY();
@@ -46,7 +46,7 @@ public class CalibrationMethods {
         double projectionX1 = calibrationPointB.getAbsoluteX() + delta_projectionX / delta_x * (1 - calibrationPointB.getNormalizedX());
         double projectionY1 = calibrationPointB.getAbsoluteY() + delta_projectionY / delta_y * (1 - calibrationPointB.getNormalizedY());
 
-        return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
+        return new MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
     }
 
     /**
@@ -55,11 +55,11 @@ public class CalibrationMethods {
      * dimension. So the two points selected to compute de X values of the bounds may be different
      * from the ones used to compute de Y bounds.
      *
-     * @return The {@link Map.MapBounds} object or null if calibration is not possible.
+     * @return The {@link MapBounds} object or null if calibration is not possible.
      */
     public static
     @Nullable
-    Map.MapBounds calibrate3Points(CalibrationPoint calibrationPointA,
+    MapBounds calibrate3Points(CalibrationPoint calibrationPointA,
                                    CalibrationPoint calibrationPointB,
                                    CalibrationPoint calibrationPointC) {
 
@@ -85,7 +85,7 @@ public class CalibrationMethods {
         double projectionY0 = points[0].getAbsoluteY() - delta_projectionY / delta_y * points[0].getNormalizedY();
         double projectionY1 = points[2].getAbsoluteY() + delta_projectionY / delta_y * (1 - points[2].getNormalizedY());
 
-        return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
+        return new MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
     }
 
     /**
@@ -93,11 +93,11 @@ public class CalibrationMethods {
      * It takes into account all provided points, but the more two points are distant, the more they
      * contribute to the value of the bounds.
      *
-     * @return The {@link Map.MapBounds} object or null if calibration is not possible.
+     * @return The {@link MapBounds} object or null if calibration is not possible.
      */
     public static
     @Nullable
-    Map.MapBounds calibrate4Points(CalibrationPoint calibrationPointA,
+    MapBounds calibrate4Points(CalibrationPoint calibrationPointA,
                                    CalibrationPoint calibrationPointB,
                                    CalibrationPoint calibrationPointC,
                                    CalibrationPoint calibrationPointD) {
@@ -139,7 +139,7 @@ public class CalibrationMethods {
         double projectionY0 = points[0].getAbsoluteY() - alpha_y * points[0].getNormalizedY();
         double projectionY1 = points[2].getAbsoluteY() + alpha_y * (1 - points[2].getNormalizedY());
 
-        return new Map.MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
+        return new MapBounds(projectionX0, projectionY0, projectionX1, projectionY1);
     }
 
     /**

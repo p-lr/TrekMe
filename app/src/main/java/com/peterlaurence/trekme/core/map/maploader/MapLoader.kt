@@ -148,7 +148,7 @@ class MapLoader(
         /* Update the map on the main thread */
         withContext(mainDispatcher) {
             if (markerGson != null) {
-                map.markers = markerGson.markers.map { it.toDomain() }
+                map.setMarkers(markerGson.markers.map { it.toDomain() })
                 true
             } else false
         }
@@ -163,7 +163,7 @@ class MapLoader(
         mapRouteImportTask(map, gson, MAP_ROUTE_FILENAME)
     }?.let { routeList ->
         withContext(mainDispatcher) {
-            map.routes = routeList
+            map.setRoutes(routeList)
         }
     }
 
@@ -177,7 +177,7 @@ class MapLoader(
             mapLandmarkImportTask(map, gson, MAP_LANDMARK_FILENAME)
         }?.let { landmarkGson ->
             withContext(mainDispatcher) {
-                map.landmarks = landmarkGson.landmarks
+                map.setLandmarks(landmarkGson.landmarks)
             }
         }
 
@@ -323,8 +323,7 @@ class MapLoader(
      */
     suspend fun deleteMarker(map: Map, marker: Marker) {
         withContext(mainDispatcher) {
-            val markerList = map.markers
-            markerList?.remove(marker)
+            map.deleteMarker(marker)
         }
 
         saveMarkers(map)
@@ -354,7 +353,7 @@ class MapLoader(
                     it.id == null || it.id !in ids
                 }
                 if (filtered.size != oldCnt) {
-                    map.routes = filtered
+                    map.setRoutes(filtered)
                     saveRoutes(map)
                 }
             }
@@ -370,10 +369,11 @@ class MapLoader(
      */
     suspend fun renameMap(map: Map, newName: String) = withContext(mainDispatcher) {
         map.name = newName
-        val newDirectory = File(map.directory.parentFile, newName)
+        val directory = map.directory ?: return@withContext
+        val newDirectory = File(directory.parentFile, newName)
         val renameOk = withContext(ioDispatcher) {
             runCatching {
-                map.directory.renameTo(newDirectory)
+                directory.renameTo(newDirectory)
             }.getOrNull() ?: false
         }
         if (renameOk) {
