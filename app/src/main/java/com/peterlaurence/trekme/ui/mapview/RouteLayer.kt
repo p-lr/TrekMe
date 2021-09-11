@@ -276,23 +276,23 @@ class RouteLayer(
      * by the view that will represent it.
      */
     private fun Route.toPath(mapView: MapView): FloatArray? {
-        val markerList = routeMarkers
-        /* If there is only one marker, the path has no sense */
-        if (markerList.size < 2) return null
-
-        val size = markerList.size * 4 - 4
-        val lines = FloatArray(size)
-
-        var i = 0
-        var init = true
-
-        val coordinateTranslater = mapView.coordinateTranslater ?: return null
-
         /* While we iterate the list of markers, some new markers may be concurrently added to the
-         * list. This is the case for the liveroute, inside the associated view-model.
-         * By holding the monitor of the list of markers, we ensure that no new markers are added
+         * route. This is the case for the liveroute, inside the associated view-model.
+         * By holding the monitor of the route, we ensure that no new markers are added
          * meanwhile (as adding new markers requires the acquisition of the same lock). */
-        synchronized(this) {
+        return synchronized(this) {
+            val markerList = routeMarkers
+            /* If there is only one marker, the path has no sense */
+            if (markerList.size < 2) return null
+
+            val size = markerList.size * 4 - 4
+            val lines = FloatArray(size)
+
+            var i = 0
+            var init = true
+
+            val coordinateTranslater = mapView.coordinateTranslater ?: return null
+
             for (marker in markerList) {
                 val relativeX = marker.getRelativeX(map)
                 val relativeY = marker.getRelativeY(map)
@@ -310,9 +310,9 @@ class RouteLayer(
                     i += 4
                 }
             }
-        }
 
-        return lines
+            lines
+        }
     }
 }
 

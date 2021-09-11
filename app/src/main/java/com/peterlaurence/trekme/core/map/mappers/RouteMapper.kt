@@ -22,7 +22,7 @@ fun RouteGson.Route.toDomain(): Route {
         id,
         name,
         visible,
-        routeMarkers = routeMarkers.mapTo(domainList) { it.toDomain() },
+        markers = routeMarkers.mapTo(domainList) { it.toDomain() },
         color = color,
         elevationTrusted = elevationTrusted
     )

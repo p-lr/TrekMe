@@ -161,7 +161,7 @@ class TrackImporter {
         return Route(
             track.id, /* The route id is the track id */
             name,
-            routeMarkers = routePoints,
+            markers = routePoints,
             visible = true, /* The route should be visible by default */
             elevationTrusted = elevationTrusted)
     }

@@ -76,7 +76,7 @@ private class RouteBuilder(val map: Map) {
 
     fun add(point: TrackPoint) {
         val marker = point.toMarker(map)
-        liveRoute.routeMarkers.add(marker)
+        liveRoute.addMarker(marker)
     }
 }
 
