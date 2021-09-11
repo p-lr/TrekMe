@@ -7,7 +7,7 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat.getDrawable
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.entity.Landmark
+import com.peterlaurence.trekme.core.map.domain.Landmark
 
 /**
  * This [android.widget.ImageView] has two states :

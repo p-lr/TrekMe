@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.Landmark
 import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.core.map.entity.*
 import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
@@ -176,7 +177,7 @@ class MapLoader(
             mapLandmarkImportTask(map, gson, MAP_LANDMARK_FILENAME)
         }?.let { landmarkGson ->
             withContext(mainDispatcher) {
-                map.landmarkGson = landmarkGson
+                map.landmarks = landmarkGson.landmarks
             }
         }
 
@@ -271,7 +272,7 @@ class MapLoader(
      * @param map the [Map] to save.
      */
     suspend fun saveLandmarks(map: Map) = withContext(mainDispatcher) {
-        val jsonString = gson.toJson(map.landmarkGson)
+        val jsonString = gson.toJson(LandmarkGson(map.landmarks ?: listOf()))
 
         withContext(ioDispatcher) {
             val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
@@ -334,7 +335,7 @@ class MapLoader(
      */
     suspend fun deleteLandmark(map: Map, landmark: Landmark) {
         withContext(mainDispatcher) {
-            map.landmarkGson.landmarks.remove(landmark)
+            map.deleteLandmark(landmark)
         }
 
         saveLandmarks(map)

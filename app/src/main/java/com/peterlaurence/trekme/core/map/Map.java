@@ -11,13 +11,12 @@ import androidx.annotation.Nullable;
 import com.peterlaurence.trekme.core.map.domain.Calibration;
 import com.peterlaurence.trekme.core.map.domain.CalibrationMethod;
 import com.peterlaurence.trekme.core.map.domain.CalibrationPoint;
+import com.peterlaurence.trekme.core.map.domain.Landmark;
 import com.peterlaurence.trekme.core.map.domain.Level;
 import com.peterlaurence.trekme.core.map.domain.MapConfig;
 import com.peterlaurence.trekme.core.map.domain.MapOrigin;
 import com.peterlaurence.trekme.core.map.domain.Marker;
 import com.peterlaurence.trekme.core.map.domain.Route;
-import com.peterlaurence.trekme.core.map.entity.Landmark;
-import com.peterlaurence.trekme.core.map.entity.LandmarkGson;
 import com.peterlaurence.trekme.core.map.maploader.MapLoader;
 import com.peterlaurence.trekme.core.projection.Projection;
 import com.peterlaurence.trekme.util.ZipProgressionListener;
@@ -60,9 +59,7 @@ public class Map {
     /* The Java Object corresponding to the json configuration file */
     private final MapConfig mMapConfig;
 
-    /* The Java Object corresponding to the json file of landmarks */
-    private LandmarkGson mLandmarkGson;
-
+    private List<Landmark> mLandmarks;
     private List<Marker> mMarkerList;
     private List<Route> mRouteList;
 
@@ -78,7 +75,6 @@ public class Map {
      */
     public Map(MapConfig mapConfig, File jsonFile, File thumbnail) {
         mMapConfig = mapConfig;
-        mLandmarkGson = new LandmarkGson(new ArrayList<>());
         mConfigFile = jsonFile;
         mImage = getBitmapFromFile(thumbnail);
     }
@@ -243,6 +239,55 @@ public class Map {
     }
 
     /**
+     * Markers are lazily loaded.
+     */
+    @Nullable
+    public List<Marker> getMarkers() {
+        return mMarkerList;
+    }
+
+    public void setMarkers(List<Marker> markers) {
+        mMarkerList = markers;
+    }
+
+    public void addMarker(Marker marker) {
+        mMarkerList.add(marker);
+    }
+
+    @Nullable
+    public final List<Landmark> getLandmarks() {
+        return mLandmarks;
+    }
+
+    public void setLandmarks(List<Landmark> landmarks) {
+        mLandmarks = landmarks;
+    }
+
+    public void addLandmark(Landmark landmark) {
+        mLandmarks.add(landmark);
+    }
+
+    public void deleteLandmark(Landmark landmark) {
+        mLandmarks.remove(landmark);
+    }
+
+    public boolean areLandmarksDefined() {
+        return mLandmarks != null && mLandmarks.size() > 0;
+    }
+
+    /**
+     * Routes are lazily loaded.
+     */
+    @Nullable
+    public List<Route> getRoutes() {
+        return mRouteList;
+    }
+
+    public void setRoutes(List<Route> routes) {
+        mRouteList = routes;
+    }
+
+    /**
      * Add a new route to the map.
      */
     public void addRoute(Route route) {
@@ -259,20 +304,6 @@ public class Map {
         } else {
             mRouteList.add(to);
         }
-    }
-
-    /**
-     * Add a new marker.
-     */
-    public void addMarker(Marker marker) {
-        mMarkerList.add(marker);
-    }
-
-    /**
-     * Add a new landmark
-     */
-    public void addLandmark(Landmark landmark) {
-        mLandmarkGson.getLandmarks().add(landmark);
     }
 
     public Bitmap getImage() {
@@ -392,42 +423,6 @@ public class Map {
     public final MapConfig getConfigSnapshot() {
         // TODO: make a defensive copy
         return mMapConfig;
-    }
-
-    public void setMarkers(List<Marker> markers) {
-        mMarkerList = markers;
-    }
-
-    public final LandmarkGson getLandmarkGson() {
-        return mLandmarkGson;
-    }
-
-    public void setLandmarkGson(LandmarkGson landmarkGson) {
-        mLandmarkGson = landmarkGson;
-    }
-
-    public boolean areLandmarksDefined() {
-        return mLandmarkGson != null && mLandmarkGson.getLandmarks().size() > 0;
-    }
-
-    /**
-     * Markers are lazily loaded.
-     */
-    @Nullable
-    public List<Marker> getMarkers() {
-        return mMarkerList;
-    }
-
-    /**
-     * Routes are lazily loaded.
-     */
-    @Nullable
-    public List<Route> getRoutes() {
-        return mRouteList;
-    }
-
-    public void setRoutes(List<Route> routes) {
-        mRouteList = routes;
     }
 
     public final File getConfigFile() {
