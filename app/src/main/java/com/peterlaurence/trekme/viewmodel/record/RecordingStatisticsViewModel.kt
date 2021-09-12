@@ -215,6 +215,15 @@ class RecordingStatisticsViewModel @Inject constructor(
         /* Remove corresponding tracks on existing maps */
         launch {
             val trkIds = recordingDataList.mapNotNull { it.trkId }
+
+            /* Remove in-memory routes now */
+            mapLoader.maps.forEach { map ->
+                map.routes?.filter { it.compositeId in trkIds }?.forEach { route ->
+                    map.deleteRoute(route)
+                }
+            }
+
+            /* Remove them on disk */
             mapLoader.maps.forEach { map ->
                 routeRepository.deleteRoutes(map, trkIds)
             }
