@@ -27,7 +27,5 @@ public class MercatorProjectionTest {
         /* Test that erroneous values return null */
         double[] projValuesErr = mProjection.doProjection(261834.84, 6250049.02);
         assertNull(projValuesErr);
-        double[] wgs84ValuesErr = mProjection.undoProjection(2.352102, 48.853554);
-        assertNull(wgs84ValuesErr);
     }
 }

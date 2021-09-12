@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.map
 
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.repositories.map.RouteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -19,6 +20,7 @@ import kotlin.test.assertNotNull
 @RunWith(RobolectricTestRunner::class)
 class MapParserTest {
     private val mapLoader = MapLoader(Dispatchers.Unconfined, Dispatchers.Default, Dispatchers.IO)
+    private val routeRepository = RouteRepository(Dispatchers.IO, Dispatchers.Unconfined)
 
     @Test
     fun mapTracksParse() = runBlocking {
@@ -31,7 +33,7 @@ class MapParserTest {
             assertEquals(1, mapList.size.toLong())
             val map = mapList[0]
 
-            mapLoader.importRoutesForMap(map)
+            routeRepository.importRoutes(map)
             assertEquals(2, map.routes!!.size.toLong())
 
             val route = map.routes!![0]

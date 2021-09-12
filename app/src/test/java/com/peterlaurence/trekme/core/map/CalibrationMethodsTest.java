@@ -25,7 +25,7 @@ public class CalibrationMethodsTest {
 
         CalibrationPoint pC = new CalibrationPoint(0.2, 0.9, 10, 90);
 
-        Map.MapBounds bounds = CalibrationMethods.calibrate3Points(pA, pB, pC);
+        MapBounds bounds = CalibrationMethods.calibrate3Points(pA, pB, pC);
         assertNotNull(bounds);
         assertTrue(bounds.compareTo(0, 0, 100, 100));
 
