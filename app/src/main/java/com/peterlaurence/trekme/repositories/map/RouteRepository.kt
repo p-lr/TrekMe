@@ -34,6 +34,7 @@ class RouteRepository @Inject constructor(
     @IoDispatcher val ioDispatcher: CoroutineDispatcher,
     @MainDispatcher val mainDispatcher: CoroutineDispatcher
 ) {
+    private val format = Json { prettyPrint = true }
     private val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
 
     suspend fun importRoutes(map: Map) = withContext(ioDispatcher) {
@@ -120,14 +121,14 @@ class RouteRepository @Inject constructor(
             val infoFile = File(dir, MAP_ROUTE_INFO_FILENAME)
             val routeInfoKtx = runCatching<RouteInfoKtx> {
                 getStringFromFile(infoFile).let {
-                    Json.decodeFromString(it)
+                    format.decodeFromString(it)
                 }
             }.getOrNull() ?: return@mapNotNull null
 
             val markersFile = File(dir, MAP_ROUTE_MARKERS_FILENAME)
             val routeMarkerKtx = runCatching<RouteKtx> {
                 getStringFromFile(markersFile).let {
-                    Json.decodeFromString(it)
+                    format.decodeFromString(it)
                 }
             }.getOrNull() ?: return@mapNotNull null
 
@@ -199,7 +200,7 @@ class RouteRepository @Inject constructor(
                 Log.e(TAG, "Error while creating $MAP_ROUTE_INFO_FILENAME")
             }
         }
-        val routeInfoKtxJson = Json.encodeToString(routeInfoKtx)
+        val routeInfoKtxJson = format.encodeToString(routeInfoKtx)
         writeToFile(routeInfoKtxJson, routeInfoFile)
     }
 
@@ -215,7 +216,7 @@ class RouteRepository @Inject constructor(
                 Log.e(TAG, "Error while creating $MAP_ROUTE_MARKERS_FILENAME")
             }
         }
-        val routeKtsJson = Json.encodeToString(routeKtx)
+        val routeKtsJson = format.encodeToString(routeKtx)
         writeToFile(routeKtsJson, routeMarkersFile)
     }
 
