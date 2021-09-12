@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.repositories.location.LocationSourceImpl
 import com.peterlaurence.trekme.repositories.location.producers.GoogleLocationProducer
 import com.peterlaurence.trekme.repositories.location.producers.NmeaOverBluetoothProducer
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.repositories.map.RouteRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
@@ -93,7 +94,13 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindTrackImporter(): TrackImporter = TrackImporter()
+    fun bindRouteRepository(): RouteRepository = RouteRepository(
+        Dispatchers.IO, Dispatchers.Main
+    )
+
+    @Singleton
+    @Provides
+    fun bindTrackImporter(repo: RouteRepository): TrackImporter = TrackImporter(repo)
 
     @Singleton
     @Provides

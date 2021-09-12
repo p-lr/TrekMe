@@ -415,7 +415,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun openDrawer() {
-        println("xxx open")
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         if (drawer != null && !drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.openDrawer(GravityCompat.START)

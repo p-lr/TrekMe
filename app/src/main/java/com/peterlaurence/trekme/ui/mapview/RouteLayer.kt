@@ -15,11 +15,11 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.getRelativeX
 import com.peterlaurence.trekme.core.map.getRelativeY
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.map.route.Barycenter
 import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
 import com.peterlaurence.trekme.core.track.DistanceCalculatorImpl
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
+import com.peterlaurence.trekme.repositories.map.RouteRepository
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener
@@ -54,7 +54,7 @@ import kotlin.math.pow
 class RouteLayer(
         private val coroutineScope: CoroutineScope,
         private val state: RouteLayerState? = null,
-        private val mapLoader: MapLoader
+        private val routeRepository: RouteRepository,
 ) : TracksManageFragment.TrackChangeListener, CoroutineScope by coroutineScope {
     private var isInitialized = false
     private lateinit var mapView: MapView
@@ -198,7 +198,7 @@ class RouteLayer(
 
     private fun CoroutineScope.acquireThenDrawRoutes(map: Map) = launch {
         /* Fetch and set routes to the map */
-        mapLoader.importRoutesForMap(map)
+        routeRepository.importRoutes(map)
 
         /* Then draw them */
         drawStaticRoutes()

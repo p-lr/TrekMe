@@ -150,9 +150,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
         /* Since new routes may have added, update the empty panel visibility */
         updateEmptyRoutePanelVisibility()
-
-        /* Save */
-        viewModel.saveChanges()
     }
 
     private fun initViews() {
@@ -212,7 +209,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     }
 
     override fun onVisibilityToggle(route: Route) {
-        viewModel.saveChanges()
+        viewModel.saveChanges(route)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

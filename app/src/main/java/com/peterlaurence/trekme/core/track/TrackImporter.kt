@@ -7,6 +7,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.repositories.map.RouteRepository
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.model.*
 import com.peterlaurence.trekme.util.gpx.parseGpxSafely
@@ -17,6 +18,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import javax.inject.Inject
 
 /**
  * Utility toolbox to :
@@ -27,7 +29,9 @@ import java.io.InputStream
  *
  * @author P.Laurence on 03/03/17 -- converted to Kotlin on 16/09/18
  */
-class TrackImporter {
+class TrackImporter @Inject constructor(
+    val routeRepository: RouteRepository
+) {
     /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
@@ -114,20 +118,18 @@ class TrackImporter {
         }
     }
 
-    private suspend fun setRoutesAndMarkersToMap(map: Map, routes: List<Route>,
+    private suspend fun setRoutesAndMarkersToMap(map: Map, newRoutes: List<Route>,
                                                  wayPoints: List<Marker>,
                                                  mapLoader: MapLoader): GpxImportResult {
         return try {
-            /* At that point, routes for that map might not have been imported.
-             * Routes are lazily imported when viewing a map. So (re?)import routes now. */
-            mapLoader.importRoutesForMap(map)
-
-            /* Now, add the new routes and markers, and save the modifications */
-            val newRouteCount = TrackTools.updateRouteList(map, routes)
+            /* Add the new routes and markers, and save the modifications */
+            val newRouteCount = TrackTools.updateRouteList(map, newRoutes)
             val newMarkersCount = TrackTools.updateMarkerList(map, wayPoints)
-            mapLoader.saveRoutes(map)
+            newRoutes.forEach {
+                routeRepository.saveNewRoute(map, it)
+            }
             mapLoader.saveMarkers(map)
-            GpxImportResult.GpxImportOk(map, routes, wayPoints, newRouteCount, newMarkersCount)
+            GpxImportResult.GpxImportOk(map, newRoutes, wayPoints, newRouteCount, newMarkersCount)
         } catch (e: Exception) {
             GpxImportResult.GpxImportError
         }

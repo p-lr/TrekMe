@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
+import com.peterlaurence.trekme.repositories.map.RouteRepository
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
 import com.peterlaurence.trekme.ui.mapview.components.PositionOrientationMarker
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
@@ -54,6 +55,9 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     @Inject
     lateinit var mapLoader: MapLoader
+
+    @Inject
+    lateinit var routeRepository: RouteRepository
 
     @Inject
     lateinit var locationSource: LocationSource
@@ -165,7 +169,7 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
         /* Create the route layer, restoring the previous state (if any) */
         val routeLayerState = mergedState?.getParcelable<RouteLayerState>(ROUTE_LAYER_STATE)
-        routeLayer = RouteLayer(lifecycleScope, routeLayerState, mapLoader)
+        routeLayer = RouteLayer(lifecycleScope, routeLayerState, routeRepository)
 
         /* Create the distance layer */
         distanceLayer = DistanceLayer(context, distanceListener)

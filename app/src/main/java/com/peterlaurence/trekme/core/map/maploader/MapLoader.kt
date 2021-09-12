@@ -12,7 +12,6 @@ import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapLandmarkImportTask
-import com.peterlaurence.trekme.core.map.maploader.tasks.mapRouteImportTask
 import com.peterlaurence.trekme.core.map.mappers.toDomain
 import com.peterlaurence.trekme.core.map.mappers.toEntity
 import com.peterlaurence.trekme.core.projection.MercatorProjection
@@ -23,7 +22,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -39,7 +37,6 @@ import kotlin.coroutines.resume
  * * Create instances of [Map]
  * * Deletion a [Map]
  * * Import the markers of a [Map]
- * * [mapRouteImportTask] -> Import the list of routes for a given [Map]
  * * [MapArchiveSearchTask] -> Get the list of [MapArchive]
  *
  * @author P.Laurence -- converted to Kotlin on 16/02/2019
@@ -151,19 +148,6 @@ class MapLoader(
                 map.setMarkers(markerGson.markers.map { it.toDomain() })
                 true
             } else false
-        }
-    }
-
-    /**
-     * Launch a task which reads the routes.json file.
-     * The [mapRouteImportTask] is called off UI thread to get a nullable instance of [RouteGson].
-     * Right after, if the result is not null, we update the [Map] on the main thread.
-     */
-    suspend fun importRoutesForMap(map: Map) = withContext(ioDispatcher) {
-        mapRouteImportTask(map, gson, MAP_ROUTE_FILENAME)
-    }?.let { routeList ->
-        withContext(mainDispatcher) {
-            map.setRoutes(routeList)
         }
     }
 
@@ -283,24 +267,6 @@ class MapLoader(
     }
 
     /**
-     * Save the [RouteGson] of a [Map], so the changes persist upon application restart.
-     * Here, it writes to the corresponding json file.
-     *
-     * @param map The [Map] to save.
-     */
-    suspend fun saveRoutes(map: Map) = withContext(mainDispatcher) {
-        val entities = map.routes?.map { it.toEntity() } ?: listOf()
-        val jsonString = gson.toJson(RouteGson().apply { routes = entities })
-
-        withContext(ioDispatcher) {
-            val routeFile = File(map.directory, MAP_ROUTE_FILENAME)
-            writeToFile(jsonString, routeFile) {
-                Log.e(TAG, "Error while saving the routes")
-            }
-        }
-    }
-
-    /**
      * Delete a [Map]. Recursively deletes its directory.
      *
      * @param map The [Map] to delete.
@@ -338,26 +304,6 @@ class MapLoader(
         }
 
         saveLandmarks(map)
-    }
-
-    /**
-     * Delete a list of [RouteGson.Route], given their ids. If a route doesn't have an id (typically
-     * because it's a legacy route), it isn't deleted.
-     */
-    suspend fun deleteRoutes(ids: List<String>) = withContext(mainDispatcher) {
-        for (map in mapList) {
-            launch {
-                val routes = map.routes ?: return@launch
-                val oldCnt = routes.size
-                val filtered = routes.filter {
-                    it.id == null || it.id !in ids
-                }
-                if (filtered.size != oldCnt) {
-                    map.setRoutes(filtered)
-                    saveRoutes(map)
-                }
-            }
-        }
     }
 
     /**

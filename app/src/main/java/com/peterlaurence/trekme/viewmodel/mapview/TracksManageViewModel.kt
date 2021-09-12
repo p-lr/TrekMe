@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.repositories.map.RouteRepository
 import com.peterlaurence.trekme.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ import javax.inject.Inject
 class TracksManageViewModel @Inject constructor(
         private val mapRepository: MapRepository,
         private val gpxRepository: GpxRepository,
+        private val routeRepository: RouteRepository,
         private val trackImporter: TrackImporter,
         private val app: Application,
         private val appEventBus: AppEventBus,
@@ -48,9 +50,11 @@ class TracksManageViewModel @Inject constructor(
     fun removeRoute(route: Route) {
         map?.also { map ->
             map.deleteRoute(route)
+            viewModelScope.launch {
+                routeRepository.deleteRoute(map, route)
+            }
             map.routes?.let { routes ->
                 _tracks.value = routes
-                saveChanges()
                 /* Notify other views */
                 mapViewEventBus.postTrackVisibilityChange()
             }
@@ -64,7 +68,7 @@ class TracksManageViewModel @Inject constructor(
         map?.let {
             trackImporter.applyGpxUriToMap(uri, app.applicationContext.contentResolver, it, mapLoader).let { result ->
                 if (result is TrackImporter.GpxImportResult.GpxImportOk) {
-                    _tracks.postValue((_tracks.value ?: listOf()) + result.routes)
+                    _tracks.postValue(map?.routes ?: listOf())
                 }
                 /* Notify the rest of the app */
                 appEventBus.postGpxImportResult(result)
@@ -79,7 +83,7 @@ class TracksManageViewModel @Inject constructor(
 
     fun renameRoute(route: Route, newName: String) {
         route.name = newName
-        saveChanges()
+        saveChanges(route)
 
         /* Notify the view */
         mapViewEventBus.postTrackNameChange()
@@ -89,14 +93,14 @@ class TracksManageViewModel @Inject constructor(
         val route = map?.routes?.firstOrNull { it.compositeId == routeId }
         if (route != null) {
             route.color = color
-            saveChanges()
+            saveChanges(route)
         }
     }
 
-    fun saveChanges() {
+    fun saveChanges(route: Route) {
         viewModelScope.launch {
             map?.also {
-                mapLoader.saveRoutes(it)
+                routeRepository.saveRouteInfo(it, route)
             }
         }
     }

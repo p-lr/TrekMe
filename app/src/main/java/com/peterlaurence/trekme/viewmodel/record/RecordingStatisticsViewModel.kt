@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.*
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.repositories.map.RouteRepository
 import com.peterlaurence.trekme.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
@@ -55,6 +56,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RecordingStatisticsViewModel @Inject constructor(
         private val mapLoader: MapLoader,
+        private val routeRepository: RouteRepository,
         private val gpxRecordEvents: GpxRecordEvents,
         private val gpxRepository: GpxRepository,
         private val appEventBus: AppEventBus,
@@ -213,7 +215,9 @@ class RecordingStatisticsViewModel @Inject constructor(
         /* Remove corresponding tracks on existing maps */
         launch {
             val trkIds = recordingDataList.mapNotNull { it.trkId }
-            mapLoader.deleteRoutes(trkIds)
+            mapLoader.maps.forEach { map ->
+                routeRepository.deleteRoutes(map, trkIds)
+            }
         }
     }
 
