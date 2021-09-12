@@ -47,6 +47,9 @@ class RouteRepository @Inject constructor(
                 saveNewRoute(map, route)
             }
 
+            /* Delete the legacy format */
+            legacyRouteFile.safeDelete()
+
             routes
         } else {
             val dir =
@@ -193,7 +196,7 @@ class RouteRepository @Inject constructor(
 
         val routeInfoFile = File(dir, MAP_ROUTE_INFO_FILENAME).also {
             if (!it.createNewFile()) {
-                // TODO: error creating json file
+                Log.e(TAG, "Error while creating $MAP_ROUTE_INFO_FILENAME")
             }
         }
         val routeInfoKtxJson = Json.encodeToString(routeInfoKtx)
@@ -209,11 +212,15 @@ class RouteRepository @Inject constructor(
 
         val routeMarkersFile = File(dir, MAP_ROUTE_MARKERS_FILENAME).also {
             if (!it.createNewFile()) {
-                // TODO: error creating json file
+                Log.e(TAG, "Error while creating $MAP_ROUTE_MARKERS_FILENAME")
             }
         }
         val routeKtsJson = Json.encodeToString(routeKtx)
         writeToFile(routeKtsJson, routeMarkersFile)
+    }
+
+    private fun File.safeDelete() = runCatching {
+        delete()
     }
 }
 

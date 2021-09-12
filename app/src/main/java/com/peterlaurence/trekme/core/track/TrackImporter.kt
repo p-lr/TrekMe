@@ -36,7 +36,7 @@ class TrackImporter @Inject constructor(
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
     suspend fun applyGpxUriToMap(
-            uri: Uri, contentResolver: ContentResolver, map: Map, mapLoader: MapLoader
+        uri: Uri, contentResolver: ContentResolver, map: Map, mapLoader: MapLoader
     ): GpxImportResult {
         return runCatching {
             val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
@@ -44,7 +44,7 @@ class TrackImporter @Inject constructor(
                 val fileDescriptor = parcelFileDescriptor.fileDescriptor
                 FileInputStream(fileDescriptor).use { fileInputStream ->
                     val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-                            ?: "A track"
+                        ?: "A track"
                     applyGpxInputStreamToMap(fileInputStream, map, fileName, mapLoader)
                 }
             }
@@ -74,8 +74,10 @@ class TrackImporter @Inject constructor(
     }
 
     sealed class GpxImportResult {
-        data class GpxImportOk(val map: Map, val routes: List<Route>, val wayPoints: List<Marker>,
-                               val newRouteCount: Int, val newMarkersCount: Int) : GpxImportResult()
+        data class GpxImportOk(
+            val map: Map, val routes: List<Route>, val wayPoints: List<Marker>,
+            val newRouteCount: Int, val newMarkersCount: Int
+        ) : GpxImportResult()
 
         object GpxImportError : GpxImportResult()
     }
@@ -83,16 +85,21 @@ class TrackImporter @Inject constructor(
     /**
      * Parses the GPX content provided as [InputStream], off UI thread.
      */
-    private suspend fun readGpxInputStream(input: InputStream, map: Map, defaultName: String) = withContext(Dispatchers.Default) {
-        parseGpxSafely(input)?.let { gpx ->
-            convertGpx(gpx, map, defaultName)
+    private suspend fun readGpxInputStream(input: InputStream, map: Map, defaultName: String) =
+        withContext(Dispatchers.Default) {
+            parseGpxSafely(input)?.let { gpx ->
+                convertGpx(gpx, map, defaultName)
+            }
         }
-    }
 
     /**
      * Converts a [Gpx] instance into view-specific types.
      */
-    private suspend fun convertGpx(gpx: Gpx, map: Map, defaultName: String = "track"): Pair<List<Route>, List<Marker>> = withContext(Dispatchers.Default) {
+    private suspend fun convertGpx(
+        gpx: Gpx,
+        map: Map,
+        defaultName: String = "track"
+    ): Pair<List<Route>, List<Marker>> = withContext(Dispatchers.Default) {
         val routes = gpx.tracks.mapIndexed { index, track ->
             gpxTrackToRoute(map, track, gpx.hasTrustedElevations(), index, defaultName)
         }
@@ -106,9 +113,11 @@ class TrackImporter @Inject constructor(
      * Parses a [Gpx] from the given [InputStream]. Then, on the calling [CoroutineScope] (which
      * [CoroutineDispatcher] should be [Dispatchers.Main]), applies the result on the provided [Map].
      */
-    private suspend fun applyGpxInputStreamToMap(input: InputStream, map: Map,
-                                                 defaultName: String,
-                                                 mapLoader: MapLoader): GpxImportResult {
+    private suspend fun applyGpxInputStreamToMap(
+        input: InputStream, map: Map,
+        defaultName: String,
+        mapLoader: MapLoader
+    ): GpxImportResult {
         val pair = readGpxInputStream(input, map, defaultName)
 
         return if (pair != null) {
@@ -118,9 +127,11 @@ class TrackImporter @Inject constructor(
         }
     }
 
-    private suspend fun setRoutesAndMarkersToMap(map: Map, newRoutes: List<Route>,
-                                                 wayPoints: List<Marker>,
-                                                 mapLoader: MapLoader): GpxImportResult {
+    private suspend fun setRoutesAndMarkersToMap(
+        map: Map, newRoutes: List<Route>,
+        wayPoints: List<Marker>,
+        mapLoader: MapLoader
+    ): GpxImportResult {
         return try {
             /* Add the new routes and markers, and save the modifications */
             val newRouteCount = TrackTools.updateRouteList(map, newRoutes)
@@ -140,7 +151,13 @@ class TrackImporter @Inject constructor(
      * A single [Track] may contain several [TrackSegment].
      * This should be invoked off UI thread.
      */
-    private fun gpxTrackToRoute(map: Map, track: Track, elevationTrusted: Boolean, index: Int, defaultName: String): Route {
+    private fun gpxTrackToRoute(
+        map: Map,
+        track: Track,
+        elevationTrusted: Boolean,
+        index: Int,
+        defaultName: String
+    ): Route {
 
         /* The route name is the track name if it has one. Otherwise we take the default name */
         val name = if (track.name.isNotEmpty()) {
@@ -165,10 +182,16 @@ class TrackImporter @Inject constructor(
             name,
             markers = routePoints,
             visible = true, /* The route should be visible by default */
-            elevationTrusted = elevationTrusted)
+            elevationTrusted = elevationTrusted
+        )
     }
 
-    private fun gpxWaypointsToMarker(map: Map, wpt: TrackPoint, index: Int, defaultName: String): Marker {
+    private fun gpxWaypointsToMarker(
+        map: Map,
+        wpt: TrackPoint,
+        index: Int,
+        defaultName: String
+    ): Marker {
         return wpt.toMarker(map).apply {
             name = if (wpt.name?.isNotEmpty() == true) {
                 wpt.name ?: ""

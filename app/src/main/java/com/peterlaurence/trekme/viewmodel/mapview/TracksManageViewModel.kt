@@ -26,14 +26,14 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class TracksManageViewModel @Inject constructor(
-        private val mapRepository: MapRepository,
-        private val gpxRepository: GpxRepository,
-        private val routeRepository: RouteRepository,
-        private val trackImporter: TrackImporter,
-        private val app: Application,
-        private val appEventBus: AppEventBus,
-        private val mapViewEventBus: MapViewEventBus,
-        private val mapLoader: MapLoader
+    private val mapRepository: MapRepository,
+    private val gpxRepository: GpxRepository,
+    private val routeRepository: RouteRepository,
+    private val trackImporter: TrackImporter,
+    private val app: Application,
+    private val appEventBus: AppEventBus,
+    private val mapViewEventBus: MapViewEventBus,
+    private val mapLoader: MapLoader
 ) : ViewModel() {
     private val _tracks = MutableLiveData<List<Route>>()
     val tracks: LiveData<List<Route>> = _tracks
@@ -66,7 +66,12 @@ class TracksManageViewModel @Inject constructor(
      */
     fun applyGpxUri(uri: Uri) = viewModelScope.launch {
         map?.let {
-            trackImporter.applyGpxUriToMap(uri, app.applicationContext.contentResolver, it, mapLoader).let { result ->
+            trackImporter.applyGpxUriToMap(
+                uri,
+                app.applicationContext.contentResolver,
+                it,
+                mapLoader
+            ).let { result ->
                 if (result is TrackImporter.GpxImportResult.GpxImportOk) {
                     _tracks.postValue(map?.routes ?: listOf())
                 }
