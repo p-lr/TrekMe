@@ -25,6 +25,8 @@ import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
@@ -60,17 +62,21 @@ class RecordViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
-            eventBus.startGpxRecordingSignal.collect {
-                onRequestStartEvent()
-            }
-        }
+        eventBus.startGpxRecordingSignal.map {
+            onRequestStartEvent()
+        }.launchIn(viewModelScope)
 
-        viewModelScope.launch {
-            eventBus.stopGpxRecordingSignal.collect {
-                gpxRecordEvents.stopRecording()
-            }
-        }
+        eventBus.stopGpxRecordingSignal.map {
+            gpxRecordEvents.stopRecording()
+        }.launchIn(viewModelScope)
+
+        eventBus.pauseGpxRecordingSignal.map {
+            gpxRecordEvents.pauseRecording()
+        }.launchIn(viewModelScope)
+
+        eventBus.resumeGpxRecordingSignal.map {
+            gpxRecordEvents.resumeRecording()
+        }.launchIn(viewModelScope)
 
         viewModelScope.launch {
             eventBus.locationDisclaimerClosedSignal.collect {

@@ -29,6 +29,8 @@ import com.peterlaurence.trekme.util.gpx.writeGpx
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -96,12 +98,10 @@ class GpxRecordService : Service() {
             }
         }
 
-        /* Register a subscriber coroutine to the stop signal */
-        scope.launch {
-            eventsGpx.stopRecordingSignal.collect {
-                createGpx()
-            }
-        }
+        /* Listen to signals */
+        eventsGpx.stopRecordingSignal.map { createGpx() }.launchIn(scope)
+        eventsGpx.pauseRecordingSignal.map { pause() }.launchIn(scope)
+        eventsGpx.resumeRecordingSignal.map { resume() }.launchIn(scope)
     }
 
     private fun onLocationUpdate(location: Location) {
@@ -212,7 +212,7 @@ class GpxRecordService : Service() {
 
         startForeground(SERVICE_ID, notification)
 
-        eventsGpx.setServiceState(true)
+        eventsGpx.setServiceState(GpxRecordState.STARTED)
 
         return START_NOT_STICKY
     }
@@ -223,8 +223,20 @@ class GpxRecordService : Service() {
     private fun stop() {
         eventsGpx.resetLiveRoute()
         eventsGpx.postTrackStatistics(null)
-        eventsGpx.setServiceState(false)
+        eventsGpx.setServiceState(GpxRecordState.STOPPED)
         stopSelf()
+    }
+
+    private fun pause() {
+        eventsGpx.setServiceState(GpxRecordState.PAUSED)
+        // TODO: impl pause
+    }
+
+    private fun resume() {
+        if (eventsGpx.serviceState.value == GpxRecordState.PAUSED) {
+            eventsGpx.setServiceState(GpxRecordState.STARTED)
+            // TODO: impl resume
+        }
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -242,6 +254,9 @@ class GpxRecordService : Service() {
         private const val NOTIFICATION_ID = "peterlaurence.GpxRecordService"
         private const val SERVICE_ID = 126585
     }
+}
+enum class GpxRecordState {
+    STOPPED, STARTED, PAUSED
 }
 
 private const val THREAD_NAME = "GpxRecordServiceThread"

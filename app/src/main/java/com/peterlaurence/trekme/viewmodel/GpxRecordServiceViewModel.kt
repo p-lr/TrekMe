@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.service.GpxRecordService
+import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -21,7 +22,7 @@ class GpxRecordServiceViewModel @Inject constructor(
         private val gpxRecordEvents: GpxRecordEvents,
         private val recordEvents: RecordEventBus
 ) : ViewModel() {
-    val status: StateFlow<Boolean> = gpxRecordEvents.serviceState
+    val status: StateFlow<GpxRecordState> = gpxRecordEvents.serviceState
 
     private var isButtonEnabled = true
 
@@ -30,10 +31,25 @@ class GpxRecordServiceViewModel @Inject constructor(
 
         viewModelScope.launch {
             isButtonEnabled = false
-            if (gpxRecordEvents.serviceState.value) {
-                recordEvents.stopGpxRecording()
-            } else {
-                recordEvents.startGpxRecording()
+            when (gpxRecordEvents.serviceState.value) {
+                GpxRecordState.STOPPED -> recordEvents.startGpxRecording()
+                GpxRecordState.STARTED -> recordEvents.stopGpxRecording()
+                GpxRecordState.PAUSED -> recordEvents.stopGpxRecording()
+            }
+            delay(START_STOP_DISABLE_TIMEOUT.toLong())
+            isButtonEnabled = true
+        }
+    }
+
+    fun onPauseResumeClicked() {
+        if (!isButtonEnabled) return
+
+        viewModelScope.launch {
+            isButtonEnabled = false
+            when (gpxRecordEvents.serviceState.value) {
+                GpxRecordState.STOPPED -> { /* Nothing to do */ }
+                GpxRecordState.STARTED -> recordEvents.pauseGpxRecording()
+                GpxRecordState.PAUSED -> recordEvents.resumeGpxRecording()
             }
             delay(START_STOP_DISABLE_TIMEOUT.toLong())
             isButtonEnabled = true

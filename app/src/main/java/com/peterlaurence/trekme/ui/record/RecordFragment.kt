@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.service.GpxRecordService
+import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.ui.record.components.RecordListView
 import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
 import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
@@ -105,8 +106,8 @@ class RecordFragment : Fragment() {
          * Observe the changes in the [GpxRecordService] status, and update child views accordingly.
          */
         val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
-        gpxRecordServiceViewModel.status.map { isActive ->
-            dispatchGpxRecordServiceStatus(isActive)
+        gpxRecordServiceViewModel.status.map { gpxRecordState ->
+            dispatchGpxRecordServiceStatus(isActive = gpxRecordState != GpxRecordState.STOPPED)
         }.collectWhileResumedIn(this)
     }
 

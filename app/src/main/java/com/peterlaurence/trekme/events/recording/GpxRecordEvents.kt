@@ -1,13 +1,11 @@
 package com.peterlaurence.trekme.events.recording
 
 import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 
 class GpxRecordEvents {
     private val _liveRoute = MutableSharedFlow<LiveRouteEvent>(replay = Int.MAX_VALUE)
@@ -24,15 +22,15 @@ class GpxRecordEvents {
 
     /**********************************************************************************************/
 
-    /* Status started / stopped of the service */
-    private val _serviceState = MutableStateFlow(false)
-    val serviceState = _serviceState.asStateFlow()
+    /* Status started / stopped / paused of the service */
+    private val _serviceState = MutableStateFlow(GpxRecordState.STOPPED)
+    val serviceState : StateFlow<GpxRecordState> = _serviceState.asStateFlow()
 
     /**
      * Should only by used by the service.
      */
-    fun setServiceState(started: Boolean) {
-        _serviceState.value = started
+    fun setServiceState(state: GpxRecordState) {
+        _serviceState.value = state
     }
 
     /**********************************************************************************************/
@@ -44,6 +42,28 @@ class GpxRecordEvents {
 
     fun stopRecording() {
         _stopRecordingSignal.tryEmit(Unit)
+    }
+
+    /**********************************************************************************************/
+
+    /* The service listens to this signal. Upon reception of this signal, the service pauses the
+     * current gpx recording after notifying its state. */
+    private val _pauseRecordingSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val pauseRecordingSignal = _pauseRecordingSignal.asSharedFlow()
+
+    fun pauseRecording() {
+        _pauseRecordingSignal.tryEmit(Unit)
+    }
+
+    /**********************************************************************************************/
+
+    /* The service listens to this signal. Upon reception of this signal, the service resumes the
+     * current gpx recording after notifying its state. */
+    private val _resumeRecordingSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val resumeRecordingSignal = _resumeRecordingSignal.asSharedFlow()
+
+    fun resumeRecording() {
+        _resumeRecordingSignal.tryEmit(Unit)
     }
 
     /**********************************************************************************************/

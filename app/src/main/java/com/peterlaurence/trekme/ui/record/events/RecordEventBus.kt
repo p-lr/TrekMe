@@ -63,6 +63,20 @@ class RecordEventBus {
 
     /**********************************************************************************************/
 
+    private val _pauseGpxRecordingSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val pauseGpxRecordingSignal = _pauseGpxRecordingSignal.asSharedFlow()
+
+    fun pauseGpxRecording() = _pauseGpxRecordingSignal.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
+    private val _resumeGpxRecordingSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val resumeGpxRecordingSignal = _resumeGpxRecordingSignal.asSharedFlow()
+
+    fun resumeGpxRecording() = _resumeGpxRecordingSignal.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
     private val _disableBatteryOptSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val disableBatteryOptSignal = _disableBatteryOptSignal.asSharedFlow()
 
