@@ -6,7 +6,6 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
-import com.peterlaurence.trekme.util.CircularArray
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -24,16 +23,6 @@ class GpxRecordServiceViewModel @Inject constructor(
     private val recordEvents: RecordEventBus
 ) : ViewModel() {
     val status: StateFlow<GpxRecordState> = gpxRecordEvents.serviceState
-    val lastState: GpxRecordState
-        get() = states.lastOrNull() ?: status.value
-
-    private var states = CircularArray<GpxRecordState>(1)
-
-    init {
-        status.map {
-            states.add(it)
-        }.launchIn(viewModelScope)
-    }
 
     private var isButtonEnabled = true
 

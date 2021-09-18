@@ -35,16 +35,12 @@ private val playPathDest =
 @Composable
 private fun PlayPauseStop(
     state: GpxRecordState,
-    lastState: GpxRecordState,
     onStartStopClick: () -> Unit,
     onPauseResumeClick: () -> Unit
 ) {
     var animatedValue by remember {
         mutableStateOf(
-            if (state == GpxRecordState.PAUSED
-                || state == GpxRecordState.RESUMED
-                || lastState == GpxRecordState.STARTED
-            ) 1f else 0f
+            if (state == GpxRecordState.STOPPED) 0f else 1f
         )
     }
 
@@ -55,12 +51,7 @@ private fun PlayPauseStop(
             firstTimeComposition = false
             return@LaunchedEffect
         }
-        println("xxx last state ${lastState} | state $state")
-        if ((lastState == GpxRecordState.STOPPED && state == GpxRecordState.STARTED)
-            || (state == GpxRecordState.STOPPED && (lastState == GpxRecordState.PAUSED ||
-                    lastState == GpxRecordState.RESUMED || lastState == GpxRecordState.STARTED))
-            || (state == GpxRecordState.STOPPED && lastState == GpxRecordState.STOPPED)
-        ) {
+        if (state == GpxRecordState.STARTED || state == GpxRecordState.STOPPED) {
             animate(
                 initialValue = if (state == GpxRecordState.STARTED) 0f else 1f,
                 targetValue = if (state == GpxRecordState.STARTED) 1f else 0f,
@@ -107,12 +98,10 @@ class PlayPauseStopView @JvmOverloads constructor(
         val viewModel: GpxRecordServiceViewModel =
             viewModel(findFragment<RecordFragment>().requireActivity())
         val state by viewModel.status.collectAsState()
-        val lastState = viewModel.lastState
 
         TrekMeTheme {
             PlayPauseStop(
                 state,
-                lastState,
                 viewModel::onStartStopClicked,
                 viewModel::onPauseResumeClicked
             )
