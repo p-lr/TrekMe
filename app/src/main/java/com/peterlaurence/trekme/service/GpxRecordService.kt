@@ -234,7 +234,7 @@ class GpxRecordService : Service() {
 
     private fun resume() {
         if (eventsGpx.serviceState.value == GpxRecordState.PAUSED) {
-            eventsGpx.setServiceState(GpxRecordState.STARTED)
+            eventsGpx.setServiceState(GpxRecordState.RESUMED)
             // TODO: impl resume
         }
     }
@@ -256,7 +256,7 @@ class GpxRecordService : Service() {
     }
 }
 enum class GpxRecordState {
-    STOPPED, STARTED, PAUSED
+    STOPPED, STARTED, PAUSED, RESUMED
 }
 
 private const val THREAD_NAME = "GpxRecordServiceThread"

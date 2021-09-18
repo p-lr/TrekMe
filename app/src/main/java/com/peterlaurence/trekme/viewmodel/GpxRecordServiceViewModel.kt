@@ -6,9 +6,10 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import com.peterlaurence.trekme.util.CircularArray
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,10 +20,20 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class GpxRecordServiceViewModel @Inject constructor(
-        private val gpxRecordEvents: GpxRecordEvents,
-        private val recordEvents: RecordEventBus
+    private val gpxRecordEvents: GpxRecordEvents,
+    private val recordEvents: RecordEventBus
 ) : ViewModel() {
     val status: StateFlow<GpxRecordState> = gpxRecordEvents.serviceState
+    val lastState: GpxRecordState
+        get() = states.lastOrNull() ?: status.value
+
+    private var states = CircularArray<GpxRecordState>(1)
+
+    init {
+        status.map {
+            states.add(it)
+        }.launchIn(viewModelScope)
+    }
 
     private var isButtonEnabled = true
 
@@ -35,6 +46,7 @@ class GpxRecordServiceViewModel @Inject constructor(
                 GpxRecordState.STOPPED -> recordEvents.startGpxRecording()
                 GpxRecordState.STARTED -> recordEvents.stopGpxRecording()
                 GpxRecordState.PAUSED -> recordEvents.stopGpxRecording()
+                GpxRecordState.RESUMED -> recordEvents.stopGpxRecording()
             }
             delay(START_STOP_DISABLE_TIMEOUT.toLong())
             isButtonEnabled = true
@@ -47,9 +59,11 @@ class GpxRecordServiceViewModel @Inject constructor(
         viewModelScope.launch {
             isButtonEnabled = false
             when (gpxRecordEvents.serviceState.value) {
-                GpxRecordState.STOPPED -> { /* Nothing to do */ }
+                GpxRecordState.STOPPED -> { /* Nothing to do */
+                }
                 GpxRecordState.STARTED -> recordEvents.pauseGpxRecording()
                 GpxRecordState.PAUSED -> recordEvents.resumeGpxRecording()
+                GpxRecordState.RESUMED -> recordEvents.pauseGpxRecording()
             }
             delay(START_STOP_DISABLE_TIMEOUT.toLong())
             isButtonEnabled = true

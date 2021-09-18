@@ -2,11 +2,10 @@ package com.peterlaurence.trekme.ui.record.components.molecules
 
 import android.content.Context
 import android.util.AttributeSet
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.animate
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.addPathNodes
@@ -36,30 +35,64 @@ private val playPathDest =
 @Composable
 private fun PlayPauseStop(
     state: GpxRecordState,
+    lastState: GpxRecordState,
     onStartStopClick: () -> Unit,
     onPauseResumeClick: () -> Unit
 ) {
-    Row {
+    var animatedValue by remember {
+        mutableStateOf(
+            if (state == GpxRecordState.PAUSED
+                || state == GpxRecordState.RESUMED
+                || lastState == GpxRecordState.STARTED
+            ) 1f else 0f
+        )
+    }
+
+    var firstTimeComposition by remember { mutableStateOf(true) }
+
+    LaunchedEffect(key1 = state) {
+        if (firstTimeComposition) {
+            firstTimeComposition = false
+            return@LaunchedEffect
+        }
+        println("xxx last state ${lastState} | state $state")
+        if ((lastState == GpxRecordState.STOPPED && state == GpxRecordState.STARTED)
+            || (state == GpxRecordState.STOPPED && (lastState == GpxRecordState.PAUSED ||
+                    lastState == GpxRecordState.RESUMED || lastState == GpxRecordState.STARTED))
+            || (state == GpxRecordState.STOPPED && lastState == GpxRecordState.STOPPED)
+        ) {
+            animate(
+                initialValue = if (state == GpxRecordState.STARTED) 0f else 1f,
+                targetValue = if (state == GpxRecordState.STARTED) 1f else 0f,
+//                animationSpec = tween(5000)
+            ) { value, _ -> animatedValue = value }
+        }
+    }
+
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
         TwoStateButton(
             Modifier.size(48.dp),
             isDestState = state == GpxRecordState.STOPPED,
             PathData(playPath, Color(0xFF4CAF50)),
             PathData(stopPath, Color(0xFFF44336)),
-            onClick = onStartStopClick
+            onClick = {
+                onStartStopClick()
+            }
         )
-        when (state) {
-            GpxRecordState.STOPPED -> { /* Nothing to do */
-            }
-            GpxRecordState.STARTED, GpxRecordState.PAUSED -> {
-                TwoStateButton(
-                    Modifier.size(48.dp),
-                    isDestState = state == GpxRecordState.STARTED,
-                    PathData(pausePath, Color(0xFFFFC107)),
-                    PathData(playPathDest, Color(0xFF4CAF50)),
-                    onClick = onPauseResumeClick
-                )
-            }
-        }
+        Spacer(modifier = Modifier.width((30 * animatedValue).dp))
+
+        TwoStateButton(
+            Modifier.size(48.dp * animatedValue),
+            isDestState = state == GpxRecordState.STARTED || state == GpxRecordState.RESUMED,
+            PathData(pausePath, Color(0xFFFFC107)),
+            PathData(playPathDest, Color(0xFF4CAF50)),
+            onClick = onPauseResumeClick
+        )
     }
 }
 
@@ -74,9 +107,15 @@ class PlayPauseStopView @JvmOverloads constructor(
         val viewModel: GpxRecordServiceViewModel =
             viewModel(findFragment<RecordFragment>().requireActivity())
         val state by viewModel.status.collectAsState()
+        val lastState = viewModel.lastState
 
         TrekMeTheme {
-            PlayPauseStop(state, viewModel::onStartStopClicked, viewModel::onPauseResumeClicked)
+            PlayPauseStop(
+                state,
+                lastState,
+                viewModel::onStartStopClicked,
+                viewModel::onPauseResumeClicked
+            )
         }
     }
 }
