@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.Path
+import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.AbstractComposeView
@@ -54,6 +55,8 @@ import kotlinx.coroutines.launch
 fun StartStopButton(
         modifier: Modifier = Modifier,
         stopped: Boolean,
+        startPathData: PathData,
+        destPathData: PathData,
         pathMorphingDurationMs: Int = 500,
         disableTimeoutMs: Int = 2000,
         onClick: () -> Unit
@@ -63,13 +66,13 @@ fun StartStopButton(
             animationSpec = tween(pathMorphingDurationMs)
     )
     val backgroundColor by animateColorAsState(
-            if (stopped) Color(0xFF4CAF50) else Color(0xFFF44336),
+            if (stopped) startPathData.color else destPathData.color,
             animationSpec = tween(pathMorphingDurationMs)
     )
     val strokeColor = if (stopped) {
-        Color(0xFF4CAF50)
+        startPathData.color
     } else {
-        Color(0xFFF44336)
+        destPathData.color
     }
 
     val anim = remember {
@@ -118,6 +121,8 @@ fun StartStopButton(
         )
         StartStopShape(
                 modifier = modifier,
+                startPathData.path,
+                destPathData.path,
                 backgroundColor,
                 t = animatedProgress.value
         )
@@ -156,14 +161,12 @@ fun TimeoutShape(
 @Composable
 fun StartStopShape(
         modifier: Modifier = Modifier,
+        startPath: List<PathNode>,
+        destPath: List<PathNode>,
         backgroundColor: Color,
         t: Float
 ) {
-    val playPath = remember { addPathNodes("M 19 33 L 19 15 L 33 24 L 33 24 Z") }
-    val stopPath = remember { addPathNodes("M 17 31 L 17 17 L 31 17 L 31 31 Z") }
-
-    val pathNodes = lerp(playPath, stopPath, t)
-
+    val pathNodes = lerp(startPath, destPath, t)
     val degree = t * 90
 
     Image(
@@ -183,11 +186,21 @@ fun StartStopShape(
     )
 }
 
+/* For play <-> stop */
+private val playPath = addPathNodes("M 19 33 L 19 15 L 33 24 L 33 24 Z")
+private val stopPath = addPathNodes("M 17 31 L 17 17 L 31 17 L 31 31 Z")
+
+/* For pause <-> play */
+private val pausePath = addPathNodes("M 17 31 L 17 17 L 21.66 17 L 21.66 31 M 26.33 31 L 26.33 17 L 31 17 L 31 31 Z")
+private val playPathDest = addPathNodes("M 15 29 L 24 15 L 24 15 L 24 29 M 24 29 L 24 15 L 24 15 L 33 29 Z")
+
+data class PathData(val path: List<PathNode>, val color: Color)
+
 @Preview(showBackground = true)
 @Composable
 fun Preview0() {
     TrekMeTheme {
-        StartStopShape(Modifier, Color.Yellow, 0f)
+        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 0f)
     }
 }
 
@@ -195,7 +208,7 @@ fun Preview0() {
 @Composable
 fun Preview1() {
     TrekMeTheme {
-        StartStopShape(Modifier, Color.Yellow, 0.25f)
+        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 0.25f)
     }
 }
 
@@ -204,7 +217,7 @@ fun Preview1() {
 @Composable
 fun Preview2() {
     TrekMeTheme {
-        StartStopShape(Modifier, Color.Yellow, 0.5f)
+        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 0.5f)
     }
 }
 
@@ -212,7 +225,7 @@ fun Preview2() {
 @Composable
 fun Preview3() {
     TrekMeTheme {
-        StartStopShape(Modifier, Color.Yellow, 0.75f)
+        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 0.75f)
     }
 }
 
@@ -220,7 +233,7 @@ fun Preview3() {
 @Composable
 fun Preview4() {
     TrekMeTheme {
-        StartStopShape(Modifier, Color.Yellow, 1f)
+        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 1f)
     }
 }
 
@@ -236,7 +249,12 @@ class StartStopButtonView @JvmOverloads constructor(
         val started by viewModel.status.collectAsState()
 
         TrekMeTheme {
-            StartStopButton(Modifier.size(48.dp), stopped = !started, onClick = viewModel::onStartStopClicked)
+            StartStopButton(
+                Modifier.size(48.dp),
+                stopped = !started,
+                PathData(playPath, Color(0xFF4CAF50)),
+                PathData(stopPath, Color(0xFFF44336)),
+                onClick = viewModel::onStartStopClicked)
         }
     }
 }
