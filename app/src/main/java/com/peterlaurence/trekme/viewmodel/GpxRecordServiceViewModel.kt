@@ -43,10 +43,7 @@ class GpxRecordServiceViewModel @Inject constructor(
     }
 
     fun onPauseResumeClicked() {
-        if (!isButtonEnabled) return
-
         viewModelScope.launch {
-            isButtonEnabled = false
             when (gpxRecordEvents.serviceState.value) {
                 GpxRecordState.STOPPED -> { /* Nothing to do */
                 }
@@ -54,8 +51,6 @@ class GpxRecordServiceViewModel @Inject constructor(
                 GpxRecordState.PAUSED -> recordEvents.resumeGpxRecording()
                 GpxRecordState.RESUMED -> recordEvents.pauseGpxRecording()
             }
-            delay(START_STOP_DISABLE_TIMEOUT.toLong())
-            isButtonEnabled = true
         }
     }
 }

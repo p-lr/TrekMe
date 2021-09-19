@@ -7,7 +7,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -48,13 +47,14 @@ fun TwoStateButton(
     destPathData: PathData,
     pathMorphingDurationMs: Int = 500,
     disableTimeoutMs: Int = 2000,
+    showTimeout: Boolean = true,
     onClick: () -> Unit
 ) {
     val animatedProgress = animateFloatAsState(
         if (isDestState) 0f else 1f,
         animationSpec = tween(pathMorphingDurationMs)
     )
-    val backgroundColor by animateColorAsState(
+    val color by animateColorAsState(
         if (isDestState) startPathData.color else destPathData.color,
         animationSpec = tween(pathMorphingDurationMs)
     )
@@ -100,19 +100,21 @@ fun TwoStateButton(
     Surface(
         modifier = modifier
             .clip(CircleShape)
-            .clickable { onClick() }
+            .clickable { onClick() },
+        color = color.copy(alpha = 0.2f)
     ) {
-        TimeoutShape(
-            modifier = modifier,
-            backgroundColor,
-            strokeColor,
-            t = progress
-        )
+        if (showTimeout) {
+            TimeoutShape(
+                modifier = modifier,
+                strokeColor,
+                t = progress
+            )
+        }
         StartStopShape(
             modifier = modifier,
             startPathData.path,
             destPathData.path,
-            backgroundColor,
+            color,
             t = animatedProgress.value
         )
     }
@@ -121,7 +123,6 @@ fun TwoStateButton(
 @Composable
 fun TimeoutShape(
     modifier: Modifier,
-    backgroundColor: Color,
     strokeColor: Color,
     t: Float
 ) {
@@ -131,10 +132,8 @@ fun TimeoutShape(
 
     Canvas(
         modifier = modifier
-            .background(backgroundColor.copy(alpha = 0.2f))
             .fillMaxSize()
             .padding(1.5.dp),
-
         ) {
         drawArc(
             color = strokeColor,
@@ -152,7 +151,7 @@ fun StartStopShape(
     modifier: Modifier = Modifier,
     startPath: List<PathNode>,
     destPath: List<PathNode>,
-    backgroundColor: Color,
+    color: Color,
     t: Float
 ) {
     val pathNodes = lerp(startPath, destPath, t)
@@ -167,7 +166,7 @@ fun StartStopShape(
         ) { _, _ ->
             Path(
                 pathData = pathNodes,
-                fill = SolidColor(backgroundColor)
+                fill = SolidColor(color)
             )
         },
         modifier = modifier.rotate(degree),

@@ -2,7 +2,9 @@ package com.peterlaurence.trekme.ui.record.components.molecules
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,12 +53,24 @@ private fun PlayPauseStop(
             firstTimeComposition = false
             return@LaunchedEffect
         }
-        if (state == GpxRecordState.STARTED || state == GpxRecordState.STOPPED) {
-            animate(
-                initialValue = if (state == GpxRecordState.STARTED) 0f else 1f,
-                targetValue = if (state == GpxRecordState.STARTED) 1f else 0f,
-//                animationSpec = tween(5000)
-            ) { value, _ -> animatedValue = value }
+        when (state) {
+            GpxRecordState.STOPPED -> {
+                animate(
+                    initialValue = 1f,
+                    targetValue = 0f,
+                ) { value, _ -> animatedValue = value }
+            }
+            GpxRecordState.STARTED -> {
+                animate(
+                    initialValue = 0f,
+                    targetValue = 1f,
+                    animationSpec = tween(300) {
+                        OvershootInterpolator().getInterpolation(it)
+                    }
+                ) { value, _ -> animatedValue = value }
+            }
+            else -> { /* No anim */
+            }
         }
     }
 
@@ -82,6 +96,7 @@ private fun PlayPauseStop(
             isDestState = state == GpxRecordState.STARTED || state == GpxRecordState.RESUMED,
             PathData(pausePath, Color(0xFFFFC107)),
             PathData(playPathDest, Color(0xFF4CAF50)),
+            showTimeout = false,
             onClick = onPauseResumeClick
         )
     }
