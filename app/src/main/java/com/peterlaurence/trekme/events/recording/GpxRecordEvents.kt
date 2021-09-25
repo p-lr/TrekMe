@@ -8,16 +8,24 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 
 class GpxRecordEvents {
-    private val _liveRoute = MutableSharedFlow<LiveRouteEvent>(replay = Int.MAX_VALUE)
-    val liveRouteFlow = _liveRoute.asSharedFlow()
+    private val _liveRouteFlow = MutableSharedFlow<LiveRouteEvent>(replay = Int.MAX_VALUE)
+    val liveRouteFlow = _liveRouteFlow.asSharedFlow()
 
-    fun addTrackPoint(trackPoint: TrackPoint) {
-        _liveRoute.tryEmit(LiveRoutePoint(trackPoint))
+    fun addPointToLiveRoute(trackPoint: TrackPoint) {
+        _liveRouteFlow.tryEmit(LiveRoutePoint(trackPoint))
+    }
+
+    fun pauseLiveRoute() {
+        _liveRouteFlow.tryEmit(LiveRoutePause)
+    }
+
+    fun stopLiveRoute() {
+        _liveRouteFlow.tryEmit(LiveRouteStop)
     }
 
     fun resetLiveRoute() {
-        _liveRoute.resetReplayCache()
-        _liveRoute.tryEmit(LiveRouteStop)
+        _liveRouteFlow.resetReplayCache()
+        _liveRouteFlow.tryEmit(LiveRouteStop)
     }
 
     /**********************************************************************************************/
@@ -86,6 +94,7 @@ class GpxRecordEvents {
     }
 }
 
-sealed class LiveRouteEvent
-data class LiveRoutePoint(val pt: TrackPoint) : LiveRouteEvent()
-object LiveRouteStop : LiveRouteEvent()
+sealed interface LiveRouteEvent
+data class LiveRoutePoint(val pt: TrackPoint) : LiveRouteEvent
+object LiveRouteStop : LiveRouteEvent
+object LiveRoutePause : LiveRouteEvent

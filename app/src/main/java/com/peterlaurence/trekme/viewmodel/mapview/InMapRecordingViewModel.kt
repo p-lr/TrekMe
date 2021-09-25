@@ -8,6 +8,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.track.toMarker
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.repositories.map.MapRepository
@@ -59,7 +60,8 @@ class InMapRecordingViewModel @Inject constructor(
             gpxRecordEvents.liveRouteFlow.collect {
                 when (it) {
                     is LiveRoutePoint -> routeBuilder.add(it.pt)
-                    is LiveRouteStop -> routeBuilder = RouteBuilder(map)
+                    LiveRouteStop -> routeBuilder = RouteBuilder(map)
+                    LiveRoutePause -> { /* TODO: impl pause */ }
                 }
                 route.postValue(routeBuilder.liveRoute)
             }

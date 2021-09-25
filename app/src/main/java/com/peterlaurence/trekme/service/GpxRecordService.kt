@@ -21,7 +21,9 @@ import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.track.DistanceCalculatorImpl
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
+import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.util.gpx.model.*
@@ -63,6 +65,12 @@ class GpxRecordService : Service() {
 
     @Inject
     lateinit var locationSource: LocationSource
+
+    private var state: GpxRecordState
+        get() = eventsGpx.serviceState.value
+        set(value) {
+            eventsGpx.setServiceState(value)
+        }
 
     private var serviceLooper: Looper? = null
     private var serviceHandler: Handler? = null
@@ -122,12 +130,14 @@ class GpxRecordService : Service() {
             return
         }
 
-        val trackPoint = TrackPoint(location.latitude,
-                location.longitude, location.altitude, location.time, "")
-        eventsGpx.addTrackPoint(trackPoint)
-        trackStatCalculator.addTrackPoint(trackPoint)
-        trackStatCalculator.getStatistics()?.also { stats ->
-            eventsGpx.postTrackStatistics(stats)
+        val trackPoint = TrackPoint(
+            location.latitude,
+            location.longitude, location.altitude, location.time, ""
+        )
+        if (state == GpxRecordState.STARTED || state == GpxRecordState.RESUMED) {
+            eventsGpx.addPointToLiveRoute(trackPoint)
+            trackStatCalculator.addTrackPoint(trackPoint)
+            eventsGpx.postTrackStatistics(trackStatCalculator.getStatistics())
         }
     }
 
@@ -147,11 +157,21 @@ class GpxRecordService : Service() {
         }
 
         serviceHandler?.post {
+            eventsGpx.stopLiveRoute()
+
             val trkSegList = ArrayList<TrackSegment>()
-            val trackPoints = eventsGpx.liveRouteFlow.replayCache.mapNotNull {
-                if (it is LiveRoutePoint) it.pt else null
+            var trackPoints = mutableListOf<TrackPoint>()
+            for (event in eventsGpx.liveRouteFlow.replayCache) {
+                when (event) {
+                    LiveRoutePause, LiveRouteStop -> {
+                        if (trackPoints.isNotEmpty()) {
+                            trkSegList.add(TrackSegment(trackPoints))
+                        }
+                        trackPoints = mutableListOf()
+                    }
+                    is LiveRoutePoint -> trackPoints.add(event.pt)
+                }
             }
-            trkSegList.add(TrackSegment(trackPoints))
 
             /* Name the track using the current date */
             val date = Date()
@@ -166,8 +186,10 @@ class GpxRecordService : Service() {
              * actual source (which might be wifi, etc. It doesn't matter because GPS elevation is
              * considered not trustworthy), with a sampling of 1 since each point has its own
              * elevation value. */
-            val metadata = Metadata(trackName, date.time, trackStatCalculator.getBounds(),
-                    elevationSourceInfo = ElevationSourceInfo(ElevationSource.GPS, 1))
+            val metadata = Metadata(
+                trackName, date.time, trackStatCalculator.getBounds(),
+                elevationSourceInfo = ElevationSourceInfo(ElevationSource.GPS, 1)
+            )
 
             val trkList = ArrayList<Track>()
             trkList.add(track)
@@ -178,7 +200,7 @@ class GpxRecordService : Service() {
             try {
                 val gpxFileName = "$trackName.gpx"
                 val recordingsDir = trekMeContext.recordingsDir
-                        ?: error("Recordings dir is mandatory")
+                    ?: error("Recordings dir is mandatory")
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 writeGpx(gpx, fos)
@@ -202,21 +224,26 @@ class GpxRecordService : Service() {
         val icon = if (iconDrawable != null) getBitmapFromDrawable(iconDrawable) else null
 
         val notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
-                .setContentTitle(getText(R.string.app_name))
-                .setContentText(getText(R.string.service_gpx_record_action))
-                .setSmallIcon(R.drawable.ic_my_location_black_24dp)
-                .setContentIntent(pendingIntent)
-                .setOngoing(true)
-                .apply {
-                    if (icon != null) {
-                        setLargeIcon(icon)
-                    }
+            .setContentTitle(getText(R.string.app_name))
+            .setContentText(getText(R.string.service_gpx_record_action))
+            .setSmallIcon(R.drawable.ic_my_location_black_24dp)
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .apply {
+                if (icon != null) {
+                    setLargeIcon(icon)
                 }
+            }
 
         if (Build.VERSION.SDK_INT >= 26) {
             /* This is only needed on Devices on Android O and above */
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val mChannel = NotificationChannel(NOTIFICATION_ID, getText(R.string.service_gpx_record_name), NotificationManager.IMPORTANCE_DEFAULT)
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val mChannel = NotificationChannel(
+                NOTIFICATION_ID,
+                getText(R.string.service_gpx_record_name),
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
             mChannel.enableLights(true)
             mChannel.lightColor = Color.MAGENTA
             notificationManager.createNotificationChannel(mChannel)
@@ -226,7 +253,7 @@ class GpxRecordService : Service() {
 
         startForeground(SERVICE_ID, notification)
 
-        eventsGpx.setServiceState(GpxRecordState.STARTED)
+        state = GpxRecordState.STARTED
 
         return START_NOT_STICKY
     }
@@ -237,20 +264,19 @@ class GpxRecordService : Service() {
     private fun stop() {
         eventsGpx.resetLiveRoute()
         eventsGpx.postTrackStatistics(null)
-        eventsGpx.setServiceState(GpxRecordState.STOPPED)
+        state = GpxRecordState.STOPPED
         stopSelf()
     }
 
     private fun pause() {
-        eventsGpx.setServiceState(GpxRecordState.PAUSED)
+        eventsGpx.pauseLiveRoute()
+        state = GpxRecordState.PAUSED
         createNewTrackSegment()
-        // TODO: finish pause impl
     }
 
     private fun resume() {
-        if (eventsGpx.serviceState.value == GpxRecordState.PAUSED) {
-            eventsGpx.setServiceState(GpxRecordState.RESUMED)
-            // TODO: impl resume
+        if (state == GpxRecordState.PAUSED) {
+            state = GpxRecordState.RESUMED
         }
     }
 
@@ -270,6 +296,7 @@ class GpxRecordService : Service() {
         private const val SERVICE_ID = 126585
     }
 }
+
 enum class GpxRecordState {
     STOPPED, STARTED, PAUSED, RESUMED
 }
