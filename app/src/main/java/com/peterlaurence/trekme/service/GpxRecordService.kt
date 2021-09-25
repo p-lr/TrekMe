@@ -20,6 +20,8 @@ import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.track.DistanceCalculatorImpl
 import com.peterlaurence.trekme.core.track.TrackStatCalculator
+import com.peterlaurence.trekme.core.track.mergeBounds
+import com.peterlaurence.trekme.core.track.mergeStats
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
@@ -180,14 +182,18 @@ class GpxRecordService : Service() {
             val id = generateTrackId(trackName)
 
             val track = Track(trkSegList, trackName, id = id)
-            track.statistics = trackStatCalculator.getStatistics()
+            track.statistics = if (trackStatCalculatorList.size > 1) {
+                trackStatCalculatorList.mergeStats()
+            } else {
+                trackStatCalculator.getStatistics()
+            }
 
             /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
              * actual source (which might be wifi, etc. It doesn't matter because GPS elevation is
              * considered not trustworthy), with a sampling of 1 since each point has its own
              * elevation value. */
             val metadata = Metadata(
-                trackName, date.time, trackStatCalculator.getBounds(),
+                trackName, date.time, trackStatCalculatorList.mergeBounds(),
                 elevationSourceInfo = ElevationSourceInfo(ElevationSource.GPS, 1)
             )
 

@@ -12,7 +12,7 @@ import kotlin.math.*
 /**
  * Calculates statistics for a track:
  * * distance
- * * elevation difference (max and stack)
+ * * elevation min & max and stacked
  * * duration
  * * bounds
  * * average speed
