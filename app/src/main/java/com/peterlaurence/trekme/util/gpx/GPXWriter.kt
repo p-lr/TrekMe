@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.util.gpx
 
-import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.util.gpx.model.*
 import org.w3c.dom.Document
 import org.w3c.dom.Node
@@ -109,53 +108,16 @@ private fun addTrackToNode(trk: Track, n: Node, doc: Document) {
     }
 
     /* Optional data */
-    val trkStats = trk.statistics
     val trkId = trk.id
-    if (trkStats != null || trkId != null) {
+    if (trkId != null) {
         val nodeExtensions = doc.createElement(TAG_EXTENSIONS)
-        if (trkStats != null) {
-            addTrackStatisticsToNode(trkStats, nodeExtensions, doc)
-        }
-        if (trkId != null) {
-            val nodeId = doc.createElement(TAG_TRK_ID)
-            nodeId.appendChild(doc.createTextNode(trkId))
-            nodeExtensions.appendChild(nodeId)
-        }
+        val nodeId = doc.createElement(TAG_TRK_ID)
+        nodeId.appendChild(doc.createTextNode(trkId))
+        nodeExtensions.appendChild(nodeId)
 
         trkNode.appendChild(nodeExtensions)
     }
     n.appendChild(trkNode)
-}
-
-private fun addTrackStatisticsToNode(statistics: TrackStatistics, n: Node, doc: Document) {
-    val statisticsNode = doc.createElement(TAG_TRACK_STATISTICS)
-    val statisticsNodeAttr = statisticsNode.attributes
-
-    val distanceAttribute = doc.createAttribute(ATTR_TRK_STAT_DIST)
-    distanceAttribute.nodeValue = statistics.distance.toString()
-    statisticsNodeAttr.setNamedItem(distanceAttribute)
-
-    val elevationDiffMax = doc.createAttribute(ATTR_TRK_STAT_ELE_DIFF_MAX)
-    elevationDiffMax.nodeValue = statistics.elevationDifferenceMax.toString()
-    statisticsNodeAttr.setNamedItem(elevationDiffMax)
-
-    val elevationUpStatck = doc.createAttribute(ATTR_TRK_STAT_ELE_UP_STACK)
-    elevationUpStatck.nodeValue = statistics.elevationUpStack.toString()
-    statisticsNodeAttr.setNamedItem(elevationUpStatck)
-
-    val elevationDownStack = doc.createAttribute(ATTR_TRK_STAT_ELE_DOWN_STACK)
-    elevationDownStack.nodeValue = statistics.elevationDownStack.toString()
-    statisticsNodeAttr.setNamedItem(elevationDownStack)
-
-    val durationInSec = doc.createAttribute(ATTR_TRK_STAT_DURATION)
-    durationInSec.nodeValue = statistics.durationInSecond.toString()
-    statisticsNodeAttr.setNamedItem(durationInSec)
-
-    val avgSpeed = doc.createAttribute(ATTR_TRK_STAT_AVG_SPEED)
-    avgSpeed.nodeValue = statistics.avgSpeed.toString()
-    statisticsNodeAttr.setNamedItem(avgSpeed)
-
-    n.appendChild(statisticsNode)
 }
 
 private fun addTrackSegmentToNode(ts: TrackSegment, n: Node, doc: Document) {

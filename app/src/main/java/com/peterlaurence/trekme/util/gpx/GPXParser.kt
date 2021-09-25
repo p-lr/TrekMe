@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.util.gpx
 
 import android.util.Xml
-import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.util.gpx.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -130,8 +129,7 @@ private fun readRoute(parser: XmlPullParser): Track {
     parser.require(XmlPullParser.END_TAG, null, TAG_ROUTE)
 
     segments.add(TrackSegment(points))
-    return Track(trackSegments = segments, name = trackName, id = trkExtensions?.id,
-            statistics = trkExtensions?.stats)
+    return Track(trackSegments = segments, name = trackName, id = trkExtensions?.id)
 }
 
 /**
@@ -159,65 +157,24 @@ private fun readTrack(parser: XmlPullParser): Track {
     }
     parser.require(XmlPullParser.END_TAG, null, TAG_TRACK)
 
-    return Track(trackSegments = segments, name = trackName, id = trkExtensions?.id,
-            statistics = trkExtensions?.stats)
+    return Track(trackSegments = segments, name = trackName, id = trkExtensions?.id)
 }
 
 @Throws(IOException::class, XmlPullParserException::class, ParseException::class)
 private fun readTrackExtensions(parser: XmlPullParser): TrackExtensions {
     parser.require(XmlPullParser.START_TAG, null, TAG_EXTENSIONS)
-    var trackStatistics: TrackStatistics? = null
     var trackId: String? = null
     while (parser.next() != XmlPullParser.END_TAG) {
         if (parser.eventType != XmlPullParser.START_TAG) {
             continue
         }
         when (parser.name) {
-            TAG_TRACK_STATISTICS -> trackStatistics = readTrackStatistics(parser)
             TAG_TRK_ID -> trackId = readText(parser)
             else -> skip(parser)
         }
     }
     parser.require(XmlPullParser.END_TAG, null, TAG_EXTENSIONS)
-    return TrackExtensions(trackId, trackStatistics)
-}
-
-@Throws(IOException::class, XmlPullParserException::class, ParseException::class)
-private fun readTrackStatistics(parser: XmlPullParser): TrackStatistics {
-    parser.require(XmlPullParser.START_TAG, null, TAG_TRACK_STATISTICS)
-
-    val distance = runCatching {
-        parser.getAttributeValue(null, ATTR_TRK_STAT_DIST)?.toDouble()
-    }.getOrNull() ?: 0.0
-
-    val elevationDifferenceMax = runCatching {
-        parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DIFF_MAX)?.toDouble()
-    }.getOrNull() ?: 0.0
-
-    val elevationUpStack = runCatching {
-        parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_UP_STACK)?.toDouble()
-    }.getOrNull() ?: 0.0
-
-    val elevationDownStack = runCatching {
-        parser.getAttributeValue(null, ATTR_TRK_STAT_ELE_DOWN_STACK)?.toDouble()
-    }.getOrNull() ?: 0.0
-
-    val durationInSecond = runCatching {
-        parser.getAttributeValue(null, ATTR_TRK_STAT_DURATION)?.toLong()
-    }.getOrNull()
-
-    val avgSpeed = runCatching {
-        parser.getAttributeValue(null, ATTR_TRK_STAT_AVG_SPEED)?.toDouble()
-    }.getOrNull()
-
-    while (parser.next() != XmlPullParser.END_TAG) {
-        if (parser.eventType != XmlPullParser.START_TAG) {
-            continue
-        }
-        skip(parser)
-    }
-    parser.require(XmlPullParser.END_TAG, null, TAG_TRACK_STATISTICS)
-    return TrackStatistics(distance, elevationDifferenceMax, elevationUpStack, elevationDownStack, durationInSecond, avgSpeed)
+    return TrackExtensions(trackId)
 }
 
 /* Process summary tags in the feed */
@@ -334,4 +291,4 @@ private val DATE_PARSER: SimpleDateFormat
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
     }
 
-private data class TrackExtensions(val id: String?, val stats: TrackStatistics?)
+private data class TrackExtensions(val id: String?)

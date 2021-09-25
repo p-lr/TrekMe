@@ -8,15 +8,11 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.xmlpull.v1.XmlPullParserException
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.IOException
 import java.text.ParseException
 import java.util.*
-import javax.xml.parsers.ParserConfigurationException
-import javax.xml.transform.TransformerException
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -80,12 +76,11 @@ class GPXTest {
                     assertEquals(46.57608333, lat)
                     assertEquals(8.89241667, lon)
                     assertEquals(2376.0, elevation)
-                    assertEquals(getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(),
-                            time!!.toDouble())
+                    assertEquals(
+                        getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(),
+                        time!!.toDouble()
+                    )
 
-                    /* Check that the track has statistics */
-                    assertNotNull(statistics)
-                    assertEquals(statistics.distance, 102.0)
                     assertEquals(4, wayPoints.size)
                     val (latitude, longitude, elevation1, _, name1) = wayPoints[0]
                     assertEquals(54.9328621088893, latitude)
@@ -163,9 +158,10 @@ class GPXTest {
             assertEquals(46.57608333, lat)
             assertEquals(8.89241667, lon)
             assertEquals(2376.0, elevation)
-            assertEquals(getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(), time!!.toDouble())
-            assertNotNull(statistics)
-            assertEquals(statistics.distance, 102.0)
+            assertEquals(
+                getGpxDateParser().parse("2007-10-14T10:09:57Z")!!.time.toDouble(),
+                time!!.toDouble()
+            )
         } catch (t: Throwable) {
             t.printStackTrace()
             fail()

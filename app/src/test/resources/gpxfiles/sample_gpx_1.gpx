@@ -55,8 +55,6 @@
             </trkpt>
         </trkseg>
         <extensions>
-            <statistics distance="102">
-            </statistics>
             <trekmeId>12345</trekmeId>
         </extensions>
     </trk>

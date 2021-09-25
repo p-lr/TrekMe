@@ -4,6 +4,7 @@ import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertNull
 
 class TrackStatCalculatorTest {
     private val trackPoints = listOf(
@@ -52,7 +53,7 @@ class TrackStatCalculatorTest {
         statCalculator.addTrackPointList(trackPoints)
         val stats = statCalculator.getStatistics()
 
-        assertEquals(0.0, stats.elevationDifferenceMax, 0.0)
+        assertNull(stats.elevationMax)
         assertEquals(0.0, stats.elevationUpStack, 0.1)
         assertEquals(0.0, stats.elevationDownStack, 0.1)
     }

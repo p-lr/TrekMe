@@ -17,8 +17,8 @@ import kotlin.math.*
  * * bounds
  * * average speed
  *
- * Distance and elevation stack are computed using a rolling mean of [bufferSize] points and an
- * elevation threshold of 10 meters.
+ * Distance and elevation stack are computed using a rolling mean of 5 points and an
+ * elevation threshold of 10 meters (if elevation isn't trusted, 3 meters otherwise).
  *
  * Beware, [addTrackPoint] and [addTrackPointList] aren't synchronized.
  * A safe usage is to have one [TrackStatCalculator] instance per coroutine.
@@ -28,7 +28,6 @@ import kotlin.math.*
  * @author P.Laurence on 09/09/18
  */
 class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
-    private var elevationDiffMax = 0.0
     private var elevationUpStack = 0.0
     private var elevationDownStack = 0.0
     private var durationInSecond = 0L
@@ -50,8 +49,8 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
     private var maxLon: Double? = null
 
     fun getStatistics(): TrackStatistics {
-        return TrackStatistics(distanceCalculator.getDistance(), elevationDiffMax, elevationUpStack, elevationDownStack,
-                durationInSecond, avgSpeed)
+        return TrackStatistics(distanceCalculator.getDistance(), highestElevation, lowestElevation,
+            elevationUpStack, elevationDownStack, durationInSecond, avgSpeed)
     }
 
     fun getBounds(): Bounds? {
@@ -73,26 +72,27 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
         updateMeanSpeed()
     }
 
+    fun isEmpty(): Boolean {
+        return minLat == null
+    }
+
     private fun updateElevationStats(ele: Double) {
         /* Lowest point update */
         lowestElevation?.also { eleLowest ->
             if (ele <= eleLowest) {
                 lowestElevation = ele
             }
-        } ?: { this.lowestElevation = ele }()
+        } ?: run {
+            lowestElevation = ele
+        }
 
         /* Highest point update */
         highestElevation?.also { eleHighest ->
             if (ele >= eleHighest) {
                 highestElevation = ele
             }
-        } ?: { highestElevation = ele }()
-
-        /* .. then we can update the elevation maximum difference*/
-        highestElevation?.also { eleHighest ->
-            lowestElevation?.also { eleLowest ->
-                elevationDiffMax = eleHighest - eleLowest
-            }
+        } ?: run {
+            highestElevation = ele
         }
 
         /* Elevation stack update */
@@ -116,7 +116,9 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
                 if (time > origin) { // time should always be increasing, but who knows...
                     durationInSecond = (time - origin) / 1000
                 }
-            } ?: { firstPointTime = time }()
+            } ?: run {
+                firstPointTime = time
+            }
         }
     }
 
@@ -214,11 +216,12 @@ private data class Snapshot(val distance: Double, val elevation: Double)
  * @param distance The distance in meters
  * @param elevationUpStack The cumulative elevation up in meters
  * @param elevationDownStack The cumulative elevation down in meters
- * @param elevationDifferenceMax The difference between the highest and lowest altitude
+ * @param elevationMax The highest altitude
+ * @param elevationMin The lowest altitude
  * @param durationInSecond The total time in seconds
  * @param avgSpeed The average speed in meters per seconds
  */
 @Parcelize
-data class TrackStatistics(val distance: Double, var elevationDifferenceMax: Double,
+data class TrackStatistics(val distance: Double, var elevationMax: Double?, var elevationMin: Double?,
                            val elevationUpStack: Double, val elevationDownStack: Double,
                            val durationInSecond: Long? = null, val avgSpeed: Double? = null) : Parcelable

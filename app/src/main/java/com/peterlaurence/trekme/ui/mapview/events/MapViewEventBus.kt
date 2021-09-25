@@ -21,7 +21,7 @@ class MapViewEventBus {
 
     /**********************************************************************************************/
 
-    private val _trackColorChangeEvent = MutableSharedFlow<TrackColorChangeEvent>(0, 1, BufferOverflow.DROP_LATEST)
+    private val _trackColorChangeEvent = MutableSharedFlow<TrackColorChangeEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val trackColorChangeEvent = _trackColorChangeEvent.asSharedFlow()
 
     fun postTrackColorChange(event: TrackColorChangeEvent) = _trackColorChangeEvent.tryEmit(event)

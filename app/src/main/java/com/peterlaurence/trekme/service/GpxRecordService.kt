@@ -69,7 +69,21 @@ class GpxRecordService : Service() {
     private var locationCounter: Long = 0
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private var trackStatCalculator: TrackStatCalculator? = null
+
+    private val trackStatCalculatorList = mutableListOf<TrackStatCalculator>()
+    private val trackStatCalculator: TrackStatCalculator
+        get() = trackStatCalculatorList.lastOrNull() ?: run {
+            val calculator = makeTrackStatCalculator()
+            trackStatCalculatorList.add(calculator)
+            calculator
+        }
+
+    /**
+     * Prepare the stat calculator.
+     * Since we're getting elevations from the GPS, we're using a distance calculator designed to
+     * deal with non-trusted elevations.
+     */
+    private fun makeTrackStatCalculator() = TrackStatCalculator(DistanceCalculatorImpl(false))
 
     override fun onCreate() {
         super.onCreate()
@@ -86,10 +100,6 @@ class GpxRecordService : Service() {
         val looper = thread.looper
         serviceLooper = looper
         serviceHandler = Handler(looper)
-
-        /* Prepare the stat calculator. Since we're getting elevations from the GPS, we're using
-         * a distance calculator designed to deal with non-trusted elevations. */
-        trackStatCalculator = TrackStatCalculator(DistanceCalculatorImpl(false))
 
         /* Listen to location data */
         scope.launch {
@@ -115,10 +125,14 @@ class GpxRecordService : Service() {
         val trackPoint = TrackPoint(location.latitude,
                 location.longitude, location.altitude, location.time, "")
         eventsGpx.addTrackPoint(trackPoint)
-        trackStatCalculator?.addTrackPoint(trackPoint)
-        trackStatCalculator?.getStatistics()?.also { stats ->
+        trackStatCalculator.addTrackPoint(trackPoint)
+        trackStatCalculator.getStatistics()?.also { stats ->
             eventsGpx.postTrackStatistics(stats)
         }
+    }
+
+    private fun createNewTrackSegment() {
+        trackStatCalculatorList.add(makeTrackStatCalculator())
     }
 
     /**
@@ -146,13 +160,13 @@ class GpxRecordService : Service() {
             val id = generateTrackId(trackName)
 
             val track = Track(trkSegList, trackName, id = id)
-            track.statistics = trackStatCalculator?.getStatistics()
+            track.statistics = trackStatCalculator.getStatistics()
 
             /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
              * actual source (which might be wifi, etc. It doesn't matter because GPS elevation is
              * considered not trustworthy), with a sampling of 1 since each point has its own
              * elevation value. */
-            val metadata = Metadata(trackName, date.time, trackStatCalculator?.getBounds(),
+            val metadata = Metadata(trackName, date.time, trackStatCalculator.getBounds(),
                     elevationSourceInfo = ElevationSourceInfo(ElevationSource.GPS, 1))
 
             val trkList = ArrayList<Track>()
@@ -229,7 +243,8 @@ class GpxRecordService : Service() {
 
     private fun pause() {
         eventsGpx.setServiceState(GpxRecordState.PAUSED)
-        // TODO: impl pause
+        createNewTrackSegment()
+        // TODO: finish pause impl
     }
 
     private fun resume() {
