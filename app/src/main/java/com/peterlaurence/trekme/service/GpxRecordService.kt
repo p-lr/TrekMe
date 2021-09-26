@@ -230,6 +230,8 @@ class GpxRecordService : Service() {
         val iconDrawable = ContextCompat.getDrawable(applicationContext, R.mipmap.ic_launcher)
         val icon = if (iconDrawable != null) getBitmapFromDrawable(iconDrawable) else null
 
+        // TODO: add action button to stop the service directly from the notification (without having
+        // to launch the app and stop the recording.
         val notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_ID)
             .setContentTitle(getText(R.string.app_name))
             .setContentText(getText(R.string.service_gpx_record_action))

@@ -176,7 +176,7 @@ class RouteLayer(
         val liveRoutePaint = Paint().apply {
             this.color = Color.parseColor(colorLiveRoute)
         }
-        val liveRouteFlow = getRouteFlow(listOf(liveRoute)) { route, path ->
+        val liveRouteFlow = getRouteFlow(liveRoute) { route, path ->
             val drawablePath = object : PathView.DrawablePath {
                 override val visible: Boolean
                     get() = route.visible
@@ -189,10 +189,10 @@ class RouteLayer(
         }
 
         coroutineScope.launch {
-            liveRouteFlow.collect { liveRoute ->
-                val paths = listOf(liveRoute.data as PathView.DrawablePath)
-                liveRouteView.updatePaths(paths)
+            val paths = liveRouteFlow.toList().map { route ->
+                route.data as PathView.DrawablePath
             }
+            liveRouteView.updatePaths(paths)
         }
     }
 

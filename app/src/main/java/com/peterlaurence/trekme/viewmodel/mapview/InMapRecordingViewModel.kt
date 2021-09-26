@@ -40,30 +40,55 @@ import javax.inject.Inject
  * exposes a SharedFlow of events.
  *
  * The coroutine collects this SharedFlow, and adds new [TrackPoint]s to the [RouteBuilder] as they
- * arrive. If the coroutine receives a [LiveRouteStop] event, it creates a new [RouteBuilder].
- * After each received point or event, the [route] is updated.
+ * arrive. If the coroutine receives a [LiveRouteStop] or [LiveRoutePause] event, it creates a new
+ * [RouteBuilder]. So actually, the live route is a list of route, as each pause results in the
+ * creation of a new route.
+ * For each received event, the [route] is updated.
  *
  * The coroutine runs off UI thread. However the [MutableLiveData] triggers observers in the UI thread.
  */
 @HiltViewModel
 class InMapRecordingViewModel @Inject constructor(
-        private val mapRepository: MapRepository,
-        private val gpxRecordEvents: GpxRecordEvents
+    private val mapRepository: MapRepository,
+    private val gpxRecordEvents: GpxRecordEvents
 ) : ViewModel() {
     private val route = MutableLiveData<LiveRoute>()
 
     init {
         viewModelScope.launch(Dispatchers.Default) {
             val map = mapRepository.getCurrentMap() ?: return@launch
-            var routeBuilder = RouteBuilder(map)
+
+            var routeBuilderList = mutableListOf<RouteBuilder>()
+
+            fun newRouteBuilder(): RouteBuilder {
+                val routeBuilder = RouteBuilder(map)
+                routeBuilderList.add(routeBuilder)
+                return routeBuilder
+            }
+
+            var routeBuilder = newRouteBuilder()
 
             gpxRecordEvents.liveRouteFlow.collect {
                 when (it) {
                     is LiveRoutePoint -> routeBuilder.add(it.pt)
-                    LiveRouteStop -> routeBuilder = RouteBuilder(map)
-                    LiveRoutePause -> { /* TODO: impl pause */ }
+                    LiveRouteStop -> {
+                        routeBuilderList = mutableListOf()
+                        routeBuilder = newRouteBuilder()
+                    }
+                    LiveRoutePause -> {
+                        /* Add previous route builder */
+                        routeBuilderList.add(routeBuilder)
+
+                        /* Create and add a new route builder */
+                        routeBuilder = newRouteBuilder()
+                    }
                 }
-                route.postValue(routeBuilder.liveRoute)
+
+                route.postValue(
+                    routeBuilderList.mapNotNull { builder ->
+                        builder.route.takeIf { route -> route.routeMarkers.isNotEmpty() }
+                    }
+                )
             }
         }
     }
@@ -74,13 +99,13 @@ class InMapRecordingViewModel @Inject constructor(
 }
 
 private class RouteBuilder(val map: Map) {
-    val liveRoute = LiveRoute()
+    val route = Route()
 
     fun add(point: TrackPoint) {
         val marker = point.toMarker(map)
-        liveRoute.addMarker(marker)
+        route.addMarker(marker)
     }
 }
 
-/* A LiveRoute is just one particular route */
-typealias LiveRoute = Route
+/* A LiveRoute is just a list of route */
+typealias LiveRoute = List<Route>
