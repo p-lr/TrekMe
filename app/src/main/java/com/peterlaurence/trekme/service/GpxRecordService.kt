@@ -18,10 +18,7 @@ import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
-import com.peterlaurence.trekme.core.track.DistanceCalculatorImpl
-import com.peterlaurence.trekme.core.track.TrackStatCalculator
-import com.peterlaurence.trekme.core.track.mergeBounds
-import com.peterlaurence.trekme.core.track.mergeStats
+import com.peterlaurence.trekme.core.track.*
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
@@ -139,7 +136,7 @@ class GpxRecordService : Service() {
         if (state == GpxRecordState.STARTED || state == GpxRecordState.RESUMED) {
             eventsGpx.addPointToLiveRoute(trackPoint)
             trackStatCalculator.addTrackPoint(trackPoint)
-            eventsGpx.postTrackStatistics(trackStatCalculator.getStatistics())
+            eventsGpx.postTrackStatistics(getStatistics())
         }
     }
 
@@ -182,11 +179,7 @@ class GpxRecordService : Service() {
             val id = generateTrackId(trackName)
 
             val track = Track(trkSegList, trackName, id = id)
-            track.statistics = if (trackStatCalculatorList.size > 1) {
-                trackStatCalculatorList.mergeStats()
-            } else {
-                trackStatCalculator.getStatistics()
-            }
+            track.statistics = getStatistics()
 
             /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
              * actual source (which might be wifi, etc. It doesn't matter because GPS elevation is
@@ -219,12 +212,20 @@ class GpxRecordService : Service() {
         }
     }
 
+    private fun getStatistics(): TrackStatistics {
+        return if (trackStatCalculatorList.size > 1) {
+            trackStatCalculatorList.mergeStats()
+        } else {
+            trackStatCalculator.getStatistics()
+        }
+    }
+
     /**
      * Called when the service is started.
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
 
         val iconDrawable = ContextCompat.getDrawable(applicationContext, R.mipmap.ic_launcher)
         val icon = if (iconDrawable != null) getBitmapFromDrawable(iconDrawable) else null
