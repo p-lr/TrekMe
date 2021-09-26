@@ -9,6 +9,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import java.io.File
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,5 +60,5 @@ class GpxRepository @Inject constructor(private val trekMeContext: TrekMeContext
  * Contains a [Gpx] along with a unique [id].
  */
 data class GpxForElevation(val gpx: Gpx, val gpxFile: File) {
-    val id = gpxFile.hashCode()
+    val id: UUID = UUID.randomUUID()
 }
