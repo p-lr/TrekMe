@@ -147,8 +147,7 @@ class TrackImporter @Inject constructor(
     }
 
     /**
-     * Converts a [Track] into a [Route].
-     * A single [Track] may contain several [TrackSegment].
+     * Converts a [Track] into a list of [Route] (a single [Track] may contain several [TrackSegment]).
      * This should be invoked off UI thread.
      */
     private fun gpxTrackToRoute(

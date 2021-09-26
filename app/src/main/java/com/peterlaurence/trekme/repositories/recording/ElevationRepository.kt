@@ -19,10 +19,13 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Generates elevation graph data, as state of the exposed [elevationRepoState]. Other states are:
+ * Generates elevation graph data, as state of the exposed [elevationRepoState]. Possible states are:
  * * [Calculating] indicating that a computation is ongoing
- * * [ElevationCorrectionError] indicating that the last computation couldn't be completed successfully
- * * [NoNetwork] when it detects that remote servers aren't reachable
+ * * [ElevationData] which contains corrected elevation data
+ *
+ * Some error events can be fired, such as:
+ * * [ElevationCorrectionErrorEvent] indicating that the last computation couldn't be completed successfully
+ * * [NoNetworkEvent] when it detects that remote servers aren't reachable
  *
  * Client code uses the [update] method to trigger either a graph data generation or an update.
  *
@@ -54,18 +57,11 @@ class ElevationRepository(
     /**
      * Computes elevation data from the given [GpxForElevation] and updates the exposed
      * [elevationRepoState].
-     * When [gpxData] is null, the state is set to [Calculating]. Otherwise, the id of [gpxData] is
-     * used to decide whether to cancel the ongoing work or not.
+     * The id of [gpxData] is used to decide whether to cancel the ongoing work or not.
      *
      * @param gpxData The data to work on.
      */
-    fun update(gpxData: GpxForElevation?) {
-        if (gpxData == null) {
-            primaryScope.launch {
-                _elevationRepoState.emit(Calculating)
-            }
-            return
-        }
+    fun update(gpxData: GpxForElevation) {
         val gpx = gpxData.gpx
         val id = gpxData.id
         if (id != lastGpxId) {
@@ -83,6 +79,10 @@ class ElevationRepository(
             }
             lastGpxId = id
         }
+    }
+
+    fun reset() = primaryScope.launch {
+        _elevationRepoState.emit(Calculating)
     }
 
     /**

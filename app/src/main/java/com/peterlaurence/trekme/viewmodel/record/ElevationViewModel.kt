@@ -111,7 +111,11 @@ class ElevationViewModel @Inject constructor(
 
     fun onUpdateGraph() = viewModelScope.launch {
         gpxRepository.gpxForElevation.collect {
-            repository.update(it)
+            if (it != null) {
+                repository.update(it)
+            } else {
+                repository.reset()
+            }
         }
     }
 }
