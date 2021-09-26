@@ -102,7 +102,7 @@ class TrackImporter @Inject constructor(
     ): Pair<List<Route>, List<Marker>> = withContext(Dispatchers.Default) {
         val routes = gpx.tracks.mapIndexed { index, track ->
             gpxTrackToRoute(map, track, gpx.hasTrustedElevations(), index, defaultName)
-        }
+        }.flatten()
         val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
             gpxWaypointsToMarker(map, wpt, index, defaultName)
         }
@@ -157,7 +157,7 @@ class TrackImporter @Inject constructor(
         elevationTrusted: Boolean,
         index: Int,
         defaultName: String
-    ): Route {
+    ): List<Route> {
 
         /* The route name is the track name if it has one. Otherwise we take the default name */
         val name = if (track.name.isNotEmpty()) {
@@ -166,24 +166,26 @@ class TrackImporter @Inject constructor(
             "$defaultName#$index"
         }
 
-        /* All track segments are concatenated */
-        val trackSegmentList = track.trackSegments
-        val routePoints = mutableListOf<Marker>()
-        for (trackSegment in trackSegmentList) {
-            val trackPointList = trackSegment.trackPoints
-            for (trackPoint in trackPointList) {
-                val pt = trackPoint.toMarker(map)
-                routePoints.add(pt)
-            }
-        }
+        /* If there's more than one segment, the route name/id is the track name/id suffixed
+         * with the segment index. */
+        fun String?.formatNameOrId(i: Int): String? = if (this != null && track.trackSegments.size > 1) {
+            this + "_$i"
+        } else this
 
-        return Route(
-            track.id, /* The route id is the track id */
-            name,
-            markers = routePoints,
-            visible = true, /* The route should be visible by default */
-            elevationTrusted = elevationTrusted
-        )
+        /* Make a route for each track segment */
+        return track.trackSegments.mapIndexed { i, segment ->
+            val markers = segment.trackPoints.map { trackPoint ->
+                trackPoint.toMarker(map)
+            }.toMutableList()
+
+            Route(
+                track.id.formatNameOrId(i),
+                name.formatNameOrId(i),
+                markers = markers,
+                visible = true, /* The route should be visible by default */
+                elevationTrusted = elevationTrusted
+            )
+        }
     }
 
     private fun gpxWaypointsToMarker(

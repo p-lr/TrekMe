@@ -284,12 +284,14 @@ class RecordingStatisticsViewModel @Inject constructor(
     private suspend fun setTrackStatistics(gpx: Gpx) = withContext(Dispatchers.Default) {
         gpx.tracks.firstOrNull()?.let { track ->
             val distanceCalculator = DistanceCalculatorImpl(gpx.hasTrustedElevations())
-            val statCalculator = TrackStatCalculator(distanceCalculator)
-            track.trackSegments.forEach { trackSegment ->
+
+            val statCalculatorList = track.trackSegments.map { trackSegment ->
+                val statCalculator = TrackStatCalculator(distanceCalculator)
                 statCalculator.addTrackPointList(trackSegment.trackPoints)
+                statCalculator
             }
 
-            val updatedStatistics = statCalculator.getStatistics()
+            val updatedStatistics = statCalculatorList.mergeStats()
             track.statistics = updatedStatistics
         }
     }
