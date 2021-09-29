@@ -312,8 +312,9 @@ From the "GPX Record" option menu, you get the following interface:
 <img src="doc/images/gpx-recordings-en.jpg" width="300">
 </p>
 
-The recording can be started or stopped from the control panel. When recording, the location service
-runs in the background. It continues even if TrekMe is stopped or paused.
+The recording can be started, stopped, or paused from the control panel. When recording, the location service
+runs in the background. It continues to run even if TrekMe is stopped, until you decide to stop it
+from inside the app.
 If you have Android 10 or above, you need to make sure that the location permission for TrekMe is set
 to "Allow all the time", and not just when using the app. Otherwise, some points won't be recorded 
 and straight lines will appear on the track.

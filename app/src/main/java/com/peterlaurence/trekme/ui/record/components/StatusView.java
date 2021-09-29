@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.ui.record.components;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 
@@ -16,6 +17,7 @@ import com.peterlaurence.trekme.ui.record.components.widgets.HeartBeatIndicator;
  */
 public class StatusView extends CardView {
     private HeartBeatIndicator mHeartBeatIndicator;
+    private TextView mStatusText;
 
     public StatusView(Context context) {
         this(context, null);
@@ -34,13 +36,21 @@ public class StatusView extends CardView {
         inflate(context, R.layout.record_status_layout, this);
 
         mHeartBeatIndicator = findViewById(R.id.heartBeatIndicator);
+        mStatusText = findViewById(R.id.record_status_subtitle);
     }
 
     public void onServiceStarted() {
         mHeartBeatIndicator.beat();
+        mStatusText.setText(getResources().getText(R.string.recording_status_started));
     }
 
     public void onServiceStopped() {
         mHeartBeatIndicator.off();
+        mStatusText.setText(getResources().getText(R.string.recording_status_stopped));
+    }
+
+    public void onServicePaused() {
+        mHeartBeatIndicator.off();
+        mStatusText.setText(getResources().getText(R.string.recording_status_paused));
     }
 }

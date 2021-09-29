@@ -107,7 +107,7 @@ class RecordFragment : Fragment() {
          */
         val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
         gpxRecordServiceViewModel.status.map { gpxRecordState ->
-            dispatchGpxRecordServiceStatus(isActive = gpxRecordState != GpxRecordState.STOPPED)
+            dispatchGpxRecordServiceStatus(gpxRecordState)
         }.collectWhileResumedIn(this)
     }
 
@@ -207,11 +207,11 @@ class RecordFragment : Fragment() {
         binding.recordListView.setRecordingData(data)
     }
 
-    private fun dispatchGpxRecordServiceStatus(isActive: Boolean) {
-        if (isActive) {
-            binding.statusView.onServiceStarted()
-        } else {
-            binding.statusView.onServiceStopped()
+    private fun dispatchGpxRecordServiceStatus(gpxRecordState: GpxRecordState) {
+        when (gpxRecordState) {
+            GpxRecordState.STOPPED -> binding.statusView.onServiceStopped()
+            GpxRecordState.STARTED, GpxRecordState.RESUMED -> binding.statusView.onServiceStarted()
+            GpxRecordState.PAUSED -> binding.statusView.onServicePaused()
         }
     }
 

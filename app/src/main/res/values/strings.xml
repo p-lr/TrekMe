@@ -212,7 +212,9 @@
     <string name="recordings_menu_import">Import files</string>
     <string name="files_could_not_be_deleted">Some files could not be deleted</string>
     <string name="recordings_status_title">Location service</string>
-    <string name="recording_status_description">Started/stopped status</string>
+    <string name="recording_status_started">Started</string>
+    <string name="recording_status_stopped">Stopped</string>
+    <string name="recording_status_paused">Paused</string>
     <string name="choose_a_map">Choose a map</string>
     <string name="track_is_being_added">The track is being imported into the map</string>
     <string name="track_add_error">An error occurred while importing the track</string>
