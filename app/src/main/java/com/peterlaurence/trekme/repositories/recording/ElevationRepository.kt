@@ -88,83 +88,10 @@ class ElevationRepository(
     }
 
     /**
-     * Get real elevations every [sampling]m. Returns null when an error occurred which would make the returned
-     * list inconsistent (we shall not mix real elevations with original elevations from the GPS).
-     */
-    private suspend fun getRealElevations(gpx: Gpx): PayloadInfo = withContext(dispatcher) {
-        val pointsFlow = flow {
-            var previousPt: TrackPoint? = null
-            val trackPoints = gpx.tracks.firstOrNull()?.trackSegments?.firstOrNull()?.trackPoints
-            trackPoints?.mapIndexed { index, pt ->
-                previousPt?.also { prev ->
-                    val d = deltaTwoPoints(prev.latitude, prev.longitude, pt.latitude, pt.longitude)
-                    if (d > sampling || index == trackPoints.lastIndex) {
-                        emit(PointIndexed(index, pt.latitude, pt.longitude, pt.elevation ?: 0.0))
-                    }
-                } ?: suspend {
-                    previousPt = pt
-                    emit(PointIndexed(0, pt.latitude, pt.longitude, pt.elevation ?: 0.0))
-                }()
-            }
-        }
-
-        val noError = AtomicBoolean(true)
-
-        suspend fun useApi() = runCatching {
-            pointsFlow.chunk(40).buffer(8).flowOn(dispatcher).map { pts ->
-                flow {
-                    /* If we fail to fetch elevation for one chunk, stop the whole flow */
-                    val points = when (val eleResult = getElevations(
-                        pts.map { it.lat }, pts.map { it.lon })
-                    ) {
-                        Error -> {
-                            val apiStatus = checkElevationRestApi()
-                            if (!apiStatus.internetOk || !apiStatus.restApiOk) {
-                                _events.tryEmit(
-                                    NoNetworkEvent(
-                                        apiStatus.internetOk,
-                                        apiStatus.restApiOk
-                                    )
-                                )
-                            }
-                            /* Stop the flow */
-                            throw Exception()
-                        }
-                        NonTrusted -> {
-                            noError.set(false)
-                            pts
-                        }
-                        is TrustedElevations -> eleResult.elevations.zip(pts).map { (ele, pt) ->
-                            PointIndexed(pt.index, pt.lat, pt.lon, ele)
-                        }
-                    }
-                    emit(points)
-                }
-            }.flattenMerge(8).flowOn(ioDispatcher).toList().flatten()
-        }.getOrNull()
-
-        val trustedElevations = gpx.hasTrustedElevations()
-
-        var usedApi = false
-        val payload = if (trustedElevations) {
-            pointsFlow.toList()
-        } else useApi()?.also { usedApi = true } ?: pointsFlow.toList()
-
-        /* If the api was used without critical error, but the result isn't trusted, warn the user */
-        if (usedApi && !noError.get()) _events.tryEmit(ElevationCorrectionErrorEvent)
-
-        /* Needs update if it wasn't already trusted and there was no errors */
-        val needsUpdate = usedApi && !trustedElevations && noError.get()
-
-        val eleSource = if (needsUpdate) ElevationSource.IGN_RGE_ALTI else gpx.getElevationSource()
-
-        PayloadInfo(payload, eleSource, needsUpdate)
-    }
-
-    /**
      * If the gpx doesn't have trusted elevations, try to get sub-sampled real elevations. Otherwise,
      * or if any error happens while fetching real elevations, fallback to just sub-sampling existing
      * elevations.
+     * The sub-sampling is done by taking a point every [sampling]m.
      */
     private suspend fun getElevationsSampled(
         gpx: Gpx
