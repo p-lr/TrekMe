@@ -81,20 +81,18 @@ class ElevationViewModel @Inject constructor(
     }
 
     private fun updateGpxFileWithTrustedElevations(gpxForElevation: GpxForElevation, eleData: ElevationData) {
-        val points = eleData.points
+        val segmentElePoints = eleData.segmentElePoints
         val gpx = gpxForElevation.gpx
-        /* Update only the first segment of the first track */
+        /* Update the first track only */
         val newTracks = gpx.tracks.mapIndexed { iTrack, track ->
             if (iTrack == 0) {
-                val trackSegments = track.trackSegments.mapIndexed { iSeg, trackSegment ->
-                    if (iSeg == 0) {
-                        if (trackSegment.trackPoints.size == points.size) {
-                            val newTrackPoints = trackSegment.trackPoints.zip(points).map {
-                                it.first.copy(elevation = it.second.elevation)
-                            }
-                            TrackSegment(newTrackPoints)
-                        } else trackSegment
-                    } else trackSegment
+                val trackSegments = track.trackSegments.zip(segmentElePoints).map { (segment, segmentElePt) ->
+                    if (segment.trackPoints.size == segmentElePt.points.size) {
+                        val newTrackPoints = segment.trackPoints.zip(segmentElePt.points).map {
+                            it.first.copy(elevation = it.second.elevation)
+                        }
+                        TrackSegment(newTrackPoints)
+                    } else segment
                 }
                 track.copy(trackSegments = trackSegments)
             } else track

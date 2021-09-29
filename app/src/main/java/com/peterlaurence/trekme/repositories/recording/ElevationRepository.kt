@@ -69,8 +69,9 @@ class ElevationRepository(
             job?.cancel()
             job = primaryScope.launch {
                 _elevationRepoState.emit(Calculating)
-                val (realElevations, eleSource, needsUpdate) = getRealElevations(gpx)
-                val data = makeElevationData(gpx, id, realElevations, eleSource, needsUpdate)
+                val (segmentElevationsList, eleSource, needsUpdate) = getElevationsSampled(gpx)
+                val data =
+                    makeElevationData(gpx, id, segmentElevationsList, eleSource, needsUpdate)
                 _elevationRepoState.emit(data)
             }
 
@@ -161,62 +162,181 @@ class ElevationRepository(
     }
 
     /**
-     * Perform interpolation between each real elevations.
+     * If the gpx doesn't have trusted elevations, try to get sub-sampled real elevations. Otherwise,
+     * or if any error happens while fetching real elevations, fallback to just sub-sampling existing
+     * elevations.
      */
+    private suspend fun getElevationsSampled(
+        gpx: Gpx
+    ): TrackElevationsSubSampled = withContext(dispatcher) {
+        /* We'll work on the first track only */
+        val firstTrack = gpx.tracks.firstOrNull() ?: return@withContext TrackElevationsSubSampled(
+            listOf(), ElevationSource.GPS, false
+        )
+        val trustedElevations = gpx.hasTrustedElevations()
+
+        suspend fun sampleWithoutApi(): List<SegmentElevationsSubSampled> {
+            return firstTrack.trackSegments.map { segment ->
+                SegmentElevationsSubSampled(subSamplePoints(segment.trackPoints).toList())
+            }
+        }
+
+        val noError = AtomicBoolean(true)
+        val segmentElevations = if (!trustedElevations) {
+            val segmentElevations = mutableListOf<SegmentElevationsSubSampled>()
+            for (segment in firstTrack.trackSegments) {
+                val points = getRealElevationsForSegment(segment)
+                if (points == null) {
+                    /* If something went wrong for one segment, don't process other segments */
+                    noError.set(true)
+                    break
+                }
+
+                segmentElevations.add(SegmentElevationsSubSampled(points))
+            }
+            if (noError.get()) segmentElevations else sampleWithoutApi()
+        } else sampleWithoutApi()
+
+        /* Needs update if it wasn't already trusted and there was no errors */
+        val needsUpdate = !trustedElevations && noError.get()
+
+        val eleSource = if (needsUpdate) ElevationSource.IGN_RGE_ALTI else gpx.getElevationSource()
+
+        TrackElevationsSubSampled(segmentElevations, eleSource, needsUpdate)
+    }
+
+    /**
+     * Sub-samples and fetch real elevations for a track segment. In case of any error, returns null.
+     */
+    private suspend fun getRealElevationsForSegment(segment: TrackSegment): List<PointIndexed>? {
+        return withContext(dispatcher) {
+            val pointsFlow = subSamplePoints(segment.trackPoints)
+
+            val noError = AtomicBoolean(true)
+
+            suspend fun useApi() = runCatching {
+                pointsFlow.chunk(40).buffer(8).flowOn(dispatcher).map { pts ->
+                    flow {
+                        /* If we fail to fetch elevation for one chunk, stop the whole flow */
+                        val points = when (val eleResult = getElevations(
+                            pts.map { it.lat }, pts.map { it.lon })
+                        ) {
+                            Error -> {
+                                val apiStatus = checkElevationRestApi()
+                                if (!apiStatus.internetOk || !apiStatus.restApiOk) {
+                                    _events.tryEmit(
+                                        NoNetworkEvent(
+                                            apiStatus.internetOk,
+                                            apiStatus.restApiOk
+                                        )
+                                    )
+                                }
+                                /* Stop the flow */
+                                throw Exception()
+                            }
+                            NonTrusted -> {
+                                noError.set(false)
+                                pts
+                            }
+                            is TrustedElevations -> eleResult.elevations.zip(pts).map { (ele, pt) ->
+                                PointIndexed(pt.index, pt.lat, pt.lon, ele)
+                            }
+                        }
+                        emit(points)
+                    }
+                }.flattenMerge(8).flowOn(ioDispatcher).toList().flatten()
+            }.getOrNull()
+
+            useApi().takeIf { noError.get() }
+        }
+    }
+
+    private suspend fun subSamplePoints(points: List<TrackPoint>): Flow<PointIndexed> {
+        return flow {
+            var previousPt: TrackPoint? = null
+            points.mapIndexed { index, pt ->
+                previousPt?.also { prev ->
+                    val d = deltaTwoPoints(prev.latitude, prev.longitude, pt.latitude, pt.longitude)
+                    if (d > sampling || index == points.lastIndex) {
+                        emit(PointIndexed(index, pt.latitude, pt.longitude, pt.elevation ?: 0.0))
+                    }
+                } ?: suspend {
+                    previousPt = pt
+                    emit(PointIndexed(0, pt.latitude, pt.longitude, pt.elevation ?: 0.0))
+                }()
+            }
+        }
+    }
+
     private fun makeElevationData(
         gpx: Gpx,
         id: UUID,
-        points: List<PointIndexed>,
+        segmentElevationList: List<SegmentElevationsSubSampled>,
         eleSource: ElevationSource,
         needsUpdate: Boolean
     ): ElevationState {
-        /* Take into account the trivial case where there is one or no points */
-        if (points.size < 2) {
-            val ele = points.firstOrNull()?.ele ?: 0.0
-            return ElevationData(
-                id,
-                points.map { ElePoint(0.0, it.ele) },
-                ele,
-                ele,
-                eleSource,
-                needsUpdate,
-                sampling
-            )
-        }
-        val ptsSorted = points.sortedBy { it.index }.iterator()
+        val firstTrack = gpx.tracks.firstOrNull()
+        if (firstTrack == null || segmentElevationList.isEmpty()) return ElevationData(
+            id,
+            listOf(),
+            0.0,
+            0.0,
+            eleSource,
+            needsUpdate,
+            sampling
+        )
 
-        var dist = 0.0
-        var previousRefPt = ptsSorted.next()
-        var nextRefPt = ptsSorted.next()
-        val interpolated =
-            gpx.tracks.firstOrNull()?.trackSegments?.firstOrNull()?.trackPoints?.mapIndexed { index, pt ->
-                val ratio =
-                    (index - previousRefPt.index).toFloat() / (nextRefPt.index - previousRefPt.index)
-                val ele = previousRefPt.ele + ratio * (nextRefPt.ele - previousRefPt.ele)
-                val distDelta = deltaTwoPoints(
-                    previousRefPt.lat,
-                    previousRefPt.lon,
-                    previousRefPt.ele,
-                    pt.latitude,
-                    pt.longitude,
-                    ele
-                )
-
-                if (index >= nextRefPt.index && ptsSorted.hasNext()) {
-                    previousRefPt = nextRefPt
-                    nextRefPt = ptsSorted.next()
-                }
-                dist += distDelta
-                ElePoint(dist, ele)
+        var distanceOffset = 0.0
+        val segmentElePoints = firstTrack.trackSegments.zip(segmentElevationList)
+            .map { (segment, segmentEleSubSampled) ->
+                val elePoints = interpolateSegment(segmentEleSubSampled, segment, distanceOffset)
+                distanceOffset += elePoints.last().dist
+                SegmentElePoints(elePoints)
             }
 
-        val minEle = points.minByOrNull { it.ele }?.ele ?: 0.0
-        val maxEle = points.maxByOrNull { it.ele }?.ele ?: 0.0
+        val subSampledPoints = segmentElevationList.flatMap { it.points }
+        val minEle = subSampledPoints.minByOrNull { it.ele }?.ele ?: 0.0
+        val maxEle = subSampledPoints.maxByOrNull { it.ele }?.ele ?: 0.0
 
-        return ElevationData(
-            id, interpolated
-                ?: listOf(), minEle, maxEle, eleSource, needsUpdate, sampling
-        )
+        return ElevationData(id, segmentElePoints, minEle, maxEle, eleSource, needsUpdate, sampling)
+    }
+
+    private fun interpolateSegment(
+        segmentElevation: SegmentElevationsSubSampled,
+        segment: TrackSegment,
+        distanceOffset: Double = 0.0
+    ): List<ElePoint> {
+        /* Take into account the trivial case where there is one or no points */
+        if (segmentElevation.points.size < 2) {
+            val ele = segmentElevation.points.firstOrNull()?.ele ?: 0.0
+            return segmentElevation.points.map { ElePoint(0.0, it.ele) }
+        }
+        val ptsSorted = segmentElevation.points.sortedBy { it.index }.iterator()
+
+        var dist = distanceOffset
+        var previousRefPt = ptsSorted.next()
+        var nextRefPt = ptsSorted.next()
+
+        return segment.trackPoints.mapIndexed { index, pt ->
+            val ratio =
+                (index - previousRefPt.index).toFloat() / (nextRefPt.index - previousRefPt.index)
+            val ele = previousRefPt.ele + ratio * (nextRefPt.ele - previousRefPt.ele)
+            val distDelta = deltaTwoPoints(
+                previousRefPt.lat,
+                previousRefPt.lon,
+                previousRefPt.ele,
+                pt.latitude,
+                pt.longitude,
+                ele
+            )
+
+            if (index >= nextRefPt.index && ptsSorted.hasNext()) {
+                previousRefPt = nextRefPt
+                nextRefPt = ptsSorted.next()
+            }
+            dist += distDelta
+            ElePoint(dist, ele)
+        }
     }
 
     /**
@@ -280,11 +400,19 @@ class ElevationRepository(
 
     private data class ApiStatus(val internetOk: Boolean = false, val restApiOk: Boolean = false)
 
+    private data class SegmentElevationsSubSampled(val points: List<PointIndexed>)
+
     private data class PointIndexed(
         val index: Int,
         val lat: Double,
         val lon: Double,
         val ele: Double
+    )
+
+    private data class TrackElevationsSubSampled(
+        val segmentElevations: List<SegmentElevationsSubSampled>,
+        val elevationSource: ElevationSource,
+        val needsUpdate: Boolean
     )
 
     private data class PayloadInfo(
@@ -300,7 +428,7 @@ sealed class ElevationState
 object Calculating : ElevationState()
 data class ElevationData(
     val id: UUID,
-    val points: List<ElePoint> = listOf(),
+    val segmentElePoints: List<SegmentElePoints> = listOf(),
     val eleMin: Double = 0.0,
     val eleMax: Double = 0.0,
     val elevationSource: ElevationSource,
@@ -319,6 +447,8 @@ object ElevationCorrectionErrorEvent : ElevationEvent()
  * @param elevation altitude in meters
  */
 data class ElePoint(val dist: Double, val elevation: Double)
+
+data class SegmentElePoints(val points: List<ElePoint>)
 
 private sealed class ElevationResult
 private object Error : ElevationResult()

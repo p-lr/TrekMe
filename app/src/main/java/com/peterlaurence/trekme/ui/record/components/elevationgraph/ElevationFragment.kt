@@ -54,10 +54,11 @@ class ElevationFragment : Fragment() {
             viewModel.elevationPoints.collect { config ->
                 when (config) {
                     is ElevationData -> {
-                        if (config.points.isNotEmpty()) {
+                        if (config.segmentElePoints.isNotEmpty()) {
                             lifecycleScope.launchWhenStarted {
                                 val points = withContext(Dispatchers.Default) {
-                                    config.points.subSample(graphUsableWidth.toInt())
+                                    /* For instance, represent all segments on the same line, one after another */
+                                    config.segmentElePoints.flatMap { it.points }.subSample(graphUsableWidth.toInt())
                                 }
                                 b.showGraph(true)
                                 b.elevationGraphView.setPoints(points, config.eleMin, config.eleMax)
