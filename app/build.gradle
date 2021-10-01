@@ -7,7 +7,7 @@ apply plugin: "androidx.navigation.safeargs"
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     buildFeatures {
         dataBinding true
@@ -60,7 +60,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 //    implementation project(":mapview-debug")     // for dev purposes
 //    implementation project(":mapcompose-debug")  // for dev purposes
-    implementation 'ovh.plrapps:mapcompose:1.0.2'
+    implementation 'ovh.plrapps:mapcompose:1.0.3'
     implementation 'ovh.plrapps:mapview:3.1.0'
     implementation 'com.android.billingclient:billing:4.0.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
@@ -78,7 +78,7 @@ dependencies {
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0-beta01'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
@@ -86,7 +86,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:18.0.0'
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'com.google.android:flexbox:2.0.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
     implementation "com.squareup.okhttp3:okhttp:4.9.1"
