@@ -22,7 +22,7 @@ android {
     defaultConfig {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 144
         versionName "2.10.0"
 

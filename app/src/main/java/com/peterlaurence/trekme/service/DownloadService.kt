@@ -97,11 +97,11 @@ class DownloadService : Service() {
         super.onCreate()
 
         val notificationIntent = Intent(this, MainActivity::class.java)
-        onTapPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        onTapPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
         val stopIntent = Intent(this, DownloadService::class.java)
         stopIntent.action = stopAction
-        onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+        onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT)
 
         notificationManager = NotificationManagerCompat.from(this)
     }
