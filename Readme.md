@@ -100,10 +100,10 @@ particular place, using the search button in the top bar.
 
 When you found the place you're looking for, press the area button (at the bottom-right of the screen)
 so an area of selection appears. 
-This area can be resized by moving the two blue rounds.
+This area can be resized by moving the two blue circles.
 
 
-If you can't reach the blue rounds (after you
+If you can't reach the blue circles (after you
 e.g zoomed in), pressing the area button again will make the area disapear. Pressing the button again
 will make the area fit on the screen. 
  
