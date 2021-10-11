@@ -89,17 +89,18 @@ sources suivantes :
 </p>
 
 Quand vous avez fait votre choix, la carte s'affiche après un délai de quelques secondes.
+Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse, comme dans la vidéo ci-dessous.
 
-<p align="center">
-<img src="doc/images/select-area.jpg" width="300">
-</p>
+https://user-images.githubusercontent.com/15638794/136759759-33378909-cba7-4434-a09a-2c40cc16b71b.mp4
 
-Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse, ou bien rechercher un lieu
-particulier avec le bouton recherche. Pour l'IGN, il a des fonctionnalités supplémentaires comme le
-[choix de différentes couches](doc/ign_layers.fr.md). Quand vous avec trouvé la bonne zone, un bouton en haut à 
-droite, ressemblant à un carré, fait apparaître une zone bleue qui définit ce qui sera téléchargé. 
-Cette zone est modifiable en déplaçant les deux ronds bleus.
-Quand vous êtes satisfait de votre sélection, utilisez le bouton de téléchargement en bas à droite.
+Il est aussi possible de rechercher un lieu particulier avec le bouton recherche. Pour l'IGN, il a des fonctionnalités 
+supplémentaires comme le [choix de différentes couches](doc/ign_layers.fr.md). Quand vous avec trouvé la bonne zone, 
+un bouton en bas à droite de l'écran fait apparaître une zone bleue qui définit ce qui sera téléchargé. 
+Cette zone est modifiable en déplaçant les deux ronds bleus (voir la vidéo ci-dessous).
+
+https://user-images.githubusercontent.com/15638794/136759807-dc5b183e-e181-4bae-af52-5fa2418f06cf.mp4
+
+Quand vous êtes satisfait de votre sélection, utilisez le bouton de téléchargement. 
 
 NB : La plupart des fournisseurs de cartes n'ont qu'une couverture partielle du globe. A l'exception 
 d'OpenStreetMap, qui couvre le monde entier, l'USGS par ex ne couvre que les Etats-Unis, l'IGN Espagne 
