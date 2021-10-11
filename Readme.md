@@ -89,16 +89,23 @@ From the "Create map" option menu, you get to choose between available providers
 </p>
 
 When you've made your choice, the map appears shortly.
+From there, you can center on your current location, as shown in the video below.
 
-<p align="center">
-<img src="doc/images/select-area.jpg" width="300">
-</p>
+[Zoom on position](https://user-images.githubusercontent.com/15638794/136757539-ac589d8e-fbf4-4e71-aac0-cdac7a446c02.mp4)
 
-From there, you can zoom into the area in the world you want to capture. Or, you can search for a 
-particular place, using the search button in the top bar. When you found the place you're looking for,
-press the area button in the top-bar (which looks like a square) so an area of selection appears. 
-This area can be resized by moving the two blue rounds. If you can't reach the blue rounds (after you
-e.g zoomed in), pressing the area button again will make the area fit on the screen. 
+
+If you prefer, you can zoom into the area in the world you want to capture. Or, you can search for a 
+particular place, using the search button in the top bar. 
+
+
+When you found the place you're looking for, press the area button (at the bottom-right of the screen)
+so an area of selection appears. 
+This area can be resized by moving the two blue rounds.
+
+
+If you can't reach the blue rounds (after you
+e.g zoomed in), pressing the area button again will make the area disapear. Pressing the button again
+will make the area fit on the screen. 
  
 Beware that USGS only provides detailed levels for USA. Actually, other providers only cover their 
 relevant country, except for OpenStreetMap which covers the entire world.
