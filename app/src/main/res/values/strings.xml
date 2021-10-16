@@ -281,6 +281,7 @@
     <string name="ordnance_survey_source" translatable="false">Ordnance Survey</string>
     <string name="ordnance_survey_source_description">U.K maps</string>
     <string name="place_outside_of_covered_area">The place is outside of the area covered by this map.</string>
+    <string name="accessibility_mapsource_image" translatable="false">Map source image</string>
 
     <!-- GoogleMapWmtsFragment -->
     <string name="mapcreate_title">Map creation</string>

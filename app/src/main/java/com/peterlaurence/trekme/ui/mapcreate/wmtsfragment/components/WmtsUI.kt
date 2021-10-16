@@ -216,7 +216,7 @@ fun WmtsScaffold(
 
 
     if (events.isNotEmpty()) {
-        val ok = stringResource(id = R.string.ok)
+        val ok = stringResource(id = R.string.ok_dialog)
         val message = when (events.first()) {
             WmtsEvent.CURRENT_LOCATION_OUT_OF_BOUNDS -> stringResource(id = R.string.mapcreate_out_of_bounds)
             WmtsEvent.PLACE_OUT_OF_BOUNDS -> stringResource(id = R.string.place_outside_of_covered_area)
