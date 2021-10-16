@@ -60,7 +60,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 //    implementation project(":mapview-debug")     // for dev purposes
 //    implementation project(":mapcompose-debug")  // for dev purposes
-    implementation 'ovh.plrapps:mapcompose:1.0.3'
+    implementation 'ovh.plrapps:mapcompose:1.0.4'
     implementation 'ovh.plrapps:mapview:3.1.0'
     implementation 'com.android.billingclient:billing:4.0.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
@@ -78,7 +78,7 @@ dependencies {
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0-beta01'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0-rc01'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'

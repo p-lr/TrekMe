@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.di
 
 import android.app.Application
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.Billing
@@ -112,7 +113,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindOrdnanceSurveyApiRepository(): OrdnanceSurveyApiRepository = OrdnanceSurveyApiRepository()
+    fun bindOrdnanceSurveyApiRepository(): OrdnanceSurveyApiRepository =
+        OrdnanceSurveyApiRepository()
 
     @Singleton
     @Provides
@@ -146,18 +148,34 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindMapLoader(): MapLoader = MapLoader(Dispatchers.Main.immediate, Dispatchers.Default, Dispatchers.IO)
+    fun bindMapLoader(): MapLoader =
+        MapLoader(Dispatchers.Main.immediate, Dispatchers.Default, Dispatchers.IO)
 
     @Singleton
     @Provides
-    fun bindLocationSource(@ApplicationContext context: Context, settings: Settings, appEventBus: AppEventBus, gpsProEvents: GpsProEvents): LocationSource {
+    fun bindLocationSource(
+        @ApplicationContext context: Context,
+        settings: Settings,
+        appEventBus: AppEventBus,
+        gpsProEvents: GpsProEvents
+    ): LocationSource {
         val modeFlow = settings.getLocationProducerInfo()
         val flowSelector = { mode: LocationProducerInfo ->
             when (mode) {
                 InternalGps -> GoogleLocationProducer(context).locationFlow
                 is LocationProducerBtInfo -> {
                     val connLostMsg = context.getString(R.string.connection_bt_lost_msg)
-                    NmeaOverBluetoothProducer(connLostMsg, mode, appEventBus, gpsProEvents).locationFlow
+                    val bluetoothManager =
+                        context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+                    val adapter = bluetoothManager.adapter
+
+                    NmeaOverBluetoothProducer(
+                        adapter,
+                        connLostMsg,
+                        mode,
+                        appEventBus,
+                        gpsProEvents
+                    ).locationFlow
                 }
             }
         }

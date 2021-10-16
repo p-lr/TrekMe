@@ -26,6 +26,7 @@ import java.util.concurrent.Executors
  * In case of connection failure, this producer tries to re-connect every 2s.
  */
 class NmeaOverBluetoothProducer(
+        private val bluetoothAdapter: BluetoothAdapter,
         private val connectionLostMsg: String,
         private val mode: LocationProducerBtInfo,
         private val appEventBus: AppEventBus,
@@ -60,7 +61,7 @@ class NmeaOverBluetoothProducer(
     private suspend fun ProducerScope<Location>.connectAndRead(): Pair<BluetoothSocket, Job> {
         val socket = withContext(connectionDispatcher) {
             val uuid = UUID.fromString(SPP_UUID)
-            BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mode.macAddress).createRfcommSocketToServiceRecord(uuid)
+            bluetoothAdapter.getRemoteDevice(mode.macAddress).createRfcommSocketToServiceRecord(uuid)
         }
 
         val job = launch(connectionDispatcher) {
@@ -72,7 +73,7 @@ class NmeaOverBluetoothProducer(
                     val nmeaDataFlow = flow {
                         reader.use {
                             while (isActive) {
-                                val line = runCatching {
+                                val line = runCatching<String> {
                                     reader.readLine()
                                 }.getOrNull() ?: throw ConnectionLostException()
 
