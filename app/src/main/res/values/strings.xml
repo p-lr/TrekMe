@@ -32,6 +32,9 @@
     <string name="understood_dialog">I understand</string>
     <string name="delayed_button_desc">Start / Strop a GPX recording</string>
 
+    <!-- Map Creation -->
+    <string name="onboarding_map_create">Now, select a map source.</string>
+
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>
     <string name="service_gpx_record_action">GPX recording</string>

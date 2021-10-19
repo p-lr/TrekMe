@@ -10,10 +10,8 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.colorResource
@@ -27,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.ui.common.OnBoardingTip
+import com.peterlaurence.trekme.ui.common.PopupOrigin
 import com.peterlaurence.trekme.viewmodel.mapcreate.MapSourceListViewModel
 
 
@@ -163,5 +163,20 @@ fun MapSourceListStateful(
     onSourceClick: (WmtsSource) -> Unit
 ) {
     val sourceList by viewModel.sourceList
-    SourceList(sourceList, onSourceClick)
+    var showOnBoarding by viewModel.showOnBoarding
+
+    Box {
+        SourceList(sourceList, onSourceClick)
+        if (showOnBoarding) {
+            OnBoardingTip(
+                modifier = Modifier.padding(bottom = 16.dp).align(Alignment.BottomCenter),
+                popupOrigin = PopupOrigin.BottomCenter,
+                text = stringResource(
+                    id = R.string.onboarding_map_create
+                ), delayMs = 500
+            ) {
+                showOnBoarding = false
+            }
+        }
+    }
 }

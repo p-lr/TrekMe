@@ -321,4 +321,5 @@
     <string name="recording_status_started">Démarré</string>
     <string name="recording_status_stopped">Arrêté</string>
     <string name="recording_status_paused">En pause</string>
+    <string name="onboarding_map_create">A présent, sélectionnez une source de carte.</string>
 </resources>
