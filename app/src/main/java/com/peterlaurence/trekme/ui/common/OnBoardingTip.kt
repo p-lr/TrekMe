@@ -28,7 +28,7 @@ fun OnBoardingTip(
 ) {
     var shouldAnimate by remember { mutableStateOf(true) }
 
-    Box(modifier.width(310.dp)) {
+    Box(modifier) {
         Callout(
             popupOrigin = popupOrigin,
             delayMs = delayMs,

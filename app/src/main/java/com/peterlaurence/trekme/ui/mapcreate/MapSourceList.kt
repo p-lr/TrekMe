@@ -22,6 +22,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
@@ -165,11 +166,13 @@ fun MapSourceListStateful(
     val sourceList by viewModel.sourceList
     var showOnBoarding by viewModel.showOnBoarding
 
-    Box {
+    BoxWithConstraints {
         SourceList(sourceList, onSourceClick)
         if (showOnBoarding) {
             OnBoardingTip(
-                modifier = Modifier.padding(bottom = 16.dp).align(Alignment.BottomCenter),
+                modifier = Modifier.width(min(maxWidth * 0.8f, 310.dp))
+                    .padding(bottom = 16.dp)
+                    .align(Alignment.BottomCenter),
                 popupOrigin = PopupOrigin.BottomCenter,
                 text = stringResource(
                     id = R.string.onboarding_map_create
