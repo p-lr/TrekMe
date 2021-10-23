@@ -36,55 +36,69 @@ fun GpsProPurchaseUI(purchaseState: PurchaseState, price: String?, buyCb: () -> 
         PurchaseState.NOT_PURCHASED,
         PurchaseState.PURCHASE_PENDING,
         PurchaseState.UNKNOWN -> AccessDeniedUI(purchaseState, price, buyCb)
-        else -> { /* Nothing to do */ }
+        else -> { /* Nothing to do */
+        }
     }
 }
 
 @Composable
 private fun PendingScreen() {
-    Column(Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LinearProgressIndicator()
         Text(
-                text = stringResource(id = R.string.module_check_pending),
-                Modifier.padding(top = 16.dp))
+            text = stringResource(id = R.string.module_check_pending),
+            Modifier.padding(top = 16.dp)
+        )
     }
 }
 
 @Composable
 private fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Column(Modifier
+        Column(
+            Modifier
                 .weight(1f)
                 .padding(start = 24.dp, end = 24.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            Image(modifier = Modifier
+            Image(
+                modifier = Modifier
                     .padding(16.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .align(Alignment.CenterHorizontally),
-                    painter = painterResource(id = R.drawable.gps_ext),
-                    contentScale = ContentScale.Inside,
-                    contentDescription = null)
-            Text(stringResource(id = R.string.gps_pro_pres_p1_title), fontWeight = FontWeight.Medium)
+                painter = painterResource(id = R.drawable.gps_ext),
+                contentScale = ContentScale.Inside,
+                contentDescription = null
+            )
+            Text(
+                stringResource(id = R.string.gps_pro_pres_p1_title),
+                fontWeight = FontWeight.Medium
+            )
             Spacer(modifier = Modifier.padding(8.dp))
             Text(stringResource(id = R.string.gps_pro_pres_content), textAlign = TextAlign.Justify)
             Spacer(modifier = Modifier.padding(8.dp))
-            Text(stringResource(id = R.string.gps_pro_pres_p2_title), fontWeight = FontWeight.Medium)
+            Text(
+                stringResource(id = R.string.gps_pro_pres_p2_title),
+                fontWeight = FontWeight.Medium
+            )
             Spacer(modifier = Modifier.padding(8.dp))
-            Text("• GARMIN GLO2")
-            Text("• Dual XGPS150A & SkyPro XGPS160")
-            Text("• Bad Elf Flex, GNSS Surveyor, GPS Pro+")
-            Text("• Juniper Systems Geode")
+            for (device in supportedDevices) {
+                Text("• $device")
+            }
             Spacer(modifier = Modifier.padding(8.dp))
             Text(stringResource(id = R.string.gps_pro_pres_ending), textAlign = TextAlign.Justify)
         }
-        Row(Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             when (purchaseState) {
                 PurchaseState.NOT_PURCHASED -> {
@@ -98,7 +112,8 @@ private fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: 
                 PurchaseState.UNKNOWN -> {
                     Text(stringResource(id = R.string.module_check_unknown))
                 }
-                else -> { /* Nothing to do */ }
+                else -> { /* Nothing to do */
+                }
             }
         }
     }
@@ -106,9 +121,9 @@ private fun AccessDeniedUI(purchaseState: PurchaseState, price: String?, buyCb: 
 
 
 class GpsProPurchaseUIView @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyle: Int = 0
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyle: Int = 0
 ) : AbstractComposeView(context, attrs, defStyle) {
 
     @Composable
@@ -122,3 +137,10 @@ class GpsProPurchaseUIView @JvmOverloads constructor(
         }
     }
 }
+
+private val supportedDevices = listOf(
+    "GARMIN GLO2",
+    "Dual XGPS150A & SkyPro XGPS160",
+    "Bad Elf Flex, GNSS Surveyor, GPS Pro+",
+    "Juniper Systems Geode"
+)

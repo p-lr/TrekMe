@@ -17,16 +17,17 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun IconCircle(backgroundColor: Color, size: Dp, @DrawableRes iconId: Int) {
     Surface(
-            modifier = Modifier.size(size)
-                    .clip(CircleShape),
-            color = backgroundColor.copy(alpha = 0.2f)
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape),
+        color = backgroundColor.copy(alpha = 0.2f)
 
     ) {
         Icon(
-                painter = painterResource(id = iconId),
-                tint = backgroundColor,
-                contentDescription = null,
-                modifier = Modifier.padding(6.dp)
+            painter = painterResource(id = iconId),
+            tint = backgroundColor,
+            contentDescription = null,
+            modifier = Modifier.padding(6.dp)
         )
     }
 }
