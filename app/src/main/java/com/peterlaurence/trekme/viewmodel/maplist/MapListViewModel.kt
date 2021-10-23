@@ -8,6 +8,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.repositories.onboarding.OnBoardingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
@@ -22,7 +23,8 @@ import javax.inject.Inject
 class MapListViewModel @Inject constructor(
         private val settings: Settings,
         private val mapRepository: MapRepository,
-        private val mapLoader: MapLoader
+        private val mapLoader: MapLoader,
+        private val onBoardingRepository: OnBoardingRepository
 ) : ViewModel() {
 
     private val _mapState: MutableState<MapListState> = mutableStateOf(Loading, policy = structuralEqualityPolicy())
@@ -83,6 +85,10 @@ class MapListViewModel @Inject constructor(
     fun onMapSettings(mapId: Int) {
         val map = mapLoader.getMap(mapId) ?: return
         mapRepository.setSettingsMap(map)
+    }
+
+    fun onNavigateToMapCreate(showOnBoarding: Boolean) {
+        onBoardingRepository.setMapCreateOnBoarding(flag = showOnBoarding)
     }
 
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {

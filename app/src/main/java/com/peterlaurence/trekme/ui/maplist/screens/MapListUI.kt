@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -261,18 +262,41 @@ private fun PendingScreen() {
 }
 
 @Composable
-private fun GoToMapCreationScreen(onButtonCLick: () -> Unit) {
-    Column(
-        Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(id = R.string.no_maps_found_warning),
-            Modifier.padding(bottom = 16.dp)
-        )
-        Button(onClick = onButtonCLick) {
-            Text(text = stringResource(id = R.string.go_to_map_creation_btn))
+private fun GoToMapCreationScreen(onButtonCLick: (showOnBoarding: Boolean) -> Unit) {
+    BoxWithConstraints {
+        val maxWidth = maxWidth
+        Column(
+            Modifier
+                .padding(32.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(id = R.string.create_first_map_question),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .alpha(0.87f)
+            )
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = { onButtonCLick(true) },
+                modifier = Modifier.width(maxWidth * 0.6f),
+                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.colorAccent), contentColor = Color.White),
+                shape = RoundedCornerShape(50)
+            ) {
+                Text(text = stringResource(id = R.string.with_onboarding_btn).uppercase())
+            }
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = { onButtonCLick(false) },
+                modifier = Modifier.width(maxWidth * 0.6f),
+                shape = RoundedCornerShape(50)
+            ) {
+                Text(text = stringResource(id = R.string.without_onboarding_btn).uppercase())
+            }
         }
     }
 }
@@ -320,7 +344,11 @@ class MapListView @JvmOverloads constructor(
                 viewModel.deleteMap(mapId)
             }
 
-            override fun navigateToMapCreate() {
+            override fun navigateToMapCreate(showOnBoarding: Boolean) {
+                /* First, let the app globally know about the user choice */
+                viewModel.onNavigateToMapCreate(showOnBoarding)
+
+                /* Then, navigate */
                 val navController = findNavController()
                 navController.navigate(R.id.action_global_mapCreateFragment)
             }
@@ -339,5 +367,5 @@ interface MapListIntents {
     fun onMapSettings(mapId: Int)
     fun onSetMapImage(mapId: Int, uri: Uri)
     fun onMapDelete(mapId: Int)
-    fun navigateToMapCreate()
+    fun navigateToMapCreate(showOnBoarding: Boolean)
 }

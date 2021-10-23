@@ -61,8 +61,9 @@
     <!-- Map list fragment -->
     <string name="fragment_map_list" translatable="false">MapListFragment</string>
     <string name="loading_maps">Loading maps…</string>
-    <string name="no_maps_found_warning">You haven\'t created any map yet</string>
-    <string name="go_to_map_creation_btn">Create a map</string>
+    <string name="create_first_map_question">How would you like to create your first map?</string>
+    <string name="with_onboarding_btn">Create a map</string>
+    <string name="without_onboarding_btn">Without onboarding</string>
     <string name="ok_dialog">OK</string>
     <string name="delete_dialog">Delete</string>
     <string name="map_manage_btn_string">Edit</string>

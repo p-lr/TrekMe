@@ -98,8 +98,9 @@
     <string name="service_download_finished">Téléchargement de la carte terminé</string>
     <string name="map_size">Taille de la carte</string>
     <string name="delete_dialog">Supprimer</string>
-    <string name="no_maps_found_warning">Vous n\'avez pas encore créé de carte</string>
-    <string name="go_to_map_creation_btn">Créer une carte</string>
+    <string name="create_first_map_question">Comment voulez-vous créer votre première carte ?</string>
+    <string name="with_onboarding_btn">Avec tutoriel</string>
+    <string name="without_onboarding_btn">Sans tutoriel</string>
     <string name="download_confirm">Téléchargement lancé. Voir le statut dans les notifications.</string>
     <string name="confirm_exit">Appuyez à nouveau sur RETOUR pour quitter TrekMe</string>
     <string name="ign_spain_source">IGN Espagne</string>

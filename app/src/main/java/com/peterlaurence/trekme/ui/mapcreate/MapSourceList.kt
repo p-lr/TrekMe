@@ -170,7 +170,8 @@ fun MapSourceListStateful(
         SourceList(sourceList, onSourceClick)
         if (showOnBoarding) {
             OnBoardingTip(
-                modifier = Modifier.width(min(maxWidth * 0.8f, 310.dp))
+                modifier = Modifier
+                    .width(min(maxWidth * 0.8f, 310.dp))
                     .padding(bottom = 16.dp)
                     .align(Alignment.BottomCenter),
                 popupOrigin = PopupOrigin.BottomCenter,

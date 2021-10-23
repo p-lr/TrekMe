@@ -66,24 +66,8 @@
             android:name="marker"
             app:argType="com.peterlaurence.trekme.core.map.domain.Marker" />
     </fragment>
-    <fragment
-        android:id="@+id/mapCreateFragment"
-        android:name="com.peterlaurence.trekme.ui.mapcreate.MapCreateFragment"
-        android:label="MapCreateFragment" >
-        <action
-            android:id="@+id/action_mapCreateFragment_to_googleMapWmtsViewFragment"
-            app:destination="@id/wmtsViewFragment" />
-    </fragment>
     <action android:id="@+id/action_global_mapCreateFragment"
-        app:destination="@id/mapCreateFragment"/>
-    <fragment
-        android:id="@+id/wmtsViewFragment"
-        android:name="com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.WmtsFragment"
-        android:label="@string/google_map_wmts_label">
-        <action
-            android:id="@+id/action_googleMapWmtsViewFragment_to_layerOverlayFragment"
-            app:destination="@id/layerOverlayFragment" />
-    </fragment>
+        app:destination="@id/mapCreationGraph"/>
     <fragment
         android:id="@+id/recordFragment"
         android:name="com.peterlaurence.trekme.ui.record.RecordFragment"
@@ -123,14 +107,6 @@
         android:name="com.peterlaurence.trekme.ui.record.components.elevationgraph.ElevationFragment"
         android:label="ElevationFragment" />
     <fragment
-        android:id="@+id/layerOverlayFragment"
-        android:name="com.peterlaurence.trekme.ui.mapcreate.overlay.LayerOverlayFragment"
-        android:label="LayerOverlayFragment" >
-        <argument
-            android:name="wmtsSourceBundle"
-            app:argType="com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerOverlayDataBundle" />
-    </fragment>
-    <fragment
         android:id="@+id/gpsProFragment"
         android:name="com.peterlaurence.trekme.ui.gpspro.screens.GpsProFragment"
         android:label="GpsProFragment" >
@@ -146,4 +122,31 @@
         android:id="@+id/btDeviceSettingsFragment"
         android:name="com.peterlaurence.trekme.ui.gpspro.screens.BtDeviceSettingsFragment"
         android:label="BtDeviceSettingsFragment" />
+    <navigation android:id="@+id/mapCreationGraph"
+        app:startDestination="@id/mapCreateFragment">
+        <fragment
+            android:id="@+id/wmtsViewFragment"
+            android:name="com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.WmtsFragment"
+            android:label="@string/google_map_wmts_label">
+            <action
+                android:id="@+id/action_googleMapWmtsViewFragment_to_layerOverlayFragment"
+                app:destination="@id/layerOverlayFragment" />
+        </fragment>
+        <fragment
+            android:id="@+id/layerOverlayFragment"
+            android:name="com.peterlaurence.trekme.ui.mapcreate.overlay.LayerOverlayFragment"
+            android:label="LayerOverlayFragment">
+            <argument
+                android:name="wmtsSourceBundle"
+                app:argType="com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerOverlayDataBundle" />
+        </fragment>
+        <fragment
+            android:id="@+id/mapCreateFragment"
+            android:name="com.peterlaurence.trekme.ui.mapcreate.MapCreateFragment"
+            android:label="MapCreateFragment">
+            <action
+                android:id="@+id/action_mapCreateFragment_to_googleMapWmtsViewFragment"
+                app:destination="@id/wmtsViewFragment" />
+        </fragment>
+    </navigation>
 </navigation>

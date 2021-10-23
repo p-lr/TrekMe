@@ -10,6 +10,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -48,8 +49,10 @@ fun OnBoardingTip(
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         text = text,
-                        modifier = Modifier.align(alignment = Alignment.CenterVertically),
-                        fontSize = 15.sp,
+                        modifier = Modifier
+                            .alpha(0.87f)
+                            .align(alignment = Alignment.CenterVertically),
+                        fontSize = 16.sp,
                         textAlign = TextAlign.Left,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black

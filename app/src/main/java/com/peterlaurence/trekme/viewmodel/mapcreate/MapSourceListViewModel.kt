@@ -3,9 +3,9 @@ package com.peterlaurence.trekme.viewmodel.mapcreate
 import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
+import com.peterlaurence.trekme.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.util.isEnglish
 import com.peterlaurence.trekme.util.isFrench
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,10 +16,10 @@ import javax.inject.Inject
 class MapSourceListViewModel @Inject constructor(
     @ApplicationContext appContext: Context,
     private val wmtsSourceRepository: WmtsSourceRepository,
-    mapLoader: MapLoader
+    onBoardingRepository: OnBoardingRepository,
 ): ViewModel() {
     val sourceList = mutableStateOf<List<WmtsSource>>(listOf())
-    val showOnBoarding = mutableStateOf(mapLoader.maps.isEmpty())
+    val showOnBoarding = mutableStateOf(onBoardingRepository.mapCreateOnBoarding)
 
     /**
      * When the app is in english, put [WmtsSource.USGS] in front.

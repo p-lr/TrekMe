@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
@@ -21,7 +21,9 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class MapCreateFragment : Fragment() {
-    val viewModel: MapSourceListViewModel by activityViewModels()
+    val viewModel: MapSourceListViewModel by navGraphViewModels(R.id.mapCreationGraph) {
+        defaultViewModelProviderFactory
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

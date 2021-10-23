@@ -28,6 +28,7 @@ import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.repositories.map.RouteRepository
 import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
+import com.peterlaurence.trekme.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.Module
@@ -106,6 +107,10 @@ object AppModule {
     @Singleton
     @Provides
     fun bindMapRepository(): MapRepository = MapRepository()
+
+    @Singleton
+    @Provides
+    fun bindOnBoardingRepository(): OnBoardingRepository = OnBoardingRepository()
 
     @Singleton
     @Provides
