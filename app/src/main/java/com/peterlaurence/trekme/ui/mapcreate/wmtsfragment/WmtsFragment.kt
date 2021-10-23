@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.*
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
@@ -16,7 +16,7 @@ import com.peterlaurence.trekme.databinding.FragmentWmtsBinding
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.*
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.WmtsWrapper
+import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.WmtsStateful
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileResumedIn
@@ -77,7 +77,13 @@ class WmtsFragment : Fragment() {
 
     private var wmtsSource: WmtsSource? = null
 
-    private val viewModel: WmtsViewModel by activityViewModels()
+    private val viewModel: WmtsViewModel by navGraphViewModels(R.id.mapCreationGraph) {
+        defaultViewModelProviderFactory
+    }
+
+    private val onBoardingViewModel: WmtsOnBoardingViewModel by navGraphViewModels(R.id.mapCreationGraph) {
+        defaultViewModelProviderFactory
+    }
 
     private val layerIdToResId = mapOf(
         ignPlanv2 to R.string.layer_ign_plan_v2,
@@ -131,11 +137,12 @@ class WmtsFragment : Fragment() {
 
             setContent {
                 TrekMeTheme {
-                    WmtsWrapper(
+                    WmtsStateful(
                         viewModel,
                         ::showPrimaryLayerSelection,
                         ::showLayerOverlay,
-                        appEventBus::openDrawer
+                        appEventBus::openDrawer,
+                        onBoardingViewModel
                     )
                 }
             }

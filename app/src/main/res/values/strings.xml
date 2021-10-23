@@ -34,6 +34,8 @@
 
     <!-- Map Creation -->
     <string name="onboarding_map_create">Now, select a map source.</string>
+    <string name="onboarding_center_on_pos">Center on your position using this button</string>
+    <string name="onboarding_select_area">Select the area to download</string>
 
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>

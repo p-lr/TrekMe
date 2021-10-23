@@ -14,8 +14,11 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
+import com.peterlaurence.trekme.ui.common.OnBoardingTip
+import com.peterlaurence.trekme.ui.common.PopupOrigin
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas
@@ -170,31 +173,77 @@ fun LoadingScreen() {
 }
 
 @Composable
-fun WmtsWrapper(
+fun WmtsStateful(
     viewModel: WmtsViewModel, onLayerSelection: () -> Unit, onShowLayerOverlay: () -> Unit,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit, onBoardingViewModel: WmtsOnBoardingViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val topBarState by viewModel.topBarState.collectAsState()
+    val onBoardingState by onBoardingViewModel.onBoardingState
 
     val events = viewModel.eventListState.toList()
 
-    WmtsScaffold(
-        events,
-        topBarState,
-        uiState,
-        viewModel::acknowledgeError,
-        viewModel::toggleArea,
-        viewModel::onValidateArea,
-        onMenuClick,
-        viewModel::onSearchClick,
-        viewModel::onCloseSearch,
-        viewModel::onQueryTextSubmit,
-        viewModel::moveToPlace,
-        onLayerSelection,
-        viewModel::zoomOnPosition,
-        onShowLayerOverlay
-    )
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        WmtsScaffold(
+            events,
+            topBarState,
+            uiState,
+            viewModel::acknowledgeError,
+            onToggleArea = {
+                viewModel.toggleArea()
+                onBoardingViewModel.onFabTipAck()
+            },
+            viewModel::onValidateArea,
+            onMenuClick,
+            viewModel::onSearchClick,
+            viewModel::onCloseSearch,
+            viewModel::onQueryTextSubmit,
+            viewModel::moveToPlace,
+            onLayerSelection,
+            onZoomOnPosition = {
+                viewModel.zoomOnPosition()
+                onBoardingViewModel.onCenterOnPosTipAck()
+            },
+            onShowLayerOverlay
+        )
+
+        OnBoardingOverlay(
+            onBoardingState,
+            onBoardingViewModel::onCenterOnPosTipAck,
+            onBoardingViewModel::onFabTipAck
+        )
+    }
+}
+
+@Composable
+private fun BoxWithConstraintsScope.OnBoardingOverlay(
+    onBoardingState: OnBoardingState,
+    onCenterOnPosAck: () -> Unit,
+    onFabAck: () -> Unit
+) {
+    if (onBoardingState !is ShowTip) return
+    if (onBoardingState.fabTip) {
+        OnBoardingTip(
+            modifier = Modifier
+                .padding(vertical = 16.dp, horizontal = 80.dp)
+                .width(min(maxWidth * 0.8f, 310.dp))
+                .align(Alignment.BottomEnd),
+            text = stringResource(id = R.string.onboarding_select_area),
+            popupOrigin = PopupOrigin.BottomEnd,
+            onAcknowledge = onFabAck
+        )
+    }
+    if (onBoardingState.centerOnPosTip) {
+        OnBoardingTip(
+            modifier = Modifier
+                .padding(vertical = 60.dp, horizontal = 16.dp)
+                .width(min(maxWidth * 0.8f, 310.dp))
+                .align(Alignment.TopEnd),
+            text = stringResource(id = R.string.onboarding_center_on_pos),
+            popupOrigin = PopupOrigin.TopEnd,
+            onAcknowledge = onCenterOnPosAck
+        )
+    }
 }
 
 @Composable
