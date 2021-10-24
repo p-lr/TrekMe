@@ -10,6 +10,7 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
@@ -21,6 +22,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun Callout(
     modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(5.dp),
     shouldAnimate: Boolean,
     delayMs: Long = 0,
     popupOrigin: PopupOrigin = PopupOrigin.BottomCenter,
@@ -49,7 +51,7 @@ fun Callout(
                 scaleY = animVal
                 transformOrigin = getTransformOrigin(popupOrigin)
             },
-        shape = RoundedCornerShape(5.dp),
+        shape = shape,
         elevation = 10.dp,
         content = content
     )

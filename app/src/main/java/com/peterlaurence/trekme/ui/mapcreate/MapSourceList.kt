@@ -177,10 +177,10 @@ fun MapSourceListStateful(
                 popupOrigin = PopupOrigin.BottomCenter,
                 text = stringResource(
                     id = R.string.onboarding_map_create
-                ), delayMs = 500
-            ) {
-                showOnBoarding = false
-            }
+                ),
+                delayMs = 500,
+                onAcknowledge = { showOnBoarding = false }
+            )
         }
     }
 }

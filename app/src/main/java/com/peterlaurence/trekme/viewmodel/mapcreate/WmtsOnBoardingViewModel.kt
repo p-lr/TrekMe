@@ -11,7 +11,11 @@ class WmtsOnBoardingViewModel @Inject constructor(
     private val onBoardingRepository: OnBoardingRepository
 ) : ViewModel() {
     val onBoardingState =
-        mutableStateOf<OnBoardingState>(ShowTip(fabTip = false, centerOnPosTip = true))
+        mutableStateOf(
+            if (onBoardingRepository.mapCreateOnBoarding) {
+                ShowTip(fabTip = false, centerOnPosTip = true)
+            } else Hidden
+        )
 
     fun onCenterOnPosTipAck() {
         onBoardingState.value = ShowTip(fabTip = true, centerOnPosTip = false)

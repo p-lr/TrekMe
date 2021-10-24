@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
+import com.peterlaurence.trekme.ui.common.DialogShape
 import com.peterlaurence.trekme.ui.common.OnBoardingTip
 import com.peterlaurence.trekme.ui.common.PopupOrigin
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
@@ -222,26 +224,48 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
     onFabAck: () -> Unit
 ) {
     if (onBoardingState !is ShowTip) return
+
+    val radius = with(LocalDensity.current) { 10.dp.toPx() }
+    val nubWidth = with(LocalDensity.current) { 20.dp.toPx() }
+    val nubHeight = with(LocalDensity.current) { 18.dp.toPx() }
+
     if (onBoardingState.fabTip) {
         OnBoardingTip(
             modifier = Modifier
-                .padding(vertical = 16.dp, horizontal = 80.dp)
-                .width(min(maxWidth * 0.8f, 310.dp))
+                .width(min(maxWidth * 0.9f, 330.dp))
+                .padding(bottom = 16.dp, end = 85.dp)
                 .align(Alignment.BottomEnd),
             text = stringResource(id = R.string.onboarding_select_area),
             popupOrigin = PopupOrigin.BottomEnd,
-            onAcknowledge = onFabAck
+            onAcknowledge = onFabAck,
+            shape = DialogShape(
+                radius,
+                DialogShape.NubPosition.RIGHT,
+                0.66f,
+                nubWidth = nubWidth,
+                nubHeight = nubHeight,
+            )
         )
     }
     if (onBoardingState.centerOnPosTip) {
+        val offset = with(LocalDensity.current) { 15.dp.toPx() }
+
         OnBoardingTip(
             modifier = Modifier
-                .padding(vertical = 60.dp, horizontal = 16.dp)
                 .width(min(maxWidth * 0.8f, 310.dp))
+                .padding(top = 60.dp, end = 16.dp)
                 .align(Alignment.TopEnd),
             text = stringResource(id = R.string.onboarding_center_on_pos),
             popupOrigin = PopupOrigin.TopEnd,
-            onAcknowledge = onCenterOnPosAck
+            onAcknowledge = onCenterOnPosAck,
+            shape = DialogShape(
+                radius,
+                DialogShape.NubPosition.TOP,
+                0.845f,
+                nubWidth = nubWidth,
+                nubHeight = nubHeight,
+                offset = offset
+            )
         )
     }
 }
