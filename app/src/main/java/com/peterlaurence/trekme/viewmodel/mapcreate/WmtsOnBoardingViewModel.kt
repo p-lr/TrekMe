@@ -18,7 +18,9 @@ class WmtsOnBoardingViewModel @Inject constructor(
         )
 
     fun onCenterOnPosTipAck() {
-        onBoardingState.value = ShowTip(fabTip = true, centerOnPosTip = false)
+        if (onBoardingRepository.mapCreateOnBoarding) {
+            onBoardingState.value = ShowTip(fabTip = true, centerOnPosTip = false)
+        }
     }
 
     fun onFabTipAck() {

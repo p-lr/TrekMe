@@ -139,6 +139,7 @@ class WmtsFragment : Fragment() {
                 TrekMeTheme {
                     WmtsStateful(
                         viewModel,
+                        wmtsSourceRepository.wmtsSourceState,
                         ::showPrimaryLayerSelection,
                         ::showLayerOverlay,
                         appEventBus::openDrawer,

@@ -18,10 +18,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.ui.common.DialogShape
 import com.peterlaurence.trekme.ui.common.OnBoardingTip
 import com.peterlaurence.trekme.ui.common.PopupOrigin
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas
 import ovh.plrapps.mapcompose.api.fullSize
@@ -176,12 +178,14 @@ fun LoadingScreen() {
 
 @Composable
 fun WmtsStateful(
-    viewModel: WmtsViewModel, onLayerSelection: () -> Unit, onShowLayerOverlay: () -> Unit,
+    viewModel: WmtsViewModel, wmtsSourceStateFlow: StateFlow<WmtsSource?>,
+    onLayerSelection: () -> Unit, onShowLayerOverlay: () -> Unit,
     onMenuClick: () -> Unit, onBoardingViewModel: WmtsOnBoardingViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val topBarState by viewModel.topBarState.collectAsState()
     val onBoardingState by onBoardingViewModel.onBoardingState
+    val wmtsSource by wmtsSourceStateFlow.collectAsState()
 
     val events = viewModel.eventListState.toList()
 
@@ -211,6 +215,7 @@ fun WmtsStateful(
 
         OnBoardingOverlay(
             onBoardingState,
+            wmtsSource,
             onBoardingViewModel::onCenterOnPosTipAck,
             onBoardingViewModel::onFabTipAck
         )
@@ -220,6 +225,7 @@ fun WmtsStateful(
 @Composable
 private fun BoxWithConstraintsScope.OnBoardingOverlay(
     onBoardingState: OnBoardingState,
+    wmtsSource: WmtsSource?,
     onCenterOnPosAck: () -> Unit,
     onFabAck: () -> Unit
 ) {
@@ -249,6 +255,8 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
     }
     if (onBoardingState.centerOnPosTip) {
         val offset = with(LocalDensity.current) { 15.dp.toPx() }
+        /* When view IGN content, there a menu button which shifts the center-on-position button */
+        val relativePosition = if (wmtsSource == WmtsSource.IGN) 0.72f else 0.845f
 
         OnBoardingTip(
             modifier = Modifier
@@ -261,7 +269,7 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
             shape = DialogShape(
                 radius,
                 DialogShape.NubPosition.TOP,
-                0.845f,
+                relativePosition,
                 nubWidth = nubWidth,
                 nubHeight = nubHeight,
                 offset = offset
