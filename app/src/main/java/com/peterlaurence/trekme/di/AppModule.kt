@@ -11,10 +11,7 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.model.InternalGps
-import com.peterlaurence.trekme.core.model.LocationProducerBtInfo
-import com.peterlaurence.trekme.core.model.LocationProducerInfo
-import com.peterlaurence.trekme.core.model.LocationSource
+import com.peterlaurence.trekme.core.model.*
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
@@ -40,6 +37,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -165,22 +164,26 @@ object AppModule {
         gpsProEvents: GpsProEvents
     ): LocationSource {
         val modeFlow = settings.getLocationProducerInfo()
-        val flowSelector = { mode: LocationProducerInfo ->
+        val flowSelector: (LocationProducerInfo) -> Flow<Location> = { mode: LocationProducerInfo ->
             when (mode) {
                 InternalGps -> GoogleLocationProducer(context).locationFlow
                 is LocationProducerBtInfo -> {
-                    val connLostMsg = context.getString(R.string.connection_bt_lost_msg)
                     val bluetoothManager =
-                        context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-                    val adapter = bluetoothManager.adapter
+                        context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+                    val adapter = bluetoothManager?.adapter
 
-                    NmeaOverBluetoothProducer(
-                        adapter,
-                        connLostMsg,
-                        mode,
-                        appEventBus,
-                        gpsProEvents
-                    ).locationFlow
+                    if (adapter != null) {
+                        val connLostMsg = context.getString(R.string.connection_bt_lost_msg)
+                        NmeaOverBluetoothProducer(
+                            adapter,
+                            connLostMsg,
+                            mode,
+                            appEventBus,
+                            gpsProEvents
+                        ).locationFlow
+                    } else flow {
+                        /* Empty flow */
+                    }
                 }
             }
         }
