@@ -26,11 +26,11 @@ import java.util.concurrent.Executors
  * In case of connection failure, this producer tries to re-connect every 2s.
  */
 class NmeaOverBluetoothProducer(
-        private val bluetoothAdapter: BluetoothAdapter,
-        private val connectionLostMsg: String,
-        private val mode: LocationProducerBtInfo,
-        private val appEventBus: AppEventBus,
-        private val gpsProEvents: GpsProEvents
+    private val bluetoothAdapter: BluetoothAdapter,
+    private val connectionLostMsg: String,
+    private val mode: LocationProducerBtInfo,
+    private val appEventBus: AppEventBus,
+    private val gpsProEvents: GpsProEvents
 ) : LocationProducer {
 
     private val connectionDispatcher by lazy {
@@ -50,7 +50,7 @@ class NmeaOverBluetoothProducer(
             awaitClose {
                 launch(connectionDispatcher) {
                     runCatching {
-                        socket.close()
+                        socket?.close()
                         job.cancel()
                     }
                 }
@@ -58,13 +58,17 @@ class NmeaOverBluetoothProducer(
         }
     }
 
-    private suspend fun ProducerScope<Location>.connectAndRead(): Pair<BluetoothSocket, Job> {
-        val socket = withContext(connectionDispatcher) {
-            val uuid = UUID.fromString(SPP_UUID)
-            bluetoothAdapter.getRemoteDevice(mode.macAddress).createRfcommSocketToServiceRecord(uuid)
-        }
+    private fun ProducerScope<Location>.connectAndRead(): Pair<BluetoothSocket?, Job> {
+        var _socket: BluetoothSocket? = null
 
         val job = launch(connectionDispatcher) {
+            val uuid = UUID.fromString(SPP_UUID)
+            val socket = runCatching {
+                bluetoothAdapter.getRemoteDevice(mode.macAddress)
+                    .createRfcommSocketToServiceRecord(uuid)
+            }.getOrNull() ?: return@launch
+            _socket = socket
+
             runCatching {
                 socket.connect()
 
@@ -85,9 +89,10 @@ class NmeaOverBluetoothProducer(
                             }
                         }
                     }
-                    val nmeaAggregator = NmeaAggregator(nmeaDataFlow) { lat, lon, speed, altitude, time ->
-                        trySend(Location(lat, lon, speed, altitude, time, mode))
-                    }
+                    val nmeaAggregator =
+                        NmeaAggregator(nmeaDataFlow) { lat, lon, speed, altitude, time ->
+                            trySend(Location(lat, lon, speed, altitude, time, mode))
+                        }
                     nmeaAggregator.run()
                 }
             }.onFailure {
@@ -99,7 +104,7 @@ class NmeaOverBluetoothProducer(
                 connectAndRead()
             }
         }
-        return Pair(socket, job)
+        return Pair(_socket, job)
     }
 }
 
