@@ -1,11 +1,17 @@
 package com.peterlaurence.trekme.viewmodel.gpspro
 
+import android.Manifest
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.events.AppEventBus
@@ -24,24 +30,39 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GpsProViewModel @Inject constructor(
-        private val settings: Settings,
-        val app: Application,
-        private val appEventBus: AppEventBus,
-        private val gpsProEvents: GpsProEvents,
-        private val diagnosisRepo: GpsProDiagnosisRepo
+    private val settings: Settings,
+    app: Application,
+    private val appEventBus: AppEventBus,
+    private val gpsProEvents: GpsProEvents,
+    private val diagnosisRepo: GpsProDiagnosisRepo,
 ) : ViewModel() {
     var bluetoothState by mutableStateOf<BluetoothState>(Searching)
     var isHostSelected by mutableStateOf(false)
     var isDiagnosisRunning = diagnosisRepo.diagnosisRunningStateFlow
 
-    private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+    private val bluetoothAdapter: BluetoothAdapter? =
+        (app.applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
 
     init {
+        /* If we had to request bluetooth connect perm, handle the result here */
+        gpsProEvents.bluetoothPermissionResultFlow.map { granted ->
+            if (granted) start() else {
+                bluetoothState = BtConnectPermNotGranted
+            }
+        }.launchIn(viewModelScope)
+
         if (bluetoothAdapter == null) {
             bluetoothState = BtNotSupported
         } else {
-            viewModelScope.launch {
-                startUpProcedure(bluetoothAdapter)
+            /* For Android 12 and onwards, request runtime BLUETOOTH_CONNECT permission */
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ContextCompat.checkSelfPermission(
+                    app.applicationContext,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                gpsProEvents.requestBluetoothPermission()
+            } else {
+                start()
             }
         }
 
@@ -59,6 +80,14 @@ class GpsProViewModel @Inject constructor(
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    private fun start() {
+        viewModelScope.launch {
+            if (bluetoothAdapter != null) {
+                startUpProcedure(bluetoothAdapter)
+            }
+        }
     }
 
     fun onHostSelected() = viewModelScope.launch {
@@ -138,6 +167,7 @@ val BluetoothState.selectedDevice: BluetoothDeviceStub?
 
 sealed class BluetoothState
 object BtNotSupported : BluetoothState()
+object BtConnectPermNotGranted : BluetoothState()
 object BtDisabled : BluetoothState()
 object Searching : BluetoothState()
 data class PairedDeviceList(val deviceList: List<BluetoothDeviceStub>) : BluetoothState()

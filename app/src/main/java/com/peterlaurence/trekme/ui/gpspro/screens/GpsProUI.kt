@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.painterResource
@@ -78,6 +79,7 @@ fun BluetoothUI(
         }
         BtDisabled -> ErrorScreen(stringResource(id = R.string.gps_pro_bt_disabled))
         BtNotSupported -> ErrorScreen(stringResource(id = R.string.gps_pro_bt_notsupported))
+        BtConnectPermNotGranted -> ErrorScreen(stringResource(id = R.string.gps_pro_bt_perm_not_granted))
     }
 }
 
@@ -165,7 +167,13 @@ fun ErrorScreen(message: String) {
             painter = painterResource(id = R.drawable.ic_emoji_disappointed_face_1f61e),
             contentDescription = null
         )
-        Text(text = message)
+        Text(
+            text = message,
+            modifier = Modifier
+                .padding(16.dp)
+                .alpha(0.87f),
+            fontSize = 18.sp
+        )
     }
 }
 

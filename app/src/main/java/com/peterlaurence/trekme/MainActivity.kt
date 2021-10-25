@@ -135,6 +135,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var builder: Notification.Builder? = null
     private var notifyMgr: NotificationManager? = null
 
+    private val requestBtConnectPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            gpsProEvents.postBluetoothPermissionResult(isGranted)
+        }
+
     companion object {
         /* Permission-group codes */
         private const val REQUEST_LOCATION = 1
@@ -350,6 +357,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
             showBtDeviceSettingsFragment()
+        }
+
+        gpsProEvents.requestBluetoothPermissionFlow.collectWhileStarted(this) {
+            if (Build.VERSION.SDK_INT >= VERSION_CODES.S) {
+                requestBtConnectPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+            }
         }
 
         downloadRepository.downloadEvent.collectWhileStarted(this) {

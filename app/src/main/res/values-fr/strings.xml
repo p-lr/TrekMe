@@ -325,4 +325,5 @@
     <string name="recording_status_stopped">Arrêté</string>
     <string name="recording_status_paused">En pause</string>
     <string name="onboarding_map_create">Sélectionnez une source de carte.</string>
+    <string name="gps_pro_bt_perm_not_granted">TrekMe n\'a pas l\'autorisation de se connecter aux appareils Bluetooth. Vous pouvez changer cela dans les paramètres de votre appareil, dans Applications > TrekMe.</string>
 </resources>
