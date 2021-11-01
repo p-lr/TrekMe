@@ -16,7 +16,6 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.sensors.OrientationSensor
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.repositories.map.RouteRepository
@@ -84,7 +83,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
 
     private val mapViewViewModel: MapViewViewModel by viewModels()
     private val inMapRecordingViewModel: InMapRecordingViewModel by viewModels()
-    private val statisticsViewModel: StatisticsViewModel by viewModels()
 
     private var state: Bundle? = null
 
@@ -137,15 +135,6 @@ class MapViewFragment : Fragment(), MapViewFragmentPresenter.PositionTouchListen
         presenter = MapViewFragmentPresenter(inflater, container, context)
         val presenter = presenter ?: return null
         presenter.setPositionTouchListener(this)
-
-        /* Observe track statistics changes */
-        statisticsViewModel.stats.observe(viewLifecycleOwner) {
-            if (it != null) {
-                presenter.showStatistics(it)
-            } else {
-                presenter.hideStatistics()
-            }
-        }
 
         /* Get the speed, distance and orientation indicators from the view */
         speedListener = presenter.view.speedIndicator
@@ -727,8 +716,6 @@ interface MapViewFragmentContract {
         fun setPositionTouchListener(listener: MapViewFragmentPresenter.PositionTouchListener)
         fun setMapView(mapView: MapView)
         fun removeMapView(mapView: MapView?)
-        fun showStatistics(trackStatistics: TrackStatistics)
-        fun hideStatistics()
         fun setGpsData(location: Location)
         fun setGpsDataVisible(visible: Boolean)
     }

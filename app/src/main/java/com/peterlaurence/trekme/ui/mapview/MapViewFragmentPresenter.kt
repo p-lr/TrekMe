@@ -8,7 +8,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.databinding.FragmentMapViewBinding
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.ui.mapview.components.CompassView
@@ -97,18 +96,6 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
     override fun showMessage(msg: String) {
         binding.message = msg
         binding.frgmtMapViewMsg.visibility = View.VISIBLE
-    }
-
-    override fun showStatistics(trackStatistics: TrackStatistics) {
-        binding.statsPanel.visibility = View.VISIBLE
-        binding.statsPanel.setDistance(trackStatistics.distance)
-        binding.statsPanel.setElevationUp(trackStatistics.elevationUpStack)
-        binding.statsPanel.setElevationDown(trackStatistics.elevationDownStack)
-        binding.statsPanel.setChrono(trackStatistics.durationInSecond)
-    }
-
-    override fun hideStatistics() {
-        binding.statsPanel.visibility = View.GONE
     }
 
     override fun setGpsData(location: Location) {
