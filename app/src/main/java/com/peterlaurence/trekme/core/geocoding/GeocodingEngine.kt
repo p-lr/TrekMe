@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 
 /**
@@ -24,8 +25,9 @@ import okhttp3.OkHttpClient
  */
 class GeocodingEngine(private val scope: CoroutineScope) {
     private val httpClient = OkHttpClient()
+    private val json = Json { isLenient = true; ignoreUnknownKeys = true }
     private val backends: List<GeocodingBackend> = listOf(
-            Nominatim(httpClient), Photon(httpClient),
+            Nominatim(httpClient, json), Photon(httpClient, json),
     )
 
     private val _geoPlaceFlow = MutableSharedFlow<List<GeoPlace>?>(0, 1, BufferOverflow.DROP_OLDEST)

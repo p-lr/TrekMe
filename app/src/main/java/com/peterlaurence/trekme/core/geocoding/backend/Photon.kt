@@ -4,6 +4,7 @@ import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.geocoding.POI
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import com.peterlaurence.trekme.core.geocoding.City as GeoCity
@@ -14,12 +15,12 @@ import com.peterlaurence.trekme.core.geocoding.Street as GeoStreet
  *
  * @author P.Laurence on 01/01/21
  */
-class Photon(private val client: OkHttpClient) : GeocodingBackend {
+class Photon(private val client: OkHttpClient, private val json: Json) : GeocodingBackend {
     private val requestBuilder = Request.Builder()
 
     override suspend fun search(query: String): List<GeoPlace>? {
         val req = makeRequest(query)
-        val resp = client.performRequest<PhotonMainResponse>(req)
+        val resp = client.performRequest<PhotonMainResponse>(req, json)
 
         return resp?.let { convert(it) }
     }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import java.net.InetAddress
 import java.util.*
@@ -57,6 +58,8 @@ class ElevationRepository(
         .writeTimeout(30, TimeUnit.SECONDS)
         .cache(null)
         .build()
+
+    private val json = Json { isLenient = true; ignoreUnknownKeys = true }
 
     /**
      * Computes elevation data from the given [GpxForElevation] and updates the exposed
@@ -312,7 +315,7 @@ class ElevationRepository(
         val url =
             "http://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList"
         val req = ignApiRepository.requestBuilder.url(url).build()
-        val eleList = client.performRequest<ElevationsResponse>(req)?.elevations?.map { it.z }
+        val eleList = client.performRequest<ElevationsResponse>(req, json)?.elevations?.map { it.z }
             ?: return Error
         return if (eleList.contains(-99999.0)) {
             NonTrusted

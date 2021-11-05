@@ -64,7 +64,7 @@
     <string name="fragment_map_list" translatable="false">MapListFragment</string>
     <string name="loading_maps">Loading maps…</string>
     <string name="create_first_map_question">How would you like to create your first map?</string>
-    <string name="with_onboarding_btn">Create a map</string>
+    <string name="with_onboarding_btn">With onboarding</string>
     <string name="without_onboarding_btn">Without onboarding</string>
     <string name="ok_dialog">OK</string>
     <string name="delete_dialog">Delete</string>
