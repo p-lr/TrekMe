@@ -163,38 +163,60 @@ class DialogShape(
     }
 
     private fun createNubPath(size: Size): Path {
-        return Path().apply {
-            when (nubPosition) {
-                NubPosition.LEFT -> {
-                    val startY = (size.height * relativePosition).coerceIn(cornerRadius, size.height - cornerRadius - nubWidth)
-                    val endY = (startY + nubWidth).coerceIn(cornerRadius, size.height - cornerRadius)
-                    moveTo(0f, startY)
-                    lineTo(0f, endY)
-                    lineTo(-nubHeight, startY + (endY - startY) / 2f + offset)
+        return runCatching {
+            Path().apply {
+                when (nubPosition) {
+                    NubPosition.LEFT -> {
+                        val startY = (size.height * relativePosition).coerceIn(
+                            cornerRadius,
+                            size.height - cornerRadius - nubWidth
+                        )
+                        val endY =
+                            (startY + nubWidth).coerceIn(cornerRadius, size.height - cornerRadius)
+                        moveTo(0f, startY)
+                        lineTo(0f, endY)
+                        lineTo(-nubHeight, startY + (endY - startY) / 2f + offset)
+                    }
+                    NubPosition.TOP -> {
+                        val startX = (size.width * relativePosition).coerceIn(
+                            cornerRadius,
+                            size.width - cornerRadius - nubWidth
+                        )
+                        val endX =
+                            (startX + nubWidth).coerceIn(cornerRadius, size.width - cornerRadius)
+                        moveTo(startX, 0f)
+                        lineTo(endX, 0f)
+                        lineTo(startX + (endX - startX) / 2f + offset, -nubHeight)
+                    }
+                    NubPosition.RIGHT -> {
+                        val startY = (size.height * relativePosition).coerceIn(
+                            cornerRadius,
+                            size.height - cornerRadius - nubWidth
+                        )
+                        val endY =
+                            (startY + nubWidth).coerceIn(cornerRadius, size.height - cornerRadius)
+                        moveTo(size.width, startY)
+                        lineTo(size.width, endY)
+                        lineTo(size.width + nubHeight, startY + (endY - startY) / 2f + offset)
+                    }
+                    NubPosition.BOTTOM -> {
+                        val startX = (size.width * relativePosition).coerceIn(
+                            cornerRadius,
+                            size.width - cornerRadius - nubWidth
+                        )
+                        val endX =
+                            (startX + nubWidth).coerceIn(cornerRadius, size.width - cornerRadius)
+                        moveTo(startX, size.height)
+                        lineTo(endX, size.height)
+                        lineTo(startX + (endX - startX) / 2f + offset, size.height + nubHeight)
+                    }
                 }
-                NubPosition.TOP -> {
-                    val startX = (size.width * relativePosition).coerceIn(cornerRadius, size.width - cornerRadius - nubWidth)
-                    val endX = (startX + nubWidth).coerceIn(cornerRadius, size.width - cornerRadius)
-                    moveTo(startX, 0f)
-                    lineTo(endX, 0f)
-                    lineTo(startX + (endX - startX) / 2f + offset, -nubHeight)
-                }
-                NubPosition.RIGHT -> {
-                    val startY = (size.height * relativePosition).coerceIn(cornerRadius, size.height - cornerRadius - nubWidth)
-                    val endY = (startY + nubWidth).coerceIn(cornerRadius, size.height - cornerRadius)
-                    moveTo(size.width, startY)
-                    lineTo(size.width, endY)
-                    lineTo(size.width + nubHeight, startY + (endY - startY) / 2f + offset)
-                }
-                NubPosition.BOTTOM -> {
-                    val startX = (size.width * relativePosition).coerceIn(cornerRadius, size.width - cornerRadius - nubWidth)
-                    val endX = (startX + nubWidth).coerceIn(cornerRadius, size.width - cornerRadius)
-                    moveTo(startX, size.height)
-                    lineTo(endX, size.height)
-                    lineTo(startX + (endX - startX) / 2f + offset, size.height + nubHeight)
-                }
+                close()
             }
-            close()
+        }.getOrElse {
+            // coerceIn(..) calls might throw IllegalArgumentException when composition happens when
+            // the size is (0, 0). In this case, we don't care about the returned Path.
+            Path()
         }
     }
 
