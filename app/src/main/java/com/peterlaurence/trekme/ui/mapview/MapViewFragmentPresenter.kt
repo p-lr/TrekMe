@@ -29,9 +29,9 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
         private val marker = PositionOrientationMarker(context)
 
         override val speedIndicator: MapViewFragment.SpeedListener
-            get() = binding.indicatorOverlay
+            get() = binding.topOverlay
         override val distanceIndicator: DistanceLayer.DistanceListener
-            get() = binding.indicatorOverlay
+            get() = binding.topOverlay
         override val positionMarker: PositionOrientationMarker
             get() = marker
         override val compassView: CompassView
@@ -89,7 +89,6 @@ constructor(layoutInflater: LayoutInflater, container: ViewGroup?, context: Cont
             layout.removeView(mapView)
         }
 
-        binding.indicatorOverlay.visibility = View.GONE
         binding.fabPosition.visibility = View.GONE
     }
 
