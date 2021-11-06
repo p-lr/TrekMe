@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.util.*
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +43,10 @@ import kotlin.coroutines.resumeWithException
 class WifiP2pService : Service() {
     @Inject
     lateinit var mapLoader: MapLoader
+
+    @Inject
+    @ApplicationContext
+    lateinit var appContext: Context
 
     private var importedDir: File? = null
     private val notificationChannelId = "trekme.WifiP2pService"
@@ -265,7 +270,7 @@ class WifiP2pService : Service() {
         val channel = channel ?: return
 
         runCatching {
-            manager?.discoverPeers(channel)
+            manager?.discoverPeers(appContext, channel)
         }.onFailure {
             wifiP2pState = Stopped(WithError(WifiP2pServiceErrors.WIFIP2P_UNSUPPORTED))
             return
@@ -282,7 +287,7 @@ class WifiP2pService : Service() {
                     manager?.clearLocalServices(channel)
                     manager?.stopPeerDiscovery(channel)
                     if (wifiP2pState != Started) break
-                    manager?.discoverPeers(channel)
+                    manager?.discoverPeers(appContext, channel)
                 }
             }
         }
@@ -297,7 +302,7 @@ class WifiP2pService : Service() {
                     manager?.clearServiceRequests(channel).also { Log.d(TAG, "ClearServiceRequests $it") }
                     manager?.stopPeerDiscovery(channel)
                     if (wifiP2pState != Started) break
-                    manager?.discoverPeers(channel)
+                    manager?.discoverPeers(appContext, channel)
                     Log.d(TAG, "Connection timeout - retry")
                 }
             }
@@ -310,7 +315,7 @@ class WifiP2pService : Service() {
 
         val channel = channel ?: return
         val manager = manager ?: return
-        manager.addLocalService(channel, serviceInfo)
+        manager.addLocalService(appContext, channel, serviceInfo)
     }
 
     /**
@@ -344,7 +349,7 @@ class WifiP2pService : Service() {
                 val serviceAdded = manager.addServiceRequest(channel, serviceRequest)
                 if (serviceAdded) {
                     Log.d(TAG, "Discovering services..")
-                    manager.discoverServices(channel).also { success ->
+                    manager.discoverServices(appContext, channel).also { success ->
                         if (success) {
                             Log.d(TAG, "Service successfully discovered")
                         } else {
@@ -368,7 +373,7 @@ class WifiP2pService : Service() {
             wps.setup = WpsInfo.PBC
         }
         val channel = channel ?: return
-        manager?.connect(channel, config).also {
+        manager?.connect(appContext, channel, config).also {
             /**
              * At this point, although the API has returned successfully, we still need to wait for
              * the broadcast event [WIFI_P2P_CONNECTION_CHANGED_ACTION] to be sure we're indeed
