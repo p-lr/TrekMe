@@ -155,7 +155,8 @@ public class FileUtils {
         if (scheme != null && scheme.equals("content")) {
             try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                    int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (index >= 0) result = cursor.getString(index);
                 }
             }
         }
