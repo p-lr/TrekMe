@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.map.mappers.toDomain
 import com.peterlaurence.trekme.util.FileUtils
 import java.io.File
 
-private const val MAX_RECURSION_DEPTH = 6
+private const val MAX_RECURSION_DEPTH = 3
 private const val TAG = "MapCreationTask"
 
 /**
