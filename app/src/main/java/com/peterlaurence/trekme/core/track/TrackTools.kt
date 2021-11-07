@@ -3,6 +3,9 @@ package com.peterlaurence.trekme.core.track
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.domain.Marker
+import com.peterlaurence.trekme.util.gpx.model.Gpx
+import com.peterlaurence.trekme.util.gpx.model.Track
+import com.peterlaurence.trekme.util.gpx.model.hasTrustedElevations
 import java.io.File
 import java.util.*
 
@@ -58,5 +61,16 @@ object TrackTools {
             map.addMarker(it)
         }
         return toBeAdded.count()
+    }
+
+    fun getTrackStatistics(track: Track, gpx: Gpx): TrackStatistics {
+        val statCalculatorList = track.trackSegments.map { trackSegment ->
+            val distanceCalculator = DistanceCalculatorImpl(gpx.hasTrustedElevations())
+            val statCalculator = TrackStatCalculator(distanceCalculator)
+            statCalculator.addTrackPointList(trackSegment.trackPoints)
+            statCalculator
+        }
+
+        return statCalculatorList.mergeStats()
     }
 }
