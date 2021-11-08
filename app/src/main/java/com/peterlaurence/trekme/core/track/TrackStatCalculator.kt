@@ -163,7 +163,7 @@ class DistanceCalculatorImpl(isElevationTrusted: Boolean) : DistanceCalculator {
     /**
      * The first points are added to the buffer. The first time the buffer is full, we make a
      * snapshot. Then, subsequent snapshots are made only when the mean elevation is greater or
-     * smaller than the previous elevation snapshot by 10 meters.
+     * smaller than the previous elevation snapshot by [eleThreshold] meters.
      * When we make a new snapshot, the distance is updated and the provided [onEleSnapShot] callback
      * is invoked with the mean elevation. This callback can be used to update elevation statistics.
      */

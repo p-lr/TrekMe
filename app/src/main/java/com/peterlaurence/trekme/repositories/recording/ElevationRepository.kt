@@ -270,20 +270,6 @@ class ElevationRepository(
     }
 
     /**
-     * Sub-sample if the list size exceeds 2 * [targetWidth].
-     */
-    private fun List<ElePoint>.subSample(targetWidth: Int): List<ElePoint> {
-        val chunkSize = size / targetWidth
-        return if (chunkSize >= 2) {
-            chunked(chunkSize).map { chunk ->
-                val dist = chunk.sumOf { it.dist } / chunk.size
-                val ele = chunk.sumOf { it.elevation } / chunk.size
-                ElePoint(dist, ele)
-            }
-        } else this
-    }
-
-    /**
      * Determine if we have an internet connection, then check the availability of the elevation
      * REST api.
      */
@@ -341,12 +327,6 @@ class ElevationRepository(
 
     private data class TrackElevationsSubSampled(
         val segmentElevations: List<SegmentElevationsSubSampled>,
-        val elevationSource: ElevationSource,
-        val needsUpdate: Boolean
-    )
-
-    private data class PayloadInfo(
-        val pointIndexed: List<PointIndexed>,
         val elevationSource: ElevationSource,
         val needsUpdate: Boolean
     )
