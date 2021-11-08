@@ -49,13 +49,17 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
     private var maxLon: Double? = null
 
     fun getStatistics(): TrackStatistics {
-        return TrackStatistics(distanceCalculator.getDistance(), highestElevation, lowestElevation,
-            elevationUpStack, elevationDownStack, durationInSecond, avgSpeed)
+        return TrackStatistics(
+            distanceCalculator.getDistance(), highestElevation, lowestElevation,
+            elevationUpStack, elevationDownStack, durationInSecond, avgSpeed
+        )
     }
 
     fun getBounds(): Bounds? {
-        return Bounds(minLat ?: return null, minLon ?: return null,
-                maxLat ?: return null, maxLon ?: return null)
+        return Bounds(
+            minLat ?: return null, minLon ?: return null,
+            maxLat ?: return null, maxLon ?: return null
+        )
     }
 
     fun addTrackPointList(trkPtList: List<TrackPoint>) {
@@ -138,14 +142,85 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
 
 interface DistanceCalculator {
     fun getDistance(): Double
+
+    /**
+     * Contract: [onEleSnapShot] should be invoked at each considered valid value of elevation.
+     */
     fun addPoint(lat: Double, lon: Double, ele: Double?, onEleSnapShot: ((Double) -> Unit)? = null)
 }
 
+fun distanceCalculatorFactory(isElevationTrusted: Boolean): DistanceCalculator {
+    return if (isElevationTrusted) {
+        DistanceCalculatorEleTrusted()
+    } else {
+        DistanceCalculatorEleNotTrusted()
+    }
+}
+
 /**
- * When we trust the values of elevations, we use a lower threshold.
+ * When elevation is trusted, simply compute the distance between each points -- taking into account
+ * the elevation if we can.
  */
-class DistanceCalculatorImpl(isElevationTrusted: Boolean) : DistanceCalculator {
-    private val eleThreshold: Int = if (isElevationTrusted) 3 else 10
+private class DistanceCalculatorEleTrusted : DistanceCalculator {
+    private var distance: Double = 0.0
+
+    private var previousLat: Double? = null
+    private var previousLon: Double? = null
+    private var previousEle: Double? = null
+
+    override fun getDistance(): Double = distance
+
+    override fun addPoint(
+        lat: Double,
+        lon: Double,
+        ele: Double?,
+        onEleSnapShot: ((Double) -> Unit)?
+    ) {
+        val previousLat = this.previousLat
+        val previousLon = this.previousLon
+
+        if (previousLat == null || previousLon == null) {
+            this.previousLat = lat
+            this.previousLon = lon
+            this.previousEle = ele
+            return
+        }
+
+        val previousEle = this.previousEle
+        val distDelta = if (previousEle == null || ele == null) {
+            deltaTwoPoints(
+                previousLat,
+                previousLon,
+                lat,
+                lon,
+            )
+        } else {
+            /* In this impl, all elevations are valid, so invoke the listener for all non null value */
+            onEleSnapShot?.invoke(ele)
+
+            deltaTwoPoints(
+                previousLat,
+                previousLon,
+                previousEle,
+                lat,
+                lon,
+                ele
+            )
+        }
+
+        this.previousLat = lat
+        this.previousLon = lon
+        this.previousEle = ele
+
+        distance += distDelta
+    }
+}
+
+/**
+ * When elevations aren't trusted, use a rolling mean with threshold algorithm.
+ */
+private class DistanceCalculatorEleNotTrusted : DistanceCalculator {
+    private val eleThreshold: Int = 10
     private var distance: Double = 0.0
 
     /* Size of the buffer used to compute elevation mean */
@@ -167,7 +242,12 @@ class DistanceCalculatorImpl(isElevationTrusted: Boolean) : DistanceCalculator {
      * When we make a new snapshot, the distance is updated and the provided [onEleSnapShot] callback
      * is invoked with the mean elevation. This callback can be used to update elevation statistics.
      */
-    override fun addPoint(lat: Double, lon: Double, ele: Double?, onEleSnapShot: ((Double) -> Unit)?) {
+    override fun addPoint(
+        lat: Double,
+        lon: Double,
+        ele: Double?,
+        onEleSnapShot: ((Double) -> Unit)?
+    ) {
         buffer.add(ele ?: Double.NaN)
         val firstSnapshot = buffer.size == bufferSize
 
@@ -182,7 +262,9 @@ class DistanceCalculatorImpl(isElevationTrusted: Boolean) : DistanceCalculator {
                 val meanEle = elevations.mean()
                 val diffEle = snapshot?.let { abs(it.elevation - meanEle) }
                 if (diffEle != null && diffEle > eleThreshold) {
-                    distance = snapshot!!.distance + sqrt((distance - snapshot!!.distance).pow(2) + diffEle.pow(2))
+                    distance = snapshot!!.distance + sqrt(
+                        (distance - snapshot!!.distance).pow(2) + diffEle.pow(2)
+                    )
                     this.snapshot = Snapshot(distance, meanEle)
                     onEleSnapShot?.invoke(meanEle)
                 }
@@ -222,6 +304,8 @@ private data class Snapshot(val distance: Double, val elevation: Double)
  * @param avgSpeed The average speed in meters per seconds
  */
 @Parcelize
-data class TrackStatistics(val distance: Double, var elevationMax: Double?, var elevationMin: Double?,
-                           val elevationUpStack: Double, val elevationDownStack: Double,
-                           val durationInSecond: Long? = null, val avgSpeed: Double? = null) : Parcelable
+data class TrackStatistics(
+    val distance: Double, var elevationMax: Double?, var elevationMin: Double?,
+    val elevationUpStack: Double, val elevationDownStack: Double,
+    val durationInSecond: Long? = null, val avgSpeed: Double? = null
+) : Parcelable

@@ -65,7 +65,7 @@ object TrackTools {
 
     fun getTrackStatistics(track: Track, gpx: Gpx): TrackStatistics {
         val statCalculatorList = track.trackSegments.map { trackSegment ->
-            val distanceCalculator = DistanceCalculatorImpl(gpx.hasTrustedElevations())
+            val distanceCalculator = distanceCalculatorFactory(gpx.hasTrustedElevations())
             val statCalculator = TrackStatCalculator(distanceCalculator)
             statCalculator.addTrackPointList(trackSegment.trackPoints)
             statCalculator

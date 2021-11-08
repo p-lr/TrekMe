@@ -90,7 +90,7 @@ class GpxRecordService : Service() {
      * Since we're getting elevations from the GPS, we're using a distance calculator designed to
      * deal with non-trusted elevations.
      */
-    private fun makeTrackStatCalculator() = TrackStatCalculator(DistanceCalculatorImpl(false))
+    private fun makeTrackStatCalculator() = TrackStatCalculator(distanceCalculatorFactory(false))
 
     override fun onCreate() {
         super.onCreate()

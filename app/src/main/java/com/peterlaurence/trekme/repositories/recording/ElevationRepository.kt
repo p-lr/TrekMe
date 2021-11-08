@@ -5,6 +5,7 @@ package com.peterlaurence.trekme.repositories.recording
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
+import com.peterlaurence.trekme.core.track.distanceCalculatorFactory
 import com.peterlaurence.trekme.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.util.chunk
 import com.peterlaurence.trekme.util.gpx.model.*
@@ -219,7 +220,7 @@ class ElevationRepository(
         var distanceOffset = 0.0
         val segmentElePoints = firstTrack.trackSegments.zip(segmentElevationList)
             .map { (segment, segmentEleSubSampled) ->
-                val elePoints = interpolateSegment(segmentEleSubSampled, segment, distanceOffset)
+                val elePoints = interpolateSegment(gpx, segmentEleSubSampled, segment, distanceOffset)
                 distanceOffset += elePoints.last().dist
                 SegmentElePoints(elePoints)
             }
@@ -232,40 +233,34 @@ class ElevationRepository(
     }
 
     private fun interpolateSegment(
+        gpx: Gpx,
         segmentElevation: SegmentElevationsSubSampled,
         segment: TrackSegment,
         distanceOffset: Double = 0.0
     ): List<ElePoint> {
         /* Take into account the trivial case where there is one or no points */
         if (segmentElevation.points.size < 2) {
-            val ele = segmentElevation.points.firstOrNull()?.ele ?: 0.0
-            return segmentElevation.points.map { ElePoint(0.0, it.ele) }
+            return segmentElevation.points.map { ElePoint(distanceOffset, it.ele) }
         }
         val ptsSorted = segmentElevation.points.sortedBy { it.index }.iterator()
 
-        var dist = distanceOffset
         var previousRefPt = ptsSorted.next()
         var nextRefPt = ptsSorted.next()
+
+        val distanceCalculator = distanceCalculatorFactory(gpx.hasTrustedElevations())
 
         return segment.trackPoints.mapIndexed { index, pt ->
             val ratio =
                 (index - previousRefPt.index).toFloat() / (nextRefPt.index - previousRefPt.index)
             val ele = previousRefPt.ele + ratio * (nextRefPt.ele - previousRefPt.ele)
-            val distDelta = deltaTwoPoints(
-                previousRefPt.lat,
-                previousRefPt.lon,
-                previousRefPt.ele,
-                pt.latitude,
-                pt.longitude,
-                ele
-            )
+            distanceCalculator.addPoint(pt.latitude, pt.longitude, ele)
 
             if (index >= nextRefPt.index && ptsSorted.hasNext()) {
                 previousRefPt = nextRefPt
                 nextRefPt = ptsSorted.next()
             }
-            dist += distDelta
-            ElePoint(dist, ele)
+
+            ElePoint(dist = distanceOffset + distanceCalculator.getDistance(), ele)
         }
     }
 
