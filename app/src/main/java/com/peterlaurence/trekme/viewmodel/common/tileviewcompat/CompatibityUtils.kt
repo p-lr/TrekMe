@@ -32,13 +32,6 @@ fun makeMapViewTileStreamProvider(map: Map): MapViewTileStreamProvider? {
     }
 }
 
-fun TileStreamProvider.toMapViewTileStreamProvider(): MapViewTileStreamProvider {
-    return ovh.plrapps.mapview.core.TileStreamProvider { row, col, zoomLvl ->
-        val tileResult = this@toMapViewTileStreamProvider.getTileStream(row, col, zoomLvl)
-        (tileResult as? TileStream)?.tileStream
-    }
-}
-
 fun TileStreamProvider.toMapComposeTileStreamProvider(): MapComposeTileStreamProvider {
     return MapComposeTileStreamProvider { row, col, zoomLvl ->
         val tileResult = this@toMapComposeTileStreamProvider.getTileStream(row, col, zoomLvl)

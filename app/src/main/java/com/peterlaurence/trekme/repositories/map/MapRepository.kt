@@ -3,6 +3,9 @@ package com.peterlaurence.trekme.repositories.map
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.ui.mapview.MapViewFragment
 import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * This repository holds references on:
@@ -11,13 +14,15 @@ import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment
  * * the [Map] that should be displayed when navigating to the [MapSettingsFragment]
  */
 class MapRepository {
-    private var map: Map? = null
+    private val _mapFlow = MutableStateFlow<Map?>(null)
+    val mapFlow: StateFlow<Map?> = _mapFlow.asStateFlow()
+
     private var settingsMap: Map? = null
 
-    fun getCurrentMap(): Map? = map
+    fun getCurrentMap(): Map? = _mapFlow.value
 
     fun setCurrentMap(map: Map) {
-        this.map = map
+        _mapFlow.value = map
     }
 
     fun getSettingsMap() = settingsMap
