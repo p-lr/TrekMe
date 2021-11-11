@@ -93,6 +93,7 @@ class Map(
     }
 
     /**
+     * TODO: remove that method
      * Check whether the map contains a given location. It's the responsibility of the caller to
      * know whether projected coordinated or lat/lon should be used.
      *

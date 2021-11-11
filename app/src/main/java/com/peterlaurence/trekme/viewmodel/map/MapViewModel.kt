@@ -1,21 +1,15 @@
 package com.peterlaurence.trekme.viewmodel.map
 
-import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.ui.common.PositionMarker
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.File
@@ -36,9 +30,14 @@ class MapViewModel @Inject constructor(
 
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
+    private var locationLayer: LocationLayer? = null
+
     init {
         mapRepository.mapFlow.map {
-            if (it != null) onMapChange(it)
+            if (it != null) {
+                onMapChange(it)
+                initLayers()
+            }
         }.launchIn(viewModelScope)
 
         settings.getRotationMode().map { rotMode ->
@@ -100,43 +99,16 @@ class MapViewModel @Inject constructor(
         }
     }
 
+    private fun initLayers() {
+        locationLayer = LocationLayer(viewModelScope, settings)
+    }
+
     suspend fun onLocationReceived(location: Location) {
         /* If there is no MapState, no need to go further */
         val mapState = this.mapState ?: return
         val map = mapRepository.mapFlow.firstOrNull() ?: return
 
-        viewModelScope.launch {
-            /* Project lat/lon off UI thread */
-            val projectedValues = withContext(Dispatchers.Default) {
-                map.projection?.doProjection(location.latitude, location.longitude)
-            }
-
-            /* Update the position */
-            val mapBounds = map.mapBounds
-            if (projectedValues != null && mapBounds != null) {
-                updatePosition(mapState, mapBounds, projectedValues[0], projectedValues[1])
-            }
-        }
-    }
-
-    /**
-     * Update the position on the map. The first time we update the position, we add the
-     * position marker.
-     *
-     * @param X the projected X coordinate
-     * @param Y the projected Y coordinate
-     */
-    private fun updatePosition(mapState: MapState, mapBounds: MapBounds, X: Double, Y: Double) {
-        val x = normalize(X, mapBounds.X0, mapBounds.X1)
-        val y = normalize(Y, mapBounds.Y0, mapBounds.Y1)
-
-        if (mapState.hasMarker(positionMarkerId)) {
-            mapState.moveMarker(positionMarkerId, x, y)
-        } else {
-            mapState.addMarker(positionMarkerId, x, y, relativeOffset = Offset(-0.5f, -0.5f)) {
-                PositionMarker()
-            }
-        }
+        locationLayer?.onLocation(location, mapState, map)
     }
 
     private fun makeTileStreamProvider(map: Map): MapComposeTileStreamProvider {
@@ -151,13 +123,7 @@ class MapViewModel @Inject constructor(
             }
         }
     }
-
-    private fun normalize(t: Double, min: Double, max: Double): Double {
-        return (t - min) / (max - min)
-    }
 }
-
-private const val positionMarkerId = "position"
 
 sealed interface UiState
 data class MapUiState(
