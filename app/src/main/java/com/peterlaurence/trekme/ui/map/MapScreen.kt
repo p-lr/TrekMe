@@ -23,21 +23,21 @@ fun MapScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     LaunchedEffect(lifecycleOwner) {
-//        launch {
-//            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-//                viewModel.locationFlow.collect {
-//                    viewModel.onLocation(it)
-//                }
-//            }
-//        }
+        launch {
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.locationFlow.collect {
+                    viewModel.onLocationReceived(it)
+                }
+            }
+        }
     }
 
-    val locationFlowLifecycleAware = remember(viewModel.locationFlow, lifecycleOwner) {
-        viewModel.locationFlow.flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.RESUMED)
-    }
+//    val locationFlowLifecycleAware = remember(viewModel.locationFlow, lifecycleOwner) {
+//        viewModel.locationFlow.flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.RESUMED)
+//    }
 
-    val location by locationFlowLifecycleAware.collectAsState(null)
-    Text("Hello world $location")
+//    val location by locationFlowLifecycleAware.collectAsState(null)
+//    Text("Hello world $location")
 
     val uiState by viewModel.uiState.collectAsState()
 
