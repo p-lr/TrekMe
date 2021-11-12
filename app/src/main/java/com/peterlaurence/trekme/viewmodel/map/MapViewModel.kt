@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.viewmodel.map
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
@@ -22,15 +23,21 @@ class MapViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     locationSource: LocationSource,
     private val settings: Settings,
+    private val appEventBus: AppEventBus
 ) : ViewModel() {
     private var mapState: MapState? = null
 
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
+    private val _topBarState = MutableStateFlow(TopBarState())
+    val topBarState: StateFlow<TopBarState> = _topBarState.asStateFlow()
+
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
     private var locationLayer: LocationLayer? = null
+
+    val snackBarController = SnackBarController()
 
     init {
         mapRepository.mapFlow.map {
@@ -46,6 +53,12 @@ class MapViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
     }
+
+    /* region TopAppBar events */
+    fun onMainMenuClick() {
+        appEventBus.openDrawer()
+    }
+    /* endregion */
 
     private suspend fun onMapChange(map: Map) {
         /* Shutdown the previous map state, if any */
@@ -125,6 +138,8 @@ class MapViewModel @Inject constructor(
     }
 }
 
+data class TopBarState(val isShowingOrientation: Boolean = false)
+
 sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
@@ -134,4 +149,8 @@ data class MapUiState(
 object Loading : UiState
 enum class Error : UiState {
     LicenseError, EmptyMap
+}
+
+enum class SnackBarEvent {
+    CURRENT_LOCATION_OUT_OF_BOUNDS
 }

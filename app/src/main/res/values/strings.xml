@@ -200,6 +200,7 @@
         map creation and by creating an IGN map."</string>
     <string name="unknown_map_source">Unknown map source. The map configuration is incorrect.</string>
     <string name="center_on_position_btn_desc" translatable="false">Center on position button</string>
+    <string name="map_screen_loc_outside_map">Your location is outside this map</string>
 
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>

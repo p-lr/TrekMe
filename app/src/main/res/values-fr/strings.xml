@@ -327,4 +327,5 @@
     <string name="onboarding_map_create">Sélectionnez une source de carte.</string>
     <string name="gps_pro_bt_perm_not_granted">TrekMe n\'a pas l\'autorisation de se connecter aux appareils Bluetooth. Vous pouvez changer cela dans les paramètres de votre appareil, dans Applications > TrekMe.</string>
     <string name="mapview_acq_gps">Attente GPS…</string>
+    <string name="map_screen_loc_outside_map">Votre position est hors de cette carte</string>
 </resources>
