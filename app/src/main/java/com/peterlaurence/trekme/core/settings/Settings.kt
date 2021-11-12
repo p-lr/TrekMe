@@ -144,6 +144,12 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 
+    suspend fun toggleOrientationVisibility() {
+        dataStore.edit {
+            it[orientationVisibility] = !(it[orientationVisibility] ?: false)
+        }
+    }
+
     suspend fun setOrientationVisibility(v: Boolean) {
         dataStore.edit {
             it[orientationVisibility] = v

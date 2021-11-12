@@ -1,10 +1,9 @@
 package com.peterlaurence.trekme.ui.map
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Scaffold
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.Text
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -32,25 +31,33 @@ fun MapScreen(
                 }
             }
         }
-        launch {
-            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                viewModel.orientationFlow.collect {
-                    println("xxxx orientation $it")
-                }
-            }
-        }
     }
 
     val uiState by viewModel.uiState.collectAsState()
     val topBarState by viewModel.topBarState.collectAsState()
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
 
+
+    if (uiState is MapUiState) {
+        LaunchedEffect(lifecycleOwner, (uiState as MapUiState).isShowingOrientation) {
+            if (!(uiState as MapUiState).isShowingOrientation) return@LaunchedEffect
+            launch {
+                lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    viewModel.orientationFlow.collect {
+                        println("xxxx orientation $it")
+                    }
+                }
+            }
+        }
+    }
+
     MapScaffold(
         uiState,
         topBarState,
         snackBarEvents,
         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
-        onMainMenuClick = viewModel::onMainMenuClick
+        onMainMenuClick = viewModel::onMainMenuClick,
+        onToggleShowOrientation = viewModel::toggleShowOrientation
     )
 }
 
@@ -60,7 +67,8 @@ fun MapScaffold(
     topBarState: TopBarState,
     snackBarEvents: List<SnackBarEvent>,
     onSnackBarShown: () -> Unit,
-    onMainMenuClick: () -> Unit
+    onMainMenuClick: () -> Unit,
+    onToggleShowOrientation: () -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -87,7 +95,19 @@ fun MapScaffold(
         Modifier.fillMaxSize(),
         scaffoldState = scaffoldState,
         topBar = {
-            MapTopAppBar(topBarState, onMenuClick = onMainMenuClick, onShowOrientation = {})
+            if (uiState is MapUiState) {
+                MapTopAppBar(uiState.isShowingOrientation, onMenuClick = onMainMenuClick, onToggleShowOrientation = onToggleShowOrientation)
+            } else {
+                /* In case of error, we only show the main menu button */
+                TopAppBar(
+                    title = {},
+                    navigationIcon = {
+                        IconButton(onClick = onMainMenuClick) {
+                            Icon(Icons.Filled.Menu, contentDescription = "")
+                        }
+                    }
+                )
+            }
         },
         floatingActionButton = {
 

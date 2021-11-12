@@ -13,13 +13,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.viewmodel.map.TopBarState
 
 @Composable
 fun MapTopAppBar(
-    topBarState: TopBarState,
+    isShowingOrientation: Boolean,
     onMenuClick: () -> Unit,
-    onShowOrientation: () -> Unit
+    onToggleShowOrientation: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -52,12 +51,12 @@ fun MapTopAppBar(
                     onDismissRequest = { expanded = false },
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
-                    DropdownMenuItem(onClick = onShowOrientation) {
+                    DropdownMenuItem(onClick = onToggleShowOrientation) {
                         Text(stringResource(id = R.string.mapview_orientation_enable))
                         Spacer(Modifier.width(8.dp))
                         Checkbox(
-                            checked = topBarState.isShowingOrientation,
-                            onCheckedChange = { onShowOrientation() })
+                            checked = isShowingOrientation,
+                            onCheckedChange = { onToggleShowOrientation() })
                     }
                 }
             }

@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.File
@@ -23,7 +24,7 @@ import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamPro
 class MapViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     locationSource: LocationSource,
-    private val orientationSource: OrientationSource,
+    orientationSource: OrientationSource,
     private val settings: Settings,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
@@ -55,6 +56,13 @@ class MapViewModel @Inject constructor(
                 applyRotationMode(mapState, rotMode)
             }
         }.launchIn(viewModelScope)
+
+        settings.getOrientationVisibility().map { visibility ->
+            val uiState = _uiState.value
+            if (uiState is MapUiState) {
+                _uiState.value = uiState.copy(isShowingOrientation = visibility)
+            }
+        }.launchIn(viewModelScope)
     }
 
     /* region TopAppBar events */
@@ -62,6 +70,10 @@ class MapViewModel @Inject constructor(
         appEventBus.openDrawer()
     }
     /* endregion */
+
+    fun toggleShowOrientation() = viewModelScope.launch {
+        settings.toggleOrientationVisibility()
+    }
 
     private suspend fun onMapChange(map: Map) {
         /* Shutdown the previous map state, if any */
