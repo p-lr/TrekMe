@@ -27,6 +27,7 @@ import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.repositories.recording.ElevationRepository
+import com.peterlaurence.trekme.sensors.OrientationSourceImpl
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.Module
 import dagger.Provides
@@ -189,6 +190,12 @@ object AppModule {
         }
         return LocationSourceImpl(modeFlow, flowSelector)
     }
+
+    @Singleton
+    @Provides
+    fun bindOrientationSource(
+        @ApplicationContext context: Context
+    ): OrientationSource = OrientationSourceImpl(context)
 }
 
 @Retention(AnnotationRetention.BINARY)

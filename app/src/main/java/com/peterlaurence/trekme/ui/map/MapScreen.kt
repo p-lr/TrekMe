@@ -32,6 +32,13 @@ fun MapScreen(
                 }
             }
         }
+        launch {
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.orientationFlow.collect {
+                    println("xxxx orientation $it")
+                }
+            }
+        }
     }
 
     val uiState by viewModel.uiState.collectAsState()

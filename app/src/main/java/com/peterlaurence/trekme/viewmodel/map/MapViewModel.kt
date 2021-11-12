@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
+import com.peterlaurence.trekme.core.model.OrientationSource
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
@@ -22,6 +23,7 @@ import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamPro
 class MapViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     locationSource: LocationSource,
+    private val orientationSource: OrientationSource,
     private val settings: Settings,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
@@ -34,6 +36,7 @@ class MapViewModel @Inject constructor(
     val topBarState: StateFlow<TopBarState> = _topBarState.asStateFlow()
 
     val locationFlow: Flow<Location> = locationSource.locationFlow
+    val orientationFlow: Flow<Double> = orientationSource.orientationFlow
 
     private var locationLayer: LocationLayer? = null
 
