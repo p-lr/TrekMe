@@ -35,7 +35,6 @@ class LocationLayer(
             if (it != null) hasCenteredOnFirstLocation = false
         }.launchIn(scope)
 
-
         scope.launch {
             uiStateFlow.filterIsInstance<MapUiState>().combine(
                 settings.getOrientationVisibility()

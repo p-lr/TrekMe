@@ -57,7 +57,7 @@ class OrientationSourceImpl(
 
             launch {
                 while (started) {
-                    delay(1)
+                    delay(10)
                     updateOrientation()
 
                     /* Get the azimuth value (orientation[0]) in radians */
@@ -71,7 +71,7 @@ class OrientationSourceImpl(
                 sensorManager.unregisterListener(listener)
             }
         }.distinctUntilChanged { old, new ->
-            abs(old - new) < 0.1
+            abs(old - new) < 0.005
         }.flowOn(
             Dispatchers.Default
         ).shareIn(
