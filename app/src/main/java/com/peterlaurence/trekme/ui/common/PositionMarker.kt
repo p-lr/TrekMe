@@ -27,9 +27,9 @@ fun PositionMarker(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PositionOrientationMarker(modifier: Modifier = Modifier, angle: Float) {
+fun PositionOrientationMarker(modifier: Modifier = Modifier, angle: Float? = null) {
     val color = colorResource(id = R.color.colorPositionMarker)
-    val innerRadius = with(LocalDensity.current) { 10.dp.toPx() }
+    val innerRadius = with(LocalDensity.current) { 10.75.dp.toPx() }
     val outerRadius = with(LocalDensity.current) { 30.dp.toPx() }
 
     val arrowPath = remember { makeArrowPath(innerRadius, outerRadius) }
@@ -39,17 +39,19 @@ fun PositionOrientationMarker(modifier: Modifier = Modifier, angle: Float) {
         contentAlignment = Alignment.Center
     ) {
         PositionMarker()
-        Canvas(modifier.rotate(angle)) {
-            drawPath(arrowPath, color)
+        if (angle != null) {
+            Canvas(modifier.rotate(angle)) {
+                drawPath(arrowPath, color)
+            }
         }
     }
 }
 
 private fun makeArrowPath(innerRadius: Float, outerRadius: Float) = Path().apply {
     moveTo(0f, -innerRadius)
-    arcTo(Rect(Offset.Zero, innerRadius), -90f, 40f, false)
+    arcTo(Rect(Offset.Zero, innerRadius), -90f, 33f, false)
     lineTo(0f, -outerRadius)
-    arcTo(Rect(Offset.Zero, innerRadius), -90f, -40f, false)
+    arcTo(Rect(Offset.Zero, innerRadius), -90f, -33f, false)
     lineTo(0f, -outerRadius)
 }
 

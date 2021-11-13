@@ -39,7 +39,7 @@ class MapViewModel @Inject constructor(
     val locationFlow: Flow<Location> = locationSource.locationFlow
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
 
-    private var locationLayer: LocationLayer? = null
+    private val locationLayer: LocationLayer = LocationLayer(viewModelScope, settings, mapRepository, uiState)
 
     val snackBarController = SnackBarController()
 
@@ -47,7 +47,6 @@ class MapViewModel @Inject constructor(
         mapRepository.mapFlow.map {
             if (it != null) {
                 onMapChange(it)
-                initLayers()
             }
         }.launchIn(viewModelScope)
 
@@ -73,6 +72,11 @@ class MapViewModel @Inject constructor(
 
     fun toggleShowOrientation() = viewModelScope.launch {
         settings.toggleOrientationVisibility()
+    }
+
+    fun setOrientation(intrinsicAngle: Double, displayRotation: Int) {
+        val orientation = (Math.toDegrees(intrinsicAngle) + 360 + displayRotation).toFloat() % 360
+        locationLayer.onOrientation(orientation)
     }
 
     private suspend fun onMapChange(map: Map) {
@@ -127,16 +131,8 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    private fun initLayers() {
-        locationLayer = LocationLayer(viewModelScope, settings)
-    }
-
-    suspend fun onLocationReceived(location: Location) {
-        /* If there is no MapState, no need to go further */
-        val mapState = this.mapState ?: return
-        val map = mapRepository.mapFlow.firstOrNull() ?: return
-
-        locationLayer?.onLocation(location, mapState, map)
+    fun onLocationReceived(location: Location) {
+        locationLayer.updateMapUi(location)
     }
 
     private fun makeTileStreamProvider(map: Map): MapComposeTileStreamProvider {

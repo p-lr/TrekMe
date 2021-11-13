@@ -1,31 +1,82 @@
 package com.peterlaurence.trekme.viewmodel.map
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.ui.common.PositionMarker
+import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.centerOnMarker
-import ovh.plrapps.mapcompose.api.hasMarker
-import ovh.plrapps.mapcompose.api.moveMarker
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 class LocationLayer(
     private val scope: CoroutineScope,
-    private val settings: Settings
+    private val settings: Settings,
+    mapRepository: MapRepository,
+    uiStateFlow: StateFlow<UiState>
 ) {
     private var hasCenteredOnFirstLocation = false
+    private val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
 
-    fun onLocation(location: Location, mapState: MapState, map: Map) {
+    private val orientationFlow = MutableSharedFlow<Float>(1, 0, BufferOverflow.DROP_OLDEST)
+    private val orientationState = mutableStateOf<Float?>(null)
+
+    init {
+        mapRepository.mapFlow.map {
+            if (it != null) hasCenteredOnFirstLocation = false
+        }.launchIn(scope)
+
+
+        scope.launch {
+            uiStateFlow.filterIsInstance<MapUiState>().combine(
+                settings.getOrientationVisibility()
+            ) { mapUiState: MapUiState, showOrientation: Boolean ->
+                Pair(mapUiState, showOrientation)
+            }.collectLatest { (mapUiState, showOrientation) ->
+                if (showOrientation) {
+                    combine(
+                        orientationFlow,
+                        locationFlow,
+                        mapRepository.mapFlow,
+                    ) { orientation, loc, map ->
+                        if (map != null) {
+                            orientationState.value = orientation
+                            updateMapUi(loc, mapUiState.mapState, map)
+                        }
+                    }.collect()
+                } else {
+                    combine(
+                        locationFlow,
+                        mapRepository.mapFlow,
+                    ) { loc, map ->
+                        if (map != null) {
+                            orientationState.value = null
+                            updateMapUi(loc, mapUiState.mapState, map)
+                        }
+                    }.collect()
+                }
+            }
+        }
+    }
+
+    fun updateMapUi(location: Location) {
+        locationFlow.tryEmit(location)
+    }
+
+    fun onOrientation(orientation: Float) {
+        orientationFlow.tryEmit(orientation)
+    }
+
+    private fun updateMapUi(location: Location, mapState: MapState, map: Map) {
         scope.launch {
             /* Project lat/lon off UI thread */
             val projectedValues = withContext(Dispatchers.Default) {
@@ -85,7 +136,8 @@ class LocationLayer(
             mapState.moveMarker(positionMarkerId, x, y)
         } else {
             mapState.addMarker(positionMarkerId, x, y, relativeOffset = Offset(-0.5f, -0.5f)) {
-                PositionMarker()
+                val angle by orientationState
+                PositionOrientationMarker(angle = angle)
             }
         }
     }

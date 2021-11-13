@@ -1,11 +1,15 @@
 package com.peterlaurence.trekme.ui.map
 
+import android.content.Context
+import android.content.ContextWrapper
+import android.os.Build
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
@@ -17,6 +21,8 @@ import com.peterlaurence.trekme.viewmodel.map.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
+import android.view.Surface
+import androidx.appcompat.app.AppCompatActivity
 
 @Composable
 fun MapScreen(
@@ -37,14 +43,14 @@ fun MapScreen(
     val topBarState by viewModel.topBarState.collectAsState()
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
 
-
     if (uiState is MapUiState) {
+        val displayRotation = getDisplayRotation()
         LaunchedEffect(lifecycleOwner, (uiState as MapUiState).isShowingOrientation) {
             if (!(uiState as MapUiState).isShowingOrientation) return@LaunchedEffect
             launch {
                 lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                     viewModel.orientationFlow.collect {
-                        println("xxxx orientation $it")
+                        viewModel.setOrientation(it, displayRotation)
                     }
                 }
             }
@@ -126,4 +132,38 @@ fun MapScaffold(
 @Composable
 fun MapUi(mapUiState: MapUiState) {
     MapUI(state = mapUiState.mapState)
+}
+
+/**
+ * We need to know the display rotation (either 0, 90°, 180°, or 270°) - and not just the
+ * portrait / landscape mode.
+ * To get that information, we only need a [Context] for Android 11 and up. However, on Android 10
+ * and below, we need the [AppCompatActivity].
+ *
+ * @return The angle in decimal degrees
+ */
+@Composable
+private fun getDisplayRotation(): Int {
+    val surfaceRotation: Int = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+        @Suppress("DEPRECATION")
+        LocalContext.current.getActivity()?.windowManager?.defaultDisplay?.rotation ?: Surface.ROTATION_0
+    } else {
+        LocalContext.current.display?.rotation ?: Surface.ROTATION_0
+    }
+
+    return when (surfaceRotation) {
+        Surface.ROTATION_90 -> 90
+        Surface.ROTATION_180 -> 180
+        Surface.ROTATION_270 -> 270
+        else -> 0
+    }
+}
+
+/**
+ * Depending on where the compose tree was originally created, we might have a [ContextWrapper].
+ */
+private tailrec fun Context.getActivity(): AppCompatActivity? = when (this) {
+    is AppCompatActivity -> this
+    is ContextWrapper -> baseContext.getActivity()
+    else -> null
 }

@@ -56,7 +56,7 @@ private class ProducersController(
     val locationFlow: SharedFlow<Location> = _locationFlow.asSharedFlow()
 
     init {
-        state.map { mode ->
+        state.distinctUntilChanged().map { mode ->
             val flow = flowSelector(mode)
             when (mode) {
                 InternalGps -> startInternal(flow)
