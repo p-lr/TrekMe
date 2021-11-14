@@ -70,15 +70,21 @@ class MapViewModel @Inject constructor(
     }
     /* endregion */
 
+    /* region Location layer */
+    fun onLocationReceived(location: Location) {
+        locationLayer.updateMapUi(location)
+    }
+
     fun toggleShowOrientation() = viewModelScope.launch {
         settings.toggleOrientationVisibility()
     }
 
     fun setOrientation(intrinsicAngle: Double, displayRotation: Int) {
-        val orientation = (Math.toDegrees(intrinsicAngle) + 360 + displayRotation).toFloat() % 360
-        locationLayer.onOrientation(orientation)
+        locationLayer.onOrientation(intrinsicAngle, displayRotation)
     }
+    /* endregion */
 
+    /* region map configuration */
     private suspend fun onMapChange(map: Map) {
         /* Shutdown the previous map state, if any */
         mapState?.shutdown()
@@ -131,10 +137,6 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    fun onLocationReceived(location: Location) {
-        locationLayer.updateMapUi(location)
-    }
-
     private fun makeTileStreamProvider(map: Map): MapComposeTileStreamProvider {
         return MapComposeTileStreamProvider { row, col, zoomLvl ->
             val relativePathString =
@@ -147,6 +149,7 @@ class MapViewModel @Inject constructor(
             }
         }
     }
+    /* endregion */
 }
 
 data class TopBarState(val isShowingOrientation: Boolean = false)

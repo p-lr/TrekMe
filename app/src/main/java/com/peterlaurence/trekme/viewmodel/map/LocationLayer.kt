@@ -71,7 +71,8 @@ class LocationLayer(
         locationFlow.tryEmit(location)
     }
 
-    fun onOrientation(orientation: Float) {
+    fun onOrientation(intrinsicAngle: Double, displayRotation: Int) {
+        val orientation = (Math.toDegrees(intrinsicAngle) + 360 + displayRotation).toFloat() % 360
         orientationFlow.tryEmit(orientation)
     }
 
