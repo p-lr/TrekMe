@@ -1,13 +1,13 @@
 package com.peterlaurence.trekme.viewmodel.map
 
 import androidx.compose.ui.geometry.Offset
+import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.map.components.LandMark
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -17,18 +17,17 @@ import java.util.*
 class LandmarkLayer(
     private val scope: CoroutineScope,
     private val mapLoader: MapLoader,
-    uiStateFlow: StateFlow<UiState>
+    layerData: Flow<LayerData>
 ) {
     private var landmarkListState = listOf<LandmarkState>()
 
     init {
-        uiStateFlow.filterIsInstance<MapUiState>().map { mapUiState ->
-            onMapUpdate(mapUiState)
+        layerData.map {
+            onMapUpdate(it.map, it.mapUiState)
         }.launchIn(scope)
     }
 
-    private suspend fun onMapUpdate(mapUiState: MapUiState) {
-        val map = mapUiState.map
+    private suspend fun onMapUpdate(map: Map, mapUiState: MapUiState) {
         val mapBounds = map.mapBounds ?: return
 
         /* Import landmarks */

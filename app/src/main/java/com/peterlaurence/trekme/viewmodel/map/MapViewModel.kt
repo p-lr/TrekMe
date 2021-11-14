@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
@@ -40,9 +41,10 @@ class MapViewModel @Inject constructor(
 
     val locationFlow: Flow<Location> = locationSource.locationFlow
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
+    private val layerDataFlow = MutableSharedFlow<LayerData>(0, 1, BufferOverflow.DROP_OLDEST)
 
-    private val locationLayer: LocationLayer = LocationLayer(viewModelScope, settings, mapRepository, uiState)
-    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, mapLoader, uiState)
+    private val locationLayer: LocationLayer = LocationLayer(viewModelScope, settings, layerDataFlow)
+    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, mapLoader, layerDataFlow)
 
     val snackBarController = SnackBarController()
 
@@ -121,11 +123,15 @@ class MapViewModel @Inject constructor(
         /* endregion */
 
         this.mapState = mapState
-        _uiState.value = MapUiState(
-            map,
+        val mapUiState = MapUiState(
             mapState,
             isShowingOrientation = settings.getOrientationVisibility().first()
         )
+        _uiState.value = mapUiState
+
+        /* Update layer data */
+        val layerData = LayerData(map, mapUiState)
+        layerDataFlow.tryEmit(layerData)
     }
 
     private fun applyRotationMode(mapState: MapState, rotationMode: RotationMode) {
@@ -156,11 +162,12 @@ class MapViewModel @Inject constructor(
     /* endregion */
 }
 
+data class LayerData(val map: Map, val mapUiState: MapUiState)
+
 data class TopBarState(val isShowingOrientation: Boolean = false)
 
 sealed interface UiState
 data class MapUiState(
-    val map: Map,
     val mapState: MapState,
     val isShowingOrientation: Boolean
 ) : UiState

@@ -7,7 +7,6 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.repositories.map.MapRepository
 import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +20,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 class LocationLayer(
     private val scope: CoroutineScope,
     private val settings: Settings,
-    mapRepository: MapRepository,
-    uiStateFlow: StateFlow<UiState>
+    layerDataFlow: Flow<LayerData>
 ) {
     private var hasCenteredOnFirstLocation = false
     private val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -36,31 +34,31 @@ class LocationLayer(
              * - the orientation and location flows, if orientation is enabled,
              * - the location flow only, if orientation is disabled.
              */
-            uiStateFlow.filterIsInstance<MapUiState>().combine(
+            layerDataFlow.combine(
                 settings.getOrientationVisibility()
-            ) { mapUiState: MapUiState, showOrientation: Boolean ->
-                Pair(mapUiState, showOrientation)
-            }.collectLatest { (mapUiState, showOrientation) ->
+            ) { layerData: LayerData, showOrientation: Boolean ->
+                Pair(layerData, showOrientation)
+            }.collectLatest { (layerData, showOrientation) ->
                 if (showOrientation) {
                     combine(
                         orientationFlow,
                         locationFlow,
                     ) { orientation, loc ->
                         orientationState.value = orientation
-                        updateMapUi(loc, mapUiState.mapState, mapUiState.map)
+                        updateMapUi(loc, layerData.mapUiState.mapState, layerData.map)
                     }.collect()
                 } else {
                     locationFlow.collect { loc ->
                         orientationState.value = null
-                        updateMapUi(loc, mapUiState.mapState, mapUiState.map)
+                        updateMapUi(loc, layerData.mapUiState.mapState, layerData.map)
                     }
                 }
             }
         }
 
         /* At every map change, set the internal flag */
-        mapRepository.mapFlow.map {
-            if (it != null) hasCenteredOnFirstLocation = false
+        layerDataFlow.map {
+            hasCenteredOnFirstLocation = false
         }.launchIn(scope)
     }
 
