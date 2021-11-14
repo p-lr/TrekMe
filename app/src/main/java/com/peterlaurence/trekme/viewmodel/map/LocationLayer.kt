@@ -31,11 +31,11 @@ class LocationLayer(
     private val orientationState = mutableStateOf<Float?>(null)
 
     init {
-        mapRepository.mapFlow.map {
-            if (it != null) hasCenteredOnFirstLocation = false
-        }.launchIn(scope)
-
         scope.launch {
+            /* At every map or orientation setting change, collect either:
+             * - the location and the map flows, if orientation is disabled,
+             * - the orientation, location, and map flows otherwise
+             */
             uiStateFlow.filterIsInstance<MapUiState>().combine(
                 settings.getOrientationVisibility()
             ) { mapUiState: MapUiState, showOrientation: Boolean ->
@@ -65,6 +65,11 @@ class LocationLayer(
                 }
             }
         }
+
+        /* At every map change, set the internal flag */
+        mapRepository.mapFlow.map {
+            if (it != null) hasCenteredOnFirstLocation = false
+        }.launchIn(scope)
     }
 
     fun updateMapUi(location: Location) {
