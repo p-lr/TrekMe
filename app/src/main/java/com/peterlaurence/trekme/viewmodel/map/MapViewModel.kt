@@ -23,8 +23,8 @@ import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamPro
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
-    private val mapLoader: MapLoader,
-    private val mapRepository: MapRepository,
+    mapLoader: MapLoader,
+    mapRepository: MapRepository,
     locationSource: LocationSource,
     orientationSource: OrientationSource,
     private val settings: Settings,
@@ -42,7 +42,7 @@ class MapViewModel @Inject constructor(
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
 
     private val locationLayer: LocationLayer = LocationLayer(viewModelScope, settings, mapRepository, uiState)
-    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, mapLoader, mapRepository, uiState)
+    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, mapLoader, uiState)
 
     val snackBarController = SnackBarController()
 
@@ -122,6 +122,7 @@ class MapViewModel @Inject constructor(
 
         this.mapState = mapState
         _uiState.value = MapUiState(
+            map,
             mapState,
             isShowingOrientation = settings.getOrientationVisibility().first()
         )
@@ -159,6 +160,7 @@ data class TopBarState(val isShowingOrientation: Boolean = false)
 
 sealed interface UiState
 data class MapUiState(
+    val map: Map,
     val mapState: MapState,
     val isShowingOrientation: Boolean
 ) : UiState

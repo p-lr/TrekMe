@@ -33,8 +33,8 @@ class LocationLayer(
     init {
         scope.launch {
             /* At every map or orientation setting change, collect either:
-             * - the location and the map flows, if orientation is disabled,
-             * - the orientation, location, and map flows otherwise
+             * - the orientation and location flows, if orientation is enabled,
+             * - the location flow only, if orientation is disabled.
              */
             uiStateFlow.filterIsInstance<MapUiState>().combine(
                 settings.getOrientationVisibility()
@@ -45,23 +45,15 @@ class LocationLayer(
                     combine(
                         orientationFlow,
                         locationFlow,
-                        mapRepository.mapFlow,
-                    ) { orientation, loc, map ->
-                        if (map != null) {
-                            orientationState.value = orientation
-                            updateMapUi(loc, mapUiState.mapState, map)
-                        }
+                    ) { orientation, loc ->
+                        orientationState.value = orientation
+                        updateMapUi(loc, mapUiState.mapState, mapUiState.map)
                     }.collect()
                 } else {
-                    combine(
-                        locationFlow,
-                        mapRepository.mapFlow,
-                    ) { loc, map ->
-                        if (map != null) {
-                            orientationState.value = null
-                            updateMapUi(loc, mapUiState.mapState, map)
-                        }
-                    }.collect()
+                    locationFlow.collect { loc ->
+                        orientationState.value = null
+                        updateMapUi(loc, mapUiState.mapState, mapUiState.map)
+                    }
                 }
             }
         }
