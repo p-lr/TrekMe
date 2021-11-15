@@ -18,15 +18,22 @@ import kotlinx.coroutines.delay
 
 /**
  * A call-out which animates its entry with an overshoot scaling interpolator.
+ *
+ * @param shouldAnimate Controls whether there should be an entering animation or not.
+ * @param delayMs Delay of the entering animation.
+ * @param popupOrigin Defines from where the callout will popup (only applicable if [shouldAnimate]
+ * is true).
+ * @param onAnimationDone Callback invoked when entering animation is done. The parent can use this
+ * to change the [shouldAnimate] state.
  */
 @Composable
 fun Callout(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(5.dp),
-    shouldAnimate: Boolean,
+    shouldAnimate: Boolean = true,
     delayMs: Long = 0,
     popupOrigin: PopupOrigin = PopupOrigin.BottomCenter,
-    onAnimationDone: () -> Unit,
+    onAnimationDone: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     var animVal by remember { mutableStateOf(if (shouldAnimate) 0f else 1f) }

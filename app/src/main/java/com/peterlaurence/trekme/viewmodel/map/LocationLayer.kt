@@ -130,7 +130,13 @@ class LocationLayer(
         if (mapState.hasMarker(positionMarkerId)) {
             mapState.moveMarker(positionMarkerId, x, y)
         } else {
-            mapState.addMarker(positionMarkerId, x, y, relativeOffset = Offset(-0.5f, -0.5f)) {
+            mapState.addMarker(
+                positionMarkerId,
+                x,
+                y,
+                relativeOffset = Offset(-0.5f, -0.5f),
+                clickable = false
+            ) {
                 val angle by orientationState
                 PositionOrientationMarker(angle = angle)
             }

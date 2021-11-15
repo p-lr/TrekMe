@@ -1,25 +1,36 @@
 package com.peterlaurence.trekme.viewmodel.map
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.stringResource
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.map.components.LandMark
+import com.peterlaurence.trekme.ui.map.components.LandmarkCallout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.api.addCallout
 import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.removeCallout
+import ovh.plrapps.mapcompose.ui.state.MapState
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.util.*
 
 class LandmarkLayer(
     private val scope: CoroutineScope,
     private val mapLoader: MapLoader,
     layerData: Flow<LayerData>
-) {
-    private var landmarkListState = listOf<LandmarkState>()
+) : MapViewModel.MarkerTapListener {
+    private var landmarkListState = mapOf<String, LandmarkState>()
 
     init {
         layerData.map {
@@ -48,6 +59,39 @@ class LandmarkLayer(
             }
 
             LandmarkState(id, landmark)
+        }.associateBy { it.id }
+    }
+
+    override fun onMarkerTap(mapState: MapState, id: String, x: Double, y: Double) {
+        if (id !in landmarkListState.keys) return
+
+        var shouldAnimate by mutableStateOf(true)
+        mapState.addCallout(
+            id, x, y,
+            absoluteOffset = Offset(0f, -130f),
+            autoDismiss = true, clickable = false
+        ) {
+            val subTitle = landmarkListState[id]?.landmark?.let {
+                "${stringResource(id = R.string.latitude_short)} ${df.format(it.lat)} ${
+                    stringResource(
+                        id = R.string.longitude_short
+                    )
+                } ${df.format(it.lon)}"
+            } ?: ""
+
+            LandmarkCallout(
+                subTitle = subTitle,
+                shouldAnimate,
+                onAnimationDone = { shouldAnimate = false },
+                onDeleteAction = {
+                    // TODO: delete action
+                    mapState.removeCallout(id)
+                },
+                onMoveAction = {
+                    // TODO: move action
+                    mapState.removeCallout(id)
+                }
+            )
         }
     }
 
@@ -57,3 +101,7 @@ class LandmarkLayer(
 }
 
 private data class LandmarkState(val id: String, val landmark: Landmark)
+
+private val df = DecimalFormat("#.####").apply {
+    roundingMode = RoundingMode.CEILING
+}

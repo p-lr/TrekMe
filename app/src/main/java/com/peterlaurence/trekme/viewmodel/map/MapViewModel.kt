@@ -120,6 +120,10 @@ class MapViewModel @Inject constructor(
         applyRotationMode(mapState, rotationMode)
 
         mapState.shouldLoopScale = true
+
+        mapState.onMarkerClick { id, x, y ->
+            landmarkLayer.onMarkerTap(mapState, id, x, y)
+        }
         /* endregion */
 
         this.mapState = mapState
@@ -160,6 +164,10 @@ class MapViewModel @Inject constructor(
         }
     }
     /* endregion */
+
+    interface MarkerTapListener {
+        fun onMarkerTap(mapState: MapState, id: String, x: Double, y: Double)
+    }
 }
 
 data class LayerData(val map: Map, val mapUiState: MapUiState)
