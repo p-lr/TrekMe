@@ -35,32 +35,47 @@ fun LandmarkCallout(
         ) {
             Text(
                 text = stringResource(id = R.string.callout_landmark_title),
+                modifier = Modifier.padding(top = 8.dp),
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
-            Text(text = subTitle, fontSize = 10.sp)
-            Divider()
-            Row {
+            Text(
+                text = subTitle,
+                modifier = Modifier.padding(vertical = 4.dp),
+                fontSize = 10.sp
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Divider(thickness = 0.5.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     painterResource(id = R.drawable.cursor_move),
-                    contentDescription = null,
+                    contentDescription = stringResource(id = R.string.map_move_landmark),
                     Modifier
-                        .padding(start = 8.dp)
+                        .padding(top = 10.dp, bottom = 10.dp, start = 24.dp)
+                        .size(24.dp)
                         .clickable {
                             onMoveAction()
                         },
-                    tint = Color(0xFF2196F3)
+                    tint = Color(0xFF448AFF)
                 )
+                Spacer(modifier = Modifier.weight(1f))
+                Divider(
+                    Modifier
+                        .height(16.dp)
+                        .width(1.dp), thickness = 0.5.dp)
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     painterResource(id = R.drawable.ic_delete_forever_black_24dp),
-                    contentDescription = null,
+                    contentDescription = stringResource(id = R.string.map_delete_landmark),
                     Modifier
-                        .padding(end = 8.dp)
+                        .padding(top = 10.dp, bottom = 10.dp, end = 24.dp)
+                        .size(24.dp)
                         .clickable {
                             onDeleteAction()
                         },
-                    tint = Color(0xFF2196F3)
+                    tint = Color(0xFF448AFF)
                 )
             }
         }

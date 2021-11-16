@@ -1,10 +1,13 @@
 package com.peterlaurence.trekme.viewmodel.map
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Landmark
@@ -55,7 +58,7 @@ class LandmarkLayer(
             val y = normalize(projectedValues[1], mapBounds.Y0, mapBounds.Y1)
 
             mapUiState.mapState.addMarker(id, x, y, relativeOffset = Offset(-0.5f, -0.5f)) {
-                LandMark(isStatic = true)
+                LandMark(Modifier.padding(5.dp), isStatic = true)
             }
 
             LandmarkState(id, landmark)
@@ -68,15 +71,12 @@ class LandmarkLayer(
         var shouldAnimate by mutableStateOf(true)
         mapState.addCallout(
             id, x, y,
-            absoluteOffset = Offset(0f, -130f),
+            absoluteOffset = Offset(0f, -80f),
             autoDismiss = true, clickable = false
         ) {
             val subTitle = landmarkListState[id]?.landmark?.let {
-                "${stringResource(id = R.string.latitude_short)} ${df.format(it.lat)} ${
-                    stringResource(
-                        id = R.string.longitude_short
-                    )
-                } ${df.format(it.lon)}"
+                "${stringResource(id = R.string.latitude_short)} : ${df.format(it.lat)}  " +
+                        "${stringResource(id = R.string.longitude_short)} : ${df.format(it.lon)}"
             } ?: ""
 
             LandmarkCallout(

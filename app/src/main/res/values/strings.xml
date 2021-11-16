@@ -183,6 +183,8 @@
     <string name="mapview_orientation_enable">Show orientation</string>
     <string name="mapview_gpsdata_enable">Show GPS data</string>
     <string name="mapview_add_landmark">Add landmark</string>
+    <string name="map_delete_landmark">Delete landmark</string>
+    <string name="map_move_landmark">Move landmark</string>
     <string name="mapview_lock_on_position">Lock on position</string>
     <string name="mapview_acq_gps">Awaiting GPS…</string>
     <string name="callout_landmark_title">Landmark</string>
