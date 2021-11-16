@@ -12,13 +12,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.common.Callout
 
 @Composable
 fun LandmarkCallout(
+    size: DpSize,
     subTitle: String,
     shouldAnimate: Boolean,
     onAnimationDone: () -> Unit,
@@ -30,7 +30,7 @@ fun LandmarkCallout(
         onAnimationDone = onAnimationDone
     ) {
         Column(
-            Modifier.size(140.dp, 100.dp),
+            Modifier.size(size),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(

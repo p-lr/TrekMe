@@ -11,3 +11,4 @@ fun pxToDp(px: Int): Int = (px / Resources.getSystem().displayMetrics.density).t
  * Convert dp to px
  */
 fun dpToPx(dp: Float): Float = dp * Resources.getSystem().displayMetrics.density
+fun dpToPx(dp: Int): Float = dp * Resources.getSystem().displayMetrics.density
