@@ -124,17 +124,22 @@ class LandmarkLayer(
                         mapState.removeCallout(id)
                         mapState.updateMarkerClickable(id, false)
                         landmarkState.isStatic = false
-                        attachMarkerGrab(id, x, y, mapState)
+                        attachMarkerGrab(id, x, y, mapState, landmarkState)
                     }
                 )
             }
         }
     }
 
-    private fun attachMarkerGrab(id: String, xMarker: Double, yMarker: Double, mapState: MapState) {
+    private fun attachMarkerGrab(id: String, xMarker: Double, yMarker: Double, mapState: MapState, landmarkState: LandmarkState) {
         val grabId = "$markerGrabPrefix-$id"
         mapState.addMarker(grabId, xMarker, yMarker, Offset(-0.5f, -0.5f), zIndex = 0f) {
-            MarkerGrab(morphedIn = true)
+            MarkerGrab(
+                morphedIn = !landmarkState.isStatic,
+                onMorphOutDone = {
+                    mapState.removeMarker(grabId)
+                }
+            )
         }
         mapState.enableMarkerDrag(grabId) { _, x, y, dx, dy ->
             mapState.moveMarker(grabId, x + dx, y + dy)
@@ -146,7 +151,6 @@ class LandmarkLayer(
         val markerId = markerGrabId.substringAfter('-')
         val landmarkState = landmarkListState[markerId] ?: return
         landmarkState.isStatic = true
-        mapState.removeMarker(markerGrabId)
         mapState.updateMarkerClickable(markerId, true)
     }
 
