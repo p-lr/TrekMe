@@ -1,10 +1,9 @@
 package com.peterlaurence.trekme.ui.mapview.controller
 
+import com.peterlaurence.trekme.ui.map.viewmodel.CalloutPosition
 import ovh.plrapps.mapview.MapView
 import ovh.plrapps.mapview.api.getVisibleViewport
 
-data class CalloutPosition(val relativeAnchorTop: Float, val absoluteAnchorTop: Float,
-                           val relativeAnchorLeft: Float, val absoluteAnchorLeft: Float)
 
 /**
  * Positions the callout, taking into account the available space around the marker. Accounts for

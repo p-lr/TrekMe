@@ -1,12 +1,13 @@
 package com.peterlaurence.trekme.ui.map.viewmodel
 
-import com.peterlaurence.trekme.ui.mapview.controller.CalloutPosition
 import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.fullSize
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.visibleBoundingBox
 import ovh.plrapps.mapcompose.ui.state.MapState
 
+data class CalloutPosition(val relativeAnchorTop: Float, val absoluteAnchorTop: Float,
+                           val relativeAnchorLeft: Float, val absoluteAnchorLeft: Float)
 
 /**
  * Positions the callout, taking into account the available space around the marker. Accounts for

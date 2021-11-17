@@ -3,10 +3,11 @@ package com.peterlaurence.trekme.ui.map.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
-import androidx.compose.material.Surface
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -30,9 +31,9 @@ fun Marker(
         animationSpec = tween(animationDurationMs)
     )
 
-    Surface(
+    Box(
         modifier = modifier,
-        color = Color.Transparent
+        contentAlignment = Alignment.Center
     ) {
         MarkerShape(
             backgroundColor = backgroundColor,
