@@ -100,8 +100,9 @@ class LandmarkLayer(
                 markerHeight
             )
 
+            val calloutId = "$calloutPrefix-$id"
             mapState.addCallout(
-                id, x, y,
+                calloutId, x, y,
                 relativeOffset = Offset(pos.relativeAnchorLeft, pos.relativeAnchorTop),
                 absoluteOffset = Offset(pos.absoluteAnchorLeft, pos.absoluteAnchorTop),
                 autoDismiss = true, clickable = false, zIndex = 3f
@@ -117,11 +118,11 @@ class LandmarkLayer(
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onDeleteAction = {
-                        mapState.removeCallout(id)
+                        mapState.removeCallout(calloutId)
                         mapState.removeMarker(id)
                     },
                     onMoveAction = {
-                        mapState.removeCallout(id)
+                        mapState.removeCallout(calloutId)
                         mapState.updateMarkerClickable(id, false)
                         landmarkState.isStatic = false
                         attachMarkerGrab(id, x, y, mapState, landmarkState)
@@ -131,8 +132,8 @@ class LandmarkLayer(
         }
     }
 
-    private fun attachMarkerGrab(id: String, xMarker: Double, yMarker: Double, mapState: MapState, landmarkState: LandmarkState) {
-        val grabId = "$markerGrabPrefix-$id"
+    private fun attachMarkerGrab(markerId: String, xMarker: Double, yMarker: Double, mapState: MapState, landmarkState: LandmarkState) {
+        val grabId = "$markerGrabPrefix-$markerId"
         mapState.addMarker(grabId, xMarker, yMarker, Offset(-0.5f, -0.5f), zIndex = 0f) {
             MarkerGrab(
                 morphedIn = !landmarkState.isStatic,
@@ -143,7 +144,7 @@ class LandmarkLayer(
         }
         mapState.enableMarkerDrag(grabId) { _, x, y, dx, dy ->
             mapState.moveMarker(grabId, x + dx, y + dy)
-            mapState.moveMarker(id, x + dx, y + dy)
+            mapState.moveMarker(markerId, x + dx, y + dy)
         }
     }
 
@@ -159,6 +160,7 @@ class LandmarkLayer(
     }
 }
 
+private const val calloutPrefix = "callout"
 private const val markerGrabPrefix = "landmarkGrab"
 
 private data class LandmarkState(val id: String, val landmark: Landmark) {
