@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
+import com.peterlaurence.trekme.ui.map.components.LandmarkLines
 
 @Composable
 fun MapScreen(
@@ -102,7 +103,11 @@ fun MapScaffold(
         scaffoldState = scaffoldState,
         topBar = {
             if (uiState is MapUiState) {
-                MapTopAppBar(uiState.isShowingOrientation, onMenuClick = onMainMenuClick, onToggleShowOrientation = onToggleShowOrientation)
+                MapTopAppBar(
+                    uiState.isShowingOrientation,
+                    onMenuClick = onMainMenuClick,
+                    onToggleShowOrientation = onToggleShowOrientation
+                )
             } else {
                 /* In case of error, we only show the main menu button */
                 TopAppBar(
@@ -131,7 +136,13 @@ fun MapScaffold(
 
 @Composable
 fun MapUi(mapUiState: MapUiState) {
-    MapUI(state = mapUiState.mapState)
+    MapUI(state = mapUiState.mapState) {
+        LandmarkLines(
+            mapState = mapUiState.mapState,
+            positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
+            landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
+        )
+    }
 }
 
 /**
@@ -146,7 +157,8 @@ fun MapUi(mapUiState: MapUiState) {
 private fun getDisplayRotation(): Int {
     val surfaceRotation: Int = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
         @Suppress("DEPRECATION")
-        LocalContext.current.getActivity()?.windowManager?.defaultDisplay?.rotation ?: Surface.ROTATION_0
+        LocalContext.current.getActivity()?.windowManager?.defaultDisplay?.rotation
+            ?: Surface.ROTATION_0
     } else {
         LocalContext.current.display?.rotation ?: Surface.ROTATION_0
     }

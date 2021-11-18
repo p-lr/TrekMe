@@ -14,13 +14,16 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ovh.plrapps.mapcompose.api.*
+import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.centerOnMarker
+import ovh.plrapps.mapcompose.api.hasMarker
+import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 class LocationLayer(
     private val scope: CoroutineScope,
     private val settings: Settings,
-    layerDataFlow: Flow<LayerData>
+    layerDataFlow: Flow<LayerData>,
 ) {
     private var hasCenteredOnFirstLocation = false
     private val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -45,12 +48,12 @@ class LocationLayer(
                         locationFlow,
                     ) { orientation, loc ->
                         orientationState.value = orientation
-                        updateMapUi(loc, layerData.mapUiState.mapState, layerData.map)
+                        onLocation(loc, layerData.mapUiState.mapState, layerData.map)
                     }.collect()
                 } else {
                     locationFlow.collect { loc ->
                         orientationState.value = null
-                        updateMapUi(loc, layerData.mapUiState.mapState, layerData.map)
+                        onLocation(loc, layerData.mapUiState.mapState, layerData.map)
                     }
                 }
             }
@@ -62,7 +65,7 @@ class LocationLayer(
         }.launchIn(scope)
     }
 
-    fun updateMapUi(location: Location) {
+    fun onLocation(location: Location) {
         locationFlow.tryEmit(location)
     }
 
@@ -71,7 +74,7 @@ class LocationLayer(
         orientationFlow.tryEmit(orientation)
     }
 
-    private fun updateMapUi(location: Location, mapState: MapState, map: Map) {
+    private fun onLocation(location: Location, mapState: MapState, map: Map) {
         scope.launch {
             /* Project lat/lon off UI thread */
             val projectedValues = withContext(Dispatchers.Default) {
@@ -159,4 +162,4 @@ class LocationLayer(
     }
 }
 
-private const val positionMarkerId = "position"
+const val positionMarkerId = "position"

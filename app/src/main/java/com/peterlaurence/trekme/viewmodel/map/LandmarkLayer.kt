@@ -1,9 +1,7 @@
 package com.peterlaurence.trekme.viewmodel.map
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
@@ -34,7 +32,7 @@ import java.util.*
 class LandmarkLayer(
     private val scope: CoroutineScope,
     private val mapLoader: MapLoader,
-    layerData: Flow<LayerData>
+    private val layerData: Flow<LayerData>
 ) : MapViewModel.MarkerTapListener {
     private var landmarkListState = mapOf<String, LandmarkState>()
 
@@ -56,7 +54,7 @@ class LandmarkLayer(
                 map.projection?.doProjection(landmark.lat, landmark.lon)
             } ?: doubleArrayOf(landmark.lon, landmark.lat)
 
-            val id = UUID.randomUUID().toString()
+            val id = "$landmarkPrefix-${UUID.randomUUID()}"
             val x = normalize(projectedValues[0], mapBounds.X0, mapBounds.X1)
             val y = normalize(projectedValues[1], mapBounds.Y0, mapBounds.Y1)
 
@@ -160,10 +158,25 @@ class LandmarkLayer(
     }
 }
 
-private const val calloutPrefix = "callout"
-private const val markerGrabPrefix = "landmarkGrab"
+class LandmarkLinesState(mapState: MapState) {
+    private val markersSnapshot by mapState.derivedMarkerState()
 
-private data class LandmarkState(val id: String, val landmark: Landmark) {
+    val positionMarkerSnapshot: MarkerDataSnapshot?
+        get() = markersSnapshot.firstOrNull {
+            it.id == positionMarkerId
+        }
+
+    val landmarksSnapshot: List<MarkerDataSnapshot>
+        get() = markersSnapshot.filter {
+            it.id.startsWith(landmarkPrefix)
+        }
+}
+
+private const val landmarkPrefix = "landmark"
+private const val calloutPrefix = "callout"
+private const val markerGrabPrefix = "grabLandmark"
+
+data class LandmarkState(val id: String, val landmark: Landmark) {
     var isStatic by mutableStateOf(true)
 }
 
