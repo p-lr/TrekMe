@@ -1,13 +1,24 @@
 package com.peterlaurence.trekme.ui.map.components
 
-import androidx.compose.runtime.Composable
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import ovh.plrapps.mapcompose.api.DefaultCanvas
-import ovh.plrapps.mapcompose.api.MarkerDataSnapshot
-import ovh.plrapps.mapcompose.api.fullSize
-import ovh.plrapps.mapcompose.api.scale
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.nativeCanvas
+import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
+import com.peterlaurence.trekme.util.dpToPx
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 /**
@@ -29,23 +40,131 @@ fun LandmarkLines(
     modifier: Modifier = Modifier,
     mapState: MapState,
     positionMarker: MarkerDataSnapshot?,
-    landmarkPositions: List<MarkerDataSnapshot>
+    landmarkPositions: List<MarkerDataSnapshot>,
 ) {
-    if (positionMarker != null) {
-        val pStart = makeOffset(positionMarker.x, positionMarker.y, mapState)
+    if (positionMarker == null) return
 
-        DefaultCanvas(
-            modifier = modifier,
-            mapState = mapState
-        ) {
-            for (l in landmarkPositions) {
-                val pEnd = makeOffset(l.x, l.y, mapState)
-                drawLine(lineColor, start = pStart, end = pEnd, strokeWidth = 8f / mapState.scale)
+    val flow = remember {
+        MutableSharedFlow<List<MarkerDataSnapshot>>(0, 1, BufferOverflow.DROP_OLDEST)
+    }
+
+    val distanceForLandmark = remember {
+        mutableStateMapOf<String, LandmarkDistanceLabel>()
+    }
+
+    val offset = remember {
+        dpToPx(4f)
+    }
+
+    LaunchedEffect(Unit) {
+        flow.map { list ->
+            val positionMarker = list.firstOrNull() ?: return@map
+            list.subList(1, list.lastIndex + 1).forEach { landmark ->
+                val distance = computeDistance(positionMarker, landmark)
+
+                val distStr = formatDistance(distance)
+                val anchor = makeOffset(landmark.x, landmark.y, mapState)
+
+                distanceForLandmark[landmark.id]?.apply {
+                    if (distanceState.value == null) {
+                        distancePaint.getTextBounds(distStr, 0, distStr.length, textRectState.value)
+                        with(bubbleRectState.value) {
+                            left = textRectState.value.left.toFloat() - offset + anchor.x
+                            top = textRectState.value.top.toFloat() - offset + anchor.y
+                            right = textRectState.value.right.toFloat() + offset + anchor.x
+                            bottom = textRectState.value.bottom.toFloat() + offset + anchor.y
+                        }
+                    }
+                    distanceState.value = distStr
+                }
+            }
+        }.collect()
+    }
+
+    LaunchedEffect(landmarkPositions + positionMarker) {
+        flow.tryEmit(listOf(positionMarker) + landmarkPositions)
+
+        landmarkPositions.forEach { landmark ->
+            val anchor = makeOffset(landmark.x, landmark.y, mapState)
+
+            if (distanceForLandmark.containsKey(landmark.id)) {
+                distanceForLandmark[landmark.id]?.apply {
+                    anchorState.value = anchor
+                }
+            } else {
+                distanceForLandmark[landmark.id] = LandmarkDistanceLabel(
+                    anchorState = mutableStateOf(anchor),
+                    distanceState = mutableStateOf(null),
+                    textRectState = mutableStateOf(Rect()),
+                    bubbleRectState = mutableStateOf(RectF())
+                )
+            }
+            distanceForLandmark[landmark.id]?.apply {
+                val distStr = distanceState.value ?: return@apply
+                distanceState.value = distStr
+                distancePaint.getTextBounds(distStr, 0, distStr.length, textRectState.value)
+
+                with(bubbleRectState.value) {
+                    left = textRectState.value.left.toFloat() - offset + anchor.x
+                    top = textRectState.value.top.toFloat() - offset + anchor.y
+                    right = textRectState.value.right.toFloat() + offset + anchor.x
+                    bottom = textRectState.value.bottom.toFloat() + offset + anchor.y
+                }
+            }
+        }
+    }
+
+    val pStart = remember(positionMarker) {
+        makeOffset(positionMarker.x, positionMarker.y, mapState)
+    }
+
+    DefaultCanvas(
+        modifier = modifier,
+        mapState = mapState
+    ) {
+        for (l in landmarkPositions) {
+            val pEnd = makeOffset(l.x, l.y, mapState)
+            drawLine(lineColor, start = pStart, end = pEnd, strokeWidth = 8f / mapState.scale)
+
+            val distanceLabel = distanceForLandmark[l.id] ?: continue
+            val dist = distanceLabel.distanceState.value ?: continue
+
+            val anchor = distanceLabel.anchorState.value
+            drawIntoCanvas {
+                scale(1 / mapState.scale, anchor) {
+                    rotate(-mapState.rotation, anchor) {
+                        it.nativeCanvas.drawRoundRect(
+                            distanceLabel.bubbleRectState.value, 6f, 6f, distanceTextBgPaint
+                        )
+                        it.nativeCanvas.drawText(dist, anchor.x, anchor.y, distancePaint)
+                    }
+                }
             }
         }
     }
 }
 
+private val distancePaint = Paint().apply {
+    color = android.graphics.Color.WHITE
+    textSize = dpToPx(12f)
+    isAntiAlias = true
+    style = Paint.Style.FILL
+}
+
+private val distanceTextBgPaint = Paint().apply {
+    color = android.graphics.Color.parseColor("#CD9C27B0")
+    isAntiAlias = true
+    style = Paint.Style.FILL
+}
+
+suspend fun computeDistance(
+    positionMarker: MarkerDataSnapshot,
+    landmark: MarkerDataSnapshot
+): Double {
+    delay(100)
+    println("xxxx compute distance for ${landmark.id}")
+    return landmark.x + landmark.y
+}
 
 private fun makeOffset(x: Double, y: Double, mapState: MapState): Offset {
     return Offset(
@@ -53,6 +172,13 @@ private fun makeOffset(x: Double, y: Double, mapState: MapState): Offset {
         y = (mapState.fullSize.height * y).toFloat()
     )
 }
+
+private data class LandmarkDistanceLabel(
+    val anchorState: MutableState<Offset>,
+    val distanceState: MutableState<String?>,
+    val textRectState: MutableState<Rect>,
+    val bubbleRectState: MutableState<RectF>
+)
 
 private val color = Color(0xFF9C27B0)
 private val strokeColor = Color(0xFF4A148C)
