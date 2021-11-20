@@ -25,8 +25,8 @@ fun getLonLat(x: Double, y: Double, map: Map): DoubleArray? {
     val bounds = map.mapBounds ?: return null
     val projection = map.projection
     return if (projection != null) {
-        val projX = (bounds.X0 - bounds.X1) * x
-        val projY = (bounds.Y0 - bounds.Y1) * y
+        val projX = bounds.X0 + (bounds.X0 - bounds.X1) * x
+        val projY = bounds.Y0 + (bounds.Y0 - bounds.Y1) * y
         projection.undoProjection(projX, projY)
     } else {
         /* If no projection, the bounds are assumed to be in longitude / latitude */

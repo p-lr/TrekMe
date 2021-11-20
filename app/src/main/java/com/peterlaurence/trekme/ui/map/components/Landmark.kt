@@ -54,7 +54,11 @@ fun LandmarkLines(
     /* Compute the position and size of distance labels. */
     LaunchedEffect(landmarkPositions, positionMarker, distanceForId) {
         landmarkPositions.forEach { landmark ->
-            val anchor = makeOffset(landmark.x, landmark.y, mapState)
+            val anchor = makeOffset(
+                (landmark.x + positionMarker.x) / 2,
+                (landmark.y + positionMarker.y) / 2,
+                mapState
+            )
 
             if (labelDataForId.containsKey(landmark.id)) {
                 labelDataForId[landmark.id]?.apply {
@@ -74,10 +78,11 @@ fun LandmarkLines(
                 distanceState.value = distStr
                 distancePaint.getTextBounds(distStr, 0, distStr.length, textRectState.value)
 
+                val textWidth  = textRectState.value.right - textRectState.value.left
                 with(bubbleRectState.value) {
-                    left = textRectState.value.left.toFloat() - offset + anchor.x
+                    left = textRectState.value.left.toFloat() - offset + anchor.x - textWidth / 2
                     top = textRectState.value.top.toFloat() - offset + anchor.y
-                    right = textRectState.value.right.toFloat() + offset + anchor.x
+                    right = textRectState.value.right.toFloat() + offset + anchor.x - textWidth / 2
                     bottom = textRectState.value.bottom.toFloat() + offset + anchor.y
                 }
             }
@@ -119,6 +124,7 @@ private val distancePaint = Paint().apply {
     textSize = dpToPx(12f)
     isAntiAlias = true
     style = Paint.Style.FILL
+    textAlign = Paint.Align.CENTER
 }
 
 private val distanceTextBgPaint = Paint().apply {
