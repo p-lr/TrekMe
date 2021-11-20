@@ -8,8 +8,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Landmark
+import com.peterlaurence.trekme.core.map.getLonLat
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.map.components.LandMark
 import com.peterlaurence.trekme.ui.map.components.LandmarkCallout
@@ -159,7 +161,7 @@ class LandmarkLayer(
     }
 }
 
-class LandmarkLinesState(mapState: MapState) {
+class LandmarkLinesState(mapState: MapState, private val map: Map) {
     private val markersSnapshot by mapState.markerDerivedState()
     private val markersSnapshotFlow = mapState.markerSnapshotFlow()
 
@@ -173,7 +175,7 @@ class LandmarkLinesState(mapState: MapState) {
             it.id.startsWith(landmarkPrefix)
         }
 
-    val distanceForLandmark: Flow<kotlin.collections.Map<String, Double>> =
+    val distanceForLandmark: Flow<kotlin.collections.Map<String, Double?>> =
         markersSnapshotFlow.mapNotNull {
             val position = positionMarkerSnapshot ?: return@mapNotNull null
             computeDistanceForId(landmarksSnapshot, position)
@@ -183,11 +185,16 @@ class LandmarkLinesState(mapState: MapState) {
     private suspend fun computeDistanceForId(
         landmarks: List<MarkerDataSnapshot>,
         position: MarkerDataSnapshot
-    ): kotlin.collections.Map<String, Double> {
-        // TODO compute dist for ids
-        delay(100)
-        return landmarks.associate {
-            it.id to ((it.x + it.y) - (position.x + position.y)) * 1000
+    ): kotlin.collections.Map<String, Double?> = withContext(Dispatchers.Default) {
+        fun computeDistance(aX: Double, aY: Double, bX: Double, bY: Double): Double? {
+            val lonLatA = getLonLat(aX, aY, map) ?: return null
+            val lonLatB = getLonLat(bX, bY, map) ?: return null
+            return distanceApprox(lonLatA[1], lonLatA[0], lonLatB[1], lonLatB[0])
+        }
+
+        delay(100)  // slow it down a bit
+        landmarks.associate {
+            it.id to computeDistance(position.x, position.y, it.x, it.y)
         }
     }
 }

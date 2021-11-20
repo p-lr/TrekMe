@@ -37,7 +37,7 @@ fun LandmarkLines(
     mapState: MapState,
     positionMarker: MarkerDataSnapshot?,
     landmarkPositions: List<MarkerDataSnapshot>,
-    distanceForIdFlow: Flow<Map<String, Double>>
+    distanceForIdFlow: Flow<Map<String, Double?>>
 ) {
     if (positionMarker == null) return
 
@@ -122,7 +122,7 @@ private val distancePaint = Paint().apply {
 }
 
 private val distanceTextBgPaint = Paint().apply {
-    color = android.graphics.Color.parseColor("#CD9C27B0")
+    color = android.graphics.Color.parseColor("#CD9C27B0")  // full opaque equiv is #b052c0
     isAntiAlias = true
     style = Paint.Style.FILL
 }

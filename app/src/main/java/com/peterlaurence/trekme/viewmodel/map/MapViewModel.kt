@@ -127,9 +127,11 @@ class MapViewModel @Inject constructor(
         /* endregion */
 
         this.mapState = mapState
+        val landmarkLinesState = LandmarkLinesState(mapState, map)
         val mapUiState = MapUiState(
             mapState,
-            isShowingOrientation = settings.getOrientationVisibility().first()
+            isShowingOrientation = settings.getOrientationVisibility().first(),
+            landmarkLinesState
         )
         _uiState.value = mapUiState
 
@@ -178,7 +180,7 @@ sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
     val isShowingOrientation: Boolean,
-    val landmarkLinesState: LandmarkLinesState = LandmarkLinesState(mapState)
+    val landmarkLinesState: LandmarkLinesState
 ) : UiState
 
 object Loading : UiState
