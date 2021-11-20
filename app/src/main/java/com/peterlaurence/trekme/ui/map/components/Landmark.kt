@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -78,7 +79,7 @@ fun LandmarkLines(
                 distanceState.value = distStr
                 distancePaint.getTextBounds(distStr, 0, distStr.length, textRectState.value)
 
-                val textWidth  = textRectState.value.right - textRectState.value.left
+                val textWidth = textRectState.value.right - textRectState.value.left
                 with(bubbleRectState.value) {
                     left = textRectState.value.left.toFloat() - offset + anchor.x - textWidth / 2
                     top = textRectState.value.top.toFloat() - offset + anchor.y
@@ -99,7 +100,13 @@ fun LandmarkLines(
     ) {
         for (l in landmarkPositions) {
             val pEnd = makeOffset(l.x, l.y, mapState)
-            drawLine(lineColor, start = pStart, end = pEnd, strokeWidth = 8f / mapState.scale)
+            drawLine(
+                lineColor,
+                start = pStart,
+                end = pEnd,
+                strokeWidth = lineWidthPx / mapState.scale,
+                cap = StrokeCap.Round
+            )
 
             val distanceLabel = labelDataForId[l.id] ?: continue
             val dist = distanceLabel.distanceState.value ?: continue
@@ -150,3 +157,4 @@ private data class LabelData(
 private val color = Color(0xFF9C27B0)
 private val strokeColor = Color(0xFF4A148C)
 private val lineColor = Color(0xCD9C27B0)
+private val lineWidthPx = dpToPx(4)
