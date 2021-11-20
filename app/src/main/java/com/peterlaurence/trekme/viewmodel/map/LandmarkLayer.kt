@@ -16,13 +16,8 @@ import com.peterlaurence.trekme.ui.map.components.LandmarkCallout
 import com.peterlaurence.trekme.ui.map.components.MarkerGrab
 import com.peterlaurence.trekme.ui.map.viewmodel.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.math.RoundingMode
@@ -130,7 +125,13 @@ class LandmarkLayer(
         }
     }
 
-    private fun attachMarkerGrab(markerId: String, xMarker: Double, yMarker: Double, mapState: MapState, landmarkState: LandmarkState) {
+    private fun attachMarkerGrab(
+        markerId: String,
+        xMarker: Double,
+        yMarker: Double,
+        mapState: MapState,
+        landmarkState: LandmarkState
+    ) {
         val grabId = "$markerGrabPrefix-$markerId"
         mapState.addMarker(grabId, xMarker, yMarker, Offset(-0.5f, -0.5f), zIndex = 0f) {
             MarkerGrab(
@@ -159,7 +160,8 @@ class LandmarkLayer(
 }
 
 class LandmarkLinesState(mapState: MapState) {
-    private val markersSnapshot by mapState.derivedMarkerState()
+    private val markersSnapshot by mapState.markerDerivedState()
+    private val markersSnapshotFlow = mapState.markerSnapshotFlow()
 
     val positionMarkerSnapshot: MarkerDataSnapshot?
         get() = markersSnapshot.firstOrNull {
@@ -170,6 +172,24 @@ class LandmarkLinesState(mapState: MapState) {
         get() = markersSnapshot.filter {
             it.id.startsWith(landmarkPrefix)
         }
+
+    val distanceForLandmark: Flow<kotlin.collections.Map<String, Double>> =
+        markersSnapshotFlow.mapNotNull {
+            val position = positionMarkerSnapshot ?: return@mapNotNull null
+            computeDistanceForId(landmarksSnapshot, position)
+        }
+
+
+    private suspend fun computeDistanceForId(
+        landmarks: List<MarkerDataSnapshot>,
+        position: MarkerDataSnapshot
+    ): kotlin.collections.Map<String, Double> {
+        // TODO compute dist for ids
+        delay(100)
+        return landmarks.associate {
+            it.id to ((it.x + it.y) - (position.x + position.y)) * 1000
+        }
+    }
 }
 
 private const val landmarkPrefix = "landmark"

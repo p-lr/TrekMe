@@ -140,7 +140,8 @@ fun MapUi(mapUiState: MapUiState) {
         LandmarkLines(
             mapState = mapUiState.mapState,
             positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
-            landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
+            landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot,
+            distanceForIdFlow = mapUiState.landmarkLinesState.distanceForLandmark
         )
     }
 }

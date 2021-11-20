@@ -13,11 +13,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.nativeCanvas
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.util.dpToPx
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -41,66 +37,40 @@ fun LandmarkLines(
     mapState: MapState,
     positionMarker: MarkerDataSnapshot?,
     landmarkPositions: List<MarkerDataSnapshot>,
+    distanceForIdFlow: Flow<Map<String, Double>>
 ) {
     if (positionMarker == null) return
 
-    val flow = remember {
-        MutableSharedFlow<List<MarkerDataSnapshot>>(0, 1, BufferOverflow.DROP_OLDEST)
-    }
+    val distanceForId by distanceForIdFlow.collectAsState(initial = mapOf())
 
-    val distanceForLandmark = remember {
-        mutableStateMapOf<String, LandmarkDistanceLabel>()
+    val labelDataForId = remember {
+        mutableStateMapOf<String, LabelData>()
     }
 
     val offset = remember {
         dpToPx(4f)
     }
 
-    LaunchedEffect(Unit) {
-        flow.map { list ->
-            val positionMarker = list.firstOrNull() ?: return@map
-            list.subList(1, list.lastIndex + 1).forEach { landmark ->
-                val distance = computeDistance(positionMarker, landmark)
-
-                val distStr = formatDistance(distance)
-                val anchor = makeOffset(landmark.x, landmark.y, mapState)
-
-                distanceForLandmark[landmark.id]?.apply {
-                    if (distanceState.value == null) {
-                        distancePaint.getTextBounds(distStr, 0, distStr.length, textRectState.value)
-                        with(bubbleRectState.value) {
-                            left = textRectState.value.left.toFloat() - offset + anchor.x
-                            top = textRectState.value.top.toFloat() - offset + anchor.y
-                            right = textRectState.value.right.toFloat() + offset + anchor.x
-                            bottom = textRectState.value.bottom.toFloat() + offset + anchor.y
-                        }
-                    }
-                    distanceState.value = distStr
-                }
-            }
-        }.collect()
-    }
-
-    LaunchedEffect(landmarkPositions + positionMarker) {
-        flow.tryEmit(listOf(positionMarker) + landmarkPositions)
-
+    /* Compute the position and size of distance labels. */
+    LaunchedEffect(landmarkPositions, positionMarker, distanceForId) {
         landmarkPositions.forEach { landmark ->
             val anchor = makeOffset(landmark.x, landmark.y, mapState)
 
-            if (distanceForLandmark.containsKey(landmark.id)) {
-                distanceForLandmark[landmark.id]?.apply {
+            if (labelDataForId.containsKey(landmark.id)) {
+                labelDataForId[landmark.id]?.apply {
                     anchorState.value = anchor
                 }
             } else {
-                distanceForLandmark[landmark.id] = LandmarkDistanceLabel(
+                labelDataForId[landmark.id] = LabelData(
                     anchorState = mutableStateOf(anchor),
                     distanceState = mutableStateOf(null),
                     textRectState = mutableStateOf(Rect()),
                     bubbleRectState = mutableStateOf(RectF())
                 )
             }
-            distanceForLandmark[landmark.id]?.apply {
-                val distStr = distanceState.value ?: return@apply
+            labelDataForId[landmark.id]?.apply {
+                val distance = distanceForId[landmark.id] ?: return@apply
+                val distStr = formatDistance(distance)
                 distanceState.value = distStr
                 distancePaint.getTextBounds(distStr, 0, distStr.length, textRectState.value)
 
@@ -126,7 +96,7 @@ fun LandmarkLines(
             val pEnd = makeOffset(l.x, l.y, mapState)
             drawLine(lineColor, start = pStart, end = pEnd, strokeWidth = 8f / mapState.scale)
 
-            val distanceLabel = distanceForLandmark[l.id] ?: continue
+            val distanceLabel = labelDataForId[l.id] ?: continue
             val dist = distanceLabel.distanceState.value ?: continue
 
             val anchor = distanceLabel.anchorState.value
@@ -157,15 +127,6 @@ private val distanceTextBgPaint = Paint().apply {
     style = Paint.Style.FILL
 }
 
-suspend fun computeDistance(
-    positionMarker: MarkerDataSnapshot,
-    landmark: MarkerDataSnapshot
-): Double {
-    delay(100)
-    println("xxxx compute distance for ${landmark.id}")
-    return landmark.x + landmark.y
-}
-
 private fun makeOffset(x: Double, y: Double, mapState: MapState): Offset {
     return Offset(
         x = (mapState.fullSize.width * x).toFloat(),
@@ -173,7 +134,7 @@ private fun makeOffset(x: Double, y: Double, mapState: MapState): Offset {
     )
 }
 
-private data class LandmarkDistanceLabel(
+private data class LabelData(
     val anchorState: MutableState<Offset>,
     val distanceState: MutableState<String?>,
     val textRectState: MutableState<Rect>,
