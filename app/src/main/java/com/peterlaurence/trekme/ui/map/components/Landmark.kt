@@ -17,6 +17,8 @@ import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * A landmark is just a [Marker] with different colors.
@@ -53,9 +55,19 @@ fun LandmarkLines(
     }
 
     /* Compute the position and size of distance labels. */
-    LaunchedEffect(landmarkPositions, positionMarker, distanceForId) {
+    LaunchedEffect(
+        landmarkPositions,
+        positionMarker,
+        distanceForId,
+        mapState.scale,
+        mapState.scroll
+    ) {
         landmarkPositions.forEach { landmark ->
-            val anchor = makeOffset(
+            val boundingBox = mapState.visibleBoundingBox()
+            val anchor = coerceInBoundingBox(
+                mapState, boundingBox, positionMarker.x, positionMarker.y,
+                landmark.x, landmark.y
+            ) ?: makeOffset(
                 (landmark.x + positionMarker.x) / 2,
                 (landmark.y + positionMarker.y) / 2,
                 mapState
@@ -124,6 +136,91 @@ fun LandmarkLines(
             }
         }
     }
+}
+
+private fun coerceInBoundingBox(
+    mapState: MapState,
+    bb: BoundingBox,
+    aX: Double,
+    aY: Double,
+    bX: Double,
+    bY: Double
+): Offset? {
+    if (aX == bX || aY == bY) return null
+
+    val minX = min(aX, bX)
+    val maxX = max(aX, bX)
+    val minY = min(aY, bY)
+    val maxY = max(aY, bY)
+
+    /* Quick reject */
+    if (maxX <= bb.xLeft || minX >= bb.xRight || minY >= bb.yBottom || maxY <= bb.yTop) return null
+
+    fun BoundingBox.contains(x: Double, y: Double): Boolean {
+        return x in xLeft..xRight && y in yTop..yBottom
+    }
+
+    /* If the two points are visible, return the middle */
+    if (bb.contains(aX, aY) && bb.contains(bY, bY)) return makeOffset(
+        (aX + bX) / 2,
+        (aY + bY) / 2,
+        mapState
+    )
+
+    fun findIntersect(
+        l1X: Double,
+        l1Y: Double,
+        l2X: Double,
+        l2Y: Double,
+        intersects: MutableList<Double>
+    ): Boolean {
+        /* Find x intersection */
+        val s1X = bX - aX
+        val s2X = l2X - l1X
+        val s1Y = bY - aY
+        val s2Y = l2Y - l1Y
+
+        val s = (-s1Y * (aX - l1X) + s1X * (aY - l1Y)) / (-s2X * s1Y + s1X * s2Y)
+        val t = (s2X * (aY - l1Y) - s2Y * (aX - l1X)) / (-s2X * s1Y + s1X * s2Y)
+
+        return if (s in 0.0..1.0 && t in 0.0..1.0) {
+            intersects.add(aX + t * s1X)
+            intersects.add(aY + t * s1Y)
+            true
+        } else false
+    }
+
+    val intersections = mutableListOf<Double>()
+
+    findIntersect(bb.xLeft, bb.yTop, bb.xRight, bb.yTop, intersections)
+    findIntersect(bb.xRight, bb.yTop, bb.xRight, bb.yBottom, intersections)
+    findIntersect(bb.xLeft, bb.yBottom, bb.xRight, bb.yBottom, intersections)
+    findIntersect(bb.xLeft, bb.yBottom, bb.xLeft, bb.yTop, intersections)
+
+    if (intersections.size == 0) return null
+    if (intersections.size == 2) {
+        if (bb.contains(aX, aY)) {
+            return makeOffset(
+                (aX + intersections[0]) / 2,
+                (aY + intersections[1]) / 2,
+                mapState
+            )
+        } else if (bb.contains(bX, bY)) {
+            return makeOffset(
+                (bX + intersections[0]) / 2,
+                (bY + intersections[1]) / 2,
+                mapState
+            )
+        } else return null
+    }
+    if (intersections.size == 4) {
+        return makeOffset(
+            (intersections[0] + intersections[2]) / 2,
+            (intersections[1] + intersections[3]) / 2,
+            mapState
+        )
+    }
+    return null
 }
 
 private val distancePaint = Paint().apply {
