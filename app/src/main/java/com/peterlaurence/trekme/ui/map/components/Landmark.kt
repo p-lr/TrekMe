@@ -17,8 +17,7 @@ import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.flow.Flow
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.abs
 
 /**
  * A landmark is just a [Marker] with different colors.
@@ -63,7 +62,7 @@ fun LandmarkLines(
         mapState.scroll
     ) {
         landmarkPositions.forEach { landmark ->
-            val boundingBox = mapState.visibleBoundingBox()
+            val boundingBox = mapState.visibleArea()
             val anchor = coerceInBoundingBox(
                 mapState, boundingBox, positionMarker.x, positionMarker.y,
                 landmark.x, landmark.y
@@ -140,7 +139,7 @@ fun LandmarkLines(
 
 private fun coerceInBoundingBox(
     mapState: MapState,
-    bb: BoundingBox,
+    bb: VisibleArea,
     aX: Double,
     aY: Double,
     bX: Double,
@@ -148,16 +147,18 @@ private fun coerceInBoundingBox(
 ): Offset? {
     if (aX == bX || aY == bY) return null
 
-    val minX = min(aX, bX)
-    val maxX = max(aX, bX)
-    val minY = min(aY, bY)
-    val maxY = max(aY, bY)
+    fun VisibleArea.contains(x: Double, y: Double): Boolean {
+        fun triangleArea(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Double {
+            return abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0)
+        }
 
-    /* Quick reject */
-    if (maxX <= bb.xLeft || minX >= bb.xRight || minY >= bb.yBottom || maxY <= bb.yTop) return null
+        val fullArea = triangleArea(p1x, p1y, p2x, p2y, p3x, p3y) + triangleArea(p1x, p1y, p4x, p4y, p3x, p3y)
+        val t1 = triangleArea(x, y, p1x, p1y, p2x, p2y)
+        val t2 = triangleArea(x, y, p2x, p2y, p3x, p3y)
+        val t3 = triangleArea(x, y, p3x, p3y, p4x, p4y)
+        val t4 = triangleArea(x, y, p1x, p1y, p4x, p4y)
 
-    fun BoundingBox.contains(x: Double, y: Double): Boolean {
-        return x in xLeft..xRight && y in yTop..yBottom
+        return abs(fullArea - (t1 + t2 + t3 + t4)) < 1E-8
     }
 
     /* If the two points are visible, return the middle */
@@ -192,10 +193,10 @@ private fun coerceInBoundingBox(
 
     val intersections = mutableListOf<Double>()
 
-    findIntersect(bb.xLeft, bb.yTop, bb.xRight, bb.yTop, intersections)
-    findIntersect(bb.xRight, bb.yTop, bb.xRight, bb.yBottom, intersections)
-    findIntersect(bb.xLeft, bb.yBottom, bb.xRight, bb.yBottom, intersections)
-    findIntersect(bb.xLeft, bb.yBottom, bb.xLeft, bb.yTop, intersections)
+    findIntersect(bb.p1x, bb.p1y, bb.p2x, bb.p2y, intersections)
+    findIntersect(bb.p2x, bb.p2y, bb.p3x, bb.p3y, intersections)
+    findIntersect(bb.p3x, bb.p3y, bb.p4x, bb.p4y, intersections)
+    findIntersect(bb.p4x, bb.p4y, bb.p1x, bb.p1y, intersections)
 
     if (intersections.size == 0) return null
     if (intersections.size == 2) {
