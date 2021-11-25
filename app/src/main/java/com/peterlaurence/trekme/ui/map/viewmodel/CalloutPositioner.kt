@@ -1,10 +1,8 @@
 package com.peterlaurence.trekme.ui.map.viewmodel
 
-import ovh.plrapps.mapcompose.api.BoundingBox
-import ovh.plrapps.mapcompose.api.fullSize
-import ovh.plrapps.mapcompose.api.scale
-import ovh.plrapps.mapcompose.api.visibleBoundingBox
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
+import ovh.plrapps.mapcompose.utils.Point
 
 data class CalloutPosition(val relativeAnchorTop: Float, val absoluteAnchorTop: Float,
                            val relativeAnchorLeft: Float, val absoluteAnchorLeft: Float)
@@ -33,8 +31,11 @@ suspend fun positionCallout(
     markerWidth: Int, markerHeight: Int
 ): CalloutPosition {
 
-    val xInPx = relativeX * mapState.fullSize.width * mapState.scale
-    val yInPx = relativeY * mapState.fullSize.height * mapState.scale
+    /* We're working in the referential of the visible area, so we need to rotate the callout position */
+    val rotatedPoint = mapState.rotatePoint(Point(relativeX, relativeY), mapState.rotation)
+
+    val xInPx = rotatedPoint.x * mapState.fullSize.width * mapState.scale
+    val yInPx = rotatedPoint.y * mapState.fullSize.height * mapState.scale
 
     val boundingBox = mapState.visibleBoundingBox().scale(
         mapState.fullSize.width * mapState.scale.toDouble(),
