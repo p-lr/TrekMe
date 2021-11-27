@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.core.model.OrientationSource
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.ui.map.domain.interactors.MapInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
@@ -28,6 +29,7 @@ class MapViewModel @Inject constructor(
     mapRepository: MapRepository,
     locationSource: LocationSource,
     orientationSource: OrientationSource,
+    mapInteractor: MapInteractor,
     private val settings: Settings,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
@@ -44,7 +46,7 @@ class MapViewModel @Inject constructor(
     private val layerDataFlow = MutableSharedFlow<LayerData>(1, 0, BufferOverflow.DROP_OLDEST)
 
     private val locationLayer: LocationLayer = LocationLayer(viewModelScope, settings, layerDataFlow)
-    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, mapLoader, layerDataFlow)
+    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, mapLoader, layerDataFlow, mapInteractor)
 
     val snackBarController = SnackBarController()
 

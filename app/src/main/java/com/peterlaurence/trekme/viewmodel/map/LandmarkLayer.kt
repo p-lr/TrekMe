@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.map.components.LandMark
 import com.peterlaurence.trekme.ui.map.components.LandmarkCallout
 import com.peterlaurence.trekme.ui.map.components.MarkerGrab
+import com.peterlaurence.trekme.ui.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.ui.map.viewmodel.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.*
@@ -29,7 +30,8 @@ import java.util.*
 class LandmarkLayer(
     private val scope: CoroutineScope,
     private val mapLoader: MapLoader,
-    private val layerData: Flow<LayerData>
+    private val layerData: Flow<LayerData>,
+    private val mapInteractor: MapInteractor
 ) : MapViewModel.MarkerTapListener {
     private var landmarkListState = mapOf<String, LandmarkState>()
 
@@ -154,6 +156,16 @@ class LandmarkLayer(
         val landmarkState = landmarkListState[markerId] ?: return
         landmarkState.isStatic = true
         mapState.updateMarkerClickable(markerId, true)
+
+        val landmarkInfo = mapState.getMarkerInfo(markerId)
+        val landmark = landmarkListState[markerId]?.landmark
+        if (landmarkInfo != null && landmark != null) {
+            scope.launch {
+                layerData.collect {
+                    mapInteractor.updateAndSaveLandmark(landmark, it.map, landmarkInfo.x, landmarkInfo.y)
+                }
+            }
+        }
     }
 
     private fun normalize(t: Double, min: Double, max: Double): Double {
