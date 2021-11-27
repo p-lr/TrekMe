@@ -221,7 +221,7 @@ class ElevationRepository(
         val segmentElePoints = firstTrack.trackSegments.zip(segmentElevationList)
             .map { (segment, segmentEleSubSampled) ->
                 val elePoints = interpolateSegment(gpx, segmentEleSubSampled, segment, distanceOffset)
-                distanceOffset += elePoints.last().dist
+                distanceOffset = elePoints.last().dist
                 SegmentElePoints(elePoints)
             }
 
