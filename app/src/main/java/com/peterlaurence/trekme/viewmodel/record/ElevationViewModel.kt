@@ -82,6 +82,10 @@ class ElevationViewModel @Inject constructor(
 
     private fun updateGpxFileWithTrustedElevations(gpxForElevation: GpxForElevation, eleData: ElevationData) {
         val segmentElePoints = eleData.segmentElePoints
+
+        /* Safeguard - don't erase file content with empty data */
+        if (segmentElePoints.isEmpty()) return
+
         val gpx = gpxForElevation.gpx
         /* Update the first track only */
         val newTracks = gpx.tracks.mapIndexed { iTrack, track ->

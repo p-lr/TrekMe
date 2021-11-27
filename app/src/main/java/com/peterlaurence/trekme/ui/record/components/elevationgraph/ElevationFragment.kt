@@ -14,7 +14,9 @@ import com.peterlaurence.trekme.databinding.FragmentElevationBinding
 import com.peterlaurence.trekme.repositories.recording.Calculating
 import com.peterlaurence.trekme.repositories.recording.ElePoint
 import com.peterlaurence.trekme.repositories.recording.ElevationData
+import com.peterlaurence.trekme.repositories.recording.NoElevationData
 import com.peterlaurence.trekme.util.dpToPx
+import com.peterlaurence.trekme.util.exhaustive
 import com.peterlaurence.trekme.util.gpx.model.ElevationSource
 import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -71,6 +73,7 @@ class ElevationFragment : Fragment() {
                                     ElevationSource.UNKNOWN -> getString(R.string.elevation_src_unknown)
                                 }
                             }
+                            Unit
                         } else {
                             b.showGraph(false)
                             b.loadingMsg.text = getString(R.string.no_elevations)
@@ -81,7 +84,11 @@ class ElevationFragment : Fragment() {
                         b.progressBar.visibility = View.VISIBLE
                         b.loadingMsg.text = getString(R.string.elevation_compute_in_progress)
                     }
-                }
+                    NoElevationData -> {
+                        b.showGraph(false)
+                        b.loadingMsg.text = getString(R.string.no_ele_profile_data)
+                    }
+                }.exhaustive
             }
         }
 

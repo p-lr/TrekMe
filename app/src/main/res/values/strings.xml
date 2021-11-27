@@ -254,6 +254,7 @@
 
     <!-- Elevation fragment -->
     <string name="no_elevations">This GPX file contains no elevations. TrekMe can\'t show the elevation profile.</string>
+    <string name="no_ele_profile_data">This GPX is either empty of an error occurred.</string>
     <string name="network_required">You must be online to continue, as this feature uses a web service to check for elevations.</string>
     <string name="elevation_service_down">The elevation service is temporarily unavailable :(</string>
     <string name="elevation_correction_error">TrekMe couldn\'t check elevations for this track. The service might be temporarily unavailable, or the area isn\'t covered.</string>

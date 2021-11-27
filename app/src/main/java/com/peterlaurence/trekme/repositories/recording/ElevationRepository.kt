@@ -119,7 +119,7 @@ class ElevationRepository(
                 val points = getRealElevationsForSegment(segment)
                 if (points == null) {
                     /* If something went wrong for one segment, don't process other segments */
-                    noError.set(true)
+                    noError.set(false)
                     break
                 }
 
@@ -163,7 +163,7 @@ class ElevationRepository(
                                     )
                                 }
                                 /* Stop the flow */
-                                throw Exception()
+                                throw CancellationException()
                             }
                             NonTrusted -> {
                                 noError.set(false)
@@ -207,15 +207,7 @@ class ElevationRepository(
         needsUpdate: Boolean
     ): ElevationState {
         val firstTrack = gpx.tracks.firstOrNull()
-        if (firstTrack == null || segmentElevationList.isEmpty()) return ElevationData(
-            id,
-            listOf(),
-            0.0,
-            0.0,
-            eleSource,
-            needsUpdate,
-            sampling
-        )
+        if (firstTrack == null || segmentElevationList.isEmpty()) return NoElevationData
 
         var distanceOffset = 0.0
         val segmentElePoints = firstTrack.trackSegments.zip(segmentElevationList)
@@ -294,10 +286,13 @@ class ElevationRepository(
         val longitudeList = lonList.joinToString(separator = "|") { it.toString() }
         val latitudeList = latList.joinToString(separator = "|") { it.toString() }
         val url =
-            "http://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList"
+            "https://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList"
         val req = ignApiRepository.requestBuilder.url(url).build()
-        val eleList = client.performRequest<ElevationsResponse>(req, json)?.elevations?.map { it.z }
-            ?: return Error
+
+        val eleList = withTimeoutOrNull(4000) {
+            client.performRequest<ElevationsResponse>(req, json)?.elevations?.map { it.z }
+        } ?: return Error
+
         return if (eleList.contains(-99999.0)) {
             NonTrusted
         } else TrustedElevations(eleList)
@@ -329,8 +324,8 @@ class ElevationRepository(
 
 private const val elevationServiceHost = "wxs.ign.fr"
 
-sealed class ElevationState
-object Calculating : ElevationState()
+sealed interface ElevationState
+object Calculating : ElevationState
 data class ElevationData(
     val id: UUID,
     val segmentElePoints: List<SegmentElePoints> = listOf(),
@@ -339,7 +334,8 @@ data class ElevationData(
     val elevationSource: ElevationSource,
     val needsUpdate: Boolean,
     val sampling: Int
-) : ElevationState()
+) : ElevationState
+object NoElevationData : ElevationState
 
 sealed class ElevationEvent
 data class NoNetworkEvent(val internetOk: Boolean, val restApiOk: Boolean) : ElevationEvent()
