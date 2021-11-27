@@ -12,7 +12,6 @@ import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Landmark
 import com.peterlaurence.trekme.core.map.getLonLat
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.ui.map.components.LandMark
 import com.peterlaurence.trekme.ui.map.components.LandmarkCallout
 import com.peterlaurence.trekme.ui.map.components.MarkerGrab
@@ -29,7 +28,6 @@ import java.util.*
 
 class LandmarkLayer(
     private val scope: CoroutineScope,
-    private val mapLoader: MapLoader,
     private val layerData: Flow<LayerData>,
     private val mapInteractor: MapInteractor
 ) : MapViewModel.MarkerTapListener {
@@ -42,21 +40,8 @@ class LandmarkLayer(
     }
 
     private suspend fun onMapUpdate(map: Map, mapUiState: MapUiState) {
-        val mapBounds = map.mapBounds ?: return
-
-        /* Import landmarks */
-        mapLoader.getLandmarksForMap(map)
-        val landmarks = map.landmarks ?: return
-
-        landmarkListState = landmarks.map { landmark ->
-            val projectedValues = withContext(Dispatchers.Default) {
-                map.projection?.doProjection(landmark.lat, landmark.lon)
-            } ?: doubleArrayOf(landmark.lon, landmark.lat)
-
+        mapInteractor.getLandmarkPositions(map).map { (landmark, x, y) ->
             val id = "$landmarkPrefix-${UUID.randomUUID()}"
-            val x = normalize(projectedValues[0], mapBounds.X0, mapBounds.X1)
-            val y = normalize(projectedValues[1], mapBounds.Y0, mapBounds.Y1)
-
             val state = LandmarkState(id, landmark)
             mapUiState.mapState.addMarker(
                 id,
@@ -68,7 +53,9 @@ class LandmarkLayer(
                 LandMark(Modifier.padding(5.dp), state.isStatic)
             }
             state
-        }.associateBy { it.id }
+        }.associateBy { it.id }.also {
+            landmarkListState = it
+        }
     }
 
     override fun onMarkerTap(mapState: MapState, id: String, x: Double, y: Double) {
@@ -162,14 +149,15 @@ class LandmarkLayer(
         if (landmarkInfo != null && landmark != null) {
             scope.launch {
                 layerData.collect {
-                    mapInteractor.updateAndSaveLandmark(landmark, it.map, landmarkInfo.x, landmarkInfo.y)
+                    mapInteractor.updateAndSaveLandmark(
+                        landmark,
+                        it.map,
+                        landmarkInfo.x,
+                        landmarkInfo.y
+                    )
                 }
             }
         }
-    }
-
-    private fun normalize(t: Double, min: Double, max: Double): Double {
-        return (t - min) / (max - min)
     }
 }
 

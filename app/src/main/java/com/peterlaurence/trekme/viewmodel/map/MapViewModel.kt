@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.model.Location
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.model.OrientationSource
@@ -25,7 +24,6 @@ import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamPro
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
-    mapLoader: MapLoader,
     mapRepository: MapRepository,
     locationSource: LocationSource,
     orientationSource: OrientationSource,
@@ -46,7 +44,7 @@ class MapViewModel @Inject constructor(
     private val layerDataFlow = MutableSharedFlow<LayerData>(1, 0, BufferOverflow.DROP_OLDEST)
 
     private val locationLayer: LocationLayer = LocationLayer(viewModelScope, settings, layerDataFlow)
-    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, mapLoader, layerDataFlow, mapInteractor)
+    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, layerDataFlow, mapInteractor)
 
     val snackBarController = SnackBarController()
 
