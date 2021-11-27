@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.slider.LabelFormatter.LABEL_GONE
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
@@ -22,6 +24,7 @@ import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -40,57 +43,63 @@ class ElevationFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val b = FragmentElevationBinding.inflate(inflater, container, false)
         binding = b
+        init()
         return b.root
+    }
+
+    private fun init() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.elevationPoints.collect { config ->
+                    val b = binding ?: return@collect
+                    when (config) {
+                        is ElevationData -> {
+                            if (config.segmentElePoints.isNotEmpty()) {
+                                /* Compute the usable size of the graph. We know that we use the entire screen width, so
+                                 * the usable size is screen_width minus padding. */
+                                val graphUsableWidth = dpToPx(resources.configuration.screenWidthDp.toFloat()) - b.elevationGraphView.getDrawingPadding()
+
+                                val points = withContext(Dispatchers.Default) {
+                                    /* For instance, represent all segments on the same line, one after another */
+                                    config.segmentElePoints.flatMap { it.points }
+                                        .subSample(graphUsableWidth.toInt())
+                                }
+                                b.showGraph(true)
+                                b.elevationGraphView.setPoints(points, config.eleMin, config.eleMax)
+                                b.elevationTop.text = UnitFormatter.formatElevation(config.eleMax)
+                                b.elevationBottom.text =
+                                    UnitFormatter.formatElevation(config.eleMin)
+                                b.elevationBottomTop.text =
+                                    UnitFormatter.formatElevation(config.eleMax - config.eleMin)
+                                b.elevationSrcTxt.text = when (config.elevationSource) {
+                                    ElevationSource.GPS -> getString(R.string.elevation_src_gps)
+                                    ElevationSource.IGN_RGE_ALTI -> getString(R.string.elevation_src_ign_rge_alti)
+                                    ElevationSource.UNKNOWN -> getString(R.string.elevation_src_unknown)
+                                }
+                            } else {
+                                b.showGraph(false)
+                                b.loadingMsg.text = getString(R.string.no_elevations)
+                            }
+                        }
+                        Calculating -> {
+                            b.showGraph(false)
+                            b.progressBar.visibility = View.VISIBLE
+                            b.loadingMsg.text = getString(R.string.elevation_compute_in_progress)
+                        }
+                        NoElevationData -> {
+                            b.showGraph(false)
+                            b.loadingMsg.text = getString(R.string.no_ele_profile_data)
+                        }
+                    }.exhaustive
+                }
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val b = binding ?: return
-
-        /* Compute the usable size of the graph. We know that we use the entire screen width, so
-         * the usable size is screen_width minus padding. */
-        val graphUsableWidth = dpToPx(resources.configuration.screenWidthDp.toFloat()) - b.elevationGraphView.getDrawingPadding()
-
-        lifecycleScope.launchWhenResumed {
-            viewModel.elevationPoints.collect { config ->
-                when (config) {
-                    is ElevationData -> {
-                        if (config.segmentElePoints.isNotEmpty()) {
-                            lifecycleScope.launchWhenStarted {
-                                val points = withContext(Dispatchers.Default) {
-                                    /* For instance, represent all segments on the same line, one after another */
-                                    config.segmentElePoints.flatMap { it.points }.subSample(graphUsableWidth.toInt())
-                                }
-                                b.showGraph(true)
-                                b.elevationGraphView.setPoints(points, config.eleMin, config.eleMax)
-                                b.elevationTop.text = UnitFormatter.formatElevation(config.eleMax)
-                                b.elevationBottom.text = UnitFormatter.formatElevation(config.eleMin)
-                                b.elevationBottomTop.text = UnitFormatter.formatElevation(config.eleMax - config.eleMin)
-                                b.elevationSrcTxt.text = when (config.elevationSource) {
-                                    ElevationSource.GPS -> getString(R.string.elevation_src_gps)
-                                    ElevationSource.IGN_RGE_ALTI -> getString(R.string.elevation_src_ign_rge_alti)
-                                    ElevationSource.UNKNOWN -> getString(R.string.elevation_src_unknown)
-                                }
-                            }
-                            Unit
-                        } else {
-                            b.showGraph(false)
-                            b.loadingMsg.text = getString(R.string.no_elevations)
-                        }
-                    }
-                    Calculating -> {
-                        b.showGraph(false)
-                        b.progressBar.visibility = View.VISIBLE
-                        b.loadingMsg.text = getString(R.string.elevation_compute_in_progress)
-                    }
-                    NoElevationData -> {
-                        b.showGraph(false)
-                        b.loadingMsg.text = getString(R.string.no_ele_profile_data)
-                    }
-                }.exhaustive
-            }
-        }
 
         viewModel.onUpdateGraph()
 
@@ -116,5 +125,10 @@ class ElevationFragment : Fragment() {
                 ElePoint(dist, ele)
             }
         } else this
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 }
