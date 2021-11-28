@@ -12,7 +12,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.backendApi.privacyPolicyUrl
+import com.peterlaurence.trekme.data.backendApi.privacyPolicyUrl
 import com.peterlaurence.trekme.databinding.FragmentAboutBinding
 
 /**

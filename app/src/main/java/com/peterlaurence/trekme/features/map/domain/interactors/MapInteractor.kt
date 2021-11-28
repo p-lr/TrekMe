@@ -1,10 +1,10 @@
-package com.peterlaurence.trekme.ui.map.domain.interactors
+package com.peterlaurence.trekme.features.map.domain.interactors
 
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Landmark
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.di.ApplicationScope
-import com.peterlaurence.trekme.ui.map.domain.models.LandmarkWithNormalizedPos
+import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

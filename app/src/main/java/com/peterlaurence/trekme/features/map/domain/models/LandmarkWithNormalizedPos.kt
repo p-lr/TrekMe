@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.map.domain.models
+package com.peterlaurence.trekme.features.map.domain.models
 
 import com.peterlaurence.trekme.core.map.domain.Landmark
 

@@ -12,11 +12,11 @@ import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Landmark
 import com.peterlaurence.trekme.core.map.getLonLat
-import com.peterlaurence.trekme.ui.map.components.LandMark
-import com.peterlaurence.trekme.ui.map.components.LandmarkCallout
-import com.peterlaurence.trekme.ui.map.components.MarkerGrab
-import com.peterlaurence.trekme.ui.map.domain.interactors.MapInteractor
-import com.peterlaurence.trekme.ui.map.viewmodel.positionCallout
+import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
+import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkCallout
+import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*

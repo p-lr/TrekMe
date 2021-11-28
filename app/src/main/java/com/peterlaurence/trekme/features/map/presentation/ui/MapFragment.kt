@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.map
+package com.peterlaurence.trekme.features.map.presentation.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater

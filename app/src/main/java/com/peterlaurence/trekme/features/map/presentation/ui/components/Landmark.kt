@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.map.components
+package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import android.graphics.Paint
 import android.graphics.Rect

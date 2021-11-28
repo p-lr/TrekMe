@@ -151,6 +151,6 @@
     </navigation>
     <fragment
         android:id="@+id/mapFragment"
-        android:name="com.peterlaurence.trekme.ui.map.MapFragment"
+        android:name="com.peterlaurence.trekme.features.map.presentation.ui.MapFragment"
         android:label="MapFragment" /><action android:id="@+id/action_global_mapFragment" app:destination="@id/mapFragment"/>
 </navigation>

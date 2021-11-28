@@ -32,12 +32,12 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
-        private val app: Application,
-        private val trekMeContext: TrekMeContext,
-        private val settings: Settings,
-        private val mapRepository: MapRepository,
-        private val appEventBus: AppEventBus,
-        private val mapLoader: MapLoader
+    private val app: Application,
+    private val trekMeContext: TrekMeContext,
+    private val settings: Settings,
+    private val mapRepository: MapRepository,
+    private val appEventBus: AppEventBus,
+    private val mapLoader: MapLoader
 ) : ViewModel() {
     private var attemptedAtLeastOnce = false
 

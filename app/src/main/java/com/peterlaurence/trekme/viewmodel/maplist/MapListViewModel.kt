@@ -21,10 +21,10 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MapListViewModel @Inject constructor(
-        private val settings: Settings,
-        private val mapRepository: MapRepository,
-        private val mapLoader: MapLoader,
-        private val onBoardingRepository: OnBoardingRepository
+    private val settings: Settings,
+    private val mapRepository: MapRepository,
+    private val mapLoader: MapLoader,
+    private val onBoardingRepository: OnBoardingRepository
 ) : ViewModel() {
 
     private val _mapState: MutableState<MapListState> = mutableStateOf(Loading, policy = structuralEqualityPolicy())

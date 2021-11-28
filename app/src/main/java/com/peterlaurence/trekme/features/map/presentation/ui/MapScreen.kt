@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.map
+package com.peterlaurence.trekme.features.map.presentation.ui
 
 import android.content.Context
 import android.content.ContextWrapper
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
-import com.peterlaurence.trekme.ui.map.components.LandmarkLines
+import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkLines
 
 @Composable
 fun MapScreen(

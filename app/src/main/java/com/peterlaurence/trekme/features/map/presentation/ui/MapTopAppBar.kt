@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.map
+package com.peterlaurence.trekme.features.map.presentation.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*

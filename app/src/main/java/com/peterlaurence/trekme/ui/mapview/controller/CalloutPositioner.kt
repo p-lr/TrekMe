@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.ui.mapview.controller
 
-import com.peterlaurence.trekme.ui.map.viewmodel.CalloutPosition
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.CalloutPosition
 import ovh.plrapps.mapview.MapView
 import ovh.plrapps.mapview.api.getVisibleViewport
 
