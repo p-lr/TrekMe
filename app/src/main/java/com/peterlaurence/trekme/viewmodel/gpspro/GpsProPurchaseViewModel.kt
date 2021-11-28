@@ -3,8 +3,8 @@ package com.peterlaurence.trekme.viewmodel.gpspro
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.common.PurchaseState
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.model.InternalGps
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.core.location.InternalGps
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.gpspro.GpsProPurchaseRepo
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
@@ -15,10 +15,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GpsProPurchaseViewModel @Inject constructor(
-        private val repo: GpsProPurchaseRepo,
-        private val appEventBus: AppEventBus,
-        private val gpsProEvents: GpsProEvents,
-        private val settings: Settings
+    private val repo: GpsProPurchaseRepo,
+    private val appEventBus: AppEventBus,
+    private val gpsProEvents: GpsProEvents,
+    private val settings: Settings
 ) : ViewModel() {
     val purchaseFlow = repo.purchaseFlow
     val priceFlow = repo.subDetailsFlow.map { it?.price }

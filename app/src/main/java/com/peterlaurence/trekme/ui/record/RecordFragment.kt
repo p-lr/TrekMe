@@ -15,7 +15,7 @@ import androidx.lifecycle.LiveData
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.service.GpxRecordService

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.sensors
+package com.peterlaurence.trekme.data.orientation
 
 import android.app.Activity
 import android.content.Context

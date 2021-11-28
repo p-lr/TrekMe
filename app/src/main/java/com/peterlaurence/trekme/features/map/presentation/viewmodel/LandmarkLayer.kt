@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.map
+package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
@@ -16,7 +16,6 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*

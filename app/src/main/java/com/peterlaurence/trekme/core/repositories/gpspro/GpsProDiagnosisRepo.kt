@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.repositories.gpspro
 
-import com.peterlaurence.trekme.core.model.LocationSource
+import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.di.MainDispatcher
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
@@ -19,10 +19,10 @@ import javax.inject.Inject
  */
 @ActivityRetainedScoped
 class GpsProDiagnosisRepo @Inject constructor(
-        private val locationSource: LocationSource,
-        private val gpsProEvents: GpsProEvents,
-        @MainDispatcher private val mainDispatcher: CoroutineDispatcher,
-        @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    private val locationSource: LocationSource,
+    private val gpsProEvents: GpsProEvents,
+    @MainDispatcher private val mainDispatcher: CoroutineDispatcher,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())
 

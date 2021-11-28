@@ -12,9 +12,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.StandardMessage
-import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
+import com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.*
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
@@ -54,14 +54,14 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RecordingStatisticsViewModel @Inject constructor(
-        private val mapLoader: MapLoader,
-        private val routeRepository: RouteRepository,
-        private val gpxRecordEvents: GpxRecordEvents,
-        private val gpxRepository: GpxRepository,
-        private val appEventBus: AppEventBus,
-        private val eventBus: RecordEventBus,
-        private val trekMeContext: TrekMeContext,
-        private val app: Application
+    private val mapLoader: MapLoader,
+    private val routeRepository: RouteRepository,
+    private val gpxRecordEvents: GpxRecordEvents,
+    private val gpxRepository: GpxRepository,
+    private val appEventBus: AppEventBus,
+    private val eventBus: RecordEventBus,
+    private val trekMeContext: TrekMeContext,
+    private val app: Application
 ) : ViewModel() {
 
     private val recordingData: MutableLiveData<List<RecordingData>> by lazy {

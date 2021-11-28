@@ -19,8 +19,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.model.Location
-import com.peterlaurence.trekme.core.model.LocationProducerBtInfo
+import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 

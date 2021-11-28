@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.model
+package com.peterlaurence.trekme.core.location
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow

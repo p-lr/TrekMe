@@ -2,11 +2,11 @@ package com.peterlaurence.trekme.core.repositories.location.producers
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.StandardMessage
-import com.peterlaurence.trekme.core.model.Location
-import com.peterlaurence.trekme.core.model.LocationProducer
-import com.peterlaurence.trekme.core.model.LocationProducerBtInfo
+import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.location.LocationProducer
+import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.lib.nmea.NmeaAggregator
 import com.peterlaurence.trekme.lib.nmea.parseNmeaLocationSentence
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents

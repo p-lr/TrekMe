@@ -9,9 +9,9 @@ import androidx.core.location.LocationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.StandardMessage
-import com.peterlaurence.trekme.core.events.WarningMessage
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
+import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -38,14 +38,14 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RecordViewModel @Inject constructor(
-        private val gpxRepository: GpxRepository,
-        private val trackImporter: TrackImporter,
-        private val app: Application,
-        private val settings: Settings,
-        private val gpxRecordEvents: GpxRecordEvents,
-        private val eventBus: RecordEventBus,
-        private val appEventBus: AppEventBus,
-        private val mapLoader: MapLoader
+    private val gpxRepository: GpxRepository,
+    private val trackImporter: TrackImporter,
+    private val app: Application,
+    private val settings: Settings,
+    private val gpxRecordEvents: GpxRecordEvents,
+    private val eventBus: RecordEventBus,
+    private val appEventBus: AppEventBus,
+    private val mapLoader: MapLoader
 ) : ViewModel() {
     private var recordingsSelected = listOf<RecordingData>()
 

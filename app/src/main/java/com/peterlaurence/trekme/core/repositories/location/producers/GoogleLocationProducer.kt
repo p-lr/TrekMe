@@ -6,9 +6,9 @@ import android.content.pm.PackageManager
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
-import com.peterlaurence.trekme.core.model.InternalGps
-import com.peterlaurence.trekme.core.model.Location
-import com.peterlaurence.trekme.core.model.LocationProducer
+import com.peterlaurence.trekme.core.location.InternalGps
+import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.location.LocationProducer
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

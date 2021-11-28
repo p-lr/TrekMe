@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.events
+package com.peterlaurence.trekme.events
 
 sealed class GenericMessage
 data class StandardMessage(val msg: String, val showLong: Boolean = false): GenericMessage()

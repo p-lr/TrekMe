@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.model
+package com.peterlaurence.trekme.core.orientation
 
 import kotlinx.coroutines.flow.SharedFlow
 

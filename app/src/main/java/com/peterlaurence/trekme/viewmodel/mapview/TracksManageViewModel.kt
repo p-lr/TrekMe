@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.maploader.MapLoader

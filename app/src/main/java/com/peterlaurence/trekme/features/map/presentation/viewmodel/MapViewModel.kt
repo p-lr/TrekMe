@@ -1,12 +1,12 @@
-package com.peterlaurence.trekme.viewmodel.map
+package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.location.LocationSource
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.model.Location
-import com.peterlaurence.trekme.core.model.LocationSource
-import com.peterlaurence.trekme.core.model.OrientationSource
+import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.map.MapRepository

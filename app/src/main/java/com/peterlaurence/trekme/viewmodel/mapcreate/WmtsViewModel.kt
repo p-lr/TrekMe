@@ -15,8 +15,8 @@ import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.contains
 import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.mapsource.wmts.*
-import com.peterlaurence.trekme.core.model.Location
-import com.peterlaurence.trekme.core.model.LocationSource
+import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*

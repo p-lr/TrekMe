@@ -11,8 +11,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.StandardMessage
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.databinding.FragmentBtDeviceSettingsBinding
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import com.peterlaurence.trekme.util.collectWhileStarted

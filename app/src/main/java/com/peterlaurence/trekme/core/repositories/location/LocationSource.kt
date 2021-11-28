@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.repositories.location
 
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.peterlaurence.trekme.core.model.*
+import com.peterlaurence.trekme.core.location.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.*
  * or wifi connected GPS.
  */
 class LocationSourceImpl(
-        modeFlow: Flow<LocationProducerInfo>,
-        flowSelector: (LocationProducerInfo) -> Flow<Location>
+    modeFlow: Flow<LocationProducerInfo>,
+    flowSelector: (LocationProducerInfo) -> Flow<Location>
 ) : LocationSource {
     /**
      * A [SharedFlow] of [Location]s, with a replay of 1.

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.events
+package com.peterlaurence.trekme.events
 
 import com.peterlaurence.trekme.billing.BillingParams
 import com.peterlaurence.trekme.core.track.TrackImporter

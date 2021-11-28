@@ -1,11 +1,11 @@
-package com.peterlaurence.trekme.viewmodel.map
+package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
-import com.peterlaurence.trekme.core.model.Location
+import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope

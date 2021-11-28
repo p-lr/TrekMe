@@ -37,9 +37,9 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.StandardMessage
-import com.peterlaurence.trekme.core.events.WarningMessage
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
+import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.core.repositories.map.MapRepository

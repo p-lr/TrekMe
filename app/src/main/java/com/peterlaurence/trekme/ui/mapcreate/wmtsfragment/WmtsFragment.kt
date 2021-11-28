@@ -7,9 +7,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.location.LocationSource
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsBinding

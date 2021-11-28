@@ -9,9 +9,10 @@ import com.peterlaurence.trekme.billing.gpspro.buildGpsProBilling
 import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
-import com.peterlaurence.trekme.core.events.AppEventBus
+import com.peterlaurence.trekme.core.location.*
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.model.*
+import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
@@ -27,7 +28,7 @@ import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayReposito
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.core.repositories.recording.ElevationRepository
-import com.peterlaurence.trekme.sensors.OrientationSourceImpl
+import com.peterlaurence.trekme.data.orientation.OrientationSourceImpl
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.Module
 import dagger.Provides

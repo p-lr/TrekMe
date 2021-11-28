@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.WarningMessage
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy

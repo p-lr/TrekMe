@@ -57,7 +57,7 @@
 
         <provider
             android:authorities="com.peterlaurence.trekme"
-            android:name="com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider"
+            android:name="com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider"
             android:enabled="true"
             android:exported="false"
             android:grantUriPermissions="true">

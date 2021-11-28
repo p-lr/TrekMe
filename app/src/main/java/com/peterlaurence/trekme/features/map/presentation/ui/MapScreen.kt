@@ -17,13 +17,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.viewmodel.map.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkLines
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 
 @Composable
 fun MapScreen(

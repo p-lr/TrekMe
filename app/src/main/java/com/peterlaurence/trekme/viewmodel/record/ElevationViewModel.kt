@@ -4,9 +4,9 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.events.StandardMessage
-import com.peterlaurence.trekme.core.events.WarningMessage
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.StandardMessage
+import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.core.repositories.recording.*
 import com.peterlaurence.trekme.util.gpx.model.ElevationSourceInfo
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
@@ -34,10 +34,10 @@ import javax.inject.Inject
  **/
 @HiltViewModel
 class ElevationViewModel @Inject constructor(
-        private val repository: ElevationRepository,
-        private val gpxRepository: GpxRepository,
-        private val appEventBus: AppEventBus,
-        private val app: Application
+    private val repository: ElevationRepository,
+    private val gpxRepository: GpxRepository,
+    private val appEventBus: AppEventBus,
+    private val app: Application
 ) : ViewModel() {
     val elevationPoints = repository.elevationRepoState
 

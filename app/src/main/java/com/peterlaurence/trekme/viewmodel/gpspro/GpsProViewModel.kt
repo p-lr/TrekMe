@@ -14,10 +14,10 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.events.AppEventBus
-import com.peterlaurence.trekme.core.model.InternalGps
-import com.peterlaurence.trekme.core.model.LocationProducerBtInfo
-import com.peterlaurence.trekme.core.model.LocationProducerInfo
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.core.location.InternalGps
+import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
+import com.peterlaurence.trekme.core.location.LocationProducerInfo
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.gpspro.GpsProDiagnosisRepo
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents

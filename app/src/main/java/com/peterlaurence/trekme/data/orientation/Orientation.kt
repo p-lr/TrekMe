@@ -1,10 +1,10 @@
-package com.peterlaurence.trekme.sensors
+package com.peterlaurence.trekme.data.orientation
 
 import android.content.Context
 import android.hardware.*
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.peterlaurence.trekme.core.model.OrientationSource
+import com.peterlaurence.trekme.core.orientation.OrientationSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay

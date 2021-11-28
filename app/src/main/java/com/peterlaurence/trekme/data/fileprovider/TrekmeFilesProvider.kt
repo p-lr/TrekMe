@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.fileprovider
+package com.peterlaurence.trekme.data.fileprovider
 
 import android.content.ContentProvider
 import android.content.ContentValues
