@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.map.presentation.viewmodel
+package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,6 +7,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.LayerData
 import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.map.presentation.viewmodel
+package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
@@ -16,6 +16,10 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.LayerData
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -202,7 +206,7 @@ private const val landmarkPrefix = "landmark"
 private const val calloutPrefix = "callout"
 private const val markerGrabPrefix = "grabLandmark"
 
-data class LandmarkState(val id: String, val landmark: Landmark) {
+private data class LandmarkState(val id: String, val landmark: Landmark) {
     var isStatic by mutableStateOf(true)
 }
 

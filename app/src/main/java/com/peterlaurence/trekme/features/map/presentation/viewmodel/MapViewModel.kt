@@ -11,6 +11,11 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LandmarkLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LandmarkLinesState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LocationLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.MarkerLayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
@@ -45,6 +50,7 @@ class MapViewModel @Inject constructor(
 
     private val locationLayer: LocationLayer = LocationLayer(viewModelScope, settings, layerDataFlow)
     private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, layerDataFlow, mapInteractor)
+    private val markerLayer: MarkerLayer = MarkerLayer(viewModelScope, layerDataFlow, mapInteractor)
 
     val snackBarController = SnackBarController()
 
@@ -123,6 +129,7 @@ class MapViewModel @Inject constructor(
 
         mapState.onMarkerClick { id, x, y ->
             landmarkLayer.onMarkerTap(mapState, id, x, y)
+            markerLayer.onMarkerTap(mapState, id, x, y)
         }
         /* endregion */
 

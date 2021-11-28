@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.map.presentation.viewmodel
+package com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers
 
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
