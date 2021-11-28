@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
-import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.util.gpx.model.TrackPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

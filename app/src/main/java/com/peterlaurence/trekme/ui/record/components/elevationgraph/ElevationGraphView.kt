@@ -9,7 +9,7 @@ import android.view.View
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatElevation
-import com.peterlaurence.trekme.repositories.recording.ElePoint
+import com.peterlaurence.trekme.core.repositories.recording.ElePoint
 import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.parcelize.Parcelize
 

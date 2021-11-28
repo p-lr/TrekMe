@@ -8,7 +8,7 @@ import com.peterlaurence.trekme.core.map.domain.Wmts
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.di.IGN
-import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

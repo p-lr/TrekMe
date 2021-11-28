@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.gpspro
+package com.peterlaurence.trekme.core.repositories.gpspro
 
 import android.util.Log
 import com.peterlaurence.trekme.billing.Billing

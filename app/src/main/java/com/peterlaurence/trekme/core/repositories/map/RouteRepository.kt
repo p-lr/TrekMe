@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.map
+package com.peterlaurence.trekme.core.repositories.map
 
 import android.util.Log
 import com.google.gson.Gson

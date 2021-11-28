@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.repositories.mapcreate.LayerOverlayRepository
-import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
+import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
+import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

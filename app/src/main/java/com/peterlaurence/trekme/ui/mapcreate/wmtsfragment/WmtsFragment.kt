@@ -13,7 +13,7 @@ import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsBinding
-import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
+import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.*
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.WmtsStateful

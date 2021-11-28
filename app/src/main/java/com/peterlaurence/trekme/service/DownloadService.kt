@@ -32,7 +32,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.util.stackTraceToString

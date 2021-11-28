@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.model.InternalGps
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.repositories.gpspro.GpsProPurchaseRepo
+import com.peterlaurence.trekme.core.repositories.gpspro.GpsProPurchaseRepo
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.location
+package com.peterlaurence.trekme.core.repositories.location
 
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope

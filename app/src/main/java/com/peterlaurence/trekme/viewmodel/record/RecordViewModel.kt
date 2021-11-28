@@ -18,7 +18,7 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.repositories.recording.GpxRepository
+import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus

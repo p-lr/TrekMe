@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.repositories.mapcreate.WmtsSourceRepository
-import com.peterlaurence.trekme.repositories.onboarding.OnBoardingRepository
+import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
+import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.util.isEnglish
 import com.peterlaurence.trekme.util.isFrench
 import dagger.hilt.android.lifecycle.HiltViewModel

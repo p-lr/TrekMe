@@ -18,14 +18,13 @@ import com.peterlaurence.trekme.core.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.*
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.repositories.map.RouteRepository
-import com.peterlaurence.trekme.repositories.recording.GpxRepository
+import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.gpx.model.Gpx
-import com.peterlaurence.trekme.util.gpx.model.hasTrustedElevations
 import com.peterlaurence.trekme.util.gpx.parseGpx
 import com.peterlaurence.trekme.util.gpx.parseGpxSafely
 import com.peterlaurence.trekme.util.stackTraceToString

@@ -1,26 +1,21 @@
-package com.peterlaurence.trekme.repositories.api
+package com.peterlaurence.trekme.core.repositories.api
 
 import com.peterlaurence.trekme.data.backendApi.backendApiServer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import okhttp3.Request
 import java.net.URL
 
-
 /**
- * Lazily fetch the API key for France IGN
+ * Lazily fetch the API key for Ordnance Survey.
  */
-class IgnApiRepository {
+class OrdnanceSurveyApiRepository {
     private var api: String? = null
-
-    val requestBuilder: Request.Builder
-        get() = Request.Builder().header("User-Agent", ignUserAgent)
 
     suspend fun getApi(): String? {
         if (api == null) {
             api = withTimeoutOrNull(3000) {
-                queryApi(ignApiUrl)
+                queryApi(ordnanceSurveyApiUrl)
             }
         }
         return api
@@ -39,5 +34,4 @@ class IgnApiRepository {
     }
 }
 
-private const val ignApiUrl = "$backendApiServer/ign-api"
-private const val ignUserAgent = "TrekMe"
+private const val ordnanceSurveyApiUrl = "$backendApiServer/ordnance-survey-api"

@@ -41,8 +41,8 @@ import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.events.WarningMessage
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
-import com.peterlaurence.trekme.repositories.download.DownloadRepository
-import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
 import com.peterlaurence.trekme.ui.maplist.events.*

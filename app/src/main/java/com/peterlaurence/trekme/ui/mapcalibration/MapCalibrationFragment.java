@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.R;
 import com.peterlaurence.trekme.core.map.Map;
 import com.peterlaurence.trekme.core.map.domain.CalibrationPoint;
 import com.peterlaurence.trekme.core.projection.Projection;
-import com.peterlaurence.trekme.repositories.map.MapRepository;
+import com.peterlaurence.trekme.core.repositories.map.MapRepository;
 import com.peterlaurence.trekme.ui.mapcalibration.components.CalibrationMarker;
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener;
 import com.peterlaurence.trekme.viewmodel.mapcalibration.MapCalibrationViewModel;

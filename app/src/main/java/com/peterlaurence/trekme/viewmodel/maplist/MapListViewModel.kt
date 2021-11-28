@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.repositories.onboarding.OnBoardingRepository
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first

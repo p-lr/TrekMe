@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.mapsource
 
 import com.peterlaurence.trekme.core.providers.layers.Layer
-import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
+import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
 
 
 enum class WmtsSource {

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.location.producers
+package com.peterlaurence.trekme.core.repositories.location.producers
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket

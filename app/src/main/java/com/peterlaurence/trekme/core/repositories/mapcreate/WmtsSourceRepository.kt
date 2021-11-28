@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.mapcreate
+package com.peterlaurence.trekme.core.repositories.mapcreate
 
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import kotlinx.coroutines.flow.MutableStateFlow

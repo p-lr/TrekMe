@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.core.model.OrientationSource
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow

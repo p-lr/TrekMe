@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.core.providers.layers.ignCadastre
 import com.peterlaurence.trekme.core.providers.layers.ignRoad
 import com.peterlaurence.trekme.core.providers.layers.ignSlopes
 import com.peterlaurence.trekme.databinding.FragmentLayerOverlayBinding
-import com.peterlaurence.trekme.repositories.mapcreate.LayerProperties
+import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
 import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
 import com.peterlaurence.trekme.viewmodel.mapcreate.LayerOverlayViewModel

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.map
+package com.peterlaurence.trekme.core.repositories.map
 
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.ui.mapview.MapViewFragment

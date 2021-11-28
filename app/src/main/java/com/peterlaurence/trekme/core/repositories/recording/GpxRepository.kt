@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.recording
+package com.peterlaurence.trekme.core.repositories.recording
 
 import android.content.ContentResolver
 import android.net.Uri

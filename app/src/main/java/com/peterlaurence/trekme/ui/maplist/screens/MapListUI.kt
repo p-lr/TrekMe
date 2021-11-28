@@ -319,10 +319,10 @@ class MapListView @JvmOverloads constructor(
                 if (navController.currentDestination?.id == R.id.mapListFragment) {
                     viewModel.setMap(mapId)
                     val action = MapListFragmentDirections.actionMapListFragmentToMapViewFragment()
-//                    navController.navigate(action)
+                    navController.navigate(action)
                     /* TODO: this is a WIP revamp of the current fragment. It's left as a comment
                      * for development convenience. */
-                    navController.navigate(R.id.action_global_mapFragment)
+//                    navController.navigate(R.id.action_global_mapFragment)
                 }
             }
 

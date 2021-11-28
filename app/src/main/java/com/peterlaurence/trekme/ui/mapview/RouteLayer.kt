@@ -19,7 +19,7 @@ import com.peterlaurence.trekme.core.map.route.Barycenter
 import com.peterlaurence.trekme.core.map.route.NearestMarkerCalculator
 import com.peterlaurence.trekme.core.track.distanceCalculatorFactory
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
-import com.peterlaurence.trekme.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.ui.mapview.components.MarkerGrab
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment
 import com.peterlaurence.trekme.ui.tools.TouchMoveListener

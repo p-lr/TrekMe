@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.gpspro
+package com.peterlaurence.trekme.core.repositories.gpspro
 
 import com.peterlaurence.trekme.core.model.LocationSource
 import com.peterlaurence.trekme.di.IoDispatcher

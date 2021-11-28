@@ -7,7 +7,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.events.AppEventBus
 import com.peterlaurence.trekme.core.events.StandardMessage
 import com.peterlaurence.trekme.core.events.WarningMessage
-import com.peterlaurence.trekme.repositories.recording.*
+import com.peterlaurence.trekme.core.repositories.recording.*
 import com.peterlaurence.trekme.util.gpx.model.ElevationSourceInfo
 import com.peterlaurence.trekme.util.gpx.model.TrackSegment
 import com.peterlaurence.trekme.util.gpx.writeGpx

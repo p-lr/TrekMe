@@ -13,10 +13,10 @@ import com.google.android.material.slider.LabelFormatter.LABEL_GONE
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.databinding.FragmentElevationBinding
-import com.peterlaurence.trekme.repositories.recording.Calculating
-import com.peterlaurence.trekme.repositories.recording.ElePoint
-import com.peterlaurence.trekme.repositories.recording.ElevationData
-import com.peterlaurence.trekme.repositories.recording.NoElevationData
+import com.peterlaurence.trekme.core.repositories.recording.Calculating
+import com.peterlaurence.trekme.core.repositories.recording.ElePoint
+import com.peterlaurence.trekme.core.repositories.recording.ElevationData
+import com.peterlaurence.trekme.core.repositories.recording.NoElevationData
 import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.util.exhaustive
 import com.peterlaurence.trekme.util.gpx.model.ElevationSource

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.onboarding
+package com.peterlaurence.trekme.core.repositories.onboarding
 
 class OnBoardingRepository {
     var mapCreateOnBoarding: Boolean = false

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.repositories.download
+package com.peterlaurence.trekme.core.repositories.download
 
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.service.event.MapDownloadEvent

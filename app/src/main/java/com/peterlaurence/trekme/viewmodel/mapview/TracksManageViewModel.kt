@@ -11,9 +11,9 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.repositories.map.MapRepository
-import com.peterlaurence.trekme.repositories.map.RouteRepository
-import com.peterlaurence.trekme.repositories.recording.GpxRepository
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
