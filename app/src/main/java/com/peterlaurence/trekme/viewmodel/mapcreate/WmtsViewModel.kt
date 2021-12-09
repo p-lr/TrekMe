@@ -229,10 +229,11 @@ class WmtsViewModel @Inject constructor(
 
             val mapState = MapState(
                 19, mapSize, mapSize,
-                tileStreamProvider = tileStreamProvider.toMapComposeTileStreamProvider(),
                 workerCount = 16,
                 magnifyingFactor = if (wmtsSource == WmtsSource.OPEN_STREET_MAP) 1 else 0
-            )
+            ).apply {
+                addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
+            }
 
             /* Apply configuration */
             val mapConfiguration = getScaleAndScrollConfig(wmtsSource)

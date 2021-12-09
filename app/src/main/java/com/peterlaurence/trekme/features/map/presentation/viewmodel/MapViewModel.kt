@@ -113,10 +113,11 @@ class MapViewModel @Inject constructor(
             map.levelList.size,
             map.widthPx,
             map.heightPx,
-            tileStreamProvider,
             tileSize,
             magnifyingFactor = magnifyingFactor
-        )
+        ).apply {
+            addLayer(tileStreamProvider)
+        }
 
         /* region Configuration */
         val maxScale = settings.getMaxScale().first()
