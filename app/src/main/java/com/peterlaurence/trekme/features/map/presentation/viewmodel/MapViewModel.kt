@@ -57,9 +57,10 @@ class MapViewModel @Inject constructor(
     private val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
         layerDataFlow,
+        mapFeatureEvents.markerMoved,
         mapInteractor,
-        onMarkerEdit = { marker, id ->
-            mapFeatureEvents.postMarkerEditEvent(marker, id)
+        onMarkerEdit = { marker, mapId, markerId ->
+            mapFeatureEvents.postMarkerEditEvent(marker, mapId, markerId)
         }
     )
 

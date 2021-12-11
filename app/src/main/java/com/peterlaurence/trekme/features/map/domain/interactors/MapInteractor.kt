@@ -96,6 +96,19 @@ class MapInteractor @Inject constructor(
         }
     }
 
+    suspend fun getMarkerPosition(map: Map, marker: Marker): MarkerWithNormalizedPos? {
+        val mapBounds = map.mapBounds ?: return null
+
+        val (x, y) = getNormalizedCoordinates(
+            marker.lat,
+            marker.lon,
+            mapBounds,
+            map.projection
+        )
+
+        return MarkerWithNormalizedPos(marker, x, y)
+    }
+
     private suspend fun getLonLatFromNormalizedCoordinate(
         x: Double,
         y: Double,

@@ -23,22 +23,19 @@ class MapFragment : Fragment() {
     @Inject
     lateinit var mapFeatureEvents: MapFeatureEvents
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        lifecycleScope.launch {
-            mapFeatureEvents.navigateToMarkerEdit.collect { (marker, id) ->
-                val action = MapFragmentDirections.actionMapFragmentToMarkerManageFragment(id, marker)
-                findNavController().navigate(action)
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        /* Handle navigation events */
+        viewLifecycleOwner.lifecycleScope.launch {
+            mapFeatureEvents.navigateToMarkerEdit.collect { (marker, mapId, markerId) ->
+                val action = MapFragmentDirections.actionMapFragmentToMarkerManageFragment(mapId, marker, markerId)
+                findNavController().navigate(action)
+            }
+        }
+
         val binding = FragmentMapBinding.inflate(inflater, container, false)
 
         binding.mapScreen.apply {

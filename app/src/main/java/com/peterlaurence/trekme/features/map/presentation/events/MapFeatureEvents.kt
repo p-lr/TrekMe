@@ -9,9 +9,17 @@ class MapFeatureEvents {
     /* region markers */
     private val _navigateToMarkerEdit = MutableSharedFlow<MarkerEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val navigateToMarkerEdit = _navigateToMarkerEdit.asSharedFlow()
-    fun postMarkerEditEvent(marker: Marker, mapId: Int) = _navigateToMarkerEdit.tryEmit(
-        MarkerEditEvent(marker, mapId)
+    fun postMarkerEditEvent(marker: Marker, mapId: Int, markerId: String) = _navigateToMarkerEdit.tryEmit(
+        MarkerEditEvent(marker, mapId, markerId)
     )
-    data class MarkerEditEvent(val marker: Marker, val mapId: Int)
+    data class MarkerEditEvent(val marker: Marker, val mapId: Int, val markerId: String)
+
+
+    private val _markerMoved = MutableSharedFlow<MarkerMovedEvent>(0, 1, BufferOverflow.DROP_OLDEST)
+    val markerMoved = _markerMoved.asSharedFlow()
+    fun postMarkerMovedEvent(marker: Marker, mapId: Int, markerId: String) = _markerMoved.tryEmit(
+        MarkerMovedEvent(marker, mapId, markerId)
+    )
+    data class MarkerMovedEvent(val marker: Marker, val mapId: Int, val markerId: String)
     /* endregion */
 }

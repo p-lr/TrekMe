@@ -13,6 +13,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
@@ -22,10 +23,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -36,14 +34,19 @@ import java.util.*
 class MarkerLayer(
     private val scope: CoroutineScope,
     private val layerData: Flow<LayerData>,
+    markerMovedEvent: Flow<MapFeatureEvents.MarkerMovedEvent>,
     private val mapInteractor: MapInteractor,
-    private val onMarkerEdit: (Marker, Int) -> Unit
+    private val onMarkerEdit: (Marker, Int, String) -> Unit
 ): MapViewModel.MarkerTapListener {
     private var markerListState = mapOf<String, MarkerState>()
 
     init {
         layerData.map {
             onMapUpdate(it.map, it.mapUiState)
+        }.launchIn(scope)
+
+        markerMovedEvent.combine(layerData) { event, it ->
+            onMarkerUpdate(it.map, event.marker, event.markerId, it.mapUiState)
         }.launchIn(scope)
     }
 
@@ -64,6 +67,11 @@ class MarkerLayer(
         }.associateBy { it.id }.also {
             markerListState = it
         }
+    }
+
+    private suspend fun onMarkerUpdate(map: Map, marker: Marker, markerId: String, mapUiState: MapUiState) {
+        val pos = mapInteractor.getMarkerPosition(map, marker) ?: return
+        mapUiState.mapState.moveMarker(markerId, pos.x, pos.y)
     }
 
     override fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double) {
@@ -113,11 +121,12 @@ class MarkerLayer(
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onEditAction = {
-                        onMarkerEdit(marker, mapId)
+                        onMarkerEdit(marker, mapId, id)
                     },
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)
                         mapState.removeMarker(id)
+                        // TODO: implement real deletion, same for landmarks
                     },
                     onMoveAction = {
                         mapState.removeCallout(calloutId)
