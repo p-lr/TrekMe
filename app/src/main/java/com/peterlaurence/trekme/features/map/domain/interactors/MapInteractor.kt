@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.features.map.domain.interactors
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.map.domain.Landmark
+import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.di.ApplicationScope
@@ -26,21 +27,32 @@ class MapInteractor @Inject constructor(
      */
     fun updateAndSaveLandmark(landmark: Landmark, map: Map, x: Double, y: Double) = scope.launch {
         val mapBounds = map.mapBounds ?: return@launch
-        val relativeX = deNormalize(x, mapBounds.X0, mapBounds.X1)
-        val relativeY = deNormalize(y, mapBounds.Y0, mapBounds.Y1)
 
-        val lonLat = withContext(Dispatchers.Default) {
-            map.projection?.undoProjection(relativeX, relativeY)
-        } ?: doubleArrayOf(relativeX, relativeY)
+        val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)
 
         landmark.apply {
             lat = lonLat[1]
             lon = lonLat[0]
-            proj_x = relativeX
-            proj_y = relativeY
         }
 
         mapLoader.saveLandmarks(map)
+    }
+
+    /**
+     * Update the marker position and save.
+     * [x] and [y] are expected to be normalized coordinates.
+     */
+    fun updateAndSaveMarker(marker: Marker, map: Map, x: Double, y: Double) = scope.launch {
+        val mapBounds = map.mapBounds ?: return@launch
+
+        val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)
+
+        marker.apply {
+            lat = lonLat[1]
+            lon = lonLat[0]
+        }
+
+        mapLoader.saveMarkers(map)
     }
 
     /**
@@ -82,6 +94,22 @@ class MapInteractor @Inject constructor(
 
             MarkerWithNormalizedPos(marker, x, y)
         }
+    }
+
+    private suspend fun getLonLatFromNormalizedCoordinate(
+        x: Double,
+        y: Double,
+        projection: Projection?,
+        mapBounds: MapBounds
+    ): DoubleArray {
+        val relativeX = deNormalize(x, mapBounds.X0, mapBounds.X1)
+        val relativeY = deNormalize(y, mapBounds.Y0, mapBounds.Y1)
+
+        val lonLat = withContext(Dispatchers.Default) {
+            projection?.undoProjection(relativeX, relativeY)
+        } ?: doubleArrayOf(relativeX, relativeY)
+
+        return lonLat
     }
 
     private suspend fun getNormalizedCoordinates(
