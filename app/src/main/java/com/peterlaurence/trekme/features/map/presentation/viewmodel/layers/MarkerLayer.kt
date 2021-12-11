@@ -36,7 +36,8 @@ import java.util.*
 class MarkerLayer(
     private val scope: CoroutineScope,
     private val layerData: Flow<LayerData>,
-    private val mapInteractor: MapInteractor
+    private val mapInteractor: MapInteractor,
+    private val onMarkerEdit: (Marker, Int) -> Unit
 ): MapViewModel.MarkerTapListener {
     private var markerListState = mapOf<String, MarkerState>()
 
@@ -65,7 +66,7 @@ class MarkerLayer(
         }
     }
 
-    override fun onMarkerTap(mapState: MapState, id: String, x: Double, y: Double) {
+    override fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double) {
         if (id.startsWith(markerGrabPrefix)) {
             onMarkerGrabTap(id, mapState)
             return
@@ -98,12 +99,12 @@ class MarkerLayer(
                 absoluteOffset = Offset(pos.absoluteAnchorLeft, pos.absoluteAnchorTop),
                 autoDismiss = true, clickable = false, zIndex = 3f
             ) {
-                val marker = markerListState[id]?.marker
-                val subTitle = marker?.let {
+                val marker = markerListState[id]?.marker ?: return@addCallout
+                val subTitle = marker.let {
                     "${stringResource(id = R.string.latitude_short)} : ${df.format(it.lat)}  " +
                             "${stringResource(id = R.string.longitude_short)} : ${df.format(it.lon)}"
-                } ?: ""
-                val title = marker?.name ?: ""
+                }
+                val title = marker.name ?: ""
 
                 MarkerCallout(
                     DpSize(markerCalloutWidthDp.dp, markerCalloutHeightDp.dp),
@@ -112,7 +113,7 @@ class MarkerLayer(
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onEditAction = {
-                        // TODO: make modal window
+                        onMarkerEdit(marker, mapId)
                     },
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)

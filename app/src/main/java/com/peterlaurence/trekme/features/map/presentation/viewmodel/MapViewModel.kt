@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LandmarkLayer
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LandmarkLinesState
@@ -34,6 +35,7 @@ class MapViewModel @Inject constructor(
     orientationSource: OrientationSource,
     mapInteractor: MapInteractor,
     private val settings: Settings,
+    private val mapFeatureEvents: MapFeatureEvents,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
     private var mapState: MapState? = null
@@ -48,9 +50,18 @@ class MapViewModel @Inject constructor(
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
     private val layerDataFlow = MutableSharedFlow<LayerData>(1, 0, BufferOverflow.DROP_OLDEST)
 
-    private val locationLayer: LocationLayer = LocationLayer(viewModelScope, settings, layerDataFlow)
-    private val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, layerDataFlow, mapInteractor)
-    private val markerLayer: MarkerLayer = MarkerLayer(viewModelScope, layerDataFlow, mapInteractor)
+    private val locationLayer: LocationLayer =
+        LocationLayer(viewModelScope, settings, layerDataFlow)
+    private val landmarkLayer: LandmarkLayer =
+        LandmarkLayer(viewModelScope, layerDataFlow, mapInteractor)
+    private val markerLayer: MarkerLayer = MarkerLayer(
+        viewModelScope,
+        layerDataFlow,
+        mapInteractor,
+        onMarkerEdit = { marker, id ->
+            mapFeatureEvents.postMarkerEditEvent(marker, id)
+        }
+    )
 
     val snackBarController = SnackBarController()
 
@@ -129,8 +140,8 @@ class MapViewModel @Inject constructor(
         mapState.shouldLoopScale = true
 
         mapState.onMarkerClick { id, x, y ->
-            landmarkLayer.onMarkerTap(mapState, id, x, y)
-            markerLayer.onMarkerTap(mapState, id, x, y)
+            landmarkLayer.onMarkerTap(mapState, map.id, id, x, y)
+            markerLayer.onMarkerTap(mapState, map.id, id, x, y)
         }
         /* endregion */
 
@@ -176,7 +187,7 @@ class MapViewModel @Inject constructor(
     /* endregion */
 
     interface MarkerTapListener {
-        fun onMarkerTap(mapState: MapState, id: String, x: Double, y: Double)
+        fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double)
     }
 }
 
