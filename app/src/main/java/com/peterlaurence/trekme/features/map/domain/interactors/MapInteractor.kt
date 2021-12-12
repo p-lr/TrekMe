@@ -9,10 +9,7 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedPos
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.util.*
 import javax.inject.Inject
 
@@ -20,7 +17,6 @@ class MapInteractor @Inject constructor(
     private val mapLoader: MapLoader,
     @ApplicationScope private val scope: CoroutineScope
 ) {
-
     /**
      * Update the landmark position and save.
      * [x] and [y] are expected to be normalized coordinates.
@@ -53,6 +49,18 @@ class MapInteractor @Inject constructor(
         }
 
         mapLoader.saveMarkers(map)
+    }
+
+    /**
+     * Save all markers (debounced).
+     */
+    fun saveMarkers(mapId: Int) {
+        updateMarkerJob?.cancel()
+        updateMarkerJob = scope.launch {
+            delay(1000)
+            val map = mapLoader.getMap(mapId) ?: return@launch
+            mapLoader.saveMarkers(map)
+        }
     }
 
     /**
@@ -148,4 +156,6 @@ class MapInteractor @Inject constructor(
     private fun deNormalize(t: Double, min: Double, max: Double): Double {
         return min + t * (max - min)
     }
+
+    private var updateMarkerJob: Job? = null
 }

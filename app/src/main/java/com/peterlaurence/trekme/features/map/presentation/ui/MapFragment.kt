@@ -31,7 +31,7 @@ class MapFragment : Fragment() {
         /* Handle navigation events */
         viewLifecycleOwner.lifecycleScope.launch {
             mapFeatureEvents.navigateToMarkerEdit.collect { (marker, mapId, markerId) ->
-                val action = MapFragmentDirections.actionMapFragmentToMarkerManageFragment(mapId, marker, markerId)
+                val action = MapFragmentDirections.actionMapFragmentToMarkerEditFragment(marker, mapId, markerId)
                 findNavController().navigate(action)
             }
         }
