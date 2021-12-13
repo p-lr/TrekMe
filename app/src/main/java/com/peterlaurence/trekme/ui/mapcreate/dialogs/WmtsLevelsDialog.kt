@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.activityViewModels
+import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
@@ -45,7 +45,9 @@ open class WmtsLevelsDialog : DialogFragment() {
     private var downloadFormDataBundle: DownloadFormDataBundle? = null
     private val wmtsSource: WmtsSource?
         get() = downloadFormDataBundle?.wmtsSource
-    private val viewModel: WmtsViewModel by activityViewModels()
+    private val viewModel: WmtsViewModel by navGraphViewModels(R.id.mapCreationGraph) {
+        defaultViewModelProviderFactory
+    }
 
     companion object {
         const val ARG_WMTS_SOURCE = "WmtsLevelsDialog_wmtsSource"
