@@ -16,8 +16,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.flowlayout.FlowMainAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
-import com.google.accompanist.flowlayout.SizeMode
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
@@ -54,7 +54,8 @@ class StatsPanel @JvmOverloads constructor(
         val stats_ = stats ?: return
 
         FlowRow(
-            mainAxisSize = SizeMode.Expand,
+            modifier = Modifier.fillMaxWidth(),
+            mainAxisAlignment = FlowMainAxisAlignment.SpaceEvenly
         ) {
             StatWithImage(
                 statText = formatDistance(stats_.distance),
