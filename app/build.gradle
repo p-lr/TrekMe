@@ -84,7 +84,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.preference:preference-ktx:1.1.1'
-    implementation 'com.google.android.gms:play-services-location:18.0.0'
+    implementation 'com.google.android.gms:play-services-location:19.0.0'
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
