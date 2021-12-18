@@ -6,8 +6,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +29,8 @@ fun MarkerEditScreen(
     mapId: Int,
     markerId: String,
     mapFeatureEvents: MapFeatureEvents,
-    mapInteractor: MapInteractor
+    mapInteractor: MapInteractor,
+    onBackAction: () -> Unit
 ) {
     var name by remember {
         mutableStateOf(marker.name ?: "")
@@ -50,38 +52,51 @@ fun MarkerEditScreen(
         { mapFeatureEvents.postMarkerMovedEvent(marker, mapId, markerId) }
     }
 
-    MarkerEditUi(
-        name = name,
-        latitudeField = latField,
-        longitudeField = lonField,
-        commentField = commentField,
-        onNameChange = {
-            name = it
-            marker.name = it
-            mapInteractor.saveMarkers(mapId)
-        },
-        onLatChange = {
-            latField = it
-            runCatching {
-                marker.lat = it.toDouble()
-            }
-            onMarkerMove()
-            mapInteractor.saveMarkers(mapId)
-        },
-        onLonChange = {
-            lonField = it
-            runCatching {
-                marker.lon = it.toDouble()
-            }
-            onMarkerMove()
-            mapInteractor.saveMarkers(mapId)
-        },
-        onCommentChange = {
-            commentField = it
-            marker.comment = it
-            mapInteractor.saveMarkers(mapId)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(onClick = onBackAction) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                    }
+                }
+            )
         }
-    )
+    ) {
+        MarkerEditUi(
+            name = name,
+            latitudeField = latField,
+            longitudeField = lonField,
+            commentField = commentField,
+            onNameChange = {
+                name = it
+                marker.name = it
+                mapInteractor.saveMarkers(mapId)
+            },
+            onLatChange = {
+                latField = it
+                runCatching {
+                    marker.lat = it.toDouble()
+                }
+                onMarkerMove()
+                mapInteractor.saveMarkers(mapId)
+            },
+            onLonChange = {
+                lonField = it
+                runCatching {
+                    marker.lon = it.toDouble()
+                }
+                onMarkerMove()
+                mapInteractor.saveMarkers(mapId)
+            },
+            onCommentChange = {
+                commentField = it
+                marker.comment = it
+                mapInteractor.saveMarkers(mapId)
+            }
+        )
+    }
 }
 
 @Composable

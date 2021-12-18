@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.peterlaurence.trekme.databinding.FragmentMarkerEditBinding
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
@@ -33,7 +34,16 @@ class MarkerEditFragment : Fragment() {
         binding.markerEditScreen.apply {
             setContent {
                 TrekMeTheme {
-                    MarkerEditScreen(args.marker, args.mapId, args.markerId, mapFeatureEvents, mapInteractor)
+                    MarkerEditScreen(
+                        args.marker,
+                        args.mapId,
+                        args.markerId,
+                        mapFeatureEvents,
+                        mapInteractor,
+                        onBackAction = {
+                            findNavController().navigateUp()
+                        }
+                    )
                 }
             }
         }
