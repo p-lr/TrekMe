@@ -48,9 +48,10 @@ class Map(
     private var mImage: Bitmap? = getBitmapFromFile(thumbnail)
 
     /**
-     * Get the bounds the map. See [MapBounds].
+     * Get the bounds the map. See [MapBounds]. By default, the size of the map is used for the
+     * bounds. Bounds are updated after [calibrate] is invoked.
      */
-    var mapBounds: MapBounds? = null
+    var mapBounds = MapBounds(0.0, 0.0, config.size.width.toDouble(), config.size.height.toDouble())
         private set
     private var _landmarks: MutableList<Landmark>? = null
     private var _markerList: MutableList<Marker>? = null
@@ -93,7 +94,6 @@ class Map(
     }
 
     /**
-     * TODO: remove that method
      * Check whether the map contains a given location. It's the responsibility of the caller to
      * know whether projected coordinated or lat/lon should be used.
      *
@@ -102,11 +102,7 @@ class Map(
      */
     fun containsLocation(x: Double, y: Double): Boolean {
         val mapBounds = this.mapBounds
-        return if (mapBounds != null) {
-            x >= mapBounds.X0 && x <= mapBounds.X1 && y <= mapBounds.Y0 && y >= mapBounds.Y1
-        } else {
-            false
-        }
+        return x >= mapBounds.X0 && x <= mapBounds.X1 && y <= mapBounds.Y0 && y >= mapBounds.Y1
     }
 
     fun calibrate() {
@@ -114,34 +110,34 @@ class Map(
 
         /* Init the projection */
         projection?.init()
-        when (calibrationMethod) {
+        val newBounds = when (calibrationMethod) {
             CalibrationMethod.SIMPLE_2_POINTS -> if (calibrationPoints.size >= 2) {
                 /* Correct points if necessary */
                 CalibrationMethods.sanityCheck2PointsCalibration(
                     calibrationPoints[0],
                     calibrationPoints[1]
                 )
-                mapBounds = CalibrationMethods.simple2PointsCalibration(
+                CalibrationMethods.simple2PointsCalibration(
                     calibrationPoints[0],
                     calibrationPoints[1]
                 )
-            }
+            } else null
             CalibrationMethod.CALIBRATION_3_POINTS -> if (calibrationPoints.size >= 3) {
-                mapBounds = CalibrationMethods.calibrate3Points(
+                CalibrationMethods.calibrate3Points(
                     calibrationPoints[0],
                     calibrationPoints[1], calibrationPoints[2]
                 )
-            }
+            } else null
             CalibrationMethod.CALIBRATION_4_POINTS -> if (calibrationPoints.size == 4) {
-                mapBounds = CalibrationMethods.calibrate4Points(
+                CalibrationMethods.calibrate4Points(
                     calibrationPoints[0],
                     calibrationPoints[1], calibrationPoints[2],
                     calibrationPoints[3]
                 )
-            }
-            else -> {
-            }
+            } else null
         }
+
+        if (newBounds != null) mapBounds = newBounds
 
         /* Update the calibration status */
         setCalibrationStatus()
@@ -262,13 +258,12 @@ class Map(
     val levelList: List<Level>
         get() = config.levels
 
-    var calibrationMethod: CalibrationMethod?
+    var calibrationMethod: CalibrationMethod
         get() {
             val cal = config.calibration
-            return cal?.calibrationMethod
+            return cal?.calibrationMethod ?: CalibrationMethod.SIMPLE_2_POINTS
         }
         set(method) {
-            if (method == null) return
             val cal = config.calibration
             if (cal != null) {
                 val newCal = cal.copy(calibrationMethod = method)
@@ -284,8 +279,7 @@ class Map(
      */
     val calibrationPointsNumber: Int
         get() {
-            val method = calibrationMethod ?: return 0
-            return when (method) {
+            return when (calibrationMethod) {
                 CalibrationMethod.SIMPLE_2_POINTS -> 2
                 CalibrationMethod.CALIBRATION_3_POINTS -> 3
                 CalibrationMethod.CALIBRATION_4_POINTS -> 4

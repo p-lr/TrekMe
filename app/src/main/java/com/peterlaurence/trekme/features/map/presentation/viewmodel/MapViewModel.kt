@@ -44,9 +44,6 @@ class MapViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    private val _topBarState = MutableStateFlow(TopBarState())
-    val topBarState: StateFlow<TopBarState> = _topBarState.asStateFlow()
-
     val locationFlow: Flow<Location> = locationSource.locationFlow
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
     private val layerDataFlow = MutableSharedFlow<LayerData>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -107,6 +104,14 @@ class MapViewModel @Inject constructor(
         locationLayer.onOrientation(intrinsicAngle, displayRotation)
     }
     /* endregion */
+
+    fun addMarker() {
+        markerLayer.addMarker()
+    }
+
+    fun addLandmark() {
+        landmarkLayer.addLandmark()
+    }
 
     /* region map configuration */
     private suspend fun onMapChange(map: Map) {
@@ -194,8 +199,6 @@ class MapViewModel @Inject constructor(
 }
 
 data class LayerData(val map: Map, val mapUiState: MapUiState)
-
-data class TopBarState(val isShowingOrientation: Boolean = false)
 
 sealed interface UiState
 data class MapUiState(

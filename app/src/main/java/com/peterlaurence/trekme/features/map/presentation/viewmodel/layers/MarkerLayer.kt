@@ -38,7 +38,7 @@ class MarkerLayer(
     private val mapInteractor: MapInteractor,
     private val onMarkerEdit: (Marker, Int, String) -> Unit
 ): MapViewModel.MarkerTapListener {
-    private var markerListState = mapOf<String, MarkerState>()
+    private var markerListState = mutableMapOf<String, MarkerState>()
 
     init {
         layerData.map {
@@ -50,22 +50,23 @@ class MarkerLayer(
         }.launchIn(scope)
     }
 
+    fun addMarker() {
+        layerData.map { (map, mapUiState) ->
+            val x = mapUiState.mapState.centroidX
+            val y = mapUiState.mapState.centroidY
+            val marker = mapInteractor.addMarker(map, x, y)
+            val markerState = addMarkerOnMap(marker, mapUiState, x, y)
+            morphToDynamic(markerState, x, y, mapUiState.mapState)
+            markerListState[markerState.id] = markerState
+        }.launchIn(scope)
+    }
+
     private suspend fun onMapUpdate(map: Map, mapUiState: MapUiState) {
         mapInteractor.getMarkerPositions(map).map { (marker, x, y) ->
-            val id = "$markerPrefix-${UUID.randomUUID()}"
-            val state = MarkerState(id, marker)
-            mapUiState.mapState.addMarker(
-                id,
-                x,
-                y,
-                relativeOffset = Offset(-0.5f, -0.5f),
-                zIndex = 1f
-            ) {
-                Marker(modifier = Modifier.padding(5.dp), isStatic = state.isStatic)
-            }
+            val state = addMarkerOnMap(marker, mapUiState, x, y)
             state
         }.associateBy { it.id }.also {
-            markerListState = it
+            markerListState = it.toMutableMap()
         }
     }
 
@@ -130,9 +131,7 @@ class MarkerLayer(
                     },
                     onMoveAction = {
                         mapState.removeCallout(calloutId)
-                        mapState.updateMarkerClickable(id, false)
-                        markerState.isStatic = false
-                        attachMarkerGrab(id, x, y, mapState, markerState)
+                        morphToDynamic(markerState, x, y, mapState)
                     }
                 )
             }
@@ -181,6 +180,27 @@ class MarkerLayer(
                 }
             }
         }
+    }
+
+    private fun addMarkerOnMap(marker: Marker, mapUiState: MapUiState, x: Double, y: Double): MarkerState {
+        val id = "$markerPrefix-${UUID.randomUUID()}"
+        val state = MarkerState(id, marker)
+        mapUiState.mapState.addMarker(
+            id,
+            x,
+            y,
+            relativeOffset = Offset(-0.5f, -0.5f),
+            zIndex = 1f
+        ) {
+            Marker(modifier = Modifier.padding(5.dp), isStatic = state.isStatic)
+        }
+        return state
+    }
+
+    private fun morphToDynamic(markerState: MarkerState, x: Double, y: Double, mapState: MapState) {
+        mapState.updateMarkerClickable(markerState.id, false)
+        markerState.isStatic = false
+        attachMarkerGrab(markerState.id, x, y, mapState, markerState)
     }
 }
 

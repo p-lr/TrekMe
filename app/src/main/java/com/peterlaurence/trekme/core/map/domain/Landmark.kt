@@ -5,8 +5,8 @@ data class Landmark(
     var lat: Double,
     var lon: Double,
     @Deprecated("To be removed after Compose refactor")
-    var proj_x: Double?,
+    var proj_x: Double? = null,
     @Deprecated("To be removed after Compose refactor")
-    var proj_y: Double?,
-    var comment: String
+    var proj_y: Double? = null,
+    var comment: String = ""
 )

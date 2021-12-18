@@ -41,7 +41,6 @@ fun MapScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
-    val topBarState by viewModel.topBarState.collectAsState()
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
 
     if (uiState is MapUiState) {
@@ -60,22 +59,24 @@ fun MapScreen(
 
     MapScaffold(
         uiState,
-        topBarState,
         snackBarEvents,
         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
         onMainMenuClick = viewModel::onMainMenuClick,
-        onToggleShowOrientation = viewModel::toggleShowOrientation
+        onToggleShowOrientation = viewModel::toggleShowOrientation,
+        onAddMarker = viewModel::addMarker,
+        onAddLandmark = viewModel::addLandmark
     )
 }
 
 @Composable
 fun MapScaffold(
     uiState: UiState,
-    topBarState: TopBarState,
     snackBarEvents: List<SnackBarEvent>,
     onSnackBarShown: () -> Unit,
     onMainMenuClick: () -> Unit,
-    onToggleShowOrientation: () -> Unit
+    onToggleShowOrientation: () -> Unit,
+    onAddMarker: () -> Unit,
+    onAddLandmark: () -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -106,7 +107,9 @@ fun MapScaffold(
                 MapTopAppBar(
                     uiState.isShowingOrientation,
                     onMenuClick = onMainMenuClick,
-                    onToggleShowOrientation = onToggleShowOrientation
+                    onToggleShowOrientation = onToggleShowOrientation,
+                    onAddMarker = onAddMarker,
+                    onAddLandmark = onAddLandmark
                 )
             } else {
                 /* In case of error, we only show the main menu button */

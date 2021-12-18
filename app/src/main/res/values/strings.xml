@@ -187,6 +187,7 @@
     <string name="map_move_landmark">Move landmark</string>
     <string name="mapview_lock_on_position">Lock on position</string>
     <string name="mapview_acq_gps">Awaiting GPS…</string>
+    <string name="landmark_default_name">Landmark</string>
     <string name="callout_landmark_title">Landmark</string>
     <string name="move_marker">Move</string>
     <string name="delete_marker_question">Delete marker?</string>
