@@ -16,9 +16,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.flowlayout.FlowMainAxisAlignment
-import com.google.accompanist.flowlayout.FlowRow
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.ui.flowlayout.FlowMainAxisAlignment
+import com.peterlaurence.trekme.core.ui.flowlayout.FlowRow
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatElevation

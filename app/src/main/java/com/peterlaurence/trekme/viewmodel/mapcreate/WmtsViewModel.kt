@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
+import ovh.plrapps.mapcompose.ui.state.InitialValues
 import ovh.plrapps.mapcompose.ui.state.MapState
 import javax.inject.Inject
 
@@ -229,10 +230,13 @@ class WmtsViewModel @Inject constructor(
 
             val mapState = MapState(
                 19, mapSize, mapSize,
-                tileStreamProvider = tileStreamProvider.toMapComposeTileStreamProvider(),
                 workerCount = 16,
-                magnifyingFactor = if (wmtsSource == WmtsSource.OPEN_STREET_MAP) 1 else 0
-            )
+                initialValues = InitialValues().magnifyingFactor(
+                    if (wmtsSource == WmtsSource.OPEN_STREET_MAP) 1 else 0
+                ),
+            ).apply {
+                addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
+            }
 
             /* Apply configuration */
             val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
