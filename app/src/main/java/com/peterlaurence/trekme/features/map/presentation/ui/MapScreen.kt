@@ -64,7 +64,8 @@ fun MapScreen(
         onMainMenuClick = viewModel::onMainMenuClick,
         onToggleShowOrientation = viewModel::toggleShowOrientation,
         onAddMarker = viewModel::addMarker,
-        onAddLandmark = viewModel::addLandmark
+        onAddLandmark = viewModel::addLandmark,
+        onShowDistance = viewModel::toggleDistance
     )
 }
 
@@ -76,7 +77,8 @@ fun MapScaffold(
     onMainMenuClick: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
-    onAddLandmark: () -> Unit
+    onAddLandmark: () -> Unit,
+    onShowDistance: () -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -106,10 +108,12 @@ fun MapScaffold(
             if (uiState is MapUiState) {
                 MapTopAppBar(
                     uiState.isShowingOrientation,
+                    uiState.isShowingDistance,
                     onMenuClick = onMainMenuClick,
                     onToggleShowOrientation = onToggleShowOrientation,
                     onAddMarker = onAddMarker,
-                    onAddLandmark = onAddLandmark
+                    onAddLandmark = onAddLandmark,
+                    onShowDistance = onShowDistance
                 )
             } else {
                 /* In case of error, we only show the main menu button */

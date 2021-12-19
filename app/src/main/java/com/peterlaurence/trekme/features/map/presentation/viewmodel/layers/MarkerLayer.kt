@@ -170,7 +170,7 @@ class MarkerLayer(
         val marker = markerListState[markerId]?.marker
         if (markerInfo != null && marker != null) {
             scope.launch {
-                layerData.collect {
+                layerData.first().also {
                     mapInteractor.updateAndSaveMarker(
                         marker,
                         it.map,

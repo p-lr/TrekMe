@@ -18,10 +18,12 @@ import com.peterlaurence.trekme.R
 @Composable
 fun MapTopAppBar(
     isShowingOrientation: Boolean,
+    isShowingDistance: Boolean,
     onMenuClick: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
-    onAddLandmark: () -> Unit
+    onAddLandmark: () -> Unit,
+    onShowDistance: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -74,6 +76,14 @@ fun MapTopAppBar(
                         Checkbox(
                             checked = isShowingOrientation,
                             onCheckedChange = { onToggleShowOrientation() })
+                    }
+
+                    DropdownMenuItem(onClick = onShowDistance) {
+                        Text(stringResource(id = R.string.mapview_measure_distance))
+                        Spacer(Modifier.width(8.dp))
+                        Checkbox(
+                            checked = isShowingDistance,
+                            onCheckedChange = { onShowDistance() })
                     }
                 }
             }

@@ -151,7 +151,7 @@ class LandmarkLayer(
         val landmark = landmarkListState[markerId]?.landmark
         if (landmarkInfo != null && landmark != null) {
             scope.launch {
-                layerData.collect {
+                layerData.first().also {
                     mapInteractor.updateAndSaveLandmark(
                         landmark,
                         it.map,

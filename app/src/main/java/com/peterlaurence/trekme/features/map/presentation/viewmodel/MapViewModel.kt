@@ -13,10 +13,7 @@ import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LandmarkLayer
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LandmarkLinesState
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.LocationLayer
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.MarkerLayer
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
@@ -60,6 +57,7 @@ class MapViewModel @Inject constructor(
             mapFeatureEvents.postMarkerEditEvent(marker, mapId, markerId)
         }
     )
+    private val distanceLayer = DistanceLayer(viewModelScope, layerDataFlow)
 
     val snackBarController = SnackBarController()
 
@@ -80,6 +78,13 @@ class MapViewModel @Inject constructor(
             val uiState = _uiState.value
             if (uiState is MapUiState) {
                 _uiState.value = uiState.copy(isShowingOrientation = visibility)
+            }
+        }.launchIn(viewModelScope)
+
+        distanceLayer.isVisible.map { visibility ->
+            val uiState = _uiState.value
+            if (uiState is MapUiState) {
+                _uiState.value = uiState.copy(isShowingDistance = visibility)
             }
         }.launchIn(viewModelScope)
     }
@@ -110,6 +115,10 @@ class MapViewModel @Inject constructor(
 
     fun addLandmark() {
         landmarkLayer.addLandmark()
+    }
+
+    fun toggleDistance() {
+        distanceLayer.toggleDistance()
     }
 
     /* region map configuration */
@@ -157,6 +166,7 @@ class MapViewModel @Inject constructor(
         val mapUiState = MapUiState(
             mapState,
             isShowingOrientation = settings.getOrientationVisibility().first(),
+            isShowingDistance = false,
             landmarkLinesState
         )
         _uiState.value = mapUiState
@@ -204,6 +214,7 @@ sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
     val isShowingOrientation: Boolean,
+    val isShowingDistance: Boolean,
     val landmarkLinesState: LandmarkLinesState
 ) : UiState
 
