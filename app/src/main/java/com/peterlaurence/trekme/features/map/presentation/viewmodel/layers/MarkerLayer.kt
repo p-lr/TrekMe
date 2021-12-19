@@ -127,7 +127,7 @@ class MarkerLayer(
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)
                         mapState.removeMarker(id)
-                        // TODO: implement real deletion, same for landmarks
+                        mapInteractor.deleteMarker(marker, mapId)
                     },
                     onMoveAction = {
                         mapState.removeCallout(calloutId)

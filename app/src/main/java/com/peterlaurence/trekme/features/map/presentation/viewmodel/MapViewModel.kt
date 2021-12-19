@@ -22,7 +22,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
-import ovh.plrapps.mapcompose.ui.state.InitialValues
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.File
 import java.io.FileInputStream
@@ -131,9 +130,10 @@ class MapViewModel @Inject constructor(
             map.levelList.size,
             map.widthPx,
             map.heightPx,
-            tileSize,
-            initialValues = InitialValues().magnifyingFactor(magnifyingFactor)
-        ).apply {
+            tileSize
+        ) {
+            magnifyingFactor(magnifyingFactor)
+        }.apply {
             addLayer(tileStreamProvider)
         }
 

@@ -11,7 +11,6 @@ import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedPos
-import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import java.util.*
@@ -80,6 +79,18 @@ class MapInteractor @Inject constructor(
             lon = lonLat[0]
         }
 
+        mapLoader.saveMarkers(map)
+    }
+
+    fun deleteLandmark(landmark: Landmark, mapId: Int) = scope.launch {
+        val map = mapLoader.getMap(mapId) ?: return@launch
+        map.deleteLandmark(landmark)
+        mapLoader.saveLandmarks(map)
+    }
+
+    fun deleteMarker(marker: Marker, mapId: Int) = scope.launch {
+        val map = mapLoader.getMap(mapId) ?: return@launch
+        map.deleteMarker(marker)
         mapLoader.saveMarkers(map)
     }
 
