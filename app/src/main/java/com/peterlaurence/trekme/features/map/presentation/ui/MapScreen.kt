@@ -41,6 +41,7 @@ fun MapScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
+    val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
 
     if (uiState is MapUiState) {
@@ -59,6 +60,7 @@ fun MapScreen(
 
     MapScaffold(
         uiState,
+        isShowingDistance,
         snackBarEvents,
         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
         onMainMenuClick = viewModel::onMainMenuClick,
@@ -72,6 +74,7 @@ fun MapScreen(
 @Composable
 fun MapScaffold(
     uiState: UiState,
+    isShowingDistance: Boolean,
     snackBarEvents: List<SnackBarEvent>,
     onSnackBarShown: () -> Unit,
     onMainMenuClick: () -> Unit,
@@ -108,7 +111,7 @@ fun MapScaffold(
             if (uiState is MapUiState) {
                 MapTopAppBar(
                     uiState.isShowingOrientation,
-                    uiState.isShowingDistance,
+                    isShowingDistance,
                     onMenuClick = onMainMenuClick,
                     onToggleShowOrientation = onToggleShowOrientation,
                     onAddMarker = onAddMarker,

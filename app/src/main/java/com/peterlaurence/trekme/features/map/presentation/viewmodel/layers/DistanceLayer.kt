@@ -20,6 +20,13 @@ class DistanceLayer(
     var isVisible = MutableStateFlow(false)
         private set
 
+    init {
+        layerData.map { (_, mapUiState) ->
+            isVisible.value = false
+            hide(mapUiState.mapState)
+        }.launchIn(scope)
+    }
+
     fun toggleDistance() = scope.launch {
         layerData.first().also { (_, mapUiState) ->
             if (isVisible.value) {

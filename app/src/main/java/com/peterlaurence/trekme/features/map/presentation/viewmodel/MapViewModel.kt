@@ -80,13 +80,6 @@ class MapViewModel @Inject constructor(
                 _uiState.value = uiState.copy(isShowingOrientation = visibility)
             }
         }.launchIn(viewModelScope)
-
-        distanceLayer.isVisible.map { visibility ->
-            val uiState = _uiState.value
-            if (uiState is MapUiState) {
-                _uiState.value = uiState.copy(isShowingDistance = visibility)
-            }
-        }.launchIn(viewModelScope)
     }
 
     /* region TopAppBar events */
@@ -120,6 +113,8 @@ class MapViewModel @Inject constructor(
     fun toggleDistance() {
         distanceLayer.toggleDistance()
     }
+
+    fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
 
     /* region map configuration */
     private suspend fun onMapChange(map: Map) {
@@ -166,7 +161,6 @@ class MapViewModel @Inject constructor(
         val mapUiState = MapUiState(
             mapState,
             isShowingOrientation = settings.getOrientationVisibility().first(),
-            isShowingDistance = false,
             landmarkLinesState
         )
         _uiState.value = mapUiState
@@ -214,7 +208,6 @@ sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
     val isShowingOrientation: Boolean,
-    val isShowingDistance: Boolean,
     val landmarkLinesState: LandmarkLinesState
 ) : UiState
 

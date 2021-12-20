@@ -65,14 +65,13 @@ fun MapTopAppBar(
                     .wrapContentSize(Alignment.BottomEnd, true)
             ) {
                 DropdownMenu(
-                    modifier = Modifier.wrapContentSize(Alignment.TopEnd),
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
                     DropdownMenuItem(onClick = onToggleShowOrientation) {
                         Text(stringResource(id = R.string.mapview_orientation_enable))
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.weight(1f))
                         Checkbox(
                             checked = isShowingOrientation,
                             onCheckedChange = { onToggleShowOrientation() })
@@ -80,7 +79,7 @@ fun MapTopAppBar(
 
                     DropdownMenuItem(onClick = onShowDistance) {
                         Text(stringResource(id = R.string.mapview_measure_distance))
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.weight(1f))
                         Checkbox(
                             checked = isShowingDistance,
                             onCheckedChange = { onShowDistance() })
