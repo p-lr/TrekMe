@@ -35,7 +35,7 @@ class MapViewModel @Inject constructor(
     private val mapFeatureEvents: MapFeatureEvents,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
-    private var mapState: MapState? = null
+    private val mapStateFlow = MutableSharedFlow<MapState>(1, 0, BufferOverflow.DROP_OLDEST)
 
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -68,10 +68,8 @@ class MapViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
 
-        settings.getRotationMode().map { rotMode ->
-            mapState?.also { mapState ->
-                applyRotationMode(mapState, rotMode)
-            }
+        settings.getRotationMode().combine(mapStateFlow) { rotMode, mapState ->
+            applyRotationMode(mapState, rotMode)
         }.launchIn(viewModelScope)
     }
 
@@ -114,7 +112,7 @@ class MapViewModel @Inject constructor(
     /* region map configuration */
     private suspend fun onMapChange(map: Map) {
         /* Shutdown the previous map state, if any */
-        mapState?.shutdown()
+        mapStateFlow.replayCache.firstOrNull()?.shutdown()
 
         val tileSize = map.levelList.firstOrNull()?.tileSize?.width ?: run {
             _uiState.value = Error.EmptyMap
@@ -151,7 +149,7 @@ class MapViewModel @Inject constructor(
         }
         /* endregion */
 
-        this.mapState = mapState
+        mapStateFlow.tryEmit(mapState)
         val landmarkLinesState = LandmarkLinesState(mapState, map)
         val mapUiState = MapUiState(
             mapState,
@@ -171,6 +169,7 @@ class MapViewModel @Inject constructor(
                 mapState.disableRotation()
             }
             RotationMode.FOLLOW_ORIENTATION -> {
+                // TODO: implement (take into account orientation)
                 mapState.disableRotation()
             }
             RotationMode.FREE -> mapState.enableRotation()
