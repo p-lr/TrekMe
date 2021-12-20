@@ -73,13 +73,6 @@ class MapViewModel @Inject constructor(
                 applyRotationMode(mapState, rotMode)
             }
         }.launchIn(viewModelScope)
-
-        settings.getOrientationVisibility().map { visibility ->
-            val uiState = _uiState.value
-            if (uiState is MapUiState) {
-                _uiState.value = uiState.copy(isShowingOrientation = visibility)
-            }
-        }.launchIn(viewModelScope)
     }
 
     /* region TopAppBar events */
@@ -115,6 +108,8 @@ class MapViewModel @Inject constructor(
     }
 
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
+
+    fun orientationVisibilityFlow(): Flow<Boolean> = settings.getOrientationVisibility()
 
     /* region map configuration */
     private suspend fun onMapChange(map: Map) {
@@ -160,7 +155,6 @@ class MapViewModel @Inject constructor(
         val landmarkLinesState = LandmarkLinesState(mapState, map)
         val mapUiState = MapUiState(
             mapState,
-            isShowingOrientation = settings.getOrientationVisibility().first(),
             landmarkLinesState
         )
         _uiState.value = mapUiState
@@ -207,7 +201,6 @@ data class LayerData(val map: Map, val mapUiState: MapUiState)
 sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
-    val isShowingOrientation: Boolean,
     val landmarkLinesState: LandmarkLinesState
 ) : UiState
 

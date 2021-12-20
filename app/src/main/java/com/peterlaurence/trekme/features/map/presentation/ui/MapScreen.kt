@@ -41,13 +41,14 @@ fun MapScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
+    val isShowingOrientation by viewModel.orientationVisibilityFlow().collectAsState(initial = false)
     val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
 
     if (uiState is MapUiState) {
         val displayRotation = getDisplayRotation()
-        LaunchedEffect(lifecycleOwner, (uiState as MapUiState).isShowingOrientation) {
-            if (!(uiState as MapUiState).isShowingOrientation) return@LaunchedEffect
+        LaunchedEffect(lifecycleOwner, isShowingOrientation) {
+            if (!isShowingOrientation) return@LaunchedEffect
             launch {
                 lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                     viewModel.orientationFlow.collect {
@@ -60,6 +61,7 @@ fun MapScreen(
 
     MapScaffold(
         uiState,
+        isShowingOrientation,
         isShowingDistance,
         snackBarEvents,
         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
@@ -74,6 +76,7 @@ fun MapScreen(
 @Composable
 fun MapScaffold(
     uiState: UiState,
+    isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
     snackBarEvents: List<SnackBarEvent>,
     onSnackBarShown: () -> Unit,
@@ -110,7 +113,7 @@ fun MapScaffold(
         topBar = {
             if (uiState is MapUiState) {
                 MapTopAppBar(
-                    uiState.isShowingOrientation,
+                    isShowingOrientation,
                     isShowingDistance,
                     onMenuClick = onMainMenuClick,
                     onToggleShowOrientation = onToggleShowOrientation,
