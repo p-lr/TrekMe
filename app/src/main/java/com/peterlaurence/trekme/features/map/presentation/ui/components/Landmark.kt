@@ -161,13 +161,6 @@ private fun coerceInBoundingBox(
         return abs(fullArea - (t1 + t2 + t3 + t4)) < 1E-8
     }
 
-    /* If the two points are visible, return the middle */
-    if (bb.contains(aX, aY) && bb.contains(bY, bY)) return makeOffset(
-        (aX + bX) / 2,
-        (aY + bY) / 2,
-        mapState
-    )
-
     fun findIntersect(
         l1X: Double,
         l1Y: Double,
