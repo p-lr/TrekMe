@@ -17,7 +17,6 @@ import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvent
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
@@ -33,46 +32,51 @@ import java.util.*
 class MarkerLayer(
     private val scope: CoroutineScope,
     private val mapFlow: Flow<Map>,
-    private val mapUiStateFlow: Flow<MapUiState>,
+    private val mapStateFlow: Flow<MapState>,
     markerMovedEvent: Flow<MapFeatureEvents.MarkerMovedEvent>,
     private val mapInteractor: MapInteractor,
     private val onMarkerEdit: (Marker, Int, String) -> Unit
-): MapViewModel.MarkerTapListener {
+) : MapViewModel.MarkerTapListener {
     private var markerListState = mutableMapOf<String, MarkerState>()
 
     init {
-        mapFlow.combine(mapUiStateFlow) { map, mapUiState ->
-            onMapUpdate(map, mapUiState)
+        mapFlow.combine(mapStateFlow) { map, mapState ->
+            onMapUpdate(map, mapState)
         }.launchIn(scope)
 
-        combine(mapFlow, markerMovedEvent, mapUiStateFlow) { map, event, mapUiState ->
-            onMarkerUpdate(map, event.marker, event.markerId, mapUiState)
+        combine(mapFlow, markerMovedEvent, mapStateFlow) { map, event, mapState ->
+            onMarkerUpdate(map, event.marker, event.markerId, mapState)
         }.launchIn(scope)
     }
 
     fun addMarker() {
-        mapFlow.combine(mapUiStateFlow) { map, mapUiState ->
-            val x = mapUiState.mapState.centroidX
-            val y = mapUiState.mapState.centroidY
+        mapFlow.combine(mapStateFlow) { map, mapState ->
+            val x = mapState.centroidX
+            val y = mapState.centroidY
             val marker = mapInteractor.addMarker(map, x, y)
-            val markerState = addMarkerOnMap(marker, mapUiState, x, y)
-            morphToDynamic(markerState, x, y, mapUiState.mapState)
+            val markerState = addMarkerOnMap(marker, mapState, x, y)
+            morphToDynamic(markerState, x, y, mapState)
             markerListState[markerState.id] = markerState
         }.launchIn(scope)
     }
 
-    private suspend fun onMapUpdate(map: Map, mapUiState: MapUiState) {
+    private suspend fun onMapUpdate(map: Map, mapState: MapState) {
         mapInteractor.getMarkerPositions(map).map { (marker, x, y) ->
-            val state = addMarkerOnMap(marker, mapUiState, x, y)
+            val state = addMarkerOnMap(marker, mapState, x, y)
             state
         }.associateBy { it.id }.also {
             markerListState = it.toMutableMap()
         }
     }
 
-    private suspend fun onMarkerUpdate(map: Map, marker: Marker, markerId: String, mapUiState: MapUiState) {
+    private suspend fun onMarkerUpdate(
+        map: Map,
+        marker: Marker,
+        markerId: String,
+        mapState: MapState
+    ) {
         val pos = mapInteractor.getMarkerPosition(map, marker) ?: return
-        mapUiState.mapState.moveMarker(markerId, pos.x, pos.y)
+        mapState.moveMarker(markerId, pos.x, pos.y)
     }
 
     override fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double) {
@@ -182,10 +186,15 @@ class MarkerLayer(
         }
     }
 
-    private fun addMarkerOnMap(marker: Marker, mapUiState: MapUiState, x: Double, y: Double): MarkerState {
+    private fun addMarkerOnMap(
+        marker: Marker,
+        mapState: MapState,
+        x: Double,
+        y: Double
+    ): MarkerState {
         val id = "$markerPrefix-${UUID.randomUUID()}"
         val state = MarkerState(id, marker)
-        mapUiState.mapState.addMarker(
+        mapState.addMarker(
             id,
             x,
             y,

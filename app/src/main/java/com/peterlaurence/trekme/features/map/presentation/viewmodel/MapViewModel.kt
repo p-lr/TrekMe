@@ -53,14 +53,14 @@ class MapViewModel @Inject constructor(
     private val landmarkLayer: LandmarkLayer = LandmarkLayer(
         viewModelScope,
         mapRepository.mapFlow.filterNotNull(),
-        uiState.filterIsInstance(),
+        mapStateFlow,
         mapInteractor
     )
 
     private val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
         mapRepository.mapFlow.filterNotNull(),
-        uiState.filterIsInstance(),
+        mapStateFlow,
         mapFeatureEvents.markerMoved,
         mapInteractor,
         onMarkerEdit = { marker, mapId, markerId ->

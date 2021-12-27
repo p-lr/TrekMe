@@ -12,11 +12,10 @@ import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Landmark
 import com.peterlaurence.trekme.core.map.getLonLat
+import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
@@ -31,32 +30,32 @@ import java.util.*
 class LandmarkLayer(
     private val scope: CoroutineScope,
     private val mapFlow: Flow<Map>,
-    private val mapUiStateFlow: Flow<MapUiState>,
+    private val mapStateFlow: Flow<MapState>,
     private val mapInteractor: MapInteractor
 ) : MapViewModel.MarkerTapListener {
     private var landmarkListState = mutableMapOf<String, LandmarkState>()
 
     init {
-        mapFlow.combine(mapUiStateFlow) { map, mapUiState ->
-            onMapUpdate(map, mapUiState)
+        mapFlow.combine(mapStateFlow) { map, mapState ->
+            onMapUpdate(map, mapState)
         }.launchIn(scope)
     }
 
     fun addLandmark() = scope.launch {
         val map = mapFlow.first()
-        val mapUiState = mapUiStateFlow.first()
+        val mapState = mapStateFlow.first()
 
-        val x = mapUiState.mapState.centroidX
-        val y = mapUiState.mapState.centroidY
+        val x = mapState.centroidX
+        val y = mapState.centroidY
         val landmark = mapInteractor.addLandmark(map, x, y)
-        val landmarkState = addLandmarkOnMap(landmark, mapUiState, x, y)
-        morphToDynamic(landmarkState, x, y, mapUiState.mapState)
+        val landmarkState = addLandmarkOnMap(landmark, mapState, x, y)
+        morphToDynamic(landmarkState, x, y, mapState)
         landmarkListState[landmarkState.id] = landmarkState
     }
 
-    private suspend fun onMapUpdate(map: Map, mapUiState: MapUiState) {
+    private suspend fun onMapUpdate(map: Map, mapState: MapState) {
         mapInteractor.getLandmarkPositions(map).map { (landmark, x, y) ->
-            val state = addLandmarkOnMap(landmark, mapUiState, x, y)
+            val state = addLandmarkOnMap(landmark, mapState, x, y)
             state
         }.associateBy { it.id }.also {
             landmarkListState = it.toMutableMap()
@@ -165,11 +164,11 @@ class LandmarkLayer(
     }
 
     private fun addLandmarkOnMap(
-        landmark: Landmark, mapUiState: MapUiState, x: Double, y: Double
+        landmark: Landmark, mapState: MapState, x: Double, y: Double
     ): LandmarkState {
         val id = "$landmarkPrefix-${UUID.randomUUID()}"
         val state = LandmarkState(id, landmark)
-        mapUiState.mapState.addMarker(
+        mapState.addMarker(
             id,
             x,
             y,
@@ -181,7 +180,12 @@ class LandmarkLayer(
         return state
     }
 
-    private fun morphToDynamic(landmarkState: LandmarkState, x: Double, y: Double, mapState: MapState) {
+    private fun morphToDynamic(
+        landmarkState: LandmarkState,
+        x: Double,
+        y: Double,
+        mapState: MapState
+    ) {
         mapState.updateMarkerClickable(landmarkState.id, false)
         landmarkState.isStatic = false
         attachMarkerGrab(landmarkState.id, x, y, mapState, landmarkState)
