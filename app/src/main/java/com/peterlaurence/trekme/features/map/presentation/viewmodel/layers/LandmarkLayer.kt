@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGr
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
+import com.peterlaurence.trekme.util.throttle
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.*
@@ -207,7 +208,7 @@ class LandmarkLinesState(mapState: MapState, private val map: Map) {
         }
 
     val distanceForLandmark: Flow<kotlin.collections.Map<String, Double?>> =
-        markersSnapshotFlow.mapNotNull {
+        markersSnapshotFlow.throttle(100).mapNotNull {
             val position = positionMarkerSnapshot ?: return@mapNotNull null
             computeDistanceForId(landmarksSnapshot, position)
         }
@@ -223,7 +224,6 @@ class LandmarkLinesState(mapState: MapState, private val map: Map) {
             return distanceApprox(lonLatA[1], lonLatA[0], lonLatB[1], lonLatB[0])
         }
 
-        delay(100)  // slow it down a bit
         landmarks.associate {
             it.id to computeDistance(position.x, position.y, it.x, it.y)
         }
