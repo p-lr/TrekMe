@@ -161,9 +161,11 @@ class MapViewModel @Inject constructor(
 
         mapStateFlow.tryEmit(mapState)
         val landmarkLinesState = LandmarkLinesState(mapState, map)
+        val distanceLineState = DistanceLineState(mapState)
         val mapUiState = MapUiState(
             mapState,
-            landmarkLinesState
+            landmarkLinesState,
+            distanceLineState
         )
         _uiState.value = mapUiState
     }
@@ -204,7 +206,8 @@ class MapViewModel @Inject constructor(
 sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
-    val landmarkLinesState: LandmarkLinesState
+    val landmarkLinesState: LandmarkLinesState,
+    val distanceLineState: DistanceLineState
 ) : UiState
 
 object Loading : UiState

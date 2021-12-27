@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
+import com.peterlaurence.trekme.features.map.presentation.ui.components.DistanceLine
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkLines
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 
@@ -142,20 +143,31 @@ fun MapScaffold(
             Error.LicenseError -> Text(text = "license error")
             Error.EmptyMap -> Text(text = "empty map")
             Loading -> Text(text = "loading")
-            is MapUiState -> MapUi(uiState)
+            is MapUiState -> MapUi(uiState, isShowingDistance)
         }
     }
 }
 
 @Composable
-fun MapUi(mapUiState: MapUiState) {
+fun MapUi(mapUiState: MapUiState, isShowingDistance: Boolean) {
     MapUI(state = mapUiState.mapState) {
-        LandmarkLines(
-            mapState = mapUiState.mapState,
-            positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
-            landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot,
-            distanceForIdFlow = mapUiState.landmarkLinesState.distanceForLandmark
-        )
+        val landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
+        if (landmarkPositions.isNotEmpty()) {
+            LandmarkLines(
+                mapState = mapUiState.mapState,
+                positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
+                landmarkPositions = landmarkPositions,
+                distanceForIdFlow = mapUiState.landmarkLinesState.distanceForLandmark
+            )
+        }
+
+        if (isShowingDistance) {
+            DistanceLine(
+                mapState = mapUiState.mapState,
+                marker1 = mapUiState.distanceLineState.marker1Snapshot,
+                marker2 = mapUiState.distanceLineState.marker2Snapshot
+            )
+        }
     }
 }
 

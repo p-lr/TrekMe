@@ -1,15 +1,14 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
+import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.enableMarkerDrag
-import ovh.plrapps.mapcompose.api.removeMarker
-import ovh.plrapps.mapcompose.api.visibleArea
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 class DistanceLayer(
@@ -63,6 +62,20 @@ class DistanceLayer(
 
         isVisible.value = false
     }
+}
+
+class DistanceLineState(mapState: MapState) {
+    private val markersSnapshot by mapState.markerDerivedState()
+
+    val marker1Snapshot: MarkerDataSnapshot?
+        get() = markersSnapshot.firstOrNull {
+            it.id == distMarker1
+        }
+
+    val marker2Snapshot: MarkerDataSnapshot?
+        get() = markersSnapshot.firstOrNull {
+            it.id == distMarker2
+        }
 }
 
 private const val distMarker1 = "distMarker1"
