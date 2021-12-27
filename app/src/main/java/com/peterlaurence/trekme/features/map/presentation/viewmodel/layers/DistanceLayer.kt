@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.LayerData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -15,24 +14,24 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 
 class DistanceLayer(
     private val scope: CoroutineScope,
-    private val layerData: Flow<LayerData>
+    private val mapStateFlow: Flow<MapState>,
 ) {
     var isVisible = MutableStateFlow(false)
         private set
 
     init {
-        layerData.map { (_, mapUiState) ->
+        mapStateFlow.map {
             isVisible.value = false
-            hide(mapUiState.mapState)
+            hide(it)
         }.launchIn(scope)
     }
 
     fun toggleDistance() = scope.launch {
-        layerData.first().also { (_, mapUiState) ->
+        mapStateFlow.first().also { mapState ->
             if (isVisible.value) {
-                hide(mapUiState.mapState)
+                hide(mapState)
             } else {
-                show(mapUiState.mapState)
+                show(mapState)
             }
         }
     }

@@ -7,7 +7,6 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.LayerData
 import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +23,8 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 class LocationLayer(
     private val scope: CoroutineScope,
     private val settings: Settings,
-    layerDataFlow: Flow<LayerData>,
+    private val mapFlow: Flow<Map>,
+    private val mapStateFlow: Flow<MapState>
 ) {
     private var hasCenteredOnFirstLocation = false
     private val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -38,30 +38,32 @@ class LocationLayer(
              * - the orientation and location flows, if orientation is enabled,
              * - the location flow only, if orientation is disabled.
              */
-            layerDataFlow.combine(
+            combine(
+                mapFlow,
                 settings.getOrientationVisibility()
-            ) { layerData: LayerData, showOrientation: Boolean ->
-                Pair(layerData, showOrientation)
-            }.collectLatest { (layerData, showOrientation) ->
+            ) { map, showOrientation ->
+                Pair(map, showOrientation)
+            }.collectLatest { (map, showOrientation) ->
+                val mapState = mapStateFlow.first()
                 if (showOrientation) {
                     combine(
                         orientationFlow,
                         locationFlow,
                     ) { orientation, loc ->
                         orientationState.value = orientation
-                        onLocation(loc, layerData.mapUiState.mapState, layerData.map)
+                        onLocation(loc, mapState, map)
                     }.collect()
                 } else {
                     locationFlow.collect { loc ->
                         orientationState.value = null
-                        onLocation(loc, layerData.mapUiState.mapState, layerData.map)
+                        onLocation(loc, mapState, map)
                     }
                 }
             }
         }
 
         /* At every map change, set the internal flag */
-        layerDataFlow.map {
+        mapFlow.map {
             hasCenteredOnFirstLocation = false
         }.launchIn(scope)
     }
@@ -84,7 +86,7 @@ class LocationLayer(
 
             /* Update the position */
             val mapBounds = map.mapBounds
-            if (projectedValues != null && mapBounds != null) {
+            if (projectedValues != null) {
                 val X = projectedValues[0]
                 val Y = projectedValues[1]
                 if (mapBounds.contains(X, Y)) {

@@ -42,22 +42,32 @@ class MapViewModel @Inject constructor(
 
     val locationFlow: Flow<Location> = locationSource.locationFlow
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
-    private val layerDataFlow = MutableSharedFlow<LayerData>(1, 0, BufferOverflow.DROP_OLDEST)
 
-    private val locationLayer: LocationLayer =
-        LocationLayer(viewModelScope, settings, layerDataFlow)
-    private val landmarkLayer: LandmarkLayer =
-        LandmarkLayer(viewModelScope, layerDataFlow, mapInteractor)
+    private val locationLayer: LocationLayer = LocationLayer(
+        viewModelScope,
+        settings,
+        mapRepository.mapFlow.filterNotNull(),
+        mapStateFlow
+    )
+
+    private val landmarkLayer: LandmarkLayer = LandmarkLayer(
+        viewModelScope,
+        mapRepository.mapFlow.filterNotNull(),
+        uiState.filterIsInstance(),
+        mapInteractor
+    )
+
     private val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
-        layerDataFlow,
+        mapRepository.mapFlow.filterNotNull(),
+        uiState.filterIsInstance(),
         mapFeatureEvents.markerMoved,
         mapInteractor,
         onMarkerEdit = { marker, mapId, markerId ->
             mapFeatureEvents.postMarkerEditEvent(marker, mapId, markerId)
         }
     )
-    private val distanceLayer = DistanceLayer(viewModelScope, layerDataFlow)
+    private val distanceLayer = DistanceLayer(viewModelScope, mapStateFlow)
 
     val snackBarController = SnackBarController()
 
@@ -156,10 +166,6 @@ class MapViewModel @Inject constructor(
             landmarkLinesState
         )
         _uiState.value = mapUiState
-
-        /* Update layer data */
-        val layerData = LayerData(map, mapUiState)
-        layerDataFlow.tryEmit(layerData)
     }
 
     private fun applyRotationMode(mapState: MapState, rotationMode: RotationMode) {
@@ -194,8 +200,6 @@ class MapViewModel @Inject constructor(
         fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double)
     }
 }
-
-data class LayerData(val map: Map, val mapUiState: MapUiState)
 
 sealed interface UiState
 data class MapUiState(

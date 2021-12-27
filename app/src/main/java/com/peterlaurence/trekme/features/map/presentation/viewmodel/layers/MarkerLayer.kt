@@ -17,7 +17,6 @@ import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvent
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.LayerData
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
@@ -33,7 +32,8 @@ import java.util.*
 
 class MarkerLayer(
     private val scope: CoroutineScope,
-    private val layerData: Flow<LayerData>,
+    private val mapFlow: Flow<Map>,
+    private val mapUiStateFlow: Flow<MapUiState>,
     markerMovedEvent: Flow<MapFeatureEvents.MarkerMovedEvent>,
     private val mapInteractor: MapInteractor,
     private val onMarkerEdit: (Marker, Int, String) -> Unit
@@ -41,17 +41,17 @@ class MarkerLayer(
     private var markerListState = mutableMapOf<String, MarkerState>()
 
     init {
-        layerData.map {
-            onMapUpdate(it.map, it.mapUiState)
+        mapFlow.combine(mapUiStateFlow) { map, mapUiState ->
+            onMapUpdate(map, mapUiState)
         }.launchIn(scope)
 
-        markerMovedEvent.combine(layerData) { event, it ->
-            onMarkerUpdate(it.map, event.marker, event.markerId, it.mapUiState)
+        combine(mapFlow, markerMovedEvent, mapUiStateFlow) { map, event, mapUiState ->
+            onMarkerUpdate(map, event.marker, event.markerId, mapUiState)
         }.launchIn(scope)
     }
 
     fun addMarker() {
-        layerData.map { (map, mapUiState) ->
+        mapFlow.combine(mapUiStateFlow) { map, mapUiState ->
             val x = mapUiState.mapState.centroidX
             val y = mapUiState.mapState.centroidY
             val marker = mapInteractor.addMarker(map, x, y)
@@ -170,10 +170,10 @@ class MarkerLayer(
         val marker = markerListState[markerId]?.marker
         if (markerInfo != null && marker != null) {
             scope.launch {
-                layerData.first().also {
+                mapFlow.first().also {
                     mapInteractor.updateAndSaveMarker(
                         marker,
-                        it.map,
+                        it,
                         markerInfo.x,
                         markerInfo.y
                     )
