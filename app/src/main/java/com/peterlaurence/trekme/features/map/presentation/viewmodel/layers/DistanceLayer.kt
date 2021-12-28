@@ -3,11 +3,16 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
+import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.getLonLat
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.util.throttle
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -64,8 +69,9 @@ class DistanceLayer(
     }
 }
 
-class DistanceLineState(mapState: MapState) {
+class DistanceLineState(mapState: MapState, private val map: Map) {
     private val markersSnapshot by mapState.markerDerivedState()
+    private val markersSnapshotFlow = mapState.markerSnapshotFlow()
 
     val marker1Snapshot: MarkerDataSnapshot?
         get() = markersSnapshot.firstOrNull {
@@ -76,6 +82,20 @@ class DistanceLineState(mapState: MapState) {
         get() = markersSnapshot.firstOrNull {
             it.id == distMarker2
         }
+
+    val distanceFlow: Flow<Float> = markersSnapshotFlow.throttle(100).mapNotNull {
+        computeDistance(marker1Snapshot, marker2Snapshot)?.toFloat()
+    }
+
+    private suspend fun computeDistance(
+        marker1: MarkerDataSnapshot?,
+        marker2: MarkerDataSnapshot?
+    ): Double? = withContext(Dispatchers.Default) {
+        if (marker1 == null || marker2 == null) return@withContext null
+        val lonLatA = getLonLat(marker1.x, marker1.y, map) ?: return@withContext null
+        val lonLatB = getLonLat(marker2.x, marker2.y, map) ?: return@withContext null
+        distanceApprox(lonLatA[1], lonLatA[0], lonLatB[1], lonLatB[0])
+    }
 }
 
 private const val distMarker1 = "distMarker1"

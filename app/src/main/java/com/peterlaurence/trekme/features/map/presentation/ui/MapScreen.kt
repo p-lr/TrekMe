@@ -22,8 +22,10 @@ import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Box
 import com.peterlaurence.trekme.features.map.presentation.ui.components.DistanceLine
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkLines
+import com.peterlaurence.trekme.features.map.presentation.ui.components.TopOverlay
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 
 @Composable
@@ -150,23 +152,30 @@ fun MapScaffold(
 
 @Composable
 fun MapUi(mapUiState: MapUiState, isShowingDistance: Boolean) {
-    MapUI(state = mapUiState.mapState) {
-        val landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
-        if (landmarkPositions.isNotEmpty()) {
-            LandmarkLines(
-                mapState = mapUiState.mapState,
-                positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
-                landmarkPositions = landmarkPositions,
-                distanceForIdFlow = mapUiState.landmarkLinesState.distanceForLandmark
-            )
+    Box {
+        MapUI(state = mapUiState.mapState) {
+            val landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
+            if (landmarkPositions.isNotEmpty()) {
+                LandmarkLines(
+                    mapState = mapUiState.mapState,
+                    positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
+                    landmarkPositions = landmarkPositions,
+                    distanceForIdFlow = mapUiState.landmarkLinesState.distanceForLandmark
+                )
+            }
+
+            if (isShowingDistance) {
+                DistanceLine(
+                    mapState = mapUiState.mapState,
+                    marker1 = mapUiState.distanceLineState.marker1Snapshot,
+                    marker2 = mapUiState.distanceLineState.marker2Snapshot
+                )
+            }
         }
 
         if (isShowingDistance) {
-            DistanceLine(
-                mapState = mapUiState.mapState,
-                marker1 = mapUiState.distanceLineState.marker1Snapshot,
-                marker2 = mapUiState.distanceLineState.marker2Snapshot
-            )
+            val distance by mapUiState.distanceLineState.distanceFlow.collectAsState(initial = 0f)
+            TopOverlay(speed = 2f, distance = distance, speedVisibility = false, distanceVisibility = isShowingDistance)
         }
     }
 }
