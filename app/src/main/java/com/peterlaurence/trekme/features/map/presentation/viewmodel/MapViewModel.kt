@@ -115,8 +115,12 @@ class MapViewModel @Inject constructor(
         distanceLayer.toggleDistance()
     }
 
-    fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
+    fun toggleSpeed() = viewModelScope.launch {
+        settings.toggleSpeedVisibility()
+    }
 
+    fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
+    fun isShowingSpeedFlow(): Flow<Boolean> = settings.getSpeedVisibility()
     fun orientationVisibilityFlow(): Flow<Boolean> = settings.getOrientationVisibility()
 
     /* region map configuration */

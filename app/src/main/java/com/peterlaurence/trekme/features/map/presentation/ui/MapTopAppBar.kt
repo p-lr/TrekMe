@@ -19,11 +19,13 @@ import com.peterlaurence.trekme.R
 fun MapTopAppBar(
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
+    isShowingSpeed: Boolean,
     onMenuClick: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
-    onShowDistance: () -> Unit
+    onShowDistance: () -> Unit,
+    onToggleSpeed: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -83,6 +85,14 @@ fun MapTopAppBar(
                         Checkbox(
                             checked = isShowingDistance,
                             onCheckedChange = { onShowDistance() })
+                    }
+
+                    DropdownMenuItem(onClick = onToggleSpeed) {
+                        Text(stringResource(id = R.string.mapview_show_speed))
+                        Spacer(Modifier.weight(1f))
+                        Checkbox(
+                            checked = isShowingSpeed,
+                            onCheckedChange = { onToggleSpeed() })
                     }
                 }
             }

@@ -33,20 +33,25 @@ fun MapScreen(
     viewModel: MapViewModel = viewModel(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val isShowingOrientation by viewModel.orientationVisibilityFlow().collectAsState(initial = false)
+    val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
+    val isShowingSpeed by viewModel.isShowingSpeedFlow().collectAsState(initial = false)
+    val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
+    var speed: Float? by remember {
+        mutableStateOf(null)
+    }
+
     LaunchedEffect(lifecycleOwner) {
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.locationFlow.collect {
                     viewModel.onLocationReceived(it)
+                    speed = it.speed
                 }
             }
         }
     }
-
-    val uiState by viewModel.uiState.collectAsState()
-    val isShowingOrientation by viewModel.orientationVisibilityFlow().collectAsState(initial = false)
-    val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
-    val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
 
     if (uiState is MapUiState) {
         val displayRotation = getDisplayRotation()
@@ -66,13 +71,16 @@ fun MapScreen(
         uiState,
         isShowingOrientation,
         isShowingDistance,
+        isShowingSpeed,
         snackBarEvents,
+        speed,
         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
         onMainMenuClick = viewModel::onMainMenuClick,
         onToggleShowOrientation = viewModel::toggleShowOrientation,
         onAddMarker = viewModel::addMarker,
         onAddLandmark = viewModel::addLandmark,
-        onShowDistance = viewModel::toggleDistance
+        onShowDistance = viewModel::toggleDistance,
+        onToggleSpeed = viewModel::toggleSpeed
     )
 }
 
@@ -81,13 +89,16 @@ fun MapScaffold(
     uiState: UiState,
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
+    isShowingSpeed: Boolean,
     snackBarEvents: List<SnackBarEvent>,
+    speed: Float?,
     onSnackBarShown: () -> Unit,
     onMainMenuClick: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
-    onShowDistance: () -> Unit
+    onShowDistance: () -> Unit,
+    onToggleSpeed: () -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -118,11 +129,13 @@ fun MapScaffold(
                 MapTopAppBar(
                     isShowingOrientation,
                     isShowingDistance,
+                    isShowingSpeed,
                     onMenuClick = onMainMenuClick,
                     onToggleShowOrientation = onToggleShowOrientation,
                     onAddMarker = onAddMarker,
                     onAddLandmark = onAddLandmark,
-                    onShowDistance = onShowDistance
+                    onShowDistance = onShowDistance,
+                    onToggleSpeed = onToggleSpeed
                 )
             } else {
                 /* In case of error, we only show the main menu button */
@@ -145,13 +158,18 @@ fun MapScaffold(
             Error.LicenseError -> Text(text = "license error")
             Error.EmptyMap -> Text(text = "empty map")
             Loading -> Text(text = "loading")
-            is MapUiState -> MapUi(uiState, isShowingDistance)
+            is MapUiState -> MapUi(uiState, isShowingDistance, isShowingSpeed, speed)
         }
     }
 }
 
 @Composable
-fun MapUi(mapUiState: MapUiState, isShowingDistance: Boolean) {
+fun MapUi(
+    mapUiState: MapUiState,
+    isShowingDistance: Boolean,
+    isShowingSpeed: Boolean,
+    speed: Float?
+) {
     Box {
         MapUI(state = mapUiState.mapState) {
             val landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
@@ -173,9 +191,9 @@ fun MapUi(mapUiState: MapUiState, isShowingDistance: Boolean) {
             }
         }
 
-        if (isShowingDistance) {
+        if (isShowingDistance || isShowingSpeed) {
             val distance by mapUiState.distanceLineState.distanceFlow.collectAsState(initial = 0f)
-            TopOverlay(speed = 2f, distance = distance, speedVisibility = false, distanceVisibility = isShowingDistance)
+            TopOverlay(speed = speed, distance = distance, speedVisibility = isShowingSpeed, distanceVisibility = isShowingDistance)
         }
     }
 }
