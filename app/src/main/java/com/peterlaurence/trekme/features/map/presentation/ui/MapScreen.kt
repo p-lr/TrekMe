@@ -23,7 +23,10 @@ import ovh.plrapps.mapcompose.ui.MapUI
 import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
+import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.features.map.presentation.ui.components.DistanceLine
+import com.peterlaurence.trekme.features.map.presentation.ui.components.GpsDataOverlay
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkLines
 import com.peterlaurence.trekme.features.map.presentation.ui.components.TopOverlay
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
@@ -34,12 +37,14 @@ fun MapScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isShowingOrientation by viewModel.orientationVisibilityFlow().collectAsState(initial = false)
+    val isShowingOrientation by viewModel.orientationVisibilityFlow()
+        .collectAsState(initial = false)
     val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
     val isShowingSpeed by viewModel.isShowingSpeedFlow().collectAsState(initial = false)
     val isLockedOnpPosition by viewModel.isLockedOnPosition()
+    val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
-    var speed: Float? by remember {
+    var location: Location? by remember {
         mutableStateOf(null)
     }
 
@@ -48,7 +53,7 @@ fun MapScreen(
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.locationFlow.collect {
                     viewModel.onLocationReceived(it)
-                    speed = it.speed
+                    location = it
                 }
             }
         }
@@ -74,8 +79,9 @@ fun MapScreen(
         isShowingDistance,
         isShowingSpeed,
         isLockedOnpPosition,
+        isShowingGpsData,
         snackBarEvents,
-        speed,
+        location,
         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
         onMainMenuClick = viewModel::onMainMenuClick,
         onToggleShowOrientation = viewModel::toggleShowOrientation,
@@ -83,7 +89,8 @@ fun MapScreen(
         onAddLandmark = viewModel::addLandmark,
         onShowDistance = viewModel::toggleDistance,
         onToggleSpeed = viewModel::toggleSpeed,
-        onToggleLockOnPosition = viewModel::toggleLockedOnPosition
+        onToggleLockOnPosition = viewModel::toggleLockedOnPosition,
+        onToggleShowGpsData = viewModel::toggleShowGpsData
     )
 }
 
@@ -94,8 +101,9 @@ fun MapScaffold(
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
     isLockedOnPosition: Boolean,
+    isShowingGpsData: Boolean,
     snackBarEvents: List<SnackBarEvent>,
-    speed: Float?,
+    location: Location?,
     onSnackBarShown: () -> Unit,
     onMainMenuClick: () -> Unit,
     onToggleShowOrientation: () -> Unit,
@@ -103,7 +111,8 @@ fun MapScaffold(
     onAddLandmark: () -> Unit,
     onShowDistance: () -> Unit,
     onToggleSpeed: () -> Unit,
-    onToggleLockOnPosition: () -> Unit
+    onToggleLockOnPosition: () -> Unit,
+    onToggleShowGpsData: () -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -136,13 +145,15 @@ fun MapScaffold(
                     isShowingDistance,
                     isShowingSpeed,
                     isLockedOnPosition,
+                    isShowingGpsData,
                     onMenuClick = onMainMenuClick,
                     onToggleShowOrientation = onToggleShowOrientation,
                     onAddMarker = onAddMarker,
                     onAddLandmark = onAddLandmark,
                     onShowDistance = onShowDistance,
                     onToggleSpeed = onToggleSpeed,
-                    onToggleLockPosition = onToggleLockOnPosition
+                    onToggleLockPosition = onToggleLockOnPosition,
+                    onToggleShowGpsData = onToggleShowGpsData
                 )
             } else {
                 /* In case of error, we only show the main menu button */
@@ -165,7 +176,13 @@ fun MapScaffold(
             Error.LicenseError -> Text(text = "license error")
             Error.EmptyMap -> Text(text = "empty map")
             Loading -> Text(text = "loading")
-            is MapUiState -> MapUi(uiState, isShowingDistance, isShowingSpeed, speed)
+            is MapUiState -> MapUi(
+                uiState,
+                isShowingDistance,
+                isShowingSpeed,
+                isShowingGpsData,
+                location
+            )
         }
     }
 }
@@ -175,7 +192,8 @@ fun MapUi(
     mapUiState: MapUiState,
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
-    speed: Float?
+    isShowingGpsData: Boolean,
+    location: Location?
 ) {
     Box {
         MapUI(state = mapUiState.mapState) {
@@ -200,7 +218,17 @@ fun MapUi(
 
         if (isShowingDistance || isShowingSpeed) {
             val distance by mapUiState.distanceLineState.distanceFlow.collectAsState(initial = 0f)
-            TopOverlay(speed = speed, distance = distance, speedVisibility = isShowingSpeed, distanceVisibility = isShowingDistance)
+            TopOverlay(
+                speed = location?.speed,
+                distance = distance,
+                speedVisibility = isShowingSpeed,
+                distanceVisibility = isShowingDistance
+            )
+        }
+
+        println("xxxxx $isShowingGpsData")
+        if (isShowingGpsData) {
+            GpsDataOverlay(location, Modifier.align(Alignment.BottomStart))
         }
     }
 }

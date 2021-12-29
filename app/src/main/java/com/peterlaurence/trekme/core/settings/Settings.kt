@@ -176,6 +176,12 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
         }
     }
 
+    suspend fun toggleGpsDataVisibility() {
+        dataStore.edit {
+            it[gpsDataVisibility] = !(it[gpsDataVisibility] ?: false)
+        }
+    }
+
     /**
      * If `true`, [scaleCentered] is accounted for. Otherwise, [scaleCentered] is ignored.
      */

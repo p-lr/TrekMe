@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapview.components
+package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import android.content.Context
 import android.util.AttributeSet
@@ -26,29 +26,33 @@ import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 
 
 @Composable
-fun GpsDataOverlay(location: Location?) {
-    Column(Modifier
+fun GpsDataOverlay(location: Location?, modifier: Modifier = Modifier) {
+    Column(
+        modifier
             .width(IntrinsicSize.Min)
-            .background(colorResource(id = R.color.colorIndicatorOverlay), RoundedCornerShape(topEnd = 5.dp))
+            .background(
+                colorResource(id = R.color.colorIndicatorOverlay),
+                RoundedCornerShape(topEnd = 5.dp)
+            )
             .padding(8.dp)
     ) {
         /* When an external source is used, display the name of the device */
         when (val p = location?.locationProducerInfo) {
             is LocationProducerBtInfo -> Text(
-                    p.name,
-                    Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    color = colorResource(id = R.color.colorPrimaryTextWhite)
+                p.name,
+                Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                color = colorResource(id = R.color.colorPrimaryTextWhite)
             )
         }
         KeyValueRow(key = stringResource(id = R.string.latitude_short),
-                value = location?.latitude?.let { UnitFormatter.formatLatLon(location.latitude) }
-                        ?: "")
+            value = location?.latitude?.let { UnitFormatter.formatLatLon(location.latitude) }
+                ?: "")
         KeyValueRow(key = stringResource(id = R.string.longitude_short),
-                value = location?.longitude?.let { UnitFormatter.formatLatLon(location.longitude) }
-                        ?: "")
+            value = location?.longitude?.let { UnitFormatter.formatLatLon(location.longitude) }
+                ?: "")
         KeyValueRow(key = stringResource(id = R.string.elevation_short),
-                value = location?.altitude?.let { UnitFormatter.formatElevation(location.altitude) }
-                        ?: "")
+            value = location?.altitude?.let { UnitFormatter.formatElevation(location.altitude) }
+                ?: "")
     }
 }
 
@@ -63,21 +67,4 @@ private fun KeyValueRow(key: String, value: String) {
 }
 
 
-class GpsDataOverlayView @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyle: Int = 0
-) : AbstractComposeView(context, attrs, defStyle) {
-    var location by mutableStateOf<Location?>(null)
 
-    @Composable
-    override fun Content() {
-        TrekMeTheme {
-            GpsDataOverlay(location)
-        }
-    }
-
-    fun setData(location: Location) {
-        this.location = location
-    }
-}

@@ -124,10 +124,15 @@ class MapViewModel @Inject constructor(
         locationLayer.toggleLockedOnPosition()
     }
 
+    fun toggleShowGpsData() = viewModelScope.launch {
+        settings.toggleGpsDataVisibility()
+    }
+
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
     fun isShowingSpeedFlow(): Flow<Boolean> = settings.getSpeedVisibility()
     fun orientationVisibilityFlow(): Flow<Boolean> = settings.getOrientationVisibility()
     fun isLockedOnPosition(): State<Boolean> = locationLayer.isLockedOnPosition
+    fun isShowingGpsDataFlow(): Flow<Boolean> = settings.getGpsDataVisibility()
 
     /* region map configuration */
     private suspend fun onMapChange(map: Map) {

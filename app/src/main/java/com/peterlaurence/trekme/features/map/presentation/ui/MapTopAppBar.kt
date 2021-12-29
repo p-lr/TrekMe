@@ -21,13 +21,15 @@ fun MapTopAppBar(
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
     isLockedOnPosition: Boolean,
+    isShowingGpsData: Boolean,
     onMenuClick: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
     onShowDistance: () -> Unit,
     onToggleSpeed: () -> Unit,
-    onToggleLockPosition: () -> Unit
+    onToggleLockPosition: () -> Unit,
+    onToggleShowGpsData: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -100,6 +102,13 @@ fun MapTopAppBar(
                         Checkbox(
                             checked = isShowingOrientation,
                             onCheckedChange = { onToggleShowOrientation() })
+                    }
+                    DropdownMenuItem(onClick = onToggleShowGpsData) {
+                        Text(stringResource(id = R.string.mapview_gpsdata_enable))
+                        Spacer(Modifier.weight(1f))
+                        Checkbox(
+                            checked = isShowingGpsData,
+                            onCheckedChange = { onToggleShowGpsData() })
                     }
                 }
             }
