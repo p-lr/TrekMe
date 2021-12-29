@@ -3,11 +3,14 @@ package com.peterlaurence.trekme.features.map.presentation.ui
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Build
-import androidx.compose.foundation.layout.fillMaxSize
+import android.view.Surface
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -17,23 +20,19 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.features.map.presentation.ui.components.*
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
+import com.peterlaurence.trekme.viewmodel.mapview.StatisticsViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
-import android.view.Surface
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.Alignment
-import com.peterlaurence.trekme.core.location.Location
-import com.peterlaurence.trekme.features.map.presentation.ui.components.DistanceLine
-import com.peterlaurence.trekme.features.map.presentation.ui.components.GpsDataOverlay
-import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkLines
-import com.peterlaurence.trekme.features.map.presentation.ui.components.TopOverlay
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 
 @Composable
 fun MapScreen(
     viewModel: MapViewModel = viewModel(),
+    statisticsViewModel: StatisticsViewModel = viewModel(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -44,6 +43,8 @@ fun MapScreen(
     val isLockedOnpPosition by viewModel.isLockedOnPosition()
     val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
+    val stats by statisticsViewModel.stats.collectAsState(initial = null)
+
     var location: Location? by remember {
         mutableStateOf(null)
     }
@@ -80,6 +81,7 @@ fun MapScreen(
         isShowingSpeed,
         isLockedOnpPosition,
         isShowingGpsData,
+        stats,
         snackBarEvents,
         location,
         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
@@ -102,6 +104,7 @@ fun MapScaffold(
     isShowingSpeed: Boolean,
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
+    trackStatistics: TrackStatistics?,
     snackBarEvents: List<SnackBarEvent>,
     location: Location?,
     onSnackBarShown: () -> Unit,
@@ -181,7 +184,8 @@ fun MapScaffold(
                 isShowingDistance,
                 isShowingSpeed,
                 isShowingGpsData,
-                location
+                location,
+                trackStatistics
             )
         }
     }
@@ -193,42 +197,48 @@ fun MapUi(
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
     isShowingGpsData: Boolean,
-    location: Location?
+    location: Location?,
+    trackStatistics: TrackStatistics?
 ) {
-    Box {
-        MapUI(state = mapUiState.mapState) {
-            val landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
-            if (landmarkPositions.isNotEmpty()) {
-                LandmarkLines(
-                    mapState = mapUiState.mapState,
-                    positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
-                    landmarkPositions = landmarkPositions,
-                    distanceForIdFlow = mapUiState.landmarkLinesState.distanceForLandmark
+    Column {
+        Box(Modifier.weight(1f, true)) {
+            MapUI(state = mapUiState.mapState) {
+                val landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
+                if (landmarkPositions.isNotEmpty()) {
+                    LandmarkLines(
+                        mapState = mapUiState.mapState,
+                        positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
+                        landmarkPositions = landmarkPositions,
+                        distanceForIdFlow = mapUiState.landmarkLinesState.distanceForLandmark
+                    )
+                }
+
+                if (isShowingDistance) {
+                    DistanceLine(
+                        mapState = mapUiState.mapState,
+                        marker1 = mapUiState.distanceLineState.marker1Snapshot,
+                        marker2 = mapUiState.distanceLineState.marker2Snapshot
+                    )
+                }
+            }
+
+            if (isShowingDistance || isShowingSpeed) {
+                val distance by mapUiState.distanceLineState.distanceFlow.collectAsState(initial = 0f)
+                TopOverlay(
+                    speed = location?.speed,
+                    distance = distance,
+                    speedVisibility = isShowingSpeed,
+                    distanceVisibility = isShowingDistance
                 )
             }
 
-            if (isShowingDistance) {
-                DistanceLine(
-                    mapState = mapUiState.mapState,
-                    marker1 = mapUiState.distanceLineState.marker1Snapshot,
-                    marker2 = mapUiState.distanceLineState.marker2Snapshot
-                )
+            if (isShowingGpsData) {
+                GpsDataOverlay(location, Modifier.align(Alignment.BottomStart))
             }
         }
 
-        if (isShowingDistance || isShowingSpeed) {
-            val distance by mapUiState.distanceLineState.distanceFlow.collectAsState(initial = 0f)
-            TopOverlay(
-                speed = location?.speed,
-                distance = distance,
-                speedVisibility = isShowingSpeed,
-                distanceVisibility = isShowingDistance
-            )
-        }
-
-        println("xxxxx $isShowingGpsData")
-        if (isShowingGpsData) {
-            GpsDataOverlay(location, Modifier.align(Alignment.BottomStart))
+        if (trackStatistics != null) {
+            StatsPanel(trackStatistics)
         }
     }
 }

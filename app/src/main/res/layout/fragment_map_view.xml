@@ -51,7 +51,7 @@
             app:layout_constraintBottom_toTopOf="@id/fab_position"
             app:layout_constraintRight_toRightOf="parent" />
 
-        <com.peterlaurence.trekme.ui.mapview.components.statspanel.StatsPanel
+        <com.peterlaurence.trekme.ui.mapview.components.statspanel.StatsPanelView
             android:id="@+id/stats_panel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
