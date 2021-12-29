@@ -14,10 +14,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.centerOnMarker
-import ovh.plrapps.mapcompose.api.hasMarker
-import ovh.plrapps.mapcompose.api.moveMarker
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 class LocationLayer(
@@ -31,6 +28,7 @@ class LocationLayer(
 
     private val orientationFlow = MutableSharedFlow<Float>(1, 0, BufferOverflow.DROP_OLDEST)
     private val orientationState = mutableStateOf<Float?>(null)
+    val isLockedOnPosition = mutableStateOf(false)
 
     init {
         scope.launch {
@@ -75,6 +73,10 @@ class LocationLayer(
     fun onOrientation(intrinsicAngle: Double, displayRotation: Int) {
         val orientation = (Math.toDegrees(intrinsicAngle) + 360 + displayRotation).toFloat() % 360
         orientationFlow.tryEmit(orientation)
+    }
+
+    fun toggleLockedOnPosition() {
+        isLockedOnPosition.value = !isLockedOnPosition.value
     }
 
     private fun onLocation(location: Location, mapState: MapState, map: Map) {
@@ -124,7 +126,7 @@ class LocationLayer(
      * @param X the projected X coordinate
      * @param Y the projected Y coordinate
      */
-    private fun updatePositionMarker(
+    private suspend fun updatePositionMarker(
         mapState: MapState,
         mapBounds: MapBounds,
         X: Double,
@@ -146,6 +148,10 @@ class LocationLayer(
                 val angle by orientationState
                 PositionOrientationMarker(angle = angle)
             }
+        }
+
+        if (isLockedOnPosition.value) {
+            mapState.scrollTo(x, y)
         }
     }
 

@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
+import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.location.Location
@@ -119,9 +120,14 @@ class MapViewModel @Inject constructor(
         settings.toggleSpeedVisibility()
     }
 
+    fun toggleLockedOnPosition() {
+        locationLayer.toggleLockedOnPosition()
+    }
+
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
     fun isShowingSpeedFlow(): Flow<Boolean> = settings.getSpeedVisibility()
     fun orientationVisibilityFlow(): Flow<Boolean> = settings.getOrientationVisibility()
+    fun isLockedOnPosition(): State<Boolean> = locationLayer.isLockedOnPosition
 
     /* region map configuration */
     private suspend fun onMapChange(map: Map) {

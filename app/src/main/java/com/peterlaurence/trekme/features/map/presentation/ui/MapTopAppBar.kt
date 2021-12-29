@@ -20,12 +20,14 @@ fun MapTopAppBar(
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
+    isLockedOnPosition: Boolean,
     onMenuClick: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
     onShowDistance: () -> Unit,
-    onToggleSpeed: () -> Unit
+    onToggleSpeed: () -> Unit,
+    onToggleLockPosition: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -71,14 +73,13 @@ fun MapTopAppBar(
                     onDismissRequest = { expanded = false },
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
-                    DropdownMenuItem(onClick = onToggleShowOrientation) {
-                        Text(stringResource(id = R.string.mapview_orientation_enable))
+                    DropdownMenuItem(onClick = onToggleSpeed) {
+                        Text(stringResource(id = R.string.mapview_show_speed))
                         Spacer(Modifier.weight(1f))
                         Checkbox(
-                            checked = isShowingOrientation,
-                            onCheckedChange = { onToggleShowOrientation() })
+                            checked = isShowingSpeed,
+                            onCheckedChange = { onToggleSpeed() })
                     }
-
                     DropdownMenuItem(onClick = onShowDistance) {
                         Text(stringResource(id = R.string.mapview_measure_distance))
                         Spacer(Modifier.weight(1f))
@@ -86,13 +87,19 @@ fun MapTopAppBar(
                             checked = isShowingDistance,
                             onCheckedChange = { onShowDistance() })
                     }
-
-                    DropdownMenuItem(onClick = onToggleSpeed) {
-                        Text(stringResource(id = R.string.mapview_show_speed))
+                    DropdownMenuItem(onClick = onToggleLockPosition) {
+                        Text(stringResource(id = R.string.mapview_lock_on_position))
                         Spacer(Modifier.weight(1f))
                         Checkbox(
-                            checked = isShowingSpeed,
-                            onCheckedChange = { onToggleSpeed() })
+                            checked = isLockedOnPosition,
+                            onCheckedChange = { onToggleLockPosition() })
+                    }
+                    DropdownMenuItem(onClick = onToggleShowOrientation) {
+                        Text(stringResource(id = R.string.mapview_orientation_enable))
+                        Spacer(Modifier.weight(1f))
+                        Checkbox(
+                            checked = isShowingOrientation,
+                            onCheckedChange = { onToggleShowOrientation() })
                     }
                 }
             }

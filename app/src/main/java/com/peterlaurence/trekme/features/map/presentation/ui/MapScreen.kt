@@ -37,6 +37,7 @@ fun MapScreen(
     val isShowingOrientation by viewModel.orientationVisibilityFlow().collectAsState(initial = false)
     val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
     val isShowingSpeed by viewModel.isShowingSpeedFlow().collectAsState(initial = false)
+    val isLockedOnpPosition by viewModel.isLockedOnPosition()
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
     var speed: Float? by remember {
         mutableStateOf(null)
@@ -72,6 +73,7 @@ fun MapScreen(
         isShowingOrientation,
         isShowingDistance,
         isShowingSpeed,
+        isLockedOnpPosition,
         snackBarEvents,
         speed,
         onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
@@ -80,7 +82,8 @@ fun MapScreen(
         onAddMarker = viewModel::addMarker,
         onAddLandmark = viewModel::addLandmark,
         onShowDistance = viewModel::toggleDistance,
-        onToggleSpeed = viewModel::toggleSpeed
+        onToggleSpeed = viewModel::toggleSpeed,
+        onToggleLockOnPosition = viewModel::toggleLockedOnPosition
     )
 }
 
@@ -90,6 +93,7 @@ fun MapScaffold(
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
+    isLockedOnPosition: Boolean,
     snackBarEvents: List<SnackBarEvent>,
     speed: Float?,
     onSnackBarShown: () -> Unit,
@@ -98,7 +102,8 @@ fun MapScaffold(
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
     onShowDistance: () -> Unit,
-    onToggleSpeed: () -> Unit
+    onToggleSpeed: () -> Unit,
+    onToggleLockOnPosition: () -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -130,12 +135,14 @@ fun MapScaffold(
                     isShowingOrientation,
                     isShowingDistance,
                     isShowingSpeed,
+                    isLockedOnPosition,
                     onMenuClick = onMainMenuClick,
                     onToggleShowOrientation = onToggleShowOrientation,
                     onAddMarker = onAddMarker,
                     onAddLandmark = onAddLandmark,
                     onShowDistance = onShowDistance,
-                    onToggleSpeed = onToggleSpeed
+                    onToggleSpeed = onToggleSpeed,
+                    onToggleLockPosition = onToggleLockOnPosition
                 )
             } else {
                 /* In case of error, we only show the main menu button */
