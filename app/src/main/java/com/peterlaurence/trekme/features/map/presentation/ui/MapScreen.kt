@@ -8,8 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,17 +18,20 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.viewmodel.mapview.StatisticsViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
@@ -48,17 +49,15 @@ fun MapScreen(
     val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
     val stats by statisticsViewModel.stats.collectAsState(initial = null)
-
-    var location: Location? by remember {
-        mutableStateOf(null)
-    }
+    val location: Location? by viewModel.locationFlow.collectAsState(initial = null)
+    val rotationMode by viewModel.settings.getRotationMode()
+        .collectAsState(initial = RotationMode.NONE)
 
     LaunchedEffect(lifecycleOwner) {
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.locationFlow.collect {
                     viewModel.locationLayer.onLocation(it)
-                    location = it
                 }
             }
         }
@@ -78,31 +77,50 @@ fun MapScreen(
         }
     }
 
-    Column {
-        MapScaffold(
-            Modifier.weight(1f, true),
-            uiState,
-            isShowingOrientation,
-            isShowingDistance,
-            isShowingSpeed,
-            isLockedOnpPosition,
-            isShowingGpsData,
-            snackBarEvents,
-            location,
-            onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
-            onMainMenuClick = viewModel::onMainMenuClick,
-            onToggleShowOrientation = viewModel::toggleShowOrientation,
-            onAddMarker = viewModel.markerLayer::addMarker,
-            onAddLandmark = viewModel.landmarkLayer::addLandmark,
-            onShowDistance = viewModel.distanceLayer::toggleDistance,
-            onToggleSpeed = viewModel::toggleSpeed,
-            onToggleLockOnPosition = viewModel.locationLayer::toggleLockedOnPosition,
-            onToggleShowGpsData = viewModel::toggleShowGpsData,
-            onPositionFabClick = viewModel.locationLayer::centerOnPosition
-        )
+    when (uiState) {
+        // TODO: finish this. In case of error, show a different Scaffold with a custom TopAppBar (see below)
+//        /* In case of error, we only show the main menu button */
+//        TopAppBar(
+//            title = {},
+//            navigationIcon = {
+//                IconButton(onClick = onMainMenuClick) {
+//                    Icon(Icons.Filled.Menu, contentDescription = "")
+//                }
+//            }
+//        )
+        Error.LicenseError -> Text(text = "license error")
+        Error.EmptyMap -> Text(text = "empty map")
+        Loading -> Text(text = "loading")
+        is MapUiState -> {
+            Column {
+                MapScaffold(
+                    Modifier.weight(1f, true),
+                    uiState as MapUiState,
+                    isShowingOrientation,
+                    isShowingDistance,
+                    isShowingSpeed,
+                    isLockedOnpPosition,
+                    isShowingGpsData,
+                    rotationMode,
+                    snackBarEvents,
+                    location,
+                    onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
+                    onMainMenuClick = viewModel::onMainMenuClick,
+                    onToggleShowOrientation = viewModel::toggleShowOrientation,
+                    onAddMarker = viewModel.markerLayer::addMarker,
+                    onAddLandmark = viewModel.landmarkLayer::addLandmark,
+                    onShowDistance = viewModel.distanceLayer::toggleDistance,
+                    onToggleSpeed = viewModel::toggleSpeed,
+                    onToggleLockOnPosition = viewModel.locationLayer::toggleLockedOnPosition,
+                    onToggleShowGpsData = viewModel::toggleShowGpsData,
+                    onPositionFabClick = viewModel.locationLayer::centerOnPosition,
+                    onCompassClick = viewModel::alignToNorth
+                )
 
-        stats?.also {
-            StatsPanel(it)
+                stats?.also {
+                    StatsPanel(it)
+                }
+            }
         }
     }
 }
@@ -110,12 +128,13 @@ fun MapScreen(
 @Composable
 fun MapScaffold(
     modifier: Modifier = Modifier,
-    uiState: UiState,
+    uiState: MapUiState,
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
+    rotationMode: RotationMode,
     snackBarEvents: List<SnackBarEvent>,
     location: Location?,
     onSnackBarShown: () -> Unit,
@@ -127,7 +146,8 @@ fun MapScaffold(
     onToggleSpeed: () -> Unit,
     onToggleLockOnPosition: () -> Unit,
     onToggleShowGpsData: () -> Unit,
-    onPositionFabClick: () -> Unit
+    onPositionFabClick: () -> Unit,
+    onCompassClick: () -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -154,60 +174,54 @@ fun MapScaffold(
         modifier,
         scaffoldState = scaffoldState,
         topBar = {
-            if (uiState is MapUiState) {
-                MapTopAppBar(
-                    isShowingOrientation,
-                    isShowingDistance,
-                    isShowingSpeed,
-                    isLockedOnPosition,
-                    isShowingGpsData,
-                    onMenuClick = onMainMenuClick,
-                    onToggleShowOrientation = onToggleShowOrientation,
-                    onAddMarker = onAddMarker,
-                    onAddLandmark = onAddLandmark,
-                    onShowDistance = onShowDistance,
-                    onToggleSpeed = onToggleSpeed,
-                    onToggleLockPosition = onToggleLockOnPosition,
-                    onToggleShowGpsData = onToggleShowGpsData
-                )
-            } else {
-                /* In case of error, we only show the main menu button */
-                TopAppBar(
-                    title = {},
-                    navigationIcon = {
-                        IconButton(onClick = onMainMenuClick) {
-                            Icon(Icons.Filled.Menu, contentDescription = "")
-                        }
-                    }
-                )
-            }
+            MapTopAppBar(
+                isShowingOrientation,
+                isShowingDistance,
+                isShowingSpeed,
+                isLockedOnPosition,
+                isShowingGpsData,
+                onMenuClick = onMainMenuClick,
+                onToggleShowOrientation = onToggleShowOrientation,
+                onAddMarker = onAddMarker,
+                onAddLandmark = onAddLandmark,
+                onShowDistance = onShowDistance,
+                onToggleSpeed = onToggleSpeed,
+                onToggleLockPosition = onToggleLockOnPosition,
+                onToggleShowGpsData = onToggleShowGpsData
+            )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                backgroundColor = Color.White,
-                onClick = onPositionFabClick,
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_gps_fixed_24dp),
-                    contentDescription = stringResource(id = R.string.center_on_position_btn_desc),
-                    colorFilter = ColorFilter.tint(colorResource(id = R.color.colorAccent))
-                )
+            Column {
+                if (rotationMode != RotationMode.NONE) {
+                    CompassFab(
+                        degrees = uiState.mapState.rotation,
+                        onClick = if (rotationMode == RotationMode.FREE) onCompassClick else {
+                            {}
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                FloatingActionButton(
+                    backgroundColor = Color.White,
+                    onClick = onPositionFabClick,
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_gps_fixed_24dp),
+                        contentDescription = stringResource(id = R.string.center_on_position_btn_desc),
+                        colorFilter = ColorFilter.tint(colorResource(id = R.color.colorAccent))
+                    )
+                }
             }
         }
     ) {
-        when (uiState) {
-            // TODO: finish this
-            Error.LicenseError -> Text(text = "license error")
-            Error.EmptyMap -> Text(text = "empty map")
-            Loading -> Text(text = "loading")
-            is MapUiState -> MapUi(
-                uiState,
-                isShowingDistance,
-                isShowingSpeed,
-                isShowingGpsData,
-                location,
-            )
-        }
+        MapUi(
+            uiState,
+            isShowingDistance,
+            isShowingSpeed,
+            isShowingGpsData,
+            location,
+        )
     }
 }
 

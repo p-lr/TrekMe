@@ -24,7 +24,7 @@ class LocationLayer(
     private val mapStateFlow: Flow<MapState>
 ) {
     private var hasCenteredOnFirstLocation = false
-    private val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
+    val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
 
     private val orientationFlow = MutableSharedFlow<Float>(1, 0, BufferOverflow.DROP_OLDEST)
     private val orientationState = mutableStateOf<Float?>(null)

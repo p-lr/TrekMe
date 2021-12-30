@@ -32,7 +32,7 @@ class MapViewModel @Inject constructor(
     locationSource: LocationSource,
     orientationSource: OrientationSource,
     mapInteractor: MapInteractor,
-    private val settings: Settings,
+    val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
@@ -82,6 +82,10 @@ class MapViewModel @Inject constructor(
         settings.getRotationMode().combine(mapStateFlow) { rotMode, mapState ->
             applyRotationMode(mapState, rotMode)
         }.launchIn(viewModelScope)
+
+        settings.getMaxScale().combine(mapStateFlow) { maxScale, mapState ->
+            mapState.maxScale = maxScale
+        }.launchIn(viewModelScope)
     }
 
     /* region TopAppBar events */
@@ -100,6 +104,10 @@ class MapViewModel @Inject constructor(
 
     fun toggleShowGpsData() = viewModelScope.launch {
         settings.toggleGpsDataVisibility()
+    }
+
+    fun alignToNorth() = viewModelScope.launch {
+        mapStateFlow.first().rotateTo(0f)
     }
 
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
@@ -129,17 +137,12 @@ class MapViewModel @Inject constructor(
             tileSize
         ) {
             magnifyingFactor(magnifyingFactor)
+            highFidelityColors(false)
         }.apply {
             addLayer(tileStreamProvider)
         }
 
         /* region Configuration */
-        val maxScale = settings.getMaxScale().first()
-        mapState.maxScale = maxScale
-
-        val rotationMode = settings.getRotationMode().first()
-        applyRotationMode(mapState, rotationMode)
-
         mapState.shouldLoopScale = true
 
         mapState.onMarkerClick { id, x, y ->
