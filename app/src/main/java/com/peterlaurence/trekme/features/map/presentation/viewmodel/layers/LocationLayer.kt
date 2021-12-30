@@ -79,6 +79,11 @@ class LocationLayer(
         isLockedOnPosition.value = !isLockedOnPosition.value
     }
 
+    fun centerOnPosition() = scope.launch {
+        val mapState = mapStateFlow.first()
+        centerOnPosMarker(mapState)
+    }
+
     private fun onLocation(location: Location, mapState: MapState, map: Map) {
         scope.launch {
             /* Project lat/lon off UI thread */
@@ -107,15 +112,18 @@ class LocationLayer(
         updatePositionMarker(mapState, mapBounds, X, Y)
 
         if (!hasCenteredOnFirstLocation) {
-            val scaleCentered = getScaleCentered().first()
-            val defineScaleCentered = settings.getDefineScaleCentered().first()
-            if (defineScaleCentered) {
-                mapState.centerOnMarker(positionMarkerId, scaleCentered)
-            } else {
-                mapState.centerOnMarker(positionMarkerId)
-            }
-
+            centerOnPosMarker(mapState)
             hasCenteredOnFirstLocation = true
+        }
+    }
+
+    private suspend fun centerOnPosMarker(mapState: MapState) {
+        val scaleCentered = getScaleCentered().first()
+        val defineScaleCentered = settings.getDefineScaleCentered().first()
+        if (defineScaleCentered) {
+            mapState.centerOnMarker(positionMarkerId, scaleCentered)
+        } else {
+            mapState.centerOnMarker(positionMarkerId)
         }
     }
 

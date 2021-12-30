@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
-import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.orientation.OrientationSource
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
@@ -44,21 +44,21 @@ class MapViewModel @Inject constructor(
     val locationFlow: Flow<Location> = locationSource.locationFlow
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
 
-    private val locationLayer: LocationLayer = LocationLayer(
+    val locationLayer: LocationLayer = LocationLayer(
         viewModelScope,
         settings,
         mapRepository.mapFlow.filterNotNull(),
         mapStateFlow
     )
 
-    private val landmarkLayer: LandmarkLayer = LandmarkLayer(
+    val landmarkLayer: LandmarkLayer = LandmarkLayer(
         viewModelScope,
         mapRepository.mapFlow.filterNotNull(),
         mapStateFlow,
         mapInteractor
     )
 
-    private val markerLayer: MarkerLayer = MarkerLayer(
+    val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
         mapRepository.mapFlow.filterNotNull(),
         mapStateFlow,
@@ -68,7 +68,7 @@ class MapViewModel @Inject constructor(
             mapFeatureEvents.postMarkerEditEvent(marker, mapId, markerId)
         }
     )
-    private val distanceLayer = DistanceLayer(viewModelScope, mapStateFlow)
+    val distanceLayer = DistanceLayer(viewModelScope, mapStateFlow)
 
     val snackBarController = SnackBarController()
 
@@ -90,38 +90,12 @@ class MapViewModel @Inject constructor(
     }
     /* endregion */
 
-    /* region Location layer */
-    fun onLocationReceived(location: Location) {
-        locationLayer.onLocation(location)
-    }
-
     fun toggleShowOrientation() = viewModelScope.launch {
         settings.toggleOrientationVisibility()
     }
 
-    fun setOrientation(intrinsicAngle: Double, displayRotation: Int) {
-        locationLayer.onOrientation(intrinsicAngle, displayRotation)
-    }
-    /* endregion */
-
-    fun addMarker() {
-        markerLayer.addMarker()
-    }
-
-    fun addLandmark() {
-        landmarkLayer.addLandmark()
-    }
-
-    fun toggleDistance() {
-        distanceLayer.toggleDistance()
-    }
-
     fun toggleSpeed() = viewModelScope.launch {
         settings.toggleSpeedVisibility()
-    }
-
-    fun toggleLockedOnPosition() {
-        locationLayer.toggleLockedOnPosition()
     }
 
     fun toggleShowGpsData() = viewModelScope.launch {
@@ -204,6 +178,7 @@ class MapViewModel @Inject constructor(
             val relativePathString =
                 "$zoomLvl${File.separator}$row${File.separator}$col${map.imageExtension}"
 
+            @Suppress("BlockingMethodInNonBlockingContext")
             try {
                 FileInputStream(File(map.directory, relativePathString))
             } catch (e: Exception) {
