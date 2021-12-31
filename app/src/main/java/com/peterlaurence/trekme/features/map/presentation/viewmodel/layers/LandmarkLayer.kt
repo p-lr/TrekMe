@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
@@ -30,21 +31,19 @@ import java.util.*
 
 class LandmarkLayer(
     private val scope: CoroutineScope,
-    private val mapFlow: Flow<Map>,
-    private val mapStateFlow: Flow<MapState>,
+    private val dataStateFlow: Flow<DataState>,
     private val mapInteractor: MapInteractor
 ) : MapViewModel.MarkerTapListener {
     private var landmarkListState = mutableMapOf<String, LandmarkState>()
 
     init {
-        mapFlow.combine(mapStateFlow) { map, mapState ->
+        dataStateFlow.map { (map, mapState) ->
             onMapUpdate(map, mapState)
         }.launchIn(scope)
     }
 
     fun addLandmark() = scope.launch {
-        val map = mapFlow.first()
-        val mapState = mapStateFlow.first()
+        val (map, mapState) = dataStateFlow.first()
 
         val x = mapState.centroidX
         val y = mapState.centroidY
@@ -152,10 +151,10 @@ class LandmarkLayer(
         val landmark = landmarkListState[markerId]?.landmark
         if (landmarkInfo != null && landmark != null) {
             scope.launch {
-                mapFlow.first().also {
+                dataStateFlow.first().also {
                     mapInteractor.updateAndSaveLandmark(
                         landmark,
-                        it,
+                        it.map,
                         landmarkInfo.x,
                         landmarkInfo.y
                     )

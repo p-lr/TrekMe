@@ -36,7 +36,7 @@ class MapViewModel @Inject constructor(
     private val mapFeatureEvents: MapFeatureEvents,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
-    private val mapStateFlow = MutableSharedFlow<MapState>(1, 0, BufferOverflow.DROP_OLDEST)
+    private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
 
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -47,28 +47,28 @@ class MapViewModel @Inject constructor(
     val locationLayer: LocationLayer = LocationLayer(
         viewModelScope,
         settings,
-        mapRepository.mapFlow.filterNotNull(),
-        mapStateFlow
+        dataStateFlow
     )
 
     val landmarkLayer: LandmarkLayer = LandmarkLayer(
         viewModelScope,
-        mapRepository.mapFlow.filterNotNull(),
-        mapStateFlow,
+        dataStateFlow,
         mapInteractor
     )
 
     val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
-        mapRepository.mapFlow.filterNotNull(),
-        mapStateFlow,
+        dataStateFlow,
         mapFeatureEvents.markerMoved,
         mapInteractor,
         onMarkerEdit = { marker, mapId, markerId ->
             mapFeatureEvents.postMarkerEditEvent(marker, mapId, markerId)
         }
     )
-    val distanceLayer = DistanceLayer(viewModelScope, mapStateFlow)
+    val distanceLayer = DistanceLayer(
+        viewModelScope,
+        dataStateFlow.map { it.mapState }
+    )
 
     val snackBarController = SnackBarController()
 
@@ -79,12 +79,12 @@ class MapViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
 
-        settings.getRotationMode().combine(mapStateFlow) { rotMode, mapState ->
-            applyRotationMode(mapState, rotMode)
+        settings.getRotationMode().combine(dataStateFlow) { rotMode, dataState ->
+            applyRotationMode(dataState.mapState, rotMode)
         }.launchIn(viewModelScope)
 
-        settings.getMaxScale().combine(mapStateFlow) { maxScale, mapState ->
-            mapState.maxScale = maxScale
+        settings.getMaxScale().combine(dataStateFlow) { maxScale, dataState ->
+            dataState.mapState.maxScale = maxScale
         }.launchIn(viewModelScope)
     }
 
@@ -107,7 +107,7 @@ class MapViewModel @Inject constructor(
     }
 
     fun alignToNorth() = viewModelScope.launch {
-        mapStateFlow.first().rotateTo(0f)
+        dataStateFlow.first().mapState.rotateTo(0f)
     }
 
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
@@ -119,7 +119,7 @@ class MapViewModel @Inject constructor(
     /* region map configuration */
     private suspend fun onMapChange(map: Map) {
         /* Shutdown the previous map state, if any */
-        mapStateFlow.replayCache.firstOrNull()?.shutdown()
+        dataStateFlow.replayCache.firstOrNull()?.mapState?.shutdown()
 
         val tileSize = map.levelList.firstOrNull()?.tileSize?.width ?: run {
             _uiState.value = Error.EmptyMap
@@ -151,7 +151,7 @@ class MapViewModel @Inject constructor(
         }
         /* endregion */
 
-        mapStateFlow.tryEmit(mapState)
+        dataStateFlow.tryEmit(DataState(map, mapState))
         val landmarkLinesState = LandmarkLinesState(mapState, map)
         val distanceLineState = DistanceLineState(mapState, map)
         val mapUiState = MapUiState(
@@ -195,6 +195,13 @@ class MapViewModel @Inject constructor(
         fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double)
     }
 }
+
+/**
+ * When the [Map] changes, the [MapState] also changes. A [DataState] guarantees this consistency,
+ * as opposed to combining separates flows of [Map] and [MapState], which would produce ephemeral
+ * illegal combinations.
+ */
+data class DataState(val map: Map, val mapState: MapState)
 
 sealed interface UiState
 data class MapUiState(

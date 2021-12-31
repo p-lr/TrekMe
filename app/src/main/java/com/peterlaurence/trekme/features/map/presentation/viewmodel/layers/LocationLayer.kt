@@ -7,6 +7,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,8 +21,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 class LocationLayer(
     private val scope: CoroutineScope,
     private val settings: Settings,
-    private val mapFlow: Flow<Map>,
-    private val mapStateFlow: Flow<MapState>
+    private val dataStateFlow: Flow<DataState>
 ) {
     private var hasCenteredOnFirstLocation = false
     val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -37,12 +37,12 @@ class LocationLayer(
              * - the location flow only, if orientation is disabled.
              */
             combine(
-                mapFlow,
+                dataStateFlow,
                 settings.getOrientationVisibility()
             ) { map, showOrientation ->
                 Pair(map, showOrientation)
-            }.collectLatest { (map, showOrientation) ->
-                val mapState = mapStateFlow.first()
+            }.collectLatest { (dataState, showOrientation) ->
+                val (map, mapState) = dataState
                 if (showOrientation) {
                     combine(
                         orientationFlow,
@@ -61,7 +61,7 @@ class LocationLayer(
         }
 
         /* At every map change, set the internal flag */
-        mapFlow.map {
+        dataStateFlow.map {
             hasCenteredOnFirstLocation = false
         }.launchIn(scope)
     }
@@ -80,7 +80,7 @@ class LocationLayer(
     }
 
     fun centerOnPosition() = scope.launch {
-        val mapState = mapStateFlow.first()
+        val mapState = dataStateFlow.first().mapState
         centerOnPosMarker(mapState)
     }
 
