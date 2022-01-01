@@ -133,6 +133,9 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     suspend fun setRotationMode(mode: RotationMode) {
         dataStore.edit {
             it[rotationMode] = mode.name
+            if (mode == RotationMode.FOLLOW_ORIENTATION) {
+                it[orientationVisibility] = true
+            }
         }
     }
 
