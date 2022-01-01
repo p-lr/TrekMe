@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
@@ -18,7 +19,7 @@ import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 
-class LocationLayer(
+class LocationOrientationLayer(
     private val scope: CoroutineScope,
     private val settings: Settings,
     private val dataStateFlow: Flow<DataState>
@@ -38,16 +39,20 @@ class LocationLayer(
              */
             combine(
                 dataStateFlow,
-                settings.getOrientationVisibility()
-            ) { map, showOrientation ->
-                Pair(map, showOrientation)
-            }.collectLatest { (dataState, showOrientation) ->
+                settings.getOrientationVisibility(),
+                settings.getRotationMode()
+            ) { map, showOrientation, rotationMode ->
+                Triple(map, showOrientation, rotationMode)
+            }.collectLatest { (dataState, showOrientation, rotationMode) ->
                 val (map, mapState) = dataState
                 if (showOrientation) {
                     combine(
                         orientationFlow,
                         locationFlow,
                     ) { orientation, loc ->
+                        if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
+                            dataState.mapState.rotation = -orientation
+                        }
                         orientationState.value = orientation
                         onLocation(loc, mapState, map)
                     }.collect()
@@ -59,6 +64,28 @@ class LocationLayer(
                 }
             }
         }
+
+        settings.getRotationMode().combine(dataStateFlow) { rotMode, dataState ->
+            applyRotationMode(dataState.mapState, rotMode)
+        }.launchIn(scope)
+
+//        scope.launch {
+//            /* When the rotation mode is FOLLOW_ORIENTATION, collect the orientation flow. */
+//            combine(
+//                dataStateFlow,
+//                settings.getRotationMode()
+//            ) { map, rotationMode ->
+//                Pair(map, rotationMode)
+//            }.collectLatest { (dataState, rotationMode) ->
+//                if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
+////                    orientationState.value = 0f
+//                    orientationFlow.collect {
+//                        dataState.mapState.rotation = -it
+//                        dataState.mapState.disableRotation()
+//                    }
+//                }
+//            }
+//        }
 
         /* At every map change, set the internal flag */
         dataStateFlow.map {
@@ -153,7 +180,8 @@ class LocationLayer(
                 relativeOffset = Offset(-0.5f, -0.5f),
                 clickable = false
             ) {
-                val angle by orientationState
+                val orientation by orientationState
+                val angle = orientation?.let { it + mapState.rotation }
                 PositionOrientationMarker(angle = angle)
             }
         }
@@ -176,6 +204,20 @@ class LocationLayer(
             .combine(settings.getMaxScale()) { scaleRatio, maxScale ->
                 scaleRatio * maxScale / 100f
             }
+    }
+
+    private fun applyRotationMode(mapState: MapState, rotationMode: RotationMode) {
+        when (rotationMode) {
+            RotationMode.NONE -> {
+                mapState.rotation = 0f
+                mapState.disableRotation()
+            }
+            RotationMode.FOLLOW_ORIENTATION -> {
+                // TODO: implement (take into account orientation)
+                mapState.disableRotation()
+            }
+            RotationMode.FREE -> mapState.enableRotation()
+        }
     }
 }
 

@@ -57,7 +57,7 @@ fun MapScreen(
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.locationFlow.collect {
-                    viewModel.locationLayer.onLocation(it)
+                    viewModel.locationOrientationLayer.onLocation(it)
                 }
             }
         }
@@ -70,7 +70,7 @@ fun MapScreen(
             launch {
                 lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                     viewModel.orientationFlow.collect {
-                        viewModel.locationLayer.onOrientation(it, displayRotation)
+                        viewModel.locationOrientationLayer.onOrientation(it, displayRotation)
                     }
                 }
             }
@@ -111,9 +111,9 @@ fun MapScreen(
                     onAddLandmark = viewModel.landmarkLayer::addLandmark,
                     onShowDistance = viewModel.distanceLayer::toggleDistance,
                     onToggleSpeed = viewModel::toggleSpeed,
-                    onToggleLockOnPosition = viewModel.locationLayer::toggleLockedOnPosition,
+                    onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
                     onToggleShowGpsData = viewModel::toggleShowGpsData,
-                    onPositionFabClick = viewModel.locationLayer::centerOnPosition,
+                    onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
                     onCompassClick = viewModel::alignToNorth
                 )
 

@@ -57,7 +57,7 @@ class OrientationSourceImpl(
 
             launch {
                 while (started) {
-                    delay(10)
+                    delay(1)
                     updateOrientation()
 
                     /* Get the azimuth value (orientation[0]) in radians */

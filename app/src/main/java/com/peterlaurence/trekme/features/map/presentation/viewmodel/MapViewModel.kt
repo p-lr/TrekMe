@@ -8,7 +8,6 @@ import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
-import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
@@ -44,7 +43,7 @@ class MapViewModel @Inject constructor(
     val locationFlow: Flow<Location> = locationSource.locationFlow
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
 
-    val locationLayer: LocationLayer = LocationLayer(
+    val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
         viewModelScope,
         settings,
         dataStateFlow
@@ -79,10 +78,6 @@ class MapViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
 
-        settings.getRotationMode().combine(dataStateFlow) { rotMode, dataState ->
-            applyRotationMode(dataState.mapState, rotMode)
-        }.launchIn(viewModelScope)
-
         settings.getMaxScale().combine(dataStateFlow) { maxScale, dataState ->
             dataState.mapState.maxScale = maxScale
         }.launchIn(viewModelScope)
@@ -113,7 +108,7 @@ class MapViewModel @Inject constructor(
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
     fun isShowingSpeedFlow(): Flow<Boolean> = settings.getSpeedVisibility()
     fun orientationVisibilityFlow(): Flow<Boolean> = settings.getOrientationVisibility()
-    fun isLockedOnPosition(): State<Boolean> = locationLayer.isLockedOnPosition
+    fun isLockedOnPosition(): State<Boolean> = locationOrientationLayer.isLockedOnPosition
     fun isShowingGpsDataFlow(): Flow<Boolean> = settings.getGpsDataVisibility()
 
     /* region map configuration */
@@ -160,20 +155,6 @@ class MapViewModel @Inject constructor(
             distanceLineState
         )
         _uiState.value = mapUiState
-    }
-
-    private fun applyRotationMode(mapState: MapState, rotationMode: RotationMode) {
-        when (rotationMode) {
-            RotationMode.NONE -> {
-                mapState.rotation = 0f
-                mapState.disableRotation()
-            }
-            RotationMode.FOLLOW_ORIENTATION -> {
-                // TODO: implement (take into account orientation)
-                mapState.disableRotation()
-            }
-            RotationMode.FREE -> mapState.enableRotation()
-        }
     }
 
     private fun makeTileStreamProvider(map: Map): MapComposeTileStreamProvider {
