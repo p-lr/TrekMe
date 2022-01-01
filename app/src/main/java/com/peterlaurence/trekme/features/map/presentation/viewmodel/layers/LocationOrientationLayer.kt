@@ -3,9 +3,9 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
-import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
@@ -27,8 +27,13 @@ class LocationOrientationLayer(
     private var hasCenteredOnFirstLocation = false
     val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
 
-    private val orientationFlow = MutableSharedFlow<Float>(1, 0, BufferOverflow.DROP_OLDEST)
-    private val orientationState = mutableStateOf<Float?>(null)
+    /* Internal angle data flow, which depends the orientation and the display screen angle. */
+    private val angleFlow = MutableSharedFlow<Float>(1, 0, BufferOverflow.DROP_OLDEST)
+
+    /* Represents the arrow angle state, which also depends on settings.
+     * When the value is null, the orientation arrow isn't displayed. */
+    private val arrowAngleState = mutableStateOf<Float?>(null)
+
     val isLockedOnPosition = mutableStateOf(false)
 
     init {
@@ -41,51 +46,34 @@ class LocationOrientationLayer(
                 dataStateFlow,
                 settings.getOrientationVisibility(),
                 settings.getRotationMode()
-            ) { map, showOrientation, rotationMode ->
-                Triple(map, showOrientation, rotationMode)
+            ) { dataState, showOrientation, rotationMode ->
+                Triple(dataState, showOrientation, rotationMode)
             }.collectLatest { (dataState, showOrientation, rotationMode) ->
                 val (map, mapState) = dataState
+                applyRotationMode(mapState, rotationMode)
+
                 if (showOrientation) {
                     combine(
-                        orientationFlow,
+                        angleFlow,
                         locationFlow,
-                    ) { orientation, loc ->
+                    ) { angle, loc ->
                         if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
-                            dataState.mapState.rotation = -orientation
+                            dataState.mapState.rotation = -angle
                         }
-                        orientationState.value = orientation
+                        arrowAngleState.value = angle
                         onLocation(loc, mapState, map)
                     }.collect()
                 } else {
+                    if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
+                        dataState.mapState.rotateTo(0f)
+                    }
                     locationFlow.collect { loc ->
-                        orientationState.value = null
+                        arrowAngleState.value = null
                         onLocation(loc, mapState, map)
                     }
                 }
             }
         }
-
-        settings.getRotationMode().combine(dataStateFlow) { rotMode, dataState ->
-            applyRotationMode(dataState.mapState, rotMode)
-        }.launchIn(scope)
-
-//        scope.launch {
-//            /* When the rotation mode is FOLLOW_ORIENTATION, collect the orientation flow. */
-//            combine(
-//                dataStateFlow,
-//                settings.getRotationMode()
-//            ) { map, rotationMode ->
-//                Pair(map, rotationMode)
-//            }.collectLatest { (dataState, rotationMode) ->
-//                if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
-////                    orientationState.value = 0f
-//                    orientationFlow.collect {
-//                        dataState.mapState.rotation = -it
-//                        dataState.mapState.disableRotation()
-//                    }
-//                }
-//            }
-//        }
 
         /* At every map change, set the internal flag */
         dataStateFlow.map {
@@ -99,7 +87,7 @@ class LocationOrientationLayer(
 
     fun onOrientation(intrinsicAngle: Double, displayRotation: Int) {
         val orientation = (Math.toDegrees(intrinsicAngle) + 360 + displayRotation).toFloat() % 360
-        orientationFlow.tryEmit(orientation)
+        angleFlow.tryEmit(orientation)
     }
 
     fun toggleLockedOnPosition() {
@@ -180,9 +168,8 @@ class LocationOrientationLayer(
                 relativeOffset = Offset(-0.5f, -0.5f),
                 clickable = false
             ) {
-                val orientation by orientationState
-                val angle = orientation?.let { it + mapState.rotation }
-                PositionOrientationMarker(angle = angle)
+                val angle by arrowAngleState
+                PositionOrientationMarker(angle = angle?.let { it + mapState.rotation })
             }
         }
 
@@ -213,7 +200,6 @@ class LocationOrientationLayer(
                 mapState.disableRotation()
             }
             RotationMode.FOLLOW_ORIENTATION -> {
-                // TODO: implement (take into account orientation)
                 mapState.disableRotation()
             }
             RotationMode.FREE -> mapState.enableRotation()
