@@ -1,11 +1,9 @@
 package com.peterlaurence.trekme.core.map.domain
 
-import java.io.Serializable
 import java.util.*
 
 /**
  * The domain representation of a route.
- * TODO: this class shouldn't be serializable. Remove that inheritance after Compose route revamp.
  */
 data class Route (
     var name: String? = null,
@@ -13,7 +11,7 @@ data class Route (
     private val markers: MutableList<Marker> = mutableListOf(),
     var color: String? = null, // In the format "#AARRGGBB"
     var elevationTrusted: Boolean = false,
-) : Serializable {
+) {
     val id: String = UUID.randomUUID().toString()
 
     /**

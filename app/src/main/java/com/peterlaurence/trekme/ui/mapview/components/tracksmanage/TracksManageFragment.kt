@@ -123,7 +123,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             R.id.track_rename_id -> {
                 val map = viewModel.map ?: return true
                 val selectedRoute = trackAdapter?.selectedRoute ?: return true
-                val fragment = ChangeRouteNameFragment.newInstance(map.id, selectedRoute)
+                val fragment = ChangeRouteNameFragment.newInstance(map.id, selectedRoute.id)
                 fragment.show(parentFragmentManager, "rename route")
                 return super.onOptionsItemSelected(item)
             }
@@ -281,13 +281,13 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         private val viewModel: TracksManageViewModel by viewModels()
 
         companion object {
-            const val ROUTE_KEY = "route"
+            const val ROUTE_ID = "routeId"
             const val MAP_ID = "mapId"
 
-            fun newInstance(mapId: Int, route: Route): ChangeRouteNameFragment {
+            fun newInstance(mapId: Int, routeId: String): ChangeRouteNameFragment {
                 val bundle = Bundle()
                 bundle.putInt(MAP_ID, mapId)
-                bundle.putSerializable(ROUTE_KEY, route)
+                bundle.putSerializable(ROUTE_ID, routeId)
                 val fragment = ChangeRouteNameFragment()
                 fragment.arguments = bundle
                 return fragment
@@ -299,17 +299,16 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             val view = View.inflate(context, R.layout.change_trackname_fragment, null)
             val editText = view.findViewById<View>(R.id.track_name_edittext) as EditText
 
-            val route = arguments?.get(ROUTE_KEY) as? Route
+            val routeId = arguments?.get(ROUTE_ID) as? String ?: return builder.create()
             val mapId = arguments?.get(MAP_ID) as? Int
 
-            if (route != null) {
-                editText.setText(route.name)
-            }
+            val route = viewModel.getRoute(routeId) ?: return builder.create()
+            editText.setText(route.name)
 
             builder.setView(view)
             builder.setMessage(R.string.track_name_change)
                     .setPositiveButton(R.string.ok_dialog) { _, _ ->
-                        if (mapId != null && route != null) {
+                        if (mapId != null) {
                             val newName = editText.text.toString()
                             viewModel.renameRoute(route, newName)
                         }

@@ -47,6 +47,10 @@ class TracksManageViewModel @Inject constructor(
         }
     }
 
+    fun getRoute(routeId: String): Route? {
+        return _tracks.value?.firstOrNull { it.id == routeId }
+    }
+
     fun removeRoute(route: Route) {
         map?.also { map ->
             map.deleteRoute(route)

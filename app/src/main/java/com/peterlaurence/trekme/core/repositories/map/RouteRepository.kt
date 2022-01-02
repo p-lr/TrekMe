@@ -200,7 +200,8 @@ class RouteRepository @Inject constructor(
         id: String,
         routeInfoKtx: RouteInfoKtx
     ) {
-        val dir = getOrCreateDirectory(routesDir, id) ?: return
+        val routeDirName = routeDirNameForId[id] ?: return
+        val dir = getOrCreateDirectory(routesDir, routeDirName) ?: return
 
         val routeInfoFile = File(dir, MAP_ROUTE_INFO_FILENAME).also {
             if (!it.createNewFile()) {
@@ -216,7 +217,8 @@ class RouteRepository @Inject constructor(
         id: String,
         routeKtx: RouteKtx,
     ) {
-        val dir = getOrCreateDirectory(routesDir, id) ?: return
+        val routeDirName = routeDirNameForId[id] ?: return
+        val dir = getOrCreateDirectory(routesDir, routeDirName) ?: return
 
         val routeMarkersFile = File(dir, MAP_ROUTE_MARKERS_FILENAME).also {
             if (!it.createNewFile()) {
