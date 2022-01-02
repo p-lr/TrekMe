@@ -9,8 +9,11 @@ import com.peterlaurence.trekme.util.parseColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.addPath
 import ovh.plrapps.mapcompose.api.makePathDataBuilder
+import ovh.plrapps.mapcompose.api.removePath
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.*
@@ -28,6 +31,30 @@ class RouteLayer(
         }.launchIn(scope)
     }
 
+    fun onTrackVisibilityChanged(mapId: Int, route: Route) = scope.launch {
+        val (map, mapState) = dataStateFlow.first()
+        if (map.id != mapId) return@launch
+
+        if (route.visible && staticRoutesData.none { it.route.compositeId == route.compositeId }) {
+            val routeData = withContext(Dispatchers.Default) {
+                makePathData(map, route, mapState)?.let {
+                    RouteData(route, it)
+                }
+            }
+
+            if (routeData != null) {
+                mapState.addPath(routeData)
+            }
+        } else {
+            val existing = staticRoutesData.firstOrNull {
+                it.route.compositeId == route.compositeId
+            }
+            if (existing != null) {
+                mapState.removePath(existing.id)
+            }
+        }
+    }
+
     private suspend fun drawStaticRoutes(mapState: MapState, map: Map) {
         staticRoutesData.clear()
         mapInteractor.loadRoutes(map)
@@ -35,25 +62,33 @@ class RouteLayer(
         routes.asFlow().mapNotNull { route ->
             if (route.visible) {
                 flow {
-                    val pathBuilder = mapState.makePathDataBuilder()
-                    mapInteractor.getRouteMarkerPositions(map, route).collect {
-                        pathBuilder.addPoint(it.x, it.y)
-                    }
-                    pathBuilder.build()?.let {
+                    makePathData(map, route, mapState)?.let {
                         emit(RouteData(route, it))
                     }
                 }.flowOn(Dispatchers.Default)
             } else null
         }.flattenMerge(4).collect {
             staticRoutesData.add(it)
-            mapState.addPath(
-                it.id,
-                it.pathData,
-                color = it.route.color?.let { colorStr ->
-                    Color(parseColor(colorStr))
-                }
-            )
+            mapState.addPath(it)
         }
+    }
+
+    private suspend fun makePathData(map: Map, route: Route, mapState: MapState): PathData? {
+        val pathBuilder = mapState.makePathDataBuilder()
+        mapInteractor.getRouteMarkerPositions(map, route).collect {
+            pathBuilder.addPoint(it.x, it.y)
+        }
+        return pathBuilder.build()
+    }
+
+    private fun MapState.addPath(routeData: RouteData) {
+        addPath(
+            routeData.id,
+            routeData.pathData,
+            color = routeData.route.color?.let { colorStr ->
+                Color(parseColor(colorStr))
+            }
+        )
     }
 
     private data class RouteData(val route: Route, val pathData: PathData) {
