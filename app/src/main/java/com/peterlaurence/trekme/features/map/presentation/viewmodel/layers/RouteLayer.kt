@@ -35,7 +35,7 @@ class RouteLayer(
         val (map, mapState) = dataStateFlow.first()
         if (map.id != mapId) return@launch
 
-        if (route.visible && staticRoutesData.none { it.route.compositeId == route.compositeId }) {
+        if (route.visible && staticRoutesData.none { it.route.id == route.id }) {
             val routeData = withContext(Dispatchers.Default) {
                 makePathData(map, route, mapState)?.let {
                     RouteData(route, it)
@@ -47,10 +47,10 @@ class RouteLayer(
             }
         } else {
             val existing = staticRoutesData.firstOrNull {
-                it.route.compositeId == route.compositeId
+                it.route.id == route.id
             }
             if (existing != null) {
-                mapState.removePath(existing.id)
+                mapState.removePath(existing.route.id)
             }
         }
     }
@@ -83,7 +83,7 @@ class RouteLayer(
 
     private fun MapState.addPath(routeData: RouteData) {
         addPath(
-            routeData.id,
+            routeData.route.id,
             routeData.pathData,
             color = routeData.route.color?.let { colorStr ->
                 Color(parseColor(colorStr))
@@ -91,7 +91,5 @@ class RouteLayer(
         )
     }
 
-    private data class RouteData(val route: Route, val pathData: PathData) {
-        val id = UUID.randomUUID().toString()
-    }
+    private data class RouteData(val route: Route, val pathData: PathData)
 }

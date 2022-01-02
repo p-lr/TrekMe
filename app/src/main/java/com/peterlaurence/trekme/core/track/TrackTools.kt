@@ -32,14 +32,14 @@ object TrackTools {
         val routeList = map.routes
         if (routeList != null) {
             for (route in routeList) {
-                hashMap[route.compositeId] = route
+                hashMap[route.id] = route
             }
         }
 
         var newRouteCount = 0
         for (route in newRouteList) {
-            if (hashMap.containsKey(route.compositeId)) {
-                hashMap[route.compositeId]?.also { existing ->
+            if (hashMap.containsKey(route.id)) {
+                hashMap[route.id]?.also { existing ->
                     map.replaceRoute(existing, route)
                 }
             } else {

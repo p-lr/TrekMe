@@ -359,7 +359,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
      */
     fun getState(): DistOnRouteState {
         return infoForRoute.map {
-            it.key.compositeId to Pair(it.value.index1, it.value.index2)
+            it.key.id to Pair(it.value.index1, it.value.index2)
         }.toMap()
     }
 
@@ -448,7 +448,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         /* Restore from the former state */
         state?.forEach { (id, pair) ->
             val route = routes.firstOrNull {
-                it.compositeId == id
+                it.id == id
             }
             if (route != null) {
                 infoForRoute[route] = Info(pair.first, pair.second)

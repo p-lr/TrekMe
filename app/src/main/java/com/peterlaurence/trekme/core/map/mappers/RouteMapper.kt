@@ -26,7 +26,6 @@ fun Route.toRouteInfoKtx(): RouteInfoKtx {
 fun RouteGson.Route.toDomain(): Route {
     val domainList = ArrayList<Marker>(routeMarkers.size)
     return Route(
-        id,
         name,
         visible,
         markers = routeMarkers.mapTo(domainList) { it.toDomain() },

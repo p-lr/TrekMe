@@ -178,7 +178,6 @@ class TrackImporter @Inject constructor(
             }.toMutableList()
 
             Route(
-                track.id.formatNameOrId(i),
                 name.formatNameOrId(i),
                 markers = markers,
                 visible = true, /* The route should be visible by default */

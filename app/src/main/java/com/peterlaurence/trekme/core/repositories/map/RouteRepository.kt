@@ -22,6 +22,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -37,7 +38,11 @@ class RouteRepository @Inject constructor(
     private val format = Json { prettyPrint = true }
     private val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
 
+    /* Associates a route id and the directory name of the serialized route */
+    private val routeDirNameForId = mutableMapOf<String, String>()
+
     suspend fun importRoutes(map: Map) = withContext(ioDispatcher) {
+        routeDirNameForId.clear()
         val legacyRouteFile = File(map.directory, LEGACY_MAP_ROUTE_FILENAME)
         val routes = if (legacyRouteFile.exists()) {
             /* Import legacy */
@@ -70,8 +75,8 @@ class RouteRepository @Inject constructor(
                 getOrCreateDirectory(map.directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
             val routeKtx = route.toRouteKtx()
             val routeInfoKtx = route.toRouteInfoKtx()
-            val id = route.id ?: route.compositeId
-            serializeRoute(dir, id, routeKtx, routeInfoKtx)
+            serializeRoute(dir, route.id, routeKtx, routeInfoKtx)
+            routeDirNameForId[route.id] = dir.name
         }
     }
 
@@ -80,23 +85,24 @@ class RouteRepository @Inject constructor(
             val dir =
                 getOrCreateDirectory(map.directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
             val routeInfoKtx = route.toRouteInfoKtx()
-            val id = route.id ?: route.compositeId
-            serializeRouteInfo(dir, id, routeInfoKtx)
+            serializeRouteInfo(dir, route.id, routeInfoKtx)
         }
     }
 
     suspend fun deleteRoute(map: Map, route: Route) = withContext(ioDispatcher) {
-        deleteRoutes(map, listOf(route.id ?: route.compositeId))
+        deleteRoutes(map, listOf(route.id))
     }
-
 
     suspend fun deleteRoutes(map: Map, ids: List<String>) = withContext(ioDispatcher) {
         val root = File(map.directory, MAP_ROUTES_DIRECTORY)
         ids.forEach { id ->
             runCatching {
-                val mapDir = File(root, id)
-                if (mapDir.exists()) {
-                    mapDir.deleteRecursively()
+                val routeDirName = routeDirNameForId[id]
+                if (routeDirName != null) {
+                    val mapDir = File(root, routeDirName)
+                    if (mapDir.exists()) {
+                        mapDir.deleteRecursively()
+                    }
                 }
             }
         }
@@ -133,7 +139,6 @@ class RouteRepository @Inject constructor(
             }.getOrNull() ?: return@mapNotNull null
 
             Route(
-                id = dir.name,
                 name = routeInfoKtx.name,
                 color = routeInfoKtx.color,
                 elevationTrusted = routeInfoKtx.elevationTrusted,
@@ -141,7 +146,9 @@ class RouteRepository @Inject constructor(
                 markers = routeMarkerKtx.markers.map {
                     it.toMarker()
                 }.toMutableList()
-            )
+            ).also {
+                routeDirNameForId[it.id] = dir.name
+            }
         }
     }
 
