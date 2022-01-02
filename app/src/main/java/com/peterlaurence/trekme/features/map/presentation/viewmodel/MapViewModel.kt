@@ -64,10 +64,13 @@ class MapViewModel @Inject constructor(
             mapFeatureEvents.postMarkerEditEvent(marker, mapId, markerId)
         }
     )
+
     val distanceLayer = DistanceLayer(
         viewModelScope,
         dataStateFlow.map { it.mapState }
     )
+
+    val routeLayer = RouteLayer(viewModelScope, dataStateFlow, mapInteractor)
 
     val snackBarController = SnackBarController()
 

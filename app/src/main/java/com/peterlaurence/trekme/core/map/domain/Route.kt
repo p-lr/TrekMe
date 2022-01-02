@@ -7,7 +7,7 @@ data class Route (
     var name: String? = null,
     var visible: Boolean = true,
     private val markers: MutableList<Marker> = mutableListOf(),
-    var color: String? = null,
+    var color: String? = null, // In the format "#AARRGGBB"
     var elevationTrusted: Boolean = false,
 ) : Serializable {
     val compositeId: String
