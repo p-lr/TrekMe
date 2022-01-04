@@ -37,10 +37,15 @@ class LocationOrientationLayer(
     val isLockedOnPosition = mutableStateOf(false)
 
     init {
+        locationFlow.map { loc ->
+            val (map, mapState) = dataStateFlow.first()
+            onLocation(loc, mapState, map)
+        }.launchIn(scope)
+
         scope.launch {
-            /* At every map or orientation setting change, collect either:
-             * - the orientation and location flows, if orientation is enabled,
-             * - the location flow only, if orientation is disabled.
+            /* At every map, orientation setting, and rotation mode change:
+             * - collect the angle flow, if orientation is enabled,
+             * - hide the orientation arrow and align to the north, if orientation is disabled.
              */
             combine(
                 dataStateFlow,
@@ -49,28 +54,21 @@ class LocationOrientationLayer(
             ) { dataState, showOrientation, rotationMode ->
                 Triple(dataState, showOrientation, rotationMode)
             }.collectLatest { (dataState, showOrientation, rotationMode) ->
-                val (map, mapState) = dataState
+                val mapState = dataState.mapState
                 applyRotationMode(mapState, rotationMode)
 
                 if (showOrientation) {
-                    combine(
-                        angleFlow,
-                        locationFlow,
-                    ) { angle, loc ->
+                    angleFlow.collect { angle ->
                         if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
                             dataState.mapState.rotation = -angle
                         }
                         arrowAngleState.value = angle
-                        onLocation(loc, mapState, map)
-                    }.collect()
+                    }
                 } else {
                     if (rotationMode == RotationMode.FOLLOW_ORIENTATION) {
                         dataState.mapState.rotateTo(0f)
                     }
-                    locationFlow.collect { loc ->
-                        arrowAngleState.value = null
-                        onLocation(loc, mapState, map)
-                    }
+                    arrowAngleState.value = null
                 }
             }
         }
