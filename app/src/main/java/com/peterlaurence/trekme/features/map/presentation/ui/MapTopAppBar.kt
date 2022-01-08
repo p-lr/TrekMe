@@ -23,6 +23,7 @@ fun MapTopAppBar(
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
     onMenuClick: () -> Unit,
+    onManageTracks: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
@@ -75,6 +76,10 @@ fun MapTopAppBar(
                     onDismissRequest = { expanded = false },
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
+                    DropdownMenuItem(onClick = onManageTracks) {
+                        Text(stringResource(id = R.string.manage_tracks_menu))
+                        Spacer(Modifier.weight(1f))
+                    }
                     DropdownMenuItem(onClick = onToggleSpeed) {
                         Text(stringResource(id = R.string.mapview_show_speed))
                         Spacer(Modifier.weight(1f))

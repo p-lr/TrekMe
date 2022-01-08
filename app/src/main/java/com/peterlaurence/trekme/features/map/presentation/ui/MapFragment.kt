@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.fragment.findNavController
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapBinding
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
@@ -43,6 +44,10 @@ class MapFragment : Fragment() {
                 ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
             )
 
+            val onNavigateToTracksManage = {
+                findNavController().navigate(R.id.tracksManageFragment)
+            }
+
             setContent {
                 TrekMeTheme {
                     /* By changing the view-model store owner to the activity in the current
@@ -55,7 +60,7 @@ class MapFragment : Fragment() {
                     CompositionLocalProvider(
                         LocalViewModelStoreOwner provides requireActivity()
                     ) {
-                        MapScreen()
+                        MapScreen(onNavigateToTracksManage = onNavigateToTracksManage)
                     }
                 }
             }

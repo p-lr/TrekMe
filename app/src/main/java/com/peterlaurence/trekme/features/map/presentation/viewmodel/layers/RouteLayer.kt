@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.util.parseColor
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +22,7 @@ import java.util.*
 class RouteLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
+    mapFeatureEvents: MapFeatureEvents,
     private val mapInteractor: MapInteractor
 ) {
     private val staticRoutesData = mutableListOf<RouteData>()
@@ -29,20 +31,29 @@ class RouteLayer(
         dataStateFlow.map { (map, mapState) ->
             drawStaticRoutes(mapState, map)
         }.launchIn(scope)
+
+        mapFeatureEvents.trackVisibilityChanged.map { (mapId, route) ->
+            onTrackVisibilityChanged(mapId, route)
+        }.launchIn(scope)
     }
 
-    fun onTrackVisibilityChanged(mapId: Int, route: Route) = scope.launch {
+    private fun onTrackVisibilityChanged(mapId: Int, route: Route) = scope.launch {
         val (map, mapState) = dataStateFlow.first()
         if (map.id != mapId) return@launch
 
-        if (route.visible && staticRoutesData.none { it.route.id == route.id }) {
-            val routeData = withContext(Dispatchers.Default) {
-                makePathData(map, route, mapState)?.let {
-                    RouteData(route, it)
+        if (route.visible) {
+            val routeData = staticRoutesData.firstOrNull {
+                it.route.id == route.id
+            }.let { routeData ->
+                routeData ?: withContext(Dispatchers.Default) {
+                    makePathData(map, route, mapState)?.let {
+                        RouteData(route, it)
+                    }
                 }
             }
 
             if (routeData != null) {
+                staticRoutesData.add(routeData)
                 mapState.addPath(routeData)
             }
         } else {
@@ -50,6 +61,7 @@ class RouteLayer(
                 it.route.id == route.id
             }
             if (existing != null) {
+                staticRoutesData.remove(existing)
                 mapState.removePath(existing.route.id)
             }
         }

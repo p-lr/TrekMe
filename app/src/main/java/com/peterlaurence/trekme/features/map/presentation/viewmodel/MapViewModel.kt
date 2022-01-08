@@ -70,7 +70,7 @@ class MapViewModel @Inject constructor(
         dataStateFlow.map { it.mapState }
     )
 
-    val routeLayer = RouteLayer(viewModelScope, dataStateFlow, mapInteractor)
+    val routeLayer = RouteLayer(viewModelScope, dataStateFlow, mapFeatureEvents, mapInteractor)
 
     val snackBarController = SnackBarController()
 

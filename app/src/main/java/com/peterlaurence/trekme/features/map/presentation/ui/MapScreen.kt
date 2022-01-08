@@ -29,7 +29,6 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.viewmodel.mapview.StatisticsViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.ui.MapUI
@@ -38,7 +37,8 @@ import ovh.plrapps.mapcompose.ui.MapUI
 fun MapScreen(
     viewModel: MapViewModel = viewModel(),
     statisticsViewModel: StatisticsViewModel = viewModel(),
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    onNavigateToTracksManage: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isShowingOrientation by viewModel.orientationVisibilityFlow()
@@ -106,6 +106,7 @@ fun MapScreen(
                     location,
                     onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
                     onMainMenuClick = viewModel::onMainMenuClick,
+                    onManageTracks = onNavigateToTracksManage,
                     onToggleShowOrientation = viewModel::toggleShowOrientation,
                     onAddMarker = viewModel.markerLayer::addMarker,
                     onAddLandmark = viewModel.landmarkLayer::addLandmark,
@@ -139,6 +140,7 @@ fun MapScaffold(
     location: Location?,
     onSnackBarShown: () -> Unit,
     onMainMenuClick: () -> Unit,
+    onManageTracks: () -> Unit,
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
@@ -181,6 +183,7 @@ fun MapScaffold(
                 isLockedOnPosition,
                 isShowingGpsData,
                 onMenuClick = onMainMenuClick,
+                onManageTracks = onManageTracks,
                 onToggleShowOrientation = onToggleShowOrientation,
                 onAddMarker = onAddMarker,
                 onAddLandmark = onAddLandmark,

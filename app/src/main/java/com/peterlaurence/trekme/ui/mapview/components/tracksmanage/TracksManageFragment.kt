@@ -23,6 +23,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.dialogs.ColorSelectDialog
 import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
 import com.peterlaurence.trekme.util.collectWhileResumedIn
@@ -50,6 +51,9 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     @Inject
     lateinit var eventBus: MapViewEventBus
+
+    @Inject
+    lateinit var mapFeatureEvents: MapFeatureEvents
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -209,6 +213,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     }
 
     override fun onVisibilityToggle(route: Route) {
+        val mapId = viewModel.map?.id ?: return
+        mapFeatureEvents.postTrackVisibilityChanged(mapId, route)
         viewModel.saveChanges(route)
     }
 
