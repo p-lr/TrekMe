@@ -70,6 +70,8 @@ class OrientationSourceImpl(
                 started = false
                 sensorManager.unregisterListener(listener)
             }
+        }.distinctUntilChanged { old, new ->
+            abs(old - new) < 0.002
         }.flowOn(
             Dispatchers.Default
         ).shareIn(
