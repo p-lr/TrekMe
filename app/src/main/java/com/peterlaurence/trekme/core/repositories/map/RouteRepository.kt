@@ -142,7 +142,7 @@ class RouteRepository @Inject constructor(
                 name = routeInfoKtx.name,
                 color = routeInfoKtx.color,
                 elevationTrusted = routeInfoKtx.elevationTrusted,
-                visible = routeInfoKtx.visible,
+                initialVisibility = routeInfoKtx.visible,
                 markers = routeMarkerKtx.markers.map {
                     it.toMarker()
                 }.toMutableList()

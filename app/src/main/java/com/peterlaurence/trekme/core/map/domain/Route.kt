@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.map.domain
 
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*
 
 /**
@@ -7,12 +8,14 @@ import java.util.*
  */
 data class Route (
     var name: String? = null,
-    var visible: Boolean = true,
+    val initialVisibility: Boolean = true,
     private val markers: MutableList<Marker> = mutableListOf(),
     var color: String? = null, // In the format "#AARRGGBB"
     var elevationTrusted: Boolean = false,
 ) {
     val id: String = UUID.randomUUID().toString()
+
+    val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
 
     /**
      * Keep in mind that iterating the list of markers should be done while holding the monitor
@@ -42,6 +45,6 @@ data class Route (
         }
 
     fun toggleVisibility() {
-        visible = !visible
+        visible.value = !visible.value
     }
 }

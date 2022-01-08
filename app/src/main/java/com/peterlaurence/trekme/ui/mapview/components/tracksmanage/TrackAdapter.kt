@@ -89,10 +89,10 @@ class TrackAdapter(
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
         val route = differ.currentList[position] ?: return
         holder.trackName.text = route.name
-        holder.setVisibleButtonIcon(route.visible)
+        holder.setVisibleButtonIcon(route.visible.value)
         holder.visibleButton.setOnClickListener {
             route.toggleVisibility()
-            holder.setVisibleButtonIcon(route.visible)
+            holder.setVisibleButtonIcon(route.visible.value)
             trackSelectionListener.onVisibilityToggle(route)
         }
         holder.colorButton.setColorFilter(Color.parseColor(route.color ?: colorRoute))

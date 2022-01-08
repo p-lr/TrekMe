@@ -18,7 +18,7 @@ fun Route.toRouteInfoKtx(): RouteInfoKtx {
     return RouteInfoKtx(
         name = r.name,
         color = r.color,
-        visible = r.visible,
+        visible = r.visible.value,
         elevationTrusted = r.elevationTrusted,
     )
 }

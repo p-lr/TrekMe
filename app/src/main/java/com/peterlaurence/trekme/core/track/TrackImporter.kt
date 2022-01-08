@@ -180,7 +180,7 @@ class TrackImporter @Inject constructor(
             Route(
                 name.formatNameOrId(i),
                 markers = markers,
-                visible = true, /* The route should be visible by default */
+                initialVisibility = true, /* The route should be visible by default */
                 elevationTrusted = elevationTrusted
             )
         }

@@ -179,7 +179,7 @@ class RouteLayer(
         val liveRouteFlow = getRouteFlow(liveRoute) { route, path ->
             val drawablePath = object : PathView.DrawablePath {
                 override val visible: Boolean
-                    get() = route.visible
+                    get() = route.visible.value
                 override var path: FloatArray = path
                 override var paint: Paint? = liveRoutePaint
                 override val width: Float? = null
@@ -221,7 +221,7 @@ class RouteLayer(
 
             val drawablePath = object : PathView.DrawablePath {
                 override val visible: Boolean
-                    get() = route.visible
+                    get() = route.visible.value
                 override var path: FloatArray = path
                 override var paint: Paint? = paint
                 override val width: Float? = null
@@ -419,7 +419,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         mapView.removeMarker(distMarker)
 
         /* Finally, restore original paths */
-        val originalPaths = routes.filter { it.visible }.map {
+        val originalPaths = routes.filter { it.visible.value }.map {
             it.data as PathView.DrawablePath
         }
         pathView.updatePaths(originalPaths)
@@ -473,7 +473,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         val x = ct.translateAbsoluteToRelativeX((referentialData.centerX * ct.baseWidth).toInt())
         val y = ct.translateAbsoluteToRelativeY((referentialData.centerY * ct.baseHeight).toInt())
 
-        barycenterToRoute?.filter { it.value.visible }?.minByOrNull {
+        barycenterToRoute?.filter { it.value.visible.value }?.minByOrNull {
             computeDistance(x, y, it.key)
         }?.also {
             /* Only if this is a different route, position the markers on this route */
@@ -581,7 +581,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
 
         val distancePath = object : PathView.DrawablePath {
             override val visible: Boolean
-                get() = routeWithActiveDistance.visible
+                get() = routeWithActiveDistance.visible.value
             override var path: FloatArray = drawablePath.path
             override val width: Float = distancePathWidth
             override var paint: Paint? = distancePaint
@@ -595,7 +595,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         /* The part between the start of the original path and the start of the distance path */
         val beforePath = object : PathView.DrawablePath {
             override val visible: Boolean
-                get() = routeWithActiveDistance.visible
+                get() = routeWithActiveDistance.visible.value
             override var path: FloatArray = drawablePath.path
             override val width: Float? = null
             override var paint: Paint? = null
@@ -608,7 +608,7 @@ private class DistanceOnRouteController(private val pathView: PathView,
         /* The part between the end of the distance path and the end of the original path */
         val afterPath = object : PathView.DrawablePath {
             override val visible: Boolean
-                get() = routeWithActiveDistance.visible
+                get() = routeWithActiveDistance.visible.value
             override var path: FloatArray = drawablePath.path
             override val width: Float? = null
             override var paint: Paint? = null
