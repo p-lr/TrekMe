@@ -101,7 +101,7 @@ class TracksManageViewModel @Inject constructor(
     fun changeRouteColor(routeId: String, color: String) {
         val route = map?.routes?.firstOrNull { it.id == routeId }
         if (route != null) {
-            route.color = color
+            route.color.value = color
             saveChanges(route)
         }
     }

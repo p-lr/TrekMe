@@ -6,16 +6,17 @@ import java.util.*
 /**
  * The domain representation of a route.
  */
-data class Route (
+class Route (
     var name: String? = null,
-    val initialVisibility: Boolean = true,
+    initialVisibility: Boolean = true,
     private val markers: MutableList<Marker> = mutableListOf(),
-    var color: String? = null, // In the format "#AARRGGBB"
+    initialColor: String? = null, // In the format "#AARRGGBB"
     var elevationTrusted: Boolean = false,
 ) {
     val id: String = UUID.randomUUID().toString()
 
     val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
+    val color: MutableStateFlow<String?> = MutableStateFlow(initialColor)
 
     /**
      * Keep in mind that iterating the list of markers should be done while holding the monitor
@@ -46,5 +47,20 @@ data class Route (
 
     fun toggleVisibility() {
         visible.value = !visible.value
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Route
+
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
     }
 }

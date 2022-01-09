@@ -95,7 +95,7 @@ class TrackAdapter(
             holder.setVisibleButtonIcon(route.visible.value)
             trackSelectionListener.onVisibilityToggle(route)
         }
-        holder.colorButton.setColorFilter(Color.parseColor(route.color ?: colorRoute))
+        holder.colorButton.setColorFilter(Color.parseColor(route.color.value ?: colorRoute))
         holder.colorButton.setOnClickListener {
             trackSelectionListener.onColorButtonClicked(route)
         }

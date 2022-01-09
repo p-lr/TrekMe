@@ -215,7 +215,7 @@ class RouteLayer(
             /* Honor the route color, if set */
             val paint = runCatching {
                 Paint().apply {
-                    color = Color.parseColor(route.color ?: colorRoute)
+                    color = Color.parseColor(route.color.value ?: colorRoute)
                 }
             }.getOrNull()
 
