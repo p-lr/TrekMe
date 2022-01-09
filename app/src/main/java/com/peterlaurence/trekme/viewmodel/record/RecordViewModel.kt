@@ -23,7 +23,6 @@ import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -109,6 +108,7 @@ class RecordViewModel @Inject constructor(
                     if (map.intersects(boundingBox) == true) {
                         /* Import the new route */
                         val result = trackImporter.applyGpxToMap(gpx, map, mapLoader)
+                        appEventBus.postGpxImportResult(result)
                         if (result is TrackImporter.GpxImportResult.GpxImportOk && result.newRouteCount >= 1) {
                             importCount++
                         }

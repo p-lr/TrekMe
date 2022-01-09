@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
@@ -83,6 +84,15 @@ class MapViewModel @Inject constructor(
 
         settings.getMaxScale().combine(dataStateFlow) { maxScale, dataState ->
             dataState.mapState.maxScale = maxScale
+        }.launchIn(viewModelScope)
+
+        appEventBus.gpxImportEvent.map { event ->
+            if (event is TrackImporter.GpxImportResult.GpxImportOk) {
+                routeLayer.onNewRoutes(event.map.id, event.routes)
+                if (event.newMarkersCount > 0) {
+                    markerLayer.onMarkersChanged(event.map.id)
+                }
+            }
         }.launchIn(viewModelScope)
     }
 

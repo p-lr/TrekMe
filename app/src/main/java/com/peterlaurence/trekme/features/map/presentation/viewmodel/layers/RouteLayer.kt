@@ -32,42 +32,57 @@ class RouteLayer(
         }
     }
 
+    fun onNewRoutes(mapId: Int, routes: List<Route>) = scope.launch {
+        dataStateFlow.collectLatest { (map, mapState) ->
+            if (mapId != map.id) return@collectLatest
+            coroutineScope {
+                for (route in routes) {
+                    processRoute(route, map, mapState)
+                }
+            }
+        }
+    }
+
     private suspend fun drawStaticRoutes(mapState: MapState, map: Map) = coroutineScope {
         staticRoutesData.clear()
         mapInteractor.loadRoutes(map)
         val routes = map.routes ?: return@coroutineScope
 
         for (route in routes) {
-            /* React to color change */
-            launch(Dispatchers.Default) {
-                route.color.collect { color ->
-                    mapState.updatePath(
-                        route.id,
-                        color = Color(parseColor(color ?: colorRoute))
-                    )
-                }
+            processRoute(route, map, mapState)
+        }
+    }
+
+    private fun CoroutineScope.processRoute(route: Route, map: Map, mapState: MapState) {
+        /* React to color change */
+        launch(Dispatchers.Default) {
+            route.color.collect { color ->
+                mapState.updatePath(
+                    route.id,
+                    color = Color(parseColor(color ?: colorRoute))
+                )
             }
+        }
 
-            /* React to visibility change */
-            launch(Dispatchers.Default) {
-                route.visible.collect { visible ->
-                    if (visible) {
-                        val routeData = makePathData(map, route, mapState)?.let {
-                            RouteData(route, it)
-                        }
+        /* React to visibility change */
+        launch(Dispatchers.Default) {
+            route.visible.collect { visible ->
+                if (visible) {
+                    val routeData = makePathData(map, route, mapState)?.let {
+                        RouteData(route, it)
+                    }
 
-                        if (routeData != null) {
-                            staticRoutesData.add(routeData)
-                            mapState.addPath(routeData)
-                        }
-                    } else {
-                        val existing = staticRoutesData.firstOrNull {
-                            it.route.id == route.id
-                        }
-                        if (existing != null) {
-                            staticRoutesData.remove(existing)
-                            mapState.removePath(existing.route.id)
-                        }
+                    if (routeData != null) {
+                        staticRoutesData.add(routeData)
+                        mapState.addPath(routeData)
+                    }
+                } else {
+                    val existing = staticRoutesData.firstOrNull {
+                        it.route.id == route.id
+                    }
+                    if (existing != null) {
+                        staticRoutesData.remove(existing)
+                        mapState.removePath(existing.route.id)
                     }
                 }
             }

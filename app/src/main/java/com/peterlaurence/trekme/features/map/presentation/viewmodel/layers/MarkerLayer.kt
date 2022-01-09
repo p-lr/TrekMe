@@ -61,6 +61,13 @@ class MarkerLayer(
         markerListState[markerState.id] = markerState
     }
 
+    suspend fun onMarkersChanged(mapId: Int) {
+        val (map, mapState) = dataStateFlow.first()
+        if (mapId == map.id) {
+            onMapUpdate(map, mapState)
+        }
+    }
+
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
         mapInteractor.getMarkerPositions(map).map { (marker, x, y) ->
             val state = addMarkerOnMap(marker, mapState, x, y)
