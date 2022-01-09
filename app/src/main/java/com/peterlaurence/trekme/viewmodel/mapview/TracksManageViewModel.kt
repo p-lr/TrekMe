@@ -52,6 +52,9 @@ class TracksManageViewModel @Inject constructor(
     }
 
     fun removeRoute(route: Route) {
+        /* Immediately set visibility */
+        route.visible.value = false
+
         map?.also { map ->
             map.deleteRoute(route)
             viewModelScope.launch {
@@ -59,6 +62,8 @@ class TracksManageViewModel @Inject constructor(
             }
             map.routes?.let { routes ->
                 _tracks.value = routes
+
+                // TODO: this won't be needed anymore with Compose version
                 /* Notify other views */
                 mapViewEventBus.postTrackVisibilityChange()
             }

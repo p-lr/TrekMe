@@ -38,23 +38,27 @@ class RouteLayer(
         val routes = map.routes ?: return@coroutineScope
 
         for (route in routes) {
+            /* React to color change */
             launch(Dispatchers.Default) {
-                combine(route.visible, route.color) { visible, color ->
-                    if (visible) {
-                        if (staticRoutesData.any { it.route == route }) {
-                            mapState.updatePath(
-                                route.id,
-                                color = Color(parseColor(color ?: colorRoute))
-                            )
-                        } else {
-                            val routeData = makePathData(map, route, mapState)?.let {
-                                RouteData(route, it)
-                            }
+                route.color.collect { color ->
+                    mapState.updatePath(
+                        route.id,
+                        color = Color(parseColor(color ?: colorRoute))
+                    )
+                }
+            }
 
-                            if (routeData != null) {
-                                staticRoutesData.add(routeData)
-                                mapState.addPath(routeData)
-                            }
+            /* React to visibility change */
+            launch(Dispatchers.Default) {
+                route.visible.collect { visible ->
+                    if (visible) {
+                        val routeData = makePathData(map, route, mapState)?.let {
+                            RouteData(route, it)
+                        }
+
+                        if (routeData != null) {
+                            staticRoutesData.add(routeData)
+                            mapState.addPath(routeData)
                         }
                     } else {
                         val existing = staticRoutesData.firstOrNull {
@@ -65,7 +69,7 @@ class RouteLayer(
                             mapState.removePath(existing.route.id)
                         }
                     }
-                }.collect()
+                }
             }
         }
     }

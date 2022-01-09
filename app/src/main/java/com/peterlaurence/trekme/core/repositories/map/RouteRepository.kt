@@ -73,10 +73,10 @@ class RouteRepository @Inject constructor(
         runCatching {
             val dir =
                 getOrCreateDirectory(map.directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
+            routeDirNameForId[route.id] = route.name ?: route.id
             val routeKtx = route.toRouteKtx()
             val routeInfoKtx = route.toRouteInfoKtx()
             serializeRoute(dir, route.id, routeKtx, routeInfoKtx)
-            routeDirNameForId[route.id] = dir.name
         }
     }
 
