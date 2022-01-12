@@ -3,8 +3,14 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 import androidx.compose.ui.graphics.Color
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
+import com.peterlaurence.trekme.core.track.toMarker
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.events.recording.LiveRoutePause
+import com.peterlaurence.trekme.events.recording.LiveRoutePoint
+import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
+import com.peterlaurence.trekme.ui.mapview.colorLiveRoute
 import com.peterlaurence.trekme.ui.mapview.colorRoute
 import com.peterlaurence.trekme.util.parseColor
 import kotlinx.coroutines.*
@@ -20,7 +26,8 @@ import java.util.*
 class RouteLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
-    private val mapInteractor: MapInteractor
+    private val mapInteractor: MapInteractor,
+    private val gpxRecordEvents: GpxRecordEvents
 ) {
     private val staticRoutesData = mutableListOf<RouteData>()
 
@@ -28,6 +35,12 @@ class RouteLayer(
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
                 drawStaticRoutes(mapState, map)
+            }
+        }
+
+        scope.launch {
+            dataStateFlow.collectLatest { (map, mapState) ->
+                drawLiveRoute(mapState, map)
             }
         }
     }
@@ -38,6 +51,62 @@ class RouteLayer(
             coroutineScope {
                 for (route in routes) {
                     processRoute(route, map, mapState)
+                }
+            }
+        }
+    }
+
+    private suspend fun drawLiveRoute(mapState: MapState, map: Map): Nothing = coroutineScope {
+        val routeList = mutableListOf<Route>()
+
+        fun newRoute(): Route {
+            val route = Route(initialColor = colorLiveRoute)
+            routeList.add(route)
+
+            launch {
+                var added = false
+                val pathBuilder = mapState.makePathDataBuilder()
+                mapInteractor.getLiveMarkerPositions(map, route).collect {
+                    pathBuilder.addPoint(it.x, it.y)
+                    val routeData = pathBuilder.build()?.let { pathData ->
+                        RouteData(route, pathData)
+                    }
+                    if (routeData != null) {
+                        if (added) {
+                            mapState.removePath(routeData.route.id)
+                            mapState.addPath(routeData)
+                            // TODO: fix this
+//                            mapState.updatePath(routeData.route.id, pathData = routeData.pathData)
+                        } else {
+                            mapState.addPath(routeData)
+                            added = true
+                        }
+                    }
+                }
+            }
+            return route
+        }
+
+        var route = newRoute()
+
+        gpxRecordEvents.liveRouteFlow.collect {
+            when (it) {
+                is LiveRoutePoint -> {
+                    route.addMarker(it.pt.toMarker(map))
+                }
+                LiveRouteStop -> {
+                    routeList.forEach { route ->
+                        mapState.removePath(route.id)
+                    }
+                    routeList.clear()
+                    route = newRoute()
+                }
+                LiveRoutePause -> {
+                    /* Add previous route */
+                    routeList.add(route)
+
+                    /* Create and add a new route */
+                    route = newRoute()
                 }
             }
         }
@@ -91,7 +160,7 @@ class RouteLayer(
 
     private suspend fun makePathData(map: Map, route: Route, mapState: MapState): PathData? {
         val pathBuilder = mapState.makePathDataBuilder()
-        mapInteractor.getRouteMarkerPositions(map, route).collect {
+        mapInteractor.getExistingMarkerPositions(map, route).collect {
             pathBuilder.addPoint(it.x, it.y)
         }
         return pathBuilder.build()

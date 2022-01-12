@@ -28,7 +28,7 @@ fun RouteGson.Route.toDomain(): Route {
     return Route(
         name,
         visible,
-        markers = routeMarkers.mapTo(domainList) { it.toDomain() },
+        initialMarkers = routeMarkers.mapTo(domainList) { it.toDomain() },
         initialColor = color,
         elevationTrusted = elevationTrusted
     )

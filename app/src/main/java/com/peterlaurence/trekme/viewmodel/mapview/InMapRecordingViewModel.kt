@@ -102,7 +102,7 @@ private class RouteBuilder(val map: Map) {
     val route = Route()
 
     fun add(point: TrackPoint) {
-        val marker = point.toMarker(map)
+        val marker = point.toMarker(map, true)
         route.addMarker(marker)
     }
 }

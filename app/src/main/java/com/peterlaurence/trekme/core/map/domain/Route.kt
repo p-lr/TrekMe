@@ -1,15 +1,18 @@
 package com.peterlaurence.trekme.core.map.domain
 
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*
 
 /**
  * The domain representation of a route.
  */
-class Route (
+class Route(
     var name: String? = null,
     initialVisibility: Boolean = true,
-    private val markers: MutableList<Marker> = mutableListOf(),
+    initialMarkers: List<Marker> = emptyList(),
     initialColor: String? = null, // In the format "#AARRGGBB"
     var elevationTrusted: Boolean = false,
 ) {
@@ -18,17 +21,19 @@ class Route (
     val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
     val color: MutableStateFlow<String?> = MutableStateFlow(initialColor)
 
-    /**
-     * Keep in mind that iterating the list of markers should be done while holding the monitor
-     * of this [Route] object, especially when new markers are concurrently added to this
-     * route.
-     */
-    val routeMarkers: List<Marker> = markers
+    val routeMarkersFlow: Flow<Marker> = MutableSharedFlow<Marker>(
+        replay = Int.MAX_VALUE, onBufferOverflow = BufferOverflow.DROP_OLDEST
+    ).apply {
+        for (marker in initialMarkers) {
+            tryEmit(marker)
+        }
+    }
+
+    val routeMarkers: List<Marker>
+        get() = (routeMarkersFlow as MutableSharedFlow<Marker>).replayCache
 
     fun addMarker(marker: Marker) {
-        synchronized(this) {
-            markers.add(marker)
-        }
+        (routeMarkersFlow as MutableSharedFlow<Marker>).tryEmit(marker)
     }
 
     @Transient

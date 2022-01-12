@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
@@ -34,6 +35,7 @@ class MapViewModel @Inject constructor(
     mapInteractor: MapInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
+    private val gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -71,7 +73,7 @@ class MapViewModel @Inject constructor(
         dataStateFlow.map { it.mapState }
     )
 
-    val routeLayer = RouteLayer(viewModelScope, dataStateFlow, mapInteractor)
+    val routeLayer = RouteLayer(viewModelScope, dataStateFlow, mapInteractor, gpxRecordEvents)
 
     val snackBarController = SnackBarController()
 

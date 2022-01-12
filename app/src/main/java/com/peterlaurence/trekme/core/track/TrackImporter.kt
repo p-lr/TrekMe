@@ -179,7 +179,7 @@ class TrackImporter @Inject constructor(
 
             Route(
                 name.formatNameOrId(i),
-                markers = markers,
+                initialMarkers = markers,
                 initialVisibility = true, /* The route should be visible by default */
                 elevationTrusted = elevationTrusted
             )
@@ -207,17 +207,20 @@ class TrackImporter @Inject constructor(
  * To be drawn relatively to a [Map], it must be converted to a [Marker].
  * This should be called off UI thread.
  */
-fun TrackPoint.toMarker(map: Map): Marker {
+fun TrackPoint.toMarker(map: Map, computeProj: Boolean = false): Marker {
     val marker = Marker(lat = latitude, lon = longitude, elevation = elevation)
 
-    /* If the map uses a projection, store projected values */
-    val projectedValues: DoubleArray?
-    val projection = map.projection
-    if (projection != null) {
-        projectedValues = projection.doProjection(latitude, longitude)
-        if (projectedValues != null) {
-            marker.proj_x = projectedValues[0]
-            marker.proj_y = projectedValues[1]
+    // TODO: remove that after Compose refactor
+    if (computeProj) {
+        /* If the map uses a projection, store projected values */
+        val projectedValues: DoubleArray?
+        val projection = map.projection
+        if (projection != null) {
+            projectedValues = projection.doProjection(latitude, longitude)
+            if (projectedValues != null) {
+                marker.proj_x = projectedValues[0]
+                marker.proj_y = projectedValues[1]
+            }
         }
     }
 

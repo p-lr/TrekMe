@@ -163,8 +163,16 @@ class MapInteractor @Inject constructor(
         routeRepository.importRoutes(map)
     }
 
-    suspend fun getRouteMarkerPositions(map: Map, route: Route): Flow<MarkerWithNormalizedPos> {
-        return route.routeMarkers.asFlow().mapNotNull { marker ->
+    fun getExistingMarkerPositions(map: Map, route: Route): Flow<MarkerWithNormalizedPos> {
+        return route.routeMarkers.asFlow().toNormalizedPositions(map)
+    }
+
+    fun getLiveMarkerPositions(map: Map, route: Route): Flow<MarkerWithNormalizedPos> {
+        return route.routeMarkersFlow.toNormalizedPositions(map)
+    }
+
+    private fun Flow<Marker>.toNormalizedPositions(map: Map): Flow<MarkerWithNormalizedPos> {
+        return mapNotNull { marker ->
             val (x, y) = getNormalizedCoordinates(
                 marker.lat,
                 marker.lon,
