@@ -5,5 +5,5 @@ package com.peterlaurence.trekme.util.gpx.model
  *
  * @author P.Laurence on 12/02/17.
  */
-data class TrackSegment(val trackPoints: List<TrackPoint>)
+data class TrackSegment(val trackPoints: List<TrackPoint>, val id: String? = null)
 

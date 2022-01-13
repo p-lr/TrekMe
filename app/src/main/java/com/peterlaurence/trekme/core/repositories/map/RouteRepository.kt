@@ -93,16 +93,31 @@ class RouteRepository @Inject constructor(
         deleteRoutes(map, listOf(route.id))
     }
 
+    /**
+     * Walk through routes on disk. If there's a match between [RouteInfoKtx]'s id and one of the
+     * id in the provided [ids], we delete the route.
+     * This operation performs quickly since [RouteInfoKtx] is a small object.
+     */
     suspend fun deleteRoutes(map: Map, ids: List<String>) = withContext(ioDispatcher) {
         val root = File(map.directory, MAP_ROUTES_DIRECTORY)
-        ids.forEach { id ->
-            runCatching {
-                val routeDirName = routeDirNameForId[id]
-                if (routeDirName != null) {
-                    val mapDir = File(root, routeDirName)
-                    if (mapDir.exists()) {
-                        mapDir.deleteRecursively()
-                    }
+
+        val dirList = runCatching {
+            root.listFiles { it: File ->
+                it.isDirectory
+            }
+        }.getOrNull() ?: return@withContext
+
+        dirList.forEach { dir ->
+            val infoFile = File(dir, MAP_ROUTE_INFO_FILENAME)
+            val routeInfoKtx = runCatching<RouteInfoKtx> {
+                getStringFromFile(infoFile).let {
+                    format.decodeFromString(it)
+                }
+            }.getOrNull()
+
+            if (routeInfoKtx?.id in ids) {
+                runCatching {
+                    dir.deleteRecursively()
                 }
             }
         }
@@ -139,6 +154,7 @@ class RouteRepository @Inject constructor(
             }.getOrNull() ?: return@mapNotNull null
 
             Route(
+                id = routeInfoKtx.id,
                 name = routeInfoKtx.name,
                 initialColor = routeInfoKtx.color,
                 elevationTrusted = routeInfoKtx.elevationTrusted,

@@ -10,13 +10,14 @@ import java.util.*
  * The domain representation of a route.
  */
 class Route(
+    id: String? = null,
     var name: String? = null,
     initialVisibility: Boolean = true,
     initialMarkers: List<Marker> = emptyList(),
     initialColor: String? = null, // In the format "#AARRGGBB"
     var elevationTrusted: Boolean = false,
 ) {
-    val id: String = UUID.randomUUID().toString()
+    val id: String = id ?: UUID.randomUUID().toString()
 
     val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
     val color: MutableStateFlow<String?> = MutableStateFlow(initialColor)

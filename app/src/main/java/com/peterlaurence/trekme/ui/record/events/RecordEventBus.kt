@@ -13,8 +13,7 @@ class RecordEventBus {
         _mapSelectedEvent.tryEmit(mapId)
     }
 
-    /**********************************************************************************************/
-
+    /* region recording */
     private val _recordingNameChangeEvent =
             MutableSharedFlow<RecordingNameChangeEvent>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val recordingNameChangeEvent = _recordingNameChangeEvent.asSharedFlow()
@@ -29,6 +28,7 @@ class RecordEventBus {
     val recordingDeletionFailedSignal = _recordingDeletionFailedSignal.asSharedFlow()
 
     fun postRecordingDeletionFailed() = _recordingDeletionFailedSignal.tryEmit(Unit)
+    /* endregion*/
 
     /**********************************************************************************************/
 

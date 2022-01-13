@@ -46,13 +46,10 @@ class RouteLayer(
     }
 
     fun onNewRoutes(mapId: Int, routes: List<Route>) = scope.launch {
-        dataStateFlow.collectLatest { (map, mapState) ->
-            if (mapId != map.id) return@collectLatest
-            coroutineScope {
-                for (route in routes) {
-                    processRoute(route, map, mapState)
-                }
-            }
+        val (map, mapState) = dataStateFlow.first()
+        if (mapId != map.id) return@launch
+        for (route in routes) {
+            processRoute(route, map, mapState)
         }
     }
 

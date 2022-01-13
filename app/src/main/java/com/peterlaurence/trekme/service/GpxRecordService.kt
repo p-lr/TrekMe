@@ -164,7 +164,7 @@ class GpxRecordService : Service() {
                 when (event) {
                     LiveRoutePause, LiveRouteStop -> {
                         if (trackPoints.isNotEmpty()) {
-                            trkSegList.add(TrackSegment(trackPoints))
+                            trkSegList.add(TrackSegment(trackPoints, UUID.randomUUID().toString()))
                         }
                         trackPoints = mutableListOf()
                     }

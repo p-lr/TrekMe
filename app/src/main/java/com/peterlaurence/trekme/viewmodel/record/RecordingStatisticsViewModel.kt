@@ -213,7 +213,7 @@ class RecordingStatisticsViewModel @Inject constructor(
 
         /* Remove corresponding tracks on existing maps */
         launch {
-            val trkIds = recordingDataList.mapNotNull { it.trkId }
+            val trkIds = recordingDataList.flatMap { it.trkSegmentIds }
 
             /* Remove in-memory routes now */
             mapLoader.maps.forEach { map ->
@@ -289,11 +289,20 @@ class RecordingStatisticsViewModel @Inject constructor(
 
     private fun makeRecordingData(gpxFile: File, gpx: Gpx? = null): RecordingData {
         val firstTrk = gpx?.tracks?.firstOrNull()
+
+        /* Since the convention in this app is that a track segment corresponds to a route, we
+         * retrieve each track segment id for later comparison with existing route ids. */
+        val trkSegmentIds: List<String> = buildList {
+            firstTrk?.trackSegments?.forEach {
+                it.id?.also { id -> add(id) }
+            }
+        }
+
         return RecordingData(
                 gpxFile,
                 FileUtils.getFileNameWithoutExtention(gpxFile),
                 firstTrk?.statistics,
-                firstTrk?.id,
+                trkSegmentIds,
                 gpx?.metadata?.time
         )
     }
@@ -337,5 +346,5 @@ private const val TAG = "RecordingStatisticsVM"
  */
 data class RecordingData(val gpxFile: File, val name: String,
                          val statistics: TrackStatistics? = null,
-                         val trkId: String? = null,
+                         val trkSegmentIds: List<String> = emptyList(),
                          val time: Long? = null)

@@ -182,17 +182,19 @@ private fun readTrackExtensions(parser: XmlPullParser): TrackExtensions {
 private fun readSegment(parser: XmlPullParser): TrackSegment {
     val points = ArrayList<TrackPoint>()
     parser.require(XmlPullParser.START_TAG, null, TAG_SEGMENT)
+    var trkExtensions: TrackExtensions? = null
     while (parser.next() != XmlPullParser.END_TAG) {
         if (parser.eventType != XmlPullParser.START_TAG) {
             continue
         }
         when (parser.name) {
             TAG_TRK_POINT -> points.add(readPoint(parser))
+            TAG_EXTENSIONS -> trkExtensions = readTrackExtensions(parser)
             else -> skip(parser)
         }
     }
     parser.require(XmlPullParser.END_TAG, null, TAG_SEGMENT)
-    return TrackSegment(points)
+    return TrackSegment(points, id = trkExtensions?.id)
 }
 
 /* Process summary tags in the feed */

@@ -178,7 +178,8 @@ class TrackImporter @Inject constructor(
             }.toMutableList()
 
             Route(
-                name.formatNameOrId(i),
+                id = segment.id,
+                name = name.formatNameOrId(i),
                 initialMarkers = markers,
                 initialVisibility = true, /* The route should be visible by default */
                 elevationTrusted = elevationTrusted

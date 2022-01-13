@@ -127,8 +127,17 @@ private fun addTrackSegmentToNode(ts: TrackSegment, n: Node, doc: Document) {
         addWaypointToNode(TAG_TRK_POINT, trkpt, tsNode, doc)
     }
 
-    n.appendChild(tsNode)
+    /* Optional data */
+    if (ts.id != null) {
+        val nodeExtensions = doc.createElement(TAG_EXTENSIONS)
+        val nodeId = doc.createElement(TAG_TRK_ID)
+        nodeId.appendChild(doc.createTextNode(ts.id))
+        nodeExtensions.appendChild(nodeId)
 
+        tsNode.appendChild(nodeExtensions)
+    }
+
+    n.appendChild(tsNode)
 }
 
 private fun addWaypointToNode(tag: String, trkPt: TrackPoint, n: Node, doc: Document) {

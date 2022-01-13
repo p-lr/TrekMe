@@ -9,6 +9,7 @@ data class RouteKtx (
 
 @Serializable
 data class RouteInfoKtx(
+    val id: String? = null,
     var name: String? = null,
     var visible: Boolean = true,
     var color: String? = null,
