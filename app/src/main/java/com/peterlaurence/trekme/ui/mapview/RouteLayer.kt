@@ -135,7 +135,7 @@ class RouteLayer(
         createPathView()
         isInitialized = true
 
-        if (this.map.routes != null) {
+        if (this.map.routes.value.isNotEmpty()) {
             drawStaticRoutes()
         } else {
             acquireThenDrawRoutes(this.map)
@@ -209,7 +209,7 @@ class RouteLayer(
      * Then, on the UI thread, render all static routes.
      */
     private fun drawStaticRoutes() {
-        val routes = map.routes ?: return
+        val routes = map.routes.value
         previousRoutes = routes
         val staticRouteFlow = getRouteFlow(routes) { route, path ->
             /* Honor the route color, if set */

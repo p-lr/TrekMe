@@ -6,6 +6,9 @@ import com.peterlaurence.trekme.util.ZipProgressionListener
 import android.graphics.BitmapFactory
 import com.peterlaurence.trekme.core.map.domain.*
 import com.peterlaurence.trekme.core.projection.Projection
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -55,7 +58,7 @@ class Map(
         private set
     private var _landmarks: MutableList<Landmark>? = null
     private var _markerList: MutableList<Marker>? = null
-    private var _routeList: MutableList<Route>? = null
+    private val _routes = MutableStateFlow<List<Route>>(listOf())
 
     /**
      * The calibration status is either :
@@ -206,36 +209,27 @@ class Map(
         return _landmarks?.let { it.size > 0 } ?: false
     }
 
-    /**
-     * Routes are lazily loaded.
-     */
-    val routes: List<Route>?
-        get() = _routeList
+    val routes: StateFlow<List<Route>> = _routes.asStateFlow()
 
     fun setRoutes(routes: List<Route>) {
-        _routeList = routes.toMutableList()
+        _routes.value = routes
     }
 
     /**
      * Add a new route to the map.
      */
     fun addRoute(route: Route) {
-        _routeList?.add(route)
+        _routes.value = _routes.value + route
     }
 
     fun replaceRoute(from: Route, to: Route) {
-        _routeList?.indexOf(from)?.also { i ->
-            if (i != -1) {
-                _routeList?.removeAt(i)
-                _routeList?.add(i, to)
-            } else {
-                _routeList?.add(to)
-            }
+        _routes.value = _routes.value.map {
+            if (it == from) to else it
         }
     }
 
     fun deleteRoute(route: Route) {
-        _routeList?.remove(route)
+        _routes.value = _routes.value - route
     }
 
     var image: Bitmap?

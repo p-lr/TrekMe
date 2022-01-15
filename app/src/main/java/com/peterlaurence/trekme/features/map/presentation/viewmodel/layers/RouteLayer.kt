@@ -13,28 +13,34 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.ui.mapview.colorLiveRoute
 import com.peterlaurence.trekme.ui.mapview.colorRoute
 import com.peterlaurence.trekme.util.parseColor
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import ovh.plrapps.mapcompose.api.addPath
-import ovh.plrapps.mapcompose.api.makePathDataBuilder
-import ovh.plrapps.mapcompose.api.removePath
-import ovh.plrapps.mapcompose.api.updatePath
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 class RouteLayer(
-    private val scope: CoroutineScope,
+    scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val mapInteractor: MapInteractor,
     private val gpxRecordEvents: GpxRecordEvents
 ) {
-    private val staticRoutesData = mutableListOf<RouteData>()
+    private val staticRoutesData = ConcurrentHashMap<Route, PathData>()
 
     init {
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
-                drawStaticRoutes(mapState, map)
+                staticRoutesData.clear()
+                mapInteractor.loadRoutes(map)
+
+                map.routes.collectLatest { routes ->
+                    drawStaticRoutes(mapState, map, routes)
+                }
             }
         }
 
@@ -42,14 +48,6 @@ class RouteLayer(
             dataStateFlow.collectLatest { (map, mapState) ->
                 drawLiveRoute(mapState, map)
             }
-        }
-    }
-
-    fun onNewRoutes(mapId: Int, routes: List<Route>) = scope.launch {
-        val (map, mapState) = dataStateFlow.first()
-        if (mapId != map.id) return@launch
-        for (route in routes) {
-            processRoute(route, map, mapState)
         }
     }
 
@@ -61,7 +59,6 @@ class RouteLayer(
             routeList.add(route)
 
             launch {
-                var added = false
                 val pathBuilder = mapState.makePathDataBuilder()
                 mapInteractor.getLiveMarkerPositions(map, route).collect {
                     pathBuilder.addPoint(it.x, it.y)
@@ -69,14 +66,10 @@ class RouteLayer(
                         RouteData(route, pathData)
                     }
                     if (routeData != null) {
-                        if (added) {
-                            mapState.removePath(routeData.route.id)
-                            mapState.addPath(routeData)
-                            // TODO: fix this
-//                            mapState.updatePath(routeData.route.id, pathData = routeData.pathData)
+                        if (mapState.hasPath(routeData.route.id)) {
+                            mapState.updatePath(routeData.route.id, pathData = routeData.pathData)
                         } else {
                             mapState.addPath(routeData)
-                            added = true
                         }
                     }
                 }
@@ -109,13 +102,25 @@ class RouteLayer(
         }
     }
 
-    private suspend fun drawStaticRoutes(mapState: MapState, map: Map) = coroutineScope {
-        staticRoutesData.clear()
-        mapInteractor.loadRoutes(map)
-        val routes = map.routes ?: return@coroutineScope
+    /**
+     * Anytime this suspend fun is invoked, the parent scope should be cancelled because flows
+     * are collected inside [processRoute].
+     */
+    private suspend fun drawStaticRoutes(mapState: MapState, map: Map, routes: List<Route>) {
+        coroutineScope {
+            /* First, remove routes which are no longer in the list */
+            val routesToRemove = staticRoutesData.keys.filter {
+                it !in routes
+            }
+            routesToRemove.forEach {
+                staticRoutesData.remove(it)
+                mapState.removePath(it.id)
+            }
 
-        for (route in routes) {
-            processRoute(route, map, mapState)
+            /* Then, process current routes */
+            for (route in routes) {
+                processRoute(route, map, mapState)
+            }
         }
     }
 
@@ -133,21 +138,20 @@ class RouteLayer(
         /* React to visibility change */
         launch(Dispatchers.Default) {
             route.visible.collect { visible ->
+                val existing = staticRoutesData[route]?.let { RouteData(route, it) }
                 if (visible) {
-                    val routeData = makePathData(map, route, mapState)?.let {
-                        RouteData(route, it)
-                    }
+                    val routeData = existing
+                        ?: makePathData(map, route, mapState)?.let {
+                            RouteData(route, it)
+                        }
 
-                    if (routeData != null) {
-                        staticRoutesData.add(routeData)
+                    if (routeData != null && !mapState.hasPath(route.id)) {
+                        staticRoutesData[routeData.route] = routeData.pathData
                         mapState.addPath(routeData)
                     }
                 } else {
-                    val existing = staticRoutesData.firstOrNull {
-                        it.route.id == route.id
-                    }
                     if (existing != null) {
-                        staticRoutesData.remove(existing)
+                        staticRoutesData.remove(existing.route)
                         mapState.removePath(existing.route.id)
                     }
                 }

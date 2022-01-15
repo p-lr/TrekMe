@@ -43,7 +43,7 @@ class TracksManageViewModel @Inject constructor(
 
     init {
         map?.also {
-            _tracks.value = it.routes
+            _tracks.value = it.routes.value
         }
     }
 
@@ -60,13 +60,11 @@ class TracksManageViewModel @Inject constructor(
             viewModelScope.launch {
                 routeRepository.deleteRoute(map, route)
             }
-            map.routes?.let { routes ->
-                _tracks.value = routes
+            _tracks.value = map.routes.value
 
-                // TODO: this won't be needed anymore with Compose version
-                /* Notify other views */
-                mapViewEventBus.postTrackVisibilityChange()
-            }
+            // TODO: this won't be needed anymore with Compose version
+            /* Notify other views */
+            mapViewEventBus.postTrackVisibilityChange()
         }
     }
 
@@ -82,7 +80,7 @@ class TracksManageViewModel @Inject constructor(
                 mapLoader
             ).let { result ->
                 if (result is TrackImporter.GpxImportResult.GpxImportOk) {
-                    _tracks.postValue(map?.routes ?: listOf())
+                    _tracks.postValue(map?.routes?.value ?: listOf())
                 }
                 /* Notify the rest of the app */
                 appEventBus.postGpxImportResult(result)
@@ -104,7 +102,7 @@ class TracksManageViewModel @Inject constructor(
     }
 
     fun changeRouteColor(routeId: String, color: String) {
-        val route = map?.routes?.firstOrNull { it.id == routeId }
+        val route = map?.routes?.value?.firstOrNull { it.id == routeId }
         if (route != null) {
             route.color.value = color
             saveChanges(route)

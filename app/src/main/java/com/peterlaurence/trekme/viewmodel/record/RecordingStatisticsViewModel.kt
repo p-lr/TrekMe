@@ -217,14 +217,14 @@ class RecordingStatisticsViewModel @Inject constructor(
 
             /* Remove in-memory routes now */
             mapLoader.maps.forEach { map ->
-                map.routes?.filter { it.id in trkIds }?.forEach { route ->
+                map.routes.value.filter { it.id in trkIds }.forEach { route ->
                     map.deleteRoute(route)
                 }
             }
 
             /* Remove them on disk */
             mapLoader.maps.forEach { map ->
-                routeRepository.deleteRoutes(map, trkIds)
+                routeRepository.deleteRoutesUsingId(map, trkIds)
             }
         }
     }

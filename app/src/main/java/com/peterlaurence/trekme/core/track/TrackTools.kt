@@ -29,11 +29,9 @@ object TrackTools {
     fun updateRouteList(map: Map, newRouteList: List<Route>?): Int {
         if (newRouteList == null) return 0
         val hashMap = HashMap<String, Route>()
-        val routeList = map.routes
-        if (routeList != null) {
-            for (route in routeList) {
-                hashMap[route.id] = route
-            }
+        val routeList = map.routes.value
+        for (route in routeList) {
+            hashMap[route.id] = route
         }
 
         var newRouteCount = 0

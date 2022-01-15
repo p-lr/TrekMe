@@ -35,7 +35,7 @@ class MapViewModel @Inject constructor(
     mapInteractor: MapInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
-    private val gpxRecordEvents: GpxRecordEvents,
+    gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -88,9 +88,11 @@ class MapViewModel @Inject constructor(
             dataState.mapState.maxScale = maxScale
         }.launchIn(viewModelScope)
 
+        // TODO: A map should have a StateFlow<List<Marker>>, just like it has a flow of Route.
+        // That would eliminate the need to listen to app events, and allows for better separation
+        // of concern.
         appEventBus.gpxImportEvent.map { event ->
             if (event is TrackImporter.GpxImportResult.GpxImportOk) {
-                routeLayer.onNewRoutes(event.map.id, event.routes)
                 if (event.newMarkersCount > 0) {
                     markerLayer.onMarkersChanged(event.map.id)
                 }

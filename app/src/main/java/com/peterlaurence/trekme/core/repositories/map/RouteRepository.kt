@@ -90,7 +90,24 @@ class RouteRepository @Inject constructor(
     }
 
     suspend fun deleteRoute(map: Map, route: Route) = withContext(ioDispatcher) {
-        deleteRoutes(map, listOf(route.id))
+        // routes created from 3.0.0 and above have an id serialized
+        deleteRoutesUsingId(map, listOf(route.id))
+
+        // legacy routes don't have an id serialized
+        deleteRouteUsingDirName(map, route)
+    }
+
+    private suspend fun deleteRouteUsingDirName(map: Map, route: Route) = withContext(ioDispatcher) {
+        val root = File(map.directory, MAP_ROUTES_DIRECTORY)
+        runCatching {
+            val routeDirName = routeDirNameForId[route.id]
+            if (routeDirName != null) {
+                val mapDir = File(root, routeDirName)
+                if (mapDir.exists()) {
+                    mapDir.deleteRecursively()
+                }
+            }
+        }
     }
 
     /**
@@ -98,7 +115,7 @@ class RouteRepository @Inject constructor(
      * id in the provided [ids], we delete the route.
      * This operation performs quickly since [RouteInfoKtx] is a small object.
      */
-    suspend fun deleteRoutes(map: Map, ids: List<String>) = withContext(ioDispatcher) {
+    suspend fun deleteRoutesUsingId(map: Map, ids: List<String>) = withContext(ioDispatcher) {
         val root = File(map.directory, MAP_ROUTES_DIRECTORY)
 
         val dirList = runCatching {
