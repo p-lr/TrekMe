@@ -62,14 +62,12 @@ class RouteLayer(
                 val pathBuilder = mapState.makePathDataBuilder()
                 mapInteractor.getLiveMarkerPositions(map, route).collect {
                     pathBuilder.addPoint(it.x, it.y)
-                    val routeData = pathBuilder.build()?.let { pathData ->
-                        RouteData(route, pathData)
-                    }
-                    if (routeData != null) {
-                        if (mapState.hasPath(routeData.route.id)) {
-                            mapState.updatePath(routeData.route.id, pathData = routeData.pathData)
+                    val pathData = pathBuilder.build()
+                    if (pathData != null) {
+                        if (mapState.hasPath(route.id)) {
+                            mapState.updatePath(route.id, pathData = pathData)
                         } else {
-                            mapState.addPath(routeData)
+                            addPath(mapState, route, pathData)
                         }
                     }
                 }
@@ -124,6 +122,15 @@ class RouteLayer(
         }
     }
 
+    /**
+     * Depending on the route's visibility and color, perform required update and/or processing.
+     * Notably:
+     * * A newly added route have it's [PathData] generated and the corresponding path
+     * is added to the [MapState].
+     * * A route which was previously added is not re-processed.
+     * * When the visibility becomes false, the corresponding path is removed from the [MapState].
+     * If the visibility is later set to true, the [PathData] is re-generated.
+     */
     private fun CoroutineScope.processRoute(route: Route, map: Map, mapState: MapState) {
         /* React to color change */
         launch(Dispatchers.Default) {
@@ -138,21 +145,20 @@ class RouteLayer(
         /* React to visibility change */
         launch(Dispatchers.Default) {
             route.visible.collect { visible ->
-                val existing = staticRoutesData[route]?.let { RouteData(route, it) }
+                val existing = staticRoutesData[route]
                 if (visible) {
-                    val routeData = existing
-                        ?: makePathData(map, route, mapState)?.let {
-                            RouteData(route, it)
-                        }
+                    /* Only make path data if it wasn't already processed, or previously removed
+                     * after visibility set to false. */
+                    val pathData = existing ?: makePathData(map, route, mapState)
 
-                    if (routeData != null && !mapState.hasPath(route.id)) {
-                        staticRoutesData[routeData.route] = routeData.pathData
-                        mapState.addPath(routeData)
+                    if (pathData != null && !mapState.hasPath(route.id)) {
+                        staticRoutesData[route] = pathData
+                        addPath(mapState, route, pathData)
                     }
                 } else {
                     if (existing != null) {
-                        staticRoutesData.remove(existing.route)
-                        mapState.removePath(existing.route.id)
+                        staticRoutesData.remove(route)
+                        mapState.removePath(route.id)
                     }
                 }
             }
@@ -167,15 +173,13 @@ class RouteLayer(
         return pathBuilder.build()
     }
 
-    private fun MapState.addPath(routeData: RouteData) {
-        addPath(
-            routeData.route.id,
-            routeData.pathData,
-            color = routeData.route.color.value.let { colorStr ->
+    private fun addPath(mapState: MapState, route: Route, pathData: PathData) {
+        mapState.addPath(
+            route.id,
+            pathData,
+            color = route.color.value.let { colorStr ->
                 Color(parseColor(colorStr ?: colorRoute))
             }
         )
     }
-
-    private data class RouteData(val route: Route, val pathData: PathData)
 }
