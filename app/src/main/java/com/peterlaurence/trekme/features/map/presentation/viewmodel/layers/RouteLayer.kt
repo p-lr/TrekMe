@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
@@ -30,6 +31,7 @@ class RouteLayer(
     private val mapInteractor: MapInteractor,
     private val gpxRecordEvents: GpxRecordEvents
 ) {
+    val isShowingDistanceOnTrack = MutableStateFlow(false)
     private val staticRoutesData = ConcurrentHashMap<Route, PathData>()
 
     init {
@@ -49,6 +51,18 @@ class RouteLayer(
                 drawLiveRoute(mapState, map)
             }
         }
+
+        scope.launch {
+            dataStateFlow.collectLatest { (map, mapState) ->
+                isShowingDistanceOnTrack.collectLatest {
+                    println("dist on track $it")
+                }
+            }
+        }
+    }
+
+    fun toggleDistanceOnTrack() {
+        isShowingDistanceOnTrack.value = !isShowingDistanceOnTrack.value
     }
 
     private suspend fun drawLiveRoute(mapState: MapState, map: Map): Nothing = coroutineScope {

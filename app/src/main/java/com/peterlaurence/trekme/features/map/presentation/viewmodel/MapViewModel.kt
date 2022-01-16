@@ -123,6 +123,7 @@ class MapViewModel @Inject constructor(
     }
 
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible
+    fun isShowingDistanceOnTrackFlow(): StateFlow<Boolean> = routeLayer.isShowingDistanceOnTrack
     fun isShowingSpeedFlow(): Flow<Boolean> = settings.getSpeedVisibility()
     fun orientationVisibilityFlow(): Flow<Boolean> = settings.getOrientationVisibility()
     fun isLockedOnPosition(): State<Boolean> = locationOrientationLayer.isLockedOnPosition

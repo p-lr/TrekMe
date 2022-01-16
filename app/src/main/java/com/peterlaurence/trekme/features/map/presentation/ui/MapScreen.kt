@@ -44,6 +44,7 @@ fun MapScreen(
     val isShowingOrientation by viewModel.orientationVisibilityFlow()
         .collectAsState(initial = false)
     val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
+    val isShowingDistanceOnTrack by viewModel.isShowingDistanceOnTrackFlow().collectAsState()
     val isShowingSpeed by viewModel.isShowingSpeedFlow().collectAsState(initial = false)
     val isLockedOnpPosition by viewModel.isLockedOnPosition()
     val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
@@ -98,6 +99,7 @@ fun MapScreen(
                     uiState as MapUiState,
                     isShowingOrientation,
                     isShowingDistance,
+                    isShowingDistanceOnTrack,
                     isShowingSpeed,
                     isLockedOnpPosition,
                     isShowingGpsData,
@@ -111,6 +113,7 @@ fun MapScreen(
                     onAddMarker = viewModel.markerLayer::addMarker,
                     onAddLandmark = viewModel.landmarkLayer::addLandmark,
                     onShowDistance = viewModel.distanceLayer::toggleDistance,
+                    onToggleDistanceOnTrack = viewModel.routeLayer::toggleDistanceOnTrack,
                     onToggleSpeed = viewModel::toggleSpeed,
                     onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
                     onToggleShowGpsData = viewModel::toggleShowGpsData,
@@ -132,6 +135,7 @@ fun MapScaffold(
     uiState: MapUiState,
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
+    isShowingDistanceOnTrack: Boolean,
     isShowingSpeed: Boolean,
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
@@ -145,6 +149,7 @@ fun MapScaffold(
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
     onShowDistance: () -> Unit,
+    onToggleDistanceOnTrack: () -> Unit,
     onToggleSpeed: () -> Unit,
     onToggleLockOnPosition: () -> Unit,
     onToggleShowGpsData: () -> Unit,
@@ -179,6 +184,7 @@ fun MapScaffold(
             MapTopAppBar(
                 isShowingOrientation,
                 isShowingDistance,
+                isShowingDistanceOnTrack,
                 isShowingSpeed,
                 isLockedOnPosition,
                 isShowingGpsData,
@@ -188,6 +194,7 @@ fun MapScaffold(
                 onAddMarker = onAddMarker,
                 onAddLandmark = onAddLandmark,
                 onShowDistance = onShowDistance,
+                onToggleDistanceOnTrack = onToggleDistanceOnTrack,
                 onToggleSpeed = onToggleSpeed,
                 onToggleLockPosition = onToggleLockOnPosition,
                 onToggleShowGpsData = onToggleShowGpsData

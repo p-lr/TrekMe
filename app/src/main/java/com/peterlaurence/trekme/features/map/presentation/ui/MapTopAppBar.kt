@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.R
 fun MapTopAppBar(
     isShowingOrientation: Boolean,
     isShowingDistance: Boolean,
+    isShowingDistanceOnTrack: Boolean,
     isShowingSpeed: Boolean,
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
@@ -28,6 +29,7 @@ fun MapTopAppBar(
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
     onShowDistance: () -> Unit,
+    onToggleDistanceOnTrack: () -> Unit,
     onToggleSpeed: () -> Unit,
     onToggleLockPosition: () -> Unit,
     onToggleShowGpsData: () -> Unit
@@ -93,6 +95,13 @@ fun MapTopAppBar(
                         Checkbox(
                             checked = isShowingDistance,
                             onCheckedChange = { onShowDistance() })
+                    }
+                    DropdownMenuItem(onClick = onToggleDistanceOnTrack) {
+                        Text(stringResource(id = R.string.mapview_measure_distance_on_track))
+                        Spacer(Modifier.weight(1f))
+                        Checkbox(
+                            checked = isShowingDistanceOnTrack,
+                            onCheckedChange = { onToggleDistanceOnTrack() })
                     }
                     DropdownMenuItem(onClick = onToggleLockPosition) {
                         Text(stringResource(id = R.string.mapview_lock_on_position))
