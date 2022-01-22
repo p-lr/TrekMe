@@ -1,12 +1,23 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.route.Barycenter
+import com.peterlaurence.trekme.core.track.distanceCalculatorFactory
 import com.peterlaurence.trekme.core.track.toMarker
+import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
@@ -17,6 +28,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.ui.mapview.colorLiveRoute
 import com.peterlaurence.trekme.ui.mapview.colorRoute
 import com.peterlaurence.trekme.util.parseColor
+import com.peterlaurence.trekme.util.throttle
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
@@ -241,11 +253,12 @@ private class DistanceOnRouteController(
     private val routesData: ConcurrentMap<Route, RouteData>,
     private val restoreState: DistanceOnRouteControllerRestoreState
 ) {
-    private val distOnRouteMarker1 = "distOnRouteMarker1"
-    private val distOnRouteMarker2 = "distOnRouteMarker2"
-    private val mainPath = "distOnRouteMainPath"
-    private val headPath = "distOnRouteHeadPath"
-    private val tailPath = "distOnRouteTailPath"
+    private val grabMarker1 = "distOnRoute-Grab1"
+    private val grabMarker2 = "distOnRoute-Grab2"
+    private val distMarker = "distOnRoute-Distance"
+    private val mainPath = "distOnRoute-MainPath"
+    private val headPath = "distOnRoute-HeadPath"
+    private val tailPath = "distOnRoute-TailPath"
 
     suspend fun processNearestRoute() = withContext(Dispatchers.Main) {
         mapState.centroidSnapshotFlow().map {
@@ -255,8 +268,8 @@ private class DistanceOnRouteController(
                 launch {
                     drawRoute(route)
                 }.invokeOnCompletion {
-                    mapState.removeMarker(distOnRouteMarker1)
-                    mapState.removeMarker(distOnRouteMarker2)
+                    mapState.removeMarker(grabMarker1)
+                    mapState.removeMarker(grabMarker2)
                     mapState.removePath(mainPath)
                     mapState.removePath(headPath)
                     mapState.removePath(tailPath)
@@ -273,7 +286,8 @@ private class DistanceOnRouteController(
         val chunksByBarycenter = chunks.filter { it.isNotEmpty() }.associateBy {
             getBarycenter(it)
         }
-        val distanceComputeFlow = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
+        val distanceComputeFlow = MutableSharedFlow<Unit>(1, 0, BufferOverflow.DROP_OLDEST)
+        var distanceText by mutableStateOf("")
         val state = restoreState.states.firstOrNull {
             it.route == route
         } ?: DistanceOnRouteState(route, 0, routePoints.lastIndex / 4).also {
@@ -284,7 +298,7 @@ private class DistanceOnRouteController(
         val secondPoint = routePoints[state.i2]
 
         mapState.addMarker(
-            distOnRouteMarker1,
+            grabMarker1,
             firstPoint.x,
             firstPoint.y,
             relativeOffset = Offset(-0.5f, -0.5f)
@@ -293,12 +307,30 @@ private class DistanceOnRouteController(
         }
 
         mapState.addMarker(
-            distOnRouteMarker2,
+            grabMarker2,
             secondPoint.x,
             secondPoint.y,
             relativeOffset = Offset(-0.5f, -0.5f)
         ) {
             MarkerGrab(morphedIn = true, size = 50.dp)
+        }
+
+        mapState.addMarker(
+            distMarker,
+            (firstPoint.x + secondPoint.x) / 2,
+            (firstPoint.y + secondPoint.y) / 2,
+            relativeOffset = Offset(-0.5f, -0.5f),
+            clickable = false,
+            clipShape = RoundedCornerShape(5.dp)
+        ) {
+            Text(
+                text = distanceText,
+                modifier = Modifier
+                    .background(Color(0x885D4037))
+                    .padding(horizontal = 4.dp),
+                color = Color.White,
+                fontSize = 14.sp
+            )
         }
 
         mapState.updatePath(route.id, visible = false)
@@ -320,7 +352,7 @@ private class DistanceOnRouteController(
             width = 10.dp,
             offset = min(state.i1, state.i2),
             count = abs(state.i2 - state.i1),
-            color = Color.Red
+            color = Color(0xFFF50057)
         )
 
         mapState.addPath(
@@ -368,11 +400,18 @@ private class DistanceOnRouteController(
         }
 
         fun updateDistance() {
+            val p1 = routePoints[state.i1]
+            val p2 = routePoints[state.i2]
+            mapState.moveMarker(
+                distMarker,
+                x = (p1.x + p2.x) / 2,
+                y = (p1.y + p2.y) / 2,
+            )
             distanceComputeFlow.tryEmit(Unit)
         }
 
-        mapState.enableMarkerDrag(distOnRouteMarker1) { _, _, _, _, _, px, py ->
-            val index = moveMarker(distOnRouteMarker1, px, py)
+        mapState.enableMarkerDrag(grabMarker1) { _, _, _, _, _, px, py ->
+            val index = moveMarker(grabMarker1, px, py)
             if (index != null) {
                 state.i1 = index
                 updatePaths()
@@ -380,8 +419,8 @@ private class DistanceOnRouteController(
             }
         }
 
-        mapState.enableMarkerDrag(distOnRouteMarker2) { _, _, _, _, _, px, py ->
-            val index = moveMarker(distOnRouteMarker2, px, py)
+        mapState.enableMarkerDrag(grabMarker2) { _, _, _, _, _, px, py ->
+            val index = moveMarker(grabMarker2, px, py)
             if (index != null) {
                 state.i2 = index
                 updatePaths()
@@ -389,10 +428,13 @@ private class DistanceOnRouteController(
             }
         }
 
+        /* Trigger the first distance computation (don't wait grab markers to be moved) */
+        distanceComputeFlow.tryEmit(Unit)
+
         /* This collection never completes - this is on purpose */
-        distanceComputeFlow.collect {
-            delay(100)
-            // compute distance
+        distanceComputeFlow.throttle(100).collect {
+            val dist = computeDistance(route, state.i1, state.i2)
+            distanceText = UnitFormatter.formatDistance(dist)
         }
     }
 
@@ -418,6 +460,23 @@ private class DistanceOnRouteController(
             sumY += pt.y
         }
         return Barycenter(sumX / chunk.size, sumY / chunk.size)
+    }
+
+    private suspend fun computeDistance(route: Route, i1: Int, i2: Int): Double {
+        return withContext(Dispatchers.Default) {
+            val iMin = min(i1, i2)
+            val iMax = max(i1, i2)
+
+            val iterator = route.routeMarkers.listIterator(iMin)
+
+            val distanceCalculator = distanceCalculatorFactory(route.elevationTrusted)
+            for (i in iMin until iMax) {
+                val marker = iterator.next()
+                distanceCalculator.addPoint(marker.lat, marker.lon, marker.elevation)
+            }
+
+            distanceCalculator.getDistance()
+        }
     }
 
     private data class PointIndexed(val index: Int, val x: Double, val y: Double)
