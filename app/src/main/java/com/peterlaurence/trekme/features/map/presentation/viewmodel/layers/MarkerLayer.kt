@@ -166,7 +166,7 @@ class MarkerLayer(
                 }
             )
         }
-        mapState.enableMarkerDrag(grabId) { _, x, y, dx, dy ->
+        mapState.enableMarkerDrag(grabId) { _, x, y, dx, dy, _, _ ->
             mapState.moveMarker(grabId, x + dx, y + dy)
             mapState.moveMarker(markerId, x + dx, y + dy)
         }

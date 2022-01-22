@@ -1,6 +1,8 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.route.Barycenter
@@ -10,11 +12,13 @@ import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.ui.mapview.colorLiveRoute
 import com.peterlaurence.trekme.ui.mapview.colorRoute
 import com.peterlaurence.trekme.util.parseColor
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.paths.PathData
@@ -22,6 +26,9 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.utils.Point
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 
 class RouteLayer(
@@ -53,9 +60,18 @@ class RouteLayer(
 
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
+                val state = DistanceOnRouteController.DistanceOnRouteControllerRestoreState(
+                    mutableListOf()
+                )
                 isShowingDistanceOnTrack.collectLatest {
                     if (it) {
-                        val controller = DistanceOnRouteController(mapState, staticRoutesData)
+                        val controller = DistanceOnRouteController(
+                            map,
+                            mapState,
+                            mapInteractor,
+                            staticRoutesData,
+                            state
+                        )
                         controller.processNearestRoute()
                     }
                 }
@@ -219,17 +235,166 @@ class RouteLayer(
 private data class RouteData(val pathData: PathData, val barycenter: Barycenter?)
 
 private class DistanceOnRouteController(
+    private val map: Map,
     private val mapState: MapState,
-    private val routesData: ConcurrentMap<Route, RouteData>
+    private val mapInteractor: MapInteractor,
+    private val routesData: ConcurrentMap<Route, RouteData>,
+    private val restoreState: DistanceOnRouteControllerRestoreState
 ) {
+    private val distOnRouteMarker1 = "distOnRouteMarker1"
+    private val distOnRouteMarker2 = "distOnRouteMarker2"
+    private val mainPath = "distOnRouteMainPath"
+    private val headPath = "distOnRouteHeadPath"
+    private val tailPath = "distOnRouteTailPath"
 
     suspend fun processNearestRoute() = withContext(Dispatchers.Main) {
         mapState.centroidSnapshotFlow().map {
             findNearestRoute(it)
-        }.filterNotNull().distinctUntilChanged().map {
-            println("xxxx nearest route : ${it.name}")
+        }.filterNotNull().distinctUntilChanged().collectLatest { route ->
+            coroutineScope {
+                launch {
+                    drawRoute(route)
+                }.invokeOnCompletion {
+                    mapState.removeMarker(distOnRouteMarker1)
+                    mapState.removeMarker(distOnRouteMarker2)
+                    mapState.removePath(mainPath)
+                    mapState.removePath(headPath)
+                    mapState.removePath(tailPath)
+                    mapState.updatePath(route.id, visible = true)
+                }
+            }
         }
-    }.collect()
+    }
+
+    private suspend fun drawRoute(route: Route) {
+        val routePoints = getRoutePoints(route)
+        val chunkSize = min(25, routePoints.size)
+        val chunks = routePoints.chunked(chunkSize)
+        val chunksByBarycenter = chunks.filter { it.isNotEmpty() }.associateBy {
+            getBarycenter(it)
+        }
+        val distanceComputeFlow = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
+        val state = restoreState.states.firstOrNull {
+            it.route == route
+        } ?: DistanceOnRouteState(route, 0, routePoints.lastIndex / 4).also {
+            restoreState.states.add(it)
+        }
+
+        val firstPoint = routePoints[state.i1]
+        val secondPoint = routePoints[state.i2]
+
+        mapState.addMarker(
+            distOnRouteMarker1,
+            firstPoint.x,
+            firstPoint.y,
+            relativeOffset = Offset(-0.5f, -0.5f)
+        ) {
+            MarkerGrab(morphedIn = true, size = 50.dp)
+        }
+
+        mapState.addMarker(
+            distOnRouteMarker2,
+            secondPoint.x,
+            secondPoint.y,
+            relativeOffset = Offset(-0.5f, -0.5f)
+        ) {
+            MarkerGrab(morphedIn = true, size = 50.dp)
+        }
+
+        mapState.updatePath(route.id, visible = false)
+
+        val pathData = routesData[route]?.pathData ?: return
+        mapState.addPath(
+            headPath,
+            pathData,
+            offset = 0,
+            count = min(state.i1, state.i2),
+            color = route.color.value.let { colorStr ->
+                Color(parseColor(colorStr ?: colorRoute))
+            }
+        )
+
+        mapState.addPath(
+            mainPath,
+            pathData,
+            width = 10.dp,
+            offset = min(state.i1, state.i2),
+            count = abs(state.i2 - state.i1),
+            color = Color.Red
+        )
+
+        mapState.addPath(
+            tailPath,
+            pathData,
+            offset = max(state.i1, state.i2),
+            count = routePoints.lastIndex - max(state.i1, state.i2),
+            color = route.color.value.let { colorStr ->
+                Color(parseColor(colorStr ?: colorRoute))
+            }
+        )
+
+        fun moveMarker(id: String, px: Double, py: Double): Int? {
+            val bary = chunksByBarycenter.keys.minByOrNull {
+                (it.x - px).pow(2) + (it.y - py).pow(2)
+            } ?: return null
+
+            val chunk = chunksByBarycenter[bary] ?: return null
+            return chunk.minByOrNull {
+                (it.x - px).pow(2) + (it.y - py).pow(2)
+            }?.let {
+                mapState.moveMarker(id, it.x, it.y)
+                it.index
+            }
+        }
+
+        fun updatePaths() {
+            mapState.updatePath(
+                headPath,
+                offset = 0,
+                count = min(state.i1, state.i2)
+            )
+
+            mapState.updatePath(
+                mainPath,
+                offset = min(state.i1, state.i2),
+                count = abs(state.i2 - state.i1)
+            )
+
+            mapState.updatePath(
+                tailPath,
+                offset = max(state.i1, state.i2),
+                count = routePoints.lastIndex - max(state.i1, state.i2)
+            )
+        }
+
+        fun updateDistance() {
+            distanceComputeFlow.tryEmit(Unit)
+        }
+
+        mapState.enableMarkerDrag(distOnRouteMarker1) { _, _, _, _, _, px, py ->
+            val index = moveMarker(distOnRouteMarker1, px, py)
+            if (index != null) {
+                state.i1 = index
+                updatePaths()
+                updateDistance()
+            }
+        }
+
+        mapState.enableMarkerDrag(distOnRouteMarker2) { _, _, _, _, _, px, py ->
+            val index = moveMarker(distOnRouteMarker2, px, py)
+            if (index != null) {
+                state.i2 = index
+                updatePaths()
+                updateDistance()
+            }
+        }
+
+        /* This collection never completes - this is on purpose */
+        distanceComputeFlow.collect {
+            delay(100)
+            // compute distance
+        }
+    }
 
     private suspend fun findNearestRoute(point: Point): Route? = withContext(Dispatchers.Default) {
         routesData.minByOrNull {
@@ -237,4 +402,26 @@ private class DistanceOnRouteController(
             (point.x - bary.x).pow(2) + (point.y - bary.y).pow(2)
         }?.key
     }
+
+    private suspend fun getRoutePoints(route: Route): List<PointIndexed> {
+        var i = 0
+        return mapInteractor.getExistingMarkerPositions(map, route).map {
+            PointIndexed(i++, it.x, it.y)
+        }.toList()
+    }
+
+    private fun getBarycenter(chunk: List<PointIndexed>): Barycenter {
+        var sumX = 0.0
+        var sumY = 0.0
+        for (pt in chunk) {
+            sumX += pt.x
+            sumY += pt.y
+        }
+        return Barycenter(sumX / chunk.size, sumY / chunk.size)
+    }
+
+    private data class PointIndexed(val index: Int, val x: Double, val y: Double)
+
+    data class DistanceOnRouteControllerRestoreState(val states: MutableList<DistanceOnRouteState>)
+    data class DistanceOnRouteState(val route: Route, var i1: Int, var i2: Int)
 }
