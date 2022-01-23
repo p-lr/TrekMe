@@ -37,20 +37,6 @@ class Route(
         (routeMarkersFlow as MutableSharedFlow<Marker>).tryEmit(marker)
     }
 
-    @Transient
-    private val dataLock = Any()
-
-    @Transient
-    var data: Any? = null
-        get() = synchronized(dataLock) {
-            field
-        }
-        set(value) {
-            synchronized(dataLock) {
-                field = value
-            }
-        }
-
     fun toggleVisibility() {
         visible.value = !visible.value
     }
