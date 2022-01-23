@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment
 
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -97,6 +98,9 @@ class WmtsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        /* Uses an action bar made in Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.hide()
 
         wmtsSource = wmtsSourceRepository.wmtsSourceState.value
 

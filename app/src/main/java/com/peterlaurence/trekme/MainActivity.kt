@@ -52,7 +52,6 @@ import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.net.InetAddress
@@ -97,13 +96,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         supportActionBar?.show()
                         supportActionBar?.title = getString(R.string.import_title)
                     }
-                    R.id.mapViewFragment, R.id.markerManageFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = ""
-                    }
-                    R.id.wmtsViewFragment -> {
-                        supportActionBar?.hide()
-                        supportActionBar?.title = ""
+                    R.id.mapFragment, R.id.markerEditFragment, R.id.wmtsViewFragment -> {
+                        // Nothing to do, the actionBar is hidden in those fragments
                     }
                     else -> {
                         supportActionBar?.show()

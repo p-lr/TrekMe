@@ -270,6 +270,7 @@ private class DistanceOnRouteController(
                 }.invokeOnCompletion {
                     mapState.removeMarker(grabMarker1)
                     mapState.removeMarker(grabMarker2)
+                    mapState.removeMarker(distMarker)
                     mapState.removePath(mainPath)
                     mapState.removePath(headPath)
                     mapState.removePath(tailPath)
