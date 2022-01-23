@@ -14,13 +14,6 @@ class MapViewEventBus {
     fun postTrackNameChange() = _trackNameChangeSignal.tryEmit(Unit)
     /* endregion */
 
-    /* region Track visibility */
-    private val _trackVisibilityChangedSignal = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
-    val trackVisibilityChangedSignal = _trackVisibilityChangedSignal.asSharedFlow()
-
-    fun postTrackVisibilityChange() = _trackVisibilityChangedSignal.tryEmit(Unit)
-    /* endregion */
-
     /* region Track color */
     private val _trackColorChangeEvent = MutableSharedFlow<TrackColorChangeEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val trackColorChangeEvent = _trackColorChangeEvent.asSharedFlow()

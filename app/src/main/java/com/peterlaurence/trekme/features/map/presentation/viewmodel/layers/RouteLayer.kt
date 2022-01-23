@@ -122,7 +122,7 @@ class RouteLayer(
         gpxRecordEvents.liveRouteFlow.collect {
             when (it) {
                 is LiveRoutePoint -> {
-                    route.addMarker(it.pt.toMarker(map))
+                    route.addMarker(it.pt.toMarker())
                 }
                 LiveRouteStop -> {
                     routeList.forEach { route ->

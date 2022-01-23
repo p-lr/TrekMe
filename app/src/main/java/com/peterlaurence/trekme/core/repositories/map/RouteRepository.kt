@@ -35,7 +35,11 @@ class RouteRepository @Inject constructor(
     @IoDispatcher val ioDispatcher: CoroutineDispatcher,
     @MainDispatcher val mainDispatcher: CoroutineDispatcher
 ) {
-    private val format = Json { prettyPrint = true }
+    private val format = Json {
+        prettyPrint = true
+        isLenient = true
+        ignoreUnknownKeys = true
+    }
     private val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
 
     /* Associates a route id and the directory name of the serialized route */

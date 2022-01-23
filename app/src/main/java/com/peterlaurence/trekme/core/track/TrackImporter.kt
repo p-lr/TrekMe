@@ -69,7 +69,7 @@ class TrackImporter @Inject constructor(
      * Applies the GPX content given directly as a [Gpx] instance to the provided [Map].
      */
     suspend fun applyGpxToMap(gpx: Gpx, map: Map, mapLoader: MapLoader): GpxImportResult {
-        val data = convertGpx(gpx, map)
+        val data = convertGpx(gpx)
         return setRoutesAndMarkersToMap(map, data.first, data.second, mapLoader)
     }
 
@@ -88,7 +88,7 @@ class TrackImporter @Inject constructor(
     private suspend fun readGpxInputStream(input: InputStream, map: Map, defaultName: String) =
         withContext(Dispatchers.Default) {
             parseGpxSafely(input)?.let { gpx ->
-                convertGpx(gpx, map, defaultName)
+                convertGpx(gpx, defaultName)
             }
         }
 
@@ -97,14 +97,13 @@ class TrackImporter @Inject constructor(
      */
     private suspend fun convertGpx(
         gpx: Gpx,
-        map: Map,
         defaultName: String = "track"
     ): Pair<List<Route>, List<Marker>> = withContext(Dispatchers.Default) {
         val routes = gpx.tracks.mapIndexed { index, track ->
-            gpxTrackToRoute(map, track, gpx.hasTrustedElevations(), index, defaultName)
+            gpxTrackToRoute(track, gpx.hasTrustedElevations(), index, defaultName)
         }.flatten()
         val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
-            gpxWaypointsToMarker(map, wpt, index, defaultName)
+            gpxWaypointsToMarker(wpt, index, defaultName)
         }
         Pair(routes, waypoints)
     }
@@ -151,7 +150,6 @@ class TrackImporter @Inject constructor(
      * This should be invoked off UI thread.
      */
     private fun gpxTrackToRoute(
-        map: Map,
         track: Track,
         elevationTrusted: Boolean,
         index: Int,
@@ -174,7 +172,7 @@ class TrackImporter @Inject constructor(
         /* Make a route for each track segment */
         return track.trackSegments.mapIndexed { i, segment ->
             val markers = segment.trackPoints.map { trackPoint ->
-                trackPoint.toMarker(map)
+                trackPoint.toMarker()
             }.toMutableList()
 
             Route(
@@ -188,12 +186,11 @@ class TrackImporter @Inject constructor(
     }
 
     private fun gpxWaypointsToMarker(
-        map: Map,
         wpt: TrackPoint,
         index: Int,
         defaultName: String
     ): Marker {
-        return wpt.toMarker(map).apply {
+        return wpt.toMarker().apply {
             name = if (wpt.name?.isNotEmpty() == true) {
                 wpt.name ?: ""
             } else {
@@ -203,29 +200,7 @@ class TrackImporter @Inject constructor(
     }
 }
 
-/**
- * A [TrackPoint] is a raw point that we make right after a location api callback.
- * To be drawn relatively to a [Map], it must be converted to a [Marker].
- * This should be called off UI thread.
- */
-fun TrackPoint.toMarker(map: Map, computeProj: Boolean = false): Marker {
-    val marker = Marker(lat = latitude, lon = longitude, elevation = elevation)
+fun TrackPoint.toMarker(): Marker = Marker(lat = latitude, lon = longitude, elevation = elevation)
 
-    // TODO: remove that after Compose refactor
-    if (computeProj) {
-        /* If the map uses a projection, store projected values */
-        val projectedValues: DoubleArray?
-        val projection = map.projection
-        if (projection != null) {
-            projectedValues = projection.doProjection(latitude, longitude)
-            if (projectedValues != null) {
-                marker.proj_x = projectedValues[0]
-                marker.proj_y = projectedValues[1]
-            }
-        }
-    }
-
-    return marker
-}
 
 private const val TAG = "TrackImporter"

@@ -9,9 +9,5 @@ data class Marker(
     var lon: Double,
     var name: String? = null,
     var elevation: Double? = null,
-    @Deprecated("To be removed after Compose refactor")
-    var proj_x: Double? = null,
-    @Deprecated("To be removed after Compose refactor")
-    var proj_y: Double? = null,
     var comment: String? = null
 ) : Parcelable

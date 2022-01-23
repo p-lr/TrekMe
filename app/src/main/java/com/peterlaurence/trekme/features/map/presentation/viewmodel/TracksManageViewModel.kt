@@ -61,10 +61,6 @@ class TracksManageViewModel @Inject constructor(
                 routeRepository.deleteRoute(map, route)
             }
             _tracks.value = map.routes.value
-
-            // TODO: this won't be needed anymore with Compose version
-            /* Notify other views */
-            mapViewEventBus.postTrackVisibilityChange()
         }
     }
 

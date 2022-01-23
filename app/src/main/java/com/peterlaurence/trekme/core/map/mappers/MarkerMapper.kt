@@ -11,14 +11,12 @@ fun Marker.toEntity(): MarkerGson.Marker {
         lon = m.lon
         name = m.name
         elevation = m.elevation
-        proj_x = m.proj_x
-        proj_y = m.proj_y
         comment = m.comment
     }
 }
 
 fun MarkerGson.Marker.toDomain(): Marker {
-    return Marker(lat, lon, name, elevation, proj_x, proj_y, comment)
+    return Marker(lat, lon, name, elevation, comment)
 }
 
 fun Marker.toMarkerKtx(): MarkerKtx {
@@ -27,8 +25,6 @@ fun Marker.toMarkerKtx(): MarkerKtx {
         lon = this.lon,
         name = this.name,
         elevation = this.elevation,
-        proj_x = this.proj_x,
-        proj_y = this.proj_y,
         comment = this.comment
     )
 }
@@ -39,8 +35,6 @@ fun MarkerKtx.toMarker(): Marker {
         lon = this.lon,
         name = this.name,
         elevation = this.elevation,
-        proj_x = this.proj_x,
-        proj_y = this.proj_y,
         comment = this.comment
     )
 }
