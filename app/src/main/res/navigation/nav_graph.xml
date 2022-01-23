@@ -11,26 +11,12 @@
         android:label="@string/fragment_map_list"
         tools:layout="@layout/fragment_map_list" >
         <action
-            android:id="@+id/action_mapListFragment_to_mapViewFragment"
-            app:destination="@id/mapViewFragment" />
-        <action
             android:id="@+id/action_mapListFragment_to_mapSettingsFragment"
             app:destination="@id/mapSettingsFragment" />
         <argument
             android:name="scrollToPosition"
             app:argType="integer"
             android:defaultValue="-1" />
-    </fragment>
-    <fragment
-        android:id="@+id/mapViewFragment"
-        android:name="com.peterlaurence.trekme.ui.mapview.MapViewFragment"
-        android:label="MapViewFragment" >
-        <action
-            android:id="@+id/action_mapViewFragment_to_tracksManageFragment"
-            app:destination="@id/tracksManageFragment" />
-        <action
-            android:id="@+id/action_mapViewFragment_to_markerManageFragment"
-            app:destination="@id/markerManageFragment" />
     </fragment>
     <fragment
         android:id="@+id/mapSettingsFragment"
@@ -55,17 +41,6 @@
         android:name="com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment"
         android:label="fragment_tracks_manage"
         tools:layout="@layout/fragment_tracks_manage" />
-    <fragment
-        android:id="@+id/markerManageFragment"
-        android:name="com.peterlaurence.trekme.ui.mapview.components.markermanage.MarkerManageFragment"
-        android:label="MarkerManageFragment" >
-        <argument
-            android:name="mapId"
-            app:argType="integer" />
-        <argument
-            android:name="marker"
-            app:argType="com.peterlaurence.trekme.core.map.domain.Marker" />
-    </fragment>
     <action android:id="@+id/action_global_mapCreateFragment"
         app:destination="@id/mapCreationGraph"/>
     <fragment
@@ -93,9 +68,6 @@
         android:id="@+id/mapCalibrationFragment"
         android:name="com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment"
         android:label="MapCalibrationFragment" />
-    <action
-        android:id="@+id/action_global_mapViewFragment"
-        app:destination="@id/mapViewFragment" />
     <action android:id="@+id/action_global_mapListFragment" app:destination="@id/mapListFragment" />
     <fragment
         android:id="@+id/aboutFragment"

@@ -317,7 +317,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         lifecycleScope.launchWhenCreated {
             viewModel.showMapViewSignal.collect {
-                showMapViewFragment()
+                showMapFragment()
             }
         }
 
@@ -428,13 +428,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun showMapViewFragment() {
+    private fun showMapFragment() {
         /* Don't show the fragment if no map has been selected yet */
         if (mapRepository.getCurrentMap() == null) {
             return
         }
 
-        navController.navigate(R.id.action_global_mapViewFragment)
+        navController.navigate(R.id.action_global_mapFragment)
     }
 
     /**
