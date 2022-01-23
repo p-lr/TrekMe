@@ -65,6 +65,9 @@ fun MapScreen(
                 }
             }
         }
+        launch {
+            viewModel.checkMapLicense()
+        }
     }
 
     if (uiState is MapUiState) {

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
+import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Wmts
 import com.peterlaurence.trekme.core.orientation.OrientationSource
@@ -19,10 +20,6 @@ import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
-import com.peterlaurence.trekme.viewmodel.mapview.ErrorIgnLicenseEvent
-import com.peterlaurence.trekme.viewmodel.mapview.FreeLicense
-import com.peterlaurence.trekme.viewmodel.mapview.LicenseEvent
-import com.peterlaurence.trekme.viewmodel.mapview.ValidIgnLicense
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -38,7 +35,7 @@ import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamPro
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
-    mapRepository: MapRepository,
+    private val mapRepository: MapRepository,
     locationSource: LocationSource,
     orientationSource: OrientationSource,
     mapInteractor: MapInteractor,
@@ -46,7 +43,7 @@ class MapViewModel @Inject constructor(
     private val mapFeatureEvents: MapFeatureEvents,
     gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
-    @IGN private val billing: Billing,
+    @IGN private val billing: Billing
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
 
@@ -116,6 +113,17 @@ class MapViewModel @Inject constructor(
     }
     /* endregion */
 
+    suspend fun checkMapLicense() {
+        val map = mapRepository.getCurrentMap() ?: return
+
+        when (getLicense(map)) {
+            is FreeLicense, ValidIgnLicense -> { /* Nothing to do */ }
+            is ErrorIgnLicense -> {
+                _uiState.value = Error.LicenseError
+            }
+        }
+    }
+
     fun toggleShowOrientation() = viewModelScope.launch {
         settings.toggleOrientationVisibility()
     }
@@ -143,15 +151,6 @@ class MapViewModel @Inject constructor(
     private suspend fun onMapChange(map: Map) {
         /* Shutdown the previous map state, if any */
         dataStateFlow.replayCache.firstOrNull()?.mapState?.shutdown()
-
-        /* Check license */
-        when (getLicense(map)) {
-            is FreeLicense, ValidIgnLicense -> { /* Nothing to do */ }
-            is ErrorIgnLicenseEvent -> {
-                _uiState.value = Error.LicenseError
-                return
-            }
-        }
 
         // TODO: a map shouldn't be empty and tileSize should be defined. Also, remove EmptyMap error.
         val tileSize = map.levelList.firstOrNull()?.tileSize?.width ?: run {
@@ -214,14 +213,14 @@ class MapViewModel @Inject constructor(
         fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double)
     }
 
-    private suspend fun getLicense(map: Map): LicenseEvent {
+    private suspend fun getLicense(map: Map): MapLicense {
         val origin = map.origin
         if (origin !is Wmts || !origin.licensed) return FreeLicense
 
         return withContext(Dispatchers.IO) {
             billing.getPurchase()?.let {
                 ValidIgnLicense
-            } ?: ErrorIgnLicenseEvent(map)
+            } ?: ErrorIgnLicense(map)
         }
     }
 }
