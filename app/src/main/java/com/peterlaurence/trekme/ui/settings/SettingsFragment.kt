@@ -10,7 +10,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
-import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
 import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

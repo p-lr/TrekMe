@@ -25,8 +25,6 @@ import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
-import com.peterlaurence.trekme.ui.mapview.colorLiveRoute
-import com.peterlaurence.trekme.ui.mapview.colorRoute
 import com.peterlaurence.trekme.util.parseColor
 import com.peterlaurence.trekme.util.throttle
 import kotlinx.coroutines.*
@@ -485,3 +483,6 @@ private class DistanceOnRouteController(
     data class DistanceOnRouteControllerRestoreState(val states: MutableList<DistanceOnRouteState>)
     data class DistanceOnRouteState(val route: Route, var i1: Int, var i2: Int)
 }
+
+private const val colorLiveRoute = "#FF9800"
+const val colorRoute = "#3F51B5"    // default route color

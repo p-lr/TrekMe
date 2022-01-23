@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.mapview
+package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.track.TrackStatistics

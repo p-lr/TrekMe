@@ -38,7 +38,7 @@
         app:destination="@id/settingsFragment"/>
     <fragment
         android:id="@+id/tracksManageFragment"
-        android:name="com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TracksManageFragment"
+        android:name="com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.TracksManageFragment"
         android:label="fragment_tracks_manage"
         tools:layout="@layout/fragment_tracks_manage" />
     <action android:id="@+id/action_global_mapCreateFragment"

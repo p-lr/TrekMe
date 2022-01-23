@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapview.components.tracksmanage
+package com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage
 
 import android.app.Activity
 import android.app.Dialog
@@ -23,10 +23,10 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
-import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.dialogs.ColorSelectDialog
-import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.dialogs.ColorSelectDialog
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
 import com.peterlaurence.trekme.util.collectWhileResumedIn
-import com.peterlaurence.trekme.viewmodel.mapview.TracksManageViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

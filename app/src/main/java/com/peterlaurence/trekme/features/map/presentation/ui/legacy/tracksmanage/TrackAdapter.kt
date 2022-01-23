@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapview.components.tracksmanage
+package com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.Route
-import com.peterlaurence.trekme.ui.mapview.colorRoute
-import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.TrackAdapter.TrackViewHolder
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.colorRoute
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.TrackAdapter.TrackViewHolder
 
 /**
  * Adapter to provide access to the data set (here a list of [Route]).

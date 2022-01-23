@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapview.components.tracksmanage.dialogs
+package com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.dialogs
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -9,9 +9,9 @@ import android.view.LayoutInflater
 import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.DialogColorSelectBinding
-import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.events.TrackColorChangeEvent
-import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views.SelectableColor
-import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.events.TrackColorChangeEvent
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject

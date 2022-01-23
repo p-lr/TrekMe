@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views
+package com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views
 
 import android.content.Context
 import android.graphics.Canvas

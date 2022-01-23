@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.mapview
+package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import android.app.Application
 import android.net.Uri
@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
-import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

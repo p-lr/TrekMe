@@ -31,7 +31,7 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.ui.gpspro.screens.ErrorScreen
-import com.peterlaurence.trekme.viewmodel.mapview.StatisticsViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
 import ovh.plrapps.mapcompose.ui.MapUI

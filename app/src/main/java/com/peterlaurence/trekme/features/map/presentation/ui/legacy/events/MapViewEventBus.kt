@@ -1,7 +1,7 @@
-package com.peterlaurence.trekme.ui.mapview.events
+package com.peterlaurence.trekme.features.map.presentation.ui.legacy.events
 
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.ui.mapview.components.tracksmanage.events.TrackColorChangeEvent
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.events.TrackColorChangeEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

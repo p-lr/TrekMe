@@ -97,7 +97,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         supportActionBar?.title = getString(R.string.import_title)
                     }
                     R.id.mapFragment, R.id.markerEditFragment, R.id.wmtsViewFragment -> {
-                        // Nothing to do, the actionBar is hidden in those fragments
+                        supportActionBar?.hide()
+                        supportActionBar?.title = ""
                     }
                     else -> {
                         supportActionBar?.show()

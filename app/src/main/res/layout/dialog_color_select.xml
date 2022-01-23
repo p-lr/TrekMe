@@ -27,34 +27,34 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views.SelectableColor
+        <com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
             android:id="@+id/color_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="parent"
             tools:layout_editor_absoluteX="75dp" />
 
-        <com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views.SelectableColor
+        <com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
             android:id="@+id/color_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views.SelectableColor
+        <com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
             android:id="@+id/color_3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views.SelectableColor
+        <com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
             android:id="@+id/color_4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views.SelectableColor
+        <com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
             android:id="@+id/color_5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <com.peterlaurence.trekme.ui.mapview.components.tracksmanage.views.SelectableColor
+        <com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
             android:id="@+id/color_6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />

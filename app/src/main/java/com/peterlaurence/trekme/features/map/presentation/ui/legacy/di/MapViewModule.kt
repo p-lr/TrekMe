@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.ui.mapview.di
+package com.peterlaurence.trekme.features.map.presentation.ui.legacy.di
 
-import com.peterlaurence.trekme.ui.mapview.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
