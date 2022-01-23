@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.ui.common.DialogShape
 import com.peterlaurence.trekme.ui.common.OnBoardingTip
 import com.peterlaurence.trekme.ui.common.PopupOrigin
+import com.peterlaurence.trekme.ui.gpspro.screens.ErrorScreen
 import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -50,7 +51,7 @@ fun WmtsUI(
             AreaSelectionScreen(modifier, wmtsState, onValidateArea)
         }
         is WmtsError -> {
-            ErrorScreen(wmtsState)
+            CustomErrorScreen(wmtsState)
         }
     }
 }
@@ -136,33 +137,13 @@ private fun Area(
 }
 
 @Composable
-private fun ErrorScreen(state: WmtsError) {
+private fun CustomErrorScreen(state: WmtsError) {
     val message = when (state) {
         WmtsError.IGN_OUTAGE -> stringResource(id = R.string.mapcreate_warning_ign)
         WmtsError.VPS_FAIL -> stringResource(id = R.string.mapreate_warning_vps)
         WmtsError.PROVIDER_OUTAGE -> stringResource(id = R.string.mapcreate_warning_others)
     }
-    Error(message)
-}
-
-@Composable
-private fun Error(message: String) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_emoji_disappointed_face_1f61e),
-            contentDescription = null,
-            modifier = Modifier
-                .size(100.dp)
-                .padding(16.dp)
-        )
-        Text(text = message)
-    }
+    ErrorScreen(message)
 }
 
 @Composable

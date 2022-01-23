@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +30,7 @@ import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
+import com.peterlaurence.trekme.ui.gpspro.screens.ErrorScreen
 import com.peterlaurence.trekme.viewmodel.mapview.StatisticsViewModel
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
@@ -79,19 +82,7 @@ fun MapScreen(
     }
 
     when (uiState) {
-        // TODO: finish this. In case of error, show a different Scaffold with a custom TopAppBar (see below)
-//        /* In case of error, we only show the main menu button */
-//        TopAppBar(
-//            title = {},
-//            navigationIcon = {
-//                IconButton(onClick = onMainMenuClick) {
-//                    Icon(Icons.Filled.Menu, contentDescription = "")
-//                }
-//            }
-//        )
-        Error.LicenseError -> Text(text = "license error")
-        Error.EmptyMap -> Text(text = "empty map")
-        Loading -> Text(text = "loading")
+        Loading -> Text(text = "loading")  // TODO: improve that
         is MapUiState -> {
             Column {
                 MapScaffold(
@@ -125,6 +116,38 @@ fun MapScreen(
                     StatsPanel(it)
                 }
             }
+        }
+        is Error -> ErrorScaffold(
+            uiState as Error,
+            onMainMenuClick = viewModel::onMainMenuClick
+        )
+    }
+}
+
+@Composable
+fun ErrorScaffold(
+    error: Error,
+    onMainMenuClick: () -> Unit
+) {
+    val scaffoldState: ScaffoldState = rememberScaffoldState()
+
+    Scaffold(
+        Modifier,
+        scaffoldState = scaffoldState,
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(onClick = onMainMenuClick) {
+                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    }
+                }
+            )
+        }
+    ) {
+        when (error) {
+            Error.LicenseError -> ErrorScreen(message = stringResource(R.string.missing_ign_license))
+            Error.EmptyMap -> ErrorScreen(message = "empty map")
         }
     }
 }

@@ -3,23 +3,32 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel
 import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.billing.Billing
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.Wmts
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.di.IGN
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
+import com.peterlaurence.trekme.viewmodel.mapview.ErrorIgnLicenseEvent
+import com.peterlaurence.trekme.viewmodel.mapview.FreeLicense
+import com.peterlaurence.trekme.viewmodel.mapview.LicenseEvent
+import com.peterlaurence.trekme.viewmodel.mapview.ValidIgnLicense
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.io.File
@@ -36,7 +45,8 @@ class MapViewModel @Inject constructor(
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
     gpxRecordEvents: GpxRecordEvents,
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    @IGN private val billing: Billing,
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
 
@@ -134,6 +144,16 @@ class MapViewModel @Inject constructor(
         /* Shutdown the previous map state, if any */
         dataStateFlow.replayCache.firstOrNull()?.mapState?.shutdown()
 
+        /* Check license */
+        when (getLicense(map)) {
+            is FreeLicense, ValidIgnLicense -> { /* Nothing to do */ }
+            is ErrorIgnLicenseEvent -> {
+                _uiState.value = Error.LicenseError
+                return
+            }
+        }
+
+        // TODO: a map shouldn't be empty and tileSize should be defined. Also, remove EmptyMap error.
         val tileSize = map.levelList.firstOrNull()?.tileSize?.width ?: run {
             _uiState.value = Error.EmptyMap
             return
@@ -192,6 +212,17 @@ class MapViewModel @Inject constructor(
 
     interface MarkerTapListener {
         fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double)
+    }
+
+    private suspend fun getLicense(map: Map): LicenseEvent {
+        val origin = map.origin
+        if (origin !is Wmts || !origin.licensed) return FreeLicense
+
+        return withContext(Dispatchers.IO) {
+            billing.getPurchase()?.let {
+                ValidIgnLicense
+            } ?: ErrorIgnLicenseEvent(map)
+        }
     }
 }
 
