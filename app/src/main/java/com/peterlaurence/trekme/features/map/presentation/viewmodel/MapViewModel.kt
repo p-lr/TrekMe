@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.Billing
@@ -90,6 +91,17 @@ class MapViewModel @Inject constructor(
                 onMapChange(it)
             }
         }.launchIn(viewModelScope)
+
+        /* Some other components depend on the last scale */
+        viewModelScope.launch {
+            dataStateFlow.collectLatest {
+                snapshotFlow {
+                    it.mapState.scale
+                }.collect {
+                    mapFeatureEvents.postScale(it)
+                }
+            }
+        }
 
         settings.getMaxScale().combine(dataStateFlow) { maxScale, dataState ->
             dataState.mapState.maxScale = maxScale

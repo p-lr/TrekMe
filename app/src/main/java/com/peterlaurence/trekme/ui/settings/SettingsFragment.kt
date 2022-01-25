@@ -10,7 +10,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
-import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -25,7 +25,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by viewModels()
 
     @Inject
-    lateinit var mapViewEventBus: MapViewEventBus
+    lateinit var mapFeatureEvents: MapFeatureEvents
 
     private var startOnPref: ListPreference? = null
     private var measurementSystemPref: ListPreference? = null
@@ -65,8 +65,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         viewModel.maxScaleLiveData.observe(this) {
-            it?.let {
-                updateMaxScale(it)
+            it?.let { maxScale ->
+                updateMaxScale(maxScale)
+
+                mapFeatureEvents.mapScaleFlow.value?.let { scale ->
+                    val scaleRatio = (scale * 100 / maxScale).toInt()
+                    val str = getString(R.string.preference_zoom_when_centered_compl, scaleRatio.toString())
+                    scaleCenteredPref?.title = getString(R.string.preference_zoom_when_centered) + " " + str
+                }
             }
         }
 
@@ -159,10 +165,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         defineScaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_change_scale_when_centering_key))
         scaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_zoom_when_centered_key))
 
-        val currentScaleRatioInfo = mapViewEventBus.scaleRatio?.let {
-            " " + getString(R.string.preference_zoom_when_centered_compl, it.toString())
-        } ?: ""
-        scaleCenteredPref?.title = getString(R.string.preference_zoom_when_centered) + currentScaleRatioInfo
+        scaleCenteredPref?.title = getString(R.string.preference_zoom_when_centered)
 
         rootFolderPref?.setOnPreferenceChangeListener { _, newValue ->
             val newPath = newValue as String

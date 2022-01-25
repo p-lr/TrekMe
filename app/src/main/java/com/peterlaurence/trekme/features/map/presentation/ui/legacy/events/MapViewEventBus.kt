@@ -27,15 +27,4 @@ class MapViewEventBus {
 
     fun postTrackImportEvent(event: TrackImporter.GpxImportResult) = _trackImportEvent.tryEmit(event)
     /* endregion */
-
-    /* region Scale ratio */
-    var scaleRatio: Int? = null
-        private set
-
-    /* For now, just remember the scale ratio. Ultimately, we could store the MapState here, maybe
-     * inside a SharedFlow. */
-    fun rememberMapState(scaleRatio: Int) {
-        this.scaleRatio = scaleRatio
-    }
-    /* endregion */
 }
