@@ -164,7 +164,7 @@ class MapViewModel @Inject constructor(
         /* Shutdown the previous map state, if any */
         dataStateFlow.replayCache.firstOrNull()?.mapState?.shutdown()
 
-        // TODO: a map shouldn't be empty and tileSize should be defined. Also, remove EmptyMap error.
+        /* For instance, MapCompose only supports levels of uniform tile size (and squared) */
         val tileSize = map.levelList.firstOrNull()?.tileSize?.width ?: run {
             _uiState.value = Error.EmptyMap
             return
