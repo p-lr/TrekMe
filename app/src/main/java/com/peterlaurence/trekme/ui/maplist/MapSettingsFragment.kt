@@ -23,7 +23,6 @@ import com.peterlaurence.trekme.ui.maplist.events.MapImageImportResult
 import com.peterlaurence.trekme.util.isFrench
 import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -206,13 +205,13 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
     override fun onResume() {
         super.onResume()
         preferenceScreen.sharedPreferences
-                .registerOnSharedPreferenceChangeListener(this)
+                ?.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onPause() {
         super.onPause()
         preferenceScreen.sharedPreferences
-                .unregisterOnSharedPreferenceChangeListener(this)
+                ?.unregisterOnSharedPreferenceChangeListener(this)
     }
 
     /**
