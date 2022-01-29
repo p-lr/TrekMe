@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.mapsettings
+package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 
 import android.app.Application
 import android.net.Uri
@@ -11,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.ui.maplist.events.*
+import com.peterlaurence.trekme.features.maplist.presentation.events.*
 import com.peterlaurence.trekme.util.ZipProgressionListener
 import com.peterlaurence.trekme.util.makeThumbnail
 import com.peterlaurence.trekme.util.stackTraceAsString

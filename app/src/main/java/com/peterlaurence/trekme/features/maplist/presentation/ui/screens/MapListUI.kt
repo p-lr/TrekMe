@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.maplist.screens
+package com.peterlaurence.trekme.features.maplist.presentation.ui.screens
 
 import android.content.Context
 import android.net.Uri
@@ -31,12 +31,12 @@ import androidx.fragment.app.findFragment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.ui.maplist.MapListFragment
-import com.peterlaurence.trekme.ui.maplist.MapListFragmentDirections
+import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
+import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
+import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.pxToDp
 import com.peterlaurence.trekme.viewmodel.maplist.*
-import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 
 @Composable
 fun MapListUI(state: MapListState, intents: MapListIntents) {

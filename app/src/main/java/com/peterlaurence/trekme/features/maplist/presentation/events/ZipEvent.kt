@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.maplist.events
+package com.peterlaurence.trekme.features.maplist.presentation.events
 
 sealed class ZipEvent
 data class ZipProgressEvent(val p: Int, val mapName: String, val mapId: Int): ZipEvent()

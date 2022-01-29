@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.maplist
+package com.peterlaurence.trekme.features.maplist.presentation.ui
 
 import android.app.Activity
 import android.content.DialogInterface
@@ -19,9 +19,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.ui.maplist.events.MapImageImportResult
+import com.peterlaurence.trekme.features.maplist.presentation.events.MapImageImportResult
+import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.util.isFrench
-import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -131,7 +131,8 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
             }
         }
         calibrationButton?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            val direction = MapSettingsFragmentDirections.actionMapSettingsFragmentToMapCalibrationFragment()
+            val direction =
+                MapSettingsFragmentDirections.actionMapSettingsFragmentToMapCalibrationFragment()
             NavHostFragment.findNavController(this).navigate(direction)
             true
         }

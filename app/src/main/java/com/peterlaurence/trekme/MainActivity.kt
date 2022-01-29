@@ -43,13 +43,13 @@ import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.features.maplist.presentation.events.*
+import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
-import com.peterlaurence.trekme.ui.maplist.events.*
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
-import com.peterlaurence.trekme.viewmodel.mapsettings.MapSettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map

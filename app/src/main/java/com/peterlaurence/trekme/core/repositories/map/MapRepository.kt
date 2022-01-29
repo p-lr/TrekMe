@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.repositories.map
 
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.ui.maplist.MapSettingsFragment
+import com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFragment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mapListFragment"
-        android:name="com.peterlaurence.trekme.ui.maplist.MapListFragment"
+        android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment"
         android:label="@string/fragment_map_list"
         tools:layout="@layout/fragment_map_list" >
         <action
@@ -20,7 +20,7 @@
     </fragment>
     <fragment
         android:id="@+id/mapSettingsFragment"
-        android:name="com.peterlaurence.trekme.ui.maplist.MapSettingsFragment"
+        android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFragment"
         android:label="MapSettingsFragment" >
         <argument
             android:name="mapId"
