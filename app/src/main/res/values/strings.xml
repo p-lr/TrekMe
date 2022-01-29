@@ -323,7 +323,6 @@
     <string name="mapreate_warning_vps">We\'re having trouble fetching required data. If your internet connection is working properly, we\'ll hopefully fix the outage soon.</string>
     <string name="mapcreate_btn_nav_credentials">Fix my credentials</string>
     <string name="layer_ign_plan_v2">IGN Plan</string>
-    <string name="layer_ign_scan_express_std">Scan Expresss Standard</string>
     <string name="layer_ign_classic">IGN Classic</string>
     <string name="layer_ign_satellite">IGN Satellite</string>
     <string name="layer_ign_roads">Roads</string>

@@ -12,7 +12,6 @@ Les couches principales disponibles sont :
 * Cartes IGN Classiques
 * Plan IGN
 * Vues aériennes
-* Scan Express Standard
 
 ## Couches secondaires
 

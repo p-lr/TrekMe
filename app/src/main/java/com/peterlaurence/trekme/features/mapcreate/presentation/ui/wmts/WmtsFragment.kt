@@ -86,7 +86,6 @@ class WmtsFragment : Fragment() {
 
     private val layerIdToResId = mapOf(
         ignPlanv2 to R.string.layer_ign_plan_v2,
-        ignScanExpressStd to R.string.layer_ign_scan_express_std,
         ignClassic to R.string.layer_ign_classic,
         ignSatellite to R.string.layer_ign_satellite,
         osmTopo to R.string.layer_osm_topo,
