@@ -1,10 +1,10 @@
-package com.peterlaurence.trekme.ui.mapcreate.dialogs
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs
 
 import android.os.Bundle
 import android.os.Parcelable
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.ui.dialogs.SingleSelectDialog
-import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
+import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject

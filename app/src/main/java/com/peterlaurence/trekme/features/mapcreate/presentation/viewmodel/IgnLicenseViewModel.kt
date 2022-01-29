@@ -1,24 +1,20 @@
-package com.peterlaurence.trekme.viewmodel.mapcreate
+package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.billing.Billing
-import com.peterlaurence.trekme.billing.BillingParams
-import com.peterlaurence.trekme.billing.SubscriptionDetails
+import com.peterlaurence.trekme.billing.*
 import com.peterlaurence.trekme.billing.common.PurchaseState
-import com.peterlaurence.trekme.billing.ign.*
 import com.peterlaurence.trekme.di.IGN
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class IgnLicenseViewModel @Inject constructor(
-        @IGN private val billing: Billing,
+    @IGN private val billing: Billing,
 ) : ViewModel() {
     private val ignLicenseStatus = MutableLiveData<PurchaseState>()
     private val ignSubscriptionDetails = MutableLiveData<SubscriptionDetails>()
@@ -29,7 +25,8 @@ class IgnLicenseViewModel @Inject constructor(
             ignLicenseStatus.value = PurchaseState.CHECK_PENDING
 
             /* Check if we just need to acknowledge the purchase */
-            val ackDone = billing.acknowledgePurchase(this@IgnLicenseViewModel::onPurchaseAcknowledged)
+            val ackDone =
+                billing.acknowledgePurchase(this@IgnLicenseViewModel::onPurchaseAcknowledged)
 
             /* Otherwise, do normal checks */
             if (!ackDone) {
@@ -61,7 +58,11 @@ class IgnLicenseViewModel @Inject constructor(
     fun buyLicense(): BillingParams? {
         val ignLicenseDetails = ignSubscriptionDetails.value
         return if (ignLicenseDetails != null) {
-            billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchaseAcknowledged, this::onPurchasePending)
+            billing.launchBilling(
+                ignLicenseDetails.skuDetails,
+                this::onPurchaseAcknowledged,
+                this::onPurchasePending
+            )
         } else null
     }
 
@@ -85,8 +86,5 @@ class IgnLicenseViewModel @Inject constructor(
         return ignSubscriptionDetails
     }
 }
-
-class NotSupportedException : Exception()
-class ProductNotFoundException : Exception()
 
 private const val TAG = "IgnLicenceViewModel"

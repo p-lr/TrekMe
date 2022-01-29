@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.mapcreate
+package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,7 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 /**
- * Acts as a middle-man between the [LayerOverlayRepository] and the [LayerOverlayFragment].
+ * The view-model for the view showing the list of possible overlay layers.
  *
  * @author P.Laurence on 2021-01-11
  */

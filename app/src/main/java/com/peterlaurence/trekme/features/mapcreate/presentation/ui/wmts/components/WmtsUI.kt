@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -19,11 +19,11 @@ import androidx.compose.ui.unit.min
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
 import com.peterlaurence.trekme.ui.common.DialogShape
 import com.peterlaurence.trekme.ui.common.OnBoardingTip
 import com.peterlaurence.trekme.ui.common.PopupOrigin
 import com.peterlaurence.trekme.ui.gpspro.screens.ErrorScreen
-import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas

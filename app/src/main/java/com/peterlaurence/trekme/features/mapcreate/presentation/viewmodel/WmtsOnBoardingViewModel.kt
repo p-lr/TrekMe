@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.mapcreate
+package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel

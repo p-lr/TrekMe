@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.overlay
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

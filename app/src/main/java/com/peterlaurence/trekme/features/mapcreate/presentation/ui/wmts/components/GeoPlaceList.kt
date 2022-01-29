@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.core.geocoding.GeoPlace
-import com.peterlaurence.trekme.viewmodel.mapcreate.GeoplaceList
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.GeoplaceList
 
 @Composable
 fun GeoPlaceListUI(uiState: GeoplaceList, onGeoPlaceSelection: (GeoPlace) -> Unit) {

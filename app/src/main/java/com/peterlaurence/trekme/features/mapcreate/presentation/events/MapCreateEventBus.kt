@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.ui.mapcreate.events
+package com.peterlaurence.trekme.features.mapcreate.presentation.events
 
-import com.peterlaurence.trekme.ui.mapcreate.dialogs.DownloadFormDataBundle
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.DownloadFormDataBundle
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

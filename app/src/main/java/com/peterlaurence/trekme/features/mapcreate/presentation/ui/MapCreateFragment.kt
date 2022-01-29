@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,7 +11,7 @@ import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.viewmodel.mapcreate.MapSourceListViewModel
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 /**

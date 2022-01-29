@@ -98,7 +98,7 @@
         app:startDestination="@id/mapCreateFragment">
         <fragment
             android:id="@+id/wmtsViewFragment"
-            android:name="com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.WmtsFragment"
+            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFragment"
             android:label="@string/google_map_wmts_label">
             <action
                 android:id="@+id/action_googleMapWmtsViewFragment_to_layerOverlayFragment"
@@ -106,15 +106,15 @@
         </fragment>
         <fragment
             android:id="@+id/layerOverlayFragment"
-            android:name="com.peterlaurence.trekme.ui.mapcreate.overlay.LayerOverlayFragment"
+            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay.LayerOverlayFragment"
             android:label="LayerOverlayFragment">
             <argument
                 android:name="wmtsSourceBundle"
-                app:argType="com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerOverlayDataBundle" />
+                app:argType="com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LayerOverlayDataBundle" />
         </fragment>
         <fragment
             android:id="@+id/mapCreateFragment"
-            android:name="com.peterlaurence.trekme.ui.mapcreate.MapCreateFragment"
+            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.MapCreateFragment"
             android:label="MapCreateFragment">
             <action
                 android:id="@+id/action_mapCreateFragment_to_googleMapWmtsViewFragment"

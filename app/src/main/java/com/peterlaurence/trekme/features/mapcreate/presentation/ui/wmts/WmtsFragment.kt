@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts
 
 import android.os.Bundle
 import android.view.*
@@ -11,22 +11,20 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsBinding
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
-import com.peterlaurence.trekme.ui.mapcreate.dialogs.*
-import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.WmtsStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.*
+import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsOnBoardingViewModel
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.util.collectWhileStartedIn
-import com.peterlaurence.trekme.viewmodel.mapcreate.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.map
-import ovh.plrapps.mapview.api.*
 import javax.inject.Inject
 
 /**

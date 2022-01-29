@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

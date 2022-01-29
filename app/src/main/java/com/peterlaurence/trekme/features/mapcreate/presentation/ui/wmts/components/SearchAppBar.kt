@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.viewmodel.mapcreate.Collapsed
-import com.peterlaurence.trekme.viewmodel.mapcreate.Empty
-import com.peterlaurence.trekme.viewmodel.mapcreate.SearchMode
-import com.peterlaurence.trekme.viewmodel.mapcreate.TopBarState
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Collapsed
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.Empty
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.SearchMode
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.TopBarState
 
 /**
  * This top app bar implements [material design](https://material.io/components/app-bars-top).

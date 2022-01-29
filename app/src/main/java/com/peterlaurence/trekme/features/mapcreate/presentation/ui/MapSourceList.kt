@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -28,7 +28,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.ui.common.OnBoardingTip
 import com.peterlaurence.trekme.ui.common.PopupOrigin
-import com.peterlaurence.trekme.viewmodel.mapcreate.MapSourceListViewModel
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
 
 
 @Composable

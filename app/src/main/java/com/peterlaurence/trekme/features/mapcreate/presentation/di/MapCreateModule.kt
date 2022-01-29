@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.ui.mapcreate.di
+package com.peterlaurence.trekme.features.mapcreate.presentation.di
 
-import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
+import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

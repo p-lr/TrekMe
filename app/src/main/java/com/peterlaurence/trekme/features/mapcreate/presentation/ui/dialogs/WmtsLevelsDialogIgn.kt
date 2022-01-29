@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.dialogs
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs
 
 import android.os.Bundle
 import android.view.View
@@ -9,7 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
-import com.peterlaurence.trekme.viewmodel.mapcreate.IgnLicenseViewModel
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.IgnLicenseViewModel
 
 
 /**

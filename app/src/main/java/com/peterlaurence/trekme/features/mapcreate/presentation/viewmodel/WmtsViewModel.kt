@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.mapcreate
+package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 
 import android.app.Application
 import android.content.Intent
@@ -32,13 +32,13 @@ import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.service.DownloadService
 import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.common.PositionMarker
-import com.peterlaurence.trekme.ui.mapcreate.dialogs.DownloadFormDataBundle
-import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.WmtsFragment
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.AreaUiController
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.components.PlaceMarker
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.Point
-import com.peterlaurence.trekme.ui.mapcreate.wmtsfragment.model.toDomain
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.DownloadFormDataBundle
+import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFragment
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.AreaUiController
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.PlaceMarker
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*

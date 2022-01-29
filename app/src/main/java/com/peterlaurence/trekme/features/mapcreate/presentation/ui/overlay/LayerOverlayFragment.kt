@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapcreate.overlay
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.overlay
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,11 +18,10 @@ import com.peterlaurence.trekme.core.providers.layers.ignRoad
 import com.peterlaurence.trekme.core.providers.layers.ignSlopes
 import com.peterlaurence.trekme.databinding.FragmentLayerOverlayBinding
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
-import com.peterlaurence.trekme.ui.mapcreate.dialogs.LayerSelectDialog
-import com.peterlaurence.trekme.ui.mapcreate.events.MapCreateEventBus
-import com.peterlaurence.trekme.viewmodel.mapcreate.LayerOverlayViewModel
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LayerSelectDialog
+import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.LayerOverlayViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
 /**

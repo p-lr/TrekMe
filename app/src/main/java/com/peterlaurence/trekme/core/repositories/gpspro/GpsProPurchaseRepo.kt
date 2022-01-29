@@ -1,14 +1,10 @@
 package com.peterlaurence.trekme.core.repositories.gpspro
 
 import android.util.Log
-import com.peterlaurence.trekme.billing.Billing
-import com.peterlaurence.trekme.billing.BillingParams
-import com.peterlaurence.trekme.billing.SubscriptionDetails
+import com.peterlaurence.trekme.billing.*
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.di.GpsPro
 import com.peterlaurence.trekme.di.MainDispatcher
-import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
-import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob

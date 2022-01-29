@@ -4,8 +4,6 @@ import android.app.Application
 import android.util.Log
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode.*
-import com.peterlaurence.trekme.viewmodel.mapcreate.NotSupportedException
-import com.peterlaurence.trekme.viewmodel.mapcreate.ProductNotFoundException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.callbackFlow
@@ -263,6 +261,9 @@ class Billing(
         return BillingParams(billingClient, flowParams)
     }
 }
+
+class NotSupportedException : Exception()
+class ProductNotFoundException : Exception()
 
 data class BillingParams(val billingClient: BillingClient, val flowParams: BillingFlowParams)
 
