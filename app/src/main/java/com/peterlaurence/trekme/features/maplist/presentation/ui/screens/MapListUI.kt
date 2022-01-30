@@ -330,8 +330,10 @@ class MapListView @JvmOverloads constructor(
                 viewModel.onMapSettings(mapId)
 
                 /* Navigate to the MapSettingsFragment*/
+//                val action =
+//                    MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(mapId)
                 val action =
-                    MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(mapId)
+                    MapListFragmentDirections.actionMapListFragmentToMapSettingsGraph()
                 findNavController().navigate(action)
             }
 

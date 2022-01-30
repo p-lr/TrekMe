@@ -52,11 +52,9 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val args = arguments
-        if (args != null) {
-            val mapId = args.getInt(ARG_MAP_ID)
-            setMap(mapId)
-        }
+
+        val map = viewModel.map ?: return
+        setMap(map)
 
         lifecycleScope.launchWhenResumed {
             viewModel.mapImageImportEvents.collect {
@@ -75,18 +73,13 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
      *
      * This calls `initComponents` method, so it must be called after the Preferences
      * layout has been set with e.g `addPreferencesFromResource`.
-     *
-     * @param mapId the id of the [Map]
      */
-    private fun setMap(mapId: Int) {
-        val map = mapLoader.getMap(mapId)
+    private fun setMap(map: Map) {
         this.map = map
-        if (map != null) {
-            /* Choice is made to have the preference file name equal to the map name, from which
-             * we strip reserved characters */
-            preferenceManager.sharedPreferencesName = map.name.replace("[\\\\/:*?\"<>|]".toRegex(), "")
-            initComponents()
-        }
+        /* Choice is made to have the preference file name equal to the map name, from which
+         * we strip reserved characters */
+        preferenceManager.sharedPreferencesName = map.name.replace("[\\\\/:*?\"<>|]".toRegex(), "")
+        initComponents()
     }
 
     private fun initComponents() {
@@ -297,7 +290,6 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
     }
 
     companion object {
-        private const val ARG_MAP_ID = "mapId"
 
         /* Convenience method */
         private fun setListPreferenceSummaryAndValue(preference: ListPreference?, value: String) {
