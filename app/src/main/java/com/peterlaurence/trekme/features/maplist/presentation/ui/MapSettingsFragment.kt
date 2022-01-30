@@ -8,9 +8,9 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.navGraphViewModels
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -45,7 +45,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
     private var map: Map? = null
-    private val viewModel: MapSettingsViewModel by activityViewModels()
+    private val viewModel: MapSettingsViewModel by navGraphViewModels(R.id.map_settings_graph) {
+        defaultViewModelProviderFactory
+    }
 
     @Inject
     lateinit var mapLoader: MapLoader
