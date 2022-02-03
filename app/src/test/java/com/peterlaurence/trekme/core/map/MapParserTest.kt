@@ -39,9 +39,9 @@ class MapParserTest {
         val map = mapList[0]
 
         routeRepository.importRoutes(map)
-        assertEquals(2, map.routes!!.size.toLong())
+        assertEquals(2, map.routes.value.size.toLong())
 
-        val route = map.routes!![0]
+        val route = map.routes.value[0]
         assertEquals("A test route 1", route.name)
         assertTrue(route.visible.value)
         val markers = route.routeMarkers
@@ -49,15 +49,15 @@ class MapParserTest {
 
         val marker1 = markers[0]
         assertEquals("marker1", marker1.name)
-        val projX = marker1.proj_x
-        assertNotNull(projX)
-        assertEquals(6198798.5047565, projX, 0.0)
+        val lat = marker1.lat
+        assertNotNull(lat)
+        assertEquals(0.0, lat, 0.0)
 
         val marker2 = markers[1]
         assertEquals("marker2", marker2.name)
-        val projY = marker2.proj_y
-        assertNotNull(projY)
-        assertEquals(-2418744.7142449305, projY, 0.0)
+        val lon = marker2.lon
+        assertNotNull(lon)
+        assertEquals(0.0, lon, 0.0)
     }
 
     @Test
@@ -76,9 +76,9 @@ class MapParserTest {
         val map = mapList[0]
 
         routeRepository.importRoutes(map)
-        assertEquals(2, map.routes!!.size.toLong())
+        assertEquals(2, map.routes.value.size.toLong())
 
-        val route1 = map.routes!!.sortedBy { it.name }[0]
+        val route1 = map.routes.value.sortedBy { it.name }[0]
         assertEquals("track-10-09-2021_22h09-04s", route1.name)
         assertTrue(route1.visible.value)
         val markers1 = route1.routeMarkers
@@ -86,17 +86,17 @@ class MapParserTest {
 
         val marker1 = markers1[0]
         assertEquals("marker1", marker1.name)
-        val projX = marker1.proj_x
-        assertNotNull(projX)
-        assertEquals(6198798.5047565, projX, 0.0)
+        val lat = marker1.lat
+        assertNotNull(lat)
+        assertEquals(0.0, lat, 0.0)
 
         val marker2 = markers1[1]
         assertEquals("marker2", marker2.name)
-        val marker2ProjY = marker2.proj_y
-        assertNotNull(marker2ProjY)
-        assertEquals(-2418744.7142449305, marker2ProjY, 0.0)
+        val lon = marker2.lon
+        assertNotNull(lon)
+        assertEquals(-2418744.7142449305, lon, 0.0)
 
-        val route2 = map.routes!!.sortedBy { it.name }[1]
+        val route2 = map.routes.value.sortedBy { it.name }[1]
         assertEquals("track-13-07-2021_10h27-44s", route2.name)
         assertTrue(route2.visible.value)
         val markers2 = route2.routeMarkers
@@ -104,14 +104,14 @@ class MapParserTest {
 
         val marker3 = markers2[0]
         assertEquals("marker3", marker3.name)
-        val marker3ProjY = marker3.proj_y
-        assertNotNull(marker3ProjY)
-        assertEquals(-2785744.45, marker3ProjY, 0.0)
+        val lat2 = marker3.lat
+        assertNotNull(lat2)
+        assertEquals(-2785744.45, lat2, 0.0)
 
         val marker4 = markers2[1]
         assertEquals("marker4", marker4.name)
-        val marker4ProjX = marker4.proj_x
-        assertNotNull(marker4ProjX)
-        assertEquals(5298798.45375, marker4ProjX, 0.0)
+        val lon2 = marker4.lon
+        assertNotNull(lon2)
+        assertEquals(5298798.45375, lon2, 0.0)
     }
 }

@@ -21,6 +21,7 @@ import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
+import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -170,7 +171,7 @@ class MapViewModel @Inject constructor(
             return
         }
 
-        val tileStreamProvider = makeTileStreamProvider(map)
+        val tileStreamProvider = makeMapComposeTileStreamProvider(map)
 
         val magnifyingFactor = settings.getMagnifyingFactor().first()
 
@@ -204,20 +205,6 @@ class MapViewModel @Inject constructor(
             distanceLineState
         )
         _uiState.value = mapUiState
-    }
-
-    private fun makeTileStreamProvider(map: Map): MapComposeTileStreamProvider {
-        return MapComposeTileStreamProvider { row, col, zoomLvl ->
-            val relativePathString =
-                "$zoomLvl${File.separator}$row${File.separator}$col${map.imageExtension}"
-
-            @Suppress("BlockingMethodInNonBlockingContext")
-            try {
-                FileInputStream(File(map.directory, relativePathString))
-            } catch (e: Exception) {
-                null
-            }
-        }
     }
     /* endregion */
 

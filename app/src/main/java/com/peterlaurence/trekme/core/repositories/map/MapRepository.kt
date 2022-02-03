@@ -16,7 +16,8 @@ class MapRepository {
     private val _mapFlow = MutableStateFlow<Map?>(null)
     val mapFlow: StateFlow<Map?> = _mapFlow.asStateFlow()
 
-    private var settingsMap: Map? = null
+    private val _settingsMapFlow = MutableStateFlow<Map?>(null)
+    val settingsMapFlow: StateFlow<Map?> = _settingsMapFlow.asStateFlow()
 
     fun getCurrentMap(): Map? = _mapFlow.value
 
@@ -24,9 +25,9 @@ class MapRepository {
         _mapFlow.value = map
     }
 
-    fun getSettingsMap() = settingsMap
+    fun getSettingsMap() = _settingsMapFlow.value
 
     fun setSettingsMap(map: Map) {
-        settingsMap = map
+        _settingsMapFlow.value = map
     }
 }
