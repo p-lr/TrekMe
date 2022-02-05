@@ -1,11 +1,13 @@
 package com.peterlaurence.trekme.features.maplist.presentation.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -13,12 +15,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.CalibrationViewModel
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.EmptyMap
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.Loading
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapUiState
+import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.*
 import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
@@ -27,69 +27,68 @@ fun CalibrationStateful(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column {
-        Calibration()
+    var selected by remember {
+        mutableStateOf(PointId.One)
+    }
 
-        when (uiState) {
-            EmptyMap -> {}
-            Loading -> {}
-            is MapUiState -> MapUI(state = (uiState as MapUiState).mapState)
+    when (uiState) {
+        EmptyMap -> {}
+        Loading -> {}
+        is MapUiState -> {
+            Column {
+                val calibrationPoints = (uiState as MapUiState).calibrationPoints
+                val calibrationPointModel = calibrationPoints.getOrNull(selected.index)
+
+                Calibration(
+                    selected,
+                    calibrationPointModel,
+                    onPointSelection = { selected = it }
+                )
+
+                MapUI(state = (uiState as MapUiState).mapState)
+            }
         }
     }
 }
 
 @Composable
-private fun Calibration() {
-    var selected by remember {
-        mutableStateOf(PointId.One)
-    }
-    var latitude by remember {
-        mutableStateOf("")
-    }
-    var longitude by remember {
-        mutableStateOf("")
-    }
-
+private fun Calibration(
+    selected: PointId,
+    calibrationPointModel: CalibrationPointModel?,
+    onPointSelection: (PointId) -> Unit
+) {
     Row(
         Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             Modifier
-                .weight(1f)
+                .height(96.dp)
+                .weight(1f),
+            verticalArrangement = Arrangement.SpaceAround,
         ) {
-            TextField(
-                latitude, onValueChange = { latitude = it },
-                modifier = Modifier
-                    .height(48.dp)
-                    .fillMaxWidth(1f),
-                leadingIcon = { Text(text = stringResource(id = R.string.latitude_short)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent
+            Row {
+                LatLonPrefix(stringResource(id = R.string.latitude_short))
+                LatLonTextField(
+                    value = calibrationPointModel?.lat?.toString() ?: "",
+                    onValueChange = { calibrationPointModel?.lat = it.toDoubleOrNull() }
                 )
-            )
+            }
 
-            TextField(
-                longitude, onValueChange = { longitude = it },
-                modifier = Modifier.height(48.dp),
-                leadingIcon = { Text(text = stringResource(id = R.string.longitude_short)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent
+            Row {
+                LatLonPrefix(stringResource(id = R.string.longitude_short))
+                LatLonTextField(
+                    value = calibrationPointModel?.lon?.toString() ?: "",
+                    onValueChange = { calibrationPointModel?.lon = it.toDoubleOrNull() }
                 )
-            )
+            }
         }
 
         PointSelector(
             Modifier.padding(start = 9.dp),
             CalibrationMethod.SIMPLE_2_POINTS,
             activePointId = selected,
-            onPointSelection = {
-                selected = it
-            }
+            onPointSelection = onPointSelection
         )
 
         FloatingActionButton(
@@ -169,8 +168,54 @@ private fun PointSelector(
     }
 }
 
-private enum class PointId {
-    One, Two, Three, Four
+@Composable
+private fun LatLonTextField(
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    val unfocusedColor =
+        MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.UnfocusedIndicatorLineOpacity)
+    val focusedColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
+
+    var focused by remember { mutableStateOf(false) }
+
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .onFocusChanged {
+                focused = it.isFocused
+            },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+        decorationBox = { innerTextField ->
+            Column {
+                innerTextField()
+                Divider(
+                    color = if (focused) focusedColor else unfocusedColor,
+                    thickness = if (focused) 2.dp else 1.dp
+                )
+                if (!focused) {
+                    Spacer(modifier = Modifier.height(1.dp))
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun LatLonPrefix(text: String) {
+    Text(
+        modifier = Modifier.padding(end = 8.dp),
+        text = text,
+        color = colorResource(id = R.color.colorGrey),
+        fontSize = 14.sp
+    )
+}
+
+private enum class PointId(val index: Int) {
+    One(0), Two(1), Three(2), Four(4)
 }
 
 @Preview
@@ -191,5 +236,5 @@ private fun PointSelector2PointsPreview() {
 @Preview
 @Composable
 private fun CalibrationPreview() {
-    Calibration()
+    Calibration(PointId.One, null, {})
 }

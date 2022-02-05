@@ -1,10 +1,14 @@
 package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
+import com.peterlaurence.trekme.features.maplist.domain.interactors.CalibrationInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.addLayer
@@ -15,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CalibrationViewModel @Inject constructor(
     mapRepository: MapRepository,
+    private val calibrationInteractor: CalibrationInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor
 ): ViewModel() {
     private var mapState: MapState? = null
@@ -30,7 +35,7 @@ class CalibrationViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun onMapChange(map: Map) {
+    private suspend fun onMapChange(map: Map) {
         /* Shutdown the previous map state, if any */
         mapState?.shutdown()
 
@@ -55,11 +60,44 @@ class CalibrationViewModel @Inject constructor(
         }
 
         this.mapState = mapState
-        _uiState.value = MapUiState(mapState)
+
+        /* Calibration points */
+        val calibrationPoints = (0 until map.calibrationPointsNumber).mapNotNull { index ->
+            val pt = map.calibrationPoints.getOrNull(index)
+            if (pt != null) {
+                val latLon = calibrationInteractor.getLatLonForCalibrationPoint(pt, map)
+                if (latLon != null) {
+                    CalibrationPointModel(pt.absoluteX, pt.absoluteY, latLon.lat, latLon.lon)
+                } else {
+                    createCalibrationPointFromIndex(index)
+                }
+            } else {
+                createCalibrationPointFromIndex(index)
+            }
+        }
+
+        _uiState.value = MapUiState(mapState, calibrationPoints)
     }
+
+    private fun createCalibrationPointFromIndex(index: Int): CalibrationPointModel? {
+        return when(index) {
+            0 -> CalibrationPointModel(0.0, 0.0, null, null)
+            1 -> CalibrationPointModel(1.0, 1.0, null, null)
+            2 -> CalibrationPointModel(1.0, 0.0, null, null)
+            3 -> CalibrationPointModel(0.0, 1.0, null, null)
+            else -> null
+        }
+    }
+}
+
+class CalibrationPointModel(x: Double, y: Double, lat: Double?, lon: Double?) {
+    var x by mutableStateOf(x)
+    var y by mutableStateOf(y)
+    var lat by mutableStateOf(lat)
+    var lon by mutableStateOf(lon)
 }
 
 sealed interface UiState
 object Loading : UiState
 object EmptyMap : UiState
-data class MapUiState(val mapState: MapState) : UiState
+data class MapUiState(val mapState: MapState, val calibrationPoints: List<CalibrationPointModel>) : UiState

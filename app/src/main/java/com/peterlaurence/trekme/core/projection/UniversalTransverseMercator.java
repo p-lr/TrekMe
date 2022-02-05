@@ -33,6 +33,10 @@ import com.google.gson.annotations.SerializedName;
  * Note that in TrekAdvisor the zone and hemisphere are set automatically by Gson during
  * deserialization.
  *
+ * TODO: this class make assumptions about how it's serialized. This is a violation of separation
+ * of concern between the domain layer (which this class belongs to) and the data layer. Also, this
+ * class should take required arguments in its constructor, eliminating the need for an init method.
+ *
  * </pre>
  */
 public class UniversalTransverseMercator implements Projection {
