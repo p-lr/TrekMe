@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.core.ui.TextFieldCustom
+import com.peterlaurence.trekme.features.common.presentation.ui.TextFieldCustom
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 

@@ -39,18 +39,4 @@ fun TileStreamProvider.toMapComposeTileStreamProvider(): MapComposeTileStreamPro
     }
 }
 
-fun makeMapComposeTileStreamProvider(map: Map): MapComposeTileStreamProvider {
-    return MapComposeTileStreamProvider { row, col, zoomLvl ->
-        val relativePathString =
-            "$zoomLvl${File.separator}$row${File.separator}$col${map.imageExtension}"
-
-        @Suppress("BlockingMethodInNonBlockingContext")
-        try {
-            FileInputStream(File(map.directory, relativePathString))
-        } catch (e: Exception) {
-            null
-        }
-    }
-}
-
 const val TAG = "CompatibilityUtils.kt"

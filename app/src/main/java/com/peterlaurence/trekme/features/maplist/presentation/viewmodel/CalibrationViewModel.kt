@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapComposeTileStreamProvider
+import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.addLayer
@@ -14,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CalibrationViewModel @Inject constructor(
-    mapRepository: MapRepository
+    mapRepository: MapRepository,
+    private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor
 ): ViewModel() {
     private var mapState: MapState? = null
 
@@ -39,7 +40,7 @@ class CalibrationViewModel @Inject constructor(
             return
         }
 
-        val tileStreamProvider = makeMapComposeTileStreamProvider(map)
+        val tileStreamProvider = mapComposeTileStreamProviderInteractor.makeTileStreamProvider(map)
 
         val mapState = MapState(
             map.levelList.size,

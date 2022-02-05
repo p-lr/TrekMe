@@ -15,7 +15,7 @@
  */
 
 
-package com.peterlaurence.trekme.core.ui.flowlayout
+package com.peterlaurence.trekme.features.common.presentation.ui.flowlayout
 
 
 import androidx.compose.foundation.layout.Arrangement

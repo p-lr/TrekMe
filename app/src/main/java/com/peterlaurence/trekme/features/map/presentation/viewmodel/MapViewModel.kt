@@ -17,11 +17,11 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.di.IGN
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.makeMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -30,10 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
-import java.io.File
-import java.io.FileInputStream
 import javax.inject.Inject
-import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamProvider
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
@@ -41,6 +38,7 @@ class MapViewModel @Inject constructor(
     locationSource: LocationSource,
     orientationSource: OrientationSource,
     mapInteractor: MapInteractor,
+    private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
     gpxRecordEvents: GpxRecordEvents,
@@ -171,7 +169,7 @@ class MapViewModel @Inject constructor(
             return
         }
 
-        val tileStreamProvider = makeMapComposeTileStreamProvider(map)
+        val tileStreamProvider = mapComposeTileStreamProviderInteractor.makeTileStreamProvider(map)
 
         val magnifyingFactor = settings.getMagnifyingFactor().first()
 

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.ui
+package com.peterlaurence.trekme.features.common.presentation.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
