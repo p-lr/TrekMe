@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.maplist.domain.interactors.CalibrationInteractor
+import com.peterlaurence.trekme.features.maplist.domain.model.CalibrationData
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.CalibrationMarker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -22,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CalibrationViewModel @Inject constructor(
-    mapRepository: MapRepository,
+    private val mapRepository: MapRepository,
     private val calibrationInteractor: CalibrationInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor
 ) : ViewModel() {
@@ -58,9 +59,22 @@ class CalibrationViewModel @Inject constructor(
         val calibrationPoints = this.calibrationPoints ?: return
         val currentPoint = calibrationPoints.getOrNull(pointId.index) ?: return
 
+        /* Update the relevant marker using the current marker position */
         mapState.getMarkerInfo(calibrationMarkerId)?.also {
             currentPoint.x = it.x
             currentPoint.y = it.y
+        }
+
+        /* Prepare the calibration data */
+        val map = mapRepository.settingsMapFlow.value ?: return
+        val data = calibrationPoints.map {
+            val lat = it.lat ?: 0.0
+            val lon = it.lon ?: 0.0
+            CalibrationData(lat, lon, it.x, it.y)
+        }
+
+        viewModelScope.launch {
+            calibrationInteractor.updateCalibration(data, map)
         }
     }
 

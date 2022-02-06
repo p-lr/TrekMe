@@ -115,11 +115,6 @@ class Map(
         projection?.init()
         val newBounds = when (calibrationMethod) {
             CalibrationMethod.SIMPLE_2_POINTS -> if (calibrationPoints.size >= 2) {
-                /* Correct points if necessary */
-                CalibrationMethods.sanityCheck2PointsCalibration(
-                    calibrationPoints[0],
-                    calibrationPoints[1]
-                )
                 CalibrationMethods.simple2PointsCalibration(
                     calibrationPoints[0],
                     calibrationPoints[1]

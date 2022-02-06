@@ -26,8 +26,8 @@ enum class CalibrationMethod {
  * coordinates.
  */
 data class CalibrationPoint(
-    var normalizedX: Double,
-    var normalizedY: Double,
-    var absoluteX: Double,
-    var absoluteY: Double
+    val normalizedX: Double,
+    val normalizedY: Double,
+    val absoluteX: Double,
+    val absoluteY: Double
 )
