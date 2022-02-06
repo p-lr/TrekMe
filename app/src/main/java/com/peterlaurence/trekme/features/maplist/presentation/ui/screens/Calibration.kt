@@ -27,25 +27,25 @@ fun CalibrationStateful(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    var selected by remember {
-        mutableStateOf(PointId.One)
-    }
-
     when (uiState) {
         EmptyMap -> {}
         Loading -> {}
         is MapUiState -> {
             Column {
-                val calibrationPoints = (uiState as MapUiState).calibrationPoints
-                val calibrationPointModel = calibrationPoints.getOrNull(selected.index)
-
-                Calibration(
-                    selected,
-                    calibrationPointModel,
-                    onPointSelection = { selected = it }
+                val mapUiState = uiState as MapUiState
+                val calibrationPoints = mapUiState.calibrationPoints
+                val calibrationPointModel = calibrationPoints.getOrNull(
+                    mapUiState.selected.value.index
                 )
 
-                MapUI(state = (uiState as MapUiState).mapState)
+                Calibration(
+                    mapUiState.selected.value,
+                    calibrationPointModel,
+                    onPointSelection = viewModel::onPointSelectionChange,
+                    onSave = viewModel::onSave
+                )
+
+                MapUI(state = mapUiState.mapState)
             }
         }
     }
@@ -55,10 +55,11 @@ fun CalibrationStateful(
 private fun Calibration(
     selected: PointId,
     calibrationPointModel: CalibrationPointModel?,
-    onPointSelection: (PointId) -> Unit
+    onPointSelection: (PointId) -> Unit,
+    onSave: (PointId) -> Unit
 ) {
     Row(
-        Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+        Modifier.padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
@@ -92,7 +93,7 @@ private fun Calibration(
         )
 
         FloatingActionButton(
-            onClick = { /*TODO*/ },
+            onClick = { onSave(selected) },
             Modifier
                 .padding(start = 9.dp)
                 .size(48.dp),
@@ -214,9 +215,6 @@ private fun LatLonPrefix(text: String) {
     )
 }
 
-private enum class PointId(val index: Int) {
-    One(0), Two(1), Three(2), Four(4)
-}
 
 @Preview
 @Composable
@@ -236,5 +234,5 @@ private fun PointSelector2PointsPreview() {
 @Preview
 @Composable
 private fun CalibrationPreview() {
-    Calibration(PointId.One, null, {})
+    Calibration(PointId.One, null, {}, {})
 }

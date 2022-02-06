@@ -1,17 +1,21 @@
 package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.maplist.domain.interactors.CalibrationInteractor
+import com.peterlaurence.trekme.features.maplist.presentation.ui.components.CalibrationMarker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import ovh.plrapps.mapcompose.api.addLayer
+import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.layout.Fill
 import ovh.plrapps.mapcompose.ui.state.MapState
 import javax.inject.Inject
@@ -21,8 +25,9 @@ class CalibrationViewModel @Inject constructor(
     mapRepository: MapRepository,
     private val calibrationInteractor: CalibrationInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor
-): ViewModel() {
+) : ViewModel() {
     private var mapState: MapState? = null
+    private var calibrationPoints: List<CalibrationPointModel>? = null
 
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -33,6 +38,30 @@ class CalibrationViewModel @Inject constructor(
                 onMapChange(it)
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun onPointSelectionChange(pointId: PointId) {
+        val mapUiState = uiState.value as? MapUiState ?: return
+        mapUiState.selected.value = pointId
+
+        val calibrationPoints = this.calibrationPoints ?: return
+        val newPoint = calibrationPoints.getOrNull(pointId.index) ?: return
+
+        mapUiState.mapState.moveMarker(calibrationMarkerId, newPoint.x, newPoint.y)
+        viewModelScope.launch {
+            mapUiState.mapState.centerOnMarker(calibrationMarkerId, destScale = 2f)
+        }
+    }
+
+    fun onSave(pointId: PointId) {
+        val mapState = this.mapState ?: return
+        val calibrationPoints = this.calibrationPoints ?: return
+        val currentPoint = calibrationPoints.getOrNull(pointId.index) ?: return
+
+        mapState.getMarkerInfo(calibrationMarkerId)?.also {
+            currentPoint.x = it.x
+            currentPoint.y = it.y
+        }
     }
 
     private suspend fun onMapChange(map: Map) {
@@ -55,6 +84,7 @@ class CalibrationViewModel @Inject constructor(
         ) {
             highFidelityColors(false)
             minimumScaleMode(Fill)
+            scale(2f)
         }.apply {
             addLayer(tileStreamProvider)
         }
@@ -67,7 +97,7 @@ class CalibrationViewModel @Inject constructor(
             if (pt != null) {
                 val latLon = calibrationInteractor.getLatLonForCalibrationPoint(pt, map)
                 if (latLon != null) {
-                    CalibrationPointModel(pt.absoluteX, pt.absoluteY, latLon.lat, latLon.lon)
+                    CalibrationPointModel(pt.normalizedX, pt.normalizedY, latLon.lat, latLon.lon)
                 } else {
                     createCalibrationPointFromIndex(index)
                 }
@@ -76,11 +106,29 @@ class CalibrationViewModel @Inject constructor(
             }
         }
 
+        this.calibrationPoints = calibrationPoints
+
+        /* Configure the calibration marker behavior */
+        calibrationPoints.firstOrNull()?.also { firstPoint ->
+            mapState.addMarker(
+                calibrationMarkerId,
+                firstPoint.x,
+                firstPoint.y,
+                relativeOffset = Offset(-0.5f, -0.5f)
+            ) {
+                CalibrationMarker()
+            }
+            mapState.enableMarkerDrag(calibrationMarkerId)
+            viewModelScope.launch {
+                mapState.centerOnMarker(calibrationMarkerId)
+            }
+        }
+
         _uiState.value = MapUiState(mapState, calibrationPoints)
     }
 
     private fun createCalibrationPointFromIndex(index: Int): CalibrationPointModel? {
-        return when(index) {
+        return when (index) {
             0 -> CalibrationPointModel(0.0, 0.0, null, null)
             1 -> CalibrationPointModel(1.0, 1.0, null, null)
             2 -> CalibrationPointModel(1.0, 0.0, null, null)
@@ -88,6 +136,12 @@ class CalibrationViewModel @Inject constructor(
             else -> null
         }
     }
+}
+
+private const val calibrationMarkerId = "calibration_marker_id"
+
+enum class PointId(val index: Int) {
+    One(0), Two(1), Three(2), Four(4)
 }
 
 class CalibrationPointModel(x: Double, y: Double, lat: Double?, lon: Double?) {
@@ -100,4 +154,8 @@ class CalibrationPointModel(x: Double, y: Double, lat: Double?, lon: Double?) {
 sealed interface UiState
 object Loading : UiState
 object EmptyMap : UiState
-data class MapUiState(val mapState: MapState, val calibrationPoints: List<CalibrationPointModel>) : UiState
+data class MapUiState(
+    val mapState: MapState,
+    val calibrationPoints: List<CalibrationPointModel>,
+    val selected: MutableState<PointId> = mutableStateOf(PointId.One)
+) : UiState
