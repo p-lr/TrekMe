@@ -37,23 +37,27 @@ class CalibrationInteractor @Inject constructor(
     suspend fun updateCalibration(
         calibrationDataList: List<CalibrationData>,
         map: Map
-    ) {
+    ): Boolean {
         val projection = map.projection
         val newCalibrationPoints = calibrationDataList.map { data ->
             if (projection != null) {
                 val projectedValues = projection.doProjection(data.lat, data.lon)
                 if (projectedValues != null) {
                     CalibrationPoint(data.x, data.y, projectedValues[0], projectedValues[1])
-                } else return
+                } else return false
             } else {
                 CalibrationPoint(data.x, data.y, data.lon, data.lat)
             }
         }
 
-        /* Update the calibration points in memory */
-        map.calibrationPoints = newCalibrationPoints
+        /* Update the calibration in memory */
+        withContext(Dispatchers.Main) {
+            map.calibrationPoints = newCalibrationPoints
+            map.calibrate()
+        }
 
         /* Effectively save the map (and consequently, the calibration) */
         mapLoader.saveMap(map)
+        return true
     }
 }

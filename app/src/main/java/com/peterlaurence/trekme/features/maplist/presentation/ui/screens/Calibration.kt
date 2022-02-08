@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.*
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
@@ -26,33 +27,59 @@ fun CalibrationStateful(
     viewModel: CalibrationViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val events = viewModel.acknowledgeableEvents
 
     when (uiState) {
         EmptyMap -> {}
         Loading -> {}
         is MapUiState -> {
-            Column {
-                val mapUiState = uiState as MapUiState
-                val calibrationPoints = mapUiState.calibrationPoints
-                val calibrationPointModel = calibrationPoints.getOrNull(
-                    mapUiState.selected.value.index
-                )
-                val calibrationMethod by mapUiState.calibrationMethodStateFlow.collectAsState()
-                /* Since the number of points can be changed anytime, don't allow selecting an
-                 * otherwise impossible point. */
-                if (mapUiState.selected.value.index + 1 > calibrationMethod.pointCount) {
-                    viewModel.onPointSelectionChange(PointId.One)
+
+            val scaffoldState: ScaffoldState = rememberScaffoldState()
+            val scope = rememberCoroutineScope()
+
+            if (events.isNotEmpty()) {
+                val ok = stringResource(id = R.string.ok_dialog)
+                val message = when (events.first()) {
+                    CalibrationPointSaved -> stringResource(id = R.string.calibration_point_saved)
+                    CalibrationError -> stringResource(id = R.string.calibration_status_error)
                 }
 
-                Calibration(
-                    mapUiState.selected.value,
-                    calibrationPointModel,
-                    calibrationMethod,
-                    onPointSelection = viewModel::onPointSelectionChange,
-                    onSave = viewModel::onSave
-                )
+                SideEffect {
+                    scope.launch {
+                        /* Dismiss the currently showing snackbar, if any */
+                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
 
-                MapUI(state = mapUiState.mapState)
+                        scaffoldState.snackbarHostState
+                            .showSnackbar(message, actionLabel = ok)
+                    }
+                    viewModel.acknowledgeEvent()
+                }
+            }
+
+            Scaffold(scaffoldState = scaffoldState) {
+                Column {
+                    val mapUiState = uiState as MapUiState
+                    val calibrationPoints = mapUiState.calibrationPoints
+                    val calibrationPointModel = calibrationPoints.getOrNull(
+                        mapUiState.selected.value.index
+                    )
+                    val calibrationMethod by mapUiState.calibrationMethodStateFlow.collectAsState()
+                    /* Since the number of points can be changed anytime, don't allow selecting an
+                     * otherwise impossible point. */
+                    if (mapUiState.selected.value.index + 1 > calibrationMethod.pointCount) {
+                        viewModel.onPointSelectionChange(PointId.One)
+                    }
+
+                    Calibration(
+                        mapUiState.selected.value,
+                        calibrationPointModel,
+                        calibrationMethod,
+                        onPointSelection = viewModel::onPointSelectionChange,
+                        onSave = viewModel::onSave
+                    )
+
+                    MapUI(state = mapUiState.mapState)
+                }
             }
         }
     }

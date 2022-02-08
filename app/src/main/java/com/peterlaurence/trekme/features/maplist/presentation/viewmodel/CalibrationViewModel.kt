@@ -1,9 +1,6 @@
 package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,6 +30,8 @@ class CalibrationViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<UiState>(Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    val acknowledgeableEvents = mutableStateListOf<AcknowledgeableEvent>()
 
     init {
         mapRepository.settingsMapFlow.map {
@@ -75,8 +74,18 @@ class CalibrationViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            calibrationInteractor.updateCalibration(data, map)
+            calibrationInteractor.updateCalibration(data, map).also { ok ->
+                if (!ok) {
+                    acknowledgeableEvents.add(CalibrationError)
+                } else {
+                    acknowledgeableEvents.add(CalibrationPointSaved)
+                }
+            }
         }
+    }
+
+    fun acknowledgeEvent() {
+        acknowledgeableEvents.removeFirstOrNull()
     }
 
     private suspend fun onMapChange(map: Map) {
@@ -169,6 +178,11 @@ class CalibrationPointModel(x: Double, y: Double, lat: Double?, lon: Double?) {
     var lat by mutableStateOf(lat)
     var lon by mutableStateOf(lon)
 }
+
+sealed interface AcknowledgeableEvent
+object CalibrationPointSaved : AcknowledgeableEvent
+object CalibrationError : AcknowledgeableEvent
+
 
 sealed interface UiState
 object Loading : UiState
