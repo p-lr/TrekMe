@@ -247,6 +247,10 @@ class Map(
     val levelList: List<Level>
         get() = config.levels
 
+
+    private val _calibrationMethodStateFlow = MutableStateFlow(calibrationMethod)
+    val calibrationMethodStateFlow = _calibrationMethodStateFlow.asStateFlow()
+
     var calibrationMethod: CalibrationMethod
         get() {
             val cal = config.calibration
@@ -257,6 +261,7 @@ class Map(
             if (cal != null) {
                 val newCal = cal.copy(calibrationMethod = method)
                 config.calibration = newCal
+                _calibrationMethodStateFlow.value = method
             }
         }
 

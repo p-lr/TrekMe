@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.maplist.domain.interactors.CalibrationInteractor
@@ -138,7 +139,11 @@ class CalibrationViewModel @Inject constructor(
             }
         }
 
-        _uiState.value = MapUiState(mapState, calibrationPoints)
+        _uiState.value = MapUiState(
+            mapState,
+            calibrationPoints,
+            calibrationMethodStateFlow = map.calibrationMethodStateFlow
+        )
     }
 
     private fun createCalibrationPointFromIndex(index: Int): CalibrationPointModel? {
@@ -155,7 +160,7 @@ class CalibrationViewModel @Inject constructor(
 private const val calibrationMarkerId = "calibration_marker_id"
 
 enum class PointId(val index: Int) {
-    One(0), Two(1), Three(2), Four(4)
+    One(0), Two(1), Three(2), Four(3)
 }
 
 class CalibrationPointModel(x: Double, y: Double, lat: Double?, lon: Double?) {
@@ -171,5 +176,6 @@ object EmptyMap : UiState
 data class MapUiState(
     val mapState: MapState,
     val calibrationPoints: List<CalibrationPointModel>,
-    val selected: MutableState<PointId> = mutableStateOf(PointId.One)
+    val selected: MutableState<PointId> = mutableStateOf(PointId.One),
+    val calibrationMethodStateFlow: StateFlow<CalibrationMethod>
 ) : UiState

@@ -37,10 +37,17 @@ fun CalibrationStateful(
                 val calibrationPointModel = calibrationPoints.getOrNull(
                     mapUiState.selected.value.index
                 )
+                val calibrationMethod by mapUiState.calibrationMethodStateFlow.collectAsState()
+                /* Since the number of points can be changed anytime, don't allow selecting an
+                 * otherwise impossible point. */
+                if (mapUiState.selected.value.index + 1 > calibrationMethod.pointCount) {
+                    viewModel.onPointSelectionChange(PointId.One)
+                }
 
                 Calibration(
                     mapUiState.selected.value,
                     calibrationPointModel,
+                    calibrationMethod,
                     onPointSelection = viewModel::onPointSelectionChange,
                     onSave = viewModel::onSave
                 )
@@ -55,6 +62,7 @@ fun CalibrationStateful(
 private fun Calibration(
     selected: PointId,
     calibrationPointModel: CalibrationPointModel?,
+    calibrationMethod: CalibrationMethod,
     onPointSelection: (PointId) -> Unit,
     onSave: (PointId) -> Unit
 ) {
@@ -87,7 +95,7 @@ private fun Calibration(
 
         PointSelector(
             Modifier.padding(start = 9.dp),
-            CalibrationMethod.SIMPLE_2_POINTS,
+            calibrationMethod,
             activePointId = selected,
             onPointSelection = onPointSelection
         )
@@ -234,5 +242,5 @@ private fun PointSelector2PointsPreview() {
 @Preview
 @Composable
 private fun CalibrationPreview() {
-    Calibration(PointId.One, null, {}, {})
+    Calibration(PointId.One, null, CalibrationMethod.SIMPLE_2_POINTS, {}, {})
 }

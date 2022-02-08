@@ -9,10 +9,10 @@ data class Calibration(
     val calibrationPoints: List<CalibrationPoint>
 )
 
-enum class CalibrationMethod {
-    SIMPLE_2_POINTS,
-    CALIBRATION_3_POINTS,
-    CALIBRATION_4_POINTS
+enum class CalibrationMethod(val pointCount: Int) {
+    SIMPLE_2_POINTS(2),
+    CALIBRATION_3_POINTS(3),
+    CALIBRATION_4_POINTS(4)
 }
 
 /**
