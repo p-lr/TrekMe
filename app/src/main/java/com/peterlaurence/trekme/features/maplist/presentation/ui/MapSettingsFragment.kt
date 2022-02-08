@@ -127,7 +127,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         }
         calibrationButton?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             val direction =
-                MapSettingsFragmentDirections.actionMapSettingsFragmentToMapCalibrationFragment()
+                MapSettingsFragmentDirections.actionMapSettingsFragmentToCalibrationFragment()
             NavHostFragment.findNavController(this).navigate(direction)
             true
         }

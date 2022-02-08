@@ -136,16 +136,9 @@
             android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFragment"
             android:label="MapSettingsFragment">
             <action
-                android:id="@+id/action_mapSettingsFragment_to_mapCalibrationFragment"
-                app:destination="@id/mapCalibrationFragment" />
-            <action
                 android:id="@+id/action_mapSettingsFragment_to_calibrationFragment"
                 app:destination="@id/calibrationFragment" />
         </fragment>
-        <fragment
-            android:id="@+id/mapCalibrationFragment"
-            android:name="com.peterlaurence.trekme.ui.mapcalibration.MapCalibrationFragment"
-            android:label="MapCalibrationFragment" />
         <fragment
             android:id="@+id/calibrationFragment"
             android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.CalibrationFragment"
