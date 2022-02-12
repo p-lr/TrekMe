@@ -8,7 +8,6 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
-import com.peterlaurence.trekme.features.map.domain.models.inBounds
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +21,8 @@ class LocationOrientationLayer(
     private val scope: CoroutineScope,
     private val settings: Settings,
     private val dataStateFlow: Flow<DataState>,
-    private val mapInteractor: MapInteractor
+    private val mapInteractor: MapInteractor,
+    private val onOutOfBounds: () -> Unit
 ) {
     private var hasCenteredOnFirstLocation = false
     val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -94,7 +94,14 @@ class LocationOrientationLayer(
 
     fun centerOnPosition() = scope.launch {
         val mapState = dataStateFlow.first().mapState
-        centerOnPosMarker(mapState)
+
+        mapState.getMarkerInfo(positionMarkerId)?.also {
+            if (it.x >= 0 && it.y >= 0) {
+                centerOnPosMarker(mapState)
+            } else {
+                onOutOfBounds()
+            }
+        }
     }
 
     private fun onLocation(location: Location, mapState: MapState, map: Map) {
@@ -103,9 +110,7 @@ class LocationOrientationLayer(
                 mapInteractor.getNormalizedCoordinates(map, location.latitude, location.longitude)
 
             /* Update the position */
-            if (normalized.inBounds()) {
-                updatePosition(mapState, normalized.x, normalized.y)
-            }
+            updatePosition(mapState, normalized.x, normalized.y)
         }
     }
 
@@ -152,7 +157,8 @@ class LocationOrientationLayer(
                 x,
                 y,
                 relativeOffset = Offset(-0.5f, -0.5f),
-                clickable = false
+                clickable = false,
+                isConstrainedInBounds = false
             ) {
                 val angle by arrowAngleState
                 PositionOrientationMarker(angle = angle?.let { it + mapState.rotation })

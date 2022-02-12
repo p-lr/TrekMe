@@ -57,7 +57,10 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         settings,
         dataStateFlow,
-        mapInteractor
+        mapInteractor,
+        onOutOfBounds = {
+            snackBarController.showSnackBar(SnackBarEvent.CURRENT_LOCATION_OUT_OF_BOUNDS)
+        }
     )
 
     val landmarkLayer: LandmarkLayer = LandmarkLayer(

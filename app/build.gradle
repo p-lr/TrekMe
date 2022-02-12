@@ -23,8 +23,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 31
-        versionCode 153
-        versionName "3.0.2"
+        versionCode 154
+        versionName "3.0.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -62,13 +62,14 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 //    implementation project(":mapview-debug")     // for dev purposes
 //    implementation project(":mapcompose-debug")  // for dev purposes
-    implementation 'ovh.plrapps:mapcompose:2.0.0-rc03'
+    implementation 'ovh.plrapps:mapcompose:2.0.1'
     implementation 'com.android.billingclient:billing:4.0.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0"
     implementation 'androidx.fragment:fragment-ktx:1.4.1'
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
@@ -79,7 +80,6 @@ dependencies {
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0'
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
