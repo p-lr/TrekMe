@@ -5,24 +5,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.domain.models.inBounds
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 
 class LocationOrientationLayer(
     private val scope: CoroutineScope,
     private val settings: Settings,
-    private val dataStateFlow: Flow<DataState>
+    private val dataStateFlow: Flow<DataState>,
+    private val mapInteractor: MapInteractor
 ) {
     private var hasCenteredOnFirstLocation = false
     val locationFlow = MutableSharedFlow<Location>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -99,30 +99,22 @@ class LocationOrientationLayer(
 
     private fun onLocation(location: Location, mapState: MapState, map: Map) {
         scope.launch {
-            /* Project lat/lon off UI thread */
-            val projectedValues = withContext(Dispatchers.Default) {
-                map.projection?.doProjection(location.latitude, location.longitude)
-            }
+            val normalized =
+                mapInteractor.getNormalizedCoordinates(map, location.latitude, location.longitude)
 
             /* Update the position */
-            val mapBounds = map.mapBounds
-            if (projectedValues != null) {
-                val X = projectedValues[0]
-                val Y = projectedValues[1]
-                if (mapBounds.contains(X, Y)) {
-                    updatePosition(mapState, mapBounds, X, Y)
-                }
+            if (normalized.inBounds()) {
+                updatePosition(mapState, normalized.x, normalized.y)
             }
         }
     }
 
     private suspend fun updatePosition(
         mapState: MapState,
-        mapBounds: MapBounds,
-        X: Double,
-        Y: Double
+        x: Double,
+        y: Double
     ) {
-        updatePositionMarker(mapState, mapBounds, X, Y)
+        updatePositionMarker(mapState, x, y)
 
         if (!hasCenteredOnFirstLocation) {
             centerOnPosMarker(mapState)
@@ -144,18 +136,14 @@ class LocationOrientationLayer(
      * Update the position on the map. The first time we update the position, we add the
      * position marker.
      *
-     * @param X the projected X coordinate
-     * @param Y the projected Y coordinate
+     * @param x the normalized X coordinate
+     * @param y the normalized y coordinate
      */
     private suspend fun updatePositionMarker(
         mapState: MapState,
-        mapBounds: MapBounds,
-        X: Double,
-        Y: Double
+        x: Double,
+        y: Double
     ) {
-        val x = normalize(X, mapBounds.X0, mapBounds.X1)
-        val y = normalize(Y, mapBounds.Y0, mapBounds.Y1)
-
         if (mapState.hasMarker(positionMarkerId)) {
             mapState.moveMarker(positionMarkerId, x, y)
         } else {
@@ -174,14 +162,6 @@ class LocationOrientationLayer(
         if (isLockedOnPosition.value) {
             mapState.scrollTo(x, y)
         }
-    }
-
-    private fun normalize(t: Double, min: Double, max: Double): Double {
-        return (t - min) / (max - min)
-    }
-
-    private fun MapBounds.contains(x: Double, y: Double): Boolean {
-        return x in X0..X1 && y in Y1..Y0
     }
 
     private fun getScaleCentered(): Flow<Float> {

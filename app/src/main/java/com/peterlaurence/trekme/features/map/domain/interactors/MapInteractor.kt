@@ -13,6 +13,7 @@ import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedPos
+import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
@@ -169,6 +170,12 @@ class MapInteractor @Inject constructor(
 
     fun getLiveMarkerPositions(map: Map, route: Route): Flow<MarkerWithNormalizedPos> {
         return route.routeMarkersFlow.toNormalizedPositions(map)
+    }
+
+    suspend fun getNormalizedCoordinates(map: Map, latitude: Double, longitude: Double) : NormalizedPos {
+        return getNormalizedCoordinates(latitude, longitude, map.mapBounds, map.projection).let {
+            NormalizedPos(it[0], it[1])
+        }
     }
 
     private fun Flow<Marker>.toNormalizedPositions(map: Map): Flow<MarkerWithNormalizedPos> {

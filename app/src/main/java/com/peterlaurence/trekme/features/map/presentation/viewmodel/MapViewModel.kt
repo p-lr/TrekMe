@@ -56,7 +56,8 @@ class MapViewModel @Inject constructor(
     val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
         viewModelScope,
         settings,
-        dataStateFlow
+        dataStateFlow,
+        mapInteractor
     )
 
     val landmarkLayer: LandmarkLayer = LandmarkLayer(

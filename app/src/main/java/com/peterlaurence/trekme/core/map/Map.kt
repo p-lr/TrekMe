@@ -35,8 +35,6 @@ import java.util.*
  * the tile size, the name of the map, etc.
  * @param configFile the [File] for serialization.
  * @param thumbnail the [File] image for map customization.
- *
- * @author P.Laurence
  */
 class Map(
     private val config: MapConfig,
@@ -94,18 +92,6 @@ class Map(
 
     fun setSizeInBytes(size: Long) {
         config.sizeInBytes = size
-    }
-
-    /**
-     * Check whether the map contains a given location. It's the responsibility of the caller to
-     * know whether projected coordinated or lat/lon should be used.
-     *
-     * @param x a projected coordinate, or longitude
-     * @param y a projected coordinate, or latitude
-     */
-    fun containsLocation(x: Double, y: Double): Boolean {
-        val mapBounds = this.mapBounds
-        return x >= mapBounds.X0 && x <= mapBounds.X1 && y <= mapBounds.Y0 && y >= mapBounds.Y1
     }
 
     fun calibrate() {
@@ -198,10 +184,6 @@ class Map(
 
     fun deleteLandmark(landmark: Landmark) {
         _landmarks?.remove(landmark)
-    }
-
-    fun areLandmarksDefined(): Boolean {
-        return _landmarks?.let { it.size > 0 } ?: false
     }
 
     val routes: StateFlow<List<Route>> = _routes.asStateFlow()
@@ -297,16 +279,6 @@ class Map(
                 config.calibration = newCal
             }
         }
-
-    fun addCalibrationPoint(point: CalibrationPoint) {
-        val cal = config.calibration
-        if (cal != null) {
-            val newPoints: MutableList<CalibrationPoint> = ArrayList(cal.calibrationPoints)
-            newPoints.add(point)
-            val newCal = cal.copy(calibrationPoints = newPoints)
-            config.calibration = newCal
-        }
-    }
 
     val imageExtension: String
         get() = config.imageExtension
