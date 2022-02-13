@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.features.map.domain.interactors
 
 import android.content.Context
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.map.domain.Landmark
@@ -19,7 +20,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
-import java.util.*
 import javax.inject.Inject
 
 class MapInteractor @Inject constructor(
@@ -32,26 +32,28 @@ class MapInteractor @Inject constructor(
      * Create and add a new landmark.
      * [x] and [y] are expected to be normalized coordinates.
      */
-    suspend fun addLandmark(map: Map, x: Double, y: Double): Landmark = withContext(scope.coroutineContext) {
-        val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
-        val name =  context.getString(R.string.landmark_default_name)
+    suspend fun addLandmark(map: Map, x: Double, y: Double): Landmark =
+        withContext(scope.coroutineContext) {
+            val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
+            val name = context.getString(R.string.landmark_default_name)
 
-        Landmark(name, lonLat[1], lonLat[0]).also {
-            map.addLandmark(it)
+            Landmark(name, lonLat[1], lonLat[0]).also {
+                map.addLandmark(it)
+            }
         }
-    }
 
     /**
      * Create and add a new marker.
      * [x] and [y] are expected to be normalized coordinates.
      */
-    suspend fun addMarker(map: Map, x: Double, y: Double): Marker = withContext(scope.coroutineContext) {
-        val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
+    suspend fun addMarker(map: Map, x: Double, y: Double): Marker =
+        withContext(scope.coroutineContext) {
+            val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
 
-        Marker(lonLat[1], lonLat[0]).also {
-            map.addMarker(it)
+            Marker(lonLat[1], lonLat[0]).also {
+                map.addMarker(it)
+            }
         }
-    }
 
     /**
      * Update the landmark position and save.
@@ -172,9 +174,25 @@ class MapInteractor @Inject constructor(
         return route.routeMarkersFlow.toNormalizedPositions(map)
     }
 
-    suspend fun getNormalizedCoordinates(map: Map, latitude: Double, longitude: Double) : NormalizedPos {
+    suspend fun getNormalizedCoordinates(
+        map: Map,
+        latitude: Double,
+        longitude: Double
+    ): NormalizedPos {
         return getNormalizedCoordinates(latitude, longitude, map.mapBounds, map.projection).let {
             NormalizedPos(it[0], it[1])
+        }
+    }
+
+    fun getMapFullWidthDistance(map: Map): Double? {
+        val projection = map.projection
+        val b = map.mapBounds
+        return if (projection != null) {
+            val (lon1, lat1) = projection.undoProjection(b.X0, b.Y0) ?: return null
+            val (lon2, lat2) = projection.undoProjection(b.X1, b.Y0) ?: return null
+            distanceApprox(lat1, lon1, lat2, lon2)
+        } else {
+            distanceApprox(b.Y0, b.X0, b.Y0, b.X1)
         }
     }
 

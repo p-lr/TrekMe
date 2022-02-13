@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers
 import androidx.compose.runtime.mutableStateListOf
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.SnackBarEvent
 
-class SnackBarController() {
+class SnackBarController {
     val snackBarEvents = mutableStateListOf<SnackBarEvent>()
 
     /**

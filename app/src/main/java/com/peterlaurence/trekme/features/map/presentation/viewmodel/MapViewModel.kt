@@ -37,7 +37,7 @@ class MapViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     locationSource: LocationSource,
     orientationSource: OrientationSource,
-    mapInteractor: MapInteractor,
+    private val mapInteractor: MapInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
@@ -201,10 +201,12 @@ class MapViewModel @Inject constructor(
         dataStateFlow.tryEmit(DataState(map, mapState))
         val landmarkLinesState = LandmarkLinesState(mapState, map)
         val distanceLineState = DistanceLineState(mapState, map)
+        val scaleIndicatorState = makeScaleIndicatorState(map, mapState, mapInteractor)
         val mapUiState = MapUiState(
             mapState,
             landmarkLinesState,
-            distanceLineState
+            distanceLineState,
+            scaleIndicatorState
         )
         _uiState.value = mapUiState
     }
@@ -237,7 +239,8 @@ sealed interface UiState
 data class MapUiState(
     val mapState: MapState,
     val landmarkLinesState: LandmarkLinesState,
-    val distanceLineState: DistanceLineState
+    val distanceLineState: DistanceLineState,
+    val scaleIndicatorState: ScaleIndicatorState
 ) : UiState
 
 object Loading : UiState

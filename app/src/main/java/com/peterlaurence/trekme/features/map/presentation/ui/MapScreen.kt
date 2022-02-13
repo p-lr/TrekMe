@@ -251,22 +251,24 @@ fun MapScaffold(
             }
         }
     ) {
-        MapUi(
+        MapLayout(
             uiState,
             isShowingDistance,
             isShowingSpeed,
             isShowingGpsData,
+            true, // TODO: use settings
             location,
         )
     }
 }
 
 @Composable
-fun MapUi(
+private fun MapLayout(
     mapUiState: MapUiState,
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
     isShowingGpsData: Boolean,
+    isShowingScaleIndicator: Boolean,
     location: Location?,
 ) {
     Box {
@@ -290,14 +292,25 @@ fun MapUi(
             }
         }
 
-        if (isShowingDistance || isShowingSpeed) {
-            val distance by mapUiState.distanceLineState.distanceFlow.collectAsState(initial = 0f)
-            TopOverlay(
-                speed = location?.speed,
-                distance = distance,
-                speedVisibility = isShowingSpeed,
-                distanceVisibility = isShowingDistance
-            )
+        Column {
+            if (isShowingDistance || isShowingSpeed) {
+                val distance by mapUiState.distanceLineState.distanceFlow.collectAsState(initial = 0f)
+                TopOverlay(
+                    speed = location?.speed,
+                    distance = distance,
+                    speedVisibility = isShowingSpeed,
+                    distanceVisibility = isShowingDistance
+                )
+            }
+            if (isShowingScaleIndicator) {
+                val state = mapUiState.scaleIndicatorState
+                ScaleIndicator(
+                    widthPx = state.widthPx,
+                    widthRatio = state.widthRatio,
+                    scaleText = state.scaleText,
+                    lineColor = Color.Black
+                )
+            }
         }
 
         if (isShowingGpsData) {
