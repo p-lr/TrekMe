@@ -7,14 +7,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.util.pxToDp
 
 @Composable
@@ -22,27 +25,30 @@ fun ScaleIndicator(
     widthPx: Int,
     widthRatio: Float,
     scaleText: String,
-    lineColor: Color
+    color: Color = MaterialTheme.colors.primary
 ) {
-    Box(Modifier.height(50.dp)) {
+    Box(
+        Modifier.height(25.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
         Canvas(
             modifier = Modifier
                 .alpha(0.8f)
-                .padding(5.dp)
+                .padding(horizontal = 5.dp)
                 .size(pxToDp(widthPx).dp, 15.dp)
         ) {
             val width = widthPx * widthRatio
             val height = size.height
-            drawLine(lineColor, Offset(0f, height / 2), Offset(width, height / 2), 2.dp.toPx())
+            drawLine(color, Offset(0f, height / 2), Offset(width, height / 2), 2.dp.toPx())
             drawLine(
-                lineColor,
+                color,
                 Offset(0f, 0f),
                 Offset(0f, height),
                 2.dp.toPx(),
                 cap = StrokeCap.Round
             )
             drawLine(
-                lineColor,
+                color,
                 Offset(width, 0f),
                 Offset(width, height),
                 2.dp.toPx(),
@@ -51,10 +57,11 @@ fun ScaleIndicator(
         }
         Text(
             text = scaleText,
+            fontSize = 12.sp,
             color = Color.White,
             modifier = Modifier
-                .padding(start = 16.dp, top = 20.dp)
-                .background(color = Color(0x885D4037), shape = RoundedCornerShape(4.dp))
+                .padding(start = 16.dp)
+                .background(color = color, shape = RoundedCornerShape(4.dp))
                 .padding(start = 5.dp, end = 5.dp)
         )
     }

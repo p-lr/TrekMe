@@ -307,8 +307,7 @@ private fun MapLayout(
                 ScaleIndicator(
                     widthPx = state.widthPx,
                     widthRatio = state.widthRatio,
-                    scaleText = state.scaleText,
-                    lineColor = Color.Black
+                    scaleText = state.scaleText
                 )
             }
         }
