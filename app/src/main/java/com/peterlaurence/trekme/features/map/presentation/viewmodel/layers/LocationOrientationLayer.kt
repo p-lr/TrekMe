@@ -121,7 +121,7 @@ class LocationOrientationLayer(
     ) {
         updatePositionMarker(mapState, x, y)
 
-        if (!hasCenteredOnFirstLocation) {
+        if (!hasCenteredOnFirstLocation && x >= 0 && y >= 0) {
             centerOnPosMarker(mapState)
             hasCenteredOnFirstLocation = true
         }
