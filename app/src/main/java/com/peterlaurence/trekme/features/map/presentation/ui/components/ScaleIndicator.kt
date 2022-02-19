@@ -39,16 +39,16 @@ fun ScaleIndicator(
         ) {
             val width = widthPx * widthRatio
             val height = size.height
-            drawLine(color, Offset(0f, height / 2), Offset(width, height / 2), 2.dp.toPx())
+            drawLine(Color.Black, Offset(0f, height / 2), Offset(width, height / 2), 2.dp.toPx())
             drawLine(
-                color,
+                Color.Black,
                 Offset(0f, 0f),
                 Offset(0f, height),
                 2.dp.toPx(),
                 cap = StrokeCap.Round
             )
             drawLine(
-                color,
+                Color.Black,
                 Offset(width, 0f),
                 Offset(width, height),
                 2.dp.toPx(),

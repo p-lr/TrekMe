@@ -51,6 +51,7 @@ fun MapScreen(
     val isShowingSpeed by viewModel.isShowingSpeedFlow().collectAsState(initial = false)
     val isLockedOnpPosition by viewModel.isLockedOnPosition()
     val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
+    val isShowingScaleIndicator by viewModel.settings.getShowScaleIndicator().collectAsState(initial = true)
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
     val stats by statisticsViewModel.stats.collectAsState(initial = null)
     val location: Location? by viewModel.locationFlow.collectAsState(initial = null)
@@ -97,6 +98,7 @@ fun MapScreen(
                     isShowingSpeed,
                     isLockedOnpPosition,
                     isShowingGpsData,
+                    isShowingScaleIndicator,
                     rotationMode,
                     snackBarEvents,
                     location,
@@ -165,6 +167,7 @@ fun MapScaffold(
     isShowingSpeed: Boolean,
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
+    isShowingScaleIndicator: Boolean,
     rotationMode: RotationMode,
     snackBarEvents: List<SnackBarEvent>,
     location: Location?,
@@ -256,7 +259,7 @@ fun MapScaffold(
             isShowingDistance,
             isShowingSpeed,
             isShowingGpsData,
-            true, // TODO: use settings
+            isShowingScaleIndicator,
             location,
         )
     }

@@ -19,6 +19,10 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.log10
 import kotlin.math.pow
 
+/**
+ * Depending on the visibility of the scale indicator and the measurement system in the settings,
+ * we update the scale indicator state when the scale changes.
+ */
 class ScaleIndicatorLayer(
     scope: CoroutineScope,
     private val isShowingScaleIndicator: Flow<Boolean>,
