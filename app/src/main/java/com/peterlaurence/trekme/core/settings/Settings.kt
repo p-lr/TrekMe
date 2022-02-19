@@ -53,6 +53,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val maxScale = floatPreferencesKey("maxScale")
     private val lastMapId = intPreferencesKey("lastMapId")
     private val defineScaleWhenCentered = booleanPreferencesKey("defineScaleWhenCentered")
+    private val showScaleIndicator = booleanPreferencesKey("showScaleIndicator")
     private val scaleRatioCentered = floatPreferencesKey("scaleRatioCentered")
     private val measurementSystem = stringPreferencesKey("measurementSystem")
     private val locationDisclaimer = booleanPreferencesKey("locationDisclaimer")
@@ -195,6 +196,16 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     suspend fun setDefineScaleCentered(defined: Boolean) {
         dataStore.edit {
             it[defineScaleWhenCentered] = defined
+        }
+    }
+
+    fun getShowScaleIndicator(): Flow<Boolean> = dataStore.data.map {
+        it[showScaleIndicator] ?: true
+    }
+
+    suspend fun setShowScaleIndicator(show: Boolean) {
+        dataStore.edit {
+            it[showScaleIndicator] = show
         }
     }
 

@@ -3,25 +3,50 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.util.dpToPx
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.ui.state.MapState
 import kotlin.math.log10
 import kotlin.math.pow
 
-fun makeScaleIndicatorState(
-    map: Map,
-    mapState: MapState,
-    mapInteractor: MapInteractor
-): ScaleIndicatorState {
-    val width = dpToPx(180).toInt()
-    return ScaleIndicatorState(
-        mapState,
-        width,
-        distanceCalculator = object : ScaleIndicatorState.DistanceCalculator {
+class ScaleIndicatorLayer(
+    scope: CoroutineScope,
+    private val isShowingScaleIndicator: Flow<Boolean>,
+    private val measurementSystemFlow: Flow<MeasurementSystem>,
+    private val dataStateFlow: Flow<DataState>,
+    private val mapInteractor: MapInteractor,
+) {
+    val state = ScaleIndicatorState(dpToPx(180).toInt())
+
+    init {
+        scope.launch {
+            isShowingScaleIndicator.collectLatest { isShowing ->
+                if (!isShowing) return@collectLatest
+                dataStateFlow.collectLatest { (map, mapState) ->
+                    measurementSystemFlow.collectLatest { measurementSystem ->
+                        updateScaleIndicator(map, mapState, measurementSystem)
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun updateScaleIndicator(
+        map: Map,
+        mapState: MapState,
+        measurementSystem: MeasurementSystem
+    ) {
+        val distanceCalculator = object : DistanceCalculator {
             /**
              * This distance calculator lazily computes the full width in meters of the map.
              * Since this call is cheap and done once, it's done on the main thread.
@@ -34,36 +59,49 @@ fun makeScaleIndicatorState(
                 return nPx * fullWidthDist / (scale * map.widthPx)
             }
         }
-    )
-}
 
-class ScaleIndicatorState(
-    val mapState: MapState,
-    val widthPx: Int,
-    val distanceCalculator: DistanceCalculator
-) {
-    private var snapScale: Float = mapState.scale
-    private var snapWidthRatio = 0f
+        val scaleFlow = snapshotFlow {
+            mapState.scale
+        }
 
-    val widthRatio: Float
-        get() {
-            val scale = mapState.scale
+        var snapScale: Float = mapState.scale
+        var snapWidthRatio = 0f
+
+        scaleFlow.collect { scale ->
             val ratio = scale / snapScale
-            return if (snapWidthRatio * ratio in 0.5f..1f) {
+            state.widthRatio = if (snapWidthRatio * ratio in 0.5f..1f) {
                 snapWidthRatio * ratio
             } else {
                 /* Snap to new value */
-                val distance = distanceCalculator.compute(widthPx, scale).toInt()
-                val snap = computeSnapValue(distance) ?: 0
-                snapScale = scale
-                scaleText = UnitFormatter.formatDistance(snap.toDouble())
-                (snap.toFloat() / distance).also {
-                    snapWidthRatio = it
+                when (measurementSystem) {
+                    MeasurementSystem.METRIC -> {
+                        val distance = distanceCalculator.compute(state.widthPx, scale).toInt()
+                        val snap = computeSnapValue(distance)
+                        snapScale = scale
+                        state.scaleText = UnitFormatter.formatDistance(snap.toDouble(), precision = 0u)
+                        (snap.toFloat() / distance).also {
+                            snapWidthRatio = it
+                        }
+                    }
+                    MeasurementSystem.IMPERIAL -> {
+                        val distance = distanceCalculator.compute(state.widthPx, scale)
+                        val yards = distance / 0.9144
+                        val (imperial, unit) = if (yards < 2000) {
+                            Pair(yards, "yd")
+                        } else {
+                            Pair(yards / 1760, "mi")
+                        }
+                        val snap = computeSnapValue(imperial.toInt())
+                        snapScale = scale
+                        state.scaleText = "$snap $unit"
+                        (snap / imperial).toFloat().also {
+                            snapWidthRatio = it
+                        }
+                    }
                 }
             }
         }
-
-    var scaleText by mutableStateOf("")
+    }
 
     /**
      * A snap value is an entire multiple of power of 10, which is lower than [input].
@@ -71,8 +109,8 @@ class ScaleIndicatorState(
      * For example: 835 -> 500, 480 -> 300, 270 -> 200, 114 -> 100
      * The snap value is always greater than half of [input].
      */
-    private fun computeSnapValue(input: Int): Int? {
-        if (input <= 1) return null
+    private fun computeSnapValue(input: Int): Int {
+        if (input <= 1) return 1
 
         // Lowest entire power of 10
         val power = (log10(input.toDouble())).toInt()
@@ -88,7 +126,14 @@ class ScaleIndicatorState(
         }.toInt()
     }
 
-    fun interface DistanceCalculator {
+    private fun interface DistanceCalculator {
         fun compute(nPx: Int, scale: Float): Double
     }
+}
+
+class ScaleIndicatorState(
+    val widthPx: Int
+) {
+    var widthRatio by mutableStateOf(1f)
+    var scaleText by mutableStateOf("")
 }

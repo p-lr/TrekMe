@@ -12,14 +12,15 @@ object UnitFormatter {
     /**
      * Given a distance in meters, format this distance to return a value which depends on the
      * measurement system.
+     * Defaults to using 2 digits for decimal precision (for km and mi).
      */
-    fun formatDistance(dist: Double): String {
+    fun formatDistance(dist: Double, precision: UInt = 2u): String {
         return when (system) {
             MeasurementSystem.METRIC -> {
                 if (dist <= 1000) {
                     "%.0f m".format(dist)
                 } else {
-                    "%.2f km".format(dist / 1000.0)
+                    "%.${precision}f km".format(dist / 1000.0)
                 }
             }
             MeasurementSystem.IMPERIAL -> {
@@ -28,7 +29,7 @@ object UnitFormatter {
                     "%.0f yd".format(yd)
                 } else {
                     val mi = dist * TO_MILE
-                    "%.2f mi".format(mi)
+                    "%.${precision}f mi".format(mi)
                 }
             }
         }

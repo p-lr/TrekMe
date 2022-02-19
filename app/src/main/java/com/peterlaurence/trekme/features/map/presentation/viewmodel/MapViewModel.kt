@@ -84,6 +84,14 @@ class MapViewModel @Inject constructor(
         dataStateFlow.map { it.mapState }
     )
 
+    private val scaleIndicatorLayer = ScaleIndicatorLayer(
+        viewModelScope,
+        settings.getShowScaleIndicator(),
+        settings.getMeasurementSystem(),
+        dataStateFlow,
+        mapInteractor
+    )
+
     val routeLayer = RouteLayer(viewModelScope, dataStateFlow, mapInteractor, gpxRecordEvents)
 
     val snackBarController = SnackBarController()
@@ -132,7 +140,8 @@ class MapViewModel @Inject constructor(
         val map = mapRepository.getCurrentMap() ?: return
 
         when (getLicense(map)) {
-            is FreeLicense, ValidIgnLicense -> { /* Nothing to do */ }
+            is FreeLicense, ValidIgnLicense -> { /* Nothing to do */
+            }
             is ErrorIgnLicense -> {
                 _uiState.value = Error.LicenseError
             }
@@ -201,12 +210,11 @@ class MapViewModel @Inject constructor(
         dataStateFlow.tryEmit(DataState(map, mapState))
         val landmarkLinesState = LandmarkLinesState(mapState, map)
         val distanceLineState = DistanceLineState(mapState, map)
-        val scaleIndicatorState = makeScaleIndicatorState(map, mapState, mapInteractor)
         val mapUiState = MapUiState(
             mapState,
             landmarkLinesState,
             distanceLineState,
-            scaleIndicatorState
+            scaleIndicatorLayer.state
         )
         _uiState.value = mapUiState
     }

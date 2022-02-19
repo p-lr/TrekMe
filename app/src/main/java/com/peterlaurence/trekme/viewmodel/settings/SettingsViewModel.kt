@@ -30,6 +30,7 @@ class SettingsViewModel @Inject constructor(
     val defineScaleCentered: LiveData<Boolean> = settings.getDefineScaleCentered().asLiveData()
     val scaleRatioCentered: LiveData<Float> = settings.getScaleRatioCentered().asLiveData()
     val measurementSystemLiveData: LiveData<MeasurementSystem> = settings.getMeasurementSystem().asLiveData()
+    val showScaleIndicator: LiveData<Boolean> = settings.getShowScaleIndicator().asLiveData()
 
     init {
         /* App dir list */
@@ -64,6 +65,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setDefineScaleCentered(defined: Boolean) = viewModelScope.launch {
         settings.setDefineScaleCentered(defined)
+    }
+
+    fun setShowScaleIndicator(show: Boolean) = viewModelScope.launch {
+        settings.setShowScaleIndicator(show)
     }
 
     /**

@@ -35,6 +35,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var rotationModePref: ListPreference? = null
     private var defineScaleCenteredPref: CheckBoxPreference? = null
     private var scaleCenteredPref: SeekBarPreference? = null
+    private var showScaleIndicatorPref: CheckBoxPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.app_settings)
@@ -99,6 +100,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 updateScaleRatioCentered(it)
             }
         }
+
+        viewModel.showScaleIndicator.observe(this) {
+            it?.let {
+                updateShowScaleIndicator(it)
+            }
+        }
     }
 
     private fun updateDownloadDirList(dirs: Array<String>) {
@@ -155,6 +162,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         scaleCenteredPref?.value = scaleCentered.toInt()
     }
 
+    private fun updateShowScaleIndicator(show: Boolean) {
+        showScaleIndicatorPref?.isChecked = show
+    }
+
     private fun initComponents() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
         measurementSystemPref = preferenceManager.findPreference(getString(R.string.preference_measurement_system))
@@ -164,6 +175,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         rotationModePref = preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
         defineScaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_change_scale_when_centering_key))
         scaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_zoom_when_centered_key))
+        showScaleIndicatorPref = preferenceManager.findPreference(getString(R.string.preference_show_scale_indicator_key))
 
         scaleCenteredPref?.title = getString(R.string.preference_zoom_when_centered)
 
@@ -230,6 +242,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         scaleCenteredPref?.setOnPreferenceChangeListener { _, v ->
             val percent = (v as Int).toFloat()
             viewModel.setScaleRatioCentered(percent)
+            true
+        }
+
+        showScaleIndicatorPref?.setOnPreferenceChangeListener { _, v ->
+            val checked = v as Boolean
+            viewModel.setShowScaleIndicator(checked)
             true
         }
     }

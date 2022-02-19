@@ -33,6 +33,10 @@
             android:entryValues="@array/max_scales" />
 
         <CheckBoxPreference
+            android:key="@string/preference_show_scale_indicator_key"
+            android:title="@string/preference_show_scale_indicator" />
+
+        <CheckBoxPreference
             android:key="@string/preference_change_scale_when_centering_key"
             android:title="@string/preference_change_scale_when_centering" />
 
@@ -42,15 +46,15 @@
             app:isPreferenceVisible="false"/>
 
         <ListPreference
-            android:key="@string/preference_magnifying_key"
-            android:title="@string/preference_magnifying_factor"
-            android:entries="@array/magnifying_factors"
-            android:entryValues="@array/magnifying_factors" />
-
-        <ListPreference
             android:key="@string/preference_rotation_mode_key"
             android:title="@string/preference_rotation_mode"
             android:entries="@array/rotation_modes"
             android:entryValues="@array/rotation_modes"/>
+
+        <ListPreference
+            android:key="@string/preference_magnifying_key"
+            android:title="@string/preference_magnifying_factor"
+            android:entries="@array/magnifying_factors"
+            android:entryValues="@array/magnifying_factors" />
     </PreferenceCategory>
 </PreferenceScreen>
