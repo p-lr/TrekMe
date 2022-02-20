@@ -1,20 +1,27 @@
 package com.peterlaurence.trekme.viewmodel
 
 import android.app.Application
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.events.WarningMessage
+import com.peterlaurence.trekme.core.location.InternalGps
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.repositories.gpspro.GpsProPurchaseRepo
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.events.WarningMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,6 +43,7 @@ class MainActivityViewModel @Inject constructor(
     private val trekMeContext: TrekMeContext,
     private val settings: Settings,
     private val mapRepository: MapRepository,
+    private val gpsProRepository: GpsProPurchaseRepo,
     private val appEventBus: AppEventBus,
     private val mapLoader: MapLoader
 ) : ViewModel() {
@@ -46,6 +54,8 @@ class MainActivityViewModel @Inject constructor(
 
     private val _showMapViewSignal = MutableSharedFlow<Unit>()
     val showMapViewSignal = _showMapViewSignal.asSharedFlow()
+
+    val gpsProPurchased = MutableLiveData(false)
 
     /**
      * When the [MainActivity] first starts, we init the [TrekMeContext] and the [UnitFormatter].
@@ -89,6 +99,23 @@ class MainActivityViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            gpsProRepository.purchaseFlow.collect { state ->
+                when (state) {
+                    PurchaseState.PURCHASED -> {
+                        gpsProPurchased.value = true
+                    }
+                    PurchaseState.NOT_PURCHASED -> {
+                        /* If denied, switch back to internal GPS */
+                        settings.setLocationProducerInfo(InternalGps)
+                        gpsProPurchased.value = false
+                    }
+                    else -> { /* Nothing to do */
+                    }
+                }
+            }
+        }
     }
 
     private suspend fun warnIfBadStorageState() {
@@ -98,10 +125,20 @@ class MainActivityViewModel @Inject constructor(
             val warningTitle = ctx.getString(R.string.warning_title)
             if (trekMeContext.isAppDirReadOnly()) {
                 /* If its read only for sure, be explicit */
-                appEventBus.postMessage(WarningMessage(warningTitle, ctx.getString(R.string.storage_read_only)))
+                appEventBus.postMessage(
+                    WarningMessage(
+                        warningTitle,
+                        ctx.getString(R.string.storage_read_only)
+                    )
+                )
             } else {
                 /* Else, just say there is something wrong */
-                appEventBus.postMessage(WarningMessage(warningTitle, ctx.getString(R.string.bad_storage_status)))
+                appEventBus.postMessage(
+                    WarningMessage(
+                        warningTitle,
+                        ctx.getString(R.string.bad_storage_status)
+                    )
+                )
             }
         }
     }
