@@ -12,7 +12,6 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.ViewMatchers.*
-import ovh.plrapps.mapview.MapView
 import com.peterlaurence.trekme.matchers.checkMapViewScale
 import com.peterlaurence.trekme.matchers.childAtPosition
 import org.hamcrest.Matcher
@@ -122,19 +121,4 @@ class MapViewStateRestoreInMapCreationTest : AbstractTest() {
 //        /* Check that the new displayed map has the same scale as before */
 //        onView(withId(R.id.tileview_ign_id)).check(matches(checkMapViewScale(scaleTest)))
 //    }
-}
-
-private class MapViewsScalingAction(private val scale: Float) : ViewAction {
-    override fun getConstraints(): Matcher<View> {
-        return isAssignableFrom(MapView::class.java)
-    }
-
-    override fun getDescription(): String {
-        return "Scaling MapView"
-    }
-
-    override fun perform(uiController: UiController?, view: View?) {
-        val mapView = view as? MapView
-        mapView?.scale = scale
-    }
 }

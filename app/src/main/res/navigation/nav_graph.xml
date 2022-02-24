@@ -144,4 +144,8 @@
             android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.CalibrationFragment"
             android:label="CalibrationFragment" />
     </navigation>
+    <fragment
+        android:id="@+id/shopFragment"
+        android:name="com.peterlaurence.trekme.features.shop.presentation.ui.ShopFragment"
+        android:label="ShopFragment" /><action android:id="@+id/action_global_shopFragment" app:destination="@id/shopFragment"/>
 </navigation>

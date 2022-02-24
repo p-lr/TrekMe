@@ -96,6 +96,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         supportActionBar?.show()
                         supportActionBar?.title = getString(R.string.import_title)
                     }
+                    R.id.shopFragment -> {
+                        supportActionBar?.show()
+                        supportActionBar?.title = getString(R.string.shop_menu_title)
+                    }
                     R.id.mapFragment, R.id.markerEditFragment, R.id.wmtsViewFragment -> {
                         supportActionBar?.hide()
                         supportActionBar?.title = ""
@@ -421,6 +425,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_import -> showMapImportFragment()
             R.id.nav_share -> showWifiP2pFragment()
             R.id.nav_settings -> showSettingsFragment()
+            R.id.nav_shop -> showShopFragment()
             R.id.nav_about -> navController.navigate(R.id.action_global_aboutFragment)
             else -> {
             }
@@ -499,6 +504,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun showSettingsFragment() {
         navController.navigate(R.id.action_global_settingsFragment)
+    }
+
+    private fun showShopFragment() {
+        navController.navigate(R.id.action_global_shopFragment)
     }
 
     private fun showMessageInSnackbar(message: String) {

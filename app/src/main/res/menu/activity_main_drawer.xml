@@ -32,6 +32,10 @@
             android:icon="@drawable/ic_settings_black_24dp"
             android:title="@string/settings_menu_title" />
         <item
+            android:id="@+id/nav_shop"
+            android:icon="@drawable/basket"
+            android:title="@string/shop_menu_title" />
+        <item
             android:id="@+id/nav_about"
             android:icon="@drawable/help"
             android:title="@string/about" />

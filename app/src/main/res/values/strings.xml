@@ -16,6 +16,7 @@
     <string name="import_menu_title">Import a map</string>
     <string name="share_menu_title">Receive or send</string>
     <string name="settings_menu_title">Settings</string>
+    <string name="shop_menu_title">Shop</string>
     <string name="about">About</string>
     <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.md#summary</string>
     <string name="confirm_exit">Click BACK again to exit</string>
