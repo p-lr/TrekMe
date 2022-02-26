@@ -435,4 +435,8 @@
     device. Then, please send it at plr.devs@gmail.com - I\'ll have a look and give you feedback.</string>
     <string name="bt_device_settings_diagnostic_done">Diagnosis done. Received %1$d sentences.\nSave file?</string>
     <string name="bt_device_settings_diagnostic_empty">The previous diagnosis didn\'t record any activity from the GPS.</string>
+
+    <!-- Shop UI -->
+    <string name="trekme_extended_offer" translatable="false">TrekMe Extended</string>
+    <string name="trekme_extended_trial">7d of free trial</string>
 </resources>

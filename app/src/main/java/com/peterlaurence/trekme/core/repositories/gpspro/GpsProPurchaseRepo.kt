@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.core.repositories.gpspro
 
-import android.util.Log
 import com.peterlaurence.trekme.billing.*
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.di.GpsPro
@@ -39,7 +38,7 @@ class GpsProPurchaseRepo @Inject constructor(
                 val result = if (p != null) {
                     PurchaseState.PURCHASED
                 } else {
-                    getSubscriptionInfo()
+                    updateSubscriptionInfo()
                     PurchaseState.NOT_PURCHASED
                 }
                 _purchaseFlow.value = result
@@ -47,20 +46,11 @@ class GpsProPurchaseRepo @Inject constructor(
         }
     }
 
-    private fun getSubscriptionInfo() {
+    private fun updateSubscriptionInfo() {
         scope.launch {
-            try {
+            runCatching {
                 val subDetails = billing.getSubDetails()
                 _subDetailsFlow.value = subDetails
-            } catch (e: ProductNotFoundException) {
-                // Something wrong on our side
-                _purchaseFlow.value = PurchaseState.PURCHASED
-            } catch (e: IllegalStateException) {
-                // Can't check license info
-                Log.e(TAG, e.message ?: Log.getStackTraceString(e))
-                _purchaseFlow.value = PurchaseState.UNKNOWN
-            } catch (e: NotSupportedException) {
-                // TODO: alert the user that it can't buy the module
             }
         }
     }

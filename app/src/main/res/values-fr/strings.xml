@@ -333,4 +333,5 @@
     <string name="landmark_default_name">Repère</string>
     <string name="preference_show_scale_indicator">Afficher l\'indicateur d\'échelle</string>
     <string name="shop_menu_title">Boutique</string>
+    <string name="trekme_extended_trial">Essai gratuit de 7j</string>
 </resources>

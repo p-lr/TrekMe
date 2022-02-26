@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -39,18 +38,9 @@ class IgnLicenseViewModel @Inject constructor(
 
     fun getIgnLicenseInfo() {
         viewModelScope.launch {
-            try {
+            runCatching {
                 val licenseDetails = billing.getSubDetails()
                 ignSubscriptionDetails.postValue(licenseDetails)
-            } catch (e: ProductNotFoundException) {
-                // Something wrong on our side
-                ignLicenseStatus.postValue(PurchaseState.PURCHASED)
-            } catch (e: IllegalStateException) {
-                // Can't check license info
-                Log.e(TAG, e.message ?: Log.getStackTraceString(e))
-                ignLicenseStatus.postValue(PurchaseState.UNKNOWN)
-            } catch (e: NotSupportedException) {
-                // TODO: alert the user that it can't buy the license and should ask for refund
             }
         }
     }
