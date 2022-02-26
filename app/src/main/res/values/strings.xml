@@ -439,4 +439,14 @@
     <!-- Shop UI -->
     <string name="trekme_extended_offer" translatable="false">TrekMe Extended</string>
     <string name="trekme_extended_trial">7d of free trial</string>
+    <string name="trekme_extended_ign_maps_title">IGN maps</string>
+    <string name="trekme_extended_ign_maps_offline">Topographic IGN maps</string>
+    <string name="trekme_extended_ign_maps_satellite">Satellite view</string>
+    <string name="trekme_extended_ign_overlay_title">Overlays (IGN only, for now)</string>
+    <string name="trekme_extended_ign_overlay_1">IGN slopes for mountain activities</string>
+    <string name="trekme_extended_ign_overlay_2">Cadastre</string>
+    <string name="trekme_extended_ign_overlay_3">Roads, paths and trails</string>
+    <string name="trekme_extended_specificities">Specificities</string>
+    <string name="no_ads">No ads</string>
+    <string name="new_features">Exclusive features will be added</string>
 </resources>

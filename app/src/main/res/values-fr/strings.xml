@@ -334,4 +334,14 @@
     <string name="preference_show_scale_indicator">Afficher l\'indicateur d\'échelle</string>
     <string name="shop_menu_title">Boutique</string>
     <string name="trekme_extended_trial">Essai gratuit de 7j</string>
+    <string name="trekme_extended_ign_maps_title">Cartes IGN</string>
+    <string name="trekme_extended_ign_maps_offline">Téléchargez des cartes IGN, pour utilisation hors ligne</string>
+    <string name="trekme_extended_ign_maps_satellite">Photos aériennes, et plan IGN</string>
+    <string name="trekme_extended_ign_overlay_title">Couches en superposition</string>
+    <string name="trekme_extended_ign_overlay_1">Carte IGN des pentes pour activité neige</string>
+    <string name="trekme_extended_ign_overlay_2">Parcelles cadastrales</string>
+    <string name="trekme_extended_ign_overlay_3">Réseau des routes, chemins et sentiers</string>
+    <string name="trekme_extended_specificities">Particularités</string>
+    <string name="no_ads">Pas de publicité</string>
+    <string name="new_features">Des fonctionnalités exclusives seront ajoutées</string>
 </resources>
