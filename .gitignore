@@ -15,4 +15,5 @@ build
 /mapcompose-debug/*
 deploy-release.sh
 compile_sign_and_run.sh
+compile_and_deploy_release.sh
 *.hprof

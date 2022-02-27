@@ -3,15 +3,15 @@
 buildscript {
     ext.kotlin_version = '1.6.10'
     ext.hilt_version= '2.40.5'
-    ext.nav_version = '2.3.5'
-    ext.compose_version = '1.1.0'
+    ext.nav_version = '2.4.1'
+    ext.compose_version = '1.1.1'
     repositories {
         mavenCentral()
         google()
     }
     dependencies {
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
-        classpath 'com.android.tools.build:gradle:7.1.1'
+        classpath 'com.android.tools.build:gradle:7.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
