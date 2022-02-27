@@ -1,8 +1,10 @@
-package com.peterlaurence.trekme.core.repositories.gpspro
+package com.peterlaurence.trekme.core.repositories.offers.extended
 
-import com.peterlaurence.trekme.billing.*
+import com.peterlaurence.trekme.billing.Billing
+import com.peterlaurence.trekme.billing.BillingParams
+import com.peterlaurence.trekme.billing.SubscriptionDetails
 import com.peterlaurence.trekme.billing.common.PurchaseState
-import com.peterlaurence.trekme.di.GpsPro
+import com.peterlaurence.trekme.di.IGN
 import com.peterlaurence.trekme.di.MainDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -14,9 +16,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GpsProPurchaseRepo @Inject constructor(
-        @MainDispatcher mainDispatcher: CoroutineDispatcher,
-        @GpsPro private val billing: Billing
+class ExtendedOfferRepository @Inject constructor(
+    @MainDispatcher mainDispatcher: CoroutineDispatcher,
+    @IGN private val billing: Billing
 ) {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())
 
@@ -54,6 +56,13 @@ class GpsProPurchaseRepo @Inject constructor(
         }
     }
 
+    fun acknowledgePurchase() = scope.launch {
+        val ackDone = billing.acknowledgePurchase()
+        if (ackDone) {
+            onPurchaseAcknowledged()
+        }
+    }
+
     private fun updateSubscriptionInfo() {
         scope.launch {
             runCatching {
@@ -63,10 +72,10 @@ class GpsProPurchaseRepo @Inject constructor(
         }
     }
 
-    fun buySubscription(): BillingParams? {
-        val ignLicenseDetails = _subDetailsFlow.value
-        return if (ignLicenseDetails != null) {
-            billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchasePending)
+    fun getSubscriptionBillingParams(): BillingParams? {
+        val subscriptionDetails = _subDetailsFlow.value
+        return if (subscriptionDetails != null) {
+            billing.launchBilling(subscriptionDetails.skuDetails, this::onPurchasePending)
         } else null
     }
 

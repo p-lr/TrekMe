@@ -141,11 +141,10 @@
     <string name="preference_starton_lastmap">la dernière carte ouverte</string>
     <string name="preference_root_location_title">Répertoire sélectionné</string>
     <string name="mapview_lock_on_position">Verrouiller la position</string>
-    <string name="ign_buy_license_banner">Module IGN, valable un an, 7j d\'essai gratuit</string>
     <string name="ign_license_explanation">Vous avez <b>7 jours d\'essai gratuits</b>. Vous pouvez annuler l\'abonnement à tout moment dans
         Google Play > Abonnements > TrekMe > Annuler.\nPendant la période d\'essai, cela ne donne lieu à aucun frais. Hors de la période d\'essai,
-        cela ne donne lieu à aucun remboursement, bien que l\'abonnement reste actif pour un an. Le module IGN vous donne un accès illimité aux
-        cartes IGN pendant un an.</string>
+        cela ne donne lieu à aucun remboursement, bien que l\'abonnement reste actif pour la durée prévue (un an ou un mois, selon l\'offre). TrekMe
+        Extended vous donne un accès illimité aux cartes IGN.</string>
     <string name="buy_btn">Acheter</string>
     <string name="missing_ign_license">Votre module IGN est introuvable.\n\nSi vous avec supprimé le cache du playstore, veuillez rouvrir le playstore et consulter
         vos abonnements pour réactualiser le cache. Vous devez avoir du réseau pour que cette opération fonctionne.\n\nSi ce n\'est pas un problème de cache,
@@ -344,4 +343,5 @@
     <string name="trekme_extended_specificities">Particularités</string>
     <string name="no_ads">Pas de publicité</string>
     <string name="new_features">Des fonctionnalités exclusives seront ajoutées</string>
+    <string name="offer_suggestion">Disponible avec TrekMe Extended 1 an, 7j d\'essai gratuit</string>
 </resources>

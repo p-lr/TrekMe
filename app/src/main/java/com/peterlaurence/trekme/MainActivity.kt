@@ -416,6 +416,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onStart()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        viewModel.onActivityResume()
+    }
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_select_map -> showMapListFragment()

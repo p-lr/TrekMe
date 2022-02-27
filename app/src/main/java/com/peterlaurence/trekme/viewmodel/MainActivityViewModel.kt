@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.location.InternalGps
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.repositories.gpspro.GpsProPurchaseRepo
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter
@@ -43,6 +44,7 @@ class MainActivityViewModel @Inject constructor(
     private val trekMeContext: TrekMeContext,
     private val settings: Settings,
     private val mapRepository: MapRepository,
+    private val extendedOfferRepository: ExtendedOfferRepository,
     private val gpsProRepository: GpsProPurchaseRepo,
     private val appEventBus: AppEventBus,
     private val mapLoader: MapLoader
@@ -116,6 +118,10 @@ class MainActivityViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun onActivityResume() {
+        extendedOfferRepository.acknowledgePurchase()
     }
 
     private suspend fun warnIfBadStorageState() {

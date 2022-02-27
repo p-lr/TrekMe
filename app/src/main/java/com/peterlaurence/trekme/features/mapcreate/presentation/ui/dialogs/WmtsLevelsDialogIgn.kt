@@ -43,37 +43,40 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.getIgnLicenseStatus().observe(this) {
+        viewModel.purchaseStateLiveData.observe(this) {
             it?.also {
                 when (it) {
-                    PurchaseState.CHECK_PENDING -> showCheckPending()
+                    PurchaseState.CHECK_PENDING -> {
+                        showCheckPending()
+                        setDownloadEnabled(false)
+                    }
                     PurchaseState.PURCHASED -> {
                         hidePriceIGN()
                         setDownloadEnabled(true)
                     }
-                    PurchaseState.NOT_PURCHASED -> viewModel.getIgnLicenseInfo()
-                    PurchaseState.PURCHASE_PENDING -> showPending()
-                    PurchaseState.UNKNOWN -> showUnknown()
+                    PurchaseState.NOT_PURCHASED -> {
+                        setDownloadEnabled(false)
+                    }
+                    PurchaseState.PURCHASE_PENDING -> {
+                        showPending()
+                        setDownloadEnabled(false)
+                    }
+                    PurchaseState.UNKNOWN -> {
+                        showUnknown()
+                        setDownloadEnabled(false)
+                    }
                 }
             }
         }
 
-        viewModel.getSubscriptionDetails().observe(this) {
-            it?.also {
-                ignLicensePrice = it.price
-                showPriceIGN()
+        viewModel.priceLiveData.observe(this) {
+            it?.also { price ->
+                ignLicensePrice = price
+                if (PurchaseState.NOT_PURCHASED == viewModel.purchaseStateLiveData.value) {
+                    showPriceIGN()
+                }
             }
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        /* Assume that the license isn't acquired */
-        setDownloadEnabled(false)
-
-        /* Then check the license status */
-        viewModel.getIgnLicensePurchaseStatus()
     }
 
     /**
@@ -84,17 +87,12 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         super.configureComponents(view)
 
         priceInformation = view.findViewById(R.id.price_info)
-        priceInformation.text = getString(R.string.ign_buy_license_banner)
-
         priceValue = view.findViewById(R.id.price_value)
 
         buyBtn = view.findViewById(R.id.purchase_btn)
         buyBtn.text = getString(R.string.buy_btn)
         buyBtn.setOnClickListener {
-            val billingParams = viewModel.buyLicense()
-            activity?.also {
-                billingParams?.billingClient?.launchBillingFlow(it, billingParams.flowParams)
-            }
+            viewModel.buyLicense()
         }
 
         helpBtn = view.findViewById(R.id.help_license_info)
@@ -115,6 +113,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
 
     private fun showPriceIGN() {
         priceInformation.visibility = View.VISIBLE
+        priceInformation.text = getString(R.string.offer_suggestion)
         priceValue.visibility = View.VISIBLE
         priceValue.text = ignLicensePrice
         buyBtn.visibility = View.VISIBLE

@@ -4,15 +4,16 @@ import android.app.Application
 import android.util.Log
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-typealias PurchaseAcknowledgedCallback = () -> Unit
 typealias PurchasePendingCallback = () -> Unit
 
 /**
@@ -27,11 +28,11 @@ class Billing(
         private val oneTimeSku: String,
         private val subSku: String,
         private val purchaseVerifier: PurchaseVerifier
-) : PurchasesUpdatedListener, AcknowledgePurchaseResponseListener {
+) : PurchasesUpdatedListener {
 
+    val purchaseAcknowledgedEvent = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
     private val billingClient = BillingClient.newBuilder(application).setListener(this).enablePendingPurchases().build()
 
-    private lateinit var purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback
     private lateinit var purchasePendingCallback: PurchasePendingCallback
 
     private var connected = false
@@ -93,25 +94,16 @@ class Billing(
         val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
                 .setPurchaseToken(purchase.purchaseToken)
                 .build()
-        billingClient.acknowledgePurchase(acknowledgePurchaseParams, this)
+        billingClient.acknowledgePurchase(acknowledgePurchaseParams) {
+            if (it.responseCode == OK) {
+                purchaseAcknowledgedEvent.tryEmit(Unit)
+            }
+        }
     }
 
     private fun shouldAcknowledgePurchase(purchase: Purchase): Boolean {
         return (purchase.skus.any { it == subSku || it == oneTimeSku })
                 && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
-    }
-
-    /**
-     * This is the callback of the [BillingClient.acknowledgePurchase] call.
-     * The [purchaseAcknowledgedCallback] is called only if the purchase is successfully acknowledged.
-     */
-    override fun onAcknowledgePurchaseResponse(billingResult: BillingResult) {
-        /* Then notify registered PurchaseListener that it completed normally */
-        if (billingResult.responseCode == OK && this::purchaseAcknowledgedCallback.isInitialized) {
-            purchaseAcknowledgedCallback()
-        } else {
-            Log.e(TAG, "Payment couldn't be acknowledged (code ${billingResult.responseCode}): ${billingResult.debugMessage}")
-        }
     }
 
     /**
@@ -121,25 +113,23 @@ class Billing(
      * slow and the user didn't wait the end of the procedure with the [onPurchasesUpdated] call).
      * So we can end up with a purchase which is in [Purchase.PurchaseState.PURCHASED] state but not
      * acknowledged.
-     * This is why the acknowledgement is also made here.
+     *
+     * @return Whether acknowledgment as done or not.
      */
-    suspend fun acknowledgePurchase(purchaseAcknowledgedCallback: PurchaseAcknowledgedCallback): Boolean {
+    suspend fun acknowledgePurchase(): Boolean {
         runCatching { awaitConnect() }.onFailure { return false }
 
         val inAppPurchases = queryPurchasesAsync(BillingClient.SkuType.INAPP)
         val oneTimeAck = inAppPurchases.second.getOneTimePurchase()?.let {
-            this.purchaseAcknowledgedCallback = purchaseAcknowledgedCallback
             if (shouldAcknowledgePurchase(it)) {
-                acknowledgePurchase(it)
-                true
+                acknowledge(it)
             } else false
         } ?: false
 
         val subs = queryPurchasesAsync(BillingClient.SkuType.SUBS)
         val subAck = subs.second.getSubPurchase()?.let {
             if (shouldAcknowledgePurchase(it)) {
-                acknowledgePurchase(it)
-                true
+                acknowledge(it)
             } else false
         } ?: false
 
@@ -249,14 +239,32 @@ class Billing(
         awaitClose { /* We can't do anything, but it doesn't matter */ }
     }.first()
 
+    /**
+     * Using a [callbackFlow] instead of [suspendCancellableCoroutine], as we have no way to remove
+     * the provided callback given to [BillingClient.acknowledgePurchase] - so creating a memory
+     * leak.
+     * By collecting a [callbackFlow], the real collector is on a different call stack. So the
+     * [BillingClient] has no reference on the collector.
+     */
+    private suspend fun acknowledge(purchase: Purchase) = callbackFlow {
+        /* Approve the payment */
+        val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+            .setPurchaseToken(purchase.purchaseToken)
+            .build()
+
+        billingClient.acknowledgePurchase(acknowledgePurchaseParams) {
+            trySend(it.responseCode == OK)
+        }
+
+        awaitClose { /* We can't do anything, but it doesn't matter */ }
+    }.first()
+
     data class SkuQueryResult(val billingResult: BillingResult, val skuDetailsList: List<SkuDetails>)
 
-    fun launchBilling(skuDetails: SkuDetails, purchaseAcknowledgedCb: PurchaseAcknowledgedCallback,
-                      purchasePendingCb: PurchasePendingCallback): BillingParams {
+    fun launchBilling(skuDetails: SkuDetails, purchasePendingCb: PurchasePendingCallback): BillingParams {
         val flowParams = BillingFlowParams.newBuilder()
                 .setSkuDetails(skuDetails)
                 .build()
-        this.purchaseAcknowledgedCallback = purchaseAcknowledgedCb
         this.purchasePendingCallback = purchasePendingCb
         return BillingParams(billingClient, flowParams)
     }
