@@ -408,7 +408,7 @@
 
     <!-- GpsPro UI -->
     <string name="gps_pro_name" translatable="false">GPS Pro</string>
-    <string name="gps_pro_pres_p1_title">Connect your external GPS in Bluetooth</string>
+    <string name="gps_pro_pres_p1_title">Connect your external GPS using Bluetooth</string>
     <string name="gps_pro_help_url">https://github.com/peterLaurence/TrekMe/blob/master/doc/gpspro/doc.md</string>
     <string name="gps_pro_pres_content">If you have an external GPS with bluetooth, you can connect it to TrekMe and use it instead of
     the internal GPS of your device. This is especially useful when your activity (aeronautic, professional topography, ..) requires better
@@ -449,4 +449,9 @@
     <string name="trekme_extended_specificities">Specificities</string>
     <string name="no_ads">No ads</string>
     <string name="new_features">Exclusive features will be added</string>
+    <string name="module_owned">You own this module</string>
+    <string name="module_purchase_pending">Purchase pending…</string>
+    <string name="module_error">Temporary unavailable</string>
+    <string name="free_trial">%1$dd of free trial</string>
+    <string name="one_year">1 year</string>
 </resources>

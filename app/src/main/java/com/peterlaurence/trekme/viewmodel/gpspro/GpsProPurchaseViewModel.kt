@@ -21,14 +21,14 @@ class GpsProPurchaseViewModel @Inject constructor(
     private val settings: Settings
 ) : ViewModel() {
     val purchaseFlow = repo.purchaseFlow
-    val priceFlow = repo.subDetailsFlow.map { it?.price }
+    val subscriptionDetailsFlow = repo.subDetailsFlow
 
     init {
         purchaseFlow.map { state ->
             when(state) {
                 PurchaseState.PURCHASED -> {
                     /* As soon as we're granted access, navigate to the feature fragment */
-                    gpsProEvents.requestShowGpsProFragment()
+                    //gpsProEvents.requestShowGpsProFragment()
                 }
                 PurchaseState.NOT_PURCHASED -> {
                     /* If denied, switch back to internal GPS */

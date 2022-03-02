@@ -10,7 +10,9 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentShopBinding
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ShopViewModel
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ShopFragment : Fragment() {
     private var binding: FragmentShopBinding? = null
 

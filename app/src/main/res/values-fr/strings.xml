@@ -344,4 +344,9 @@
     <string name="no_ads">Pas de publicité</string>
     <string name="new_features">Des fonctionnalités exclusives seront ajoutées</string>
     <string name="offer_suggestion">Disponible avec TrekMe Extended 1 an, 7j d\'essai gratuit</string>
+    <string name="module_owned">Vous possédez ce module</string>
+    <string name="module_purchase_pending">Achat en cours…</string>
+    <string name="module_error">Temporarairement indisponible</string>
+    <string name="free_trial">Essai gratuit de %1$dj</string>
+    <string name="one_year">1 an</string>
 </resources>

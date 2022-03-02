@@ -30,13 +30,28 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.HorizontalPager
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.PagerState
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.rememberPagerState
+import com.peterlaurence.trekme.features.shop.presentation.ui.offers.GpsProPurchaseFooterStateful
+import com.peterlaurence.trekme.features.shop.presentation.ui.offers.GpsProPurchaseHeaderStateful
+import com.peterlaurence.trekme.features.shop.presentation.ui.offers.GpsProPurchaseUI
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ShopViewModel
 
 @Composable
 fun ShopStateful(viewModel: ShopViewModel = viewModel()) {
     val pagerState = rememberPagerState()
 
-    ShopCarousel(pagerState)
+    ShopCarousel(
+        pagerState,
+        firstOffer = OfferUi(
+            header = { },
+            content = { FirstOfferContent() },
+            footerButtons = { FirstOfferButtons() }
+        ),
+        secondOffer = OfferUi(
+            header = { GpsProPurchaseHeaderStateful() },
+            content = { GpsProPurchaseUI() },
+            footerButtons = { GpsProPurchaseFooterStateful() }
+        ),
+    )
 }
 
 private enum class ShopType {
@@ -44,7 +59,11 @@ private enum class ShopType {
 }
 
 @Composable
-fun ShopCarousel(pagerState: PagerState) {
+fun ShopCarousel(
+    pagerState: PagerState,
+    firstOffer: OfferUi,
+    secondOffer: OfferUi,
+) {
     Column(Modifier.background(Color.Gray)) {
         Row(
             Modifier
@@ -80,25 +99,28 @@ fun ShopCarousel(pagerState: PagerState) {
                         .clip(RoundedCornerShape(20.dp))
                         .background(Color.White)
                 ) {
-                    Header()
+                    when (page) {
+                        0 -> (firstOffer.header)()
+                        1 -> (secondOffer.header)()
+                    }
 
                     val scrollState = rememberScrollState()
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 32.dp)
+                            .padding(start = 32.dp, end = 32.dp, bottom = 32.dp)
                             .verticalScroll(scrollState),
                     ) {
                         when (page) {
-                            0 -> FirstOfferContent()
-                            1 -> FirstOfferContent()
+                            0 -> (firstOffer.content)()
+                            1 -> (secondOffer.content)()
                         }
                     }
                 }
 
                 when (page) {
-                    0 -> FirstOfferButtons()
-                    1 -> SecondOfferButtons()
+                    0 -> (firstOffer.footerButtons)()
+                    1 -> (secondOffer.footerButtons)()
                 }
             }
         }
@@ -106,7 +128,7 @@ fun ShopCarousel(pagerState: PagerState) {
 }
 
 @Composable
-private fun Header() {
+fun Header(title: String, subTitle: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -128,13 +150,13 @@ private fun Header() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            stringResource(id = R.string.trekme_extended_offer),
+            title, //stringResource(id = R.string.trekme_extended_offer),
             color = Color.White,
             fontWeight = FontWeight.Medium,
             fontSize = 18.sp
         )
         Text(
-            stringResource(id = R.string.trekme_extended_trial),
+            subTitle, //stringResource(id = R.string.trekme_extended_trial),
             color = Color.White,
             fontSize = 12.sp
         )
@@ -208,59 +230,42 @@ private fun FirstOfferButtons() {
             .padding(bottom = 16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        Button(
-            onClick = { /*TODO*/ },
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color(0xFF4CAF50),
-                contentColor = Color.White
-            )
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("1 mois")
-                Text("2.99€")
-            }
-        }
-
-        Button(
-            onClick = { /*TODO*/ },
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color(0xFF448AFF),
-                contentColor = Color.White
-            )
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("1 an")
-                Text("15.99€")
-            }
-        }
+        PriceButton(onClick = { /*TODO*/ }, duration = "1 mois", price = "2.99€", color = Color(0xFF4CAF50))
+        PriceButton(onClick = { /*TODO*/ }, duration = "1 an", price = "15.99€")
     }
 }
 
 @Composable
-private fun SecondOfferButtons() {
+fun PriceButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    duration: String,
+    price: String,
+    color: Color = Color(0xFF448AFF),
+) {
     Button(
-        onClick = { /*TODO*/ },
-        modifier = Modifier.padding(bottom = 16.dp),
+        onClick = onClick,
+        modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = Color(0xFF448AFF),
+            backgroundColor = color,
             contentColor = Color.White
         )
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("1 an")
-            Text("9.99€")
+            Text(duration)
+            Text(price)
         }
     }
 }
+
+data class OfferUi(
+    val header: @Composable () -> Unit,
+    val content: @Composable ColumnScope.() -> Unit,
+    val footerButtons: @Composable () -> Unit
+)
 
 @Preview
 @Composable

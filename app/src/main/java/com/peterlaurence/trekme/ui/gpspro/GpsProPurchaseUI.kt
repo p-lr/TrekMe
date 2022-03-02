@@ -128,13 +128,13 @@ class GpsProPurchaseUIView @JvmOverloads constructor(
 
     @Composable
     override fun Content() {
-        val viewModel: GpsProPurchaseViewModel = viewModel()
-        val purchase by viewModel.purchaseFlow.collectAsState()
-        val price by viewModel.priceFlow.collectAsState(null)
-
-        TrekMeTheme {
-            GpsProPurchaseUI(purchase, price, viewModel::buy)
-        }
+//        val viewModel: GpsProPurchaseViewModel = viewModel()
+//        val purchase by viewModel.purchaseFlow.collectAsState()
+//        val price by viewModel.priceFlow.collectAsState(null)
+//
+//        TrekMeTheme {
+//            GpsProPurchaseUI(purchase, price, viewModel::buy)
+//        }
     }
 }
 

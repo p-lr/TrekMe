@@ -278,6 +278,8 @@ data class BillingParams(val billingClient: BillingClient, val flowParams: Billi
 data class SubscriptionDetails(val skuDetails: SkuDetails) {
     val price: String
         get() = skuDetails.price
+    val trialDuration: String
+        get() = skuDetails.freeTrialPeriod.filter { it.isDigit() }
 }
 
 private const val TAG = "Billing.kt"

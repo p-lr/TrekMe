@@ -295,7 +295,10 @@ private fun GoToMapCreationScreen(onButtonCLick: (showOnBoarding: Boolean) -> Un
                 modifier = Modifier.width(maxWidth * 0.6f),
                 shape = RoundedCornerShape(50)
             ) {
-                Text(text = stringResource(id = R.string.without_onboarding_btn).uppercase())
+                Text(
+                    text = stringResource(id = R.string.without_onboarding_btn).uppercase(),
+                    color = colorResource(id = R.color.colorAccent)
+                )
             }
         }
     }
@@ -330,8 +333,6 @@ class MapListView @JvmOverloads constructor(
                 viewModel.onMapSettings(mapId)
 
                 /* Navigate to the MapSettingsFragment*/
-//                val action =
-//                    MapListFragmentDirections.actionMapListFragmentToMapSettingsFragment(mapId)
                 val action =
                     MapListFragmentDirections.actionMapListFragmentToMapSettingsGraph()
                 findNavController().navigate(action)
