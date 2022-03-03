@@ -24,7 +24,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.features.shop.presentation.ui.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.PriceButton
-import com.peterlaurence.trekme.viewmodel.gpspro.GpsProPurchaseViewModel
+import com.peterlaurence.trekme.features.shop.presentation.viewmodel.GpsProPurchaseViewModel
 
 @Composable
 fun GpsProPurchaseHeaderStateful(

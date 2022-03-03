@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro.events
+package com.peterlaurence.trekme.events.gpspro
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow

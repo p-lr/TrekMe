@@ -46,7 +46,7 @@ import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.service.event.*
-import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
+import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
 import com.peterlaurence.trekme.viewmodel.MainActivityViewModel

@@ -29,7 +29,7 @@ import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.core.repositories.recording.ElevationRepository
 import com.peterlaurence.trekme.data.orientation.OrientationSourceImpl
-import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
+import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

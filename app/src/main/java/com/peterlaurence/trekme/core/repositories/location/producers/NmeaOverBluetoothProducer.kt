@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.lib.nmea.NmeaAggregator
 import com.peterlaurence.trekme.lib.nmea.parseNmeaLocationSentence
-import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
+import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.gpspro
+package com.peterlaurence.trekme.features.gpspro.presentation.viewmodel
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -21,7 +21,7 @@ import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
 import com.peterlaurence.trekme.core.location.LocationProducerInfo
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.gpspro.GpsProDiagnosisRepo
-import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
+import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn

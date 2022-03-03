@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens
+package com.peterlaurence.trekme.features.gpspro.presentation.ui.screens
 
 import android.content.Context
 import android.util.AttributeSet
@@ -21,11 +21,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.repositories.gpspro.*
-import com.peterlaurence.trekme.ui.gpspro.presentation.ui.components.IconCircle
+import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
+import com.peterlaurence.trekme.features.gpspro.presentation.ui.components.IconCircle
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.viewmodel.gpspro.BluetoothDeviceStub
-import com.peterlaurence.trekme.viewmodel.gpspro.GpsProViewModel
-import com.peterlaurence.trekme.viewmodel.gpspro.selectedDevice
+import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.BluetoothDeviceStub
+import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.GpsProViewModel
+import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.selectedDevice
 
 
 @Composable
@@ -103,22 +104,16 @@ private fun RecordButton(diagnosisState: DiagnosisState, intents: BtDeviceSettin
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        OutlinedButton(
-                            onClick = { intents.onCancelDiagnosisSave() }
-                        ) {
-                            Text(stringResource(id = R.string.cancel_dialog_string))
-                        }
+                        OutlinedButtonColored(
+                            onClick = { intents.onCancelDiagnosisSave() },
+                            text = stringResource(id = R.string.cancel_dialog_string),
+                            color = colorResource(id = R.color.colorDarkGrey)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
-                        OutlinedButton(
+                        OutlinedButtonColored(
                             onClick = { intents.onSaveDiagnosis() },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = colorResource(
-                                    id = R.color.colorGreen
-                                )
-                            )
-                        ) {
-                            Text(stringResource(id = R.string.save_action))
-                        }
+                            color = colorResource(id = R.color.colorGreen),
+                            text = stringResource(id = R.string.save_action))
                     }
                 }
             }
@@ -144,22 +139,23 @@ private fun ShowDialog(openDialog: MutableState<Boolean>, onStartPressed: () -> 
             )
         },
         confirmButton = {
-            OutlinedButton(
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = colorResource(id = R.color.colorGreen)),
+            OutlinedButtonColored(
                 onClick = {
                     openDialog.value = false
                     onStartPressed()
-                }) {
-                Text(stringResource(id = R.string.start_dialog_string))
-            }
+                },
+                color = colorResource(id = R.color.colorGreen),
+                text = stringResource(id = R.string.start_dialog_string)
+            )
         },
         dismissButton = {
-            OutlinedButton(
+            OutlinedButtonColored(
                 onClick = {
                     openDialog.value = false
-                }) {
-                Text(stringResource(id = R.string.cancel_dialog_string))
-            }
+                },
+                color = colorResource(id = R.color.colorDarkGrey),
+                text = stringResource(id = R.string.cancel_dialog_string)
+            )
         }
     )
 }

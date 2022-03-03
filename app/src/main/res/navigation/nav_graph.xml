@@ -137,7 +137,7 @@
         app:startDestination="@id/gpsProFragment">
         <fragment
             android:id="@+id/gpsProFragment"
-            android:name="com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens.GpsProFragment"
+            android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.screens.GpsProFragment"
             android:label="GpsProFragment">
             <action
                 android:id="@+id/action_gpsProFragment_to_btDeviceSettingsFragment"
@@ -145,7 +145,7 @@
         </fragment>
         <fragment
             android:id="@+id/btDeviceSettingsFragment"
-            android:name="com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens.BtDeviceSettingsFragment"
+            android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.screens.BtDeviceSettingsFragment"
             android:label="BtDeviceSettingsFragment" />
     </navigation>
 </navigation>

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens
+package com.peterlaurence.trekme.features.gpspro.presentation.ui.screens
 
 import android.content.Context
 import android.util.AttributeSet
@@ -27,9 +27,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
-import com.peterlaurence.trekme.ui.gpspro.presentation.ui.components.IconCircle
+import com.peterlaurence.trekme.features.gpspro.presentation.ui.components.IconCircle
+import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.*
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.viewmodel.gpspro.*
 
 
 @Composable

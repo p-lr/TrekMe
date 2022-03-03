@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.core.repositories.gpspro
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.di.MainDispatcher
-import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
+import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro.presentation.ui.components
+package com.peterlaurence.trekme.features.gpspro.presentation.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding

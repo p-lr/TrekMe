@@ -31,6 +31,7 @@ import androidx.fragment.app.findFragment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
@@ -226,22 +227,23 @@ private fun ConfirmDialog(
             Text(contentText)
         },
         confirmButton = {
-            OutlinedButton(
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = confirmColor),
+            OutlinedButtonColored(
                 onClick = {
                     openState.value = false
                     onConfirmPressed()
-                }) {
-                Text(confirmButtonText)
-            }
+                },
+                color = confirmColor,
+                text = confirmButtonText
+            )
         },
         dismissButton = {
-            OutlinedButton(
+            OutlinedButtonColored(
                 onClick = {
                     openState.value = false
-                }) {
-                Text(cancelButtonText)
-            }
+                },
+                color = colorResource(id = R.color.colorDarkGrey),
+                text = cancelButtonText
+            )
         }
     )
 }
@@ -290,16 +292,13 @@ private fun GoToMapCreationScreen(onButtonCLick: (showOnBoarding: Boolean) -> Un
                 Text(text = stringResource(id = R.string.with_onboarding_btn).uppercase())
             }
             Spacer(Modifier.height(16.dp))
-            OutlinedButton(
+            OutlinedButtonColored(
                 onClick = { onButtonCLick(false) },
                 modifier = Modifier.width(maxWidth * 0.6f),
+                color = colorResource(id = R.color.colorAccent),
+                text = stringResource(id = R.string.without_onboarding_btn).uppercase(),
                 shape = RoundedCornerShape(50)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.without_onboarding_btn).uppercase(),
-                    color = colorResource(id = R.color.colorAccent)
-                )
-            }
+            )
         }
     }
 }

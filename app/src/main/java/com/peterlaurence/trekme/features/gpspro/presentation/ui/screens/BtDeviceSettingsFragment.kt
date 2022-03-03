@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens
+package com.peterlaurence.trekme.features.gpspro.presentation.ui.screens
 
 import android.app.Activity
 import android.app.Application
@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.databinding.FragmentBtDeviceSettingsBinding
-import com.peterlaurence.trekme.ui.gpspro.events.GpsProEvents
+import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.util.collectWhileStarted
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers

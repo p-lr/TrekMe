@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
 import com.peterlaurence.trekme.ui.common.OnBoardingTip
 import com.peterlaurence.trekme.ui.common.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
@@ -95,11 +96,10 @@ private fun SourceRow(source: WmtsSource, onSourceClick: (WmtsSource) -> Unit) {
                                     .padding(end = 16.dp, bottom = 16.dp),
                                 horizontalArrangement = Arrangement.End
                             ) {
-                                OutlinedButton(
-                                    onClick = { openDialog.value = false }
-                                ) {
-                                    Text(stringResource(id = R.string.ok_dialog))
-                                }
+                                OutlinedButtonColored(
+                                    onClick = { openDialog.value = false },
+                                    text = stringResource(id = R.string.ok_dialog)
+                                )
                             }
                         }
                     )
