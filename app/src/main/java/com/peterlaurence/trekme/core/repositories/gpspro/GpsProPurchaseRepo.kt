@@ -63,7 +63,7 @@ class GpsProPurchaseRepo @Inject constructor(
         }
     }
 
-    fun buySubscription(): BillingParams? {
+    fun getSubscriptionBillingParams(): BillingParams? {
         val ignLicenseDetails = _subDetailsFlow.value
         return if (ignLicenseDetails != null) {
             billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchasePending)

@@ -14,9 +14,8 @@ class GpsProPurchaseViewModel @Inject constructor(
     val purchaseFlow = repo.purchaseFlow
     val subscriptionDetailsFlow = repo.subDetailsFlow
 
-
     fun buy() {
-        val billingParams = repo.buySubscription()
+        val billingParams = repo.getSubscriptionBillingParams()
         if (billingParams != null) {
             appEventBus.startBillingFlow(billingParams)
         }

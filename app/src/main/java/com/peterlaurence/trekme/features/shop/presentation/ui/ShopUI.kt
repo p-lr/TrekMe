@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.features.shop.presentation.ui
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,20 +17,15 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.HorizontalPager
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.PagerState
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.rememberPagerState
-import com.peterlaurence.trekme.features.shop.presentation.ui.offers.GpsProPurchaseFooterStateful
-import com.peterlaurence.trekme.features.shop.presentation.ui.offers.GpsProPurchaseHeaderStateful
-import com.peterlaurence.trekme.features.shop.presentation.ui.offers.GpsProPurchaseUI
+import com.peterlaurence.trekme.features.shop.presentation.ui.offers.*
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ShopViewModel
 
 @Composable
@@ -43,8 +36,8 @@ fun ShopStateful(viewModel: ShopViewModel = viewModel()) {
         pagerState,
         firstOffer = OfferUi(
             header = { },
-            content = { FirstOfferContent() },
-            footerButtons = { FirstOfferButtons() }
+            content = { TrekMeExtendedContent() },
+            footerButtons = { ExtendedOfferFooterStateful() }
         ),
         secondOffer = OfferUi(
             header = { GpsProPurchaseHeaderStateful() },
@@ -52,10 +45,6 @@ fun ShopStateful(viewModel: ShopViewModel = viewModel()) {
             footerButtons = { GpsProPurchaseFooterStateful() }
         ),
     )
-}
-
-private enum class ShopType {
-    TrekMeIntegral, GpsPro
 }
 
 @Composable
@@ -163,77 +152,9 @@ fun Header(title: String, subTitle: String) {
     }
 }
 
-@Composable
-private fun ColumnScope.FirstOfferContent() {
-    CheckSeparator()
-    TitleRow(R.string.trekme_extended_ign_maps_title)
-    LineItem(R.string.trekme_extended_ign_maps_offline)
-    LineItem(R.string.trekme_extended_ign_maps_satellite)
 
-    CheckSeparator()
-    TitleRow(R.string.trekme_extended_ign_overlay_title)
-    LineItem(R.string.trekme_extended_ign_overlay_1)
-    LineItem(R.string.trekme_extended_ign_overlay_2)
-    LineItem(R.string.trekme_extended_ign_overlay_3)
 
-    CheckSeparator()
-    TitleRow(R.string.trekme_extended_specificities)
-    LineItem(id = R.string.no_ads)
-    LineItem(id = R.string.new_features)
-}
 
-@Composable
-private fun CheckSeparator() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp, bottom = 8.dp),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            painterResource(id = R.drawable.check),
-            contentDescription = null,
-            tint = Color(0xFF4CAF50)
-        )
-    }
-}
-
-@Composable
-private fun TitleRow(@StringRes id: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(stringResource(id), fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-private fun LineItem(@StringRes id: Int) {
-    Row {
-        Text("\u2022")
-        Text(
-            stringResource(id),
-            fontSize = 14.sp,
-            modifier = Modifier.padding(start = 8.dp)
-        )
-    }
-}
-
-@Composable
-private fun FirstOfferButtons() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        PriceButton(onClick = { /*TODO*/ }, duration = "1 mois", price = "2.99€", color = Color(0xFF4CAF50))
-        PriceButton(onClick = { /*TODO*/ }, duration = "1 an", price = "15.99€")
-    }
-}
 
 @Composable
 fun PriceButton(

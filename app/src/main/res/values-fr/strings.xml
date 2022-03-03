@@ -349,4 +349,5 @@
     <string name="module_error">Temporarairement indisponible</string>
     <string name="free_trial">Essai gratuit de %1$dj</string>
     <string name="one_year">1 an</string>
+    <string name="one_month">1 mois</string>
 </resources>

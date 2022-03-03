@@ -454,4 +454,5 @@
     <string name="module_error">Temporary unavailable</string>
     <string name="free_trial">%1$dd of free trial</string>
     <string name="one_year">1 year</string>
+    <string name="one_month">1 month</string>
 </resources>
