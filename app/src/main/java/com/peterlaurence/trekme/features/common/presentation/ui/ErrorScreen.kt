@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 
 @Composable
-private fun ErrorScreen(message: String) {
+fun ErrorScreen(message: String) {
     Column(
         Modifier
             .fillMaxSize()

@@ -19,13 +19,6 @@ class GpsProEvents {
 
     /**********************************************************************************************/
 
-    private val _showGpsProFragmentSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val showGpsProFragmentSignal = _showGpsProFragmentSignal.asSharedFlow()
-
-    fun requestShowGpsProFragment() = _showGpsProFragmentSignal.tryEmit(Unit)
-
-    /**********************************************************************************************/
-
     private val _showBtDeviceSettingsFragmentSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val showBtDeviceSettingsFragmentSignal = _showBtDeviceSettingsFragmentSignal.asSharedFlow()
 

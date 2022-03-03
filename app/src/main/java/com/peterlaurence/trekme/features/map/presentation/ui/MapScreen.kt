@@ -28,9 +28,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
+import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
-import com.peterlaurence.trekme.ui.gpspro.screens.ErrorScreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation

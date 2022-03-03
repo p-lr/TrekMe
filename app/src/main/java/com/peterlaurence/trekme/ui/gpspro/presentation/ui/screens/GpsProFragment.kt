@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro.screens
+package com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens
 
 import android.content.Intent
 import android.net.Uri

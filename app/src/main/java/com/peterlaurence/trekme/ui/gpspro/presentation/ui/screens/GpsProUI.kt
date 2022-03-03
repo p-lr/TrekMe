@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro.screens
+package com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens
 
 import android.content.Context
 import android.util.AttributeSet
@@ -14,10 +14,8 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -28,7 +26,8 @@ import androidx.fragment.app.findFragment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.ui.gpspro.components.IconCircle
+import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
+import com.peterlaurence.trekme.ui.gpspro.presentation.ui.components.IconCircle
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.gpspro.*
 
@@ -153,27 +152,6 @@ fun DeviceLine(
                     .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
                 tint = MaterialTheme.colors.secondary)
         }
-    }
-}
-
-@Composable
-fun ErrorScreen(message: String) {
-    Column(
-        Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_emoji_disappointed_face_1f61e),
-            contentDescription = null
-        )
-        Text(
-            text = message,
-            modifier = Modifier
-                .padding(16.dp)
-                .alpha(0.87f),
-            fontSize = 18.sp
-        )
     }
 }
 

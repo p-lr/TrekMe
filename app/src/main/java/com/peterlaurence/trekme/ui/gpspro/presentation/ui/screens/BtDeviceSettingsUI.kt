@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.gpspro.screens
+package com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens
 
 import android.content.Context
 import android.util.AttributeSet
@@ -21,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.repositories.gpspro.*
-import com.peterlaurence.trekme.ui.gpspro.components.IconCircle
+import com.peterlaurence.trekme.ui.gpspro.presentation.ui.components.IconCircle
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.gpspro.BluetoothDeviceStub
 import com.peterlaurence.trekme.viewmodel.gpspro.GpsProViewModel

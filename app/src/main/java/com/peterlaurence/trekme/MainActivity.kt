@@ -68,10 +68,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
              * depending on the destination */
             addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
-                    R.id.gpsProPurchaseFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.gps_pro_name)
-                    }
                     R.id.gpsProFragment -> {
                         supportActionBar?.show()
                         supportActionBar?.title = getString(R.string.select_bt_devices_title)
@@ -358,10 +354,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         appEventBus.openDrawerFlow.map { openDrawer() }.collectWhileStartedIn(this)
 
-        gpsProEvents.showGpsProFragmentSignal.collectWhileStarted(this) {
-            showGpsProFragmentAfterPurchase()
-        }
-
         gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
             showBtDeviceSettingsFragment()
         }
@@ -427,7 +419,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_select_map -> showMapListFragment()
             R.id.nav_create -> showMapCreateFragment()
             R.id.nav_record -> showRecordFragment()
-            R.id.nav_gps_plus -> showGpsProPurchaseFragment()
+            R.id.nav_gps_plus -> showGpsProFragment()
             R.id.nav_import -> showMapImportFragment()
             R.id.nav_share -> showWifiP2pFragment()
             R.id.nav_settings -> showSettingsFragment()
@@ -495,13 +487,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navController.navigate(R.id.action_global_recordFragment)
     }
 
-    private fun showGpsProPurchaseFragment() {
-        navController.navigate(R.id.action_global_gpsProPurchaseFragment)
-    }
-
-    private fun showGpsProFragmentAfterPurchase() {
-        navController.popBackStack(R.id.gpsProPurchaseFragment, true)
-        navController.navigate(R.id.action_global_gpsProFragment)
+    private fun showGpsProFragment() {
+        navController.popBackStack(R.id.gpsProFragment, true)
+        navController.navigate(R.id.gpsProGraph)
     }
 
     private fun showBtDeviceSettingsFragment() {

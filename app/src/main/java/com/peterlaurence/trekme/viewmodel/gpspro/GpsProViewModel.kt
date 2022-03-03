@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.viewmodel.gpspro
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -123,6 +124,7 @@ class GpsProViewModel @Inject constructor(
      * When we get the list of paired devices, we check if one of them is the active location
      * producer.
      */
+    @SuppressLint("MissingPermission")
     private suspend fun queryPairedDevices() {
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
         val producerInfo = settings.getLocationProducerInfo().first()

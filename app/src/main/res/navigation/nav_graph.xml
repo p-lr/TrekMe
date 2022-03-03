@@ -63,22 +63,7 @@
         android:id="@+id/elevationFragment"
         android:name="com.peterlaurence.trekme.ui.record.components.elevationgraph.ElevationFragment"
         android:label="ElevationFragment" />
-    <fragment
-        android:id="@+id/gpsProFragment"
-        android:name="com.peterlaurence.trekme.ui.gpspro.screens.GpsProFragment"
-        android:label="GpsProFragment" >
-        <action
-            android:id="@+id/action_gpsProFragment_to_btDeviceSettingsFragment"
-            app:destination="@id/btDeviceSettingsFragment" />
-    </fragment><action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProFragment"/>
-    <fragment
-        android:id="@+id/gpsProPurchaseFragment"
-        android:name="com.peterlaurence.trekme.ui.gpspro.GpsProPurchaseFragment"
-        android:label="GpsProPurchaseFragment" /><action android:id="@+id/action_global_gpsProPurchaseFragment" app:destination="@id/gpsProPurchaseFragment"/>
-    <fragment
-        android:id="@+id/btDeviceSettingsFragment"
-        android:name="com.peterlaurence.trekme.ui.gpspro.screens.BtDeviceSettingsFragment"
-        android:label="BtDeviceSettingsFragment" />
+    <action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProGraph"/>
     <navigation android:id="@+id/mapCreationGraph"
         app:startDestination="@id/mapCreateFragment">
         <fragment
@@ -148,4 +133,19 @@
         android:id="@+id/shopFragment"
         android:name="com.peterlaurence.trekme.features.shop.presentation.ui.ShopFragment"
         android:label="ShopFragment" /><action android:id="@+id/action_global_shopFragment" app:destination="@id/shopFragment"/>
+    <navigation android:id="@+id/gpsProGraph"
+        app:startDestination="@id/gpsProFragment">
+        <fragment
+            android:id="@+id/gpsProFragment"
+            android:name="com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens.GpsProFragment"
+            android:label="GpsProFragment">
+            <action
+                android:id="@+id/action_gpsProFragment_to_btDeviceSettingsFragment"
+                app:destination="@id/btDeviceSettingsFragment" />
+        </fragment>
+        <fragment
+            android:id="@+id/btDeviceSettingsFragment"
+            android:name="com.peterlaurence.trekme.ui.gpspro.presentation.ui.screens.BtDeviceSettingsFragment"
+            android:label="BtDeviceSettingsFragment" />
+    </navigation>
 </navigation>
