@@ -33,17 +33,17 @@ fun GpsProPurchaseHeaderStateful(
     val purchaseState by viewModel.purchaseFlow.collectAsState()
     val subDetails by viewModel.subscriptionDetailsFlow.collectAsState(initial = null)
 
-    GpsProPurchaseHeader(purchaseState, subDetails?.trialDuration)
+    GpsProPurchaseHeader(purchaseState, subDetails?.trialDurationInDays)
 }
 
 @Composable
-private fun GpsProPurchaseHeader(purchaseState: PurchaseState, trialDuration: String?) {
+private fun GpsProPurchaseHeader(purchaseState: PurchaseState, trialDuration: Int?) {
     val subTitle = when (purchaseState) {
         PurchaseState.CHECK_PENDING -> stringResource(id = R.string.module_check_pending)
         PurchaseState.PURCHASED -> stringResource(id = R.string.module_owned)
         PurchaseState.NOT_PURCHASED -> {
             if (trialDuration != null) {
-                stringResource(id = R.string.free_trial).format(trialDuration.toIntOrNull() ?: 0)
+                stringResource(id = R.string.free_trial).format(trialDuration)
             } else {
                 stringResource(id = R.string.module_error)
             }

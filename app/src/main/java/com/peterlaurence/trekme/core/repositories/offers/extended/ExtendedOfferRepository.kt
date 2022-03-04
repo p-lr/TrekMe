@@ -25,8 +25,11 @@ class ExtendedOfferRepository @Inject constructor(
     private val _purchaseFlow = MutableStateFlow(PurchaseState.CHECK_PENDING)
     val purchaseFlow = _purchaseFlow.asStateFlow()
 
-    private val _subDetailsFlow = MutableStateFlow<SubscriptionDetails?>(null)
-    val subDetailsFlow = _subDetailsFlow.asStateFlow()
+    private val _yearlySubDetailsFlow = MutableStateFlow<SubscriptionDetails?>(null)
+    val yearlySubDetailsFlow = _yearlySubDetailsFlow.asStateFlow()
+
+    private val _monthlySubDetailsFlow = MutableStateFlow<SubscriptionDetails?>(null)
+    val monthlySubDetailsFlow = _monthlySubDetailsFlow.asStateFlow()
 
     init {
         scope.launch {
@@ -66,14 +69,27 @@ class ExtendedOfferRepository @Inject constructor(
     private fun updateSubscriptionInfo() {
         scope.launch {
             runCatching {
-                val subDetails = billing.getSubDetails()
-                _subDetailsFlow.value = subDetails
+                val subDetails = billing.getSubDetails(1)
+                _yearlySubDetailsFlow.value = subDetails
+            }
+        }
+        scope.launch {
+            runCatching {
+                val subDetails = billing.getSubDetails(0)
+                _monthlySubDetailsFlow.value = subDetails
             }
         }
     }
 
-    fun getSubscriptionBillingParams(): BillingParams? {
-        val subscriptionDetails = _subDetailsFlow.value
+    fun getYearlySubscriptionBillingParams(): BillingParams? {
+        val subscriptionDetails = _yearlySubDetailsFlow.value
+        return if (subscriptionDetails != null) {
+            billing.launchBilling(subscriptionDetails.skuDetails, this::onPurchasePending)
+        } else null
+    }
+
+    fun getMonthlySubscriptionBillingParams(): BillingParams? {
+        val subscriptionDetails = _monthlySubDetailsFlow.value
         return if (subscriptionDetails != null) {
             billing.launchBilling(subscriptionDetails.skuDetails, this::onPurchasePending)
         } else null

@@ -35,7 +35,7 @@ fun ShopStateful(viewModel: ShopViewModel = viewModel()) {
     ShopCarousel(
         pagerState,
         firstOffer = OfferUi(
-            header = { },
+            header = { ExtendedOfferHeaderStateful() },
             content = { TrekMeExtendedContent() },
             footerButtons = { ExtendedOfferFooterStateful() }
         ),

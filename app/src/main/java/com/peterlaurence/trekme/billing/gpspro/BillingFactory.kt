@@ -8,5 +8,5 @@ private const val ONETIME_SKU = "gps_pro"
 private const val SUBSCRIPTION_SKU = "gps_pro_sub"
 
 fun buildGpsProBilling(app: Application): Billing {
-    return Billing(app, ONETIME_SKU, SUBSCRIPTION_SKU, AnnualWithGracePeriodVerifier())
+    return Billing(app, ONETIME_SKU, listOf(SUBSCRIPTION_SKU), AnnualWithGracePeriodVerifier())
 }

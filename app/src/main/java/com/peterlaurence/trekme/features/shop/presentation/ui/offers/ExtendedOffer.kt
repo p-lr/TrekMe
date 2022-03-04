@@ -17,11 +17,40 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
+import com.peterlaurence.trekme.features.shop.presentation.ui.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.PriceButton
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ExtendedOfferViewModel
 
 @Composable
-fun ColumnScope.TrekMeExtendedContent() {
+fun ExtendedOfferHeaderStateful(viewModel: ExtendedOfferViewModel = viewModel()) {
+    val purchaseState by viewModel.purchaseFlow.collectAsState()
+    val monthlySubDetails by viewModel.monthlySubscriptionDetailsFlow.collectAsState(initial = null)
+    val yearlySubDetails by viewModel.yearlySubscriptionDetailsFlow.collectAsState(initial = null)
+
+    /* Monthly and yearly trials should have the same duration */
+    ExtendedOfferHeader(purchaseState, yearlySubDetails?.trialDurationInDays ?: monthlySubDetails?.trialDurationInDays)
+}
+
+@Composable
+private fun ExtendedOfferHeader(purchaseState: PurchaseState, trialDuration: Int?) {
+    val subTitle = when (purchaseState) {
+        PurchaseState.CHECK_PENDING -> stringResource(id = R.string.module_check_pending)
+        PurchaseState.PURCHASED -> stringResource(id = R.string.module_owned)
+        PurchaseState.NOT_PURCHASED -> {
+            if (trialDuration != null) {
+                stringResource(id = R.string.free_trial).format(trialDuration)
+            } else {
+                stringResource(id = R.string.module_error)
+            }
+        }
+        PurchaseState.PURCHASE_PENDING -> stringResource(id = R.string.module_check_pending)
+        PurchaseState.UNKNOWN -> stringResource(id = R.string.module_error)
+    }
+    Header(title = stringResource(id = R.string.trekme_extended_offer), subTitle = subTitle)
+}
+
+@Composable
+fun TrekMeExtendedContent() {
     CheckSeparator()
     TitleRow(R.string.trekme_extended_ign_maps_title)
     LineItem(R.string.trekme_extended_ign_maps_offline)
@@ -82,14 +111,15 @@ private fun LineItem(@StringRes id: Int) {
 @Composable
 fun ExtendedOfferFooterStateful(viewModel: ExtendedOfferViewModel = viewModel()) {
     val purchaseState by viewModel.purchaseFlow.collectAsState()
-    val subDetails by viewModel.subscriptionDetailsFlow.collectAsState(initial = null)
+    val monthlySubDetails by viewModel.monthlySubscriptionDetailsFlow.collectAsState(initial = null)
+    val yearlySubDetails by viewModel.yearlySubscriptionDetailsFlow.collectAsState(initial = null)
 
     ExtendedOfferFooter(
         purchaseState,
-        pricePerMonth = subDetails?.price,
-        pricePerYear = subDetails?.price,
-        viewModel::buy,
-        viewModel::buy
+        pricePerMonth = monthlySubDetails?.price,
+        pricePerYear = yearlySubDetails?.price,
+        buyMonthlyOffer = viewModel::buyMonthly,
+        buyYearlyOffer = viewModel::buyYearly
     )
 }
 

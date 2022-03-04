@@ -15,10 +15,10 @@ class IgnLicenseViewModel @Inject constructor(
     private val appEventBus: AppEventBus
 ) : ViewModel() {
     val purchaseStateLiveData = repo.purchaseFlow.asLiveData(viewModelScope.coroutineContext)
-    val priceLiveData = repo.subDetailsFlow.map { it?.price ?: "" }.asLiveData()
+    val priceLiveData = repo.yearlySubDetailsFlow.map { it?.price ?: "" }.asLiveData()
 
     fun buyLicense() {
-        val billingParams =  repo.getSubscriptionBillingParams()
+        val billingParams =  repo.getYearlySubscriptionBillingParams()
         if (billingParams != null) {
             appEventBus.startBillingFlow(billingParams)
         }

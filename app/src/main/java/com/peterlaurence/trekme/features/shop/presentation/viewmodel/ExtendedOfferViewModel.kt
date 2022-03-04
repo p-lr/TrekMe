@@ -12,10 +12,18 @@ class ExtendedOfferViewModel @Inject constructor(
     private val appEventBus: AppEventBus
 ): ViewModel() {
     val purchaseFlow = extendedOfferRepository.purchaseFlow
-    val subscriptionDetailsFlow = extendedOfferRepository.subDetailsFlow
+    val monthlySubscriptionDetailsFlow = extendedOfferRepository.monthlySubDetailsFlow
+    val yearlySubscriptionDetailsFlow = extendedOfferRepository.yearlySubDetailsFlow
 
-    fun buy() {
-        val billingParams = extendedOfferRepository.getSubscriptionBillingParams()
+    fun buyMonthly() {
+        val billingParams = extendedOfferRepository.getMonthlySubscriptionBillingParams()
+        if (billingParams != null) {
+            appEventBus.startBillingFlow(billingParams)
+        }
+    }
+
+    fun buyYearly() {
+        val billingParams = extendedOfferRepository.getYearlySubscriptionBillingParams()
         if (billingParams != null) {
             appEventBus.startBillingFlow(billingParams)
         }

@@ -24,14 +24,15 @@ typealias PurchasePendingCallback = () -> Unit
  * @author P.Laurence on 06/08/2019
  */
 class Billing(
-        val application: Application,
-        private val oneTimeSku: String,
-        private val subSku: String,
-        private val purchaseVerifier: PurchaseVerifier
+    val application: Application,
+    private val oneTimeSku: String,
+    private val subSkuList: List<String>,
+    private val purchaseVerifier: PurchaseVerifier
 ) : PurchasesUpdatedListener {
 
     val purchaseAcknowledgedEvent = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
-    private val billingClient = BillingClient.newBuilder(application).setListener(this).enablePendingPurchases().build()
+    private val billingClient =
+        BillingClient.newBuilder(application).setListener(this).enablePendingPurchases().build()
 
     private lateinit var purchasePendingCallback: PurchasePendingCallback
 
@@ -63,13 +64,16 @@ class Billing(
         billingClient.startConnection(connectionStateListener)
     }
 
-    override fun onPurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
+    override fun onPurchasesUpdated(
+        billingResult: BillingResult,
+        purchases: MutableList<Purchase>?
+    ) {
         fun acknowledge() {
             purchases?.forEach {
                 if (
-                        it.skus.any { sku ->
-                            sku == oneTimeSku || sku == subSku
-                        }
+                    it.skus.any { sku ->
+                        sku == oneTimeSku || sku in subSkuList
+                    }
                 ) {
                     if (it.purchaseState == Purchase.PurchaseState.PURCHASED && !it.isAcknowledged) {
                         acknowledgePurchase(it)
@@ -92,8 +96,8 @@ class Billing(
     private fun acknowledgePurchase(purchase: Purchase) {
         /* Approve the payment */
         val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
-                .setPurchaseToken(purchase.purchaseToken)
-                .build()
+            .setPurchaseToken(purchase.purchaseToken)
+            .build()
         billingClient.acknowledgePurchase(acknowledgePurchaseParams) {
             if (it.responseCode == OK) {
                 purchaseAcknowledgedEvent.tryEmit(Unit)
@@ -102,7 +106,12 @@ class Billing(
     }
 
     private fun shouldAcknowledgePurchase(purchase: Purchase): Boolean {
-        return (purchase.skus.any { it == subSku || it == oneTimeSku })
+        return (purchase.skus.any { it == oneTimeSku })
+                && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
+    }
+
+    private fun shouldAcknowledgeSubPurchase(purchase: Purchase): Boolean {
+        return (purchase.skus.any { it in subSkuList })
                 && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
     }
 
@@ -128,7 +137,7 @@ class Billing(
 
         val subs = queryPurchasesAsync(BillingClient.SkuType.SUBS)
         val subAck = subs.second.getSubPurchase()?.let {
-            if (shouldAcknowledgePurchase(it)) {
+            if (shouldAcknowledgeSubPurchase(it)) {
                 acknowledge(it)
             } else false
         } ?: false
@@ -159,7 +168,7 @@ class Billing(
     }
 
     private fun List<Purchase>.getSubPurchase(): Purchase? {
-        return firstOrNull { it.skus.any { sku -> sku == subSku } }
+        return firstOrNull { it.skus.any { sku -> sku in subSkuList } }
     }
 
     private fun List<Purchase>.getValidOneTimePurchase(): Purchase? {
@@ -168,7 +177,7 @@ class Billing(
 
     private fun List<Purchase>.getValidSubPurchase(): Purchase? {
         return firstOrNull {
-            it.skus.any { sku -> sku == subSku } &&
+            it.skus.any { sku -> sku in subSkuList } &&
                     it.isAcknowledged
         }
     }
@@ -181,12 +190,13 @@ class Billing(
     }
 
     /**
-     * Get the details of the subscription.
+     * Get the details of a subscription.
      * @throws [ProductNotFoundException], [NotSupportedException], [IllegalStateException]
      */
-    suspend fun getSubDetails(): SubscriptionDetails {
+    suspend fun getSubDetails(index: Int = 0): SubscriptionDetails {
+        val subSku = subSkuList.getOrNull(index) ?: error("no sku for index $index")
         awaitConnect()
-        val (billingResult, skuDetailsList) = querySubDetails()
+        val (billingResult, skuDetailsList) = querySubDetails(subSku)
         return when (billingResult.responseCode) {
             OK -> skuDetailsList.find { it.sku == subSku }?.let {
                 SubscriptionDetails(it)
@@ -215,7 +225,7 @@ class Billing(
         }
     }
 
-    private suspend fun querySubDetails(): SkuQueryResult = suspendCoroutine {
+    private suspend fun querySubDetails(subSku: String): SkuQueryResult = suspendCoroutine {
         val skuList = ArrayList<String>()
         skuList.add(subSku)
         val params = SkuDetailsParams.newBuilder()
@@ -232,12 +242,13 @@ class Billing(
      * By collecting a [callbackFlow], the real collector is on a different call stack. So the
      * [BillingClient] has no reference on the collector.
      */
-    private suspend fun queryPurchasesAsync(skuType: String): Pair<BillingResult, List<Purchase>> = callbackFlow {
-        billingClient.queryPurchasesAsync(skuType) { r, p ->
-            trySend(Pair(r, p))
-        }
-        awaitClose { /* We can't do anything, but it doesn't matter */ }
-    }.first()
+    private suspend fun queryPurchasesAsync(skuType: String): Pair<BillingResult, List<Purchase>> =
+        callbackFlow {
+            billingClient.queryPurchasesAsync(skuType) { r, p ->
+                trySend(Pair(r, p))
+            }
+            awaitClose { /* We can't do anything, but it doesn't matter */ }
+        }.first()
 
     /**
      * Using a [callbackFlow] instead of [suspendCancellableCoroutine], as we have no way to remove
@@ -259,12 +270,18 @@ class Billing(
         awaitClose { /* We can't do anything, but it doesn't matter */ }
     }.first()
 
-    data class SkuQueryResult(val billingResult: BillingResult, val skuDetailsList: List<SkuDetails>)
+    data class SkuQueryResult(
+        val billingResult: BillingResult,
+        val skuDetailsList: List<SkuDetails>
+    )
 
-    fun launchBilling(skuDetails: SkuDetails, purchasePendingCb: PurchasePendingCallback): BillingParams {
+    fun launchBilling(
+        skuDetails: SkuDetails,
+        purchasePendingCb: PurchasePendingCallback
+    ): BillingParams {
         val flowParams = BillingFlowParams.newBuilder()
-                .setSkuDetails(skuDetails)
-                .build()
+            .setSkuDetails(skuDetails)
+            .build()
         this.purchasePendingCallback = purchasePendingCb
         return BillingParams(billingClient, flowParams)
     }
@@ -278,8 +295,21 @@ data class BillingParams(val billingClient: BillingClient, val flowParams: Billi
 data class SubscriptionDetails(val skuDetails: SkuDetails) {
     val price: String
         get() = skuDetails.price
-    val trialDuration: String
-        get() = skuDetails.freeTrialPeriod.filter { it.isDigit() }
+    val trialDurationInDays: Int
+        get() = parseTrialPeriodInDays(skuDetails.freeTrialPeriod)
+
+    /**
+     * Trial periods are given in the form "P1W" -> 1 week, or "P4D" -> 4 days.
+     */
+    private fun parseTrialPeriodInDays(period: String): Int {
+        if (period.isEmpty()) return 0
+        val qty = period.filter { it.isDigit() }.toInt()
+        return when (period.lowercase().last()) {
+            'w' -> qty * 7
+            'd' -> qty
+            else -> qty
+        }
+    }
 }
 
 private const val TAG = "Billing.kt"
