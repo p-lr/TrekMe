@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -68,7 +69,7 @@ private fun MissingOffer(message: String, onShopClick: () -> Unit) {
         )
         Text(
             text = message,
-            modifier = Modifier.padding(vertical = 32.dp),
+            modifier = Modifier.padding(vertical = 32.dp).alpha(0.87f),
             fontSize = 17.sp,
             textAlign = TextAlign.Center
         )

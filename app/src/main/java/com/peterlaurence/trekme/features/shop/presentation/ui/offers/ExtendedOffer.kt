@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -89,7 +90,8 @@ private fun TitleRow(@StringRes id: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp),
+            .padding(bottom = 8.dp)
+            .alpha(0.87f),
         horizontalArrangement = Arrangement.Center
     ) {
         Text(stringResource(id), fontWeight = FontWeight.Medium)
@@ -97,13 +99,13 @@ private fun TitleRow(@StringRes id: Int) {
 }
 
 @Composable
-private fun LineItem(@StringRes id: Int) {
+private fun LineItem(@StringRes id: Int, alpha: Float = 0.87f) {
     Row {
-        Text("\u2022")
+        Text("\u2022", Modifier.alpha(alpha))
         Text(
             stringResource(id),
             fontSize = 14.sp,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.padding(start = 8.dp).alpha(alpha),
         )
     }
 }

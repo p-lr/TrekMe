@@ -11,6 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -65,8 +66,10 @@ fun ColumnScope.GpsProPurchaseUI() {
         contentScale = ContentScale.Inside,
         contentDescription = null
     )
+    val alpha = 0.87f
     Text(
         stringResource(id = R.string.gps_pro_pres_p1_title),
+        Modifier.alpha(alpha),
         fontWeight = FontWeight.Medium,
     )
     Spacer(modifier = Modifier.padding(8.dp))
@@ -74,18 +77,21 @@ fun ColumnScope.GpsProPurchaseUI() {
         stringResource(
             id = R.string.gps_pro_pres_content
         ),
+        Modifier.alpha(alpha),
         textAlign = TextAlign.Justify,
         fontSize = 14.sp
     )
     Spacer(modifier = Modifier.padding(8.dp))
     Text(
         stringResource(id = R.string.gps_pro_pres_p2_title),
+        Modifier.alpha(alpha),
         fontWeight = FontWeight.Medium,
     )
     Spacer(modifier = Modifier.padding(8.dp))
     for (device in supportedDevices) {
         Text(
             "• $device",
+            Modifier.alpha(alpha),
             fontSize = 14.sp
         )
     }
@@ -94,6 +100,7 @@ fun ColumnScope.GpsProPurchaseUI() {
         stringResource(
             id = R.string.gps_pro_pres_ending
         ),
+        Modifier.alpha(alpha),
         textAlign = TextAlign.Justify,
         fontSize = 14.sp
     )

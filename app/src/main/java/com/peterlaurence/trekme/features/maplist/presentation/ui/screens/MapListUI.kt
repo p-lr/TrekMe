@@ -77,6 +77,7 @@ private fun MapCard(mapStub: MapStub, intents: MapListIntents) {
                 ) {
                     Text(
                         text = mapStub.title,
+                        modifier = Modifier.alpha(0.87f),
                         fontSize = 24.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
