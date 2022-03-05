@@ -6,20 +6,22 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
-import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.IgnLicenseViewModel
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.ExtendedOfferViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 
 /**
  * This dialog fragment holds the settings of the minimum and maximum zoom level of the map, before
  * it is downloaded.
- * In addition, it interacts with [IgnLicenseViewModel] to provide the user the ability to buy the
+ * In addition, it interacts with [ExtendedOfferViewModel] to provide the user the ability to buy the
  * license, if needed.
  */
+@AndroidEntryPoint
 class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
-    private val viewModel: IgnLicenseViewModel by activityViewModels()
+    private val viewModel: ExtendedOfferViewModel by viewModels()
     private lateinit var ignLicensePrice: String
 
     private lateinit var priceInformation: TextView

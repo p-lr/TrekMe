@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -71,6 +72,10 @@ private fun MissingOffer(message: String, onShopClick: () -> Unit) {
             fontSize = 17.sp,
             textAlign = TextAlign.Center
         )
-        OutlinedButtonColored(onClick = onShopClick, text = stringResource(id = R.string.navigate_to_shop))
+        OutlinedButtonColored(
+            onClick = onShopClick,
+            text = stringResource(id = R.string.navigate_to_shop),
+            color = colorResource(id = R.color.colorGreen)
+        )
     }
 }

@@ -4,7 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.billing.Billing
+import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.core.map.*
@@ -12,9 +12,9 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Wmts
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.di.IGN
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
@@ -23,11 +23,10 @@ import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvent
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 import javax.inject.Inject
@@ -37,13 +36,13 @@ class MapViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     locationSource: LocationSource,
     orientationSource: OrientationSource,
-    private val mapInteractor: MapInteractor,
+    mapInteractor: MapInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
     gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
-    @IGN private val billing: Billing
+    private val extendedOfferRepository: ExtendedOfferRepository
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
 
@@ -140,14 +139,20 @@ class MapViewModel @Inject constructor(
     }
     /* endregion */
 
-    suspend fun checkMapLicense() {
-        val map = mapRepository.getCurrentMap() ?: return
+    suspend fun checkMapLicense() = coroutineScope {
+        val map = mapRepository.getCurrentMap() ?: return@coroutineScope
 
-        when (getLicense(map)) {
-            is FreeLicense, ValidIgnLicense -> { /* Nothing to do */
-            }
-            is ErrorIgnLicense -> {
-                _uiState.value = Error.LicenseError
+        getLicense(map).collectLatest { mapLicense ->
+            when (mapLicense) {
+                is FreeLicense, ValidIgnLicense -> {
+                    /* Reload the map only if we were previously in error state */
+                    if (_uiState.value is Error) {
+                        onMapChange(map)
+                    }
+                }
+                is ErrorIgnLicense -> {
+                    _uiState.value = Error.LicenseError
+                }
             }
         }
     }
@@ -228,14 +233,24 @@ class MapViewModel @Inject constructor(
         fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double)
     }
 
-    private suspend fun getLicense(map: Map): MapLicense {
+    private suspend fun getLicense(map: Map): Flow<MapLicense> = channelFlow {
         val origin = map.origin
-        if (origin !is Wmts || !origin.licensed) return FreeLicense
+        if (origin !is Wmts || !origin.licensed) {
+            send(FreeLicense)
+            return@channelFlow
+        }
 
-        return withContext(Dispatchers.IO) {
-            billing.getPurchase()?.let {
-                ValidIgnLicense
-            } ?: ErrorIgnLicense(map)
+        extendedOfferRepository.updatePurchaseState()
+        launch {
+            extendedOfferRepository.purchaseFlow.collect {
+                send(
+                    if (PurchaseState.PURCHASED == extendedOfferRepository.purchaseFlow.value) {
+                        ValidIgnLicense
+                    } else {
+                        ErrorIgnLicense(map)
+                    }
+                )
+            }
         }
     }
 }

@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 @HiltViewModel
-class IgnLicenseViewModel @Inject constructor(
+class ExtendedOfferViewModel @Inject constructor(
     private val repo: ExtendedOfferRepository,
     private val appEventBus: AppEventBus
 ) : ViewModel() {
-    val purchaseStateLiveData = repo.purchaseFlow.asLiveData(viewModelScope.coroutineContext)
+    val purchaseStateLiveData = repo.purchaseFlow.asLiveData()
     val priceLiveData = repo.yearlySubDetailsFlow.map { it?.price ?: "" }.asLiveData()
 
     fun buyLicense() {

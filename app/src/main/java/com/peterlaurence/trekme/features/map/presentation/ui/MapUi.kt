@@ -64,7 +64,9 @@ fun MapScreen(
             }
         }
         launch {
-            viewModel.checkMapLicense()
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.checkMapLicense()
+            }
         }
     }
 

@@ -45,18 +45,22 @@ class ExtendedOfferRepository @Inject constructor(
 
             /* Otherwise, do normal checks */
             if (!ackDone) {
-                val p = billing.getPurchase()
-                val result = if (p != null) {
-                    PurchaseState.PURCHASED
-                } else {
-                    updateSubscriptionInfo()
-                    PurchaseState.NOT_PURCHASED
-                }
-                _purchaseFlow.value = result
+                updatePurchaseState()
             } else {
                 onPurchaseAcknowledged()
             }
         }
+    }
+
+    suspend fun updatePurchaseState() {
+        val p = billing.getPurchase()
+        val result = if (p != null) {
+            PurchaseState.PURCHASED
+        } else {
+            updateSubscriptionInfo()
+            PurchaseState.NOT_PURCHASED
+        }
+        _purchaseFlow.value = result
     }
 
     fun acknowledgePurchase() = scope.launch {
