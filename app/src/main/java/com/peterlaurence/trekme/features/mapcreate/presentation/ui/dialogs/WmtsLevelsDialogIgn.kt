@@ -98,7 +98,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
         helpBtn = view.findViewById(R.id.help_license_info)
         helpBtn.setOnClickListener {
             val builder = AlertDialog.Builder(requireContext())
-            builder.setMessage(R.string.ign_license_explanation)
+            builder.setMessage(R.string.extended_offer_explanation)
             builder.show()
         }
     }

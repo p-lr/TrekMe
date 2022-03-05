@@ -354,6 +354,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         appEventBus.openDrawerFlow.map { openDrawer() }.collectWhileStartedIn(this)
 
+        appEventBus.navigateToShopFlow.map { showShopFragment() }.collectWhileStartedIn(this)
+
         gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
             showBtDeviceSettingsFragment()
         }

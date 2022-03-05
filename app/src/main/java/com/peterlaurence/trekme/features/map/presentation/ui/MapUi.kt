@@ -8,10 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -28,13 +25,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
-import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
+import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
+import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapLayout
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
-import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
 fun MapScreen(
@@ -124,41 +121,14 @@ fun MapScreen(
         }
         is Error -> ErrorScaffold(
             uiState as Error,
-            onMainMenuClick = viewModel::onMainMenuClick
+            onMainMenuClick = viewModel::onMainMenuClick,
+            onShopClick = viewModel::onShopClick
         )
     }
 }
 
 @Composable
-fun ErrorScaffold(
-    error: Error,
-    onMainMenuClick: () -> Unit
-) {
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
-
-    Scaffold(
-        Modifier,
-        scaffoldState = scaffoldState,
-        topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = onMainMenuClick) {
-                        Icon(Icons.Filled.Menu, contentDescription = "")
-                    }
-                }
-            )
-        }
-    ) {
-        when (error) {
-            Error.LicenseError -> ErrorScreen(message = stringResource(R.string.missing_ign_license))
-            Error.EmptyMap -> ErrorScreen(message = "empty map")
-        }
-    }
-}
-
-@Composable
-fun MapScaffold(
+private fun MapScaffold(
     modifier: Modifier = Modifier,
     uiState: MapUiState,
     isShowingOrientation: Boolean,
@@ -265,61 +235,6 @@ fun MapScaffold(
     }
 }
 
-@Composable
-private fun MapLayout(
-    mapUiState: MapUiState,
-    isShowingDistance: Boolean,
-    isShowingSpeed: Boolean,
-    isShowingGpsData: Boolean,
-    isShowingScaleIndicator: Boolean,
-    location: Location?,
-) {
-    Box {
-        MapUI(state = mapUiState.mapState) {
-            val landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
-            if (landmarkPositions.isNotEmpty()) {
-                LandmarkLines(
-                    mapState = mapUiState.mapState,
-                    positionMarker = mapUiState.landmarkLinesState.positionMarkerSnapshot,
-                    landmarkPositions = landmarkPositions,
-                    distanceForIdFlow = mapUiState.landmarkLinesState.distanceForLandmark
-                )
-            }
-
-            if (isShowingDistance) {
-                DistanceLine(
-                    mapState = mapUiState.mapState,
-                    marker1 = mapUiState.distanceLineState.marker1Snapshot,
-                    marker2 = mapUiState.distanceLineState.marker2Snapshot
-                )
-            }
-        }
-
-        Column {
-            if (isShowingDistance || isShowingSpeed) {
-                val distance by mapUiState.distanceLineState.distanceFlow.collectAsState(initial = 0f)
-                TopOverlay(
-                    speed = location?.speed,
-                    distance = distance,
-                    speedVisibility = isShowingSpeed,
-                    distanceVisibility = isShowingDistance
-                )
-            }
-            if (isShowingScaleIndicator) {
-                val state = mapUiState.scaleIndicatorState
-                ScaleIndicator(
-                    widthPx = state.widthPx,
-                    widthRatio = state.widthRatio,
-                    scaleText = state.scaleText
-                )
-            }
-        }
-
-        if (isShowingGpsData) {
-            GpsDataOverlay(location, Modifier.align(Alignment.BottomStart))
-        }
-    }
-}
 
 /**
  * We need to know the display rotation (either 0, 90°, 180°, or 270°) - and not just the

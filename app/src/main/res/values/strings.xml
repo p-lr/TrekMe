@@ -199,9 +199,8 @@
     <string name="mile">ml</string>
     <string name="no_track_message">You haven\'t created nor imported any track yet.
         You can import a gpx track downloaded from a website (or a recording of your own) using the import button below.</string>
-    <string name="missing_ign_license">"Your IGN module can\'t be checked.\n\nIf you cleared the cache of the playstore, please open the playstore and consult your
-        subscriptions to refresh the cache. While doing this, you need network connectivity.\n\nIf it isn\'t a cache issue, you can buy the IGN module by going to
-        map creation and by creating an IGN map."</string>
+    <string name="missing_extended_offer">To open this map, your TrekMe Extended subscription must be active.</string>
+    <string name="navigate_to_shop">Go to shop</string>
     <string name="unknown_map_source">Unknown map source. The map configuration is incorrect.</string>
     <string name="center_on_position_btn_desc" translatable="false">Center on position button</string>
     <string name="compass_fab_desc" translatable="false">Compass</string>
@@ -308,7 +307,7 @@
     <string name="max_zoom">Maximun zoom</string>
     <string name="total_transactions">Total transactions</string>
     <string name="map_size">Map size</string>
-    <string name="ign_license_explanation">You have a 7 days of free trial. You can cancel your subscription anytime in the
+    <string name="extended_offer_explanation">You have a 7 days of free trial. You can cancel your subscription anytime in the
         Google Play > Subscriptions > TrekMe > Cancel.\nTrekMe Extended is available as a yearly or monthly subscription. It
         allows you to create maps without any restrictions.</string>
     <string name="module_check_pending">Checking module..</string>

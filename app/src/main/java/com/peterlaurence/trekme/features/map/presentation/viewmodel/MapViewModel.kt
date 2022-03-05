@@ -130,9 +130,13 @@ class MapViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    /* region TopAppBar events */
+    /* region events */
     fun onMainMenuClick() {
         appEventBus.openDrawer()
+    }
+
+    fun onShopClick() {
+        appEventBus.navigateToShop()
     }
     /* endregion */
 

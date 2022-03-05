@@ -528,4 +528,5 @@ Bien que certaines ressources sont désormais libres, les cartes IGN les plus de
 "Plan IGN" sont toujours basées sur des 
 [ressources payantes](https://www.ign.fr/sites/default/files/2020-12/cp_gratuite_donnees_2020.pdf). 
 Pour cette raison, et aussi pour rémunérer le travail considérable que représente le développement
-de cette application, les cartes IGN sont proposées au travers d'un "module IGN", valable un an.
+de cette application, les cartes IGN sont proposées au travers une offre "TrekMe Extended", disponible
+sous forme d'abonnement à l'année ou au mois.

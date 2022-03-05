@@ -60,4 +60,11 @@ class AppEventBus {
     val openDrawerFlow = _openDrawerFlow.asSharedFlow()
 
     fun openDrawer() = _openDrawerFlow.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
+    private val _navigateToShopFlow = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
+    val navigateToShopFlow = _navigateToShopFlow.asSharedFlow()
+
+    fun navigateToShop() = _navigateToShopFlow.tryEmit(Unit)
 }

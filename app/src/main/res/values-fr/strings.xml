@@ -141,14 +141,13 @@
     <string name="preference_starton_lastmap">la dernière carte ouverte</string>
     <string name="preference_root_location_title">Répertoire sélectionné</string>
     <string name="mapview_lock_on_position">Verrouiller la position</string>
-    <string name="ign_license_explanation">Vous avez <b>7 jours d\'essai gratuits</b>. Vous pouvez annuler l\'abonnement à tout moment dans
+    <string name="extended_offer_explanation">Vous avez <b>7 jours d\'essai gratuits</b>. Vous pouvez annuler l\'abonnement à tout moment dans
         Google Play > Abonnements > TrekMe > Annuler.\nPendant la période d\'essai, cela ne donne lieu à aucun frais. Hors de la période d\'essai,
         cela ne donne lieu à aucun remboursement, bien que l\'abonnement reste actif pour la durée prévue (un an ou un mois, selon l\'offre). TrekMe
         Extended vous donne un accès illimité aux cartes IGN.</string>
     <string name="buy_btn">Acheter</string>
-    <string name="missing_ign_license">Votre module IGN est introuvable.\n\nSi vous avec supprimé le cache du playstore, veuillez rouvrir le playstore et consulter
-        vos abonnements pour réactualiser le cache. Vous devez avoir du réseau pour que cette opération fonctionne.\n\nSi ce n\'est pas un problème de cache,
-        l\'achat du module IGN se fait au moment de créer une nouvelle carte IGN.</string>
+    <string name="missing_extended_offer">Pour accéder à cette carte, votre abonnement TrekMe Extended doit être actif.</string>
+    <string name="navigate_to_shop">Aller à la boutique</string>
     <string name="ign_legal_notice_btn">mentions légales</string>
     <string name="ign_legal_notice">L\'offre intègre des Données et/ou Géoservices pour lesquels, soit l\'IGN détient les droits de propriété intellectuelle, soit dispose de l\'accord nécessaire des ayants droits.\n
         La licence concédée à l\'utilisateur des Données ou Géoservices IGN n\'entraîne à son profit aucun transfert de propriété de ces données.\n
