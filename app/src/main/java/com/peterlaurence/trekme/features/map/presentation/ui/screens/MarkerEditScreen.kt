@@ -1,5 +1,6 @@
-package com.peterlaurence.trekme.features.map.presentation.ui
+package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,8 +14,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
@@ -22,6 +24,7 @@ import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.TextFieldCustom
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
+import com.peterlaurence.trekme.ui.theme.onSurfaceAccent
 
 @Composable
 fun MarkerEditScreen(
@@ -100,7 +103,7 @@ fun MarkerEditScreen(
 }
 
 @Composable
-fun MarkerEditUi(
+private fun MarkerEditUi(
     name: String,
     latitudeField: String,
     longitudeField: String,
@@ -110,11 +113,12 @@ fun MarkerEditUi(
     onLonChange: (String) -> Unit,
     onCommentChange: (String) -> Unit
 ) {
-    val accentColor = colorResource(id = R.color.colorAccent)
+    val accentColor = onSurfaceAccent()
 
     Column(
         Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
+            .background(MaterialTheme.colors.surface)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -167,7 +171,6 @@ fun MarkerEditUi(
             Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
-                .heightIn(min = 200.dp)
                 .border(
                     if (hasFocus) 2.dp else 1.dp,
                     MaterialTheme.colors.primary,
@@ -178,12 +181,17 @@ fun MarkerEditUi(
             BasicTextField(
                 value = commentField,
                 onValueChange = onCommentChange,
+                textStyle = TextStyle(color = MaterialTheme.colors.onSurface),
                 modifier = Modifier
-                    .fillMaxSize()
+                    .heightIn(min = 200.dp)
+                    .fillMaxWidth()
                     .padding(16.dp)
                     .onFocusChanged {
                         hasFocus = it.hasFocus
-                    }
+                    },
+                singleLine = false,
+                maxLines = 10,
+                cursorBrush = SolidColor(MaterialTheme.colors.primary)
             )
         }
     }

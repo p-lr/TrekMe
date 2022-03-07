@@ -8,7 +8,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -17,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.ui.common.Callout
+import com.peterlaurence.trekme.ui.theme.onSurfaceAccent
 
 @Composable
 fun MarkerCallout(
@@ -62,7 +62,7 @@ fun MarkerCallout(
                         .clickable {
                             onEditAction()
                         },
-                    tint = Color(0xFF448AFF)
+                    tint = onSurfaceAccent()
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -78,7 +78,7 @@ fun MarkerCallout(
                         .clickable {
                             onMoveAction()
                         },
-                    tint = Color(0xFF448AFF)
+                    tint = onSurfaceAccent()
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -95,7 +95,7 @@ fun MarkerCallout(
                         .clickable {
                             onDeleteAction()
                         },
-                    tint = Color(0xFF448AFF)
+                    tint = onSurfaceAccent()
                 )
             }
         }

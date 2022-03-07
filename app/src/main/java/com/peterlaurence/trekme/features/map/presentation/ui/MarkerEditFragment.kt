@@ -11,6 +11,7 @@ import androidx.navigation.fragment.navArgs
 import com.peterlaurence.trekme.databinding.FragmentMarkerEditBinding
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
+import com.peterlaurence.trekme.features.map.presentation.ui.screens.MarkerEditScreen
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

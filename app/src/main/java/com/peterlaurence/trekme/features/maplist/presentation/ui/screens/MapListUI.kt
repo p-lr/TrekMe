@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,6 +37,8 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.ui.theme.lazyListBackground
+import com.peterlaurence.trekme.ui.theme.onSurfaceAccent
 import com.peterlaurence.trekme.util.pxToDp
 import com.peterlaurence.trekme.viewmodel.maplist.*
 
@@ -46,6 +49,7 @@ fun MapListUI(state: MapListState, intents: MapListIntents) {
         is MapList -> {
             if (state.mapList.isNotEmpty()) {
                 LazyColumn(
+                    Modifier.background(lazyListBackground()),
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -166,7 +170,7 @@ private fun ButtonRow(
         modifier.padding(start = 8.dp, end = 0.dp, bottom = 0.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val color = colorResource(id = R.color.colorAccent)
+        val color = onSurfaceAccent()
         TextButton(onClick = onMapSettings) {
             Text(
                 text = stringResource(id = R.string.map_manage_btn_string).uppercase(),
@@ -270,6 +274,7 @@ private fun GoToMapCreationScreen(onButtonCLick: (showOnBoarding: Boolean) -> Un
         val maxWidth = maxWidth
         Column(
             Modifier
+                .background(MaterialTheme.colors.surface)
                 .padding(32.dp)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -281,13 +286,17 @@ private fun GoToMapCreationScreen(onButtonCLick: (showOnBoarding: Boolean) -> Un
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier
                     .padding(bottom = 16.dp)
-                    .alpha(0.87f)
+                    .alpha(0.87f),
+                color = MaterialTheme.colors.onSurface
             )
             Spacer(Modifier.height(16.dp))
             Button(
                 onClick = { onButtonCLick(true) },
                 modifier = Modifier.width(maxWidth * 0.6f),
-                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.colorAccent), contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = colorResource(id = R.color.colorAccent),
+                    contentColor = Color.White
+                ),
                 shape = RoundedCornerShape(50)
             ) {
                 Text(text = stringResource(id = R.string.with_onboarding_btn).uppercase())
@@ -296,7 +305,7 @@ private fun GoToMapCreationScreen(onButtonCLick: (showOnBoarding: Boolean) -> Un
             OutlinedButtonColored(
                 onClick = { onButtonCLick(false) },
                 modifier = Modifier.width(maxWidth * 0.6f),
-                color = colorResource(id = R.color.colorAccent),
+                color = onSurfaceAccent(),
                 text = stringResource(id = R.string.without_onboarding_btn).uppercase(),
                 shape = RoundedCornerShape(50)
             )
