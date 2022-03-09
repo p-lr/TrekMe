@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -56,7 +57,9 @@ class MapFragment : Fragment() {
             }
 
             setContent {
-                TrekMeTheme {
+                /* Locally override the background color (dark theme or not). Done this way, it
+                 * doesn't add a GPU overdraw. */
+                TrekMeTheme(background = Color.White) {
                     /* By changing the view-model store owner to the activity in the current
                      * composition tree (which in this case starts at setContent { .. }) in the
                      * fragment, calling viewModel() inside a composable will provide us a

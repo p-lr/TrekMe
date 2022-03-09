@@ -33,10 +33,15 @@ private val LightColorPalette = lightColors(
 @Composable
 fun TrekMeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    background: Color? = null,
     content: @Composable() () -> Unit
 ) {
     val colors = if (darkTheme) {
-        DarkColorPalette
+        DarkColorPalette.let {
+            if (background != null) {
+                it.copy(background = background)
+            } else it
+        }
     } else {
         LightColorPalette
     }
