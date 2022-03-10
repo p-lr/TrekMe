@@ -6,11 +6,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class WmtsSourceRepository {
-    private val wmtsSourceState_ = MutableStateFlow<WmtsSource?>(null)
-    val wmtsSourceState: StateFlow<WmtsSource?> = wmtsSourceState_.asStateFlow()
+    private val _wmtsSourceState = MutableStateFlow<WmtsSource?>(null)
+    val wmtsSourceState: StateFlow<WmtsSource?> = _wmtsSourceState.asStateFlow()
 
     fun setMapSource(source: WmtsSource) {
-        wmtsSourceState_.tryEmit(source)
+        _wmtsSourceState.tryEmit(source)
     }
-
 }

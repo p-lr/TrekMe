@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         supportActionBar?.show()
                         supportActionBar?.title = getString(R.string.shop_menu_title)
                     }
-                    R.id.mapFragment, R.id.markerEditFragment, R.id.wmtsViewFragment -> {
+                    R.id.mapFragment, R.id.markerEditFragment, R.id.wmtsFragment -> {
                         supportActionBar?.hide()
                         supportActionBar?.title = ""
                     }

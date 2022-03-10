@@ -67,7 +67,7 @@
     <navigation android:id="@+id/mapCreationGraph"
         app:startDestination="@id/mapCreateFragment">
         <fragment
-            android:id="@+id/wmtsViewFragment"
+            android:id="@+id/wmtsFragment"
             android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFragment"
             android:label="@string/google_map_wmts_label">
             <action
@@ -87,8 +87,8 @@
             android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.MapCreateFragment"
             android:label="MapCreateFragment">
             <action
-                android:id="@+id/action_mapCreateFragment_to_googleMapWmtsViewFragment"
-                app:destination="@id/wmtsViewFragment" />
+                android:id="@+id/action_mapCreateFragment_to_wmtsFragment"
+                app:destination="@id/wmtsFragment" />
         </fragment>
     </navigation>
     <fragment

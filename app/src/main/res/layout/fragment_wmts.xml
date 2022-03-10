@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/google_map_wmts_compose_view"
+        android:id="@+id/wmts_compose_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintStart_toStartOf="parent"

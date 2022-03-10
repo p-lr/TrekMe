@@ -52,7 +52,7 @@ class MapCreateFragment : Fragment() {
         val navController = findNavController()
         if (navController.currentDestination?.id == R.id.mapCreateFragment) {
             val action =
-                MapCreateFragmentDirections.actionMapCreateFragmentToGoogleMapWmtsViewFragment()
+                MapCreateFragmentDirections.actionMapCreateFragmentToWmtsFragment()
             navController.navigate(action)
         }
     }

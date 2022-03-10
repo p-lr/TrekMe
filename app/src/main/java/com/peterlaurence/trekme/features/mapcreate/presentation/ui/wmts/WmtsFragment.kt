@@ -113,7 +113,7 @@ class WmtsFragment : Fragment() {
         /* A hack to circumvent a nasty bug causing the AbstractComposeView to be not responsive
          * to touch events at certain state transitions */
         viewModel.wmtsState.map {
-            _binding?.googleMapWmtsComposeView?.also {
+            _binding?.wmtsComposeView?.also {
                 it.disposeComposition()
             }
         }.collectWhileResumedIn(this)
@@ -131,7 +131,7 @@ class WmtsFragment : Fragment() {
     ): View {
         val binding = FragmentWmtsBinding.inflate(inflater, container, false)
         _binding = binding
-        binding.googleMapWmtsComposeView.apply {
+        binding.wmtsComposeView.apply {
             setViewCompositionStrategy(
                 ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
             )
