@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
 import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
@@ -40,7 +41,11 @@ class MapCreateFragment : Fragment() {
                 TrekMeTheme {
                     MapSourceListStateful(viewModel) {
                         viewModel.setMapSource(it)
-                        showWmtsViewFragment()
+                        if (it == WmtsSource.IGN) {
+                            navigateToOfferGateway()
+                        } else {
+                            navigateToWmtsFragment()
+                        }
                     }
                 }
             }
@@ -48,11 +53,20 @@ class MapCreateFragment : Fragment() {
         return binding.root
     }
 
-    private fun showWmtsViewFragment() {
+    private fun navigateToWmtsFragment() {
         val navController = findNavController()
         if (navController.currentDestination?.id == R.id.mapCreateFragment) {
             val action =
                 MapCreateFragmentDirections.actionMapCreateFragmentToWmtsFragment()
+            navController.navigate(action)
+        }
+    }
+
+    private fun navigateToOfferGateway() {
+        val navController = findNavController()
+        if (navController.currentDestination?.id == R.id.mapCreateFragment) {
+            val action =
+                MapCreateFragmentDirections.actionMapCreateFragmentToExtendedOfferGatewayFragment()
             navController.navigate(action)
         }
     }

@@ -349,4 +349,7 @@
     <string name="free_trial">Essai gratuit de %1$dj</string>
     <string name="one_year">1 an</string>
     <string name="one_month">1 mois</string>
+    <string name="offer_gateway_suggest_navigation">Les cartes IGN sont accessibles avec TrekMe Extended</string>
+    <string name="offer_gateway_navigation_button">Voir les offres</string>
+    <string name="offer_gateway_check_pending">Vérifications en cours…</string>
 </resources>

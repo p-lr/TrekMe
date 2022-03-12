@@ -7,6 +7,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.asLiveData
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.ExtendedOfferViewModel
@@ -45,7 +46,7 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.purchaseStateLiveData.observe(this) {
+        viewModel.purchaseStateFlow.asLiveData().observe(this) {
             it?.also {
                 when (it) {
                     PurchaseState.CHECK_PENDING -> {
@@ -71,10 +72,10 @@ class WmtsLevelsDialogIgn : WmtsLevelsDialog() {
             }
         }
 
-        viewModel.priceLiveData.observe(this) {
+        viewModel.priceStateFlow.asLiveData().observe(this) {
             it?.also { price ->
                 ignLicensePrice = price
-                if (PurchaseState.NOT_PURCHASED == viewModel.purchaseStateLiveData.value) {
+                if (PurchaseState.NOT_PURCHASED == viewModel.purchaseStateFlow.value) {
                     showPriceIGN()
                 }
             }

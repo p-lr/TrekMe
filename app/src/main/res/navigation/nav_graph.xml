@@ -89,6 +89,17 @@
             <action
                 android:id="@+id/action_mapCreateFragment_to_wmtsFragment"
                 app:destination="@id/wmtsFragment" />
+            <action
+                android:id="@+id/action_mapCreateFragment_to_extendedOfferGatewayFragment"
+                app:destination="@id/extendedOfferGatewayFragment" />
+        </fragment>
+        <fragment
+            android:id="@+id/extendedOfferGatewayFragment"
+            android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.ExtendedOfferGatewayFragment"
+            android:label="ExtendedOfferGatewayFragment" >
+            <action
+                android:id="@+id/action_extendedOfferGatewayFragment_to_wmtsFragment"
+                app:destination="@id/wmtsFragment" />
         </fragment>
     </navigation>
     <fragment

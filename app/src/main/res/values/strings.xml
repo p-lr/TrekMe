@@ -37,6 +37,9 @@
     <string name="onboarding_map_create">Select a map source.</string>
     <string name="onboarding_center_on_pos">Center on your position using this button</string>
     <string name="onboarding_select_area">Select the area to download</string>
+    <string name="offer_gateway_suggest_navigation">IGN maps are available with TrekMe Extended</string>
+    <string name="offer_gateway_navigation_button">Go to shop</string>
+    <string name="offer_gateway_check_pending">Check pending…</string>
 
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>
