@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.offergateway
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -23,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.ExtendedOfferViewModel
+import com.peterlaurence.trekme.ui.theme.defaultBackground
 import com.peterlaurence.trekme.ui.theme.onSurfaceAccent
 
 @Composable
@@ -42,7 +44,9 @@ private fun ExtendedOfferGateway(
     onNavigateToShop: () -> Unit
 ) {
     Column(
-        modifier = Modifier.padding(32.dp),
+        modifier = Modifier
+            .background(defaultBackground())
+            .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -58,7 +62,15 @@ private fun ExtendedOfferGateway(
 
 @Composable
 private fun ShowPending() {
-    Text(text = stringResource(id = R.string.offer_gateway_check_pending))
+    Text(
+        text = stringResource(id = R.string.offer_gateway_check_pending),
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Medium,
+        modifier = Modifier
+            .padding(bottom = 32.dp)
+            .alpha(0.87f),
+        color = MaterialTheme.colors.onSurface
+    )
     Spacer(modifier = Modifier.height(16.dp))
     LinearProgressIndicator()
 }

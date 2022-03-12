@@ -7,11 +7,13 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+private val onSurfaceDark = Color(0xff2b2b2b)
+
 private val DarkColorPalette = darkColors(
     primary = Color(0xffb38b80),
     primaryVariant = Brown700,
     secondary = Blue500,
-    surface = Color(0xff2b2b2b),
+    surface = onSurfaceDark,
     onSurface = Color(0xffa9b7c6)
 )
 
@@ -57,6 +59,11 @@ fun TrekMeTheme(
 @Composable
 fun onSurfaceAccent(): Color {
     return if (isSystemInDarkTheme()) Color(0xff6ba1ff) else Color(0xff448aff)
+}
+
+@Composable
+fun defaultBackground(): Color {
+    return if (isSystemInDarkTheme()) onSurfaceDark else Color.White
 }
 
 @Composable
