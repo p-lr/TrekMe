@@ -1,7 +1,9 @@
 package com.peterlaurence.trekme.features.shop.presentation.ui.offers
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -12,7 +14,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -67,6 +71,8 @@ fun TrekMeExtendedContent() {
     TitleRow(R.string.trekme_extended_specificities)
     LineItem(id = R.string.no_ads)
     LineItem(id = R.string.new_features)
+
+    NotaBene()
 }
 
 @Composable
@@ -105,7 +111,37 @@ private fun LineItem(@StringRes id: Int, alpha: Float = 0.87f) {
         Text(
             stringResource(id),
             fontSize = 14.sp,
-            modifier = Modifier.padding(start = 8.dp).alpha(alpha),
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .alpha(alpha),
+        )
+    }
+}
+
+@Composable
+private fun NotaBene() {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Divider(
+            Modifier
+                .background(Color.Black)
+                .alpha(0.87f)
+                .width(50.dp))
+    }
+
+    Row {
+        Text(stringResource(id = R.string.nb), Modifier.alpha(0.6f))
+        Text(
+            stringResource(R.string.ign_caution),
+            fontSize = 14.sp,
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .alpha(0.6f),
+            style = TextStyle(textAlign = TextAlign.Justify)
         )
     }
 }

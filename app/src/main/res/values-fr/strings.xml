@@ -348,4 +348,7 @@
     <string name="offer_gateway_free_trial">Période d\'essai gratuite</string>
     <string name="offer_gateway_navigation_button">Voir les offres</string>
     <string name="offer_gateway_check_pending">Vérifications en cours…</string>
+    <string name="ign_caution">Le serveur de carte de l\'IGN a parfois des lenteurs. Concrètement, vous voulez créer une carte IGN mais …
+    rien ne s\'affiche. Si cela se produit, ne vous inquiétez pas ; il suffit en général de réessayer plus tard dans la journée.</string>
+    <string name="nb">N.B</string>
 </resources>
