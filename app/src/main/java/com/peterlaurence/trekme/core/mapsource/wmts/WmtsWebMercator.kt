@@ -83,13 +83,6 @@ fun getNumberOfTiles(levelMin: Int, levelMax: Int, point1: Point, point2: Point)
 }
 
 /**
- * One transaction is equivalent to [TILES_PER_TRANSACTION] tiles.
- */
-fun Long.toTransactionsNumber(): Long {
-    return ceil(this / TILES_PER_TRANSACTION).toLong()
-}
-
-/**
  * Given a number of tiles, get the resulting approximate size in Mo.
  * [TILE_SIZE_IN_MO] is an average size.
  */
@@ -274,7 +267,6 @@ const val Y0 = -X0
 const val X1 = -X0
 const val Y1 = -Y0
 
-const val TILES_PER_TRANSACTION = 15.981973 // only meaningful for France IGN
 const val TILE_SIZE_IN_MO = 0.0169
 const val TILE_SIZE_PX = 256
 

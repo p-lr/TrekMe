@@ -190,11 +190,7 @@ class WmtsFragment : Fragment() {
 
     private fun showDownloadForm(data: DownloadFormDataBundle) {
         val fm = activity?.supportFragmentManager ?: return
-        val wmtsLevelsDialog = if (data.wmtsSource == WmtsSource.IGN) {
-            WmtsLevelsDialogIgn.newInstance(data)
-        } else {
-            WmtsLevelsDialog.newInstance(data)
-        }
+        val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(data)
         wmtsLevelsDialog.show(fm, "fragment")
     }
 }

@@ -84,7 +84,6 @@
     <string name="min_zoom">Zoom minimum</string>
     <string name="wmts_settings_dialog">Configuration de la carte</string>
     <string name="max_zoom">Zoom maximum</string>
-    <string name="total_transactions">Total transactions</string>
     <string name="service_download_name">Service de téléchargement de TrekMe</string>
     <string name="service_download_action">Téléchargement de carte</string>
     <string name="download">Télécharger</string>
@@ -141,10 +140,6 @@
     <string name="preference_starton_lastmap">la dernière carte ouverte</string>
     <string name="preference_root_location_title">Répertoire sélectionné</string>
     <string name="mapview_lock_on_position">Verrouiller la position</string>
-    <string name="extended_offer_explanation">Vous avez <b>7 jours d\'essai gratuits</b>. Vous pouvez annuler l\'abonnement à tout moment dans
-        Google Play > Abonnements > TrekMe > Annuler.\nPendant la période d\'essai, cela ne donne lieu à aucun frais. Hors de la période d\'essai,
-        cela ne donne lieu à aucun remboursement, bien que l\'abonnement reste actif pour la durée prévue (un an ou un mois, selon l\'offre). TrekMe
-        Extended vous donne un accès illimité aux cartes IGN.</string>
     <string name="buy_btn">Acheter</string>
     <string name="missing_extended_offer">Pour accéder à cette carte, votre abonnement TrekMe Extended doit être actif.</string>
     <string name="navigate_to_shop">Aller à la boutique</string>
@@ -350,6 +345,7 @@
     <string name="one_year">1 an</string>
     <string name="one_month">1 mois</string>
     <string name="offer_gateway_suggest_navigation">Les cartes IGN sont accessibles avec TrekMe Extended</string>
+    <string name="offer_gateway_free_trial">Période d\'essai gratuite</string>
     <string name="offer_gateway_navigation_button">Voir les offres</string>
     <string name="offer_gateway_check_pending">Vérifications en cours…</string>
 </resources>

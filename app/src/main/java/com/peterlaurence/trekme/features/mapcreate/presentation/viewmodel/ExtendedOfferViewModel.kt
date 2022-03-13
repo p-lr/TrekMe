@@ -9,16 +9,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExtendedOfferViewModel @Inject constructor(
-    private val repo: ExtendedOfferRepository,
-    private val appEventBus: AppEventBus
+    repo: ExtendedOfferRepository,
 ) : ViewModel() {
     val purchaseStateFlow = repo.purchaseFlow
-    val priceStateFlow = repo.yearlySubDetailsFlow.map { it?.price ?: "" }
-
-    fun buyLicense() {
-        val billingParams = repo.getYearlySubscriptionBillingParams()
-        if (billingParams != null) {
-            appEventBus.startBillingFlow(billingParams)
-        }
-    }
 }

@@ -40,6 +40,7 @@
     <string name="offer_gateway_suggest_navigation">IGN maps are available with TrekMe Extended</string>
     <string name="offer_gateway_navigation_button">Go to shop</string>
     <string name="offer_gateway_check_pending">Check pending…</string>
+    <string name="offer_gateway_free_trial">Free trial</string>
 
     <!-- GpxRecordService -->
     <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>
@@ -308,11 +309,7 @@
     <string name="google_map_wmts_label" translatable="false">GoogleMapWmtsViewFragment</string>
     <string name="min_zoom">Minimum zoom</string>
     <string name="max_zoom">Maximun zoom</string>
-    <string name="total_transactions">Total transactions</string>
     <string name="map_size">Map size</string>
-    <string name="extended_offer_explanation">You have a 7 days of free trial. You can cancel your subscription anytime in the
-        Google Play > Subscriptions > TrekMe > Cancel.\nTrekMe Extended is available as a yearly or monthly subscription. It
-        allows you to create maps without any restrictions.</string>
     <string name="module_check_pending">Checking module..</string>
     <string name="offer_suggestion">Available with TrekMe Extended 1 year, 7d free trial</string>
     <string name="ign_buy_license_pending">Please wait a few minutes, payment is pending</string>

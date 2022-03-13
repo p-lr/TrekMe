@@ -16,7 +16,6 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
 import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
-import com.peterlaurence.trekme.core.mapsource.wmts.toTransactionsNumber
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
@@ -40,7 +39,6 @@ open class WmtsLevelsDialog : DialogFragment() {
     private var currentMinLevel = startMinLevel
     private var currentMaxLevel = startMaxLevel
 
-    private lateinit var transactionsTextView: TextView
     private lateinit var mapSizeTextView: TextView
     private var downloadFormDataBundle: DownloadFormDataBundle? = null
     private val wmtsSource: WmtsSource?
@@ -130,7 +128,7 @@ open class WmtsLevelsDialog : DialogFragment() {
                     barMaxLevel.progress = currentMaxLevel - this@WmtsLevelsDialog.minLevel
                 }
 
-                updateTransactionCount()
+                updateMapSize()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -152,7 +150,7 @@ open class WmtsLevelsDialog : DialogFragment() {
                     barMinLevel.progress = currentMinLevel - this@WmtsLevelsDialog.minLevel
                 }
 
-                updateTransactionCount()
+                updateMapSize()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -162,7 +160,6 @@ open class WmtsLevelsDialog : DialogFragment() {
             }
         })
 
-        transactionsTextView = view.findViewById(R.id.transactions_text_view)
         mapSizeTextView = view.findViewById(R.id.map_size_text_view)
     }
 
@@ -170,18 +167,14 @@ open class WmtsLevelsDialog : DialogFragment() {
      * This can be done in UI thread as even for billions of tiles the calculation is almost
      * instantly done.
      */
-    fun updateTransactionCount() {
+    fun updateMapSize() {
         val (p1, p2) = getPointsOfArea()
 
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1.toDomain(), p2.toDomain())
 
-        val numberOfTransactions = tileCount.toTransactionsNumber()
-
         /* Format the number of transactions according to the current locale */
         val currentLocale = ConfigurationCompat.getLocales(resources.configuration).get(0)
         val numberFormat = NumberFormat.getNumberInstance(currentLocale)
-        val formattedNumber = numberFormat.format(numberOfTransactions)
-        transactionsTextView.text = formattedNumber
 
         /* Show the map size in Mo */
         val mapSizeInMo = "${numberFormat.format(tileCount.toSizeInMo())} Mo"
@@ -190,7 +183,7 @@ open class WmtsLevelsDialog : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        updateTransactionCount()
+        updateMapSize()
     }
 
     /**

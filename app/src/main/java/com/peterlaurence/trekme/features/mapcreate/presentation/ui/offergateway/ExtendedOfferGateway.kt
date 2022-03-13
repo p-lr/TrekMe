@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,13 +35,15 @@ fun ExtendedOfferGatewayStateful(
     onNavigateToShop: () -> Unit
 ) {
     val purchaseState by viewModel.purchaseStateFlow.collectAsState()
-    ExtendedOfferGateway(purchaseState, onNavigateToWmtsFragment, onNavigateToShop)
+    if (purchaseState == PurchaseState.PURCHASED) {
+        onNavigateToWmtsFragment()
+    }
+    ExtendedOfferGateway(purchaseState, onNavigateToShop)
 }
 
 @Composable
 private fun ExtendedOfferGateway(
     purchaseState: PurchaseState,
-    onNavigateToWmtsFragment: () -> Unit,
     onNavigateToShop: () -> Unit
 ) {
     Column(
@@ -52,7 +55,7 @@ private fun ExtendedOfferGateway(
     ) {
         when (purchaseState) {
             PurchaseState.PURCHASE_PENDING, PurchaseState.CHECK_PENDING -> ShowPending()
-            PurchaseState.PURCHASED -> onNavigateToWmtsFragment()
+            PurchaseState.PURCHASED -> { /* Nothing to do */ }
             PurchaseState.UNKNOWN, PurchaseState.NOT_PURCHASED -> {
                 SuggestShopNavigation(onNavigateToShop)
             }
@@ -90,11 +93,23 @@ private fun SuggestShopNavigation(navigateToShop: () -> Unit) {
         fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
         modifier = Modifier
-            .padding(bottom = 32.dp)
+            .padding(bottom = 16.dp)
             .alpha(0.87f),
         color = MaterialTheme.colors.onSurface,
         style = TextStyle(textAlign = TextAlign.Center)
     )
+
+    Text(
+        stringResource(id = R.string.offer_gateway_free_trial),
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        modifier = Modifier
+            .padding(bottom = 32.dp)
+            .alpha(0.87f),
+        color = colorResource(id = R.color.colorGreen),
+        style = TextStyle(textAlign = TextAlign.Center)
+    )
+
     BoxWithConstraints {
         Button(
             onClick = navigateToShop,

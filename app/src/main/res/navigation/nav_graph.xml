@@ -99,7 +99,9 @@
             android:label="ExtendedOfferGatewayFragment" >
             <action
                 android:id="@+id/action_extendedOfferGatewayFragment_to_wmtsFragment"
-                app:destination="@id/wmtsFragment" />
+                app:destination="@id/wmtsFragment"
+                app:popUpTo="@id/extendedOfferGatewayFragment"
+                app:popUpToInclusive="true" />
         </fragment>
     </navigation>
     <fragment
