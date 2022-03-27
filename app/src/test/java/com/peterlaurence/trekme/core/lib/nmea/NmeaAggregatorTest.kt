@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.lib.nmea
+package com.peterlaurence.trekme.core.lib.nmea
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.lib.nmea
+package com.peterlaurence.trekme.core.lib.nmea
 
 import android.util.Log
 import java.util.*
