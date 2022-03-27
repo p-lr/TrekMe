@@ -8,12 +8,11 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.core.repositories.recording.*
-import com.peterlaurence.trekme.util.gpx.model.ElevationSourceInfo
-import com.peterlaurence.trekme.util.gpx.model.TrackSegment
-import com.peterlaurence.trekme.util.gpx.writeGpx
+import com.peterlaurence.trekme.core.lib.gpx.model.ElevationSourceInfo
+import com.peterlaurence.trekme.core.lib.gpx.model.TrackSegment
+import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import javax.inject.Inject

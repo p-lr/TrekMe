@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.util.gpx.model
+package com.peterlaurence.trekme.core.lib.gpx.model
 
 import com.peterlaurence.trekme.core.track.TrackStatistics
 

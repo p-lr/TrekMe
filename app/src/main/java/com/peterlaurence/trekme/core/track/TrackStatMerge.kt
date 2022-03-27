@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.track
 
-import com.peterlaurence.trekme.util.gpx.model.Bounds
+import com.peterlaurence.trekme.core.lib.gpx.model.Bounds
 
 fun List<TrackStatCalculator>.mergeStats(): TrackStatistics {
     return filterNot { it.isEmpty() }.map {

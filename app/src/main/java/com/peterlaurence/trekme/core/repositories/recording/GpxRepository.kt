@@ -4,7 +4,7 @@ import android.content.ContentResolver
 import android.net.Uri
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.util.gpx.model.Gpx
+import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

@@ -9,8 +9,8 @@ import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.util.gpx.model.*
-import com.peterlaurence.trekme.util.gpx.parseGpxSafely
+import com.peterlaurence.trekme.core.lib.gpx.model.*
+import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

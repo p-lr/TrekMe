@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.util.gpx.model
+package com.peterlaurence.trekme.core.lib.gpx.model
 
 
 data class Metadata(val name: String? = null, val time: Long? = null, val bounds: Bounds? = null,

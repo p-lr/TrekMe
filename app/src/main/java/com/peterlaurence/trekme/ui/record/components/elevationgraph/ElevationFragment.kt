@@ -19,11 +19,10 @@ import com.peterlaurence.trekme.core.repositories.recording.ElevationData
 import com.peterlaurence.trekme.core.repositories.recording.NoElevationData
 import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.util.exhaustive
-import com.peterlaurence.trekme.util.gpx.model.ElevationSource
+import com.peterlaurence.trekme.core.lib.gpx.model.ElevationSource
 import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 

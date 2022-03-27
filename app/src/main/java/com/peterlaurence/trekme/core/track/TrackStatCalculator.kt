@@ -3,8 +3,8 @@ package com.peterlaurence.trekme.core.track
 import android.os.Parcelable
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.statistics.mean
-import com.peterlaurence.trekme.util.gpx.model.Bounds
-import com.peterlaurence.trekme.util.gpx.model.TrackPoint
+import com.peterlaurence.trekme.core.lib.gpx.model.Bounds
+import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
 import kotlinx.parcelize.Parcelize
 import java.util.*
 import kotlin.math.*

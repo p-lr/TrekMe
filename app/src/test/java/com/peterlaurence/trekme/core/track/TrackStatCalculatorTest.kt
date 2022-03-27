@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.track
 
-import com.peterlaurence.trekme.util.gpx.model.TrackPoint
+import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test

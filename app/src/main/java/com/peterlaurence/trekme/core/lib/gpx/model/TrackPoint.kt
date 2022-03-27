@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.util.gpx.model
+package com.peterlaurence.trekme.core.lib.gpx.model
 
 /**
  * Represents a waypoint, point of interest, or named feature on a map.

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.util.gpx.model
+package com.peterlaurence.trekme.core.lib.gpx.model
 
 /**
  * A Track Segment holds a list of Track Points which are logically connected in order.

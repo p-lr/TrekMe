@@ -3,9 +3,9 @@ package com.peterlaurence.trekme.core.track
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.util.gpx.model.Gpx
-import com.peterlaurence.trekme.util.gpx.model.Track
-import com.peterlaurence.trekme.util.gpx.model.hasTrustedElevations
+import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
+import com.peterlaurence.trekme.core.lib.gpx.model.Track
+import com.peterlaurence.trekme.core.lib.gpx.model.hasTrustedElevations
 import java.io.File
 import java.util.*
 

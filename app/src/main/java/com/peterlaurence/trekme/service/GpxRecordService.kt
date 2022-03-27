@@ -25,11 +25,10 @@ import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
-import com.peterlaurence.trekme.util.gpx.model.*
-import com.peterlaurence.trekme.util.gpx.writeGpx
+import com.peterlaurence.trekme.core.lib.gpx.model.*
+import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import java.io.File

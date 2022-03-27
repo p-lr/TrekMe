@@ -1,7 +1,7 @@
-package com.peterlaurence.trekme.util.gpx
+package com.peterlaurence.trekme.core.lib.gpx
 
-import com.peterlaurence.trekme.util.gpx.model.ElevationSource
-import com.peterlaurence.trekme.util.gpx.model.Gpx
+import com.peterlaurence.trekme.core.lib.gpx.model.ElevationSource
+import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test

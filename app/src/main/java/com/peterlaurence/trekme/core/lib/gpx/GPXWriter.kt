@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.util.gpx
+package com.peterlaurence.trekme.core.lib.gpx
 
-import com.peterlaurence.trekme.util.gpx.model.*
+import com.peterlaurence.trekme.core.lib.gpx.model.*
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import java.io.OutputStream

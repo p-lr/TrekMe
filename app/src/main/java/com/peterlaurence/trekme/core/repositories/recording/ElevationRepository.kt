@@ -8,7 +8,7 @@ import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.track.distanceCalculatorFactory
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.util.chunk
-import com.peterlaurence.trekme.util.gpx.model.*
+import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow

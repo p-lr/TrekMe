@@ -1,7 +1,7 @@
-package com.peterlaurence.trekme.util.gpx
+package com.peterlaurence.trekme.core.lib.gpx
 
 import android.util.Xml
-import com.peterlaurence.trekme.util.gpx.model.*
+import com.peterlaurence.trekme.core.lib.gpx.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser

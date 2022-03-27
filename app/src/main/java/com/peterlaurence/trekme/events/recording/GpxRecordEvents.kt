@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.events.recording
 import com.peterlaurence.trekme.core.track.TrackStatistics
 import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.util.gpx.model.TrackPoint
+import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 

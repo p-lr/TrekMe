@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.util.gpx.model
+package com.peterlaurence.trekme.core.lib.gpx.model
 
 /**
  * GPX documents have a version and a creator as attributes, and contains an optional metadata header,

@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.track
 
-import com.peterlaurence.trekme.util.gpx.parseGpx
+import com.peterlaurence.trekme.core.lib.gpx.parseGpx
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith

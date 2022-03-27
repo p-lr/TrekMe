@@ -24,9 +24,9 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.FileUtils
-import com.peterlaurence.trekme.util.gpx.model.Gpx
-import com.peterlaurence.trekme.util.gpx.parseGpx
-import com.peterlaurence.trekme.util.gpx.parseGpxSafely
+import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
+import com.peterlaurence.trekme.core.lib.gpx.parseGpx
+import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import com.peterlaurence.trekme.util.stackTraceToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
