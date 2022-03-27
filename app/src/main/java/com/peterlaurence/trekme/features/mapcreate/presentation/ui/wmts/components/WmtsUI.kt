@@ -17,7 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.geocoding.GeoPlace
+import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*

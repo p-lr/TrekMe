@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.repositories.mapcreate
 
-import com.peterlaurence.trekme.core.geocoding.GeoPlace
-import com.peterlaurence.trekme.core.geocoding.GeocodingEngine
+import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
+import com.peterlaurence.trekme.core.lib.geocoding.GeocodingEngine
 import com.peterlaurence.trekme.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow

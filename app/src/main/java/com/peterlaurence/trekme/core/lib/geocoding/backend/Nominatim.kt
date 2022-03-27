@@ -1,8 +1,8 @@
-package com.peterlaurence.trekme.core.geocoding.backend
+package com.peterlaurence.trekme.core.lib.geocoding.backend
 
-import com.peterlaurence.trekme.core.geocoding.GeoPlace
-import com.peterlaurence.trekme.core.geocoding.POI
-import com.peterlaurence.trekme.core.geocoding.Street
+import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
+import com.peterlaurence.trekme.core.lib.geocoding.POI
+import com.peterlaurence.trekme.core.lib.geocoding.Street
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

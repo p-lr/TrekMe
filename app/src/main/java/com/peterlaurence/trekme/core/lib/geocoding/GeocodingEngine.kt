@@ -1,8 +1,8 @@
-package com.peterlaurence.trekme.core.geocoding
+package com.peterlaurence.trekme.core.lib.geocoding
 
-import com.peterlaurence.trekme.core.geocoding.backend.GeocodingBackend
-import com.peterlaurence.trekme.core.geocoding.backend.Nominatim
-import com.peterlaurence.trekme.core.geocoding.backend.Photon
+import com.peterlaurence.trekme.core.lib.geocoding.backend.GeocodingBackend
+import com.peterlaurence.trekme.core.lib.geocoding.backend.Nominatim
+import com.peterlaurence.trekme.core.lib.geocoding.backend.Photon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
