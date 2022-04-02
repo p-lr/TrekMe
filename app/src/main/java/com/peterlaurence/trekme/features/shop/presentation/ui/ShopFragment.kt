@@ -5,11 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.navGraphViewModels
-import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentShopBinding
-import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ShopViewModel
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

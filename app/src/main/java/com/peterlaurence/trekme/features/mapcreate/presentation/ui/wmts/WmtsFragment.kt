@@ -19,7 +19,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreate
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsOnBoardingViewModel
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.util.collectWhileStartedIn

@@ -9,7 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentExtendedOfferGatewayBinding
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.offergateway.ExtendedOfferGatewayStateful
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

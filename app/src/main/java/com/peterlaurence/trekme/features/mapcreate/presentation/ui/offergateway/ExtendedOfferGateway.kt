@@ -25,8 +25,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.ExtendedOfferViewModel
-import com.peterlaurence.trekme.ui.theme.defaultBackground
-import com.peterlaurence.trekme.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.defaultBackground
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
 
 @Composable
 fun ExtendedOfferGatewayStateful(

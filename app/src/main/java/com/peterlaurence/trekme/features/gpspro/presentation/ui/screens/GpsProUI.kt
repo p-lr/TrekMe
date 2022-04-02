@@ -29,7 +29,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
 import com.peterlaurence.trekme.features.gpspro.presentation.ui.components.IconCircle
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.*
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 
 
 @Composable

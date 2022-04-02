@@ -21,7 +21,7 @@ import com.peterlaurence.trekme.ui.record.RecordFragment
 import com.peterlaurence.trekme.ui.record.components.widgets.PathData
 import com.peterlaurence.trekme.ui.record.components.widgets.StartStopShape
 import com.peterlaurence.trekme.ui.record.components.widgets.TwoStateButton
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 
 /* For play <-> stop */

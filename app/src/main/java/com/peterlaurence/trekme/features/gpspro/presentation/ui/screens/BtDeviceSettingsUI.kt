@@ -23,7 +23,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.repositories.gpspro.*
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
 import com.peterlaurence.trekme.features.gpspro.presentation.ui.components.IconCircle
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.BluetoothDeviceStub
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.GpsProViewModel
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.selectedDevice

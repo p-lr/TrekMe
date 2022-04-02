@@ -24,7 +24,7 @@ import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.TextFieldCustom
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
 
 @Composable
 fun MarkerEditScreen(

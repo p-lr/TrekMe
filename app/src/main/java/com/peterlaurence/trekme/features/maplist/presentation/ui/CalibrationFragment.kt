@@ -10,7 +10,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentCalibrationBinding
 import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.CalibrationStateful
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.CalibrationViewModel
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

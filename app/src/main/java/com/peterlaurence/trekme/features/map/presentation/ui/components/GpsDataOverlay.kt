@@ -1,17 +1,11 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.components
 
-import android.content.Context
-import android.util.AttributeSet
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -22,7 +16,6 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
 import com.peterlaurence.trekme.core.units.UnitFormatter
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
 
 
 @Composable

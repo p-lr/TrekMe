@@ -36,9 +36,9 @@ import com.peterlaurence.trekme.features.common.presentation.ui.buttons.Outlined
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
-import com.peterlaurence.trekme.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.ui.theme.lazyListBackground
-import com.peterlaurence.trekme.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.lazyListBackground
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
 import com.peterlaurence.trekme.util.pxToDp
 import com.peterlaurence.trekme.viewmodel.maplist.*
 

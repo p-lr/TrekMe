@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.theme
+package com.peterlaurence.trekme.features.common.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
