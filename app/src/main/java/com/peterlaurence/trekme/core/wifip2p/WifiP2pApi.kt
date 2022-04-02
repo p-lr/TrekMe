@@ -8,6 +8,8 @@ import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pServiceRequest
 import androidx.core.app.ActivityCompat
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -103,22 +105,25 @@ suspend fun WifiP2pManager.removeGroup(c: WifiP2pManager.Channel): Boolean =
         removeGroup(c, listener)
     }
 
-suspend fun WifiP2pManager.stopPeerDiscovery(c: WifiP2pManager.Channel?): Boolean =
-    suspendCoroutine { cont ->
-        if (c == null) {
-            return@suspendCoroutine
-        }
-        val listener = object : WifiP2pManager.ActionListener {
-            override fun onSuccess() {
-                cont.resume(true)
+suspend fun WifiP2pManager.stopPeerDiscovery(c: WifiP2pManager.Channel?): Boolean {
+    return withTimeoutOrNull(2000) {
+        suspendCancellableCoroutine { cont ->
+            if (c == null) {
+                return@suspendCancellableCoroutine
             }
+            val listener = object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    cont.resume(true)
+                }
 
-            override fun onFailure(reason: Int) {
-                cont.resume(false)
+                override fun onFailure(reason: Int) {
+                    cont.resume(false)
+                }
             }
+            stopPeerDiscovery(c, listener)
         }
-        stopPeerDiscovery(c, listener)
-    }
+    } ?: false
+}
 
 suspend fun WifiP2pManager.discoverPeers(context: Context, c: WifiP2pManager.Channel?): Boolean =
     suspendCoroutine { cont ->

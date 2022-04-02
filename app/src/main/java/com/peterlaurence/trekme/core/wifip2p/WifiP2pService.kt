@@ -575,8 +575,8 @@ class WifiP2pService : Service() {
 
     private suspend fun exitWithReason(reason: StopReason, resetConnection: Boolean = false) {
         autoRestart?.cancel()
-        if (resetConnection) resetWifiP2p()
         wifiP2pState = Stopped(reason)
+        if (resetConnection) resetWifiP2p()
         scope.cancel()
         stopSelf()
     }
