@@ -5,7 +5,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
@@ -66,9 +65,11 @@ fun OnBoardingTip(
                     TextButton(
                         onClick = onAcknowledge,
                         modifier = Modifier.padding(top = 0.dp, end = 8.dp, bottom = 8.dp),
-                        colors = ButtonDefaults.textButtonColors(contentColor = colorResource(id = R.color.colorAccent))
                     ) {
-                        Text(text = stringResource(id = R.string.ok_dialog))
+                        Text(
+                            text = stringResource(id = R.string.ok_dialog),
+                            color = colorResource(id = R.color.colorAccent)
+                        )
                     }
                 }
             }
