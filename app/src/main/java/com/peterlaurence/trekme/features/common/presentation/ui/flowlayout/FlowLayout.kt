@@ -238,7 +238,6 @@ private fun Flow(
                 } else {
                     lastLineMainAxisAlignment.arrangement
                 }
-                // TODO(soboleva): rtl support
                 // Handle vertical direction
                 val mainAxisPositions = IntArray(childrenMainAxisSizes.size) { 0 }
                 with(arrangement) {
@@ -279,7 +278,6 @@ private fun Flow(
 /**
  * Used to specify how a layout chooses its own size when multiple behaviors are possible.
  */
-// TODO(popam): remove this when Flow is reworked
 public enum class SizeMode {
     /**
      * Minimize the amount of free space by wrapping the children,
@@ -297,7 +295,6 @@ public enum class SizeMode {
  * Used to specify the alignment of a layout's children, in main axis direction.
  */
 public enum class MainAxisAlignment(internal val arrangement: Arrangement.Vertical) {
-    // TODO(soboleva) support RTl in Flow
     // workaround for now - use Arrangement that equals to previous Arrangement
     /**
      * Place children such that they are as close as possible to the middle of the main axis.

@@ -20,6 +20,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
 import com.peterlaurence.trekme.ui.common.DialogShape
 import com.peterlaurence.trekme.ui.common.OnBoardingTip
@@ -144,17 +145,6 @@ private fun CustomErrorScreen(state: WmtsError) {
         WmtsError.PROVIDER_OUTAGE -> stringResource(id = R.string.mapcreate_warning_others)
     }
     ErrorScreen(message)
-}
-
-@Composable
-fun LoadingScreen() {
-    Box(Modifier.fillMaxSize()) {
-        LinearProgressIndicator(
-            Modifier
-                .align(Alignment.Center)
-                .width(100.dp)
-        )
-    }
 }
 
 @Composable

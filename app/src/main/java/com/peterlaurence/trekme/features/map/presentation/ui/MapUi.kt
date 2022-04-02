@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapLayout
@@ -85,7 +86,9 @@ fun MapScreen(
     }
 
     when (uiState) {
-        Loading -> Text(text = "loading")  // TODO: improve that
+        Loading -> {
+            LoadingScreen()
+        }
         is MapUiState -> {
             Column {
                 MapScaffold(
