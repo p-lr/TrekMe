@@ -13,8 +13,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.ui.common.Callout
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 
 @Composable
 fun LandmarkCallout(

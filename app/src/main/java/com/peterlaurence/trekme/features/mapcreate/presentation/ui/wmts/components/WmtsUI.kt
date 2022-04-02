@@ -19,12 +19,12 @@ import androidx.compose.ui.unit.min
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.DialogShape
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
-import com.peterlaurence.trekme.ui.common.DialogShape
-import com.peterlaurence.trekme.ui.common.OnBoardingTip
-import com.peterlaurence.trekme.ui.common.PopupOrigin
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas

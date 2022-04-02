@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.common.presentation.ui
+package com.peterlaurence.trekme.features.common.presentation.ui.text
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*

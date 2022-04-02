@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.tools;
+package com.peterlaurence.trekme.util;
 
 import android.content.Context;
 import android.view.GestureDetector;

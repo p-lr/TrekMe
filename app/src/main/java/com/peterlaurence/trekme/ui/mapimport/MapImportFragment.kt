@@ -21,7 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
-import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
+import com.peterlaurence.trekme.util.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel
 import com.peterlaurence.trekme.viewmodel.mapimport.UnzipMapImportedEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -124,8 +124,10 @@ class MapImportFragment : Fragment() {
         recyclerViewMapImport.adapter = mapArchiveAdapter
 
         recyclerViewMapImport.addOnItemTouchListener(
-                RecyclerItemClickListener(this.context,
-                        recyclerViewMapImport, object : RecyclerItemClickListener.OnItemClickListener {
+            RecyclerItemClickListener(this.context,
+                recyclerViewMapImport,
+                object :
+                    RecyclerItemClickListener.OnItemClickListener {
 
                     override fun onItemClick(view: View, position: Int) {
                         binding.fab.activate()

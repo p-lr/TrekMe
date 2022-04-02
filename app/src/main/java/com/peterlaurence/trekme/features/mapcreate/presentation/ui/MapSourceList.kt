@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,8 +26,8 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
-import com.peterlaurence.trekme.ui.common.OnBoardingTip
-import com.peterlaurence.trekme.ui.common.PopupOrigin
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
 
 

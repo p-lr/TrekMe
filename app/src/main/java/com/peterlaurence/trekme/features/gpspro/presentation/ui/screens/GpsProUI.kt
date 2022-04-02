@@ -26,7 +26,7 @@ import androidx.fragment.app.findFragment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.gpspro.presentation.ui.components.IconCircle
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme

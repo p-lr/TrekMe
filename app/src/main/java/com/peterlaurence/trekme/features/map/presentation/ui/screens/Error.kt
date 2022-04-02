@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.ErrorScreen
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.Error
 

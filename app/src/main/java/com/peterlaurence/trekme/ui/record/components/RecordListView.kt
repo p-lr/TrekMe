@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.RecordListLayoutBinding
-import com.peterlaurence.trekme.ui.tools.RecyclerItemClickListener
+import com.peterlaurence.trekme.util.RecyclerItemClickListener
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import java.util.*
 
@@ -107,69 +107,73 @@ class RecordListView @JvmOverloads constructor(
         recordingAdapter = RecordingAdapter(selectedRecordings)
         recyclerView?.adapter = recordingAdapter
 
-        recyclerView?.addOnItemTouchListener(RecyclerItemClickListener(this.context,
-                recyclerView, object : RecyclerItemClickListener.OnItemClickListener {
-            val accentTint = resources.getColor(R.color.colorAccent, null)
+        recyclerView?.addOnItemTouchListener(
+            RecyclerItemClickListener(this.context,
+                recyclerView,
+                object :
+                    RecyclerItemClickListener.OnItemClickListener {
+                    val accentTint = resources.getColor(R.color.colorAccent, null)
 
-            private fun updateButtons() {
-                if (selectedRecordings.isEmpty()) {
-                    shareButton.isEnabled = false
-                    shareButton.drawable.setTint(Color.GRAY)
+                    private fun updateButtons() {
+                        if (selectedRecordings.isEmpty()) {
+                            shareButton.isEnabled = false
+                            shareButton.drawable.setTint(Color.GRAY)
 
-                    deleteRecordingButton.visibility = View.GONE
-                } else {
-                    shareButton.isEnabled = true
-                    shareButton.drawable.setTint(accentTint)
+                            deleteRecordingButton.visibility = GONE
+                        } else {
+                            shareButton.isEnabled = true
+                            shareButton.drawable.setTint(accentTint)
 
-                    deleteRecordingButton.visibility = View.VISIBLE
-                }
-            }
+                            deleteRecordingButton.visibility = VISIBLE
+                        }
+                    }
 
-            override fun onItemClick(view: View, position: Int) {
-                if (isMultiSelectMode) {
-                    multiSelect(position)
+                    override fun onItemClick(view: View, position: Int) {
+                        if (isMultiSelectMode) {
+                            multiSelect(position)
 
-                    recordingAdapter?.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter?.notifyItemChanged(position)
-                } else {
-                    singleSelect(position)
-                    editNameButton.isEnabled = true
-                    editNameButton.drawable.setTint(accentTint)
+                            recordingAdapter?.setSelectedRecordings(selectedRecordings)
+                            recordingAdapter?.notifyItemChanged(position)
+                        } else {
+                            singleSelect(position)
+                            editNameButton.isEnabled = true
+                            editNameButton.drawable.setTint(accentTint)
 
-                    importButton.isEnabled = true
-                    importButton.drawable.setTint(accentTint)
+                            importButton.isEnabled = true
+                            importButton.drawable.setTint(accentTint)
 
-                    elevationGraphButton.isEnabled = true
-                    elevationGraphButton.drawable.setTint(accentTint)
+                            elevationGraphButton.isEnabled = true
+                            elevationGraphButton.drawable.setTint(accentTint)
 
-                    recordingAdapter?.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter?.notifyDataSetChanged()
-                }
+                            recordingAdapter?.setSelectedRecordings(selectedRecordings)
+                            recordingAdapter?.notifyDataSetChanged()
+                        }
 
-                updateButtons()
-            }
+                        updateButtons()
+                    }
 
-            override fun onItemLongClick(view: View, position: Int) {
-                selectedRecordings = ArrayList()
-                if (!isMultiSelectMode) {
-                    editNameButton.isEnabled = false
-                    editNameButton.drawable.setTint(Color.GRAY)
-                    importButton.isEnabled = false
-                    importButton.drawable.setTint(Color.GRAY)
-                    elevationGraphButton.isEnabled = false
-                    elevationGraphButton.drawable.setTint(Color.GRAY)
-                    multiSelect(position)
-                    recordingAdapter?.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter?.notifyDataSetChanged()
-                } else {
-                    recordingAdapter?.setSelectedRecordings(selectedRecordings)
-                    recordingAdapter?.notifyDataSetChanged()
-                }
-                isMultiSelectMode = !isMultiSelectMode
+                    override fun onItemLongClick(view: View, position: Int) {
+                        selectedRecordings = ArrayList()
+                        if (!isMultiSelectMode) {
+                            editNameButton.isEnabled = false
+                            editNameButton.drawable.setTint(Color.GRAY)
+                            importButton.isEnabled = false
+                            importButton.drawable.setTint(Color.GRAY)
+                            elevationGraphButton.isEnabled = false
+                            elevationGraphButton.drawable.setTint(Color.GRAY)
+                            multiSelect(position)
+                            recordingAdapter?.setSelectedRecordings(selectedRecordings)
+                            recordingAdapter?.notifyDataSetChanged()
+                        } else {
+                            recordingAdapter?.setSelectedRecordings(selectedRecordings)
+                            recordingAdapter?.notifyDataSetChanged()
+                        }
+                        isMultiSelectMode = !isMultiSelectMode
 
-                updateButtons()
-            }
-        }))
+                        updateButtons()
+                    }
+                })
+        )
     }
 
     private fun multiSelect(position: Int) {

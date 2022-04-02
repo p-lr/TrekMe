@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.common
+package com.peterlaurence.trekme.features.common.presentation.ui.widgets
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
