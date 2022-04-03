@@ -44,6 +44,7 @@ import kotlin.math.pow
 class RouteLayer(
     scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
+    private val goToRouteFlow: Flow<Route>,
     private val mapInteractor: MapInteractor,
     private val gpxRecordEvents: GpxRecordEvents
 ) {
@@ -51,6 +52,12 @@ class RouteLayer(
     private val staticRoutesData = ConcurrentHashMap<Route, RouteData>()
 
     init {
+        scope.launch {
+            goToRouteFlow.collect {
+                // TODO center on route
+            }
+        }
+
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
                 staticRoutesData.clear()

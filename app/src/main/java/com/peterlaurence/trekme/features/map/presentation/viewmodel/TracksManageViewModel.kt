@@ -2,10 +2,8 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.Route
@@ -13,8 +11,10 @@ import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
 import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
-import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,14 +29,20 @@ class TracksManageViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     private val gpxRepository: GpxRepository,
     private val routeRepository: RouteRepository,
+    extendedOfferRepository: ExtendedOfferRepository,
     private val trackImporter: TrackImporter,
     private val app: Application,
     private val appEventBus: AppEventBus,
-    private val mapViewEventBus: MapViewEventBus,
+    private val tracksEventBus: TracksEventBus,
+    private val mapFeatureEvents: MapFeatureEvents,
     private val mapLoader: MapLoader
 ) : ViewModel() {
     private val _tracks = MutableLiveData<List<Route>>()
     val tracks: LiveData<List<Route>> = _tracks
+
+    val hasExtendedOffer: LiveData<Boolean> = extendedOfferRepository.purchaseFlow.asLiveData(viewModelScope.coroutineContext).map {
+            it == PurchaseState.PURCHASED
+        }
 
     val map: Map?
         get() = mapRepository.getCurrentMap()
@@ -80,7 +86,7 @@ class TracksManageViewModel @Inject constructor(
                 }
                 /* Notify the rest of the app */
                 appEventBus.postGpxImportResult(result)
-                mapViewEventBus.postTrackImportEvent(result)
+                tracksEventBus.postTrackImportEvent(result)
             }
         }
     }
@@ -94,7 +100,11 @@ class TracksManageViewModel @Inject constructor(
         saveChanges(route)
 
         /* Notify the view */
-        mapViewEventBus.postTrackNameChange()
+        tracksEventBus.postTrackNameChange()
+    }
+
+    fun goToRouteOnMap(route: Route) {
+        mapFeatureEvents.postGoToRoute(route)
     }
 
     fun changeRouteColor(routeId: String, color: String) {

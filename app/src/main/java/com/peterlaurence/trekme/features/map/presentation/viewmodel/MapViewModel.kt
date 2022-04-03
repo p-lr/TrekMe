@@ -91,7 +91,13 @@ class MapViewModel @Inject constructor(
         mapInteractor
     )
 
-    val routeLayer = RouteLayer(viewModelScope, dataStateFlow, mapInteractor, gpxRecordEvents)
+    val routeLayer = RouteLayer(
+        viewModelScope,
+        dataStateFlow,
+        mapFeatureEvents.goToRoute,
+        mapInteractor,
+        gpxRecordEvents
+    )
 
     val snackBarController = SnackBarController()
 

@@ -7,4 +7,10 @@
         android:title="@string/track_rename_action"
         app:showAsAction="never"
         android:visible="false" />
+    <item
+        android:id="@+id/track_go_to_map_id"
+        android:orderInCategory="1"
+        android:title="@string/go_to_track_on_map"
+        app:showAsAction="never"
+        android:visible="false" />
 </menu>

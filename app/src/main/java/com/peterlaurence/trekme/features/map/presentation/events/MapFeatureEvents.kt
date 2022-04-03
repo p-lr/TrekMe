@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.map.presentation.events
 
 import com.peterlaurence.trekme.core.map.domain.Marker
+import com.peterlaurence.trekme.core.map.domain.Route
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 
@@ -20,6 +21,13 @@ class MapFeatureEvents {
         MarkerMovedEvent(marker, mapId, markerId)
     )
     data class MarkerMovedEvent(val marker: Marker, val mapId: Int, val markerId: String)
+    /* endregion */
+
+    /* region routes */
+    private val _goToRoute = MutableSharedFlow<Route>(0, 1, BufferOverflow.DROP_OLDEST)
+    val goToRoute = _goToRoute.asSharedFlow()
+
+    fun postGoToRoute(route: Route) = _goToRoute.tryEmit(route)
     /* endregion */
 
     /* region public properties */

@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +25,7 @@ import com.peterlaurence.trekme.core.map.domain.Route
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.dialogs.ColorSelectDialog
-import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
 import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,15 +46,26 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     private var binding: FragmentTracksManageBinding? = null
 
     private var trackRenameMenuItem: MenuItem? = null
+    private var trackGoToMapMenuItem: MenuItem? = null
     private var trackAdapter: TrackAdapter? = null
     private val viewModel: TracksManageViewModel by viewModels()
 
     @Inject
-    lateinit var eventBus: MapViewEventBus
+    lateinit var eventBus: TracksEventBus
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        /* Going back to the map and center on a route is only available in the extended offer. */
+        viewModel.hasExtendedOffer.observe(this) {
+            it?.also { visible ->
+                if (visible) {
+                    trackGoToMapMenuItem?.isVisible = it
+                    requireActivity().invalidateOptionsMenu()
+                }
+            }
+        }
 
         eventBus.trackNameChangeSignal.map {
             trackAdapter?.notifyDataSetChanged()
@@ -109,26 +121,31 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         binding = null
         trackAdapter = null
         trackRenameMenuItem = null
+        trackGoToMapMenuItem = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.menu_fragment_tracks_manage, menu)
         trackRenameMenuItem = menu.findItem(R.id.track_rename_id)
+        trackGoToMapMenuItem = menu.findItem(R.id.track_go_to_map_id)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val selectedRoute = trackAdapter?.selectedRoute ?: return true
         when (item.itemId) {
             R.id.track_rename_id -> {
                 val map = viewModel.map ?: return true
-                val selectedRoute = trackAdapter?.selectedRoute ?: return true
                 val fragment = ChangeRouteNameFragment.newInstance(map.id, selectedRoute.id)
                 fragment.show(parentFragmentManager, "rename route")
-                return super.onOptionsItemSelected(item)
             }
-            else -> return super.onOptionsItemSelected(item)
+            R.id.track_go_to_map_id -> {
+                findNavController().navigateUp()
+                viewModel.goToRouteOnMap(selectedRoute)
+            }
         }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun onGpxParseResult(event: TrackImporter.GpxImportResult.GpxImportOk) {
@@ -202,6 +219,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     override fun onTrackSelected() {
         trackRenameMenuItem?.isVisible = true
+        trackGoToMapMenuItem?.isVisible = viewModel.hasExtendedOffer.value ?: false
     }
 
     override fun onColorButtonClicked(route: Route) {

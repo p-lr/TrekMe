@@ -351,4 +351,5 @@
     <string name="ign_caution">Le serveur de carte de l\'IGN a parfois des lenteurs. Concrètement, vous voulez créer une carte IGN mais …
     rien ne s\'affiche. Si cela se produit, ne vous inquiétez pas ; il suffit en général de réessayer plus tard dans la journée.</string>
     <string name="nb">N.B</string>
+    <string name="go_to_track_on_map">Voir sur la carte</string>
 </resources>

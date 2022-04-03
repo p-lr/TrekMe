@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.DialogColorSelectBinding
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.events.TrackColorChangeEvent
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
-import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.MapViewEventBus
+import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
@@ -53,7 +53,7 @@ class ColorSelectDialog : DialogFragment() {
         }
 
     @Inject
-    lateinit var eventBus: MapViewEventBus
+    lateinit var eventBus: TracksEventBus
 
     companion object {
         private const val ROUTE_ID = "routeId"
