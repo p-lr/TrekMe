@@ -96,7 +96,7 @@ class LocationOrientationLayer(
         val mapState = dataStateFlow.first().mapState
 
         mapState.getMarkerInfo(positionMarkerId)?.also {
-            if (it.x >= 0 && it.y >= 0) {
+            if (isInMap(it.x, it.y)) {
                 centerOnPosMarker(mapState)
             } else {
                 onOutOfBounds()
@@ -121,7 +121,7 @@ class LocationOrientationLayer(
     ) {
         updatePositionMarker(mapState, x, y)
 
-        if (!hasCenteredOnFirstLocation && x >= 0 && y >= 0) {
+        if (!hasCenteredOnFirstLocation && isInMap(x, y)) {
             centerOnPosMarker(mapState)
             hasCenteredOnFirstLocation = true
         }
@@ -189,6 +189,8 @@ class LocationOrientationLayer(
             RotationMode.FREE -> mapState.enableRotation()
         }
     }
+
+    private fun isInMap(x: Double, y: Double) = x in 0.0..1.0 && y in 0.0..1.0
 }
 
 const val positionMarkerId = "position"

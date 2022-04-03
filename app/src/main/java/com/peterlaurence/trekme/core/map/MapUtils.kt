@@ -8,6 +8,7 @@ import java.io.File
  * Create an empty ".nomedia" file at the root of the map directory. This way, other apps don't
  * index this content for media files.
  */
+@Suppress("BlockingMethodInNonBlockingContext")
 suspend fun Map.createNomediaFile() = withContext(Dispatchers.IO) {
     val noMedia = File(directory, ".nomedia")
     noMedia.createNewFile()
@@ -22,7 +23,7 @@ suspend fun Map.createNomediaFile() = withContext(Dispatchers.IO) {
  * @return An array of two elements: the longitude and the latitude
  */
 fun getLonLat(x: Double, y: Double, map: Map): DoubleArray? {
-    val bounds = map.mapBounds ?: return null
+    val bounds = map.mapBounds
     val projection = map.projection
     return if (projection != null) {
         val projX = bounds.X0 + (bounds.X0 - bounds.X1) * x

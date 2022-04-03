@@ -105,7 +105,7 @@ class RecordViewModel @Inject constructor(
         supervisorScope {
             mapLoader.maps.forEach { map ->
                 launch {
-                    if (map.intersects(boundingBox) == true) {
+                    if (map.intersects(boundingBox)) {
                         /* Import the new route */
                         val result = trackImporter.applyGpxToMap(gpx, map, mapLoader)
                         appEventBus.postGpxImportResult(result)
