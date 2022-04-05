@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.data.backendApi.privacyPolicyUrl
@@ -27,6 +28,12 @@ class AboutFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
+        /* The action bar isn't managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            show()
+            title = getString(R.string.about)
+        }
+
         _binding = FragmentAboutBinding.inflate(inflater, container, false)
         return binding.root
     }

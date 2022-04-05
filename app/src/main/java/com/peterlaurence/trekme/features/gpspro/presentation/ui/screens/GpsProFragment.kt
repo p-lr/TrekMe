@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentGpsProBinding
@@ -19,6 +20,12 @@ class GpsProFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        /* The action bar isn't managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            show()
+            title = getString(R.string.select_bt_devices_title)
+        }
+
         binding = FragmentGpsProBinding.inflate(inflater, container, false)
         return binding!!.root
     }

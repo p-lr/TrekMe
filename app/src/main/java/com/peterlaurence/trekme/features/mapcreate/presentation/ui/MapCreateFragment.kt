@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -31,6 +32,12 @@ class MapCreateFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        /* The action bar isn't managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            show()
+            title = getString(R.string.mapcreate_title)
+        }
+
         val binding = FragmentMapCreateBinding.inflate(inflater, container, false)
         binding.mapSourceListView.apply {
             setViewCompositionStrategy(

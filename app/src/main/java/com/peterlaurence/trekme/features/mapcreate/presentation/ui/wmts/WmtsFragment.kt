@@ -96,9 +96,6 @@ class WmtsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        /* Uses an action bar made in Compose */
-        (requireActivity() as AppCompatActivity).supportActionBar?.hide()
-
         wmtsSource = wmtsSourceRepository.wmtsSourceState.value
 
         /* Listen to position update */
@@ -129,6 +126,12 @@ class WmtsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        /* The action bar is managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            hide()
+            title = ""
+        }
+
         val binding = FragmentWmtsBinding.inflate(inflater, container, false)
         _binding = binding
         binding.wmtsComposeView.apply {

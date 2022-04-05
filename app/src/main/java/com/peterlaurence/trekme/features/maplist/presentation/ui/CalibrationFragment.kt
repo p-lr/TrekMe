@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
@@ -24,6 +25,12 @@ class CalibrationFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        /* The action bar isn't managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            show()
+            title = ""
+        }
+
         val binding = FragmentCalibrationBinding.inflate(inflater, container, false)
         binding.calibrationView.setContent {
             TrekMeTheme {

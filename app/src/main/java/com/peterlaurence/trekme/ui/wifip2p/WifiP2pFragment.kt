@@ -6,6 +6,7 @@ import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -60,6 +61,12 @@ class WifiP2pFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        /* The action bar isn't managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            show()
+            title = getString(R.string.wifip2p_title)
+        }
+
         _binding = FragmentWifip2pBinding.inflate(inflater, container, false)
         setHasOptionsMenu(true)
 

@@ -352,4 +352,6 @@
     rien ne s\'affiche. Si cela se produit, ne vous inquiétez pas ; il suffit en général de réessayer plus tard dans la journée.</string>
     <string name="nb">N.B</string>
     <string name="go_to_track_on_map">Voir sur la carte</string>
+    <string name="tracks_manage_frgmt_title">Gestion des traces</string>
+    <string name="settings_frgmt_title">Réglages</string>
 </resources>

@@ -32,7 +32,10 @@ class MapFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         /* The action bar is managed by Compose */
-        (requireActivity() as AppCompatActivity).supportActionBar?.hide()
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            hide()
+            title = ""
+        }
 
         /* Handle navigation events */
         viewLifecycleOwner.lifecycleScope.launch {

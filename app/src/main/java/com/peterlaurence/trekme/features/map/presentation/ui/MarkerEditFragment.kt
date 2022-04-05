@@ -26,18 +26,17 @@ class MarkerEditFragment : Fragment() {
     @Inject
     lateinit var mapInteractor: MapInteractor
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        /* Uses an action bar made in Compose */
-        (requireActivity() as AppCompatActivity).supportActionBar?.hide()
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        /* The action bar is managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            hide()
+            title = ""
+        }
+
         val binding = FragmentMarkerEditBinding.inflate(inflater, container, false)
 
         binding.markerEditScreen.apply {

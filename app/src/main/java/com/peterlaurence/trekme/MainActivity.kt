@@ -62,56 +62,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var fragmentManager: FragmentManager? = null
     private lateinit var binding: ActivityMainBinding
 
-    private val navController: NavController by lazy {
-        findNavController(R.id.nav_host_fragment).apply {
-            /* While Compose migration isn't complete, explicitly set action-bar properties here,
-             * depending on the destination */
-            // TODO: this isn't reliable. Instead, explicitly show/hide the action bar in onCreateView
-            // of each fragment, like for example in TracksManageFragment. It's important to do this
-            // in onCreateView and not in onStart, to avoid blinks when navigating from a legacy
-            // fragment to a fragment in which the action bar is managed by compose.
-            addOnDestinationChangedListener { _, destination, _ ->
-                when (destination.id) {
-                    R.id.gpsProFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.select_bt_devices_title)
-                    }
-                    R.id.btDeviceSettingsFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.bt_device_frgmt_title)
-                    }
-                    R.id.wifiP2pFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.wifip2p_title)
-                    }
-                    R.id.mapCreateFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.mapcreate_title)
-                    }
-                    R.id.recordFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.recording_frgmt_title)
-                    }
-                    R.id.mapImportFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.import_title)
-                    }
-                    R.id.shopFragment -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.shop_menu_title)
-                    }
-                    R.id.mapFragment, R.id.markerEditFragment, R.id.wmtsFragment -> {
-                        supportActionBar?.hide()
-                        supportActionBar?.title = ""
-                    }
-                    else -> {
-                        supportActionBar?.show()
-                        supportActionBar?.title = getString(R.string.app_name)
-                    }
-                }
-            }
-        }
-    }
+    private val navController: NavController
+        get() = findNavController(R.id.nav_host_fragment)
 
     @Inject
     lateinit var mapRepository: MapRepository

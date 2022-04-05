@@ -90,7 +90,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
                               savedInstanceState: Bundle?): View {
         /* The action bar is managed by the view-system */
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            title = getString(R.string.app_name)
+            title = getString(R.string.tracks_manage_frgmt_title)
             show()
         }
 

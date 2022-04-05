@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.ui.settings
 
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
@@ -38,6 +39,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var showScaleIndicatorPref: CheckBoxPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        /* The action bar isn't managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            show()
+            title = getString(R.string.settings_frgmt_title)
+        }
+
         addPreferencesFromResource(R.xml.app_settings)
 
         initComponents()
