@@ -111,6 +111,9 @@
         <action
             android:id="@+id/action_mapFragment_to_markerEditFragment"
             app:destination="@id/markerEditFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_tracksManageFragment"
+            app:destination="@id/tracksManageFragment" />
     </fragment>
     <action android:id="@+id/action_global_mapFragment" app:destination="@id/mapFragment"/>
     <fragment

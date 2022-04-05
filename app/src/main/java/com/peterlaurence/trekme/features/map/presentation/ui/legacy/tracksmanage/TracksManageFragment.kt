@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -87,6 +88,11 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
+        /* The action bar is managed by the view-system */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            title = getString(R.string.app_name)
+            show()
+        }
 
         val binding = FragmentTracksManageBinding.inflate(inflater, container, false)
         this.binding = binding

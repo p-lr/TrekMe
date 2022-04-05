@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.core.map.Map
@@ -53,8 +54,17 @@ class RouteLayer(
 
     init {
         scope.launch {
-            goToRouteFlow.collect {
-                // TODO center on route
+            dataStateFlow.collectLatest { (map, mapState) ->
+                goToRouteFlow.collectLatest event@{ route ->
+                    val routeData = staticRoutesData[route] ?: return@event
+                    coroutineScope {
+                        mapState.getLayoutSizeFlow().collectLatest { layoutSize ->
+                            val mapSize = IntSize(map.widthPx, map.heightPx)
+                            centerOnRoute(layoutSize, mapSize, routeData, mapState)
+                            cancel()
+                        }
+                    }
+                }
             }
         }
 
@@ -219,9 +229,17 @@ class RouteLayer(
 
         var sumX = 0.0
         var sumY = 0.0
+        var xMin: Double? = null
+        var xMax: Double? = null
+        var yMin: Double? = null
+        var yMax: Double? = null
         var size = 0
         mapInteractor.getExistingMarkerPositions(map, route).collect {
             pathBuilder.addPoint(it.x, it.y)
+            xMin = it.x.coerceAtMost(xMin ?: it.x)
+            xMax = it.x.coerceAtLeast(xMax ?: it.x)
+            yMin = it.y.coerceAtMost(yMin ?: it.y)
+            yMax = it.y.coerceAtLeast(yMax ?: it.y)
             sumX += it.x
             sumY += it.y
             size++
@@ -233,9 +251,14 @@ class RouteLayer(
             Barycenter(sumX / size, sumY / size)
         } else null
 
-        return pathData?.let {
-            RouteData(it, barycenter)
-        }
+
+        val boundingBox = if (xMin != null && xMax != null && yMin != null && yMax != null) {
+            BoundingBox(xLeft = xMin!!, xRight = xMax!!, yBottom = yMax!!, yTop = yMin!!)
+        } else null
+
+        return if (pathData != null && barycenter != null && boundingBox != null) {
+            RouteData(pathData, barycenter, boundingBox)
+        } else null
     }
 
     private fun addPath(mapState: MapState, route: Route, pathData: PathData) {
@@ -247,9 +270,19 @@ class RouteLayer(
             }
         )
     }
+
+    private suspend fun centerOnRoute(layoutSize: IntSize, mapSize: IntSize, routeData: RouteData, mapState: MapState) {
+        val destScaleX = layoutSize.width / (abs(routeData.boundingBox.xRight - routeData.boundingBox.xLeft) * mapSize.width)
+        val destScaleY = layoutSize.height / (abs(routeData.boundingBox.yTop - routeData.boundingBox.yBottom) * mapSize.height)
+        val destScale = min(destScaleX, destScaleY) * 0.8
+        val centerX = (routeData.boundingBox.xRight + routeData.boundingBox.xLeft) / 2
+        val centerY = (routeData.boundingBox.yBottom + routeData.boundingBox.yTop) / 2
+
+        mapState.scrollTo(centerX, centerY, destScale.toFloat())
+    }
 }
 
-private data class RouteData(val pathData: PathData, val barycenter: Barycenter?)
+private data class RouteData(val pathData: PathData, val barycenter: Barycenter, val boundingBox: BoundingBox)
 
 private class DistanceOnRouteController(
     private val map: Map,
@@ -446,7 +479,7 @@ private class DistanceOnRouteController(
 
     private suspend fun findNearestRoute(point: Point): Route? = withContext(Dispatchers.Default) {
         routesData.minByOrNull {
-            val bary = it.value.barycenter?.let { b -> Point(b.x, b.y) } ?: point
+            val bary = it.value.barycenter.let { b -> Point(b.x, b.y) }
             (point.x - bary.x).pow(2) + (point.y - bary.y).pow(2)
         }?.key
     }

@@ -66,6 +66,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         findNavController(R.id.nav_host_fragment).apply {
             /* While Compose migration isn't complete, explicitly set action-bar properties here,
              * depending on the destination */
+            // TODO: this isn't reliable. Instead, explicitly show/hide the action bar in onCreateView
+            // of each fragment, like for example in TracksManageFragment. It's important to do this
+            // in onCreateView and not in onStart, to avoid blinks when navigating from a legacy
+            // fragment to a fragment in which the action bar is managed by compose.
             addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
                     R.id.gpsProFragment -> {

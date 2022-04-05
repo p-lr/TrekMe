@@ -25,18 +25,15 @@ class MapFragment : Fragment() {
     @Inject
     lateinit var mapFeatureEvents: MapFeatureEvents
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        /* Uses an action bar made in Compose */
-        (requireActivity() as AppCompatActivity).supportActionBar?.hide()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        /* The action bar is managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.hide()
+
         /* Handle navigation events */
         viewLifecycleOwner.lifecycleScope.launch {
             mapFeatureEvents.navigateToMarkerEdit.collect { (marker, mapId, markerId) ->
@@ -53,7 +50,8 @@ class MapFragment : Fragment() {
             )
 
             val onNavigateToTracksManage = {
-                findNavController().navigate(R.id.tracksManageFragment)
+                val action = MapFragmentDirections.actionMapFragmentToTracksManageFragment()
+                findNavController().navigate(action)
             }
 
             setContent {
