@@ -80,6 +80,7 @@
     <string name="choose_map_thumbnail">You can choose a thumbnail image to illustrate your map, it\'ll be prettier!\nContinue?</string>
 
     <!-- Map Settings fragment -->
+    <string name="map_settings_frgmt_title">Map settings</string>
     <string name="map_image_import_ok">Image set successfully</string>
     <string name="map_image_import_error">Error while changing the image :(</string>
 

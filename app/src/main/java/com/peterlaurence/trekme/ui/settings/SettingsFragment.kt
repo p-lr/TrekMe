@@ -1,6 +1,9 @@
 package com.peterlaurence.trekme.ui.settings
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.preference.CheckBoxPreference
@@ -39,12 +42,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var showScaleIndicatorPref: CheckBoxPreference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        /* The action bar isn't managed by Compose */
-        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            show()
-            title = getString(R.string.settings_frgmt_title)
-        }
-
         addPreferencesFromResource(R.xml.app_settings)
 
         initComponents()
@@ -113,6 +110,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 updateShowScaleIndicator(it)
             }
         }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        /* The action bar isn't managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            show()
+            title = getString(R.string.settings_frgmt_title)
+        }
+
+        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     private fun updateDownloadDirList(dirs: Array<String>) {
