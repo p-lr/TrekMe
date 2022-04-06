@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -40,15 +41,34 @@ class ElevationFragment : Fragment() {
     private val viewModel: ElevationViewModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        /* The action bar isn't managed by Compose */
+        (requireActivity() as AppCompatActivity).supportActionBar?.apply {
+            show()
+            title = getString(R.string.elevation_profile_title)
+        }
+
         val b = FragmentElevationBinding.inflate(inflater, container, false)
         binding = b
-        init()
+        collectElevationPoints()
         return b.root
     }
 
-    private fun init() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val b = binding ?: return
+
+        viewModel.onUpdateGraph()
+
+        b.slider.labelBehavior = LABEL_GONE
+        b.slider.addOnChangeListener { _, value, _ ->
+            b.elevationGraphView.setHighlightPt(value)
+        }
+    }
+
+    private fun collectElevationPoints() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.elevationPoints.collect { config ->
                     val b = binding ?: return@collect
                     when (config) {
@@ -92,19 +112,6 @@ class ElevationFragment : Fragment() {
                     }.exhaustive
                 }
             }
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val b = binding ?: return
-
-        viewModel.onUpdateGraph()
-
-        b.slider.labelBehavior = LABEL_GONE
-        b.slider.addOnChangeListener { _, value, _ ->
-            b.elevationGraphView.setHighlightPt(value)
         }
     }
 

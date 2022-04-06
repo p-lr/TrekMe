@@ -270,6 +270,7 @@
     <string name="recording_import_desc">Importer l\'enregistrement dans une carte</string>
     <string name="recording_share_desc">Partager un enregistrement</string>
     <string name="recording_show_elevations_desc">Afficher le profil altimétrique</string>
+    <string name="elevation_profile_title">Profil altimétrique</string>
     <string name="recording_delete_desc">Supprimer un enregistrement</string>
     <string name="delayed_button_desc">Démarrer / Arrêter un enregistrment GPX</string>
     <string name="mapreate_warning_vps">Nous ne parvenons pas à récupérer certaines données. Si votre connexion internet fonctionne normalement, l\'infrastructure de TrekMe est peut-être impactée.</string>

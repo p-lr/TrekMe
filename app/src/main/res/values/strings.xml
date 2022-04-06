@@ -259,6 +259,7 @@
     <string name="recording_share_desc">Share a recording</string>
     <string name="recording_show_elevations_desc">Show the elevation profile</string>
     <string name="recording_delete_desc">Delete a recording</string>
+    <string name="elevation_profile_title">Elevation profile</string>
 
     <!-- Elevation fragment -->
     <string name="no_elevations">This GPX file contains no elevations. TrekMe can\'t show the elevation profile.</string>
