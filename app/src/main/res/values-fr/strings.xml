@@ -356,4 +356,5 @@
     <string name="tracks_manage_frgmt_title">Gestion des traces</string>
     <string name="settings_frgmt_title">Réglages</string>
     <string name="map_settings_frgmt_title">Réglages de carte</string>
+    <string name="center_on_track">Centrer directement sur une trace depuis la gestion des traces d\'une carte</string>
 </resources>
