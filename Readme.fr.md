@@ -329,9 +329,15 @@ en ait aucune) :
 
 Vous pouvez alors :
 
-* Importer un fichier gpx avec le bouton d'import en haut
+* Importer un fichier gpx avec le bouton d'import en bas à droite
+* Assigner un couleur pour chaque trace
 * Gérer la visibilité des traces déjà importées
 * Supprimer des traces en les faisant glisser à droite ou à gauche (cela n'affecte en rien le fichier gpx)
+
+Avec le menu en haut à droite, qui appraît quand vous sélectionnez une trace, vous pouvez :
+
+* Renommer la trace sélectionnée
+* Aller directement sur la trace sélectionnée sur la carte (cette fonctionnalité n'est disponible qu'avec l'offre TrekMe Extended).
 
 ### <a name="TOC-GPX-recording"></a>Enregistrement GPX
 
@@ -438,7 +444,7 @@ les cartes existantes ne sont pas déplacées.
 
 ### <a name="TOC-Rotation-mode"></a>Mode de rotation
 
-Vous pouvez sélectionner parmi trois mode de rotation:
+Vous pouvez sélectionner parmi trois modes de rotation:
 
 * Aucune rotation (mode par défaut)
 * Tourner la carte selon l'orientation
@@ -446,7 +452,7 @@ Vous pouvez sélectionner parmi trois mode de rotation:
 
 *Tourner la carte selon l'orientation*
 
-Dans ce mode, la carte s'oriente en fonction d'orientation de votre appareil *si* vous activez l'affichage de
+Dans ce mode, la carte s'oriente en fonction de l'orientation de votre appareil *si* vous activez l'affichage de
 l'orientation (lors du visionnage d'une carte, menu en haut à droite > Afficher l'orientation).
 Lorsque l'orientation est activée, apparaît également en bas à droite une petite boussole, dont
 l'aiguille rouge indique le Nord. Vous pouvez à tout moment choisir de désactiver temporairement la 
@@ -479,22 +485,14 @@ Pour créer une archive, depuis la liste des cartes, utilisez le bouton "MODIFIE
 Vous arrivez alors dans les options pour cette carte. Tout en bas, il y a un bouton "Sauvegarder".
 Appuyez dessus ; un message vous explique alors que vous devez choisir le dossier dans votre téléphone
 où l'archive sera créée. Vous pouvez en effet choisir le dossier que vous voulez (ne choisissez pas
-un dossier interne à l'application TrekMe..).
+un dossier interne à l'application TrekMe..). Vous pouvez aussi créer un nouveau dossier et le nommer
+(par exemple) "TrekMe_sauvegardes".
 Si vous continuez la procédure, l'archive va être créée et vous pouvez suivre la progression dans la
 zone de notification du téléphone.
 
 Une archive contient tout ce qui est relatif à la carte (calibration, traces, points d'intérêt, etc).
 
-Les archives, tout comme les cartes, sont créées dans un dossier que le système Android alloue à
-TrekMe. Si vous avez une carte SD, vous avez même le choix entre deux dossiers différents. Mais ces
-dossiers seront supprimés en cas de désinstallation de l'application. Il y a cependant une exception :
-le dossier qu'utilise TrekMe sur la mémoire interne sous Android 9 et moins. Ce dossier-là n'est pas
-supprimé en cas de désinstallation.
-
-Pour tous les autres cas, la seule manière de conserver de manière sûre vos cartes est de faire des 
-sauvegardes, puis de les déplacer dans un dossier nommé (par exemple) "TrekMe_sauvegardes" 
-quelque-part sur votre carte SD ou dans la mémoire interne. 
-Ce dossier ne doit pas être un sous-dossier du répertoire utilisé par TrekMe.
+Une fois archivée, une carte peut être restaurée avec la fonctionnalité d'import de carte.
 
 ### <a name="TOC-Share-maps"></a>Partage de carte
 
@@ -504,6 +502,7 @@ pouvez lui envoyer directement une de vos cartes. Cela fonctionne avec la Wifi, 
 lui aussi doit activer sa Wifi). Veillez donc bien à activer la Wifi pour la suite, et faites en sorte 
 que les deux appareils soient relativement proches (même si des transferts ont réussi avec plusieurs
 mètres de distance, l'expérience montre que plus ils sont proches, moins il y a de risque d'erreur).
+Point important : la localisation soit être active sur les deux appareils pendant la procédure.
 
 Rendez-vous dans le menu principal > "Recevoir et envoyer". L'interface propose un bouton pour
 recevoir une carte, et un autre pour envoyer. Lorsque vous choisissez de recevoir, l'interface indique

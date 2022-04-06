@@ -305,8 +305,14 @@ Then, a list of currently available tracks opens up:
 Here you can:
 
 * Import a new gpx files using the import button,
+* Assign a color to a track,
 * Manage track visibility,
 * Remove tracks by swiping them left or right
+
+Using the menu at to right, which appears when you select a track, you can:
+
+* Rename the selected track
+* Center on the selected track on the map (only available with TrekMe Extended)
 
 ### <a name="TOC-GPX-recording"></a>GPX recording
 
@@ -388,8 +394,9 @@ By default, TrekMe stores everything on the internal memory. But if you have an 
 
 **Beware**
 
-All your maps on the SD card will be deleted if TrekMe is uninstalled (Android enforces that). The only way to safely keep your maps is to store them on the internal memory.
-However, as a workaround, you can save a map and move the resulting zip archive to another directory (outside of the Android folder on the SD card).
+All your maps on the SD card will be deleted if TrekMe is uninstalled (Android enforces that).
+This is the reason why it's highly recommended to save the maps you wouldn't want to loose.
+To learn more about that, go to the "Save your maps" section.
 
 In the "Download" section > "Download folder", you can chose between to directories if you have an SD card. Otherwise, you don't have the choice but to use the internal memory:
 
@@ -442,20 +449,13 @@ To create an archive, go to the list of maps and press the "EDIT" button at the 
 
 You land on a bunch of options related to the selected map. The last option is a "Save" button - press
 it. A dialog explains that you're about to choose the folder in which the archive will be created.
-You can choose whatever folder you want, but don't select a subdirectory of TrekMe. If you continue,
-the archive will be created in background - you can see the progression in the notification area of the
-device.
+You can choose whatever folder you want (and create a new one), but don't select a subdirectory of
+TrekMe. If you continue, the archive will be created in background - you can see the progression in
+the notification area of the device.
 
 An archive contains everything related to the map (calibration, routes, points of interest, etc.).
 
-Just like maps, archives are stored on a dedicated folder which you choose in the settings of the
-application. Beware that if you uninstall TrekMe, those folders and their content (including maps
-and archives) will be **permanently deleted**. There's an exception though. If you have Android 9 or
-lower, the folder on the internal storage won't be removed.
-
-In other cases, the only reliable way to keep your archives safe is to move them to a secure location.
-For example, it could be a folder named "TrekMe_backup" somewhere on your SD card or internal
-storage. That folder shouldn't be a subfolder of the folder(s) used by TrekMe. 
+Once archived, a map can be restored using the import feature.
 
 ### <a name="TOC-Share-maps"></a>Map sharing
 
