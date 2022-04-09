@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.peterlaurence.trekme.core.map.entity;
+package com.peterlaurence.trekme.core.map.data;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

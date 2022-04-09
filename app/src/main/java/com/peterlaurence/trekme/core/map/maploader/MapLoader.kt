@@ -5,10 +5,8 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.Landmark
-import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.core.map.entity.*
-import com.peterlaurence.trekme.core.map.maploader.events.MapListUpdateEvent
+import com.peterlaurence.trekme.core.map.data.*
+import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapLandmarkImportTask
@@ -17,11 +15,9 @@ import com.peterlaurence.trekme.core.map.mappers.toEntity
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
+import com.peterlaurence.trekme.core.repositories.map.MapListUpdateRepository
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -44,7 +40,9 @@ import kotlin.coroutines.resume
 class MapLoader(
     private val mainDispatcher: CoroutineDispatcher,
     private val defaultDispatcher: CoroutineDispatcher,
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
+    private val mapListUpdateRepository: MapListUpdateRepository,
+    private val saveMapInteractor: SaveMapInteractor
 ) {
     /**
      * All [Projection]s are registered here.
@@ -58,10 +56,6 @@ class MapLoader(
 
     private val gson: Gson
     private val mapList: MutableList<Map> = mutableListOf()
-
-    private val _mapListUpdateEventFlow =
-        MutableSharedFlow<MapListUpdateEvent>(0, 1, BufferOverflow.DROP_OLDEST)
-    val mapListUpdateEventFlow = _mapListUpdateEventFlow.asSharedFlow()
 
     /**
      * Get a read-only list of [Map]s
@@ -115,7 +109,7 @@ class MapLoader(
             it.addIfNew()
         }
 
-        notifyMapListUpdateListeners()
+        mapListUpdateRepository.notifyMapListUpdate()
         return maps
     }
 
@@ -198,8 +192,7 @@ class MapLoader(
             map.addIfNew()
         }
 
-        /* Generate the json file */
-        saveMap(map)
+        saveMapInteractor.saveMap(map)
     }
 
     /**
@@ -210,27 +203,6 @@ class MapLoader(
     fun getMap(mapId: Int): Map? {
         return mapList.firstOrNull { it.id == mapId }
     }
-
-    /**
-     * Save the content of a [Map], so the changes persist upon application restart.
-     * Here, it writes to the corresponding json file.
-     * Then, broadcasts an [MapListUpdateEvent].
-     *
-     * @param map The [Map] to save.
-     */
-    suspend fun saveMap(map: Map) = withContext(mainDispatcher) {
-        val jsonString = gson.toJson(map.configSnapshot.toEntity())
-
-        withContext(ioDispatcher) {
-            val configFile = map.configFile
-            writeToFile(jsonString, configFile) {
-                Log.e(TAG, "Error while saving the map")
-            }
-        }
-
-        notifyMapListUpdateListeners()
-    }
-
 
     /**
      * Saves the [MarkerGson] of a [Map], so the changes persist upon application restart.
@@ -275,35 +247,13 @@ class MapLoader(
         mapList.remove(map)
 
         /* Notify for view update */
-        notifyMapListUpdateListeners()
+        mapListUpdateRepository.notifyMapListUpdate()
 
         /* Delete the map directory in a separate thread */
         val mapDirectory = map.directory
         withContext(ioDispatcher) {
             FileUtils.deleteRecursive(mapDirectory)
         }
-    }
-
-    /**
-     * Delete a [MarkerGson.Marker] from a [Map].
-     */
-    suspend fun deleteMarker(map: Map, marker: Marker) {
-        withContext(mainDispatcher) {
-            map.deleteMarker(marker)
-        }
-
-        saveMarkers(map)
-    }
-
-    /**
-     * Delete a [Landmark] from a [Map].
-     */
-    suspend fun deleteLandmark(map: Map, landmark: Landmark) {
-        withContext(mainDispatcher) {
-            map.deleteLandmark(landmark)
-        }
-
-        saveLandmarks(map)
     }
 
     /**
@@ -347,10 +297,6 @@ class MapLoader(
         }
 
         return true
-    }
-
-    private fun notifyMapListUpdateListeners() {
-        _mapListUpdateEventFlow.tryEmit(MapListUpdateEvent(maps.isNotEmpty()))
     }
 
     interface MapArchiveListUpdateListener {

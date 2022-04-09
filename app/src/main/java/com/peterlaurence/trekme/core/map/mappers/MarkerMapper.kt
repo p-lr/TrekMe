@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.map.mappers
 
 import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.core.map.entity.MarkerGson
-import com.peterlaurence.trekme.core.map.entity.MarkerKtx
+import com.peterlaurence.trekme.core.map.data.MarkerGson
+import com.peterlaurence.trekme.core.map.data.MarkerKtx
 
 fun Marker.toEntity(): MarkerGson.Marker {
     val m = this

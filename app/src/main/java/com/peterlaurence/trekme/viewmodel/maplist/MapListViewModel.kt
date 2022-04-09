@@ -6,11 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.repositories.map.MapListUpdateRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,7 +24,8 @@ class MapListViewModel @Inject constructor(
     private val settings: Settings,
     private val mapRepository: MapRepository,
     private val mapLoader: MapLoader,
-    private val onBoardingRepository: OnBoardingRepository
+    private val onBoardingRepository: OnBoardingRepository,
+    private val mapListUpdateRepository: MapListUpdateRepository
 ) : ViewModel() {
 
     private val _mapState: MutableState<MapListState> = mutableStateOf(Loading, policy = structuralEqualityPolicy())
@@ -32,7 +33,7 @@ class MapListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            mapLoader.mapListUpdateEventFlow.collect {
+            mapListUpdateRepository.mapListUpdateEventFlow.collect {
                 val favList = settings.getFavoriteMapIds().first()
                 updateMapListInFragment(favList)
             }

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
+import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
@@ -35,6 +36,7 @@ import javax.inject.Inject
 class MapSettingsViewModel @Inject constructor(
         val app: Application,
         private val mapLoader: MapLoader,
+        private val saveMapInteractor: SaveMapInteractor,
         private val mapRepository: MapRepository
 ) : ViewModel() {
 
@@ -63,7 +65,7 @@ class MapSettingsViewModel @Inject constructor(
             }
             if (thumbnail != null) {
                 map.image = thumbnail
-                mapLoader.saveMap(map)
+                saveMapInteractor.saveMap(map)
                 _mapImageImportEvents.tryEmit(MapImageImportResult(true))
             } else {
                 _mapImageImportEvents.tryEmit(MapImageImportResult(false))
@@ -135,7 +137,7 @@ class MapSettingsViewModel @Inject constructor(
     fun renameMap(map: Map, newName: String) {
         viewModelScope.launch {
             mapLoader.renameMap(map, newName)
-            mapLoader.saveMap(map)
+            saveMapInteractor.saveMap(map)
         }
     }
 
@@ -162,7 +164,7 @@ class MapSettingsViewModel @Inject constructor(
 
     private fun saveMapAsync(map: Map) {
         viewModelScope.launch {
-            mapLoader.saveMap(map)
+            saveMapInteractor.saveMap(map)
         }
     }
 
