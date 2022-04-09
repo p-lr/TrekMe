@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.map;
 
-import com.peterlaurence.trekme.core.map.domain.CalibrationPoint;
+import com.peterlaurence.trekme.core.map.domain.models.CalibrationPoint;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

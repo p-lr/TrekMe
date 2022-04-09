@@ -4,7 +4,7 @@ import com.peterlaurence.trekme.util.zipTask
 import android.graphics.Bitmap
 import com.peterlaurence.trekme.util.ZipProgressionListener
 import android.graphics.BitmapFactory
-import com.peterlaurence.trekme.core.map.domain.*
+import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.domain
+package com.peterlaurence.trekme.core.map.domain.models
 
 data class Landmark(
     var name: String,

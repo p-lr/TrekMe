@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.data;
+package com.peterlaurence.trekme.core.map.data.models;
 
 import java.io.Serializable;
 import java.util.ArrayList;

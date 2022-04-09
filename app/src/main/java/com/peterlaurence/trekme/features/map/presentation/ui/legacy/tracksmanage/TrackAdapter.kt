@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.domain.Route
+import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.colorRoute
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.TrackAdapter.TrackViewHolder
 

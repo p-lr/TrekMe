@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.map.mapbuilder
 
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.*
+import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import java.io.File
 

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.data;
+package com.peterlaurence.trekme.core.map.data.models;
 
 import com.peterlaurence.trekme.core.projection.Projection;
 

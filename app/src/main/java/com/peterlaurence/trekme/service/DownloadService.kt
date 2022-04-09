@@ -22,8 +22,8 @@ import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.createNomediaFile
-import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
-import com.peterlaurence.trekme.core.map.domain.Wmts
+import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
+import com.peterlaurence.trekme.core.map.domain.models.Wmts
 import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.mapsource.WmtsSource

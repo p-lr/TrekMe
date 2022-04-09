@@ -6,7 +6,10 @@ import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.createNomediaFile
-import com.peterlaurence.trekme.core.map.domain.*
+import com.peterlaurence.trekme.core.map.domain.models.Level
+import com.peterlaurence.trekme.core.map.domain.models.MapConfig
+import com.peterlaurence.trekme.core.map.domain.models.Size
+import com.peterlaurence.trekme.core.map.domain.models.Vips
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.LibvipsMapSeeker
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.importFromFile
 import com.peterlaurence.trekme.core.map.maploader.MapLoader

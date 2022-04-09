@@ -6,9 +6,11 @@ import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.data.*
+import com.peterlaurence.trekme.core.map.data.models.LandmarkGson
+import com.peterlaurence.trekme.core.map.data.models.MarkerGson
+import com.peterlaurence.trekme.core.map.data.models.RuntimeTypeAdapterFactory
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask
-import com.peterlaurence.trekme.core.map.maploader.tasks.mapLandmarkImportTask
 import com.peterlaurence.trekme.core.map.mappers.toEntity
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
@@ -115,20 +117,6 @@ class MapLoader(
     private suspend fun findMaps(dirs: List<File>) = withContext(defaultDispatcher) {
         mapCreationTask(gson, MAP_FILENAME, *dirs.toTypedArray())
     }
-
-    /**
-     * Launch a task which reads the landmarks.json file.
-     * The [mapLandmarkImportTask] is called off UI thread to get a nullable instance of [LandmarkGson].
-     * Right after, if the result is not null, we update the [Map] on the main thread.
-     */
-    suspend fun getLandmarksForMap(map: Map) =
-        withContext(defaultDispatcher) {
-            mapLandmarkImportTask(map, gson, MAP_LANDMARK_FILENAME)
-        }?.let { landmarkGson ->
-            withContext(mainDispatcher) {
-                map.setLandmarks(landmarkGson.landmarks)
-            }
-        }
 
     /**
      * Add a [Map] to the internal list and generate the json file. Then, saves the [Map].

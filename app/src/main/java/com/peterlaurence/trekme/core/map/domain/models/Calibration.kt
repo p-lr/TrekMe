@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.domain
+package com.peterlaurence.trekme.core.map.domain.models
 
 import com.peterlaurence.trekme.core.projection.Projection
 

@@ -122,7 +122,7 @@
         android:label="MarkerEditFragment" >
         <argument
             android:name="marker"
-            app:argType="com.peterlaurence.trekme.core.map.domain.Marker" />
+            app:argType="com.peterlaurence.trekme.core.map.domain.models.Marker" />
         <argument
             android:name="mapId"
             app:argType="integer" />

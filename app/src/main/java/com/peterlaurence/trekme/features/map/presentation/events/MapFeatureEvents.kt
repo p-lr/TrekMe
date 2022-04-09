@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.map.presentation.events
 
-import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.core.map.domain.Route
+import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.Route
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 

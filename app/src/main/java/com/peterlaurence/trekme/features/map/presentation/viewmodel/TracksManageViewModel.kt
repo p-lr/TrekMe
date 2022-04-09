@@ -6,7 +6,7 @@ import androidx.lifecycle.*
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.Route
+import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.repositories.map.MapRepository

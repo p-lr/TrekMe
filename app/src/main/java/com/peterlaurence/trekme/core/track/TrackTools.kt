@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.track
 
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.Route
-import com.peterlaurence.trekme.core.map.domain.Marker
+import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import com.peterlaurence.trekme.core.lib.gpx.model.Track
 import com.peterlaurence.trekme.core.lib.gpx.model.hasTrustedElevations

@@ -2,9 +2,11 @@ package com.peterlaurence.trekme.di
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.peterlaurence.trekme.core.map.data.RuntimeTypeAdapterFactory
+import com.peterlaurence.trekme.core.map.data.dao.GetLandmarksForMapDaoImpl
+import com.peterlaurence.trekme.core.map.data.models.RuntimeTypeAdapterFactory
 import com.peterlaurence.trekme.core.map.data.dao.GetMarkersForMapDaoImpl
 import com.peterlaurence.trekme.core.map.data.dao.MapSaverDaoImpl
+import com.peterlaurence.trekme.core.map.domain.dao.GetLandmarksForMapDao
 import com.peterlaurence.trekme.core.map.domain.dao.GetMarkersForMapDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.projection.MercatorProjection
@@ -58,5 +60,15 @@ object DaoModule {
         gson: Gson
     ) : GetMarkersForMapDao {
         return GetMarkersForMapDaoImpl(mainDispatcher, ioDispatcher, gson)
+    }
+
+    @Singleton
+    @Provides
+    fun provideGetLandmarksForMapDao(
+        @MainDispatcher mainDispatcher: CoroutineDispatcher,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        gson: Gson
+    ) : GetLandmarksForMapDao {
+        return GetLandmarksForMapDaoImpl(mainDispatcher, ioDispatcher, gson)
     }
 }

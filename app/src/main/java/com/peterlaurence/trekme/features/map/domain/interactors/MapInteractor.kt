@@ -5,9 +5,10 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
-import com.peterlaurence.trekme.core.map.domain.Landmark
-import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.core.map.domain.Route
+import com.peterlaurence.trekme.core.map.domain.dao.GetLandmarksForMapDao
+import com.peterlaurence.trekme.core.map.domain.models.Landmark
+import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.dao.GetMarkersForMapDao
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
@@ -25,6 +26,7 @@ import javax.inject.Inject
 
 class MapInteractor @Inject constructor(
     private val getMarkersForMapDao: GetMarkersForMapDao,
+    private val getLandmarksForMapDao: GetLandmarksForMapDao,
     private val mapLoader: MapLoader,
     private val routeRepository: RouteRepository,
     @ApplicationContext private val context: Context,
@@ -120,7 +122,7 @@ class MapInteractor @Inject constructor(
      */
     suspend fun getLandmarkPositions(map: Map): List<LandmarkWithNormalizedPos> {
         /* Import landmarks */
-        mapLoader.getLandmarksForMap(map)
+        getLandmarksForMapDao.getLandmarksForMap(map)
 
         val landmarks = map.landmarks ?: return emptyList()
 
