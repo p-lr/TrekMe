@@ -7,10 +7,8 @@ import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.data.*
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
-import com.peterlaurence.trekme.core.map.maploader.tasks.MapArchiveSearchTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapLandmarkImportTask
-import com.peterlaurence.trekme.core.map.mappers.toDomain
 import com.peterlaurence.trekme.core.map.mappers.toEntity
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
@@ -18,13 +16,11 @@ import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
 import com.peterlaurence.trekme.core.repositories.map.MapListUpdateRepository
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
 import java.util.*
-import kotlin.coroutines.resume
 
 /**
  * The MapLoader acts as central point for most operations related to maps.
@@ -32,8 +28,6 @@ import kotlin.coroutines.resume
  *
  * * Create instances of [Map]
  * * Deletion a [Map]
- * * Import the markers of a [Map]
- * * [MapArchiveSearchTask] -> Get the list of [MapArchive]
  *
  * @author P.Laurence -- converted to Kotlin on 16/02/2019
  */
@@ -123,29 +117,6 @@ class MapLoader(
     }
 
     /**
-     * Reads the markers.json file.
-     */
-    suspend fun getMarkersForMap(map: Map): Boolean = withContext(ioDispatcher) {
-        val markerFile = File(map.directory, MAP_MARKER_FILENAME)
-        if (!markerFile.exists()) return@withContext false
-
-        val markerGson = runCatching {
-            val jsonString = FileUtils.getStringFromFile(markerFile)
-            gson.fromJson(jsonString, MarkerGson::class.java)
-        }.onFailure {
-            Log.e(TAG, it.message, it)
-        }.getOrNull()
-
-        /* Update the map on the main thread */
-        withContext(mainDispatcher) {
-            if (markerGson != null) {
-                map.setMarkers(markerGson.markers.map { it.toDomain() })
-                true
-            } else false
-        }
-    }
-
-    /**
      * Launch a task which reads the landmarks.json file.
      * The [mapLandmarkImportTask] is called off UI thread to get a nullable instance of [LandmarkGson].
      * Right after, if the result is not null, we update the [Map] on the main thread.
@@ -157,30 +128,6 @@ class MapLoader(
             withContext(mainDispatcher) {
                 map.setLandmarks(landmarkGson.landmarks)
             }
-        }
-
-    /**
-     * Launch a task which gets the list of [MapArchive].
-     * It also shows how a java [Thread] can be wrapped inside a coroutine so that it can be used
-     * by Kotlin code.
-     *
-     * TODO: Remove this along with MapArchiveSearchTask class. This logic isn't used anymore.
-     */
-    @Suppress("unused")
-    suspend fun getMapArchiveList(dirs: List<File>): List<MapArchive> =
-        suspendCancellableCoroutine { cont ->
-            val task =
-                MapArchiveSearchTask(dirs, MAP_FILENAME, object : MapArchiveListUpdateListener {
-                    override fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>) {
-                        cont.resume(mapArchiveList)
-                    }
-                })
-
-            cont.invokeOnCancellation {
-                task.cancel()
-            }
-
-            task.start()
         }
 
     /**

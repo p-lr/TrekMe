@@ -8,6 +8,7 @@ import com.peterlaurence.trekme.core.map.MapBounds
 import com.peterlaurence.trekme.core.map.domain.Landmark
 import com.peterlaurence.trekme.core.map.domain.Marker
 import com.peterlaurence.trekme.core.map.domain.Route
+import com.peterlaurence.trekme.core.map.domain.dao.GetMarkersForMapDao
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import javax.inject.Inject
 
 class MapInteractor @Inject constructor(
+    private val getMarkersForMapDao: GetMarkersForMapDao,
     private val mapLoader: MapLoader,
     private val routeRepository: RouteRepository,
     @ApplicationContext private val context: Context,
@@ -136,7 +138,7 @@ class MapInteractor @Inject constructor(
 
     suspend fun getMarkerPositions(map: Map): List<MarkerWithNormalizedPos> {
         /* Import markers */
-        mapLoader.getMarkersForMap(map)
+        getMarkersForMapDao.getMarkersForMap(map)
 
         val markers = map.markers ?: return emptyList()
         return markers.map { marker ->
