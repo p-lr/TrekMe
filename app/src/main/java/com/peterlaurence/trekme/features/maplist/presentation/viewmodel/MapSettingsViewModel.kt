@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.interactors.RenameMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
@@ -34,10 +35,11 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MapSettingsViewModel @Inject constructor(
-        val app: Application,
-        private val mapLoader: MapLoader,
-        private val saveMapInteractor: SaveMapInteractor,
-        private val mapRepository: MapRepository
+    val app: Application,
+    private val mapLoader: MapLoader,
+    private val renameMapInteractor: RenameMapInteractor,
+    private val saveMapInteractor: SaveMapInteractor,
+    private val mapRepository: MapRepository
 ) : ViewModel() {
 
     private val _zipEvents = MutableLiveData<ZipEvent>()
@@ -136,8 +138,7 @@ class MapSettingsViewModel @Inject constructor(
 
     fun renameMap(map: Map, newName: String) {
         viewModelScope.launch {
-            mapLoader.renameMap(map, newName)
-            saveMapInteractor.saveMap(map)
+            renameMapInteractor.renameMap(map, newName)
         }
     }
 

@@ -82,4 +82,14 @@ object DaoModule {
     fun provideMapDeleteDao(
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ) : MapDeleteDao = MapDeleteDaoImpl(ioDispatcher)
+
+    @Singleton
+    @Provides
+    fun provideMapRenameDao(
+        @MainDispatcher mainDispatcher: CoroutineDispatcher,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        mapSaverDao: MapSaverDao
+    ) : MapRenameDao {
+        return MapRenameDaoImpl(mainDispatcher, ioDispatcher, mapSaverDao)
+    }
 }

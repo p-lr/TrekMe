@@ -160,11 +160,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideMapLoader(): MapLoader =
-        MapLoader(
-            Dispatchers.Main.immediate,
-            Dispatchers.IO,
-        )
+    fun provideMapLoader(): MapLoader = MapLoader()
 
     @Singleton
     @Provides
