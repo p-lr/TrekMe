@@ -3,11 +3,13 @@ package com.peterlaurence.trekme.core.map.domain.interactors
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.repositories.map.MapListUpdateRepository
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import javax.inject.Inject
 
 class SaveMapInteractor @Inject constructor(
     private val mapSaver: MapSaverDao,
-    private val mapListUpdateRepository: MapListUpdateRepository
+    private val mapListUpdateRepository: MapListUpdateRepository,
+    private val mapRepository: MapRepository
 ) {
     /**
      * Save the content of a [Map], so the changes persist upon application restart.
@@ -19,5 +21,11 @@ class SaveMapInteractor @Inject constructor(
     suspend fun saveMap(map: Map) {
         mapSaver.save(map)
         mapListUpdateRepository.notifyMapListUpdate()
+    }
+
+    suspend fun addAndSaveMap(map: Map) {
+        mapRepository.addMaps(listOf(map))
+
+        mapSaver.save(map)
     }
 }

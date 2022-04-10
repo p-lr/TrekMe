@@ -102,7 +102,7 @@ class MapViewModel @Inject constructor(
     val snackBarController = SnackBarController()
 
     init {
-        mapRepository.mapFlow.map {
+        mapRepository.currentMapFlow.map {
             if (it != null) {
                 onMapChange(it)
             }

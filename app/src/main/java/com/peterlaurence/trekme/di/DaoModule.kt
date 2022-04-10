@@ -2,13 +2,9 @@ package com.peterlaurence.trekme.di
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.peterlaurence.trekme.core.map.data.dao.LandmarksDaoImpl
+import com.peterlaurence.trekme.core.map.data.dao.*
 import com.peterlaurence.trekme.core.map.data.models.RuntimeTypeAdapterFactory
-import com.peterlaurence.trekme.core.map.data.dao.MarkersDaoImpl
-import com.peterlaurence.trekme.core.map.data.dao.MapSaverDaoImpl
-import com.peterlaurence.trekme.core.map.domain.dao.LandmarksDao
-import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
-import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
+import com.peterlaurence.trekme.core.map.domain.dao.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
@@ -17,6 +13,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import java.util.HashMap
 import javax.inject.Singleton
 
@@ -71,4 +68,18 @@ object DaoModule {
     ) : LandmarksDao {
         return LandmarksDaoImpl(mainDispatcher, ioDispatcher, gson)
     }
+
+    @Singleton
+    @Provides
+    fun provideMapLoaderDao(
+        gson: Gson,
+    ): MapLoaderDao {
+        return MapLoaderDaoImpl(gson, Dispatchers.Default)
+    }
+
+    @Singleton
+    @Provides
+    fun provideMapDeleteDao(
+        @IoDispatcher ioDispatcher: CoroutineDispatcher
+    ) : MapDeleteDao = MapDeleteDaoImpl(ioDispatcher)
 }
