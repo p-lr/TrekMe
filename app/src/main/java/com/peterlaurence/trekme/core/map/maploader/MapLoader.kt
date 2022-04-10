@@ -1,12 +1,10 @@
 package com.peterlaurence.trekme.core.map.maploader
 
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.data.*
-import com.peterlaurence.trekme.core.map.data.models.LandmarkGson
 import com.peterlaurence.trekme.core.map.data.models.RuntimeTypeAdapterFactory
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask
@@ -18,8 +16,6 @@ import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.IOException
-import java.io.PrintWriter
 import java.util.*
 
 /**
@@ -138,21 +134,6 @@ class MapLoader(
     }
 
     /**
-     * Save the [LandmarkGson] of a [Map], so the changes persist upon application restart.
-     * @param map the [Map] to save.
-     */
-    suspend fun saveLandmarks(map: Map) = withContext(mainDispatcher) {
-        val jsonString = gson.toJson(LandmarkGson(map.landmarks ?: listOf()))
-
-        withContext(ioDispatcher) {
-            val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
-            writeToFile(jsonString, landmarkFile) {
-                Log.e(TAG, "Error while saving the landmarks")
-            }
-        }
-    }
-
-    /**
      * Delete a [Map]. Recursively deletes its directory.
      *
      * @param map The [Map] to delete.
@@ -216,20 +197,4 @@ class MapLoader(
     interface MapArchiveListUpdateListener {
         fun onMapArchiveListUpdate(mapArchiveList: List<MapArchive>)
     }
-
-    /**
-     * Utility method to write a [String] into a [File].
-     */
-    private fun writeToFile(st: String, out: File, errCb: () -> Unit) {
-        try {
-            PrintWriter(out).use {
-                it.print(st)
-            }
-        } catch (e: IOException) {
-            errCb()
-            Log.e(TAG, e.message, e)
-        }
-    }
 }
-
-private const val TAG = "MapLoader"

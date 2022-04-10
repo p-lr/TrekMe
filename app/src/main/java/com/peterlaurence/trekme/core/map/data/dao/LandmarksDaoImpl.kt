@@ -5,17 +5,18 @@ import com.google.gson.Gson
 import com.peterlaurence.trekme.core.map.MAP_LANDMARK_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.data.models.LandmarkGson
-import com.peterlaurence.trekme.core.map.domain.dao.GetLandmarksForMapDao
+import com.peterlaurence.trekme.core.map.domain.dao.LandmarksDao
 import com.peterlaurence.trekme.util.FileUtils
+import com.peterlaurence.trekme.util.writeToFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class GetLandmarksForMapDaoImpl (
+class LandmarksDaoImpl (
     private val mainDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
     private val gson: Gson
-) : GetLandmarksForMapDao {
+) : LandmarksDao {
     /**
      * Reads the landmarks.json file off UI thread to get a nullable instance of [LandmarkGson].
      * Right after, if the result is not null, updates the [Map] on the main thread.
@@ -38,5 +39,19 @@ class GetLandmarksForMapDaoImpl (
             map.setLandmarks(landmarkGson.landmarks)
         }
         return true
+    }
+
+    /**
+     * Re-writes the landmarks.json file.
+     */
+    override suspend fun saveLandmarks(map: Map) = withContext(mainDispatcher) {
+        val jsonString = gson.toJson(LandmarkGson(map.landmarks ?: listOf()))
+
+        withContext(ioDispatcher) {
+            val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
+            writeToFile(jsonString, landmarkFile) {
+                Log.e(this.javaClass.name, "Error while saving the landmarks")
+            }
+        }
     }
 }

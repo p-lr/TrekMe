@@ -5,7 +5,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
-import com.peterlaurence.trekme.core.map.domain.dao.GetLandmarksForMapDao
+import com.peterlaurence.trekme.core.map.domain.dao.LandmarksDao
 import com.peterlaurence.trekme.core.map.domain.models.Landmark
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
@@ -26,7 +26,7 @@ import javax.inject.Inject
 
 class MapInteractor @Inject constructor(
     private val markersDao: MarkersDao,
-    private val getLandmarksForMapDao: GetLandmarksForMapDao,
+    private val landmarksDao: LandmarksDao,
     private val mapLoader: MapLoader,
     private val routeRepository: RouteRepository,
     @ApplicationContext private val context: Context,
@@ -73,7 +73,7 @@ class MapInteractor @Inject constructor(
             lon = lonLat[0]
         }
 
-        mapLoader.saveLandmarks(map)
+        landmarksDao.saveLandmarks(map)
     }
 
     /**
@@ -96,7 +96,7 @@ class MapInteractor @Inject constructor(
     fun deleteLandmark(landmark: Landmark, mapId: Int) = scope.launch {
         val map = mapLoader.getMap(mapId) ?: return@launch
         map.deleteLandmark(landmark)
-        mapLoader.saveLandmarks(map)
+        landmarksDao.saveLandmarks(map)
     }
 
     fun deleteMarker(marker: Marker, mapId: Int) = scope.launch {
@@ -122,7 +122,7 @@ class MapInteractor @Inject constructor(
      */
     suspend fun getLandmarkPositions(map: Map): List<LandmarkWithNormalizedPos> {
         /* Import landmarks */
-        getLandmarksForMapDao.getLandmarksForMap(map)
+        landmarksDao.getLandmarksForMap(map)
 
         val landmarks = map.landmarks ?: return emptyList()
 
@@ -155,7 +155,7 @@ class MapInteractor @Inject constructor(
         }
     }
 
-    suspend fun getMarkerPosition(map: Map, marker: Marker): MarkerWithNormalizedPos? {
+    suspend fun getMarkerPosition(map: Map, marker: Marker): MarkerWithNormalizedPos {
         val (x, y) = getNormalizedCoordinates(
             marker.lat,
             marker.lon,
