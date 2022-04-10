@@ -7,11 +7,9 @@ import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.data.*
 import com.peterlaurence.trekme.core.map.data.models.LandmarkGson
-import com.peterlaurence.trekme.core.map.data.models.MarkerGson
 import com.peterlaurence.trekme.core.map.data.models.RuntimeTypeAdapterFactory
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.maploader.tasks.mapCreationTask
-import com.peterlaurence.trekme.core.map.mappers.toEntity
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
@@ -137,25 +135,6 @@ class MapLoader(
      */
     fun getMap(mapId: Int): Map? {
         return mapList.firstOrNull { it.id == mapId }
-    }
-
-    /**
-     * Saves the [MarkerGson] of a [Map], so the changes persist upon application restart.
-     * Here, it writes to the corresponding json file.
-     *
-     * @param map The [Map] to save.
-     */
-    suspend fun saveMarkers(map: Map) = withContext(mainDispatcher) {
-        val markerGson =
-            MarkerGson().apply { markers = map.markers?.map { it.toEntity() } ?: listOf() }
-        val jsonString = gson.toJson(markerGson)
-
-        withContext(ioDispatcher) {
-            val markerFile = File(map.directory, MAP_MARKER_FILENAME)
-            writeToFile(jsonString, markerFile) {
-                Log.e(TAG, "Error while saving the markers")
-            }
-        }
     }
 
     /**

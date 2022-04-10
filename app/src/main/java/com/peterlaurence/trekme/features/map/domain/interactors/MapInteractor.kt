@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.map.domain.dao.GetLandmarksForMapDao
 import com.peterlaurence.trekme.core.map.domain.models.Landmark
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.core.map.domain.dao.GetMarkersForMapDao
+import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import javax.inject.Inject
 
 class MapInteractor @Inject constructor(
-    private val getMarkersForMapDao: GetMarkersForMapDao,
+    private val markersDao: MarkersDao,
     private val getLandmarksForMapDao: GetLandmarksForMapDao,
     private val mapLoader: MapLoader,
     private val routeRepository: RouteRepository,
@@ -90,7 +90,7 @@ class MapInteractor @Inject constructor(
             lon = lonLat[0]
         }
 
-        mapLoader.saveMarkers(map)
+        markersDao.saveMarkers(map)
     }
 
     fun deleteLandmark(landmark: Landmark, mapId: Int) = scope.launch {
@@ -102,7 +102,7 @@ class MapInteractor @Inject constructor(
     fun deleteMarker(marker: Marker, mapId: Int) = scope.launch {
         val map = mapLoader.getMap(mapId) ?: return@launch
         map.deleteMarker(marker)
-        mapLoader.saveMarkers(map)
+        markersDao.saveMarkers(map)
     }
 
     /**
@@ -113,7 +113,7 @@ class MapInteractor @Inject constructor(
         updateMarkerJob = scope.launch {
             delay(1000)
             val map = mapLoader.getMap(mapId) ?: return@launch
-            mapLoader.saveMarkers(map)
+            markersDao.saveMarkers(map)
         }
     }
 
@@ -140,7 +140,7 @@ class MapInteractor @Inject constructor(
 
     suspend fun getMarkerPositions(map: Map): List<MarkerWithNormalizedPos> {
         /* Import markers */
-        getMarkersForMapDao.getMarkersForMap(map)
+        markersDao.getMarkersForMap(map)
 
         val markers = map.markers ?: return emptyList()
         return markers.map { marker ->

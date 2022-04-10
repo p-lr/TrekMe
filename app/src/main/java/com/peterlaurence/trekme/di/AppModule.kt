@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.location.*
+import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.orientation.OrientationSource
@@ -105,7 +106,10 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindTrackImporter(repo: RouteRepository): TrackImporter = TrackImporter(repo)
+    fun bindTrackImporter(
+        repo: RouteRepository,
+        markersDao: MarkersDao,
+    ): TrackImporter = TrackImporter(repo, markersDao)
 
     @Singleton
     @Provides

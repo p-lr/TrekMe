@@ -107,7 +107,7 @@ class RecordViewModel @Inject constructor(
                 launch {
                     if (map.intersects(boundingBox)) {
                         /* Import the new route */
-                        val result = trackImporter.applyGpxToMap(gpx, map, mapLoader)
+                        val result = trackImporter.applyGpxToMap(gpx, map)
                         appEventBus.postGpxImportResult(result)
                         if (result is TrackImporter.GpxImportResult.GpxImportOk && result.newRouteCount >= 1) {
                             importCount++
@@ -137,7 +137,7 @@ class RecordViewModel @Inject constructor(
                 ?: return
 
         viewModelScope.launch {
-            trackImporter.applyGpxFileToMap(recording, map, mapLoader).let {
+            trackImporter.applyGpxFileToMap(recording, map).let {
                 /* Once done, notify the rest of the app */
                 appEventBus.postGpxImportResult(it)
             }

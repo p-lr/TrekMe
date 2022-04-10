@@ -7,7 +7,6 @@ import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
@@ -35,7 +34,6 @@ class TracksManageViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val tracksEventBus: TracksEventBus,
     private val mapFeatureEvents: MapFeatureEvents,
-    private val mapLoader: MapLoader
 ) : ViewModel() {
     private val _tracks = MutableLiveData<List<Route>>()
     val tracks: LiveData<List<Route>> = _tracks
@@ -78,8 +76,7 @@ class TracksManageViewModel @Inject constructor(
             trackImporter.applyGpxUriToMap(
                 uri,
                 app.applicationContext.contentResolver,
-                it,
-                mapLoader
+                it
             ).let { result ->
                 if (result is TrackImporter.GpxImportResult.GpxImportOk) {
                     _tracks.postValue(map?.routes?.value ?: listOf())
