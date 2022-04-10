@@ -5,7 +5,7 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.map.domain.interactors.DeleteMapInteractor
 import com.peterlaurence.trekme.core.repositories.map.MapListUpdateRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
@@ -23,9 +23,9 @@ import javax.inject.Inject
 class MapListViewModel @Inject constructor(
     private val settings: Settings,
     private val mapRepository: MapRepository,
-    private val mapLoader: MapLoader,
     private val onBoardingRepository: OnBoardingRepository,
-    private val mapListUpdateRepository: MapListUpdateRepository
+    private val mapListUpdateRepository: MapListUpdateRepository,
+    private val deleteMapInteractor: DeleteMapInteractor
 ) : ViewModel() {
 
     private val _mapState: MutableState<MapListState> = mutableStateOf(Loading, policy = structuralEqualityPolicy())
@@ -41,7 +41,7 @@ class MapListViewModel @Inject constructor(
     }
 
     fun setMap(mapId: Int) {
-        val map = mapLoader.getMap(mapId) ?: return
+        val map = mapRepository.getMap(mapId) ?: return
 
         // 1- Sets the map to the main entity responsible for this
         mapRepository.setCurrentMap(map)
@@ -75,16 +75,16 @@ class MapListViewModel @Inject constructor(
     }
 
     fun deleteMap(mapId: Int) {
-        val map = mapLoader.getMap(mapId)
+        val map = mapRepository.getMap(mapId)
         if (map != null) {
             viewModelScope.launch {
-                mapLoader.deleteMap(map)
+                deleteMapInteractor.deleteMap(map)
             }
         }
     }
 
     fun onMapSettings(mapId: Int) {
-        val map = mapLoader.getMap(mapId) ?: return
+        val map = mapRepository.getMap(mapId) ?: return
         mapRepository.setSettingsMap(map)
     }
 
@@ -93,7 +93,7 @@ class MapListViewModel @Inject constructor(
     }
 
     private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
-        val mapList = mapLoader.maps
+        val mapList = mapRepository.mapListFlow.value
 
         /* Order map list with favorites first */
         val stubList = mapList.map { it.toMapStub() }.let {

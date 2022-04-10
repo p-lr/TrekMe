@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.createNomediaFile
+import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.map.domain.models.Wmts
 import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
@@ -66,7 +67,7 @@ class DownloadService : Service() {
     private val stopAction = "stop"
 
     @Inject
-    lateinit var mapLoader: MapLoader
+    lateinit var saveMapInteractor: SaveMapInteractor
 
     @Inject
     lateinit var settings: Settings
@@ -289,7 +290,7 @@ class DownloadService : Service() {
         scope.launch {
             calibrate(map)
             map.createNomediaFile()
-            mapLoader.addMap(map)
+            saveMapInteractor.addAndSaveMap(map)
 
             /* Notify that the download is finished correctly.
              * Don't attempt to send more notifications, they will be dismissed anyway since the

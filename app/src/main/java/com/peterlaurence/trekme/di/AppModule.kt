@@ -160,16 +160,10 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideMapLoader(
-        mapListUpdateRepository: MapListUpdateRepository,
-        saveMapInteractor: SaveMapInteractor
-    ): MapLoader =
+    fun provideMapLoader(): MapLoader =
         MapLoader(
             Dispatchers.Main.immediate,
-            Dispatchers.Default,
             Dispatchers.IO,
-            mapListUpdateRepository,
-            saveMapInteractor
         )
 
     @Singleton

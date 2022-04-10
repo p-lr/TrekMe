@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -32,7 +32,7 @@ abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
     private var mapSelected: Map? = null
 
     @Inject
-    lateinit var mapLoader: MapLoader
+    lateinit var mapRepository: MapRepository
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         recyclerView = RecyclerView(requireActivity().baseContext)
@@ -40,7 +40,7 @@ abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         recyclerView.layoutManager = llm
 
         /* Fetch the list of maps */
-        val mapList = mapLoader.maps
+        val mapList = mapRepository.mapListFlow.value
 
         /* Restore the selection after device rotation */
         selectedIndex = savedInstanceState?.getInt(KEY_BUNDLE_MAP_INDEX) ?: -1

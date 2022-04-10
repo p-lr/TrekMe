@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// TODO: Now that MapRepository has StateFlow of List<Map>, this repository (below) shouldn't be
+// needed anymore.
 @Singleton
 class MapListUpdateRepository @Inject constructor() {
     private val _mapListUpdateEventFlow =

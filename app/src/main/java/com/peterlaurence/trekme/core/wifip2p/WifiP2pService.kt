@@ -21,7 +21,7 @@ import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.util.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,8 +41,9 @@ import kotlin.coroutines.resumeWithException
 
 @AndroidEntryPoint
 class WifiP2pService : Service() {
-    @Inject
-    lateinit var mapLoader: MapLoader
+    @Inject lateinit var mapRepository: MapRepository
+
+    @Inject lateinit var mapImporter: MapImporter
 
     @Inject
     @ApplicationContext
@@ -241,7 +242,7 @@ class WifiP2pService : Service() {
         }
         if (intent.action == StartSend::class.java.name) {
             val mapId = intent.getIntExtra(MAP_ID_ARG, -1)
-            val map = mapLoader.getMap(mapId)
+            val map = mapRepository.getMap(mapId)
             if (map != null) {
                 mode = StartSend(map)
             } else {
@@ -502,7 +503,7 @@ class WifiP2pService : Service() {
                 /* Import the map */
                 scope.launch {
                     val result = withContext(Dispatchers.IO) {
-                        MapImporter.importFromFile(dir, mapLoader)
+                        mapImporter.importFromFile(dir)
                     }
                     /* The receiver resets the WifiP2P connection */
                     when (result.status) {

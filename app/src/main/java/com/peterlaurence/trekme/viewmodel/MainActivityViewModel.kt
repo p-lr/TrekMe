@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.location.InternalGps
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
 import com.peterlaurence.trekme.core.repositories.gpspro.GpsProPurchaseRepo
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
@@ -32,7 +32,7 @@ import javax.inject.Inject
  * It manages model specific considerations that are set here outside of the main activity which
  * should mainly used to manage fragments.
  *
- * Avoids excessive [MapLoader.updateMaps] calls by managing an internal [attemptedAtLeastOnce] flag.
+ * Avoids excessive [UpdateMapsInteractor.updateMaps] calls by managing an internal [attemptedAtLeastOnce] flag.
  * It is also important because the activity might start after an Intent with a result code. In this
  * case, [attemptedAtLeastOnce] is true and we shall not trigger background processing.
  *
@@ -47,7 +47,7 @@ class MainActivityViewModel @Inject constructor(
     private val extendedOfferRepository: ExtendedOfferRepository,
     private val gpsProRepository: GpsProPurchaseRepo,
     private val appEventBus: AppEventBus,
-    private val mapLoader: MapLoader
+    private val updateMapsInteractor: UpdateMapsInteractor
 ) : ViewModel() {
     private var attemptedAtLeastOnce = false
 
@@ -73,9 +73,9 @@ class MainActivityViewModel @Inject constructor(
             trekMeContext.init(app.applicationContext)
             warnIfBadStorageState()
 
-            mapLoader.clearMaps()
+            mapRepository.clearMaps()
             trekMeContext.mapsDirList?.also { dirList ->
-                mapLoader.updateMaps(dirList)
+                updateMapsInteractor.updateMaps(dirList)
             }
 
             /* Get user-pref about metric or imperial system */
@@ -86,7 +86,7 @@ class MainActivityViewModel @Inject constructor(
                 StartOnPolicy.LAST_MAP -> {
                     val id = settings.getLastMapId().firstOrNull()
                     val found = id?.let {
-                        val map = mapLoader.getMap(id)
+                        val map = mapRepository.getMap(id)
                         map?.let {
                             mapRepository.setCurrentMap(map)
                             _showMapViewSignal.emit(Unit)
@@ -149,5 +149,5 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun getMapIndex(mapId: Int): Int = mapLoader.maps.indexOfFirst { it.id == mapId }
+    fun getMapIndex(mapId: Int): Int = mapRepository.mapListFlow.value.indexOfFirst { it.id == mapId }
 }

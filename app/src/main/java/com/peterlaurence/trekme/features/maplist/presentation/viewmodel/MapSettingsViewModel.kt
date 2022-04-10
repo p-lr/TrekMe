@@ -54,7 +54,7 @@ class MapSettingsViewModel @Inject constructor(
      * Compression of the file defined by the [uri] is done off UI-thread.
      */
     fun setMapImage(mapId: Int, uri: Uri) = viewModelScope.launch {
-        val map = mapLoader.getMap(mapId) ?: return@launch
+        val map = mapRepository.getMap(mapId) ?: return@launch
 
         try {
             val thumbnail = withContext(Dispatchers.Default) {
@@ -105,7 +105,7 @@ class MapSettingsViewModel @Inject constructor(
 
     @ExperimentalCoroutinesApi
     private fun zipProgressFlow(mapId: Int, outputStream: OutputStream): Flow<ZipEvent> = callbackFlow {
-        val map = mapLoader.getMap(mapId) ?: return@callbackFlow
+        val map = mapRepository.getMap(mapId) ?: return@callbackFlow
 
         val callback = object : ZipProgressionListener {
             private val mapName = map.name

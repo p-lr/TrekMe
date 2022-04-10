@@ -10,8 +10,8 @@ import com.peterlaurence.trekme.core.map.domain.models.Landmark
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.projection.Projection
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
@@ -27,7 +27,7 @@ import javax.inject.Inject
 class MapInteractor @Inject constructor(
     private val markersDao: MarkersDao,
     private val landmarksDao: LandmarksDao,
-    private val mapLoader: MapLoader,
+    private val mapRepository: MapRepository,
     private val routeRepository: RouteRepository,
     @ApplicationContext private val context: Context,
     @ApplicationScope private val scope: CoroutineScope
@@ -94,13 +94,13 @@ class MapInteractor @Inject constructor(
     }
 
     fun deleteLandmark(landmark: Landmark, mapId: Int) = scope.launch {
-        val map = mapLoader.getMap(mapId) ?: return@launch
+        val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteLandmark(landmark)
         landmarksDao.saveLandmarks(map)
     }
 
     fun deleteMarker(marker: Marker, mapId: Int) = scope.launch {
-        val map = mapLoader.getMap(mapId) ?: return@launch
+        val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteMarker(marker)
         markersDao.saveMarkers(map)
     }
@@ -112,7 +112,7 @@ class MapInteractor @Inject constructor(
         updateMarkerJob?.cancel()
         updateMarkerJob = scope.launch {
             delay(1000)
-            val map = mapLoader.getMap(mapId) ?: return@launch
+            val map = mapRepository.getMap(mapId) ?: return@launch
             markersDao.saveMarkers(map)
         }
     }
