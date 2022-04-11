@@ -9,10 +9,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.interactors.MutateMapProjectionInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.RenameMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
 import com.peterlaurence.trekme.util.ZipProgressionListener
@@ -36,7 +36,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MapSettingsViewModel @Inject constructor(
     val app: Application,
-    private val mapLoader: MapLoader,
+    private val mutateMapProjectionInteractor: MutateMapProjectionInteractor,
     private val renameMapInteractor: RenameMapInteractor,
     private val saveMapInteractor: SaveMapInteractor,
     private val mapRepository: MapRepository
@@ -154,7 +154,7 @@ class MapSettingsViewModel @Inject constructor(
 
     fun setProjection(map: Map, projectionName: String?): Boolean {
         return if (projectionName != null) {
-            mapLoader.mutateMapProjection(map, projectionName)
+            mutateMapProjectionInteractor.mutateMapProjection(map, projectionName)
         } else {
             map.projection = null
             true

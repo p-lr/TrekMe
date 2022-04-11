@@ -11,8 +11,6 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.location.*
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
-import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
@@ -20,7 +18,6 @@ import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.core.repositories.location.LocationSourceImpl
 import com.peterlaurence.trekme.core.repositories.location.producers.GoogleLocationProducer
 import com.peterlaurence.trekme.core.repositories.location.producers.NmeaOverBluetoothProducer
-import com.peterlaurence.trekme.core.repositories.map.MapListUpdateRepository
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
@@ -157,10 +154,6 @@ object AppModule {
     @Singleton
     @Provides
     fun bindAppEventBus(): AppEventBus = AppEventBus()
-
-    @Singleton
-    @Provides
-    fun provideMapLoader(): MapLoader = MapLoader()
 
     @Singleton
     @Provides

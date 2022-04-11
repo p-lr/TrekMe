@@ -22,14 +22,12 @@ import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.features.maplist.presentation.events.MapImageImportResult
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.util.isFrench
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.math.RoundingMode
-import javax.inject.Inject
 
 /**
  * Fragment that shows the settings for a given map. It provides the abilities to :
@@ -52,9 +50,6 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
     private val viewModel: MapSettingsViewModel by navGraphViewModels(R.id.map_settings_graph) {
         defaultViewModelProviderFactory
     }
-
-    @Inject
-    lateinit var mapLoader: MapLoader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
