@@ -12,7 +12,9 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navGraphViewModels
 import androidx.preference.EditTextPreference
@@ -26,6 +28,8 @@ import com.peterlaurence.trekme.features.maplist.presentation.events.MapImageImp
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.util.isFrench
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -51,19 +55,6 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         defaultViewModelProviderFactory
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val map = viewModel.map ?: return
-        setMap(map)
-
-        lifecycleScope.launchWhenResumed {
-            viewModel.mapImageImportEvents.collect {
-                onMapImageImportResult(it)
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -73,6 +64,22 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
             show()
             title = getString(R.string.map_settings_frgmt_title)
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.mapFlow.filterNotNull().collect { map ->
+                    setMap(map)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.mapImageImportEvents.collect {
+                    onMapImageImportResult(it)
+                }
+            }
         }
 
         return super.onCreateView(inflater, container, savedInstanceState)

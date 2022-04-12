@@ -32,7 +32,7 @@ class MapSetThumbnailDaoImpl(
 
         return if (thumbnailImage != null) {
             val newMap = map.copy(
-                thumbnail = THUMBNAIL_NAME,
+                config = map.configSnapshot.copy(thumbnail = THUMBNAIL_NAME),
                 thumbnailImage = thumbnailImage
             )
             mapSaverDao.save(newMap)

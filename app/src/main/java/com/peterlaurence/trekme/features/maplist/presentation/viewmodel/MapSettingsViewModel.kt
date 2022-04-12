@@ -9,11 +9,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.interactors.MutateMapProjectionInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.MutateMapCalibrationInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.RenameMapInteractor
-import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.SetMapThumbnailInteractor
+import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
 import com.peterlaurence.trekme.util.ZipProgressionListener
@@ -36,7 +36,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MapSettingsViewModel @Inject constructor(
     val app: Application,
-    private val mutateMapProjectionInteractor: MutateMapProjectionInteractor,
+    private val mutateMapCalibrationInteractor: MutateMapCalibrationInteractor,
     private val renameMapInteractor: RenameMapInteractor,
     private val saveMapInteractor: SaveMapInteractor,
     private val setMapThumbnailInteractor: SetMapThumbnailInteractor,
@@ -49,8 +49,7 @@ class MapSettingsViewModel @Inject constructor(
     private val _mapImageImportEvents = MutableSharedFlow<MapImageImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
     val mapImageImportEvents = _mapImageImportEvents.asSharedFlow()
 
-    val map: Map?
-        get() = mapRepository.getSettingsMap()
+    val mapFlow: StateFlow<Map?> = mapRepository.settingsMapFlow
 
     /**
      * Changes the thumbnail of a [Map].
@@ -137,24 +136,22 @@ class MapSettingsViewModel @Inject constructor(
     }
 
     fun setCalibrationPointsNumber(map: Map, numberStr: String?) {
-        when (numberStr) {
-            "2" -> map.calibrationMethod = CalibrationMethod.SIMPLE_2_POINTS
-            "3" -> map.calibrationMethod = CalibrationMethod.CALIBRATION_3_POINTS
-            "4" -> map.calibrationMethod = CalibrationMethod.CALIBRATION_4_POINTS
-            else -> map.calibrationMethod = CalibrationMethod.SIMPLE_2_POINTS
+        val newCalibrationMethod = when (numberStr) {
+            "2" -> CalibrationMethod.SIMPLE_2_POINTS
+            "3" -> CalibrationMethod.CALIBRATION_3_POINTS
+            "4" -> CalibrationMethod.CALIBRATION_4_POINTS
+            else -> CalibrationMethod.SIMPLE_2_POINTS
         }
-        saveMapAsync(map)
-    }
-
-    fun setProjection(map: Map, projectionName: String?): Boolean {
-        return if (projectionName != null) {
-            mutateMapProjectionInteractor.mutateMapProjection(map, projectionName)
-        } else {
-            map.projection = null
-            true
-        }.also {
+        mutateMapCalibrationInteractor.mutateCalibrationMethod(map, newCalibrationMethod).onSuccess {
             saveMapAsync(map)
         }
+    }
+
+    fun setProjection(map: Map, projectionName: String?) : Boolean {
+        return mutateMapCalibrationInteractor.mutateProjection(map, projectionName).map {
+            saveMapAsync(map)
+            true
+        }.getOrDefault(false)
     }
 
     private fun saveMapAsync(map: Map) {

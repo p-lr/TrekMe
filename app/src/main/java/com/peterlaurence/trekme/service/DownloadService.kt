@@ -19,17 +19,14 @@ import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
-import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.createNomediaFile
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
-import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.map.domain.models.Wmts
 import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile
-import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
@@ -272,22 +269,11 @@ class DownloadService : Service() {
     }
 
     private fun postProcess(mapSpec: MapSpec, source: WmtsSource) {
-        val calibrationPoints = mapSpec.calibrationPoints
-
-        /* Calibrate */
-        fun calibrate(map: Map) {
-            map.projection = MercatorProjection()
-            map.calibrationMethod = CalibrationMethod.SIMPLE_2_POINTS
-            map.calibrationPoints = calibrationPoints.toList()
-            map.calibrate()
-        }
-
         val mapOrigin = Wmts(licensed = source == WmtsSource.IGN)
 
         val map = buildMap(mapSpec, mapOrigin, destDir)
 
         scope.launch {
-            calibrate(map)
             map.createNomediaFile()
             saveMapInteractor.addAndSaveMap(map)
 

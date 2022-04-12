@@ -106,9 +106,6 @@ class MapLoaderDaoImpl @Inject constructor(
                 /* Map creation */
                 val map = Map(mapConfig, f, thumbnailImage)
 
-                /* Calibration */
-                map.calibrate()
-
                 mapList.add(map)
             } catch (e: JsonSyntaxException) {
                 Log.e(TAG, e.message, e)

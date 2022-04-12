@@ -32,7 +32,7 @@ class MapRenameDaoImpl(
         }
 
         /* Update the name */
-        val newMap = map.copy(newName, configFile = File(newDirectory, map.configFile.name))
+        val newMap = map.copy(config = map.configSnapshot.copy(name = newName), configFile = File(newDirectory, map.configFile.name))
         mapSaverDao.save(newMap)
 
         Result.success(newMap)

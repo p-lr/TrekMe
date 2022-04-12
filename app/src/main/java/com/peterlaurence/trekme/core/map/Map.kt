@@ -26,13 +26,13 @@ import java.util.*
  * **Warning**: This class isn't thread-safe. It's advised to thread-confine the use of this
  * class to the main thread.
  *
- * To create a map, three parameters are needed:
+ * To create a map, two parameters are required:
  *
  * @param config the [MapConfig] object that includes information relative to levels,
  * the tile size, the name of the map, etc.
  * @param configFile the [File] for serialization.
  */
-class Map(
+data class Map(
     private val config: MapConfig,
     val configFile: File,
     val thumbnailImage: Bitmap? = null
@@ -80,15 +80,7 @@ class Map(
             return null
         }
 
-    var projection: Projection?
-        get() = config.calibration?.projection
-        set(projection) {
-            val cal = config.calibration
-            if (cal != null) {
-                val newCal = cal.copy(projection = projection)
-                config.calibration = newCal
-            }
-        }
+    val projection: Projection? = config.calibration?.projection
 
     val sizeInBytes: Long?
         get() = config.sizeInBytes
@@ -97,7 +89,11 @@ class Map(
         config.sizeInBytes = size
     }
 
-    fun calibrate() {
+    init {
+        calibrate()
+    }
+
+    private fun calibrate() {
         val (projection, _, calibrationPoints) = config.calibration ?: return
 
         /* Init the projection */
@@ -205,18 +201,10 @@ class Map(
     private val _calibrationMethodStateFlow = MutableStateFlow(calibrationMethod)
     val calibrationMethodStateFlow = _calibrationMethodStateFlow.asStateFlow()
 
-    var calibrationMethod: CalibrationMethod
+    val calibrationMethod: CalibrationMethod
         get() {
             val cal = config.calibration
             return cal?.calibrationMethod ?: CalibrationMethod.SIMPLE_2_POINTS
-        }
-        set(method) {
-            val cal = config.calibration
-            if (cal != null) {
-                val newCal = cal.copy(calibrationMethod = method)
-                config.calibration = newCal
-                _calibrationMethodStateFlow.value = method
-            }
         }
 
     val origin: MapOrigin
@@ -234,22 +222,10 @@ class Map(
             }
         }
 
-    /**
-     * Get a copy of the calibration points.
-     * This returns only a copy to ensure that no modification is made to the calibration points
-     * through this call.
-     */
-    var calibrationPoints: List<CalibrationPoint>
+    val calibrationPoints: List<CalibrationPoint>
         get() {
             val cal = config.calibration
             return cal?.calibrationPoints ?: emptyList()
-        }
-        set(points) {
-            val cal = config.calibration
-            if (cal != null) {
-                val newCal = cal.copy(calibrationPoints = points)
-                config.calibration = newCal
-            }
         }
 
     val imageExtension: String
@@ -288,49 +264,5 @@ class Map(
 
     enum class CalibrationStatus {
         OK, NONE, ERROR
-    }
-
-    /**
-     * Performs a copy of the current map, optionally mutating a restricted list of properties.
-     */
-    fun copy(
-        name: String = config.name,
-        thumbnail: String? = config.thumbnail,
-        thumbnailImage: Bitmap? = this.thumbnailImage,
-        configFile: File = this.configFile
-    ): Map {
-        val copy = Map(
-            config = config.copy(name = name, thumbnail = thumbnail),
-            configFile = configFile,
-            thumbnailImage
-        )
-        copy.setRoutes(_routes.value)
-        markers?.also {
-            copy.setMarkers(it)
-        }
-        landmarks?.also {
-            copy.setLandmarks(it)
-        }
-        return copy
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Map
-
-        if (config != other.config) return false
-        if (configFile != other.configFile) return false
-        if (thumbnailImage != other.thumbnailImage) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = config.hashCode()
-        result = 31 * result + configFile.hashCode()
-        result = 31 * result + (thumbnailImage?.hashCode() ?: 0)
-        return result
     }
 }

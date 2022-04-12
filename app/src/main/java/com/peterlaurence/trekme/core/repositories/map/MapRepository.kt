@@ -57,6 +57,11 @@ class MapRepository {
         if (oldMap == _mapFlow.value) {
             _mapFlow.value = newMap
         }
+
+        /* If necessary, update the settings map */
+        if (oldMap == _settingsMapFlow.value) {
+            _settingsMapFlow.value = newMap
+        }
     }
 
     /**
