@@ -216,14 +216,14 @@ class RecordingStatisticsViewModel @Inject constructor(
             val trkIds = recordingDataList.flatMap { it.trkSegmentIds }
 
             /* Remove in-memory routes now */
-            mapRepository.mapListFlow.value.forEach { map ->
+            mapRepository.getCurrentMapList().forEach { map ->
                 map.routes.value.filter { it.id in trkIds }.forEach { route ->
                     map.deleteRoute(route)
                 }
             }
 
             /* Remove them on disk */
-            mapRepository.mapListFlow.value.forEach { map ->
+            mapRepository.getCurrentMapList().forEach { map ->
                 routeRepository.deleteRoutesUsingId(map, trkIds)
             }
         }

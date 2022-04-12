@@ -365,7 +365,7 @@ class MapListView @JvmOverloads constructor(
             }
         }
 
-        val mapListState by viewModel.mapState
+        val mapListState by viewModel.mapListState
         TrekMeTheme {
             MapListUI(mapListState, intents)
         }

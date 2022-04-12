@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.map.mapimporter
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
@@ -203,13 +204,13 @@ class MapImporter @Inject constructor(
             )
 
             /* Find a thumbnail */
-            val thumbnailFile = getThumbnail(parentFolder)
+            val (thumbnailImage, thumbnail) = getThumbnail(parentFolder)
 
             /* Set the map name to the parent folder name */
             val name = parentFolder.name
 
             val mapConfig = MapConfig(
-                name, thumbnail = thumbnailFile?.name, levelList, mapOrigin,
+                name, thumbnail = thumbnail, levelList, mapOrigin,
                 size, imageExtension, calibration = null, sizeInBytes = null
             )
 
@@ -218,7 +219,7 @@ class MapImporter @Inject constructor(
 
             status = MapParserStatus.NEW_MAP
 
-            val map = Map(mapConfig, jsonFile, thumbnailFile)
+            val map = Map(mapConfig, jsonFile, thumbnailImage)
             map.createNomediaFile()
 
             saveMapInteractor.addAndSaveMap(map)
@@ -319,19 +320,19 @@ class MapImporter @Inject constructor(
 
         }
 
-        private fun getThumbnail(mapDir: File): File? {
+        private fun getThumbnail(mapDir: File): Pair<Bitmap?, String?> {
             for (imageFile in mapDir.listFiles(THUMBNAIL_FILTER) ?: arrayOf()) {
-                BitmapFactory.decodeFile(imageFile.path, options)
+                val bitmap = BitmapFactory.decodeFile(imageFile.path, options)
                 if (options.outWidth == THUMBNAIL_ACCEPT_SIZE && options.outHeight == THUMBNAIL_ACCEPT_SIZE) {
                     val locale = Locale.getDefault()
                     if (!imageFile.name.lowercase(locale)
                             .contains(THUMBNAIL_EXCLUDE_NAME.lowercase(locale))
                     ) {
-                        return imageFile
+                        return Pair(bitmap, imageFile.name)
                     }
                 }
             }
-            return null
+            return Pair(null, null)
         }
 
         private fun computeMapSize(lastLevel: File, lastLevelTileSize: Size): Size? {

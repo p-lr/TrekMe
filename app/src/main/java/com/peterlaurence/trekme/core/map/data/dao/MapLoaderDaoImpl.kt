@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.core.map.data.dao
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -97,11 +99,12 @@ class MapLoaderDaoImpl @Inject constructor(
                 /* Convert to domain type */
                 val mapConfig = mapGson.toDomain() ?: continue
 
+                val thumbnailImage = if (mapGson.thumbnail != null) {
+                    getThumbnail(File(f.parent, mapGson.thumbnail))
+                } else null
+
                 /* Map creation */
-                val map = if (mapGson.thumbnail == null)
-                    Map(mapConfig, f, null)
-                else
-                    Map(mapConfig, f, File(f.parent, mapGson.thumbnail))
+                val map = Map(mapConfig, f, thumbnailImage)
 
                 /* Calibration */
                 map.calibrate()
@@ -115,6 +118,11 @@ class MapLoaderDaoImpl @Inject constructor(
         }
 
         return mapList
+    }
+
+    private fun getThumbnail(file: File): Bitmap? {
+        val bmOptions = BitmapFactory.Options()
+        return BitmapFactory.decodeFile(file.absolutePath, bmOptions)
     }
 }
 

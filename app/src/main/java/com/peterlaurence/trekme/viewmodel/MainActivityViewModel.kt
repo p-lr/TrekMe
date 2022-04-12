@@ -149,5 +149,5 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun getMapIndex(mapId: Int): Int = mapRepository.mapListFlow.value.indexOfFirst { it.id == mapId }
+    fun getMapIndex(mapId: Int): Int = mapRepository.getCurrentMapList().indexOfFirst { it.id == mapId }
 }

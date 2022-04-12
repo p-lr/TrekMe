@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * * the [Map] that should be displayed when navigating to the [MapSettingsFragment]
  */
 class MapRepository {
-    private val _mapListFlow = MutableStateFlow<List<Map>>(listOf())
+    private val _mapListFlow = MutableStateFlow<MapListState>(Loading)
     val mapListFlow = _mapListFlow.asStateFlow()
 
     private val _mapFlow = MutableStateFlow<Map?>(null)
@@ -29,19 +29,57 @@ class MapRepository {
      * @return the [Map] or `null` if the given id is unknown.
      */
     fun getMap(mapId: Int): Map? {
-        return _mapListFlow.value.firstOrNull { it.id == mapId }
+        return when (val mapListState = _mapListFlow.value) {
+            Loading -> null
+            is MapList -> mapListState.mapList.firstOrNull { it.id == mapId }
+        }
     }
 
     fun deleteMap(map: Map) {
-        _mapListFlow.value = _mapListFlow.value - map
+        val mapListState = _mapListFlow.value as? MapList ?: return
+        _mapListFlow.value = MapList(mapListState.mapList - map)
+    }
+
+    fun notifyUpdate(oldMap: Map, newMap: Map) {
+        val mapListState = _mapListFlow.value as? MapList ?: return
+
+        _mapListFlow.value = MapList(
+            mapListState.mapList.indexOf(oldMap).let { i ->
+                if (i >= 0) {
+                    mapListState.mapList.toMutableList().apply {
+                        set(i, newMap)
+                    }
+                } else mapListState.mapList
+            }
+        )
+
+        /* If necessary, update the current map */
+        if (oldMap == _mapFlow.value) {
+            _mapFlow.value = newMap
+        }
+    }
+
+    /**
+     * For situations when we need to get the list of maps at the time of the call, and we don't
+     * need to react on map list changes.
+     */
+    fun getCurrentMapList() : List<Map> {
+        return (_mapListFlow.value as? MapList)?.mapList ?: emptyList()
     }
 
     fun clearMaps() {
-        _mapListFlow.value = listOf()
+        _mapListFlow.value = MapList(listOf())
     }
 
     fun addMaps(maps: List<Map>) {
-        _mapListFlow.value = _mapListFlow.value + maps.filter { it !in _mapListFlow.value }
+        when (val mapListState = _mapListFlow.value) {
+            Loading -> _mapListFlow.value = MapList(maps)
+            is MapList -> {
+                _mapListFlow.value = MapList(
+                    mapListState.mapList + maps.filter { it !in mapListState.mapList }
+                )
+            }
+        }
     }
 
     fun getCurrentMap(): Map? = _mapFlow.value
@@ -55,4 +93,8 @@ class MapRepository {
     fun setSettingsMap(map: Map) {
         _settingsMapFlow.value = map
     }
+
+    sealed interface MapListState
+    data class MapList(val mapList: List<Map>) : MapListState
+    object Loading : MapListState
 }

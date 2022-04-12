@@ -40,7 +40,7 @@ abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         recyclerView.layoutManager = llm
 
         /* Fetch the list of maps */
-        val mapList = mapRepository.mapListFlow.value
+        val mapList = mapRepository.getCurrentMapList()
 
         /* Restore the selection after device rotation */
         selectedIndex = savedInstanceState?.getInt(KEY_BUNDLE_MAP_INDEX) ?: -1

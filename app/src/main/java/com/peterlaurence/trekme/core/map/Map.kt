@@ -3,15 +3,12 @@ package com.peterlaurence.trekme.core.map
 import com.peterlaurence.trekme.util.zipTask
 import android.graphics.Bitmap
 import com.peterlaurence.trekme.util.ZipProgressionListener
-import android.graphics.BitmapFactory
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
 import java.io.OutputStream
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -34,19 +31,25 @@ import java.util.*
  * @param config the [MapConfig] object that includes information relative to levels,
  * the tile size, the name of the map, etc.
  * @param configFile the [File] for serialization.
- * @param thumbnail the [File] image for map customization.
  */
 class Map(
     private val config: MapConfig,
-    var configFile: File,
-    thumbnail: File?
+    val configFile: File,
+    val thumbnailImage: Bitmap? = null
 ) {
     val configSnapshot: MapConfig
         get() = config.copy()
 
-    val thumbnailSize = 256
+    /**
+     * The [File] which is the folder containing the map.
+     * When the directory changed (after e.g a rename), the config file must be updated.
+     */
+    val directory: File?
+        get() = configFile.parentFile
 
-    private var mImage: Bitmap? = getBitmapFromFile(thumbnail)
+    val name: String = config.name
+
+    val thumbnailSize = 256
 
     /**
      * Get the bounds the map. See [MapBounds]. By default, the size of the map is used for the
@@ -138,22 +141,6 @@ class Map(
     }
 
     /**
-     * The [File] which is the folder containing the map.
-     * When the directory changed (after e.g a rename), the config file must be updated.
-     */
-    var directory: File?
-        get() = configFile.parentFile
-        set(dir) {
-            configFile = File(dir, MAP_FILENAME)
-        }
-
-    var name: String
-        get() = config.name
-        set(newName) {
-            config.name = newName
-        }
-
-    /**
      * Markers are lazily loaded.
      */
     val markers: List<Marker>?
@@ -209,22 +196,7 @@ class Map(
         _routes.value = _routes.value - route
     }
 
-    var image: Bitmap?
-        get() = mImage
-        set(thumbnail) {
-            mImage = thumbnail
-            config.thumbnail = THUMBNAIL_NAME
-        }
 
-    val imageOutputStream: OutputStream?
-        get() {
-            val targetFile = File(directory, THUMBNAIL_NAME)
-            return try {
-                FileOutputStream(targetFile)
-            } catch (e: FileNotFoundException) {
-                null
-            }
-        }
 
     val levelList: List<Level>
         get() = config.levels
@@ -319,27 +291,46 @@ class Map(
     }
 
     /**
-     * Two [Map] are considered identical if they have the same configuration file.
+     * Performs a copy of the current map, optionally mutating a restricted list of properties.
      */
-    override fun equals(other: Any?): Boolean {
-        if (other == null) return false
-        if (other is Map) {
-            return other.configFile == configFile
+    fun copy(
+        name: String = config.name,
+        thumbnail: String? = config.thumbnail,
+        thumbnailImage: Bitmap? = this.thumbnailImage,
+        configFile: File = this.configFile
+    ): Map {
+        val copy = Map(
+            config = config.copy(name = name, thumbnail = thumbnail),
+            configFile = configFile,
+            thumbnailImage
+        )
+        copy.setRoutes(_routes.value)
+        markers?.also {
+            copy.setMarkers(it)
         }
-        return false
+        landmarks?.also {
+            copy.setLandmarks(it)
+        }
+        return copy
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Map
+
+        if (config != other.config) return false
+        if (configFile != other.configFile) return false
+        if (thumbnailImage != other.thumbnailImage) return false
+
+        return true
     }
 
     override fun hashCode(): Int {
-        return configFile.hashCode()
-    }
-
-    companion object {
-        private const val THUMBNAIL_NAME = "image.jpg"
-        private fun getBitmapFromFile(file: File?): Bitmap? {
-            val bmOptions = BitmapFactory.Options()
-            return if (file != null) {
-                BitmapFactory.decodeFile(file.absolutePath, bmOptions)
-            } else null
-        }
+        var result = config.hashCode()
+        result = 31 * result + configFile.hashCode()
+        result = 31 * result + (thumbnailImage?.hashCode() ?: 0)
+        return result
     }
 }

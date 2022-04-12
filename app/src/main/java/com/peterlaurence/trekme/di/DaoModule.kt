@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.di
 
+import android.app.Application
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.data.dao.*
@@ -91,5 +92,14 @@ object DaoModule {
         mapSaverDao: MapSaverDao
     ) : MapRenameDao {
         return MapRenameDaoImpl(mainDispatcher, ioDispatcher, mapSaverDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideMapSetThumbnailDao(
+        mapSaverDao: MapSaverDao,
+        app: Application
+    ): MapSetThumbnailDao {
+        return MapSetThumbnailDaoImpl(Dispatchers.Default, mapSaverDao, app.contentResolver)
     }
 }

@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.DeleteMapInteractor
-import com.peterlaurence.trekme.core.repositories.map.MapListUpdateRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
@@ -16,6 +15,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
+ * TODO: Now that the [MapRepository] has a state for the map list, the "MapListState" in this
+ * view-model is redundant and may cause issues. Consider removing MapStub.
+ *
  * This view-model is intended to be used by the map list UI, which displays the list of [Map].
  * Handles map selection, map deletion, and setting a map as favorite.
  */
@@ -24,18 +26,18 @@ class MapListViewModel @Inject constructor(
     private val settings: Settings,
     private val mapRepository: MapRepository,
     private val onBoardingRepository: OnBoardingRepository,
-    private val mapListUpdateRepository: MapListUpdateRepository,
     private val deleteMapInteractor: DeleteMapInteractor
 ) : ViewModel() {
 
-    private val _mapState: MutableState<MapListState> = mutableStateOf(Loading, policy = structuralEqualityPolicy())
-    val mapState: State<MapListState> = _mapState
+    private val _mapListState: MutableState<MapListState> = mutableStateOf(Loading)
+    val mapListState: State<MapListState> = _mapListState
 
     init {
         viewModelScope.launch {
-            mapListUpdateRepository.mapListUpdateEventFlow.collect {
+            mapRepository.mapListFlow.collect { mapListState ->
+                if (mapListState !is MapRepository.MapList) return@collect
                 val favList = settings.getFavoriteMapIds().first()
-                updateMapListInFragment(favList)
+                updateMapListInFragment(mapListState.mapList, favList)
             }
         }
     }
@@ -57,7 +59,7 @@ class MapListViewModel @Inject constructor(
      * the settings.
      */
     fun toggleFavorite(mapId: Int) {
-        val state = _mapState.value
+        val state = _mapListState.value
         if (state is MapList) {
             val stub = state.mapList.firstOrNull { it.mapId == mapId }
             stub?.apply {
@@ -65,7 +67,8 @@ class MapListViewModel @Inject constructor(
             }
 
             val ids = state.mapList.filter { it.isFavorite }.map { it.mapId }
-            updateMapListInFragment(ids)
+            val mapList = mapRepository.getCurrentMapList()
+            updateMapListInFragment(mapList, ids)
 
             /* Remember this setting */
             viewModelScope.launch {
@@ -92,9 +95,7 @@ class MapListViewModel @Inject constructor(
         onBoardingRepository.setMapCreateOnBoarding(flag = showOnBoarding)
     }
 
-    private fun updateMapListInFragment(favoriteMapIds: List<Int>) {
-        val mapList = mapRepository.mapListFlow.value
-
+    private fun updateMapListInFragment(mapList: List<Map>, favoriteMapIds: List<Int>) {
         /* Order map list with favorites first */
         val stubList = mapList.map { it.toMapStub() }.let {
             if (favoriteMapIds.isNotEmpty()) {
@@ -107,13 +108,13 @@ class MapListViewModel @Inject constructor(
             } else it
         }
 
-        _mapState.value = MapList(stubList)  // update with a copy of the list
+        _mapListState.value = MapList(stubList)  // update with a copy of the list
     }
 
     private fun Map.toMapStub(): MapStub {
         return MapStub(id).apply {
             title = name
-            image = this@toMapStub.image
+            image = this@toMapStub.thumbnailImage
         }
     }
 }

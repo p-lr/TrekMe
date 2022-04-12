@@ -1,8 +1,9 @@
 package com.peterlaurence.trekme.core.map.domain.models
 
+
 data class MapConfig(
-    var name: String,
-    var thumbnail: String?,
+    val name: String,
+    val thumbnail: String?,
     val levels: List<Level>,
     val origin: MapOrigin,
     val size: Size,

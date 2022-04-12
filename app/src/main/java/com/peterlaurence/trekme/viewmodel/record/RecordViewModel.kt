@@ -103,7 +103,7 @@ class RecordViewModel @Inject constructor(
 
         var importCount = 0
         supervisorScope {
-            mapRepository.mapListFlow.value.forEach { map ->
+            mapRepository.getCurrentMapList().forEach { map ->
                 launch {
                     if (map.intersects(boundingBox)) {
                         /* Import the new route */

@@ -13,10 +13,10 @@ import com.peterlaurence.trekme.core.map.domain.interactors.MutateMapProjectionI
 import com.peterlaurence.trekme.core.map.domain.interactors.RenameMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.SetMapThumbnailInteractor
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
 import com.peterlaurence.trekme.util.ZipProgressionListener
-import com.peterlaurence.trekme.util.makeThumbnail
 import com.peterlaurence.trekme.util.stackTraceAsString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -39,6 +39,7 @@ class MapSettingsViewModel @Inject constructor(
     private val mutateMapProjectionInteractor: MutateMapProjectionInteractor,
     private val renameMapInteractor: RenameMapInteractor,
     private val saveMapInteractor: SaveMapInteractor,
+    private val setMapThumbnailInteractor: SetMapThumbnailInteractor,
     private val mapRepository: MapRepository
 ) : ViewModel() {
 
@@ -59,17 +60,9 @@ class MapSettingsViewModel @Inject constructor(
         val map = mapRepository.getMap(mapId) ?: return@launch
 
         try {
-            val thumbnail = withContext(Dispatchers.Default) {
-                val outputStream = map.imageOutputStream
-                if (outputStream != null) {
-                    makeThumbnail(uri, app.contentResolver, map.thumbnailSize, outputStream)
-                } else null
-            }
-            if (thumbnail != null) {
-                map.image = thumbnail
-                saveMapInteractor.saveMap(map)
+            setMapThumbnailInteractor.setMapThumbnail(map, uri).onSuccess {
                 _mapImageImportEvents.tryEmit(MapImageImportResult(true))
-            } else {
+            }.onFailure {
                 _mapImageImportEvents.tryEmit(MapImageImportResult(false))
             }
         } catch (e: Exception) {
@@ -79,6 +72,7 @@ class MapSettingsViewModel @Inject constructor(
     }
 
     /**
+     * TODO: This code should be extracted into an interactor + dao
      * Start zipping a map and write the zip archive to the directory defined by the provided [uri].
      * Internally uses a [Flow] which only emits distinct events. Those events are listened by the
      * main activity, and not the [MapSettingsFragment], because the user might leave this view ;

@@ -24,5 +24,5 @@ fun buildMap(
     )
     val jsonFile = File(folder, MAP_FILENAME)
 
-    return Map(mapConfig, jsonFile, null)
+    return Map(mapConfig, jsonFile)
 }

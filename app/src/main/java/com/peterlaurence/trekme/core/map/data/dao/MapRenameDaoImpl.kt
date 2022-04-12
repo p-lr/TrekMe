@@ -15,26 +15,26 @@ class MapRenameDaoImpl(
 
     /**
      * The renaming is done by:
-     * - Updating the name and saving the json file right after
      * - Changing the name of the folder containing the map
+     * - Updating the name and saving the json file right after
      */
-    override suspend fun renameMap(map: Map, newName: String): Boolean = withContext(mainDispatcher) {
-        /* Update the name */
-        map.name = newName
-        mapSaverDao.save(map)
-
+    override suspend fun renameMap(map: Map, newName: String): Result<Map> = withContext(mainDispatcher) {
         /* Update the containing folder */
-        val directory = map.directory ?: return@withContext false
-        val newDirectory = File(directory.parentFile, newName)
-        withContext(ioDispatcher) {
+        val directory = map.directory ?: return@withContext Result.failure(Exception("No parent folder"))
+        val newDirectory = withContext(ioDispatcher) {
             runCatching {
-
-                directory.renameTo(newDirectory).also { renameOk ->
-                    if (renameOk) {
-                        map.directory = newDirectory
-                    }
-                }
-            }.getOrNull() ?: false
+                val dir = File(directory.parentFile, newName)
+                directory.renameTo(dir)
+                dir
+            }.getOrElse {
+                directory
+            }
         }
+
+        /* Update the name */
+        val newMap = map.copy(newName, configFile = File(newDirectory, map.configFile.name))
+        mapSaverDao.save(newMap)
+
+        Result.success(newMap)
     }
 }
