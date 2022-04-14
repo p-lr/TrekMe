@@ -15,9 +15,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * TODO: Now that the [MapRepository] has a state for the map list, the "MapListState" in this
- * view-model is redundant and may cause issues. Consider removing MapStub.
- *
  * This view-model is intended to be used by the map list UI, which displays the list of [Map].
  * Handles map selection, map deletion, and setting a map as favorite.
  */
@@ -29,15 +26,23 @@ class MapListViewModel @Inject constructor(
     private val deleteMapInteractor: DeleteMapInteractor
 ) : ViewModel() {
 
+    /**
+     * This state mirrors the MapListState from [MapRepository], with the difference that a
+     * [MapStub] has additional view-related properties.
+     */
     private val _mapListState: MutableState<MapListState> = mutableStateOf(Loading)
     val mapListState: State<MapListState> = _mapListState
 
     init {
         viewModelScope.launch {
             mapRepository.mapListFlow.collect { mapListState ->
-                if (mapListState !is MapRepository.MapList) return@collect
-                val favList = settings.getFavoriteMapIds().first()
-                updateMapListInFragment(mapListState.mapList, favList)
+                when (mapListState) {
+                    MapRepository.Loading -> Loading
+                    is MapRepository.MapList -> {
+                        val favList = settings.getFavoriteMapIds().first()
+                        updateMapListInFragment(mapListState.mapList, favList)
+                    }
+                }
             }
         }
     }

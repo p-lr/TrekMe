@@ -73,7 +73,7 @@ class MainActivityViewModel @Inject constructor(
             trekMeContext.init(app.applicationContext)
             warnIfBadStorageState()
 
-            mapRepository.clearMaps()
+            mapRepository.mapsLoading()
             trekMeContext.mapsDirList?.also { dirList ->
                 updateMapsInteractor.updateMaps(dirList)
             }

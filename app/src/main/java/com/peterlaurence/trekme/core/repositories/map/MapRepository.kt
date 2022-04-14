@@ -72,8 +72,11 @@ class MapRepository {
         return (_mapListFlow.value as? MapList)?.mapList ?: emptyList()
     }
 
-    fun clearMaps() {
-        _mapListFlow.value = MapList(listOf())
+    /**
+     * Indicate that maps are currently being (re)loaded.
+     */
+    fun mapsLoading() {
+        _mapListFlow.value = Loading
     }
 
     fun addMaps(maps: List<Map>) {
