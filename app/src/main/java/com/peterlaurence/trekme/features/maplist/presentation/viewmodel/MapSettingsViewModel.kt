@@ -9,10 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.interactors.MutateMapCalibrationInteractor
-import com.peterlaurence.trekme.core.map.domain.interactors.RenameMapInteractor
-import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
-import com.peterlaurence.trekme.core.map.domain.interactors.SetMapThumbnailInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.*
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
@@ -38,7 +35,7 @@ class MapSettingsViewModel @Inject constructor(
     val app: Application,
     private val mutateMapCalibrationInteractor: MutateMapCalibrationInteractor,
     private val renameMapInteractor: RenameMapInteractor,
-    private val saveMapInteractor: SaveMapInteractor,
+    private val updateMapSizeInteractor: UpdateMapSizeInteractor,
     private val setMapThumbnailInteractor: SetMapThumbnailInteractor,
     private val mapRepository: MapRepository
 ) : ViewModel() {
@@ -152,21 +149,8 @@ class MapSettingsViewModel @Inject constructor(
         mutateMapCalibrationInteractor.mutateProjection(map, projectionName)
     }
 
-    private fun saveMapAsync(map: Map) {
-        viewModelScope.launch {
-            saveMapInteractor.saveMap(map)
-        }
-    }
-
-    suspend fun computeMapSize(map: Map): Long? = withContext(Dispatchers.IO) {
-        runCatching {
-            val size = map.directory!!.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
-            withContext(Dispatchers.Main) {
-                map.setSizeInBytes(size)
-                saveMapAsync(map)
-            }
-            size
-        }.getOrNull()
+    suspend fun computeMapSize(map: Map): Long? {
+        return updateMapSizeInteractor.updateMapSize(map).getOrNull()
     }
 }
 

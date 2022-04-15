@@ -102,4 +102,8 @@ object DaoModule {
     ): MapSetThumbnailDao {
         return MapSetThumbnailDaoImpl(Dispatchers.Default, mapSaverDao, app.contentResolver)
     }
+
+    @Singleton
+    @Provides
+    fun provideMapSizeComputeDao(): MapSizeComputeDao = MapSizeComputeDaoImpl(Dispatchers.Default)
 }
