@@ -176,12 +176,8 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
                     viewModel.setProjection(map, null)
                     return@OnPreferenceChangeListener true
                 }
-                val saveMsg: String = if (viewModel.setProjection(map, projectionName as String)) {
-                    getString(R.string.calibration_projection_saved_ok)
-                } else {
-                    getString(R.string.calibration_projection_error)
-                }
-                showMessage(saveMsg)
+                viewModel.setProjection(map, projectionName as String)
+                showMessage(getString(R.string.calibration_projection_saved_ok))
                 true
             } catch (e: Exception) {
                 false

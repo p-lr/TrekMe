@@ -142,16 +142,14 @@ class MapSettingsViewModel @Inject constructor(
             "4" -> CalibrationMethod.CALIBRATION_4_POINTS
             else -> CalibrationMethod.SIMPLE_2_POINTS
         }
-        mutateMapCalibrationInteractor.mutateCalibrationMethod(map, newCalibrationMethod).onSuccess {
-            saveMapAsync(map)
+
+        viewModelScope.launch {
+            mutateMapCalibrationInteractor.mutateCalibrationMethod(map, newCalibrationMethod)
         }
     }
 
-    fun setProjection(map: Map, projectionName: String?) : Boolean {
-        return mutateMapCalibrationInteractor.mutateProjection(map, projectionName).map {
-            saveMapAsync(map)
-            true
-        }.getOrDefault(false)
+    fun setProjection(map: Map, projectionName: String?) = viewModelScope.launch {
+        mutateMapCalibrationInteractor.mutateProjection(map, projectionName)
     }
 
     private fun saveMapAsync(map: Map) {

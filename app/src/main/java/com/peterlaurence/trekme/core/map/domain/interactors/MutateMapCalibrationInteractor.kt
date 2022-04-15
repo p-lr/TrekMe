@@ -9,12 +9,13 @@ import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import javax.inject.Inject
 
 class MutateMapCalibrationInteractor @Inject constructor(
-    private val mapRepository: MapRepository
+    private val mapRepository: MapRepository,
+    private val saveMapInteractor: SaveMapInteractor
 ) {
     /**
-     * Mutate the [Projection] of a given [Map].
+     * Mutate the [Projection] of a given [Map], then saves the [Map].
      */
-    fun mutateProjection(map: Map, projectionName: String?) = runCatching {
+    suspend fun mutateProjection(map: Map, projectionName: String?) = runCatching {
         val projectionType = projectionHashMap[projectionName]
         val projection = projectionType?.newInstance()
         val oldConfig = map.configSnapshot
@@ -22,19 +23,19 @@ class MutateMapCalibrationInteractor @Inject constructor(
 
         val newMap = map.copy(config = newConfig)
         mapRepository.notifyUpdate(map, newMap)
+        saveMapInteractor.saveMap(newMap)
     }
 
     /**
-     * Mutate the [CalibrationMethod] of a given [Map].
-     *
-     * @return true on success, false if something went wrong.
+     * Mutate the [CalibrationMethod] of a given [Map], then saves the [Map].
      */
-    fun mutateCalibrationMethod(map: Map, calibrationMethod: CalibrationMethod)= runCatching {
+    suspend fun mutateCalibrationMethod(map: Map, calibrationMethod: CalibrationMethod)= runCatching {
         val oldConfig = map.configSnapshot
         val newConfig = oldConfig.copy(calibration = oldConfig.calibration?.copy(calibrationMethod = calibrationMethod))
 
         val newMap = map.copy(config = newConfig)
         mapRepository.notifyUpdate(map, newMap)
+        saveMapInteractor.saveMap(newMap)
     }
 
     /**
