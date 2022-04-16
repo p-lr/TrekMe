@@ -106,4 +106,8 @@ object DaoModule {
     @Singleton
     @Provides
     fun provideMapSizeComputeDao(): MapSizeComputeDao = MapSizeComputeDaoImpl(Dispatchers.Default)
+
+    @Singleton
+    @Provides
+    fun provideArchiveMapDao(): ArchiveMapDao = ArchiveMapDaoImpl(Dispatchers.Default)
 }

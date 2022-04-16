@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.core.repositories.location.LocationSourceImpl
 import com.peterlaurence.trekme.core.repositories.location.producers.GoogleLocationProducer
 import com.peterlaurence.trekme.core.repositories.location.producers.NmeaOverBluetoothProducer
+import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
@@ -111,6 +112,10 @@ object AppModule {
     @Singleton
     @Provides
     fun bindMapRepository(): MapRepository = MapRepository()
+
+    @Singleton
+    @Provides
+    fun provideMapArchiveEvents(): MapArchiveEvents = MapArchiveEvents()
 
     @Singleton
     @Provides

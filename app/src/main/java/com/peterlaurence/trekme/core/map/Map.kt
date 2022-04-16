@@ -1,18 +1,12 @@
 package com.peterlaurence.trekme.core.map
 
-import com.peterlaurence.trekme.util.zipTask
 import android.graphics.Bitmap
-import com.peterlaurence.trekme.util.ZipProgressionListener
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
-import java.io.OutputStream
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * A map contains all the information that defines a map. That includes :
@@ -192,11 +186,8 @@ data class Map(
         _routes.value = _routes.value - route
     }
 
-
-
     val levelList: List<Level>
         get() = config.levels
-
 
     private val _calibrationMethodStateFlow = MutableStateFlow(calibrationMethod)
     val calibrationMethodStateFlow = _calibrationMethodStateFlow.asStateFlow()
@@ -241,26 +232,6 @@ data class Map(
      */
     val id: Int
         get() = configFile.path.hashCode()
-
-    /**
-     * Archives the map.
-     *
-     * Creates a zip file named with this [Map] name and the date. This file is placed in the
-     * parent folder of the [Map].
-     * Beware that this is a blocking call and should be executed from inside a background thread.
-     */
-    fun zip(listener: ZipProgressionListener, outputStream: OutputStream) {
-        val mapFolder = configFile.parentFile
-        if (mapFolder != null) {
-            zipTask(mapFolder, outputStream, listener)
-        }
-    }
-
-    fun generateNewNameWithDate(): String {
-        val date = Date()
-        val dateFormat: DateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
-        return name + "-" + dateFormat.format(date)
-    }
 
     enum class CalibrationStatus {
         OK, NONE, ERROR

@@ -3,26 +3,19 @@ package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 import android.app.Application
 import android.net.Uri
 import android.util.Log
-import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.*
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
+import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
-import com.peterlaurence.trekme.util.ZipProgressionListener
 import com.peterlaurence.trekme.util.stackTraceAsString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
-import java.io.IOException
-import java.io.OutputStream
 import javax.inject.Inject
 
 /**
@@ -37,11 +30,10 @@ class MapSettingsViewModel @Inject constructor(
     private val renameMapInteractor: RenameMapInteractor,
     private val updateMapSizeInteractor: UpdateMapSizeInteractor,
     private val setMapThumbnailInteractor: SetMapThumbnailInteractor,
+    private val archiveMapInteractor: ArchiveMapInteractor,
+    private val mapArchiveEvents: MapArchiveEvents,
     private val mapRepository: MapRepository
 ) : ViewModel() {
-
-    private val _zipEvents = MutableLiveData<ZipEvent>()
-    val zipEvents: LiveData<ZipEvent> = _zipEvents
 
     private val _mapImageImportEvents = MutableSharedFlow<MapImageImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
     val mapImageImportEvents = _mapImageImportEvents.asSharedFlow()
@@ -75,55 +67,9 @@ class MapSettingsViewModel @Inject constructor(
      * we want to reliably inform the user when this task is finished.
      */
     fun archiveMap(map: Map, uri: Uri) = viewModelScope.launch {
-        val docFile = DocumentFile.fromTreeUri(app.applicationContext, uri)
-        if (docFile != null && docFile.isDirectory) {
-            val newFileName: String = map.generateNewNameWithDate() + ".zip"
-            val newFile = docFile.createFile("application/zip", newFileName)
-            if (newFile != null) {
-                val uriZip = newFile.uri
-                try {
-                    val out: OutputStream = app.contentResolver.openOutputStream(uriZip)
-                            ?: return@launch
-                    /* The underlying task which writes into the stream is responsible for closing this stream. */
-                    zipProgressFlow(map.id, out).distinctUntilChanged().collect {
-                        _zipEvents.value = it
-                    }
-                } catch (e: IOException) {
-                    Log.e(TAG, e.stackTraceAsString())
-                }
-            }
+        archiveMapInteractor.archiveMap(map, uri)?.collect {
+            mapArchiveEvents.postEvent(it)
         }
-    }
-
-    @ExperimentalCoroutinesApi
-    private fun zipProgressFlow(mapId: Int, outputStream: OutputStream): Flow<ZipEvent> = callbackFlow {
-        val map = mapRepository.getMap(mapId) ?: return@callbackFlow
-
-        val callback = object : ZipProgressionListener {
-            private val mapName = map.name
-
-            override fun fileListAcquired() {}
-
-            override fun onProgress(p: Int) {
-                trySend(ZipProgressEvent(p, mapName, mapId))
-            }
-
-            override fun onZipFinished() {
-                /* Use sendBlocking instead of offer to be sure not to lose those events */
-                trySendBlocking(ZipFinishedEvent(mapId))
-                trySendBlocking(ZipCloseEvent)
-                channel.close()
-            }
-
-            override fun onZipError() {
-                trySendBlocking(ZipError)
-                cancel()
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            map.zip(callback, outputStream)
-        }
-        awaitClose()
     }
 
     fun renameMap(map: Map, newName: String) {
