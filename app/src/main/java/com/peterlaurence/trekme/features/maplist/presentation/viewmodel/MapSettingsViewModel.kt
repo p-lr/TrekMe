@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.*
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
-import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
 import com.peterlaurence.trekme.util.stackTraceAsString
@@ -31,18 +30,17 @@ class MapSettingsViewModel @Inject constructor(
     private val updateMapSizeInteractor: UpdateMapSizeInteractor,
     private val setMapThumbnailInteractor: SetMapThumbnailInteractor,
     private val archiveMapInteractor: ArchiveMapInteractor,
-    private val mapArchiveEvents: MapArchiveEvents,
     private val mapRepository: MapRepository
 ) : ViewModel() {
 
-    private val _mapImageImportEvents = MutableSharedFlow<MapImageImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
+    private val _mapImageImportEvents =
+        MutableSharedFlow<MapImageImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
     val mapImageImportEvents = _mapImageImportEvents.asSharedFlow()
 
     val mapFlow: StateFlow<Map?> = mapRepository.settingsMapFlow
 
     /**
      * Changes the thumbnail of a [Map].
-     * Compression of the file defined by the [uri] is done off UI-thread.
      */
     fun setMapImage(mapId: Int, uri: Uri) = viewModelScope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
@@ -60,16 +58,13 @@ class MapSettingsViewModel @Inject constructor(
     }
 
     /**
-     * TODO: This code should be extracted into an interactor + dao
      * Start zipping a map and write the zip archive to the directory defined by the provided [uri].
      * Internally uses a [Flow] which only emits distinct events. Those events are listened by the
      * main activity, and not the [MapSettingsFragment], because the user might leave this view ;
      * we want to reliably inform the user when this task is finished.
      */
-    fun archiveMap(map: Map, uri: Uri) = viewModelScope.launch {
-        archiveMapInteractor.archiveMap(map, uri)?.collect {
-            mapArchiveEvents.postEvent(it)
-        }
+    fun archiveMap(map: Map, uri: Uri) {
+        archiveMapInteractor.archiveMap(map, uri)
     }
 
     fun renameMap(map: Map, newName: String) {

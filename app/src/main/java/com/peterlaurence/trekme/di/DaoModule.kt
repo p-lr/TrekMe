@@ -109,5 +109,7 @@ object DaoModule {
 
     @Singleton
     @Provides
-    fun provideArchiveMapDao(): ArchiveMapDao = ArchiveMapDaoImpl(Dispatchers.Default)
+    fun provideArchiveMapDao(app: Application): ArchiveMapDao {
+        return ArchiveMapDaoImpl(app, Dispatchers.Default)
+    }
 }

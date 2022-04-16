@@ -56,7 +56,7 @@
     <string name="imported_untouched">Carte importée sans modifications</string>
     <string name="extraction_error">Erreur d\'extraction</string>
     <string name="snack_msg_show_map_list">Afficher la liste des cartes ?</string>
-    <string name="archive_dialog_title">Sauvegarder la carte</string>
+    <string name="archive_dialog_title">Sauvegarde de carte</string>
     <string name="archive_dialog_description">Vous allez sélectionner un dossier dans lequel une archive
         de la carte sera créée. Cette archive pourra à tout moment être restaurée dans le menu
         d\'importation.\n\nLa progression de l\'archivage apparaîtra dans une notification.</string>
