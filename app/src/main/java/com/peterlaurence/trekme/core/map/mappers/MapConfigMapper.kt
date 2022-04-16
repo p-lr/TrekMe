@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.map.mappers
 
-import com.peterlaurence.trekme.core.map.domain.*
-import com.peterlaurence.trekme.core.map.entity.MapGson
+import com.peterlaurence.trekme.core.map.data.models.MapGson
+import com.peterlaurence.trekme.core.map.domain.models.*
 
 
 fun MapGson.toDomain(): MapConfig? {

@@ -1,21 +1,12 @@
 package com.peterlaurence.trekme.core.map
 
-import com.peterlaurence.trekme.util.zipTask
 import android.graphics.Bitmap
-import com.peterlaurence.trekme.util.ZipProgressionListener
-import android.graphics.BitmapFactory
-import com.peterlaurence.trekme.core.map.domain.*
+import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.OutputStream
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * A map contains all the information that defines a map. That includes :
@@ -29,24 +20,30 @@ import java.util.*
  * **Warning**: This class isn't thread-safe. It's advised to thread-confine the use of this
  * class to the main thread.
  *
- * To create a map, three parameters are needed:
+ * To create a map, two parameters are required:
  *
  * @param config the [MapConfig] object that includes information relative to levels,
  * the tile size, the name of the map, etc.
  * @param configFile the [File] for serialization.
- * @param thumbnail the [File] image for map customization.
  */
-class Map(
+data class Map(
     private val config: MapConfig,
-    var configFile: File,
-    thumbnail: File?
+    val configFile: File,
+    val thumbnailImage: Bitmap? = null
 ) {
     val configSnapshot: MapConfig
         get() = config.copy()
 
-    val thumbnailSize = 256
+    /**
+     * The [File] which is the folder containing the map.
+     * When the directory changed (after e.g a rename), the config file must be updated.
+     */
+    val directory: File?
+        get() = configFile.parentFile
 
-    private var mImage: Bitmap? = getBitmapFromFile(thumbnail)
+    val name: String = config.name
+
+    val thumbnailSize = 256
 
     /**
      * Get the bounds the map. See [MapBounds]. By default, the size of the map is used for the
@@ -77,15 +74,7 @@ class Map(
             return null
         }
 
-    var projection: Projection?
-        get() = config.calibration?.projection
-        set(projection) {
-            val cal = config.calibration
-            if (cal != null) {
-                val newCal = cal.copy(projection = projection)
-                config.calibration = newCal
-            }
-        }
+    val projection: Projection? = config.calibration?.projection
 
     val sizeInBytes: Long?
         get() = config.sizeInBytes
@@ -94,7 +83,11 @@ class Map(
         config.sizeInBytes = size
     }
 
-    fun calibrate() {
+    init {
+        calibrate()
+    }
+
+    private fun calibrate() {
         val (projection, _, calibrationPoints) = config.calibration ?: return
 
         /* Init the projection */
@@ -136,22 +129,6 @@ class Map(
             CalibrationStatus.NONE
         }
     }
-
-    /**
-     * The [File] which is the folder containing the map.
-     * When the directory changed (after e.g a rename), the config file must be updated.
-     */
-    var directory: File?
-        get() = configFile.parentFile
-        set(dir) {
-            configFile = File(dir, MAP_FILENAME)
-        }
-
-    var name: String
-        get() = config.name
-        set(newName) {
-            config.name = newName
-        }
 
     /**
      * Markers are lazily loaded.
@@ -209,42 +186,16 @@ class Map(
         _routes.value = _routes.value - route
     }
 
-    var image: Bitmap?
-        get() = mImage
-        set(thumbnail) {
-            mImage = thumbnail
-            config.thumbnail = THUMBNAIL_NAME
-        }
-
-    val imageOutputStream: OutputStream?
-        get() {
-            val targetFile = File(directory, THUMBNAIL_NAME)
-            return try {
-                FileOutputStream(targetFile)
-            } catch (e: FileNotFoundException) {
-                null
-            }
-        }
-
     val levelList: List<Level>
         get() = config.levels
-
 
     private val _calibrationMethodStateFlow = MutableStateFlow(calibrationMethod)
     val calibrationMethodStateFlow = _calibrationMethodStateFlow.asStateFlow()
 
-    var calibrationMethod: CalibrationMethod
+    val calibrationMethod: CalibrationMethod
         get() {
             val cal = config.calibration
             return cal?.calibrationMethod ?: CalibrationMethod.SIMPLE_2_POINTS
-        }
-        set(method) {
-            val cal = config.calibration
-            if (cal != null) {
-                val newCal = cal.copy(calibrationMethod = method)
-                config.calibration = newCal
-                _calibrationMethodStateFlow.value = method
-            }
         }
 
     val origin: MapOrigin
@@ -262,22 +213,10 @@ class Map(
             }
         }
 
-    /**
-     * Get a copy of the calibration points.
-     * This returns only a copy to ensure that no modification is made to the calibration points
-     * through this call.
-     */
-    var calibrationPoints: List<CalibrationPoint>
+    val calibrationPoints: List<CalibrationPoint>
         get() {
             val cal = config.calibration
             return cal?.calibrationPoints ?: emptyList()
-        }
-        set(points) {
-            val cal = config.calibration
-            if (cal != null) {
-                val newCal = cal.copy(calibrationPoints = points)
-                config.calibration = newCal
-            }
         }
 
     val imageExtension: String
@@ -294,52 +233,7 @@ class Map(
     val id: Int
         get() = configFile.path.hashCode()
 
-    /**
-     * Archives the map.
-     *
-     * Creates a zip file named with this [Map] name and the date. This file is placed in the
-     * parent folder of the [Map].
-     * Beware that this is a blocking call and should be executed from inside a background thread.
-     */
-    fun zip(listener: ZipProgressionListener, outputStream: OutputStream) {
-        val mapFolder = configFile.parentFile
-        if (mapFolder != null) {
-            zipTask(mapFolder, outputStream, listener)
-        }
-    }
-
-    fun generateNewNameWithDate(): String {
-        val date = Date()
-        val dateFormat: DateFormat = SimpleDateFormat("dd\\MM\\yyyy-HH:mm:ss", Locale.ENGLISH)
-        return name + "-" + dateFormat.format(date)
-    }
-
     enum class CalibrationStatus {
         OK, NONE, ERROR
-    }
-
-    /**
-     * Two [Map] are considered identical if they have the same configuration file.
-     */
-    override fun equals(other: Any?): Boolean {
-        if (other == null) return false
-        if (other is Map) {
-            return other.configFile == configFile
-        }
-        return false
-    }
-
-    override fun hashCode(): Int {
-        return configFile.hashCode()
-    }
-
-    companion object {
-        private const val THUMBNAIL_NAME = "image.jpg"
-        private fun getBitmapFromFile(file: File?): Bitmap? {
-            val bmOptions = BitmapFactory.Options()
-            return if (file != null) {
-                BitmapFactory.decodeFile(file.absolutePath, bmOptions)
-            } else null
-        }
     }
 }

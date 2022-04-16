@@ -10,26 +10,27 @@ import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.location.*
-import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.orientation.OrientationSource
-import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.core.track.TrackImporter
-import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.core.repositories.location.LocationSourceImpl
 import com.peterlaurence.trekme.core.repositories.location.producers.GoogleLocationProducer
 import com.peterlaurence.trekme.core.repositories.location.producers.NmeaOverBluetoothProducer
+import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.core.repositories.recording.ElevationRepository
+import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.data.orientation.OrientationSourceImpl
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
+import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -68,7 +69,7 @@ object AppModule {
     fun bindMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
 
     @Singleton // Provide always the same instance
-    @ApplicationScope
+    @ApplicationScope // Must also be injectable at application scope
     @Provides
     fun providesCoroutineScope(): CoroutineScope {
         // Run this code when providing an instance of CoroutineScope
@@ -103,11 +104,18 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindTrackImporter(repo: RouteRepository): TrackImporter = TrackImporter(repo)
+    fun bindTrackImporter(
+        repo: RouteRepository,
+        markersDao: MarkersDao,
+    ): TrackImporter = TrackImporter(repo, markersDao)
 
     @Singleton
     @Provides
     fun bindMapRepository(): MapRepository = MapRepository()
+
+    @Singleton
+    @Provides
+    fun provideMapArchiveEvents(): MapArchiveEvents = MapArchiveEvents()
 
     @Singleton
     @Provides
@@ -151,11 +159,6 @@ object AppModule {
     @Singleton
     @Provides
     fun bindAppEventBus(): AppEventBus = AppEventBus()
-
-    @Singleton
-    @Provides
-    fun bindMapLoader(): MapLoader =
-        MapLoader(Dispatchers.Main.immediate, Dispatchers.Default, Dispatchers.IO)
 
     @Singleton
     @Provides

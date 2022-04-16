@@ -31,20 +31,20 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.peterlaurence.trekme.core.map.domain.interactors.ArchiveMapInteractor
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
-import com.peterlaurence.trekme.features.maplist.presentation.events.*
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.util.collectWhileStarted
@@ -53,6 +53,7 @@ import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.InetAddress
 import javax.inject.Inject
@@ -67,6 +68,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @Inject
     lateinit var mapRepository: MapRepository
+
+    @Inject
+    lateinit var mapArchiveEvents: MapArchiveEvents
 
     @Inject
     lateinit var downloadRepository: DownloadRepository
@@ -226,23 +230,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val mapSettingsViewModel = ViewModelProvider(this).get(MapSettingsViewModel::class.java)
-        mapSettingsViewModel.zipEvents.observe(this) { e: ZipEvent? ->
-            e?.also { event ->
-                when (event) {
-                    is ZipProgressEvent -> onZipProgressEvent(event)
-                    is ZipFinishedEvent -> onZipFinishedEvent(event)
-                    ZipError -> {
-                        //TODO: Display a warning
-                    }
-                    is ZipCloseEvent -> {
-                        // When resumed, the fragment is notified with this event (this is how LiveData
-                        // works). To avoid emitting a new notification for a ZipFinishedEvent, we use
-                        // ZipCloseEvent on which we do nothing.
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mapArchiveEvents.mapArchiveEventFlow.collect { event ->
+                    when (event) {
+                        is ArchiveMapInteractor.ZipProgressEvent -> onZipProgressEvent(event)
+                        is ArchiveMapInteractor.ZipFinishedEvent -> onZipFinishedEvent(event)
+                        ArchiveMapInteractor.ZipError -> {
+                            //TODO: Display a warning
+                        }
+                        is ArchiveMapInteractor.ZipCloseEvent -> {
+                            // Nothing to do
+                        }
                     }
                 }
             }
         }
+
         fragmentManager = this.supportFragmentManager
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -535,7 +540,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      * [NotificationManager] only process one notification at a time, which is handy since
      * it prevents the application from using too much cpu.
      */
-    private fun onZipProgressEvent(event: ZipProgressEvent) {
+    private fun onZipProgressEvent(event: ArchiveMapInteractor.ZipProgressEvent) {
         val notificationChannelId = "trekadvisor_map_save"
         if (builder == null || notifyMgr == null) {
             try {
@@ -565,7 +570,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         notifyMgr?.notify(event.mapId, builder!!.build())
     }
 
-    private fun onZipFinishedEvent(event: ZipFinishedEvent) {
+    private fun onZipFinishedEvent(event: ArchiveMapInteractor.ZipFinishedEvent) {
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
 
         val archiveOkMsg = getString(R.string.archive_snackbar_finished)

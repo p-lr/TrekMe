@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.intersects
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
@@ -44,7 +44,7 @@ class RecordViewModel @Inject constructor(
     private val gpxRecordEvents: GpxRecordEvents,
     private val eventBus: RecordEventBus,
     private val appEventBus: AppEventBus,
-    private val mapLoader: MapLoader
+    private val mapRepository: MapRepository,
 ) : ViewModel() {
     private var recordingsSelected = listOf<RecordingData>()
 
@@ -103,11 +103,11 @@ class RecordViewModel @Inject constructor(
 
         var importCount = 0
         supervisorScope {
-            mapLoader.maps.forEach { map ->
+            mapRepository.getCurrentMapList().forEach { map ->
                 launch {
                     if (map.intersects(boundingBox)) {
                         /* Import the new route */
-                        val result = trackImporter.applyGpxToMap(gpx, map, mapLoader)
+                        val result = trackImporter.applyGpxToMap(gpx, map)
                         appEventBus.postGpxImportResult(result)
                         if (result is TrackImporter.GpxImportResult.GpxImportOk && result.newRouteCount >= 1) {
                             importCount++
@@ -130,14 +130,14 @@ class RecordViewModel @Inject constructor(
      * The business logic of parsing a GPX file.
      */
     private fun onMapSelectedForRecord(mapId: Int) {
-        val map = mapLoader.getMap(mapId) ?: return
+        val map = mapRepository.getMap(mapId) ?: return
 
         val recordingData = recordingsSelected.firstOrNull() ?: return
         val recording = gpxRepository.recordings?.firstOrNull { it == recordingData.gpxFile }
                 ?: return
 
         viewModelScope.launch {
-            trackImporter.applyGpxFileToMap(recording, map, mapLoader).let {
+            trackImporter.applyGpxFileToMap(recording, map).let {
                 /* Once done, notify the rest of the app */
                 appEventBus.postGpxImportResult(it)
             }

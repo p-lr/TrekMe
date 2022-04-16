@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.Wmts
+import com.peterlaurence.trekme.core.map.domain.models.Wmts
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
@@ -102,7 +102,7 @@ class MapViewModel @Inject constructor(
     val snackBarController = SnackBarController()
 
     init {
-        mapRepository.mapFlow.map {
+        mapRepository.currentMapFlow.map {
             if (it != null) {
                 onMapChange(it)
             }

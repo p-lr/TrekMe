@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
+import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI

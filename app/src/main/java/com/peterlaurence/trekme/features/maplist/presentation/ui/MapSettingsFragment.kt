@@ -12,7 +12,9 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navGraphViewModels
 import androidx.preference.EditTextPreference
@@ -22,14 +24,14 @@ import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.features.maplist.presentation.events.MapImageImportResult
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.util.isFrench
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
-import javax.inject.Inject
 
 /**
  * Fragment that shows the settings for a given map. It provides the abilities to :
@@ -53,22 +55,6 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         defaultViewModelProviderFactory
     }
 
-    @Inject
-    lateinit var mapLoader: MapLoader
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val map = viewModel.map ?: return
-        setMap(map)
-
-        lifecycleScope.launchWhenResumed {
-            viewModel.mapImageImportEvents.collect {
-                onMapImageImportResult(it)
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -78,6 +64,22 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
             show()
             title = getString(R.string.map_settings_frgmt_title)
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.mapFlow.filterNotNull().collect { map ->
+                    setMap(map)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.mapImageImportEvents.collect {
+                    onMapImageImportResult(it)
+                }
+            }
         }
 
         return super.onCreateView(inflater, container, savedInstanceState)
@@ -174,12 +176,8 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
                     viewModel.setProjection(map, null)
                     return@OnPreferenceChangeListener true
                 }
-                val saveMsg: String = if (viewModel.setProjection(map, projectionName as String)) {
-                    getString(R.string.calibration_projection_saved_ok)
-                } else {
-                    getString(R.string.calibration_projection_error)
-                }
-                showMessage(saveMsg)
+                viewModel.setProjection(map, projectionName as String)
+                showMessage(getString(R.string.calibration_projection_saved_ok))
                 true
             } catch (e: Exception) {
                 false

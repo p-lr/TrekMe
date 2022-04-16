@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.Landmark
+import com.peterlaurence.trekme.core.map.domain.models.Landmark
 import com.peterlaurence.trekme.core.map.getLonLat
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark

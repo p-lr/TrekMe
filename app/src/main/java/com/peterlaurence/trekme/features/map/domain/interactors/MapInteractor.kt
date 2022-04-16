@@ -5,11 +5,13 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapBounds
-import com.peterlaurence.trekme.core.map.domain.Landmark
-import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.core.map.domain.Route
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.map.domain.dao.LandmarksDao
+import com.peterlaurence.trekme.core.map.domain.models.Landmark
+import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.projection.Projection
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.di.ApplicationScope
 import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
@@ -23,7 +25,9 @@ import kotlinx.coroutines.flow.mapNotNull
 import javax.inject.Inject
 
 class MapInteractor @Inject constructor(
-    private val mapLoader: MapLoader,
+    private val markersDao: MarkersDao,
+    private val landmarksDao: LandmarksDao,
+    private val mapRepository: MapRepository,
     private val routeRepository: RouteRepository,
     @ApplicationContext private val context: Context,
     @ApplicationScope private val scope: CoroutineScope
@@ -69,7 +73,7 @@ class MapInteractor @Inject constructor(
             lon = lonLat[0]
         }
 
-        mapLoader.saveLandmarks(map)
+        landmarksDao.saveLandmarks(map)
     }
 
     /**
@@ -86,19 +90,19 @@ class MapInteractor @Inject constructor(
             lon = lonLat[0]
         }
 
-        mapLoader.saveMarkers(map)
+        markersDao.saveMarkers(map)
     }
 
     fun deleteLandmark(landmark: Landmark, mapId: Int) = scope.launch {
-        val map = mapLoader.getMap(mapId) ?: return@launch
+        val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteLandmark(landmark)
-        mapLoader.saveLandmarks(map)
+        landmarksDao.saveLandmarks(map)
     }
 
     fun deleteMarker(marker: Marker, mapId: Int) = scope.launch {
-        val map = mapLoader.getMap(mapId) ?: return@launch
+        val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteMarker(marker)
-        mapLoader.saveMarkers(map)
+        markersDao.saveMarkers(map)
     }
 
     /**
@@ -108,8 +112,8 @@ class MapInteractor @Inject constructor(
         updateMarkerJob?.cancel()
         updateMarkerJob = scope.launch {
             delay(1000)
-            val map = mapLoader.getMap(mapId) ?: return@launch
-            mapLoader.saveMarkers(map)
+            val map = mapRepository.getMap(mapId) ?: return@launch
+            markersDao.saveMarkers(map)
         }
     }
 
@@ -118,7 +122,7 @@ class MapInteractor @Inject constructor(
      */
     suspend fun getLandmarkPositions(map: Map): List<LandmarkWithNormalizedPos> {
         /* Import landmarks */
-        mapLoader.getLandmarksForMap(map)
+        landmarksDao.getLandmarksForMap(map)
 
         val landmarks = map.landmarks ?: return emptyList()
 
@@ -136,7 +140,7 @@ class MapInteractor @Inject constructor(
 
     suspend fun getMarkerPositions(map: Map): List<MarkerWithNormalizedPos> {
         /* Import markers */
-        mapLoader.getMarkersForMap(map)
+        markersDao.getMarkersForMap(map)
 
         val markers = map.markers ?: return emptyList()
         return markers.map { marker ->
@@ -151,7 +155,7 @@ class MapInteractor @Inject constructor(
         }
     }
 
-    suspend fun getMarkerPosition(map: Map, marker: Marker): MarkerWithNormalizedPos? {
+    suspend fun getMarkerPosition(map: Map, marker: Marker): MarkerWithNormalizedPos {
         val (x, y) = getNormalizedCoordinates(
             marker.lat,
             marker.lon,

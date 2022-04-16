@@ -4,13 +4,13 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.Route
-import com.peterlaurence.trekme.core.map.domain.Marker
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
+import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,13 +30,14 @@ import javax.inject.Inject
  * @author P.Laurence on 03/03/17 -- converted to Kotlin on 16/09/18
  */
 class TrackImporter @Inject constructor(
-    val routeRepository: RouteRepository
+    val routeRepository: RouteRepository,
+    private val markersDao: MarkersDao
 ) {
     /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
      */
     suspend fun applyGpxUriToMap(
-        uri: Uri, contentResolver: ContentResolver, map: Map, mapLoader: MapLoader
+        uri: Uri, contentResolver: ContentResolver, map: Map
     ): GpxImportResult {
         return runCatching {
             val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
@@ -45,7 +46,7 @@ class TrackImporter @Inject constructor(
                 FileInputStream(fileDescriptor).use { fileInputStream ->
                     val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
                         ?: "A track"
-                    applyGpxInputStreamToMap(fileInputStream, map, fileName, mapLoader)
+                    applyGpxInputStreamToMap(fileInputStream, map, fileName)
                 }
             }
         }.onFailure {
@@ -56,10 +57,10 @@ class TrackImporter @Inject constructor(
     /**
      * Applies the GPX content given as a [File] to the provided [Map].
      */
-    suspend fun applyGpxFileToMap(file: File, map: Map, mapLoader: MapLoader): GpxImportResult {
+    suspend fun applyGpxFileToMap(file: File, map: Map): GpxImportResult {
         return try {
             val fileInputStream = FileInputStream(file)
-            applyGpxInputStreamToMap(fileInputStream, map, file.name, mapLoader)
+            applyGpxInputStreamToMap(fileInputStream, map, file.name)
         } catch (e: Exception) {
             GpxImportResult.GpxImportError
         }
@@ -68,9 +69,9 @@ class TrackImporter @Inject constructor(
     /**
      * Applies the GPX content given directly as a [Gpx] instance to the provided [Map].
      */
-    suspend fun applyGpxToMap(gpx: Gpx, map: Map, mapLoader: MapLoader): GpxImportResult {
+    suspend fun applyGpxToMap(gpx: Gpx, map: Map): GpxImportResult {
         val data = convertGpx(gpx)
-        return setRoutesAndMarkersToMap(map, data.first, data.second, mapLoader)
+        return setRoutesAndMarkersToMap(map, data.first, data.second)
     }
 
     sealed class GpxImportResult {
@@ -113,14 +114,14 @@ class TrackImporter @Inject constructor(
      * [CoroutineDispatcher] should be [Dispatchers.Main]), applies the result on the provided [Map].
      */
     private suspend fun applyGpxInputStreamToMap(
-        input: InputStream, map: Map,
-        defaultName: String,
-        mapLoader: MapLoader
+        input: InputStream,
+        map: Map,
+        defaultName: String
     ): GpxImportResult {
         val pair = readGpxInputStream(input, map, defaultName)
 
         return if (pair != null) {
-            return setRoutesAndMarkersToMap(map, pair.first, pair.second, mapLoader)
+            return setRoutesAndMarkersToMap(map, pair.first, pair.second)
         } else {
             GpxImportResult.GpxImportError
         }
@@ -129,7 +130,6 @@ class TrackImporter @Inject constructor(
     private suspend fun setRoutesAndMarkersToMap(
         map: Map, newRoutes: List<Route>,
         wayPoints: List<Marker>,
-        mapLoader: MapLoader
     ): GpxImportResult {
         return try {
             /* Add the new routes and markers, and save the modifications */
@@ -138,7 +138,7 @@ class TrackImporter @Inject constructor(
             newRoutes.forEach {
                 routeRepository.saveNewRoute(map, it)
             }
-            mapLoader.saveMarkers(map)
+            markersDao.saveMarkers(map)
             GpxImportResult.GpxImportOk(map, newRoutes, wayPoints, newRouteCount, newMarkersCount)
         } catch (e: Exception) {
             GpxImportResult.GpxImportError
@@ -157,9 +157,7 @@ class TrackImporter @Inject constructor(
     ): List<Route> {
 
         /* The route name is the track name if it has one. Otherwise we take the default name */
-        val name = if (track.name.isNotEmpty()) {
-            track.name
-        } else {
+        val name = track.name.ifEmpty {
             "$defaultName#$index"
         }
 

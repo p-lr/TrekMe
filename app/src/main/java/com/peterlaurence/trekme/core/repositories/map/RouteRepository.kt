@@ -5,10 +5,10 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.Route
-import com.peterlaurence.trekme.core.map.entity.RouteGson
-import com.peterlaurence.trekme.core.map.entity.RouteInfoKtx
-import com.peterlaurence.trekme.core.map.entity.RouteKtx
+import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.core.map.data.models.RouteGson
+import com.peterlaurence.trekme.core.map.data.models.RouteInfoKtx
+import com.peterlaurence.trekme.core.map.data.models.RouteKtx
 import com.peterlaurence.trekme.core.map.mappers.toDomain
 import com.peterlaurence.trekme.core.map.mappers.toMarker
 import com.peterlaurence.trekme.core.map.mappers.toRouteInfoKtx
@@ -22,7 +22,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.util.*
 import javax.inject.Inject
 
 /**

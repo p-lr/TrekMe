@@ -1,20 +1,25 @@
 package com.peterlaurence.trekme.core.map.mapimporter
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.MapArchive
 import com.peterlaurence.trekme.core.map.createNomediaFile
-import com.peterlaurence.trekme.core.map.domain.*
+import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
+import com.peterlaurence.trekme.core.map.domain.models.Level
+import com.peterlaurence.trekme.core.map.domain.models.MapConfig
+import com.peterlaurence.trekme.core.map.domain.models.Size
+import com.peterlaurence.trekme.core.map.domain.models.Vips
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.LibvipsMapSeeker
-import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.importFromFile
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FilenameFilter
 import java.util.*
+import javax.inject.Inject
 import kotlin.collections.ArrayList
 
 /**
@@ -22,49 +27,55 @@ import kotlin.collections.ArrayList
  * For instance, [LibvipsMapSeeker] is the only seeker used, because TrekMe only supports one kind
  * of file-based maps.
  * This is typically used after a [MapArchive] has been extracted.
+ * TODO: This class should probably be renamed as "MapImportInteractor"
  *
  * @author P.Laurence on 23/06/16 -- Converted to Kotlin on 27/10/19
  */
-object MapImporter {
-    private val SEEKER: MapSeeker by lazy { LibvipsMapSeeker() }
-    private const val THUMBNAIL_ACCEPT_SIZE = 256
-    private val IMAGE_EXTENSIONS = arrayOf("jpg", "gif", "png", "bmp", "webp")
+class MapImporter @Inject constructor(
+    private val updateMapsInteractor: UpdateMapsInteractor,
+    private val saveMapInteractor: SaveMapInteractor
+) {
+    companion object {
+        private val SEEKER: MapSeeker by lazy { LibvipsMapSeeker() }
+        private val THUMBNAIL_ACCEPT_SIZE = 256
+        private val IMAGE_EXTENSIONS = arrayOf("jpg", "gif", "png", "bmp", "webp")
 
-    private const val TAG = "MapImporter"
+        private val TAG = "MapImporter"
 
-    private val THUMBNAIL_FILTER = FilenameFilter { _, filename ->
-        IMAGE_EXTENSIONS.any {
-            filename.endsWith(".$it")
-        }
-    }
-
-    private val IMAGE_FILTER = FilenameFilter { dir, filename ->
-        /* We only look at files */
-        if (File(dir, filename).isDirectory) {
-            return@FilenameFilter false
-        }
-
-        var accept = true
-        for (ext in IMAGE_EXTENSIONS) {
-            if (!filename.endsWith(".$ext")) {
-                accept = false
+        private val THUMBNAIL_FILTER = FilenameFilter { _, filename ->
+            IMAGE_EXTENSIONS.any {
+                filename.endsWith(".$it")
             }
-            try {
-                Integer.parseInt(filename.substring(0, filename.lastIndexOf(".")))
-            } catch (e: Exception) {
-                accept = false
+        }
+
+        private val IMAGE_FILTER = FilenameFilter { dir, filename ->
+            /* We only look at files */
+            if (File(dir, filename).isDirectory) {
+                return@FilenameFilter false
             }
 
-            if (accept) return@FilenameFilter true
+            var accept = true
+            for (ext in IMAGE_EXTENSIONS) {
+                if (!filename.endsWith(".$ext")) {
+                    accept = false
+                }
+                try {
+                    Integer.parseInt(filename.substring(0, filename.lastIndexOf(".")))
+                } catch (e: Exception) {
+                    accept = false
+                }
+
+                if (accept) return@FilenameFilter true
+            }
+            false
         }
-        false
+
+        private val DIR_FILTER = FilenameFilter { dir, filename -> File(dir, filename).isDirectory }
     }
 
-    private val DIR_FILTER = FilenameFilter { dir, filename -> File(dir, filename).isDirectory }
-
-    suspend fun importFromFile(dir: File, mapLoader: MapLoader): MapImportResult {
+    suspend fun importFromFile(dir: File): MapImportResult {
         return try {
-            parseMap(SEEKER, dir, mapLoader)
+            parseMap(SEEKER, dir)
         } catch (e: MapParseException) {
             Log.e(TAG, "Error parsing $dir (${e.issue})")
             MapImportResult(null, MapParserStatus.NO_MAP)
@@ -77,10 +88,13 @@ object MapImporter {
 
         /**
          * Produces a [Map] from a given [File].
-         * Uses the [mapLoader] to add the map, if found.
          */
         @Throws(MapParseException::class)
-        suspend fun seek(file: File, mapLoader: MapLoader): Map?
+        suspend fun seek(
+            file: File,
+            updateMapsInteractor: UpdateMapsInteractor,
+            saveMapInteractor: SaveMapInteractor
+        ): Map?
     }
 
     enum class MapParserStatus {
@@ -107,16 +121,15 @@ object MapImporter {
 
     private suspend fun parseMap(
         mapSeeker: MapSeeker, mDir: File,
-        mapLoader: MapLoader
     ): MapImportResult = withContext(Dispatchers.IO) {
-        val map = mapSeeker.seek(mDir, mapLoader)
+        val map = mapSeeker.seek(mDir, updateMapsInteractor, saveMapInteractor)
         MapImportResult(map, mapSeeker.status)
     }
 
     /**
      * This [MapSeeker] expects a folder structure corresponding to libvips's `dzsave` output.
      */
-    private class LibvipsMapSeeker : MapSeeker {
+    class LibvipsMapSeeker : MapSeeker {
         private val options = BitmapFactory.Options()
         override var status = MapParserStatus.NO_MAP
             private set
@@ -126,7 +139,11 @@ object MapImporter {
         }
 
         @Throws(MapParseException::class, SecurityException::class)
-        override suspend fun seek(file: File, mapLoader: MapLoader): Map? {
+        override suspend fun seek(
+            file: File,
+            updateMapsInteractor: UpdateMapsInteractor,
+            saveMapInteractor: SaveMapInteractor
+        ): Map {
             if (!file.isDirectory) {
                 throw MapParseException(MapParseException.Issue.NOT_A_DIRECTORY)
             }
@@ -142,7 +159,7 @@ object MapImporter {
             /* Check whether there is already a map.json file or not */
             val existingJsonFile = File(parentFolder, MAP_FILENAME)
             if (existingJsonFile.exists()) {
-                val mapList = mapLoader.updateMaps(listOf(parentFolder))
+                val mapList = updateMapsInteractor.updateMaps(listOf(parentFolder))
                 status = MapParserStatus.EXISTING_MAP
                 val map = mapList.firstOrNull()
                 if (map != null) {
@@ -187,13 +204,13 @@ object MapImporter {
             )
 
             /* Find a thumbnail */
-            val thumbnailFile = getThumbnail(parentFolder)
+            val (thumbnailImage, thumbnail) = getThumbnail(parentFolder)
 
             /* Set the map name to the parent folder name */
             val name = parentFolder.name
 
             val mapConfig = MapConfig(
-                name, thumbnail = thumbnailFile?.name, levelList, mapOrigin,
+                name, thumbnail = thumbnail, levelList, mapOrigin,
                 size, imageExtension, calibration = null, sizeInBytes = null
             )
 
@@ -202,9 +219,10 @@ object MapImporter {
 
             status = MapParserStatus.NEW_MAP
 
-            val map = Map(mapConfig, jsonFile, thumbnailFile)
+            val map = Map(mapConfig, jsonFile, thumbnailImage)
             map.createNomediaFile()
-            mapLoader.addMap(map)
+
+            saveMapInteractor.addAndSaveMap(map)
             return map
         }
 
@@ -302,19 +320,19 @@ object MapImporter {
 
         }
 
-        private fun getThumbnail(mapDir: File): File? {
+        private fun getThumbnail(mapDir: File): Pair<Bitmap?, String?> {
             for (imageFile in mapDir.listFiles(THUMBNAIL_FILTER) ?: arrayOf()) {
-                BitmapFactory.decodeFile(imageFile.path, options)
+                val bitmap = BitmapFactory.decodeFile(imageFile.path, options)
                 if (options.outWidth == THUMBNAIL_ACCEPT_SIZE && options.outHeight == THUMBNAIL_ACCEPT_SIZE) {
                     val locale = Locale.getDefault()
                     if (!imageFile.name.lowercase(locale)
                             .contains(THUMBNAIL_EXCLUDE_NAME.lowercase(locale))
                     ) {
-                        return imageFile
+                        return Pair(bitmap, imageFile.name)
                     }
                 }
             }
-            return null
+            return Pair(null, null)
         }
 
         private fun computeMapSize(lastLevel: File, lastLevelTileSize: Size): Size? {

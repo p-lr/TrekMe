@@ -2,8 +2,9 @@ package com.peterlaurence.trekme.core.map.mapbuilder
 
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.*
+import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
+import com.peterlaurence.trekme.core.projection.MercatorProjection
 import java.io.File
 
 fun buildMap(
@@ -16,7 +17,7 @@ fun buildMap(
 
     val size = Size(mapSpec.mapWidthPx, mapSpec.mapHeightPx)
 
-    val calibration = Calibration(null, CalibrationMethod.SIMPLE_2_POINTS, listOf())
+    val calibration = Calibration(MercatorProjection(), CalibrationMethod.SIMPLE_2_POINTS, mapSpec.calibrationPoints.toList())
 
     val mapConfig = MapConfig(
         name = folder.name, thumbnail = null, levels, mapOrigin, size, imageExtension,
@@ -24,5 +25,5 @@ fun buildMap(
     )
     val jsonFile = File(folder, MAP_FILENAME)
 
-    return Map(mapConfig, jsonFile, null)
+    return Map(mapConfig, jsonFile)
 }

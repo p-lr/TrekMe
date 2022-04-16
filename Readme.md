@@ -304,12 +304,12 @@ Then, a list of currently available tracks opens up:
 
 Here you can:
 
-* Import a new gpx files using the import button,
+* Import a new gpx files using the import button at the bottom right corner,
 * Assign a color to a track,
 * Manage track visibility,
 * Remove tracks by swiping them left or right
 
-Using the menu at to right, which appears when you select a track, you can:
+Using the menu at the top right corner (the three vertical dots), which appears when you select a track, you can:
 
 * Rename the selected track
 * Center on the selected track on the map (only available with TrekMe Extended)

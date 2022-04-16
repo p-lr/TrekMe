@@ -15,7 +15,6 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
 import com.peterlaurence.trekme.core.track.*
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
@@ -27,6 +26,7 @@ import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import com.peterlaurence.trekme.core.lib.gpx.parseGpx
 import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
+import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.util.stackTraceToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -54,7 +54,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RecordingStatisticsViewModel @Inject constructor(
-    private val mapLoader: MapLoader,
+    private val mapRepository: MapRepository,
     private val routeRepository: RouteRepository,
     private val gpxRecordEvents: GpxRecordEvents,
     private val gpxRepository: GpxRepository,
@@ -216,14 +216,14 @@ class RecordingStatisticsViewModel @Inject constructor(
             val trkIds = recordingDataList.flatMap { it.trkSegmentIds }
 
             /* Remove in-memory routes now */
-            mapLoader.maps.forEach { map ->
+            mapRepository.getCurrentMapList().forEach { map ->
                 map.routes.value.filter { it.id in trkIds }.forEach { route ->
                     map.deleteRoute(route)
                 }
             }
 
             /* Remove them on disk */
-            mapLoader.maps.forEach { map ->
+            mapRepository.getCurrentMapList().forEach { map ->
                 routeRepository.deleteRoutesUsingId(map, trkIds)
             }
         }

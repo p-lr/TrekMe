@@ -3,27 +3,18 @@ package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 import android.app.Application
 import android.net.Uri
 import android.util.Log
-import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.domain.CalibrationMethod
-import com.peterlaurence.trekme.core.map.maploader.MapLoader
+import com.peterlaurence.trekme.core.map.domain.interactors.*
+import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.maplist.presentation.events.*
-import com.peterlaurence.trekme.util.ZipProgressionListener
-import com.peterlaurence.trekme.util.makeThumbnail
 import com.peterlaurence.trekme.util.stackTraceAsString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
-import java.io.IOException
-import java.io.OutputStream
 import javax.inject.Inject
 
 /**
@@ -33,39 +24,31 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MapSettingsViewModel @Inject constructor(
-        val app: Application,
-        private val mapLoader: MapLoader,
-        private val mapRepository: MapRepository
+    val app: Application,
+    private val mutateMapCalibrationInteractor: MutateMapCalibrationInteractor,
+    private val renameMapInteractor: RenameMapInteractor,
+    private val updateMapSizeInteractor: UpdateMapSizeInteractor,
+    private val setMapThumbnailInteractor: SetMapThumbnailInteractor,
+    private val archiveMapInteractor: ArchiveMapInteractor,
+    private val mapRepository: MapRepository
 ) : ViewModel() {
 
-    private val _zipEvents = MutableLiveData<ZipEvent>()
-    val zipEvents: LiveData<ZipEvent> = _zipEvents
-
-    private val _mapImageImportEvents = MutableSharedFlow<MapImageImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
+    private val _mapImageImportEvents =
+        MutableSharedFlow<MapImageImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
     val mapImageImportEvents = _mapImageImportEvents.asSharedFlow()
 
-    val map: Map?
-        get() = mapRepository.getSettingsMap()
+    val mapFlow: StateFlow<Map?> = mapRepository.settingsMapFlow
 
     /**
      * Changes the thumbnail of a [Map].
-     * Compression of the file defined by the [uri] is done off UI-thread.
      */
     fun setMapImage(mapId: Int, uri: Uri) = viewModelScope.launch {
-        val map = mapLoader.getMap(mapId) ?: return@launch
+        val map = mapRepository.getMap(mapId) ?: return@launch
 
         try {
-            val thumbnail = withContext(Dispatchers.Default) {
-                val outputStream = map.imageOutputStream
-                if (outputStream != null) {
-                    makeThumbnail(uri, app.contentResolver, map.thumbnailSize, outputStream)
-                } else null
-            }
-            if (thumbnail != null) {
-                map.image = thumbnail
-                mapLoader.saveMap(map)
+            setMapThumbnailInteractor.setMapThumbnail(map, uri).onSuccess {
                 _mapImageImportEvents.tryEmit(MapImageImportResult(true))
-            } else {
+            }.onFailure {
                 _mapImageImportEvents.tryEmit(MapImageImportResult(false))
             }
         } catch (e: Exception) {
@@ -80,101 +63,35 @@ class MapSettingsViewModel @Inject constructor(
      * main activity, and not the [MapSettingsFragment], because the user might leave this view ;
      * we want to reliably inform the user when this task is finished.
      */
-    fun archiveMap(map: Map, uri: Uri) = viewModelScope.launch {
-        val docFile = DocumentFile.fromTreeUri(app.applicationContext, uri)
-        if (docFile != null && docFile.isDirectory) {
-            val newFileName: String = map.generateNewNameWithDate() + ".zip"
-            val newFile = docFile.createFile("application/zip", newFileName)
-            if (newFile != null) {
-                val uriZip = newFile.uri
-                try {
-                    val out: OutputStream = app.contentResolver.openOutputStream(uriZip)
-                            ?: return@launch
-                    /* The underlying task which writes into the stream is responsible for closing this stream. */
-                    zipProgressFlow(map.id, out).distinctUntilChanged().collect {
-                        _zipEvents.value = it
-                    }
-                } catch (e: IOException) {
-                    Log.e(TAG, e.stackTraceAsString())
-                }
-            }
-        }
-    }
-
-    @ExperimentalCoroutinesApi
-    private fun zipProgressFlow(mapId: Int, outputStream: OutputStream): Flow<ZipEvent> = callbackFlow {
-        val map = mapLoader.getMap(mapId) ?: return@callbackFlow
-
-        val callback = object : ZipProgressionListener {
-            private val mapName = map.name
-
-            override fun fileListAcquired() {}
-
-            override fun onProgress(p: Int) {
-                trySend(ZipProgressEvent(p, mapName, mapId))
-            }
-
-            override fun onZipFinished() {
-                /* Use sendBlocking instead of offer to be sure not to lose those events */
-                trySendBlocking(ZipFinishedEvent(mapId))
-                trySendBlocking(ZipCloseEvent)
-                channel.close()
-            }
-
-            override fun onZipError() {
-                trySendBlocking(ZipError)
-                cancel()
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            map.zip(callback, outputStream)
-        }
-        awaitClose()
+    fun archiveMap(map: Map, uri: Uri) {
+        archiveMapInteractor.archiveMap(map, uri)
     }
 
     fun renameMap(map: Map, newName: String) {
         viewModelScope.launch {
-            mapLoader.renameMap(map, newName)
-            mapLoader.saveMap(map)
+            renameMapInteractor.renameMap(map, newName)
         }
     }
 
     fun setCalibrationPointsNumber(map: Map, numberStr: String?) {
-        when (numberStr) {
-            "2" -> map.calibrationMethod = CalibrationMethod.SIMPLE_2_POINTS
-            "3" -> map.calibrationMethod = CalibrationMethod.CALIBRATION_3_POINTS
-            "4" -> map.calibrationMethod = CalibrationMethod.CALIBRATION_4_POINTS
-            else -> map.calibrationMethod = CalibrationMethod.SIMPLE_2_POINTS
+        val newCalibrationMethod = when (numberStr) {
+            "2" -> CalibrationMethod.SIMPLE_2_POINTS
+            "3" -> CalibrationMethod.CALIBRATION_3_POINTS
+            "4" -> CalibrationMethod.CALIBRATION_4_POINTS
+            else -> CalibrationMethod.SIMPLE_2_POINTS
         }
-        saveMapAsync(map)
-    }
 
-    fun setProjection(map: Map, projectionName: String?): Boolean {
-        return if (projectionName != null) {
-            mapLoader.mutateMapProjection(map, projectionName)
-        } else {
-            map.projection = null
-            true
-        }.also {
-            saveMapAsync(map)
-        }
-    }
-
-    private fun saveMapAsync(map: Map) {
         viewModelScope.launch {
-            mapLoader.saveMap(map)
+            mutateMapCalibrationInteractor.mutateCalibrationMethod(map, newCalibrationMethod)
         }
     }
 
-    suspend fun computeMapSize(map: Map): Long? = withContext(Dispatchers.IO) {
-        runCatching {
-            val size = map.directory!!.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
-            withContext(Dispatchers.Main) {
-                map.setSizeInBytes(size)
-                saveMapAsync(map)
-            }
-            size
-        }.getOrNull()
+    fun setProjection(map: Map, projectionName: String?) = viewModelScope.launch {
+        mutateMapCalibrationInteractor.mutateProjection(map, projectionName)
+    }
+
+    suspend fun computeMapSize(map: Map): Long? {
+        return updateMapSizeInteractor.updateMapSize(map).getOrNull()
     }
 }
 
