@@ -229,17 +229,18 @@ private fun ConfirmDialog(
     AlertDialog(
         onDismissRequest = { openState.value = false },
         text = {
-            Text(contentText)
+            Text(contentText, fontSize = 16.sp)
         },
         confirmButton = {
-            OutlinedButtonColored(
+            Button(
                 onClick = {
                     openState.value = false
                     onConfirmPressed()
                 },
-                color = confirmColor,
-                text = confirmButtonText
-            )
+                colors = ButtonDefaults.buttonColors(backgroundColor = confirmColor)
+            ) {
+                Text(confirmButtonText)
+            }
         },
         dismissButton = {
             OutlinedButtonColored(
