@@ -5,11 +5,13 @@ import android.net.Uri
 import android.util.AttributeSet
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -53,7 +55,7 @@ fun MapListUI(state: MapListState, intents: MapListIntents) {
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(state.mapList) { map ->
+                    items(state.mapList, key = { it.mapId }) { map ->
                         MapCard(map, intents)
                     }
                 }
@@ -64,9 +66,10 @@ fun MapListUI(state: MapListState, intents: MapListIntents) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MapCard(mapStub: MapStub, intents: MapListIntents) {
-    Card {
+private fun LazyItemScope.MapCard(mapStub: MapStub, intents: MapListIntents) {
+    Card(Modifier.animateItemPlacement()) {
         Box(
             Modifier
                 .fillMaxWidth()
