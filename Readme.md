@@ -46,7 +46,7 @@ Perhaps most importantly, TrekMe is _designed_ to consume few CPU resources, to 
 
 * Support in-app map creation from:
 	- United States's USGS
-	- France IGN (requires an **annual subscription**)
+	- France IGN (requires a subscription)
  	- Spain IGN 
  	- Swiss Topo
  	- OpenStreetMap

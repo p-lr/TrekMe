@@ -46,7 +46,7 @@ randonnée. L'application est aussi très fluide de manière générale.
 ## <a name="TOC-Features-sum"></a>Résumé des fonctionnalités
 
 * Création de cartes depuis l'application:
-    - France IGN (requiert une [souscription annuelle](#TOC-IGN-maps) à l'IGN)
+    - France IGN (requiert une [souscription](#TOC-IGN-maps))
     - Swiss Topo
 	- USA : USGS
  	- Espagne IGN 
@@ -521,7 +521,8 @@ redémarrer les deux apprareils puis re-tentez la procédure.
 
 ## <a name="TOC-IGN-maps"></a>Cartes IGN
 
-TrekMe vous propose un abonnement annuel, avec une semaine d'essai gratuite sans engagement. 
+TrekMe propose deux offres dites "Extended" en versions annuelle et mensuelle, avec une semaine 
+d'essai gratuite sans engagement.
 Pourquoi n'est-ce pas gratuit? L'esprit de TrekMe est la consultation hors ligne des cartes. 
 Bien que certaines ressources sont désormais libres, les cartes IGN les plus demandées comme 
 "Plan IGN" sont toujours basées sur des 
