@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 
 @Composable
@@ -39,12 +40,14 @@ fun MarkerCallout(
         ) {
             Text(
                 text = title,
+                color = textColor(),
                 modifier = Modifier.padding(top = 8.dp),
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
             Text(
                 text = subTitle,
+                color = textColor(),
                 modifier = Modifier.padding(vertical = 4.dp),
                 fontSize = 10.sp
             )

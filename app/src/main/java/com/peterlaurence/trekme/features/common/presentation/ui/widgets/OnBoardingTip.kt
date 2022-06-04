@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import kotlinx.coroutines.delay
 
 @Composable
@@ -51,12 +52,11 @@ fun OnBoardingTip(
                     Text(
                         text = text,
                         modifier = Modifier
-                            .alpha(0.87f)
                             .align(alignment = Alignment.CenterVertically),
                         fontSize = 16.sp,
                         textAlign = TextAlign.Left,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = textColor()
                     )
                 }
 

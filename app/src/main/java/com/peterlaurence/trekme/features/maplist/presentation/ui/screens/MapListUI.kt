@@ -5,10 +5,7 @@ import android.net.Uri
 import android.util.AttributeSet
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -35,12 +32,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.*
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.lazyListBackground
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
 import com.peterlaurence.trekme.util.pxToDp
 import com.peterlaurence.trekme.viewmodel.maplist.*
 
@@ -84,7 +79,7 @@ private fun LazyItemScope.MapCard(mapStub: MapStub, intents: MapListIntents) {
                 ) {
                     Text(
                         text = mapStub.title,
-                        modifier = Modifier.alpha(0.87f),
+                        color = textColor(),
                         fontSize = 24.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
@@ -141,7 +136,11 @@ private fun ImagePlaceHolder(mapStub: MapStub, onSetMapImage: (Int, Uri) -> Unit
                     Icon(
                         painter = painterResource(id = R.drawable.add_circle),
                         modifier = Modifier.size(50.dp),
-                        tint = colorResource(id = R.color.colorDarkGrey),
+                        tint = if (isSystemInDarkTheme()) {
+                            Color(0x55ffffff)
+                        } else {
+                            Color(0x55000000)
+                        },
                         contentDescription = null
                     )
                 }
@@ -288,10 +287,8 @@ private fun GoToMapCreationScreen(onButtonCLick: (showOnBoarding: Boolean) -> Un
                 text = stringResource(id = R.string.create_first_map_question),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .alpha(0.87f),
-                color = MaterialTheme.colors.onSurface
+                modifier = Modifier.padding(bottom = 16.dp),
+                color = textColor()
             )
             Spacer(Modifier.height(16.dp))
             Button(

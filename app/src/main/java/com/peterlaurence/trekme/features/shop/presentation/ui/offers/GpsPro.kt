@@ -11,7 +11,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -23,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.shop.presentation.ui.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.PriceButton
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.GpsProPurchaseViewModel
@@ -66,10 +66,9 @@ fun ColumnScope.GpsProPurchaseUI() {
         contentScale = ContentScale.Inside,
         contentDescription = null
     )
-    val alpha = 0.87f
     Text(
         stringResource(id = R.string.gps_pro_pres_p1_title),
-        Modifier.alpha(alpha),
+        color = textColor(),
         fontWeight = FontWeight.Medium,
     )
     Spacer(modifier = Modifier.padding(8.dp))
@@ -77,21 +76,21 @@ fun ColumnScope.GpsProPurchaseUI() {
         stringResource(
             id = R.string.gps_pro_pres_content
         ),
-        Modifier.alpha(alpha),
+        color = textColor(),
         textAlign = TextAlign.Justify,
         fontSize = 14.sp
     )
     Spacer(modifier = Modifier.padding(8.dp))
     Text(
         stringResource(id = R.string.gps_pro_pres_p2_title),
-        Modifier.alpha(alpha),
+        color = textColor(),
         fontWeight = FontWeight.Medium,
     )
     Spacer(modifier = Modifier.padding(8.dp))
     for (device in supportedDevices) {
         Text(
             "• $device",
-            Modifier.alpha(alpha),
+            color = textColor(),
             fontSize = 14.sp
         )
     }
@@ -100,7 +99,7 @@ fun ColumnScope.GpsProPurchaseUI() {
         stringResource(
             id = R.string.gps_pro_pres_ending
         ),
-        Modifier.alpha(alpha),
+        color = textColor(),
         textAlign = TextAlign.Justify,
         fontSize = 14.sp
     )

@@ -14,29 +14,19 @@ private val DarkColorPalette = darkColors(
     primaryVariant = Brown700,
     secondary = Blue500,
     surface = onSurfaceDark,
-    onSurface = Color(0xffa9b7c6)
 )
 
 private val LightColorPalette = lightColors(
     primary = Brown500,
     primaryVariant = Brown700,
     secondary = Blue500
-
-    /* Other default colors to override
-    background = Color.White,
-    surface = Color.White,
-    onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    */
 )
 
 @Composable
 fun TrekMeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     background: Color? = null,
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) {
         DarkColorPalette.let {
@@ -54,6 +44,11 @@ fun TrekMeTheme(
         shapes = Shapes,
         content = content
     )
+}
+
+@Composable
+fun textColor(): Color {
+    return if (isSystemInDarkTheme()) Color(0xffa9b7c6) else Color(0xdd000000)
 }
 
 @Composable

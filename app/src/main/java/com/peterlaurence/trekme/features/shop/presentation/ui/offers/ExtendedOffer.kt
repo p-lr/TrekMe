@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.shop.presentation.ui.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.PriceButton
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ExtendedOfferViewModel
@@ -97,24 +98,22 @@ private fun TitleRow(@StringRes id: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp)
-            .alpha(0.87f),
+            .padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        Text(stringResource(id), fontWeight = FontWeight.Medium)
+        Text(stringResource(id), fontWeight = FontWeight.Medium, color = textColor())
     }
 }
 
 @Composable
-private fun LineItem(@StringRes id: Int, alpha: Float = 0.87f) {
+private fun LineItem(@StringRes id: Int) {
     Row {
-        Text("\u2022", Modifier.alpha(alpha))
+        Text("\u2022", color = textColor())
         Text(
             stringResource(id),
             fontSize = 14.sp,
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .alpha(alpha),
+            modifier = Modifier.padding(start = 8.dp),
+            color = textColor()
         )
     }
 }
@@ -128,20 +127,19 @@ private fun NotaBene() {
         horizontalArrangement = Arrangement.Center
     ) {
         Divider(
-            Modifier
-                .background(Color.Black)
-                .alpha(0.87f)
-                .width(50.dp))
+            Modifier.width(50.dp),
+            color = textColor()
+        )
     }
 
     Row {
-        Text(stringResource(id = R.string.nb), Modifier.alpha(0.6f))
+        /* Set alpha to 0.7 for less emphasize */
+        Text(stringResource(id = R.string.nb), Modifier.alpha(0.7f), color = textColor())
         Text(
             stringResource(R.string.ign_caution),
             fontSize = 14.sp,
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .alpha(0.6f),
+            modifier = Modifier.padding(start = 8.dp).alpha(0.7f),
+            color = textColor(),
             style = TextStyle(textAlign = TextAlign.Justify)
         )
     }

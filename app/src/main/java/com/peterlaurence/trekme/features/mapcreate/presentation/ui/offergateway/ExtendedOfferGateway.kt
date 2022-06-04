@@ -27,6 +27,7 @@ import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.ExtendedOfferViewModel
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.defaultBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 
 @Composable
 fun ExtendedOfferGatewayStateful(
@@ -69,10 +70,8 @@ private fun ShowPending() {
         text = stringResource(id = R.string.offer_gateway_check_pending),
         fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
-        modifier = Modifier
-            .padding(bottom = 32.dp)
-            .alpha(0.87f),
-        color = MaterialTheme.colors.onSurface
+        modifier = Modifier.padding(bottom = 32.dp),
+        color = textColor()
     )
     Spacer(modifier = Modifier.height(16.dp))
     LinearProgressIndicator()
@@ -92,10 +91,8 @@ private fun SuggestShopNavigation(navigateToShop: () -> Unit) {
         stringResource(id = R.string.offer_gateway_suggest_navigation),
         fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
-        modifier = Modifier
-            .padding(bottom = 16.dp)
-            .alpha(0.87f),
-        color = MaterialTheme.colors.onSurface,
+        modifier = Modifier.padding(bottom = 16.dp),
+        color = textColor(),
         style = TextStyle(textAlign = TextAlign.Center)
     )
 

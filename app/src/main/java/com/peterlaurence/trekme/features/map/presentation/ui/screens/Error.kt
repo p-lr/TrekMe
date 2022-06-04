@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.Error
 
 @Composable
@@ -69,7 +70,8 @@ private fun MissingOffer(message: String, onShopClick: () -> Unit) {
         )
         Text(
             text = message,
-            modifier = Modifier.padding(vertical = 32.dp).alpha(0.87f),
+            modifier = Modifier.padding(vertical = 32.dp),
+            color = textColor(),
             fontSize = 17.sp,
             textAlign = TextAlign.Center
         )

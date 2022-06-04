@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -86,7 +87,7 @@ fun ShopCarousel(
                         .fillMaxSize()
                         .padding(start = 16.dp, end = 16.dp, bottom = 43.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Color.White)
+                        .background(MaterialTheme.colors.surface)
                 ) {
                     when (page) {
                         0 -> (firstOffer.header)()

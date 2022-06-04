@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 
 @Composable
@@ -36,12 +37,14 @@ fun LandmarkCallout(
             Text(
                 text = stringResource(id = R.string.callout_landmark_title),
                 modifier = Modifier.padding(top = 8.dp),
+                color = textColor(),
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
             Text(
                 text = subTitle,
                 modifier = Modifier.padding(vertical = 4.dp),
+                color = textColor(),
                 fontSize = 10.sp
             )
             Spacer(modifier = Modifier.weight(1f))
