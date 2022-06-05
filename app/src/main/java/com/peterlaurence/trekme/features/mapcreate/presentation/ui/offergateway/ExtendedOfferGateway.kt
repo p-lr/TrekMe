@@ -26,7 +26,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.ExtendedOfferViewModel
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.defaultBackground
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 
 @Composable
@@ -112,7 +112,7 @@ private fun SuggestShopNavigation(navigateToShop: () -> Unit) {
             onClick = navigateToShop,
             modifier = Modifier.width(maxWidth * 0.6f),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = onSurfaceAccent(),
+                backgroundColor = accentColor(),
                 contentColor = Color.White
             ),
             shape = RoundedCornerShape(50)

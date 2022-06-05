@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 
@@ -65,7 +65,7 @@ fun MarkerCallout(
                         .clickable {
                             onEditAction()
                         },
-                    tint = onSurfaceAccent()
+                    tint = accentColor()
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -81,7 +81,7 @@ fun MarkerCallout(
                         .clickable {
                             onMoveAction()
                         },
-                    tint = onSurfaceAccent()
+                    tint = accentColor()
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -98,7 +98,7 @@ fun MarkerCallout(
                         .clickable {
                             onDeleteAction()
                         },
-                    tint = onSurfaceAccent()
+                    tint = accentColor()
                 )
             }
         }

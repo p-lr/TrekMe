@@ -24,7 +24,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 
 @Composable
 fun MarkerEditScreen(
@@ -113,7 +113,7 @@ private fun MarkerEditUi(
     onLonChange: (String) -> Unit,
     onCommentChange: (String) -> Unit
 ) {
-    val accentColor = onSurfaceAccent()
+    val accentColor = accentColor()
 
     Column(
         Modifier

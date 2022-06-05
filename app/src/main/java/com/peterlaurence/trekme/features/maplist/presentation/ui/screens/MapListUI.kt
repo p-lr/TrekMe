@@ -172,7 +172,7 @@ private fun ButtonRow(
         modifier.padding(start = 8.dp, end = 0.dp, bottom = 0.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val color = onSurfaceAccent()
+        val color = accentColor()
         TextButton(onClick = onMapSettings) {
             Text(
                 text = stringResource(id = R.string.map_manage_btn_string).uppercase(),
@@ -306,7 +306,7 @@ private fun GoToMapCreationScreen(onButtonCLick: (showOnBoarding: Boolean) -> Un
             OutlinedButtonColored(
                 onClick = { onButtonCLick(false) },
                 modifier = Modifier.width(maxWidth * 0.6f),
-                color = onSurfaceAccent(),
+                color = accentColor(),
                 text = stringResource(id = R.string.without_onboarding_btn).uppercase(),
                 shape = RoundedCornerShape(50)
             )

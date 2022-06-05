@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -21,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.data.backendApi.privacyPolicyUrl
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.onSurfaceAccent
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 
 @Composable
@@ -108,7 +107,9 @@ private fun ColumnScope.AppRatingSection(
             .padding(top = 8.dp)
             .align(Alignment.CenterHorizontally),
         onClick = onAppRating,
-        colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.colorGreen)),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = accentColor()
+        ),
         shape = RoundedCornerShape(50)
     ) {
         Text(stringResource(id = R.string.rate_the_app))
@@ -136,7 +137,7 @@ private fun ColumnScope.UserFeedback(
             .padding(top = 8.dp)
             .size(40.dp)
             .align(Alignment.CenterHorizontally),
-        backgroundColor = onSurfaceAccent(),
+        backgroundColor = accentColor(),
         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp)
     ) {
         Image(
@@ -174,7 +175,7 @@ private fun PrivacyPolicy() {
         )
         addStyle(
             style = SpanStyle(
-                color = onSurfaceAccent(),
+                color = accentColor(),
                 fontSize = 16.sp
             ), start = startIndex, end = endIndex
         )
