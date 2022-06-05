@@ -11,10 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
@@ -41,8 +44,10 @@ fun MarkerCallout(
             Text(
                 text = title,
                 color = textColor(),
-                modifier = Modifier.padding(top = 8.dp),
-                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp),
+                fontWeight = FontWeight.Medium,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
                 fontSize = 14.sp
             )
             Text(
@@ -102,5 +107,22 @@ fun MarkerCallout(
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun MarkerCalloutPreview() {
+    TrekMeTheme {
+        MarkerCallout(
+            size = DpSize(200.dp, 120.dp),
+            title = "Les petites chutes souterraines du Plateau des Cascades",
+            subTitle = "Lat : -21.2059 Lon : 55.6268",
+            shouldAnimate = false,
+            onAnimationDone = {},
+            onEditAction = {},
+            onMoveAction = {},
+            onDeleteAction = {}
+        )
     }
 }
