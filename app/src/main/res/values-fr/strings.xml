@@ -203,8 +203,8 @@
     <string name="user_manual_desc">Tout ce que vous devez savoir est expliqué dans le manuel utilisateur. Par exemple,
         est expliqué comment importer une trace GPX, partager une carte en wifi, etc.</string>
     <string name="user_manual_btn">Voir manuel</string>
-    <string name="feedback_title">Aimez-vous l\'application?</string>
-    <string name="feedback_desc">Contribuez à rendre TrekMe plus populaire, ce qui m\'encouragera à ajouter plus de fonctionnalités.</string>
+    <string name="rating_title">Aimez-vous l\'application?</string>
+    <string name="rating_desc">Contribuez à rendre TrekMe plus populaire, ce qui m\'encouragera à ajouter plus de fonctionnalités.</string>
     <string name="feedback_negative_msg">N\'hésitez pas à me contacter pour obtenir de l\'aide.</string>
     <string name="unknown_map_source">Source de carte inconnue. La configuration de cette carte est incorrecte.</string>
     <string name="service_gpx_error">Erreur à la création du fichier GPX :(</string>
@@ -220,6 +220,8 @@
     <string name="privacy_policy_desc">Nous respectons votre vie privée et ne communiquerons jamais
         votre position ou toute autre donnée personnelle à des tiers. Nous ne stockons pas ces informations
         ailleurs que sur votre appareil.</string>
+    <string name="privacy_policy_link">Consultez notre %1$s.</string>
+    <string name="privacy_policy">politique de confidentialité</string>
     <string name="solution_title">Solution</string>
     <string name="service_download_already_running">Un téléchargement est déjà en cours. Veuillez attendre la fin du téléchargement avant d\'en lancer un autre.</string>
     <string name="module_check_pending">Vérification du module…</string>
@@ -357,4 +359,7 @@
     <string name="settings_frgmt_title">Réglages</string>
     <string name="map_settings_frgmt_title">Réglages de carte</string>
     <string name="center_on_track">Centrer directement sur une trace depuis la gestion des traces d\'une carte</string>
+    <string name="rate_the_app">Noter l\'application</string>
+    <string name="user_feedback">Retours et suggestions</string>
+    <string name="feedback_desc">Vous avez des idées d\'amélioration ou quelques soucis, n\'hésitez pas à m\'envoyer un mail.</string>
 </resources>

@@ -400,13 +400,19 @@
     <!-- AboutFragment -->
     <string name="user_manual_title">User manual</string>
     <string name="user_manual_desc">There\'s a complete user manual where you\'ll find everything you should know about TrekMe.</string>
+    <string name="rate_the_app">Rate the app</string>
+    <string name="user_feedback">Feedback and suggestions</string>
     <string name="user_manual_btn">See manual</string>
-    <string name="feedback_title">Do you like the application?</string>
-    <string name="feedback_desc">Contribute to making TrekMe more popular, and encourage me to add more features.</string>
+    <string name="rating_title">Do you like the application?</string>
+    <string name="feedback_desc">You have ideas of improvement, or some issues I can help you with, send me and email.</string>
+    <string name="rating_desc">Contribute to making TrekMe more popular, and encourage me to add more features.</string>
     <string name="feedback_negative_msg">Tell me about your issue and I\'ll do my best to help you.</string>
     <string name="privacy_policy_title">Privacy policy</string>
     <string name="privacy_policy_desc">We respect your privacy and will never share private data such as your location
         to any third parties.</string>
+    <string name="privacy_policy_link">See our %1$s.</string>
+    <string name="privacy_policy">privacy policy</string>
+    <string name="mail_button" translatable="false">Send mail</string>
     <string name="thumb_up_button" translatable="false">Thumb-up button</string>
     <string name="thumb_down_button" translatable="false">Thumb-down button</string>
 

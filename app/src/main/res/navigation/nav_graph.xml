@@ -55,11 +55,6 @@
     <action android:id="@+id/action_global_mapImportFragment" app:destination="@id/mapImportFragment" />
     <action android:id="@+id/action_global_mapListFragment" app:destination="@id/mapListFragment" />
     <fragment
-        android:id="@+id/aboutFragment"
-        android:name="com.peterlaurence.trekme.ui.about.AboutFragment"
-        android:label="AboutFragment" />
-    <action android:id="@+id/action_global_aboutFragment" app:destination="@id/aboutFragment"/>
-    <fragment
         android:id="@+id/elevationFragment"
         android:name="com.peterlaurence.trekme.ui.record.components.elevationgraph.ElevationFragment"
         android:label="ElevationFragment" />
@@ -164,4 +159,9 @@
             android:name="com.peterlaurence.trekme.features.gpspro.presentation.ui.screens.BtDeviceSettingsFragment"
             android:label="BtDeviceSettingsFragment" />
     </navigation>
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.peterlaurence.trekme.features.about.presentation.ui.AboutFragment"
+        android:label="AboutFragment" />
+    <action android:id="@+id/action_global_aboutFragment" app:destination="@id/aboutFragment" />
 </navigation>
