@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
  * * The state transition, during which the button cannot change of state.
  */
 @Composable
-fun TwoStateButton(
+fun MorphingButton(
     modifier: Modifier = Modifier,
     isDestState: Boolean,
     startPathData: PathData,
@@ -110,7 +110,7 @@ fun TwoStateButton(
                 t = progress
             )
         }
-        StartStopShape(
+        MorphingShape(
             modifier = modifier,
             startPathData.path,
             destPathData.path,
@@ -121,7 +121,7 @@ fun TwoStateButton(
 }
 
 @Composable
-fun TimeoutShape(
+private fun TimeoutShape(
     modifier: Modifier,
     strokeColor: Color,
     t: Float
@@ -146,8 +146,11 @@ fun TimeoutShape(
     }
 }
 
+/**
+ * Path morphs between two paths, and simultaneously rotates between 0° and 90°.
+ */
 @Composable
-fun StartStopShape(
+fun MorphingShape(
     modifier: Modifier = Modifier,
     startPath: List<PathNode>,
     destPath: List<PathNode>,

@@ -19,8 +19,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.ui.record.RecordFragment
 import com.peterlaurence.trekme.ui.record.components.widgets.PathData
-import com.peterlaurence.trekme.ui.record.components.widgets.StartStopShape
-import com.peterlaurence.trekme.ui.record.components.widgets.TwoStateButton
+import com.peterlaurence.trekme.ui.record.components.widgets.MorphingShape
+import com.peterlaurence.trekme.ui.record.components.widgets.MorphingButton
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 
@@ -80,7 +80,7 @@ private fun PlayPauseStop(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        TwoStateButton(
+        MorphingButton(
             Modifier.size(48.dp),
             isDestState = state == GpxRecordState.STOPPED,
             PathData(playPath, Color(0xFF4CAF50)),
@@ -91,7 +91,7 @@ private fun PlayPauseStop(
         )
         Spacer(modifier = Modifier.width((30 * animatedValue).dp))
 
-        TwoStateButton(
+        MorphingButton(
             Modifier.size(48.dp * animatedValue),
             isDestState = state == GpxRecordState.STARTED || state == GpxRecordState.RESUMED,
             PathData(pausePath, Color(0xFFFFC107)),
@@ -128,7 +128,7 @@ class PlayPauseStopView @JvmOverloads constructor(
 @Composable
 fun Preview0() {
     TrekMeTheme {
-        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 0f)
+        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 0f)
     }
 }
 
@@ -136,7 +136,7 @@ fun Preview0() {
 @Composable
 fun Preview1() {
     TrekMeTheme {
-        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 0.25f)
+        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 0.25f)
     }
 }
 
@@ -145,7 +145,7 @@ fun Preview1() {
 @Composable
 fun Preview2() {
     TrekMeTheme {
-        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 0.5f)
+        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 0.5f)
     }
 }
 
@@ -153,7 +153,7 @@ fun Preview2() {
 @Composable
 fun Preview3() {
     TrekMeTheme {
-        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 0.75f)
+        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 0.75f)
     }
 }
 
@@ -161,6 +161,6 @@ fun Preview3() {
 @Composable
 fun Preview4() {
     TrekMeTheme {
-        StartStopShape(Modifier, pausePath, playPathDest, Color.Blue, 1f)
+        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 1f)
     }
 }
