@@ -9,6 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -19,9 +23,11 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.ui.record.components.RecordListView
+import com.peterlaurence.trekme.ui.record.components.StatusStateful
 import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
 import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
 import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImport
@@ -50,6 +56,7 @@ class RecordFragment : Fragment() {
 
     val viewModel: RecordViewModel by activityViewModels()
     val statViewModel: RecordingStatisticsViewModel by activityViewModels()
+    private val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
     private var recordingData: LiveData<List<RecordingData>>? = null
 
     @Inject
@@ -102,14 +109,6 @@ class RecordFragment : Fragment() {
                 updateRecordingData(data)
             }
         }
-
-        /**
-         * Observe the changes in the [GpxRecordService] status, and update child views accordingly.
-         */
-        val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
-        gpxRecordServiceViewModel.status.map { gpxRecordState ->
-            dispatchGpxRecordServiceStatus(gpxRecordState)
-        }.collectWhileResumedIn(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -121,6 +120,8 @@ class RecordFragment : Fragment() {
         }
 
         _binding = FragmentRecordBinding.inflate(inflater, container, false)
+
+        configureComposeViews()
         return binding.root
     }
 
@@ -214,11 +215,14 @@ class RecordFragment : Fragment() {
         binding.recordListView.setRecordingData(data)
     }
 
-    private fun dispatchGpxRecordServiceStatus(gpxRecordState: GpxRecordState) {
-        when (gpxRecordState) {
-            GpxRecordState.STOPPED -> binding.statusView.onServiceStopped()
-            GpxRecordState.STARTED, GpxRecordState.RESUMED -> binding.statusView.onServiceStarted()
-            GpxRecordState.PAUSED -> binding.statusView.onServicePaused()
+    private fun configureComposeViews() {
+        binding.statusView.setContent {
+            TrekMeTheme {
+                /* Compose cards don't display well on xml layout, so we add a Box container */
+                Box(modifier = Modifier.padding(top = 8.dp, start = 4.dp, end = 8.dp, bottom = 8.dp)) {
+                    StatusStateful(viewModel = gpxRecordServiceViewModel)
+                }
+            }
         }
     }
 
