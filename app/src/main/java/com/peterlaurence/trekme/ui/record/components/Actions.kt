@@ -1,28 +1,79 @@
-package com.peterlaurence.trekme.ui.record.components.molecules
+package com.peterlaurence.trekme.ui.record.components
 
-import android.content.Context
-import android.util.AttributeSet
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Card
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.addPathNodes
-import androidx.compose.ui.platform.AbstractComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.findFragment
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.peterlaurence.trekme.service.GpxRecordState
-import com.peterlaurence.trekme.ui.record.RecordFragment
-import com.peterlaurence.trekme.ui.record.components.widgets.PathData
-import com.peterlaurence.trekme.ui.record.components.widgets.MorphingShape
-import com.peterlaurence.trekme.ui.record.components.widgets.MorphingButton
+import androidx.compose.ui.unit.sp
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import com.peterlaurence.trekme.service.GpxRecordState
+import com.peterlaurence.trekme.ui.record.components.widgets.MorphingButton
+import com.peterlaurence.trekme.ui.record.components.widgets.MorphingShape
+import com.peterlaurence.trekme.ui.record.components.widgets.PathData
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
+
+@Composable
+fun ActionsStateful(
+    viewModel: GpxRecordServiceViewModel,
+    onStartStopClick: () -> Unit,
+    onPauseResumeClick: () -> Unit
+) {
+    val gpxRecordState by viewModel.status.collectAsState()
+
+    Actions(
+        gpxRecordState = gpxRecordState,
+        onStartStopClick = onStartStopClick,
+        onPauseResumeClick = onPauseResumeClick
+    )
+}
+
+@Composable
+private fun Actions(
+    modifier: Modifier = Modifier,
+    gpxRecordState: GpxRecordState,
+    onStartStopClick: () -> Unit,
+    onPauseResumeClick: () -> Unit
+) {
+    Card(modifier) {
+        Column(
+            Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                stringResource(id = R.string.control_card_title),
+                color = textColor(),
+                fontSize = 18.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                stringResource(id = R.string.control_card_subtitle),
+                modifier = Modifier.alpha(0.7f),
+                fontSize = 12.sp
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                PlayPauseStop(gpxRecordState, onStartStopClick, onPauseResumeClick)
+            }
+        }
+    }
+}
+
 
 /* For play <-> stop */
 private val playPath = addPathNodes("M 19 33 L 19 15 L 33 24 L 33 24 Z")
@@ -99,28 +150,6 @@ private fun PlayPauseStop(
             showTimeout = false,
             onClick = onPauseResumeClick
         )
-    }
-}
-
-class PlayPauseStopView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyle: Int = 0
-) : AbstractComposeView(context, attrs, defStyle) {
-
-    @Composable
-    override fun Content() {
-        val viewModel: GpxRecordServiceViewModel =
-            viewModel(findFragment<RecordFragment>().requireActivity())
-        val state by viewModel.status.collectAsState()
-
-        TrekMeTheme {
-            PlayPauseStop(
-                state,
-                viewModel::onStartStopClicked,
-                viewModel::onPauseResumeClicked
-            )
-        }
     }
 }
 

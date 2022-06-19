@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.service.GpxRecordService
-import com.peterlaurence.trekme.service.GpxRecordState
+import com.peterlaurence.trekme.ui.record.components.ActionsStateful
 import com.peterlaurence.trekme.ui.record.components.RecordListView
 import com.peterlaurence.trekme.ui.record.components.StatusStateful
 import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
@@ -34,13 +34,11 @@ import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImpo
 import com.peterlaurence.trekme.ui.record.components.dialogs.TrackFileNameEdit
 import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.collectWhileResumed
-import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
@@ -221,6 +219,19 @@ class RecordFragment : Fragment() {
                 /* Compose cards don't display well on xml layout, so we add a Box container */
                 Box(modifier = Modifier.padding(top = 8.dp, start = 4.dp, end = 8.dp, bottom = 8.dp)) {
                     StatusStateful(viewModel = gpxRecordServiceViewModel)
+                }
+            }
+        }
+
+        binding.actionsView.setContent {
+            TrekMeTheme {
+                /* Compose cards don't display well on xml layout, so we add a Box container */
+                Box(modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 4.dp, bottom = 8.dp)) {
+                    ActionsStateful(
+                        viewModel = gpxRecordServiceViewModel,
+                        onStartStopClick = gpxRecordServiceViewModel::onStartStopClicked,
+                        onPauseResumeClick = gpxRecordServiceViewModel::onPauseResumeClicked
+                    )
                 }
             }
         }
