@@ -24,11 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import kotlin.math.max
 
 /**
@@ -44,6 +40,7 @@ import kotlin.math.max
  * @param crossAxisAlignment The alignment of each row's children in the cross axis direction.
  * @param crossAxisSpacing The cross axis spacing between the rows of the layout.
  * @param lastLineMainAxisAlignment Overrides the main axis alignment of the last row.
+ * @param lastLineAligned Try to align last main axis row with the previous row.
  */
 @Composable
 public fun FlowRow(
@@ -54,6 +51,7 @@ public fun FlowRow(
     crossAxisAlignment: FlowCrossAxisAlignment = FlowCrossAxisAlignment.Start,
     crossAxisSpacing: Dp = 0.dp,
     lastLineMainAxisAlignment: FlowMainAxisAlignment = mainAxisAlignment,
+    lastLineAligned: Boolean = false,
     content: @Composable () -> Unit
 ) {
     Flow(
@@ -65,6 +63,7 @@ public fun FlowRow(
         crossAxisAlignment = crossAxisAlignment,
         crossAxisSpacing = crossAxisSpacing,
         lastLineMainAxisAlignment = lastLineMainAxisAlignment,
+        lastLineAligned = lastLineAligned,
         content = content
     )
 }
@@ -82,6 +81,7 @@ public fun FlowRow(
  * @param crossAxisAlignment The alignment of each column's children in the cross axis direction.
  * @param crossAxisSpacing The cross axis spacing between the columns of the layout.
  * @param lastLineMainAxisAlignment Overrides the main axis alignment of the last column.
+ * @param lastLineAligned Try to align last main axis row with the previous row.
  */
 @Composable
 public fun FlowColumn(
@@ -92,6 +92,7 @@ public fun FlowColumn(
     crossAxisAlignment: FlowCrossAxisAlignment = FlowCrossAxisAlignment.Start,
     crossAxisSpacing: Dp = 0.dp,
     lastLineMainAxisAlignment: FlowMainAxisAlignment = mainAxisAlignment,
+    lastLineAligned: Boolean = false,
     content: @Composable () -> Unit
 ) {
     Flow(
@@ -103,6 +104,7 @@ public fun FlowColumn(
         crossAxisAlignment = crossAxisAlignment,
         crossAxisSpacing = crossAxisSpacing,
         lastLineMainAxisAlignment = lastLineMainAxisAlignment,
+        lastLineAligned = lastLineAligned,
         content = content
     )
 }
@@ -115,10 +117,12 @@ public enum class FlowCrossAxisAlignment {
      * Place children such that their center is in the middle of the cross axis.
      */
     Center,
+
     /**
      * Place children such that their start edge is aligned to the start edge of the cross axis.
      */
     Start,
+
     /**
      * Place children such that their end edge is aligned to the end edge of the cross axis.
      */
@@ -140,10 +144,12 @@ private fun Flow(
     crossAxisAlignment: FlowCrossAxisAlignment,
     crossAxisSpacing: Dp,
     lastLineMainAxisAlignment: FlowMainAxisAlignment,
+    lastLineAligned: Boolean,
     content: @Composable () -> Unit
 ) {
     fun Placeable.mainAxisSize() =
         if (orientation == LayoutOrientation.Horizontal) width else height
+
     fun Placeable.crossAxisSize() =
         if (orientation == LayoutOrientation.Horizontal) height else width
 
@@ -228,6 +234,7 @@ private fun Flow(
         }
 
         layout(layoutWidth, layoutHeight) {
+            var previousMainAxisPositions: IntArray? = null
             sequences.forEachIndexed { i, placeables ->
                 val childrenMainAxisSizes = IntArray(placeables.size) { j ->
                     placeables[j].mainAxisSize() +
@@ -238,11 +245,34 @@ private fun Flow(
                 } else {
                     lastLineMainAxisAlignment.arrangement
                 }
-                // Handle vertical direction
+                // Handle main axis arrangement
                 val mainAxisPositions = IntArray(childrenMainAxisSizes.size) { 0 }
                 with(arrangement) {
                     arrange(mainAxisLayoutSize, childrenMainAxisSizes, mainAxisPositions)
                 }
+
+                if (lastLineAligned && i > 0 && i == sequences.lastIndex) {
+                    // Try to align last placeables sequence with the previous sequence when there
+                    // are fewer placeables on the last line
+                    val prevPositions = previousMainAxisPositions
+                    if (prevPositions != null && mainAxisPositions.size < prevPositions.size) {
+                        // Check that there's enough room for each placeable. If not, don't alter
+                        // the positions.
+                        if (mainAxisPositions.withIndex().all { (index, _) ->
+                                if (index > 0) {
+                                    prevPositions[index] >= prevPositions[index - 1] + childrenMainAxisSizes[index - 1]
+                                } else true
+                            }
+                        ) {
+                            mainAxisPositions.forEachIndexed { index, _ ->
+                                mainAxisPositions[index] = prevPositions[index]
+                            }
+                        }
+                    }
+                }
+
+                previousMainAxisPositions = mainAxisPositions
+
                 placeables.forEachIndexed { j, placeable ->
                     val crossAxis = when (crossAxisAlignment) {
                         FlowCrossAxisAlignment.Start -> 0
@@ -284,6 +314,7 @@ public enum class SizeMode {
      * subject to the incoming layout constraints.
      */
     Wrap,
+
     /**
      * Maximize the amount of free space by expanding to fill the available space,
      * subject to the incoming layout constraints.

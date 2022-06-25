@@ -362,4 +362,9 @@
     <string name="rate_the_app">Noter l\'application</string>
     <string name="user_feedback">Retours et suggestions</string>
     <string name="feedback_desc">Vous avez des idées d\'amélioration ou quelques soucis, n\'hésitez pas à m\'envoyer un mail.</string>
+    <string name="distance_desc">Distance</string>
+    <string name="elevation_up_stack_desc">Dénivelé cumulé croissant</string>
+    <string name="elevation_down_stack_desc">Dénivelé cumulé décroissant</string>
+    <string name="duration_desc">Temps total</string>
+    <string name="speed_desc">Vitesse moyenne</string>
 </resources>
