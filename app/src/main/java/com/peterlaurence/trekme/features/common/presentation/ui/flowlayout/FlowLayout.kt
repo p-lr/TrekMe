@@ -40,7 +40,7 @@ import kotlin.math.max
  * @param crossAxisAlignment The alignment of each row's children in the cross axis direction.
  * @param crossAxisSpacing The cross axis spacing between the rows of the layout.
  * @param lastLineMainAxisAlignment Overrides the main axis alignment of the last row.
- * @param lastLineAligned Try to align last main axis row with the previous row.
+ * @param tryAlign Try to align each main axis row with the previous row.
  */
 @Composable
 public fun FlowRow(
@@ -51,7 +51,7 @@ public fun FlowRow(
     crossAxisAlignment: FlowCrossAxisAlignment = FlowCrossAxisAlignment.Start,
     crossAxisSpacing: Dp = 0.dp,
     lastLineMainAxisAlignment: FlowMainAxisAlignment = mainAxisAlignment,
-    lastLineAligned: Boolean = false,
+    tryAlign: Boolean = false,
     content: @Composable () -> Unit
 ) {
     Flow(
@@ -63,7 +63,7 @@ public fun FlowRow(
         crossAxisAlignment = crossAxisAlignment,
         crossAxisSpacing = crossAxisSpacing,
         lastLineMainAxisAlignment = lastLineMainAxisAlignment,
-        lastLineAligned = lastLineAligned,
+        tryAlign = tryAlign,
         content = content
     )
 }
@@ -81,7 +81,7 @@ public fun FlowRow(
  * @param crossAxisAlignment The alignment of each column's children in the cross axis direction.
  * @param crossAxisSpacing The cross axis spacing between the columns of the layout.
  * @param lastLineMainAxisAlignment Overrides the main axis alignment of the last column.
- * @param lastLineAligned Try to align last main axis row with the previous row.
+ * @param tryAlign Try to align each main axis row with the previous row.
  */
 @Composable
 public fun FlowColumn(
@@ -92,7 +92,7 @@ public fun FlowColumn(
     crossAxisAlignment: FlowCrossAxisAlignment = FlowCrossAxisAlignment.Start,
     crossAxisSpacing: Dp = 0.dp,
     lastLineMainAxisAlignment: FlowMainAxisAlignment = mainAxisAlignment,
-    lastLineAligned: Boolean = false,
+    tryAlign: Boolean = false,
     content: @Composable () -> Unit
 ) {
     Flow(
@@ -104,7 +104,7 @@ public fun FlowColumn(
         crossAxisAlignment = crossAxisAlignment,
         crossAxisSpacing = crossAxisSpacing,
         lastLineMainAxisAlignment = lastLineMainAxisAlignment,
-        lastLineAligned = lastLineAligned,
+        tryAlign = tryAlign,
         content = content
     )
 }
@@ -144,7 +144,7 @@ private fun Flow(
     crossAxisAlignment: FlowCrossAxisAlignment,
     crossAxisSpacing: Dp,
     lastLineMainAxisAlignment: FlowMainAxisAlignment,
-    lastLineAligned: Boolean,
+    tryAlign: Boolean,
     content: @Composable () -> Unit
 ) {
     fun Placeable.mainAxisSize() =
@@ -251,16 +251,17 @@ private fun Flow(
                     arrange(mainAxisLayoutSize, childrenMainAxisSizes, mainAxisPositions)
                 }
 
-                if (lastLineAligned && i > 0 && i == sequences.lastIndex) {
+                if (tryAlign && i > 0) {
                     // Try to align last placeables sequence with the previous sequence when there
                     // are fewer placeables on the last line
                     val prevPositions = previousMainAxisPositions
-                    if (prevPositions != null && mainAxisPositions.size < prevPositions.size) {
+                    if (prevPositions != null && mainAxisPositions.size <= prevPositions.size) {
                         // Check that there's enough room for each placeable. If not, don't alter
                         // the positions.
                         if (mainAxisPositions.withIndex().all { (index, _) ->
                                 if (index > 0) {
                                     prevPositions[index] >= prevPositions[index - 1] + childrenMainAxisSizes[index - 1]
+                                            && prevPositions[index] + childrenMainAxisSizes[index] < mainAxisLayoutSize
                                 } else true
                             }
                         ) {

@@ -41,7 +41,7 @@ fun RecordItem(
                 mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
                 mainAxisSpacing = 20.dp,
                 crossAxisSpacing = 8.dp,
-                lastLineAligned = true
+                tryAlign = true
             ) {
                 DistanceItem(stats.distance)
                 ElevationUpStack(stats.elevationUpStack)
