@@ -120,6 +120,7 @@ private fun RecordingData.toModel(isSelected: Boolean, ): SelectableRecordingDat
     return SelectableRecordingData(name, stats, isSelected, id)
 }
 
+@Stable
 @Parcelize
 private data class SelectableRecordingData(
     val name: String, val stats: RecordStats?,
