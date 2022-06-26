@@ -1,10 +1,15 @@
 package com.peterlaurence.trekme.ui.record.components
 
+import android.os.Parcelable
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Checkbox
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -19,24 +24,56 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.defaultBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import kotlinx.parcelize.Parcelize
 
 @Composable
 fun RecordItem(
     name: String,
-    stats: RecordStats? = null
+    stats: RecordStats? = null,
+    isSelected: Boolean,
+    isMultiSelectionMode: Boolean,
+    index: Int,
+    onClick: () -> Unit = {}
 ) {
+    val selectedColor = remember {
+        Color(0xffc1d8ff)
+    }
+    val background = if (isSelected) {
+        selectedColor
+    } else {
+        if (index % 2 == 0) defaultBackground() else Color(-0x121213)
+    }
+
     Column(
         Modifier
+            .background(background)
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
     ) {
-        Text(text = name, color = textColor())
+        println("xxxxx recompose $name")
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (isMultiSelectionMode && isSelected) {
+                Image(
+                    painter = painterResource(id = R.drawable.check),
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(16.dp),
+                    colorFilter = ColorFilter.tint(colorResource(id = R.color.colorAccent)),
+                    contentDescription = null
+                )
+            }
+            Text(text = name, color = textColor())
+        }
 
         if (stats != null) {
             FlowRow(
                 modifier = Modifier
-                    .padding(start = 8.dp, top = 8.dp)
+                    .padding(start = 8.dp, end = 8.dp, top = 8.dp)
                     .fillMaxWidth(),
                 mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
                 mainAxisSpacing = 20.dp,
@@ -53,13 +90,14 @@ fun RecordItem(
     }
 }
 
+@Parcelize
 data class RecordStats(
     val distance: String,
     val elevationUpStack: String,
     val elevationDownStack: String,
     val duration: String,
     val speed: String
-)
+) : Parcelable
 
 @Composable
 private fun DistanceItem(distance: String) {
@@ -142,7 +180,10 @@ private fun RecordItemPreview() {
                 "-655 m",
                 "2h46",
                 "8.2 km/h"
-            )
+            ),
+            isSelected = false,
+            isMultiSelectionMode = false,
+            index = 0
         )
     }
 }

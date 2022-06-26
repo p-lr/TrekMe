@@ -26,6 +26,7 @@ import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.ui.record.components.ActionsStateful
+import com.peterlaurence.trekme.ui.record.components.GpxRecordListStateful
 import com.peterlaurence.trekme.ui.record.components.RecordListView
 import com.peterlaurence.trekme.ui.record.components.StatusStateful
 import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
@@ -118,6 +119,9 @@ class RecordFragment : Fragment() {
         }
 
         _binding = FragmentRecordBinding.inflate(inflater, container, false)
+
+        binding.recordListView.visibility = View.GONE
+//        binding.gpxRecordListView.visibility = View.GONE
 
         configureComposeViews()
         return binding.root
@@ -232,6 +236,14 @@ class RecordFragment : Fragment() {
                         onStartStopClick = gpxRecordServiceViewModel::onStartStopClicked,
                         onPauseResumeClick = gpxRecordServiceViewModel::onPauseResumeClicked
                     )
+                }
+            }
+        }
+
+        binding.gpxRecordListView.setContent {
+            TrekMeTheme {
+                Box(modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)) {
+                    GpxRecordListStateful(statViewModel)
                 }
             }
         }
