@@ -7,13 +7,13 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val onSurfaceDark = Color(0xff2b2b2b)
+private val surfaceDark = Color(0xff2b2b2b)
 
 private val DarkColorPalette = darkColors(
     primary = Color(0xffb38b80),
     primaryVariant = Brown700,
     secondary = accentOnDark,
-    surface = onSurfaceDark,
+    surface = surfaceDark,
 )
 
 private val LightColorPalette = lightColors(
@@ -58,7 +58,7 @@ fun accentColor(): Color {
 
 @Composable
 fun defaultBackground(): Color {
-    return if (isSystemInDarkTheme()) onSurfaceDark else Color.White
+    return if (isSystemInDarkTheme()) surfaceDark else Color.White
 }
 
 @Composable

@@ -5,6 +5,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +43,9 @@ fun RecordItem(
     val background = if (isSelected) {
         selectedColor
     } else {
-        if (index % 2 == 0) defaultBackground() else Color(-0x121213)
+        if (index % 2 == 0) defaultBackground() else {
+            if (isSystemInDarkTheme()) Color(0xff3c3c3c) else Color(0x10000000)
+        }
     }
 
     Column(
@@ -163,7 +166,7 @@ private fun StatItem(
             }
         )
         Spacer(modifier = Modifier.width(4.dp))
-        Text(text, modifier = Modifier.alpha(0.6f), color = textColor())
+        Text(text, modifier = Modifier.alpha(0.7f), color = textColor())
     }
 }
 
