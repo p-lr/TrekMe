@@ -367,4 +367,5 @@
     <string name="elevation_down_stack_desc">Dénivelé cumulé décroissant</string>
     <string name="duration_desc">Temps total</string>
     <string name="speed_desc">Vitesse moyenne</string>
+    <string name="multi_selection_desc">Mode sélection multiple</string>
 </resources>

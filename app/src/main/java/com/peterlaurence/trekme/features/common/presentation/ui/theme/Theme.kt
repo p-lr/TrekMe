@@ -61,6 +61,12 @@ fun defaultBackground(): Color {
     return if (isSystemInDarkTheme()) surfaceDark else Color.White
 }
 
+/* Appropriate on white background when not in dark mode */
+@Composable
+fun textButtonColor(): Color {
+    return if (isSystemInDarkTheme()) Color(0xffa9b7c6) else Color(0xff767676)
+}
+
 @Composable
 fun lazyListBackground(): Color {
     return if (isSystemInDarkTheme()) {
