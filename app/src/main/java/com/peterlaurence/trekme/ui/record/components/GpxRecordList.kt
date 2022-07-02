@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.defaultBackground
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textButtonColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.viewmodel.record.RecordingData
@@ -201,7 +201,7 @@ private fun RecordingActionBar(
                 }
             }
         },
-        backgroundColor = defaultBackground()
+        backgroundColor = surfaceBackground()
     )
 }
 

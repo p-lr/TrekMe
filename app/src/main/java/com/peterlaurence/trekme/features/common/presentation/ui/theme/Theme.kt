@@ -57,7 +57,7 @@ fun accentColor(): Color {
 }
 
 @Composable
-fun defaultBackground(): Color {
+fun surfaceBackground(): Color {
     return if (isSystemInDarkTheme()) surfaceDark else Color.White
 }
 
@@ -68,9 +68,9 @@ fun textButtonColor(): Color {
 }
 
 @Composable
-fun lazyListBackground(): Color {
+fun backgroundColor(): Color {
     return if (isSystemInDarkTheme()) {
-        Color(0xff121212)
+        Color(0xff202020)
     } else {
         /* By default, in light mode, the background isn't taking the color
          * from the theme (e.g, it isn't white). */

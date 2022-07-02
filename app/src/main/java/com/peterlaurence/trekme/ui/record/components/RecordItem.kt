@@ -9,7 +9,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -24,7 +23,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.defaultBackground
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import kotlinx.parcelize.Parcelize
 
@@ -40,7 +39,7 @@ fun RecordItem(
     val background = if (isSelected) {
         if (isSystemInDarkTheme()) Color(0xff3b5072) else Color(0xffc1d8ff)
     } else {
-        if (index % 2 == 1) defaultBackground() else {
+        if (index % 2 == 1) surfaceBackground() else {
             if (isSystemInDarkTheme()) Color(0xff3c3c3c) else Color(0x10000000)
         }
     }

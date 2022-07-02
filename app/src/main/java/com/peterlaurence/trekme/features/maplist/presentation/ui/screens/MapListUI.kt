@@ -46,7 +46,7 @@ fun MapListUI(state: MapListState, intents: MapListIntents) {
         is MapList -> {
             if (state.mapList.isNotEmpty()) {
                 LazyColumn(
-                    Modifier.background(lazyListBackground()),
+                    Modifier.background(backgroundColor()),
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
