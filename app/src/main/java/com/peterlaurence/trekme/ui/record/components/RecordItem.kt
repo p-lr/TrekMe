@@ -37,11 +37,8 @@ fun RecordItem(
     index: Int,
     onClick: () -> Unit = {}
 ) {
-    val selectedColor = remember {
-        Color(0xffc1d8ff)
-    }
     val background = if (isSelected) {
-        selectedColor
+        if (isSystemInDarkTheme()) Color(0xff3b5072) else Color(0xffc1d8ff)
     } else {
         if (index % 2 == 1) defaultBackground() else {
             if (isSystemInDarkTheme()) Color(0xff3c3c3c) else Color(0x10000000)
@@ -52,10 +49,9 @@ fun RecordItem(
         Modifier
             .background(background)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(vertical = 8.dp)
             .fillMaxWidth()
     ) {
-        println("xxxxx recompose $name")
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -63,11 +59,13 @@ fun RecordItem(
                 Image(
                     painter = painterResource(id = R.drawable.check),
                     modifier = Modifier
-                        .padding(end = 4.dp)
-                        .size(16.dp),
+                        .padding(horizontal = 4.dp)
+                        .size(14.dp),
                     colorFilter = ColorFilter.tint(colorResource(id = R.color.colorAccent)),
                     contentDescription = null
                 )
+            } else {
+                Spacer(modifier = Modifier.width(16.dp))
             }
             Text(text = name, color = textColor())
         }
@@ -75,7 +73,7 @@ fun RecordItem(
         if (stats != null) {
             FlowRow(
                 modifier = Modifier
-                    .padding(start = 8.dp, end = 8.dp, top = 8.dp)
+                    .padding(start = 24.dp, end = 24.dp, top = 8.dp)
                     .fillMaxWidth(),
                 mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween,
                 mainAxisSpacing = 20.dp,

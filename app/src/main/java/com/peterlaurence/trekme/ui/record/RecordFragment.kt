@@ -178,10 +178,6 @@ class RecordFragment : Fragment() {
                 statViewModel.onRequestDeleteRecordings(dataList)
             }
 
-            override fun onSelectionChanged(dataList: List<RecordingData>) {
-                viewModel.setSelectedRecordings(dataList)
-            }
-
             override fun onImportFiles() {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                 intent.addCategory(Intent.CATEGORY_OPENABLE)
@@ -243,7 +239,52 @@ class RecordFragment : Fragment() {
         binding.gpxRecordListView.setContent {
             TrekMeTheme {
                 Box(modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)) {
-                    GpxRecordListStateful(statViewModel)
+                    GpxRecordListStateful(
+                        statViewModel,
+                        onImportMenuClick = {
+                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                            intent.addCategory(Intent.CATEGORY_OPENABLE)
+                            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+
+                            /* Search for all documents available via installed storage providers */
+                            intent.type = "*/*"
+                            importRecordingsLauncher.launch(intent)
+                        },
+                        onRenameRecord = { data ->
+                            val fragmentActivity = activity
+                            if (fragmentActivity != null) {
+                                val editFieldDialog = TrackFileNameEdit.newInstance(getString(R.string.track_file_name_change), data.name)
+                                editFieldDialog.show(fragmentActivity.supportFragmentManager, "EditFieldDialog" + data.name)
+                            }
+                        },
+                        onChooseMapForRecord = { data ->
+                            val fragmentActivity = activity
+                            if (fragmentActivity != null) {
+                                val dialog = MapSelectionForImport.newInstance(data.gpxFile.path)
+                                dialog.show(fragmentActivity.supportFragmentManager, "MapSelectionForImport")
+                            }
+                        },
+                        onShareRecords = { dataList ->
+                            val activity = activity ?: return@GpxRecordListStateful
+                            val intentBuilder = ShareCompat.IntentBuilder(activity)
+                                .setType("text/plain")
+                            dataList.forEach {
+                                try {
+                                    val uri = statViewModel.getRecordingUri(it)
+                                    if (uri != null) {
+                                        intentBuilder.addStream(uri)
+                                    }
+                                } catch (e: IllegalArgumentException) {
+                                    e.printStackTrace()
+                                }
+                            }
+                            intentBuilder.startChooser()
+                        },
+                        onElevationGraphClick = { data ->
+                            statViewModel.onRequestShowElevation(data)
+                            findNavController().navigate(R.id.action_recordFragment_to_elevationFragment)
+                        }
+                    )
                 }
             }
         }

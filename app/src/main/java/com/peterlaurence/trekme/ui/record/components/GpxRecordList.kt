@@ -31,8 +31,16 @@ import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import kotlinx.parcelize.Parcelize
 
 @Composable
-fun GpxRecordListStateful(statViewModel: RecordingStatisticsViewModel) {
+fun GpxRecordListStateful(
+    statViewModel: RecordingStatisticsViewModel,
+    onImportMenuClick: () -> Unit,
+    onRenameRecord: (RecordingData) -> Unit,
+    onChooseMapForRecord: (RecordingData) -> Unit,
+    onShareRecords: (List<RecordingData>) -> Unit,
+    onElevationGraphClick: (RecordingData) -> Unit
+) {
     val data by statViewModel.getRecordingData().observeAsState(listOf())
+    val dataById = data.associateBy { it.gpxFile.path }
 
     var isMultiSelectionMode by rememberSaveable {
         mutableStateOf(false)
@@ -63,6 +71,7 @@ fun GpxRecordListStateful(statViewModel: RecordingStatisticsViewModel) {
                     }.toMutableMap()
                 }
             }
+            Action.OnImportMenuCLick -> onImportMenuClick()
             is Action.OnRecordClick -> {
                 val selectable = action.selectable
                 val copy = dataToModel.toMutableMap()
@@ -80,6 +89,23 @@ fun GpxRecordListStateful(statViewModel: RecordingStatisticsViewModel) {
 
                 dataToModel = copy
             }
+            Action.OnEditClick -> {
+                val selected = getSelected(dataById, model) ?: return@GpxRecordList
+                onRenameRecord(selected)
+            }
+            Action.OnChooseMapClick -> {
+                val selected = getSelected(dataById, model) ?: return@GpxRecordList
+                onChooseMapForRecord(selected)
+            }
+            Action.OnShareClick -> {
+                val selectedIds = model.filter { it.isSelected }
+                val selectedList = selectedIds.mapNotNull { dataById[it.id] }
+                onShareRecords(selectedList)
+            }
+            Action.OnElevationGraphClick -> {
+                val selected = getSelected(dataById, model) ?: return@GpxRecordList
+                onElevationGraphClick(selected)
+            }
         }
     }
 }
@@ -92,9 +118,9 @@ private fun GpxRecordList(
     isMultiSelectionMode: Boolean,
     actioner: Actioner,
 ) {
-    val isSelectionNonEmpty by remember(data) {
+    val selectionCount by remember(data) {
         derivedStateOf {
-            data.any { it.isSelected }
+            data.count { it.isSelected }
         }
     }
 
@@ -118,7 +144,7 @@ private fun GpxRecordList(
                 }
             }
 
-            BottomBarButtons(isSelectionNonEmpty, actioner)
+            BottomBarButtons(selectionCount, actioner)
         }
     }
 }
@@ -166,7 +192,9 @@ private fun RecordingActionBar(
                     onDismissRequest = { expanded = false },
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
-                    DropdownMenuItem(onClick = { /* TODO */ }) {
+                    DropdownMenuItem(
+                        onClick = { actioner(Action.OnImportMenuCLick) }
+                    ) {
                         Text(stringResource(id = R.string.recordings_menu_import))
                         Spacer(Modifier.weight(1f))
                     }
@@ -178,20 +206,19 @@ private fun RecordingActionBar(
 }
 
 @Composable
-private fun BottomBarButtons(isSelectionNonEmpty: Boolean, actioner: Actioner) {
-    // TODO: move this in its own composable
+private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
     Row(
         Modifier.padding(horizontal = 8.dp, vertical = 0.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
-            onClick = { /*TODO*/ },
-            enabled = isSelectionNonEmpty
+            onClick = { actioner(Action.OnEditClick) },
+            enabled = selectionCount == 1
         ) {
             Image(
                 painterResource(id = R.drawable.ic_edit_black_30dp),
                 colorFilter = ColorFilter.tint(
-                    if (isSelectionNonEmpty) accentColor() else textButtonColor()
+                    if (selectionCount == 1) accentColor() else textButtonColor()
                 ),
                 contentDescription = stringResource(
                     id = R.string.recording_edit_name_desc
@@ -199,13 +226,13 @@ private fun BottomBarButtons(isSelectionNonEmpty: Boolean, actioner: Actioner) {
             )
         }
         IconButton(
-            onClick = { /*TODO*/ },
-            enabled = isSelectionNonEmpty
+            onClick = { actioner(Action.OnChooseMapClick) },
+            enabled = selectionCount == 1
         ) {
             Image(
                 painterResource(id = R.drawable.import_30dp),
                 colorFilter = ColorFilter.tint(
-                    if (isSelectionNonEmpty) accentColor() else textButtonColor()
+                    if (selectionCount == 1) accentColor() else textButtonColor()
                 ),
                 contentDescription = stringResource(
                     id = R.string.recording_import_desc
@@ -213,13 +240,13 @@ private fun BottomBarButtons(isSelectionNonEmpty: Boolean, actioner: Actioner) {
             )
         }
         IconButton(
-            onClick = { /*TODO*/ },
-            enabled = isSelectionNonEmpty
+            onClick = { actioner(Action.OnShareClick) },
+            enabled = selectionCount > 0
         ) {
             Image(
                 painterResource(id = R.drawable.ic_share_black_24dp),
                 colorFilter = ColorFilter.tint(
-                    if (isSelectionNonEmpty) accentColor() else textButtonColor()
+                    if (selectionCount > 0) accentColor() else textButtonColor()
                 ),
                 contentDescription = stringResource(
                     id = R.string.recording_share_desc
@@ -227,13 +254,13 @@ private fun BottomBarButtons(isSelectionNonEmpty: Boolean, actioner: Actioner) {
             )
         }
         IconButton(
-            onClick = { /*TODO*/ },
-            enabled = isSelectionNonEmpty
+            onClick = { actioner(Action.OnElevationGraphClick) },
+            enabled = selectionCount == 1
         ) {
             Image(
                 painterResource(id = R.drawable.elevation_graph),
                 colorFilter = ColorFilter.tint(
-                    if (isSelectionNonEmpty) accentColor() else textButtonColor()
+                    if (selectionCount == 1) accentColor() else textButtonColor()
                 ),
                 contentDescription = stringResource(
                     id = R.string.recording_show_elevations_desc
@@ -243,12 +270,12 @@ private fun BottomBarButtons(isSelectionNonEmpty: Boolean, actioner: Actioner) {
         Spacer(modifier = Modifier.weight(1f))
         IconButton(
             onClick = { /*TODO*/ },
-            enabled = isSelectionNonEmpty
+            enabled = selectionCount > 0
         ) {
             Image(
                 painterResource(id = R.drawable.ic_delete_forever_black_30dp),
                 colorFilter = ColorFilter.tint(
-                    if (isSelectionNonEmpty) colorResource(id = R.color.colorAccentRed) else textButtonColor()
+                    if (selectionCount > 0) colorResource(id = R.color.colorAccentRed) else textButtonColor()
                 ),
                 contentDescription = stringResource(
                     id = R.string.recording_delete_desc
@@ -277,11 +304,21 @@ private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingData 
     return SelectableRecordingData(name, stats, isSelected, id)
 }
 
+private fun getSelected(dataById: Map<String, RecordingData>, model: List<SelectableRecordingData>): RecordingData? {
+    val selectedId = model.firstOrNull { it.isSelected }?.id ?: return null
+    return dataById[selectedId]
+}
+
 private typealias Actioner = (Action) -> Unit
 
 private sealed interface Action {
     object OnMultiSelectionClick : Action
+    object OnImportMenuCLick : Action
     data class OnRecordClick(val selectable: SelectableRecordingData) : Action
+    object OnEditClick : Action
+    object OnChooseMapClick : Action
+    object OnShareClick : Action
+    object OnElevationGraphClick : Action
 }
 
 @Stable

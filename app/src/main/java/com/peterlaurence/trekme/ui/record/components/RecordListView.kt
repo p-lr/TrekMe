@@ -183,14 +183,12 @@ class RecordListView @JvmOverloads constructor(
         } else {
             selectedRecordings.add(recording)
         }
-        listener?.onSelectionChanged(selectedRecordings)
     }
 
     private fun singleSelect(position: Int) {
         val recording = recordingDataList.getOrNull(position) ?: return
         selectedRecordings.clear()
         selectedRecordings.add(recording)
-        listener?.onSelectionChanged(selectedRecordings)
     }
 
     fun onRecordingDeletionFail() {
@@ -206,7 +204,6 @@ class RecordListView @JvmOverloads constructor(
         fun onRequestEditRecording(data: RecordingData)
         fun onRequestShowElevationGraph(data: RecordingData)
         fun onRequestDeleteRecordings(dataList: List<RecordingData>)
-        fun onSelectionChanged(dataList: List<RecordingData>)
         fun onImportFiles()
     }
 }

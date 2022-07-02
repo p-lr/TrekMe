@@ -46,8 +46,6 @@ class RecordViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val mapRepository: MapRepository,
 ) : ViewModel() {
-    private var recordingsSelected = listOf<RecordingData>()
-
     init {
         viewModelScope.launch {
             gpxRecordEvents.gpxFileWriteEvent.collect {
@@ -56,8 +54,8 @@ class RecordViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            eventBus.mapSelectedEvent.collect {
-                onMapSelectedForRecord(it)
+            eventBus.mapSelectedEvent.collect { (mapId, recordPath) ->
+                onMapSelectedForRecord(mapId, recordPath)
             }
         }
 
@@ -122,19 +120,12 @@ class RecordViewModel @Inject constructor(
         }
     }
 
-    fun setSelectedRecordings(recordings: List<RecordingData>) {
-        recordingsSelected = recordings
-    }
-
-    /**
-     * The business logic of parsing a GPX file.
-     */
-    private fun onMapSelectedForRecord(mapId: Int) {
+    private fun onMapSelectedForRecord(mapId: Int, recordPath: String) {
         val map = mapRepository.getMap(mapId) ?: return
 
-        val recordingData = recordingsSelected.firstOrNull() ?: return
-        val recording = gpxRepository.recordings?.firstOrNull { it == recordingData.gpxFile }
-                ?: return
+        val recording = gpxRepository.recordings?.firstOrNull {
+            it.path == recordPath
+        } ?: return
 
         viewModelScope.launch {
             trackImporter.applyGpxFileToMap(recording, map).let {
