@@ -358,7 +358,7 @@ Si vous avez Android 10 ou plus, vous devez vous assurer que TrekMe a l'autorisa
 en mode "Toujours autoriser", et pas seulement si l'application est en cours d'utilisation. Sinon,
 l'enregistrement n'enregistrera parfois pas de points et des lignes droites apparaîtront.
 
-Un indicateur dans le panneau "Service de localisation" affiche le statut du service.
+Un indicateur dans le panneau "Statut du service" affiche le statut du service.
 
 Un dernier panneau affiche la liste des enregistrements effectués.
 En sélectionnant un enregistrement, quatre boutons en bas à gauche vous permettent respectivement de :

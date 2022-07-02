@@ -70,7 +70,7 @@ private fun Status(modifier: Modifier = Modifier, isBeating: Boolean, subTitle: 
 @Composable
 private fun StatusPreview() {
     TrekMeTheme {
-        Status(Modifier.size(180.dp, 150.dp), isBeating = true, subTitle = "Started")
+        Status(Modifier.size(180.dp, 130.dp), isBeating = true, subTitle = "Started")
     }
 }
 

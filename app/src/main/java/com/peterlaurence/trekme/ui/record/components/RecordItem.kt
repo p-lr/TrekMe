@@ -43,7 +43,7 @@ fun RecordItem(
     val background = if (isSelected) {
         selectedColor
     } else {
-        if (index % 2 == 0) defaultBackground() else {
+        if (index % 2 == 1) defaultBackground() else {
             if (isSystemInDarkTheme()) Color(0xff3c3c3c) else Color(0x10000000)
         }
     }

@@ -18,7 +18,7 @@
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/actionsView"
         android:layout_width="0dp"
-        android:layout_height="166dp"
+        android:layout_height="145dp"
         android:layout_marginEnd="0dp"
         android:layout_marginStart="0dp"
         android:layout_marginTop="0dp"
@@ -29,7 +29,7 @@
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/statusView"
         android:layout_width="0dp"
-        android:layout_height="166dp"
+        android:layout_height="145dp"
         android:layout_marginEnd="0dp"
         android:layout_marginStart="0dp"
         android:layout_marginTop="0dp"
