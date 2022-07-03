@@ -20,21 +20,24 @@ import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 
 @Composable
-fun StatusStateful(viewModel: GpxRecordServiceViewModel) {
+fun StatusStateful(modifier: Modifier = Modifier, viewModel: GpxRecordServiceViewModel) {
     val gpxRecordState by viewModel.status.collectAsState()
 
     when (gpxRecordState) {
         GpxRecordState.STOPPED -> Status(
+            modifier = modifier,
             isBeating = false,
             subTitle = stringResource(id = R.string.recording_status_stopped)
         )
 
         GpxRecordState.STARTED, GpxRecordState.RESUMED -> Status(
+            modifier = modifier,
             isBeating = true,
             subTitle = stringResource(id = R.string.recording_status_started)
         )
 
         GpxRecordState.PAUSED -> Status(
+            modifier = modifier,
             isBeating = false,
             subTitle = stringResource(id = R.string.recording_status_paused)
         )

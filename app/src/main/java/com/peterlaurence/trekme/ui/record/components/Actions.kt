@@ -27,6 +27,7 @@ import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 
 @Composable
 fun ActionsStateful(
+    modifier: Modifier = Modifier,
     viewModel: GpxRecordServiceViewModel,
     onStartStopClick: () -> Unit,
     onPauseResumeClick: () -> Unit
@@ -34,6 +35,7 @@ fun ActionsStateful(
     val gpxRecordState by viewModel.status.collectAsState()
 
     Actions(
+        modifier = modifier,
         gpxRecordState = gpxRecordState,
         onStartStopClick = onStartStopClick,
         onPauseResumeClick = onPauseResumeClick

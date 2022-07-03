@@ -9,14 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LiveData
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
@@ -24,6 +23,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.ui.record.components.ActionsStateful
 import com.peterlaurence.trekme.ui.record.components.GpxRecordListStateful
@@ -36,7 +36,6 @@ import com.peterlaurence.trekme.ui.record.events.RecordEventBus
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
-import com.peterlaurence.trekme.viewmodel.record.RecordingData
 import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -55,7 +54,6 @@ class RecordFragment : Fragment() {
     val viewModel: RecordViewModel by activityViewModels()
     val statViewModel: RecordingStatisticsViewModel by activityViewModels()
     private val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
-    private var recordingData: LiveData<List<RecordingData>>? = null
 
     @Inject
     lateinit var eventBus: RecordEventBus
@@ -136,32 +134,34 @@ class RecordFragment : Fragment() {
     }
 
     private fun configureComposeViews() {
-        binding.statusView.setContent {
+        binding.recordMainComposeView.setContent {
             TrekMeTheme {
-                /* Compose cards don't display well on xml layout, so we add a Box container */
-                Box(modifier = Modifier.padding(top = 8.dp, start = 4.dp, end = 8.dp, bottom = 8.dp)) {
-                    StatusStateful(viewModel = gpxRecordServiceViewModel)
-                }
-            }
-        }
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .background(backgroundColor())) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(145.dp)) {
+                        ActionsStateful(
+                            Modifier
+                                .weight(1f)
+                                .padding(top = 8.dp, start = 8.dp, end = 4.dp, bottom = 4.dp),
+                            viewModel = gpxRecordServiceViewModel,
+                            onStartStopClick = gpxRecordServiceViewModel::onStartStopClicked,
+                            onPauseResumeClick = gpxRecordServiceViewModel::onPauseResumeClicked
+                        )
+                        StatusStateful(
+                            Modifier
+                                .weight(1f)
+                                .padding(top = 8.dp, start = 4.dp, end = 8.dp, bottom = 4.dp),
+                            viewModel = gpxRecordServiceViewModel
+                        )
+                    }
 
-        binding.actionsView.setContent {
-            TrekMeTheme {
-                /* Compose cards don't display well on xml layout, so we add a Box container */
-                Box(modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 4.dp, bottom = 8.dp)) {
-                    ActionsStateful(
-                        viewModel = gpxRecordServiceViewModel,
-                        onStartStopClick = gpxRecordServiceViewModel::onStartStopClicked,
-                        onPauseResumeClick = gpxRecordServiceViewModel::onPauseResumeClicked
-                    )
-                }
-            }
-        }
-
-        binding.gpxRecordListView.setContent {
-            TrekMeTheme {
-                Box(modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)) {
                     GpxRecordListStateful(
+                        Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
                         statViewModel,
                         onImportMenuClick = {
                             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -175,15 +175,24 @@ class RecordFragment : Fragment() {
                         onRenameRecord = { data ->
                             val fragmentActivity = activity
                             if (fragmentActivity != null) {
-                                val editFieldDialog = TrackFileNameEdit.newInstance(getString(R.string.track_file_name_change), data.name)
-                                editFieldDialog.show(fragmentActivity.supportFragmentManager, "EditFieldDialog" + data.name)
+                                val editFieldDialog = TrackFileNameEdit.newInstance(
+                                    getString(R.string.track_file_name_change),
+                                    data.name
+                                )
+                                editFieldDialog.show(
+                                    fragmentActivity.supportFragmentManager,
+                                    "EditFieldDialog" + data.name
+                                )
                             }
                         },
                         onChooseMapForRecord = { data ->
                             val fragmentActivity = activity
                             if (fragmentActivity != null) {
                                 val dialog = MapSelectionForImport.newInstance(data.gpxFile.path)
-                                dialog.show(fragmentActivity.supportFragmentManager, "MapSelectionForImport")
+                                dialog.show(
+                                    fragmentActivity.supportFragmentManager,
+                                    "MapSelectionForImport"
+                                )
                             }
                         },
                         onShareRecords = { dataList ->

@@ -35,6 +35,7 @@ import kotlinx.parcelize.Parcelize
 
 @Composable
 fun GpxRecordListStateful(
+    modifier: Modifier = Modifier,
     statViewModel: RecordingStatisticsViewModel,
     onImportMenuClick: () -> Unit,
     onRenameRecord: (RecordingData) -> Unit,
@@ -63,6 +64,7 @@ fun GpxRecordListStateful(
     }
 
     GpxRecordList(
+        modifier = modifier,
         data = model,
         isMultiSelectionMode = isMultiSelectionMode
     ) { action ->
