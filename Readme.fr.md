@@ -348,7 +348,7 @@ Depuis le menu principal allez à "Enregistrement GPX". Vous arrivez à une inte
  celle-ci :
 
 <p align="center">
-<img src="doc/images/gpx-recordings-fr.jpg" width="300">
+<img src="doc/images/gpx-recording-fr.jpg" width="300">
 </p>
 
 Un enregistrement peut être démarré, arrêté ou mis en pause depuis le panneau "Commandes".
@@ -370,8 +370,8 @@ En sélectionnant un enregistrement, quatre boutons en bas à gauche vous permet
 
 **Mode de sélection multiple**
 
-Appuyez deux secondes sur un enregistrement. 
-Pour revenir au mode de sélection normal, appuyez à nouveau deux secondes sur un enregistrement.
+Appuyez sur le bouton en haut à droite de la liste, à côté du menu.
+Pour revenir au mode de sélection normal, appuyez sur le même bouton.
 
 **Partage d'un ou plusieurs enregistrements**
 

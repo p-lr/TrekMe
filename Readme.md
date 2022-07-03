@@ -322,7 +322,7 @@ with other people.
 From the "GPX Record" option menu, you get the following interface:
 
 <p align="center">
-<img src="doc/images/gpx-recordings-en.jpg" width="300">
+<img src="doc/images/gpx-recording-en.jpg" width="300">
 </p>
 
 The recording can be started, stopped, or paused from the control panel. When recording, the location service
@@ -344,8 +344,8 @@ From there, when selecting a track, four buttons at the bottom-left enable you t
 
 **Multiple-selection mode**
 
-To switch to multiple-selection mode, long-press a recording.
-To revert back to single selection mode, long press again somewhere in the list.
+To switch to multiple-selection mode, use button in the top bar, next to the drop-down menu.
+To revert back to single selection mode, use the same button.
 
 **Share recordings**
 
