@@ -283,6 +283,9 @@ class RecordFragment : Fragment() {
                         onElevationGraphClick = { data ->
                             statViewModel.onRequestShowElevation(data)
                             findNavController().navigate(R.id.action_recordFragment_to_elevationFragment)
+                        },
+                        onDeleteClick = { dataList ->
+                            statViewModel.onRequestDeleteRecordings(dataList)
                         }
                     )
                 }

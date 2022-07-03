@@ -29,6 +29,7 @@ import kotlinx.parcelize.Parcelize
 
 @Composable
 fun RecordItem(
+    modifier: Modifier = Modifier,
     name: String,
     stats: RecordStats? = null,
     isSelected: Boolean,
@@ -45,7 +46,7 @@ fun RecordItem(
     }
 
     Column(
-        Modifier
+        modifier
             .background(background)
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp)

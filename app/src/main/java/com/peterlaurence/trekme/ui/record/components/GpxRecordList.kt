@@ -1,10 +1,12 @@
 package com.peterlaurence.trekme.ui.record.components
 
 import android.os.Parcelable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
+import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textButtonColor
@@ -37,7 +40,8 @@ fun GpxRecordListStateful(
     onRenameRecord: (RecordingData) -> Unit,
     onChooseMapForRecord: (RecordingData) -> Unit,
     onShareRecords: (List<RecordingData>) -> Unit,
-    onElevationGraphClick: (RecordingData) -> Unit
+    onElevationGraphClick: (RecordingData) -> Unit,
+    onDeleteClick: (List<RecordingData>) -> Unit
 ) {
     val data by statViewModel.getRecordingData().observeAsState(listOf())
     val dataById = data.associateBy { it.gpxFile.path }
@@ -98,19 +102,23 @@ fun GpxRecordListStateful(
                 onChooseMapForRecord(selected)
             }
             Action.OnShareClick -> {
-                val selectedIds = model.filter { it.isSelected }
-                val selectedList = selectedIds.mapNotNull { dataById[it.id] }
+                val selectedList = getSelectedList(dataById, model)
                 onShareRecords(selectedList)
             }
             Action.OnElevationGraphClick -> {
                 val selected = getSelected(dataById, model) ?: return@GpxRecordList
                 onElevationGraphClick(selected)
             }
+            Action.OnRemoveClick -> {
+                val selectedList = getSelectedList(dataById, model)
+                onDeleteClick(selectedList)
+            }
         }
     }
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun GpxRecordList(
     modifier: Modifier = Modifier,
@@ -124,16 +132,23 @@ private fun GpxRecordList(
         }
     }
 
+    val state = rememberLazyListState()
+
     Card(modifier) {
         Column {
             RecordingActionBar(isMultiSelectionMode, actioner)
-            println("xxxxx recomposing list")
-            LazyColumn(Modifier.weight(1f)) {
+            LazyColumn(
+                Modifier
+                    .drawVerticalScrollbar(state)
+                    .weight(1f),
+                state = state
+            ) {
                 itemsIndexed(
                     items = data,
                     key = { _, it -> it.id }
                 ) { index, record ->
                     RecordItem(
+                        Modifier.animateItemPlacement(),
                         name = record.name,
                         stats = record.stats,
                         isSelected = record.isSelected,
@@ -269,7 +284,7 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
         }
         Spacer(modifier = Modifier.weight(1f))
         IconButton(
-            onClick = { /*TODO*/ },
+            onClick = { actioner(Action.OnRemoveClick) },
             enabled = selectionCount > 0
         ) {
             Image(
@@ -309,6 +324,11 @@ private fun getSelected(dataById: Map<String, RecordingData>, model: List<Select
     return dataById[selectedId]
 }
 
+private fun getSelectedList(dataById: Map<String, RecordingData>, model: List<SelectableRecordingData>): List<RecordingData> {
+    val selectedIds = model.filter { it.isSelected }
+    return selectedIds.mapNotNull { dataById[it.id] }
+}
+
 private typealias Actioner = (Action) -> Unit
 
 private sealed interface Action {
@@ -319,6 +339,7 @@ private sealed interface Action {
     object OnChooseMapClick : Action
     object OnShareClick : Action
     object OnElevationGraphClick : Action
+    object OnRemoveClick : Action
 }
 
 @Stable
