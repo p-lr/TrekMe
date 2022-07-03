@@ -27,7 +27,6 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.ui.record.components.ActionsStateful
 import com.peterlaurence.trekme.ui.record.components.GpxRecordListStateful
-import com.peterlaurence.trekme.ui.record.components.RecordListView
 import com.peterlaurence.trekme.ui.record.components.StatusStateful
 import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
 import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
@@ -87,7 +86,10 @@ class RecordFragment : Fragment() {
         viewModel
 
         eventBus.recordingDeletionFailedSignal.collectWhileResumed(this) {
-            binding.recordListView.onRecordingDeletionFail()
+            /* Alert the user that some files could not be deleted */
+            val snackbar = Snackbar.make(requireView(), R.string.files_could_not_be_deleted,
+                Snackbar.LENGTH_SHORT)
+            snackbar.show()
         }
 
         eventBus.showLocationDisclaimerSignal.collectWhileResumed(this) {
@@ -101,13 +103,6 @@ class RecordFragment : Fragment() {
         eventBus.disableBatteryOptSignal.collectWhileResumed(this) {
             BatteryOptWarningDialog().show(parentFragmentManager, null)
         }
-
-        recordingData = statViewModel.getRecordingData()
-        recordingData?.observe(this) {
-            it?.let { data ->
-                updateRecordingData(data)
-            }
-        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -120,9 +115,6 @@ class RecordFragment : Fragment() {
 
         _binding = FragmentRecordBinding.inflate(inflater, container, false)
 
-        binding.recordListView.visibility = View.GONE
-//        binding.gpxRecordListView.visibility = View.GONE
-
         configureComposeViews()
         return binding.root
     }
@@ -130,72 +122,6 @@ class RecordFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.recordListView.setListener(object : RecordListView.RecordListViewListener {
-            override fun onRequestShareRecording(dataList: List<RecordingData>) {
-                val activity = activity ?: return
-                val intentBuilder = ShareCompat.IntentBuilder(activity)
-                        .setType("text/plain")
-                dataList.forEach {
-                    try {
-                        val uri = statViewModel.getRecordingUri(it)
-                        if (uri != null) {
-                            intentBuilder.addStream(uri)
-                        }
-                    } catch (e: IllegalArgumentException) {
-                        e.printStackTrace()
-                    }
-                }
-                intentBuilder.startChooser()
-            }
-
-            override fun onRequestChooseMap() {
-                val fragmentActivity = activity
-                if (fragmentActivity != null) {
-                    val dialog = MapSelectionForImport()
-                    dialog.show(fragmentActivity.supportFragmentManager, "MapSelectionForImport")
-                }
-            }
-
-            override fun onRequestEditRecording(data: RecordingData) {
-                val fragmentActivity = activity
-                if (fragmentActivity != null) {
-                    val editFieldDialog = TrackFileNameEdit.newInstance(getString(R.string.track_file_name_change), data.name)
-                    editFieldDialog.show(fragmentActivity.supportFragmentManager, "EditFieldDialog" + data.name)
-                }
-            }
-
-            override fun onRequestShowElevationGraph(data: RecordingData) {
-                statViewModel.onRequestShowElevation(data)
-                findNavController().navigate(R.id.action_recordFragment_to_elevationFragment)
-            }
-
-            override fun onRequestDeleteRecordings(dataList: List<RecordingData>) {
-                statViewModel.onRequestDeleteRecordings(dataList)
-            }
-
-            override fun onImportFiles() {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-
-                /* Search for all documents available via installed storage providers */
-                intent.type = "*/*"
-                importRecordingsLauncher.launch(intent)
-            }
-        })
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        recordingData?.value?.let {
-            updateRecordingData(it)
-        }
     }
 
     private fun onGpxImported(event: TrackImporter.GpxImportResult) {
@@ -207,10 +133,6 @@ class RecordFragment : Fragment() {
                 /* Tell the user that an error occurred */
                 Snackbar.make(binding.root, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
         }
-    }
-
-    private fun updateRecordingData(data: List<RecordingData>) {
-        binding.recordListView.setRecordingData(data)
     }
 
     private fun configureComposeViews() {
