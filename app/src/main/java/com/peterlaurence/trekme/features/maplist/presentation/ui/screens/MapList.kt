@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -32,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
+import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.*
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
@@ -40,13 +42,17 @@ import com.peterlaurence.trekme.util.pxToDp
 import com.peterlaurence.trekme.viewmodel.maplist.*
 
 @Composable
-fun MapListUI(state: MapListState, intents: MapListIntents) {
+fun MapListStateful(state: MapListState, intents: MapListIntents) {
+    val listState = rememberLazyListState()
     when (state) {
         is Loading -> PendingScreen()
         is MapList -> {
             if (state.mapList.isNotEmpty()) {
                 LazyColumn(
-                    Modifier.background(backgroundColor()),
+                    Modifier
+                        .background(backgroundColor())
+                        .drawVerticalScrollbar(listState),
+                    state = listState,
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -368,7 +374,7 @@ class MapListView @JvmOverloads constructor(
 
         val mapListState by viewModel.mapListState
         TrekMeTheme {
-            MapListUI(mapListState, intents)
+            MapListStateful(mapListState, intents)
         }
     }
 }
