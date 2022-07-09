@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.maplist
+package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 
 import android.graphics.Bitmap
 import androidx.compose.runtime.*
@@ -30,7 +30,7 @@ class MapListViewModel @Inject constructor(
      * This state mirrors the MapListState from [MapRepository], with the difference that a
      * [MapStub] has additional view-related properties.
      */
-    private val _mapListState: MutableState<MapListState> = mutableStateOf(Loading)
+    private val _mapListState: MutableState<MapListState> = mutableStateOf(MapListState.Loading)
     val mapListState: State<MapListState> = _mapListState
 
     init {
@@ -65,7 +65,7 @@ class MapListViewModel @Inject constructor(
      */
     fun toggleFavorite(mapId: Int) {
         val state = _mapListState.value
-        if (state is MapList) {
+        if (state is MapListState.MapList) {
             val stub = state.mapList.firstOrNull { it.mapId == mapId }
             stub?.apply {
                 isFavorite = !isFavorite
@@ -113,7 +113,7 @@ class MapListViewModel @Inject constructor(
             } else it
         }
 
-        _mapListState.value = MapList(stubList)  // update with a copy of the list
+        _mapListState.value = MapListState.MapList(stubList)  // update with a copy of the list
     }
 
     private fun Map.toMapStub(): MapStub {
@@ -124,9 +124,10 @@ class MapListViewModel @Inject constructor(
     }
 }
 
-sealed interface MapListState
-object Loading : MapListState
-data class MapList(val mapList: List<MapStub>) : MapListState
+sealed interface MapListState {
+    object Loading : MapListState
+    data class MapList(val mapList: List<MapStub>) : MapListState
+}
 
 class MapStub(val mapId: Int) {
     var isFavorite: Boolean by mutableStateOf(false)

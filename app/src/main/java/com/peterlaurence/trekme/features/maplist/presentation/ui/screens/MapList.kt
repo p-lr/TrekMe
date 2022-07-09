@@ -37,16 +37,15 @@ import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVe
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.*
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
+import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.*
 import com.peterlaurence.trekme.util.pxToDp
-import com.peterlaurence.trekme.viewmodel.maplist.*
 
 @Composable
 fun MapListStateful(state: MapListState, intents: MapListIntents) {
     val listState = rememberLazyListState()
     when (state) {
-        is Loading -> PendingScreen()
-        is MapList -> {
+        is MapListState.Loading -> PendingScreen()
+        is MapListState.MapList -> {
             if (state.mapList.isNotEmpty()) {
                 LazyColumn(
                     Modifier
