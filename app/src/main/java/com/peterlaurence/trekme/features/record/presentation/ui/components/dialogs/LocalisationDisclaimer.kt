@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record.components.dialogs
+package com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs
 
 import android.app.Dialog
 import android.content.DialogInterface
@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

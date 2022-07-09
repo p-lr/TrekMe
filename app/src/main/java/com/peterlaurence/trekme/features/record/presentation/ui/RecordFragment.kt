@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record
+package com.peterlaurence.trekme.features.record.presentation.ui
 
 
 import android.app.Activity
@@ -25,18 +25,18 @@ import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
 import com.peterlaurence.trekme.service.GpxRecordService
-import com.peterlaurence.trekme.ui.record.components.ActionsStateful
-import com.peterlaurence.trekme.ui.record.components.GpxRecordListStateful
-import com.peterlaurence.trekme.ui.record.components.StatusStateful
-import com.peterlaurence.trekme.ui.record.components.dialogs.BatteryOptWarningDialog
-import com.peterlaurence.trekme.ui.record.components.dialogs.LocalisationDisclaimer
-import com.peterlaurence.trekme.ui.record.components.dialogs.MapSelectionForImport
-import com.peterlaurence.trekme.ui.record.components.dialogs.TrackFileNameEdit
-import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import com.peterlaurence.trekme.features.record.presentation.ui.components.ActionsStateful
+import com.peterlaurence.trekme.features.record.presentation.ui.components.GpxRecordListStateful
+import com.peterlaurence.trekme.features.record.presentation.ui.components.StatusStateful
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptWarningDialog
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocalisationDisclaimer
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.MapSelectionForImport
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.TrackFileNameEdit
+import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.util.collectWhileResumed
-import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
-import com.peterlaurence.trekme.viewmodel.record.RecordViewModel
-import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

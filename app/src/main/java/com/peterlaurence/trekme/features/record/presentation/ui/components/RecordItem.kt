@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record.components
+package com.peterlaurence.trekme.features.record.presentation.ui.components
 
 import android.os.Parcelable
 import androidx.annotation.DrawableRes

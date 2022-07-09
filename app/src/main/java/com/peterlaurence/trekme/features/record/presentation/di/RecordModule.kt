@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.ui.record.di
+package com.peterlaurence.trekme.features.record.presentation.di
 
-import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

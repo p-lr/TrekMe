@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.record
+package com.peterlaurence.trekme.features.record.presentation.viewmodel
 
 import android.app.Application
 import android.content.Context
@@ -21,7 +21,7 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn

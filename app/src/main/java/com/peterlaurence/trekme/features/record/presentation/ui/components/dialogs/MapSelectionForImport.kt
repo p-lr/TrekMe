@@ -1,9 +1,9 @@
-package com.peterlaurence.trekme.ui.record.components.dialogs
+package com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs
 
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
-import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

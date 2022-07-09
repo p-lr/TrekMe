@@ -1,6 +1,6 @@
 @file:Suppress("BlockingMethodInNonBlockingContext")
 
-package com.peterlaurence.trekme.viewmodel.record
+package com.peterlaurence.trekme.features.record.presentation.viewmodel
 
 import android.app.Application
 import android.content.ContentResolver
@@ -20,8 +20,7 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
-import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
-import com.peterlaurence.trekme.ui.record.events.RecordEventBus
+import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import com.peterlaurence.trekme.core.lib.gpx.parseGpx
@@ -158,7 +157,7 @@ class RecordingStatisticsViewModel @Inject constructor(
      * Remove the existing file matching by name, then add the new file along with the new
      * [RecordingData] instance.
      */
-    private suspend fun onRecordingNameChangeEvent(event: RecordingNameChangeEvent) {
+    private suspend fun onRecordingNameChangeEvent(event: RecordEventBus.RecordingNameChangeEvent) {
         with(recordingsToData.iterator()) {
             forEach {
                 val gpxFile = it.key

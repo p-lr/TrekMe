@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record.components
+package com.peterlaurence.trekme.features.record.presentation.ui.components
 
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.animate
@@ -20,10 +20,10 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.service.GpxRecordState
-import com.peterlaurence.trekme.ui.record.components.widgets.MorphingButton
-import com.peterlaurence.trekme.ui.record.components.widgets.MorphingShape
-import com.peterlaurence.trekme.ui.record.components.widgets.PathData
-import com.peterlaurence.trekme.viewmodel.GpxRecordServiceViewModel
+import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.MorphingButton
+import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.MorphingShape
+import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.PathData
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.GpxRecordServiceViewModel
 
 @Composable
 fun ActionsStateful(

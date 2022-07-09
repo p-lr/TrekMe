@@ -34,7 +34,7 @@
         app:destination="@id/mapCreationGraph"/>
     <fragment
         android:id="@+id/recordFragment"
-        android:name="com.peterlaurence.trekme.ui.record.RecordFragment"
+        android:name="com.peterlaurence.trekme.features.record.presentation.ui.RecordFragment"
         android:label="fragment_record"
         tools:layout="@layout/fragment_record" >
         <action
@@ -56,7 +56,7 @@
     <action android:id="@+id/action_global_mapListFragment" app:destination="@id/mapListFragment" />
     <fragment
         android:id="@+id/elevationFragment"
-        android:name="com.peterlaurence.trekme.ui.record.components.elevationgraph.ElevationFragment"
+        android:name="com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph.ElevationFragment"
         android:label="ElevationFragment" />
     <action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProGraph"/>
     <navigation android:id="@+id/mapCreationGraph"

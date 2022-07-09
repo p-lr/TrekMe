@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.record
+package com.peterlaurence.trekme.features.record.presentation.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

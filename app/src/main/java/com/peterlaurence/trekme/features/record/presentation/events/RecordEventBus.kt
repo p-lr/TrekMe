@@ -1,6 +1,5 @@
-package com.peterlaurence.trekme.ui.record.events
+package com.peterlaurence.trekme.features.record.presentation.events
 
-import com.peterlaurence.trekme.ui.record.components.events.RecordingNameChangeEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -21,6 +20,8 @@ class RecordEventBus {
     fun postRecordingNameChange(initialValue: String, newValue: String) {
         _recordingNameChangeEvent.tryEmit(RecordingNameChangeEvent(initialValue, newValue))
     }
+
+    data class RecordingNameChangeEvent(val initialValue: String, val newValue: String)
 
     /**********************************************************************************************/
 

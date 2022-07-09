@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record.components
+package com.peterlaurence.trekme.features.record.presentation.ui.components
 
 import android.os.Parcelable
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -29,8 +29,8 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColo
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textButtonColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
-import com.peterlaurence.trekme.viewmodel.record.RecordingData
-import com.peterlaurence.trekme.viewmodel.record.RecordingStatisticsViewModel
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingData
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import kotlinx.parcelize.Parcelize
 
 @Composable

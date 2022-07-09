@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record.components.dialogs
+package com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs
 
 import android.app.Dialog
 import android.os.Bundle

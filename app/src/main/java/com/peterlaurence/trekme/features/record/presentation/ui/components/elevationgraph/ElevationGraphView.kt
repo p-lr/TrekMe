@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record.components.elevationgraph
+package com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph
 
 import android.content.Context
 import android.graphics.*

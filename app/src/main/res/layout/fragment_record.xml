@@ -4,7 +4,7 @@
     android:id="@+id/record_fragment_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.peterlaurence.trekme.ui.record.RecordFragment">
+    tools:context=".features.record.presentation.ui.RecordFragment">
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/record_main_compose_view"

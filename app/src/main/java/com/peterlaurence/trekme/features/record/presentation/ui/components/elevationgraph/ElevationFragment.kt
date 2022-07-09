@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record.components.elevationgraph
+package com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -21,7 +21,7 @@ import com.peterlaurence.trekme.core.repositories.recording.NoElevationData
 import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.util.exhaustive
 import com.peterlaurence.trekme.core.lib.gpx.model.ElevationSource
-import com.peterlaurence.trekme.viewmodel.record.ElevationViewModel
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

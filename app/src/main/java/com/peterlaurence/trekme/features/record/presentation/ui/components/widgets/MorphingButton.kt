@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.record.components.widgets
+package com.peterlaurence.trekme.features.record.presentation.ui.components.widgets
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.TargetBasedAnimation

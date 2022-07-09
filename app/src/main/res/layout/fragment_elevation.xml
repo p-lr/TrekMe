@@ -136,7 +136,7 @@
                 app:layout_constraintTop_toTopOf="@+id/elevation_bottom_top_icon"
                 tools:text="500 m" />
 
-            <com.peterlaurence.trekme.ui.record.components.elevationgraph.ElevationGraphView
+            <com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph.ElevationGraphView
                 android:id="@+id/elevationGraphView"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
