@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapimport
+package com.peterlaurence.trekme.features.mapimport.presentation.ui
 
 import android.graphics.Color
 import android.graphics.ColorFilter

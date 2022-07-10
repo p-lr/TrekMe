@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.mapimport
+package com.peterlaurence.trekme.features.mapimport.presentation.viewmodel
 
 import android.app.Application
 import android.net.Uri
@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.map.maparchive.unarchive
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.util.UnzipProgressionListener
-import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel.ItemData
+import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel.ItemData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged

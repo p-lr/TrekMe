@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapimport
+package com.peterlaurence.trekme.features.mapimport.presentation.ui
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.view.ViewStub
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.databinding.MapArchiveCardBinding
-import com.peterlaurence.trekme.viewmodel.mapimport.*
+import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.*
 
 /**
  * Adapter to provide access to the data set (here a list of [MapImportViewModel.ItemData]).

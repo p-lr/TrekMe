@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.mapimport.MapImportFragment">
+    tools:context=".features.mapimport.presentation.ui.MapImportFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/welcome_panel"

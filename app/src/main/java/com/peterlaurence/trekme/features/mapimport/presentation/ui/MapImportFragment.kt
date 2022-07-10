@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.mapimport
+package com.peterlaurence.trekme.features.mapimport.presentation.ui
 
 import android.app.Activity
 import android.content.Intent
@@ -22,9 +22,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
+import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel
+import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.UnzipMapImportedEvent
 import com.peterlaurence.trekme.util.RecyclerItemClickListener
-import com.peterlaurence.trekme.viewmodel.mapimport.MapImportViewModel
-import com.peterlaurence.trekme.viewmodel.mapimport.UnzipMapImportedEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
