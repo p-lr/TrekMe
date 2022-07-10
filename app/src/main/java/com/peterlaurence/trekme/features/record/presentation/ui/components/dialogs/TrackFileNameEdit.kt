@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs
 
 import android.os.Bundle
-import com.peterlaurence.trekme.ui.dialogs.EditFieldDialog
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

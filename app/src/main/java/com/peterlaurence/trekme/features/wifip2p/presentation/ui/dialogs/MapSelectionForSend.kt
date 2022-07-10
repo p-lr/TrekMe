@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.features.wifip2p.presentation.ui.dialogs
 
-import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.features.wifip2p.presentation.events.WifiP2pEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

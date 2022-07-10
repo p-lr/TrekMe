@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme
+package com.peterlaurence.trekme.main
 
 import android.Manifest
 import android.app.Activity
@@ -37,6 +37,8 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.peterlaurence.trekme.NavGraphDirections
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.interactors.ArchiveMapInteractor
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
@@ -49,7 +51,6 @@ import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
-import com.peterlaurence.trekme.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map

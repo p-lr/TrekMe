@@ -39,7 +39,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.componen
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.PlaceMarker
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
-import com.peterlaurence.trekme.viewmodel.common.tileviewcompat.toMapComposeTileStreamProvider
+import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*

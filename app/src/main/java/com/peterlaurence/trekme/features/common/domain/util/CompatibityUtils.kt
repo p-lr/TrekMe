@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.common.tileviewcompat
+package com.peterlaurence.trekme.features.common.domain.util
 
 import com.peterlaurence.trekme.core.map.TileStream
 import com.peterlaurence.trekme.core.map.TileStreamProvider

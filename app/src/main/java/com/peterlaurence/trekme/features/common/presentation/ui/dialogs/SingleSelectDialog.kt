@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.dialogs
+package com.peterlaurence.trekme.features.common.presentation.ui.dialogs
 
 import android.app.Dialog
 import android.content.DialogInterface

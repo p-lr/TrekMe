@@ -30,7 +30,7 @@
         android:hasFragileUserData="true"
         tools:targetApi="q">
         <activity
-            android:name="com.peterlaurence.trekme.MainActivity"
+            android:name="com.peterlaurence.trekme.main.MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme"
             android:exported="true">

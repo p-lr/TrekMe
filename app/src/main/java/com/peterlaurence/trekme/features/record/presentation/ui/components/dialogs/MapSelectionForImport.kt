@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.features.record.presentation.ui.components.dial
 
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
-import com.peterlaurence.trekme.ui.dialogs.MapChoiceDialog
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

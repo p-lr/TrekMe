@@ -10,7 +10,6 @@ import android.graphics.Color
 import android.os.*
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
@@ -27,6 +26,7 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
+import com.peterlaurence.trekme.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn

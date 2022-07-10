@@ -1,10 +1,9 @@
-package com.peterlaurence.trekme.viewmodel
+package com.peterlaurence.trekme.main
 
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.MainActivity
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.billing.common.PurchaseState
 import com.peterlaurence.trekme.core.TrekMeContext
