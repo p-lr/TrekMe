@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.settings
+package com.peterlaurence.trekme.features.settings.presentation.viewmodel
 
 import androidx.lifecycle.*
 import com.peterlaurence.trekme.core.TrekMeContext

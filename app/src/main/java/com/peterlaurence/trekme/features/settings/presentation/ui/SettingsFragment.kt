@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.settings
+package com.peterlaurence.trekme.features.settings.presentation.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,7 +15,7 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.viewmodel.settings.SettingsViewModel
+import com.peterlaurence.trekme.features.settings.presentation.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

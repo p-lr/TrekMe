@@ -20,7 +20,7 @@
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.peterlaurence.trekme.ui.settings.SettingsFragment"
+        android:name="com.peterlaurence.trekme.features.settings.presentation.ui.SettingsFragment"
         android:label="SettingsFragment" />
     <action
         android:id="@+id/action_global_settingsFragment"
