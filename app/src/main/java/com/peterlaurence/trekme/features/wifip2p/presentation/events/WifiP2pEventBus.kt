@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.wifip2p.events
+package com.peterlaurence.trekme.features.wifip2p.presentation.events
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow

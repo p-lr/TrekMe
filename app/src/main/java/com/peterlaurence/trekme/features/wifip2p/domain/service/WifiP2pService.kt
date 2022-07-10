@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.wifip2p
+package com.peterlaurence.trekme.features.wifip2p.domain.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.features.wifip2p.domain.service.*
 import com.peterlaurence.trekme.util.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -508,7 +509,8 @@ class WifiP2pService : Service() {
                     /* The receiver resets the WifiP2P connection */
                     when (result.status) {
                         MapImporter.MapParserStatus.NEW_MAP,
-                        MapImporter.MapParserStatus.EXISTING_MAP -> exitWithReason(MapSuccessfullyLoaded(result.map?.name
+                        MapImporter.MapParserStatus.EXISTING_MAP -> exitWithReason(
+                            MapSuccessfullyLoaded(result.map?.name
                                 ?: ""), true)
                         else -> exitWithReason(WithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR), true)
                     }

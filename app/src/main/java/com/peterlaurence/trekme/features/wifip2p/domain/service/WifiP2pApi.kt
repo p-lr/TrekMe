@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.wifip2p
+package com.peterlaurence.trekme.features.wifip2p.domain.service
 
 import android.Manifest
 import android.content.Context

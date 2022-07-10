@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.wifip2p.widgets
+package com.peterlaurence.trekme.features.wifip2p.presentation.ui.widgets
 
 import android.content.Context
 import android.graphics.drawable.AnimatedVectorDrawable

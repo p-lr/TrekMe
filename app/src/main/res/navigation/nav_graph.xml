@@ -44,7 +44,7 @@
     <action android:id="@+id/action_global_recordFragment" app:destination="@id/recordFragment" />
     <fragment
         android:id="@+id/wifiP2pFragment"
-        android:name="com.peterlaurence.trekme.ui.wifip2p.WifiP2pFragment"
+        android:name="com.peterlaurence.trekme.features.wifip2p.presentation.ui.WifiP2pFragment"
         android:label="WifiP2pFragment" />
     <action android:id="@+id/action_global_wifiP2pFragment" app:destination="@id/wifiP2pFragment" />
     <fragment

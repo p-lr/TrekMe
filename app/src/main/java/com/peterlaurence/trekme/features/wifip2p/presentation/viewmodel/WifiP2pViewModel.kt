@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.viewmodel.wifip2p
+package com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel
 
 import android.app.Application
 import android.content.Intent
@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.wifip2p.*
+import com.peterlaurence.trekme.features.wifip2p.domain.service.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -34,7 +34,8 @@ class WifiP2pViewModel @Inject constructor(
         val state = state.value
         if (state == null || state is Stopped) {
             val importedPath = trekMeContext.importedDir?.absolutePath ?: return
-            startService(StartRcv::class.java.name,
+            startService(
+                StartRcv::class.java.name,
                     mapOf(WifiP2pService.IMPORTED_PATH_ARG to importedPath))
             return
         }
@@ -48,7 +49,8 @@ class WifiP2pViewModel @Inject constructor(
     fun onRequestSend(mapId: Int) {
         val state = state.value
         if (state == null || state is Stopped) {
-            startService(StartSend::class.java.name, mapOf(),
+            startService(
+                StartSend::class.java.name, mapOf(),
                     mapOf(WifiP2pService.MAP_ID_ARG to mapId))
             return
         }

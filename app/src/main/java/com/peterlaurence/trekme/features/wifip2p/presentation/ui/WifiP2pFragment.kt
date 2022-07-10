@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.ui.wifip2p
+package com.peterlaurence.trekme.features.wifip2p.presentation.ui
 
 import android.content.Context
 import android.content.Intent
@@ -12,15 +12,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.wifip2p.*
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
-import com.peterlaurence.trekme.ui.wifip2p.dialogs.MapSelectionForSend
-import com.peterlaurence.trekme.ui.wifip2p.events.WifiP2pEventBus
-import com.peterlaurence.trekme.viewmodel.wifip2p.Errors
-import com.peterlaurence.trekme.viewmodel.wifip2p.ServiceAlreadyStarted
-import com.peterlaurence.trekme.viewmodel.wifip2p.WifiP2pViewModel
+import com.peterlaurence.trekme.features.wifip2p.domain.service.*
+import com.peterlaurence.trekme.features.wifip2p.presentation.ui.dialogs.MapSelectionForSend
+import com.peterlaurence.trekme.features.wifip2p.presentation.events.WifiP2pEventBus
+import com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel.Errors
+import com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel.ServiceAlreadyStarted
+import com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel.WifiP2pViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

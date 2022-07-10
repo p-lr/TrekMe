@@ -50,7 +50,7 @@
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name="com.peterlaurence.trekme.core.wifip2p.WifiP2pService"
+            android:name="com.peterlaurence.trekme.features.wifip2p.domain.service.WifiP2pService"
             android:enabled="true"
             android:exported="false" />
 

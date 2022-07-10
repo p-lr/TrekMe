@@ -104,7 +104,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/status">
 
-        <com.peterlaurence.trekme.ui.wifip2p.widgets.WaveSearchIndicator
+        <com.peterlaurence.trekme.features.wifip2p.presentation.ui.widgets.WaveSearchIndicator
             android:id="@+id/wave_search_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

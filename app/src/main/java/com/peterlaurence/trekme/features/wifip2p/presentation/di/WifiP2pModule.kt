@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.ui.wifip2p.di
+package com.peterlaurence.trekme.features.wifip2p.presentation.di
 
-import com.peterlaurence.trekme.ui.wifip2p.events.WifiP2pEventBus
+import com.peterlaurence.trekme.features.wifip2p.presentation.events.WifiP2pEventBus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
