@@ -30,6 +30,7 @@ class GpsProFragment : Fragment() {
         return binding!!.root
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         /* Clear the existing action menu */
         menu.clear()
@@ -40,6 +41,7 @@ class GpsProFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.help_gpspro_id -> {

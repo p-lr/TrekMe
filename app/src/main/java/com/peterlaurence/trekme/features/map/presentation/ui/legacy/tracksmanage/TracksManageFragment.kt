@@ -130,6 +130,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         trackGoToMapMenuItem = null
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.menu_fragment_tracks_manage, menu)
@@ -138,6 +139,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val selectedRoute = trackAdapter?.selectedRoute ?: return true
         when (item.itemId) {

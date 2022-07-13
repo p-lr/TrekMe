@@ -88,6 +88,7 @@ class WifiP2pFragment : Fragment() {
         return binding.root
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         /* Clear the existing action menu */
         menu.clear()
@@ -98,6 +99,7 @@ class WifiP2pFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.help_wifip2p_id -> {
@@ -149,7 +151,7 @@ class WifiP2pFragment : Fragment() {
                         binding.emojiPartyFace.visibility = View.GONE
                         binding.stoppedStatus.text = getString(R.string.wifip2p_error).format(state.stopReason.error.name)
                     }
-                    is ByUser -> {
+                    is ByUser, null -> {
                     } // Don't display anything for now
                 }
 

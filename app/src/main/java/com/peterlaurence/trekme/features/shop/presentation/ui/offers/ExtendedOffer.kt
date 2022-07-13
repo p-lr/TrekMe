@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.features.shop.presentation.ui.offers
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon

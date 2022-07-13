@@ -69,7 +69,7 @@ class MapArchiveViewHolder(binding: MapArchiveCardBinding) : RecyclerView.ViewHo
         extractionLabel.setText(R.string.extraction_error)
     }
 
-    fun onMapImported(status: MapParserStatus?) {
+    fun onMapImported(status: MapParserStatus) {
         when (status) {
             MapParserStatus.NEW_MAP -> mapCreationLabel.setText(R.string.imported_new_map)
             MapParserStatus.EXISTING_MAP -> mapCreationLabel.setText(R.string.imported_untouched)

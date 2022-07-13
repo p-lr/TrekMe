@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.location.InternalGps
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
 import com.peterlaurence.trekme.core.units.UnitFormatter
@@ -36,6 +37,7 @@ fun GpsDataOverlay(location: Location?, modifier: Modifier = Modifier) {
                 Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis,
                 color = colorResource(id = R.color.colorPrimaryTextWhite)
             )
+            InternalGps, null -> { /* Nothing to do */ }
         }
         KeyValueRow(key = stringResource(id = R.string.latitude_short),
             value = location?.latitude?.let { UnitFormatter.formatLatLon(location.latitude) }
