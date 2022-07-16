@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.billing.gpspro.buildGpsProBilling
 import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordDao
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordParser
 import com.peterlaurence.trekme.core.location.*
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.orientation.OrientationSource
@@ -69,6 +69,11 @@ object AppModule {
     @Provides
     fun bindMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
 
+    @Singleton
+    @DefaultDispatcher
+    @Provides
+    fun bindDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
+
     @Singleton // Provide always the same instance
     @ApplicationScope // Must also be injectable at application scope
     @Provides
@@ -108,8 +113,8 @@ object AppModule {
     fun bindTrackImporter(
         repo: RouteRepository,
         markersDao: MarkersDao,
-        geoRecordDao: GeoRecordDao
-    ): TrackImporter = TrackImporter(repo, markersDao, geoRecordDao)
+        geoRecordParser: GeoRecordParser
+    ): TrackImporter = TrackImporter(repo, markersDao, geoRecordParser)
 
     @Singleton
     @Provides
@@ -219,6 +224,10 @@ annotation class MainDispatcher
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class IoDispatcher
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class DefaultDispatcher
 
 @Retention(AnnotationRetention.BINARY)
 @Qualifier

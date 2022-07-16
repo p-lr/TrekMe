@@ -1,11 +1,9 @@
 package com.peterlaurence.trekme.core.track
 
-import android.os.Parcelable
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.statistics.mean
 import com.peterlaurence.trekme.core.lib.gpx.model.Bounds
-import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
-import kotlinx.parcelize.Parcelize
 import java.util.*
 import kotlin.math.*
 
@@ -48,8 +46,8 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
     private var maxLat: Double? = null
     private var maxLon: Double? = null
 
-    fun getStatistics(): TrackStatistics {
-        return TrackStatistics(
+    fun getStatistics(): GeoStatistics {
+        return GeoStatistics(
             distanceCalculator.getDistance(), highestElevation, lowestElevation,
             elevationUpStack, elevationDownStack, durationInSecond, avgSpeed
         )
@@ -62,17 +60,13 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
         )
     }
 
-    fun addTrackPointList(trkPtList: List<TrackPoint>) {
-        trkPtList.forEach { addTrackPoint(it) }
-    }
-
-    fun addTrackPoint(trkPt: TrackPoint) {
-        distanceCalculator.addPoint(trkPt.latitude, trkPt.longitude, trkPt.elevation) { ele ->
+    fun addTrackPoint(lat: Double, lon: Double, elevation: Double?, time: Long?) {
+        distanceCalculator.addPoint(lat, lon, elevation) { ele ->
             updateElevationStats(ele)
         }
 
-        updateDuration(trkPt)
-        updateBounds(trkPt)
+        updateDuration(time)
+        updateBounds(lat, lon)
         updateMeanSpeed()
     }
 
@@ -114,8 +108,8 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
     /**
      * Remember the [Date] of the first track point, and use it as reference to get the duration.
      */
-    private fun updateDuration(trkPt: TrackPoint) {
-        trkPt.time?.also { time ->
+    private fun updateDuration(time: Long?) {
+        if (time != null) {
             firstPointTime?.also { origin ->
                 if (time > origin) { // time should always be increasing, but who knows...
                     durationInSecond = (time - origin) / 1000
@@ -132,11 +126,11 @@ class TrackStatCalculator(private val distanceCalculator: DistanceCalculator) {
         }
     }
 
-    private fun updateBounds(trkPt: TrackPoint) {
-        minLat = min(trkPt.latitude, minLat ?: Double.MAX_VALUE)
-        minLon = min(trkPt.longitude, minLon ?: Double.MAX_VALUE)
-        maxLat = max(trkPt.latitude, maxLat ?: Double.MIN_VALUE)
-        maxLon = max(trkPt.longitude, maxLon ?: Double.MIN_VALUE)
+    private fun updateBounds(latitude: Double, longitude: Double) {
+        minLat = min(latitude, minLat ?: Double.MAX_VALUE)
+        minLon = min(longitude, minLon ?: Double.MAX_VALUE)
+        maxLat = max(latitude, maxLat ?: Double.MIN_VALUE)
+        maxLon = max(longitude, maxLon ?: Double.MIN_VALUE)
     }
 }
 
@@ -291,21 +285,3 @@ private class DistanceCalculatorEleNotTrusted : DistanceCalculator {
 }
 
 private data class Snapshot(val distance: Double, val elevation: Double)
-
-/**
- * Container for statistics of a track.
- *
- * @param distance The distance in meters
- * @param elevationUpStack The cumulative elevation up in meters
- * @param elevationDownStack The cumulative elevation down in meters
- * @param elevationMax The highest altitude
- * @param elevationMin The lowest altitude
- * @param durationInSecond The total time in seconds
- * @param avgSpeed The average speed in meters per seconds
- */
-@Parcelize
-data class TrackStatistics(
-    val distance: Double, var elevationMax: Double?, var elevationMin: Double?,
-    val elevationUpStack: Double, val elevationDownStack: Double,
-    val durationInSecond: Long? = null, val avgSpeed: Double? = null
-) : Parcelable

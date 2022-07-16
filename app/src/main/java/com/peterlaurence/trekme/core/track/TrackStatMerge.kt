@@ -1,12 +1,13 @@
 package com.peterlaurence.trekme.core.track
 
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.lib.gpx.model.Bounds
 
-fun List<TrackStatCalculator>.mergeStats(): TrackStatistics {
+fun List<TrackStatCalculator>.mergeStats(): GeoStatistics {
     return filterNot { it.isEmpty() }.map {
         it.getStatistics()
     }.let {
-        TrackStatistics(
+        GeoStatistics(
             distance = it.sumOf { stat -> stat.distance },
             elevationMax = it.mapNotNull { stat -> stat.elevationMax }.maxOrNull(),
             elevationMin = it.mapNotNull { stat -> stat.elevationMin }.minOrNull(),
@@ -30,7 +31,7 @@ fun List<TrackStatCalculator>.mergeBounds(): Bounds? {
     }
 }
 
-private fun List<TrackStatistics>.computeAvgSpeed(): Double? {
+private fun List<GeoStatistics>.computeAvgSpeed(): Double? {
     var totalDuration = 0L
     val sum = mapNotNull { stat ->
         stat.avgSpeed?.let { avgSpeed ->

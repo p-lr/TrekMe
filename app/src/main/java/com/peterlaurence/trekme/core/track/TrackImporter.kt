@@ -10,7 +10,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordDao
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordParser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +30,7 @@ import javax.inject.Inject
 class TrackImporter @Inject constructor(
     val routeRepository: RouteRepository,
     private val markersDao: MarkersDao,
-    private val geoRecordDao: GeoRecordDao
+    private val geoRecordParser: GeoRecordParser
 ) {
     /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
@@ -39,7 +39,7 @@ class TrackImporter @Inject constructor(
         uri: Uri, contentResolver: ContentResolver, map: Map
     ): GpxImportResult {
         return runCatching {
-            geoRecordDao.parseGpx(uri, contentResolver)?.let { (routes, markers) ->
+            geoRecordParser.parse(uri, contentResolver)?.let { (routes, markers) ->
                 setRoutesAndMarkersToMap(map, routes, markers)
             } ?: GpxImportResult.GpxImportError
         }.onFailure {
@@ -87,7 +87,7 @@ class TrackImporter @Inject constructor(
         map: Map,
         defaultName: String
     ): GpxImportResult {
-        val pair = geoRecordDao.parseGpx(input, defaultName)
+        val pair = geoRecordParser.parse(input, defaultName)
 
         return if (pair != null) {
             return setRoutesAndMarkersToMap(map, pair.routes, pair.markers)

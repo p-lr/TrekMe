@@ -1,11 +1,10 @@
 package com.peterlaurence.trekme.core.track
 
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.Marker
-import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
-import com.peterlaurence.trekme.core.lib.gpx.model.Track
-import com.peterlaurence.trekme.core.lib.gpx.model.hasTrustedElevations
 import java.io.File
 import java.util.*
 
@@ -61,11 +60,13 @@ object TrackTools {
         return toBeAdded.count()
     }
 
-    fun getTrackStatistics(track: Track, gpx: Gpx): TrackStatistics {
-        val statCalculatorList = track.trackSegments.map { trackSegment ->
-            val distanceCalculator = distanceCalculatorFactory(gpx.hasTrustedElevations())
+    fun getGeoStatistics(geoRecord: GeoRecord): GeoStatistics {
+        val statCalculatorList = geoRecord.routes.map { route ->
+            val distanceCalculator = distanceCalculatorFactory(geoRecord.hasTrustedElevations)
             val statCalculator = TrackStatCalculator(distanceCalculator)
-            statCalculator.addTrackPointList(trackSegment.trackPoints)
+            route.routeMarkers.forEach {
+                statCalculator.addTrackPoint(it.lat, it.lon, it.elevation, it.time)
+            }
             statCalculator
         }
 

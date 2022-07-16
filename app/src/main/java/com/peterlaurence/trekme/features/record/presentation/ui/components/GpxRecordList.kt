@@ -45,7 +45,7 @@ fun GpxRecordListStateful(
     onDeleteClick: (List<RecordingData>) -> Unit
 ) {
     val data by statViewModel.getRecordingData().observeAsState(listOf())
-    val dataById = data.associateBy { it.gpxFile.path }
+    val dataById = data.associateBy { it.file.path }
 
     var isMultiSelectionMode by rememberSaveable {
         mutableStateOf(false)
@@ -56,7 +56,7 @@ fun GpxRecordListStateful(
 
     val model = remember(data, dataToModel, isMultiSelectionMode) {
         data.map {
-            val existing = dataToModel[it.gpxFile.path]
+            val existing = dataToModel[it.file.path]
             it.toModel(existing?.isSelected ?: false).also { selectable ->
                 dataToModel[selectable.id] = selectable
             }
@@ -316,7 +316,7 @@ private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingData 
             } ?: "-"
         )
     }
-    val id = gpxFile.path
+    val id = file.path
 
     return SelectableRecordingData(name, stats, isSelected, id)
 }

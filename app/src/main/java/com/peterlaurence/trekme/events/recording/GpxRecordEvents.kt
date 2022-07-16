@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.events.recording
 
-import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.service.GpxRecordState
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
@@ -85,12 +85,11 @@ class GpxRecordEvents {
 
     /**********************************************************************************************/
 
-    /* Looks like a state flow, but it's not conflated so we can re-emit the same instance */
-    private val _trackStatisticsEvent = MutableSharedFlow<TrackStatistics?>(1, 0, BufferOverflow.DROP_OLDEST)
-    val trackStatisticsEvent = _trackStatisticsEvent.asSharedFlow()
+    private val _geoStatisticsEvent = MutableSharedFlow<GeoStatistics?>(1, 0, BufferOverflow.DROP_OLDEST)
+    val geoStatisticsEvent = _geoStatisticsEvent.asSharedFlow()
 
-    fun postTrackStatistics(stats: TrackStatistics?) {
-        _trackStatisticsEvent.tryEmit(stats)
+    fun postGeoStatistics(stats: GeoStatistics?) {
+        _geoStatisticsEvent.tryEmit(stats)
     }
 }
 

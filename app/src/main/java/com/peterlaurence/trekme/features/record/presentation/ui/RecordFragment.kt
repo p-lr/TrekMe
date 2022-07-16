@@ -188,7 +188,7 @@ class RecordFragment : Fragment() {
                         onChooseMapForRecord = { data ->
                             val fragmentActivity = activity
                             if (fragmentActivity != null) {
-                                val dialog = MapSelectionForImport.newInstance(data.gpxFile.path)
+                                val dialog = MapSelectionForImport.newInstance(data.file.path)
                                 dialog.show(
                                     fragmentActivity.supportFragmentManager,
                                     "MapSelectionForImport"

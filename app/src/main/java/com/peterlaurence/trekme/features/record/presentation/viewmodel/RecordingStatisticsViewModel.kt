@@ -12,6 +12,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.georecord.data.convertGpx
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordParser
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider
@@ -23,18 +27,18 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
-import com.peterlaurence.trekme.core.lib.gpx.parseGpx
 import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.di.DefaultDispatcher
 import com.peterlaurence.trekme.util.stackTraceToString
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
@@ -57,10 +61,13 @@ class RecordingStatisticsViewModel @Inject constructor(
     private val routeRepository: RouteRepository,
     private val gpxRecordEvents: GpxRecordEvents,
     private val gpxRepository: GpxRepository,
+    private val geoRecordParser: GeoRecordParser,
     private val appEventBus: AppEventBus,
     private val eventBus: RecordEventBus,
     private val trekMeContext: TrekMeContext,
-    private val app: Application
+    private val app: Application,
+    @DefaultDispatcher
+    private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val recordingData: MutableLiveData<List<RecordingData>> by lazy {
@@ -83,7 +90,7 @@ class RecordingStatisticsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             gpxRecordEvents.gpxFileWriteEvent.collect {
-                addOneRecording(it.gpxFile, it.gpx)
+                addOneRecording(it.gpxFile, convertGpx(it.gpx))
             }
         }
 
@@ -112,37 +119,24 @@ class RecordingStatisticsViewModel @Inject constructor(
 
     /**
      * Resolves the given uri to an actual file, and copies it to the app's storage location for
-     * recordings. Then, the copied file is parsed to get the corresponding [Gpx] instance along
+     * recordings. Then, the copied file is parsed to get the corresponding [GeoRecord] instance along
      * with its statistics. Finally, [recordingData] is updated so the UI can show the imported file.
      */
     private suspend fun importRecordingFromUri(
             uri: Uri, contentResolver: ContentResolver
-    ): Boolean = withContext(Dispatchers.IO) {
-        var fileName = ""
-        runCatching {
-            val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-            parcelFileDescriptor?.use {
-                val fileDescriptor = parcelFileDescriptor.fileDescriptor
-                FileInputStream(fileDescriptor).use { fileInputStream ->
-                    val name = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-                            ?: "A track"
-                    fileName = name
-                    val outputDir = trekMeContext.recordingsDir ?: return@withContext false
-                    val file = File(outputDir, name)
-                    fileInputStream.copyTo(FileOutputStream(file))
-                    val gpx = parseGpx(FileInputStream(file))
-                    setTrackStatistics(gpx)
-                    addOneRecording(file, gpx)
-                }
-            }
-        }.onFailure {
-            val msg = if (fileName.isNotEmpty()) {
-                app.applicationContext.getString(R.string.recording_imported_failure, fileName)
-            } else {
-                app.applicationContext.getString(R.string.recording_imported_failure, "file")
-            }
+    ): Boolean {
+        val outputDir = trekMeContext.recordingsDir ?: return false
+        val result = geoRecordParser.copyAndParse(uri, contentResolver, outputDir)
+        if (result != null) {
+            val (geoRecord, file) = result
+            addOneRecording(file, geoRecord)
+        } else {
+            val name = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
+            val fileName = if (name != null && name.isNotEmpty()) name else "file"
+            val msg = app.applicationContext.getString(R.string.recording_imported_failure, fileName)
             appEventBus.postMessage(StandardMessage(msg))
-        }.isSuccess
+        }
+        return result != null
     }
 
     fun getRecordingData(): LiveData<List<RecordingData>> {
@@ -150,7 +144,7 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     fun getRecordingUri(recordingData: RecordingData): Uri? {
-        return TrekmeFilesProvider.generateUri(recordingData.gpxFile)
+        return TrekmeFilesProvider.generateUri(recordingData.file)
     }
 
     /**
@@ -182,8 +176,8 @@ class RecordingStatisticsViewModel @Inject constructor(
     fun onRequestDeleteRecordings(recordingDataList: List<RecordingData>) = viewModelScope.launch {
         /* Remove GPX files */
         launch {
-            val gpxFiles = recordingDataList.map { it.gpxFile }
-            val recordingsToDelete = gpxFiles.filter { it in recordings }
+            val files = recordingDataList.map { it.file }
+            val recordingsToDelete = files.filter { it in recordings }
             var success = true
             val iter = recordingsToData.iterator()
             iter.forEach {
@@ -212,7 +206,7 @@ class RecordingStatisticsViewModel @Inject constructor(
 
         /* Remove corresponding tracks on existing maps */
         launch {
-            val trkIds = recordingDataList.flatMap { it.trkSegmentIds }
+            val trkIds = recordingDataList.flatMap { it.routeIds }
 
             /* Remove in-memory routes now */
             mapRepository.getCurrentMapList().forEach { map ->
@@ -231,29 +225,28 @@ class RecordingStatisticsViewModel @Inject constructor(
     fun onRequestShowElevation(recordingData: RecordingData) = viewModelScope.launch {
         /* If we already computed elevation data for this same gpx file, no need to continue */
         val gpxForElevation = gpxRepository.gpxForElevation.replayCache.firstOrNull()
-        if (gpxForElevation != null && gpxForElevation.gpxFile == recordingData.gpxFile) return@launch
+        if (gpxForElevation != null && gpxForElevation.gpxFile == recordingData.file) return@launch
 
         /* Notify the repo that we're about to submit new data, invalidating the existing one */
         gpxRepository.resetGpxForElevation()
 
         withContext(Dispatchers.IO) {
-            val gpxFile = recordingData.gpxFile
-            val inputStream = runCatching { FileInputStream(gpxFile) }.getOrNull()
+            val file = recordingData.file
+            val inputStream = runCatching { FileInputStream(file) }.getOrNull()
                     ?: return@withContext
             val gpx = parseGpxSafely(inputStream)
             if (gpx != null) {
-                gpxRepository.setGpxForElevation(gpx, gpxFile)
+                gpxRepository.setGpxForElevation(gpx, file)
             }
         }
     }
 
-    private fun addOneRecording(gpxFile: File, gpx: Gpx) = viewModelScope.launch {
+    private fun addOneRecording(file: File, geoRecord: GeoRecord) = viewModelScope.launch {
         /* Add the file if not already present */
-        if (!recordingsToData.containsKey(gpxFile)) {
-            recordingsToData[gpxFile] = makeRecordingData(gpxFile, gpx)
+        if (!recordingsToData.containsKey(file)) {
+            recordingsToData[file] = makeRecordingData(file, geoRecord)
         }
 
-        setTrackStatistics(gpx)
         updateRecordings()
     }
 
@@ -276,33 +269,30 @@ class RecordingStatisticsViewModel @Inject constructor(
         updateRecordings()
     }
 
-    /**
-     * Set track statistics on the first track of the given [Gpx] instance.
-     */
-    private suspend fun setTrackStatistics(gpx: Gpx) = withContext(Dispatchers.Default) {
-        gpx.tracks.firstOrNull()?.let { track ->
-            val updatedStatistics = TrackTools.getTrackStatistics(track, gpx)
-            track.statistics = updatedStatistics
+    private suspend fun makeRecordingData(gpxFile: File, geoRecord: GeoRecord): RecordingData {
+        return withContext(defaultDispatcher) {
+            val routeIds: List<String> = geoRecord.routes.map { it.id }
+            val statistics = geoRecord.let {
+                TrackTools.getGeoStatistics(it)
+            }
+
+            RecordingData(
+                gpxFile,
+                FileUtils.getFileNameWithoutExtention(gpxFile),
+                statistics,
+                routeIds,
+                geoRecord.time
+            )
         }
     }
 
-    private fun makeRecordingData(gpxFile: File, gpx: Gpx? = null): RecordingData {
-        val firstTrk = gpx?.tracks?.firstOrNull()
-
-        /* Since the convention in this app is that a track segment corresponds to a route, we
-         * retrieve each track segment id for later comparison with existing route ids. */
-        val trkSegmentIds: List<String> = buildList {
-            firstTrk?.trackSegments?.forEach {
-                it.id?.also { id -> add(id) }
-            }
-        }
-
+    private fun makeRecordingData(file: File): RecordingData {
         return RecordingData(
-                gpxFile,
-                FileUtils.getFileNameWithoutExtention(gpxFile),
-                firstTrk?.statistics,
-                trkSegmentIds,
-                gpx?.metadata?.time
+            file,
+            FileUtils.getFileNameWithoutExtention(file),
+            null,
+            emptyList(),
+            null
         )
     }
 
@@ -312,12 +302,13 @@ class RecordingStatisticsViewModel @Inject constructor(
      * Concurrently parses all recordings and computing statistics.
      */
     private suspend fun updateRecordingsToGpxMap() = withContext(Dispatchers.Default) {
-        suspend fun parseGpxAndComputeStats(file: File): Gpx? {
+        suspend fun parseAndComputeStats(file: File): GeoRecord? {
             return try {
-                val gpx = parseGpx(FileInputStream(file))
-                setTrackStatistics(gpx)
-                recordingsToData[file] = makeRecordingData(file, gpx)
-                gpx
+                val geoRecord = geoRecordParser.parse(FileInputStream(file), "A track")
+                recordingsToData[file] = if (geoRecord != null) {
+                    makeRecordingData(file, geoRecord)
+                } else makeRecordingData(file)
+                geoRecord
             } catch (e: Exception) {
                 Log.e(TAG, "The file ${file.name} was parsed with error ${stackTraceToString(e)}")
                 null
@@ -328,10 +319,10 @@ class RecordingStatisticsViewModel @Inject constructor(
         val coreCount = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(2)
         recordings.asFlow().mapNotNull { file ->
             flow {
-                val gpx = if (!recordingsToData.keys.contains(file)) {
-                    parseGpxAndComputeStats(file)
+                val geoRecord = if (!recordingsToData.keys.contains(file)) {
+                    parseAndComputeStats(file)
                 } else null
-                emit(gpx)
+                emit(geoRecord)
             }
         }.flattenMerge(coreCount).collect()
     }
@@ -340,10 +331,10 @@ class RecordingStatisticsViewModel @Inject constructor(
 private const val TAG = "RecordingStatisticsVM"
 
 /**
- * A [RecordingData] is a wrapper on the [File] and various other data such as the [TrackStatistics]
+ * A [RecordingData] is a wrapper on the [File] and various other data such as the [GeoStatistics]
  * data, the id of the track (if any), and timestamp. The timestamp is used to sort visual elements.
  */
-data class RecordingData(val gpxFile: File, val name: String,
-                         val statistics: TrackStatistics? = null,
-                         val trkSegmentIds: List<String> = emptyList(),
+data class RecordingData(val file: File, val name: String,
+                         val statistics: GeoStatistics? = null,
+                         val routeIds: List<String> = emptyList(),
                          val time: Long? = null)

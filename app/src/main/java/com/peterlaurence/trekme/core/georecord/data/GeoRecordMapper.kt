@@ -7,6 +7,8 @@ import com.peterlaurence.trekme.core.map.domain.models.Route
 
 /**
  * Converts a [Gpx] instance into view-specific types.
+ * Theoretically, this method should return a list of [GeoRecord], as a track may contain several
+ * segments, each of which map to a [Route].
  * Should be invoked off UI thread.
  */
 fun convertGpx(
@@ -19,7 +21,7 @@ fun convertGpx(
     val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
         gpxWaypointToMarker(wpt, index, defaultName)
     }
-    return GeoRecord(routes, waypoints)
+    return GeoRecord(routes, waypoints, gpx.metadata?.time, gpx.hasTrustedElevations())
 }
 
 /**
@@ -74,4 +76,4 @@ fun gpxWaypointToMarker(
     }
 }
 
-fun TrackPoint.toMarker(): Marker = Marker(lat = latitude, lon = longitude, elevation = elevation)
+fun TrackPoint.toMarker(): Marker = Marker(lat = latitude, lon = longitude, elevation = elevation, time = time)

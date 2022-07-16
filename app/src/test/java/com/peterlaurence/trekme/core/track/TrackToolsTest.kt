@@ -24,7 +24,7 @@ class TrackToolsTest {
 
         val gpx = parseGpx(FileInputStream(gpxFile))
         assertEquals(1, gpx.tracks.size)
-        val stats = TrackTools.getTrackStatistics(gpx.tracks.first(), gpx)
+        val stats = TrackTools.getGeoStatistics(gpx.tracks.first(), gpx)
         assertEquals(3773.11, stats.distance, 0.01)
     }
 }

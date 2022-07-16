@@ -11,14 +11,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
 import com.peterlaurence.trekme.core.units.UnitFormatter
 
 @Composable
 fun StatsPanel(
-    stats: TrackStatistics,
+    stats: GeoStatistics,
     modifier: Modifier = Modifier
 ) {
     FlowRow(

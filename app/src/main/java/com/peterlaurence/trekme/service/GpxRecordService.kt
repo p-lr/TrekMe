@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
@@ -134,8 +135,8 @@ class GpxRecordService : Service() {
         )
         if (state == GpxRecordState.STARTED || state == GpxRecordState.RESUMED) {
             eventsGpx.addPointToLiveRoute(trackPoint)
-            trackStatCalculator.addTrackPoint(trackPoint)
-            eventsGpx.postTrackStatistics(getStatistics())
+            trackStatCalculator.addTrackPoint(trackPoint.latitude, trackPoint.longitude, trackPoint.elevation, trackPoint.time)
+            eventsGpx.postGeoStatistics(getStatistics())
         }
     }
 
@@ -178,7 +179,6 @@ class GpxRecordService : Service() {
             val id = generateTrackId(trackName)
 
             val track = Track(trkSegList, trackName, id = id)
-            track.statistics = getStatistics()
 
             /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
              * actual source (which might be wifi, etc. It doesn't matter because GPS elevation is
@@ -211,7 +211,7 @@ class GpxRecordService : Service() {
         }
     }
 
-    private fun getStatistics(): TrackStatistics {
+    private fun getStatistics(): GeoStatistics {
         return if (trackStatCalculatorList.size > 1) {
             trackStatCalculatorList.mergeStats()
         } else {
@@ -271,7 +271,7 @@ class GpxRecordService : Service() {
      */
     private fun stop() {
         eventsGpx.resetLiveRoute()
-        eventsGpx.postTrackStatistics(null)
+        eventsGpx.postGeoStatistics(null)
         state = GpxRecordState.STOPPED
         stopSelf()
     }

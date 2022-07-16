@@ -16,7 +16,7 @@ fun Marker.toEntity(): MarkerGson.Marker {
 }
 
 fun MarkerGson.Marker.toDomain(): Marker {
-    return Marker(lat, lon, name, elevation, comment)
+    return Marker(lat, lon, name, elevation, comment = comment)
 }
 
 fun Marker.toMarkerKtx(): MarkerKtx {

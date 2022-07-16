@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.peterlaurence.trekme.core.track.TrackStatistics
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,5 +18,5 @@ class StatisticsViewModel @Inject constructor(
 ) : ViewModel() {
     /* In this context, a null value means that statistics shouldn't be displayed - the view should
      * reflect this appropriately */
-    val stats: SharedFlow<TrackStatistics?> = gpxRecordEvents.trackStatisticsEvent
+    val stats: SharedFlow<GeoStatistics?> = gpxRecordEvents.geoStatisticsEvent
 }
