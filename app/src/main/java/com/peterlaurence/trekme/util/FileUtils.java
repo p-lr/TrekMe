@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.OpenableColumns;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -149,6 +151,7 @@ public class FileUtils {
     /**
      * Extract the file name from URI returned from Intent.ACTION_GET_CONTENT
      */
+    @Nullable
     public static String getFileRealFileNameFromURI(ContentResolver contentResolver, Uri uri) {
         String result = null;
         String scheme = uri.getScheme();

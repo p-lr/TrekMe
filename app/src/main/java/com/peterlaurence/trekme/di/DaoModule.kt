@@ -3,6 +3,8 @@ package com.peterlaurence.trekme.di
 import android.app.Application
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.peterlaurence.trekme.core.georecord.data.dao.GeoRecordDaoImpl
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordDao
 import com.peterlaurence.trekme.core.map.data.dao.*
 import com.peterlaurence.trekme.core.map.data.models.RuntimeTypeAdapterFactory
 import com.peterlaurence.trekme.core.map.domain.dao.*
@@ -111,5 +113,11 @@ object DaoModule {
     @Provides
     fun provideArchiveMapDao(app: Application): ArchiveMapDao {
         return ArchiveMapDaoImpl(app, Dispatchers.Default)
+    }
+
+    @Singleton
+    @Provides
+    fun providesGpxDao(@IoDispatcher ioDispatcher: CoroutineDispatcher): GeoRecordDao {
+        return GeoRecordDaoImpl(ioDispatcher)
     }
 }

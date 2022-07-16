@@ -1,5 +1,9 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -149,9 +153,12 @@ private fun CustomErrorScreen(state: WmtsError) {
 
 @Composable
 fun WmtsStateful(
-    viewModel: WmtsViewModel, wmtsSourceStateFlow: StateFlow<WmtsSource?>,
-    onLayerSelection: () -> Unit, onShowLayerOverlay: () -> Unit,
-    onMenuClick: () -> Unit, onBoardingViewModel: WmtsOnBoardingViewModel
+    viewModel: WmtsViewModel,
+    onBoardingViewModel: WmtsOnBoardingViewModel,
+    wmtsSourceStateFlow: StateFlow<WmtsSource?>,
+    onLayerSelection: () -> Unit,
+    onShowLayerOverlay: () -> Unit,
+    onMenuClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val topBarState by viewModel.topBarState.collectAsState()
@@ -159,6 +166,12 @@ fun WmtsStateful(
     val wmtsSource by wmtsSourceStateFlow.collectAsState()
 
     val events = viewModel.eventListState.toList()
+
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.also {
+            viewModel.onTrackImport(uri)
+        }
+    }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         WmtsScaffold(
@@ -181,7 +194,10 @@ fun WmtsStateful(
                 viewModel.zoomOnPosition()
                 onBoardingViewModel.onCenterOnPosTipAck()
             },
-            onShowLayerOverlay
+            onShowLayerOverlay,
+            onUseTrack = {
+                launcher.launch("*/*")
+            }
         )
 
         OnBoardingOverlay(
@@ -261,7 +277,8 @@ fun WmtsScaffold(
     onGeoPlaceSelection: (GeoPlace) -> Unit,
     onLayerSelection: () -> Unit,
     onZoomOnPosition: () -> Unit,
-    onShowLayerOverlay: () -> Unit
+    onShowLayerOverlay: () -> Unit,
+    onUseTrack: () -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -298,7 +315,8 @@ fun WmtsScaffold(
                 onQueryTextSubmit,
                 onLayerSelection,
                 onZoomOnPosition,
-                onShowLayerOverlay
+                onShowLayerOverlay,
+                onUseTrack
             )
         },
         floatingActionButton = {

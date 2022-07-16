@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.billing.gpspro.buildGpsProBilling
 import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordDao
 import com.peterlaurence.trekme.core.location.*
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.orientation.OrientationSource
@@ -107,7 +108,8 @@ object AppModule {
     fun bindTrackImporter(
         repo: RouteRepository,
         markersDao: MarkersDao,
-    ): TrackImporter = TrackImporter(repo, markersDao)
+        geoRecordDao: GeoRecordDao
+    ): TrackImporter = TrackImporter(repo, markersDao, geoRecordDao)
 
     @Singleton
     @Provides

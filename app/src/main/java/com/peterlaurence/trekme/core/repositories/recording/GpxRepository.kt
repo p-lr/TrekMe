@@ -48,7 +48,7 @@ class GpxRepository @Inject constructor(private val trekMeContext: TrekMeContext
 
     fun isFileSupported(uri: Uri, contentResolver: ContentResolver): Boolean {
         val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-        val extension = fileName.substringAfterLast('.', "")
+        val extension = fileName?.substringAfterLast('.', "")
 
         if ("" == extension) return false
 

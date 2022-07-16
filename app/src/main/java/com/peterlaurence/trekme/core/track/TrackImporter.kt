@@ -3,35 +3,34 @@ package com.peterlaurence.trekme.core.track
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
+import com.peterlaurence.trekme.core.georecord.data.convertGpx
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
-import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.core.lib.gpx.model.*
-import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordDao
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import javax.inject.Inject
 
 /**
- * Utility toolbox to :
+ * Interactor for gpx import.
+ * TODO: The app is missing a domain type for geographic data (for instance, the corresponding data type
+ * is [Gpx]). When, for example, "GeoRecord" replaces [Gpx] usage at domain level, this class should
+ * be renamed "GeoRecordImporter".
  *
- *  * Import a gpx track file into a [Map].
- *  * Get the list of gpx files created by location recording.
- *  * Get the content of each gpx file as [Gpx] instances.
- *
- * @author P.Laurence on 03/03/17 -- converted to Kotlin on 16/09/18
+ * @since 03/03/17 -- converted to Kotlin on 16/09/18
  */
 class TrackImporter @Inject constructor(
     val routeRepository: RouteRepository,
-    private val markersDao: MarkersDao
+    private val markersDao: MarkersDao,
+    private val geoRecordDao: GeoRecordDao
 ) {
     /**
      * Applies the GPX content given as an [Uri] to the provided [Map].
@@ -40,15 +39,9 @@ class TrackImporter @Inject constructor(
         uri: Uri, contentResolver: ContentResolver, map: Map
     ): GpxImportResult {
         return runCatching {
-            val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-            parcelFileDescriptor?.use {
-                val fileDescriptor = parcelFileDescriptor.fileDescriptor
-                FileInputStream(fileDescriptor).use { fileInputStream ->
-                    val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-                        ?: "A track"
-                    applyGpxInputStreamToMap(fileInputStream, map, fileName)
-                }
-            }
+            geoRecordDao.parseGpx(uri, contentResolver)?.let { (routes, markers) ->
+                setRoutesAndMarkersToMap(map, routes, markers)
+            } ?: GpxImportResult.GpxImportError
         }.onFailure {
             Log.e(TAG, "File with uri $uri doesn't exists")
         }.getOrNull() ?: GpxImportResult.GpxImportError
@@ -68,10 +61,12 @@ class TrackImporter @Inject constructor(
 
     /**
      * Applies the GPX content given directly as a [Gpx] instance to the provided [Map].
+     * TODO: The [Gpx] type is a data type a shouldn't be used here. Instead, it should have been
+     * converted to domain type beforehand and passed here.
      */
     suspend fun applyGpxToMap(gpx: Gpx, map: Map): GpxImportResult {
         val data = convertGpx(gpx)
-        return setRoutesAndMarkersToMap(map, data.first, data.second)
+        return setRoutesAndMarkersToMap(map, data.routes, data.markers)
     }
 
     sealed class GpxImportResult {
@@ -84,32 +79,6 @@ class TrackImporter @Inject constructor(
     }
 
     /**
-     * Parses the GPX content provided as [InputStream], off UI thread.
-     */
-    private suspend fun readGpxInputStream(input: InputStream, map: Map, defaultName: String) =
-        withContext(Dispatchers.Default) {
-            parseGpxSafely(input)?.let { gpx ->
-                convertGpx(gpx, defaultName)
-            }
-        }
-
-    /**
-     * Converts a [Gpx] instance into view-specific types.
-     */
-    private suspend fun convertGpx(
-        gpx: Gpx,
-        defaultName: String = "track"
-    ): Pair<List<Route>, List<Marker>> = withContext(Dispatchers.Default) {
-        val routes = gpx.tracks.mapIndexed { index, track ->
-            gpxTrackToRoute(track, gpx.hasTrustedElevations(), index, defaultName)
-        }.flatten()
-        val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
-            gpxWaypointsToMarker(wpt, index, defaultName)
-        }
-        Pair(routes, waypoints)
-    }
-
-    /**
      * Parses a [Gpx] from the given [InputStream]. Then, on the calling [CoroutineScope] (which
      * [CoroutineDispatcher] should be [Dispatchers.Main]), applies the result on the provided [Map].
      */
@@ -118,10 +87,10 @@ class TrackImporter @Inject constructor(
         map: Map,
         defaultName: String
     ): GpxImportResult {
-        val pair = readGpxInputStream(input, map, defaultName)
+        val pair = geoRecordDao.parseGpx(input, defaultName)
 
         return if (pair != null) {
-            return setRoutesAndMarkersToMap(map, pair.first, pair.second)
+            return setRoutesAndMarkersToMap(map, pair.routes, pair.markers)
         } else {
             GpxImportResult.GpxImportError
         }
@@ -144,61 +113,6 @@ class TrackImporter @Inject constructor(
             GpxImportResult.GpxImportError
         }
     }
-
-    /**
-     * Converts a [Track] into a list of [Route] (a single [Track] may contain several [TrackSegment]).
-     * This should be invoked off UI thread.
-     */
-    private fun gpxTrackToRoute(
-        track: Track,
-        elevationTrusted: Boolean,
-        index: Int,
-        defaultName: String
-    ): List<Route> {
-
-        /* The route name is the track name if it has one. Otherwise we take the default name */
-        val name = track.name.ifEmpty {
-            "$defaultName#$index"
-        }
-
-        /* If there's more than one segment, the route name/id is the track name/id suffixed
-         * with the segment index. */
-        fun String?.formatNameOrId(i: Int): String? = if (this != null && track.trackSegments.size > 1) {
-            this + "_$i"
-        } else this
-
-        /* Make a route for each track segment */
-        return track.trackSegments.mapIndexed { i, segment ->
-            val markers = segment.trackPoints.map { trackPoint ->
-                trackPoint.toMarker()
-            }.toMutableList()
-
-            Route(
-                id = segment.id,
-                name = name.formatNameOrId(i),
-                initialMarkers = markers,
-                initialVisibility = true, /* The route should be visible by default */
-                elevationTrusted = elevationTrusted
-            )
-        }
-    }
-
-    private fun gpxWaypointsToMarker(
-        wpt: TrackPoint,
-        index: Int,
-        defaultName: String
-    ): Marker {
-        return wpt.toMarker().apply {
-            name = if (wpt.name?.isNotEmpty() == true) {
-                wpt.name ?: ""
-            } else {
-                "$defaultName-wpt${index + 1}"
-            }
-        }
-    }
 }
-
-fun TrackPoint.toMarker(): Marker = Marker(lat = latitude, lon = longitude, elevation = elevation)
-
 
 private const val TAG = "TrackImporter"

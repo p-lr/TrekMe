@@ -253,6 +253,7 @@
     <string name="place_search_hint">Chercher un lieu</string>
     <string name="place_outside_of_covered_area">Ce lieu est hors de la zone couverte par cette carte.</string>
     <string name="mapcreate_overlay_layers">Superposer des couches</string>
+    <string name="mapcreate_from_track">Utiliser une trace</string>
     <string name="add_layer">Ajouter une couche</string>
     <string name="layer_ign_roads">Routes</string>
     <string name="layer_ign_slopes">Pentes en montagne</string>

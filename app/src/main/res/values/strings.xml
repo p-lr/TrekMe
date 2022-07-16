@@ -315,6 +315,7 @@
     <string name="mapcreate_zoom_on_position">Zoom on location</string>
     <string name="mapcreate_define_layer">Choose layer</string>
     <string name="mapcreate_overlay_layers">Overlay layers</string>
+    <string name="mapcreate_from_track">Use a track</string>
     <string name="wmts_settings_dialog">Map configuration</string>
     <string name="google_map_wmts_label" translatable="false">GoogleMapWmtsViewFragment</string>
     <string name="min_zoom">Minimum zoom</string>

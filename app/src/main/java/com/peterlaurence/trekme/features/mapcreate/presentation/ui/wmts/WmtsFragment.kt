@@ -143,11 +143,11 @@ class WmtsFragment : Fragment() {
                 TrekMeTheme {
                     WmtsStateful(
                         viewModel,
+                        onBoardingViewModel,
                         wmtsSourceRepository.wmtsSourceState,
                         ::showPrimaryLayerSelection,
                         ::showLayerOverlay,
-                        appEventBus::openDrawer,
-                        onBoardingViewModel
+                        appEventBus::openDrawer
                     )
                 }
             }

@@ -27,7 +27,7 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
     private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
     private val locationRequest = LocationRequest.create().apply {
         interval = 2000
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        priority = Priority.PRIORITY_HIGH_ACCURACY
         maxWaitTime = 5000  // 5s
     }
     private val looper = Looper.getMainLooper()

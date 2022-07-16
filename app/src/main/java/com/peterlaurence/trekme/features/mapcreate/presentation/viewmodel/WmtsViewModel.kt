@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 
 import android.app.Application
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -207,6 +208,11 @@ class WmtsViewModel @Inject constructor(
 
     fun acknowledgeError() {
         eventListState.removeFirstOrNull()
+    }
+
+    fun onTrackImport(uri: Uri) {
+
+        // TODO: implement
     }
 
     private fun updateMapState(wmtsSource: WmtsSource, restorePrevious: Boolean = true) {

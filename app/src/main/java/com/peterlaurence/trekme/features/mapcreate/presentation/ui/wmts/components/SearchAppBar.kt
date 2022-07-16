@@ -35,7 +35,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.TopBar
  * text input field occupies all horizontal space (other buttons are hidden). The search can be left
  * using the navigation icon.
  *
- * @author P.Laurence on 2021/08/28
+ * @since 2021/08/28
  */
 @Composable
 fun SearchAppBar(
@@ -46,7 +46,8 @@ fun SearchAppBar(
     onQueryTextSubmit: (String) -> Unit,
     onLayerSelection: () -> Unit,
     onZoomOnPosition: () -> Unit,
-    onShowLayerOverlay: () -> Unit
+    onShowLayerOverlay: () -> Unit,
+    onUseTrack: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -119,6 +120,9 @@ fun SearchAppBar(
                             ) {
                                 DropdownMenuItem(onClick = onShowLayerOverlay) {
                                     Text(stringResource(id = R.string.mapcreate_overlay_layers))
+                                }
+                                DropdownMenuItem(onClick = onUseTrack) {
+                                    Text(stringResource(id = R.string.mapcreate_from_track))
                                 }
                             }
                         }
