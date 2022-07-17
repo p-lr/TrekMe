@@ -5,6 +5,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.billing.common.PurchaseState
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.core.map.*
@@ -14,7 +15,6 @@ import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
@@ -126,8 +126,8 @@ class MapViewModel @Inject constructor(
         // TODO: A map should have a StateFlow<List<Marker>>, just like it has a flow of Route.
         // That would eliminate the need to listen to app events, and allows for better separation
         // of concern.
-        appEventBus.gpxImportEvent.map { event ->
-            if (event is TrackImporter.GpxImportResult.GpxImportOk) {
+        appEventBus.geoRecordImportEvent.map { event ->
+            if (event is GeoRecordImportResult.GeoRecordImportOk) {
                 if (event.newMarkersCount > 0) {
                     markerLayer.onMarkersChanged(event.map.id)
                 }

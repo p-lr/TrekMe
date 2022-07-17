@@ -19,8 +19,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
@@ -94,7 +94,7 @@ class RecordFragment : Fragment() {
             LocalisationDisclaimer().show(parentFragmentManager, null)
         }
 
-        appEventBus.gpxImportEvent.collectWhileResumed(this) {
+        appEventBus.geoRecordImportEvent.collectWhileResumed(this) {
             onGpxImported(it)
         }
 
@@ -122,12 +122,12 @@ class RecordFragment : Fragment() {
         _binding = null
     }
 
-    private fun onGpxImported(event: TrackImporter.GpxImportResult) {
+    private fun onGpxImported(event: GeoRecordImportResult) {
         when (event) {
-            is TrackImporter.GpxImportResult.GpxImportOk ->
+            is GeoRecordImportResult.GeoRecordImportOk ->
                 /* Tell the user that the track will be shortly available in the map */
                 Snackbar.make(binding.root, R.string.track_is_being_added, Snackbar.LENGTH_LONG).show()
-            is TrackImporter.GpxImportResult.GpxImportError ->
+            is GeoRecordImportResult.GeoRecordImportError ->
                 /* Tell the user that an error occurred */
                 Snackbar.make(binding.root, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
         }

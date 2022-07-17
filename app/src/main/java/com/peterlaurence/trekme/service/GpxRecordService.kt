@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
+import com.peterlaurence.trekme.core.georecord.data.convertGpx
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
@@ -27,6 +28,7 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
+import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -202,7 +204,13 @@ class GpxRecordService : Service() {
                 val gpxFile = File(recordingsDir, gpxFileName)
                 val fos = FileOutputStream(gpxFile)
                 writeGpx(gpx, fos)
-                eventsGpx.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, gpx))
+
+                /* Now that the file is written, send an event to the application */
+                val boundingBox = gpx.metadata?.bounds?.let {
+                    BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
+                }
+                val geoRecord = convertGpx(gpx)
+                eventsGpx.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, geoRecord, boundingBox))
             } catch (e: Exception) {
                 eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_error)))
             } finally {

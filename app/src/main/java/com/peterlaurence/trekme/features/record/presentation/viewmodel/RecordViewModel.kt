@@ -9,6 +9,7 @@ import androidx.core.location.LocationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
@@ -16,9 +17,9 @@ import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
+import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
@@ -38,7 +39,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RecordViewModel @Inject constructor(
     private val gpxRepository: GpxRepository,
-    private val trackImporter: TrackImporter,
+    private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val app: Application,
     private val settings: Settings,
     private val gpxRecordEvents: GpxRecordEvents,
@@ -93,11 +94,7 @@ class RecordViewModel @Inject constructor(
      * the [BoundingBox] of the gpx track.
      */
     private suspend fun onGpxFileWriteEvent(event: GpxFileWriteEvent) {
-        val gpx = event.gpx
-
-        val boundingBox = gpx.metadata?.bounds?.let {
-            BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
-        } ?: return
+        val boundingBox = event.boundingBox ?: return
 
         var importCount = 0
         supervisorScope {
@@ -105,9 +102,9 @@ class RecordViewModel @Inject constructor(
                 launch {
                     if (map.intersects(boundingBox)) {
                         /* Import the new route */
-                        val result = trackImporter.applyGpxToMap(gpx, map)
-                        appEventBus.postGpxImportResult(result)
-                        if (result is TrackImporter.GpxImportResult.GpxImportOk && result.newRouteCount >= 1) {
+                        val result = importGeoRecordInteractor.applyGpxFileToMap(event.gpxFile, map)
+                        appEventBus.postGeoRecordImportResult(result)
+                        if (result is GeoRecordImportResult.GeoRecordImportOk && result.newRouteCount >= 1) {
                             importCount++
                         }
                     }
@@ -128,9 +125,9 @@ class RecordViewModel @Inject constructor(
         } ?: return
 
         viewModelScope.launch {
-            trackImporter.applyGpxFileToMap(recording, map).let {
+            importGeoRecordInteractor.applyGpxFileToMap(recording, map).let {
                 /* Once done, notify the rest of the app */
-                appEventBus.postGpxImportResult(it)
+                appEventBus.postGeoRecordImportResult(it)
             }
         }
     }

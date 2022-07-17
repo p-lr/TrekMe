@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.georecord.domain.interactors
+package com.peterlaurence.trekme.core.georecord.domain.dao
 
 import android.content.ContentResolver
 import android.net.Uri

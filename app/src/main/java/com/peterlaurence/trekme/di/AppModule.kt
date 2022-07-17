@@ -9,9 +9,7 @@ import com.peterlaurence.trekme.billing.gpspro.buildGpsProBilling
 import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordParser
 import com.peterlaurence.trekme.core.location.*
-import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
@@ -27,7 +25,6 @@ import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.core.repositories.recording.ElevationRepository
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.data.orientation.OrientationSourceImpl
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
@@ -107,14 +104,6 @@ object AppModule {
     fun bindRouteRepository(): RouteRepository = RouteRepository(
         Dispatchers.IO, Dispatchers.Main
     )
-
-    @Singleton
-    @Provides
-    fun bindTrackImporter(
-        repo: RouteRepository,
-        markersDao: MarkersDao,
-        geoRecordParser: GeoRecordParser
-    ): TrackImporter = TrackImporter(repo, markersDao, geoRecordParser)
 
     @Singleton
     @Provides

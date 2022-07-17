@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.events
 
 import com.peterlaurence.trekme.billing.BillingParams
-import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -28,10 +28,10 @@ class AppEventBus {
 
     /**********************************************************************************************/
 
-    private val _gpxImportEvent = MutableSharedFlow<TrackImporter.GpxImportResult>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val gpxImportEvent = _gpxImportEvent.asSharedFlow()
+    private val _geoRecordImportEvent = MutableSharedFlow<GeoRecordImportResult>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val geoRecordImportEvent = _geoRecordImportEvent.asSharedFlow()
 
-    fun postGpxImportResult(event: TrackImporter.GpxImportResult) = _gpxImportEvent.tryEmit(event)
+    fun postGeoRecordImportResult(event: GeoRecordImportResult) = _geoRecordImportEvent.tryEmit(event)
 
     /**********************************************************************************************/
 

@@ -4,7 +4,7 @@ import android.app.Application
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.georecord.data.dao.GeoRecordParserImpl
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordParser
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.map.data.dao.*
 import com.peterlaurence.trekme.core.map.data.models.RuntimeTypeAdapterFactory
 import com.peterlaurence.trekme.core.map.domain.dao.*

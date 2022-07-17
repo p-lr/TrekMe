@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.legacy.events
 
-import com.peterlaurence.trekme.core.track.TrackImporter
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.events.TrackColorChangeEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,9 +22,9 @@ class TracksEventBus {
     /* endregion */
 
     /* region Track import */
-    private val _trackImportEvent = MutableSharedFlow<TrackImporter.GpxImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
+    private val _trackImportEvent = MutableSharedFlow<GeoRecordImportResult>(0, 1, BufferOverflow.DROP_OLDEST)
     val trackImportEvent = _trackImportEvent.asSharedFlow()
 
-    fun postTrackImportEvent(event: TrackImporter.GpxImportResult) = _trackImportEvent.tryEmit(event)
+    fun postTrackImportEvent(event: GeoRecordImportResult) = _trackImportEvent.tryEmit(event)
     /* endregion */
 }

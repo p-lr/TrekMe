@@ -8,8 +8,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.georecord.data.convertGpx
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordParser
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.di.IoDispatcher
@@ -76,7 +75,7 @@ class GeoRecordRepository @Inject constructor(
 
         primaryScope.launch {
             gpxRecordEvents.gpxFileWriteEvent.collect {
-                addOneRecording(it.gpxFile, convertGpx(it.gpx))
+                addOneRecording(it.gpxFile, it.geoRecord)
             }
         }
     }

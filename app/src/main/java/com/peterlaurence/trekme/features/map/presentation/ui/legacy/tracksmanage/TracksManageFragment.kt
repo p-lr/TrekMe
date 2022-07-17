@@ -21,9 +21,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.dialogs.ColorSelectDialog
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
@@ -78,7 +78,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         }.collectWhileResumedIn(this)
 
         eventBus.trackImportEvent.map {
-            if (it is TrackImporter.GpxImportResult.GpxImportOk) {
+            if (it is GeoRecordImportResult.GeoRecordImportOk) {
                 onGpxParseResult(it)
             } else {
                 onImportError()
@@ -156,7 +156,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun onGpxParseResult(event: TrackImporter.GpxImportResult.GpxImportOk) {
+    private fun onGpxParseResult(event: GeoRecordImportResult.GeoRecordImportOk) {
         /* Display to the user a recap of how many tracks and waypoints were imported */
         val activity = activity
         if (activity != null) {

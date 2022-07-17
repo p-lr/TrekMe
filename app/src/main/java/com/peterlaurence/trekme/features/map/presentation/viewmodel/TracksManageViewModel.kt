@@ -4,14 +4,15 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.*
 import com.peterlaurence.trekme.billing.common.PurchaseState
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.core.track.TrackImporter
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
 import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
+import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,7 @@ class TracksManageViewModel @Inject constructor(
     private val gpxRepository: GpxRepository,
     private val routeRepository: RouteRepository,
     extendedOfferRepository: ExtendedOfferRepository,
-    private val trackImporter: TrackImporter,
+    private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val app: Application,
     private val appEventBus: AppEventBus,
     private val tracksEventBus: TracksEventBus,
@@ -73,16 +74,16 @@ class TracksManageViewModel @Inject constructor(
      */
     fun applyGpxUri(uri: Uri) = viewModelScope.launch {
         map?.let {
-            trackImporter.applyGpxUriToMap(
+            importGeoRecordInteractor.applyGpxUriToMap(
                 uri,
                 app.applicationContext.contentResolver,
                 it
             ).let { result ->
-                if (result is TrackImporter.GpxImportResult.GpxImportOk) {
+                if (result is GeoRecordImportResult.GeoRecordImportOk) {
                     _tracks.postValue(map?.routes?.value ?: listOf())
                 }
                 /* Notify the rest of the app */
-                appEventBus.postGpxImportResult(result)
+                appEventBus.postGeoRecordImportResult(result)
                 tracksEventBus.postTrackImportEvent(result)
             }
         }

@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.core.georecord.data.dao
 import android.content.ContentResolver
 import android.net.Uri
 import com.peterlaurence.trekme.core.georecord.data.convertGpx
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordParser
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import com.peterlaurence.trekme.di.IoDispatcher
