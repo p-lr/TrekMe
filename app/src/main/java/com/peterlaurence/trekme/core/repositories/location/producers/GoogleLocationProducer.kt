@@ -21,10 +21,11 @@ import kotlinx.coroutines.runBlocking
  * A [LocationProducer] which uses Google's fused location provider. It combines all possible sources
  * of location data.
  *
- * @author P.Laurence on 26/11/20
+ * @since 2020/11/26
  */
 class GoogleLocationProducer(private val applicationContext: Context) : LocationProducer {
-    private val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
+    private val fusedLocationClient: FusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(applicationContext)
     private val locationRequest = LocationRequest.create().apply {
         interval = 2000
         priority = Priority.PRIORITY_HIGH_ACCURACY
@@ -57,9 +58,9 @@ class GoogleLocationProducer(private val applicationContext: Context) : Location
             fun requestLocationUpdates(): Result<Unit> = runCatching {
                 if (permission) {
                     fusedLocationClient.requestLocationUpdates(
-                            locationRequest,
-                            callback,
-                            looper
+                        locationRequest,
+                        callback,
+                        looper
                     ).addOnFailureListener {
                         /* In case of error, re-subscribe after a delay */
                         runBlocking { delay(4000) }

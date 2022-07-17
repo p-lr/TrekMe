@@ -21,7 +21,8 @@ class LocationSourceImpl(
      * A [SharedFlow] of [Location]s, with a replay of 1.
      * Automatically un-registers underlying callback when there are no collectors.
      * N.B: This shared flow used to be conflated, using a trick reported in
-     * https://github.com/Kotlin/kotlinx.coroutines/issues/2408 is fixed
+     * https://github.com/Kotlin/kotlinx.coroutines/issues/2408. However, we don't want slow
+     * collectors (especially recorders) to miss locations.
      */
     override val locationFlow: SharedFlow<Location> by lazy {
         callbackFlow {
@@ -34,24 +35,24 @@ class LocationSourceImpl(
                 producer.stop()
             }
         }.shareIn(
-                ProcessLifecycleOwner.get().lifecycleScope,
-                SharingStarted.WhileSubscribed(),
-                1
+            ProcessLifecycleOwner.get().lifecycleScope,
+            SharingStarted.WhileSubscribed(),
+            1
         )
     }
 }
 
 private class ProducersController(
-        state: Flow<LocationProducerInfo>,
-        private val flowSelector: (LocationProducerInfo) -> Flow<Location>
+    state: Flow<LocationProducerInfo>,
+    private val flowSelector: (LocationProducerInfo) -> Flow<Location>
 ) {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var internalJob: Job? = null
     private var externalJob: Job? = null
 
-    val _locationFlow = MutableSharedFlow<Location>(
-            extraBufferCapacity = 256,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST
+    private val _locationFlow = MutableSharedFlow<Location>(
+        extraBufferCapacity = 256,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val locationFlow: SharedFlow<Location> = _locationFlow.asSharedFlow()
 
