@@ -19,7 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
@@ -38,7 +38,6 @@ import ovh.plrapps.mapcompose.api.rotation
 fun MapScreen(
     viewModel: MapViewModel = viewModel(),
     statisticsViewModel: StatisticsViewModel = viewModel(),
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigateToTracksManage: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -52,14 +51,21 @@ fun MapScreen(
     val isShowingScaleIndicator by viewModel.settings.getShowScaleIndicator().collectAsState(initial = true)
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
     val stats by statisticsViewModel.stats.collectAsState(initial = null)
-    val location: Location? by viewModel.locationFlow.collectAsState(initial = null)
     val rotationMode by viewModel.settings.getRotationMode()
         .collectAsState(initial = RotationMode.NONE)
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val locationFlow = viewModel.locationFlow
+    val locationFlowLifecycleAware = remember(locationFlow, lifecycleOwner) {
+        locationFlow.flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.RESUMED)
+    }
+
+    val location: Location? by locationFlowLifecycleAware.collectAsState(initial = null)
 
     LaunchedEffect(lifecycleOwner) {
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                viewModel.locationFlow.collect {
+                locationFlowLifecycleAware.collect {
                     viewModel.locationOrientationLayer.onLocation(it)
                 }
             }
