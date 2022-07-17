@@ -29,7 +29,7 @@ import javax.inject.Inject
  * This view-model also notifies the UI of other events coming from the [ElevationRepository], such
  * as when an error occurred, or when there's no network.
  *
- * @author P.Laurence on 2020/12/13
+ * @since 2020/12/13
  **/
 @HiltViewModel
 class ElevationViewModel @Inject constructor(

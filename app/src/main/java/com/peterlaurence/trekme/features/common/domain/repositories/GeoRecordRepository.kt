@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.supportedGeoRecordFilesExtensions
 import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.events.AppEventBus
@@ -47,16 +48,13 @@ class GeoRecordRepository @Inject constructor(
 ) {
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
 
-
-    private val supportedTrackFilesExtensions = arrayOf("gpx", "xml")
-
     private val supportedFileFilter = filter@{ dir: File, filename: String ->
         /* We only look at files */
         if (File(dir, filename).isDirectory) {
             return@filter false
         }
 
-        supportedTrackFilesExtensions.any { filename.endsWith(".$it") }
+        supportedGeoRecordFilesExtensions.any { filename.endsWith(".$it") }
     }
 
     /**

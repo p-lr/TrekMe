@@ -18,8 +18,8 @@ import com.peterlaurence.trekme.core.map.intersects
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
+import com.peterlaurence.trekme.features.common.domain.repositories.GeoRecordRepository
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
@@ -38,7 +38,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RecordViewModel @Inject constructor(
-    private val gpxRepository: GpxRepository,
+    private val geoRecordRepository: GeoRecordRepository,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val app: Application,
     private val settings: Settings,
@@ -117,12 +117,13 @@ class RecordViewModel @Inject constructor(
         }
     }
 
+
     private fun onMapSelectedForRecord(mapId: Int, recordPath: String) {
         val map = mapRepository.getMap(mapId) ?: return
 
-        val recording = gpxRepository.recordings?.firstOrNull {
-            it.path == recordPath
-        } ?: return
+        val recording = geoRecordRepository.recordingDataFlow.value.firstOrNull {
+            it.file.path == recordPath
+        }?.file ?: return
 
         viewModelScope.launch {
             importGeoRecordInteractor.applyGpxFileToMap(recording, map).let {

@@ -1,9 +1,5 @@
 package com.peterlaurence.trekme.core.repositories.recording
 
-import android.content.ContentResolver
-import android.net.Uri
-import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -13,28 +9,14 @@ import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * TODO: refactor to remove the dependency on [Gpx].
+ */
 @Singleton
-class GpxRepository @Inject constructor(private val trekMeContext: TrekMeContext) {
+class GpxRepository @Inject constructor() {
     private val _gpxForElevation = MutableSharedFlow<GpxForElevation?>(
-            1, 0, BufferOverflow.DROP_OLDEST)
-
-    private val supportedTrackFilesExtensions = arrayOf("gpx", "xml")
-
-    private val supportedFileFilter = filter@{ dir: File, filename: String ->
-        /* We only look at files */
-        if (File(dir, filename).isDirectory) {
-            return@filter false
-        }
-
-        supportedTrackFilesExtensions.any { filename.endsWith(".$it") }
-    }
-
-    /**
-     * Get the list of [File] which extension is in the list of supported extension for track
-     * file. Files are searched into the [TrekMeContext.recordingsDir].
-     */
-    val recordings: Array<File>?
-        get() = trekMeContext.recordingsDir?.listFiles(supportedFileFilter)
+        1, 0, BufferOverflow.DROP_OLDEST
+    )
 
     val gpxForElevation = _gpxForElevation.asSharedFlow()
 
@@ -44,15 +26,6 @@ class GpxRepository @Inject constructor(private val trekMeContext: TrekMeContext
 
     fun resetGpxForElevation() {
         _gpxForElevation.tryEmit(null)
-    }
-
-    fun isFileSupported(uri: Uri, contentResolver: ContentResolver): Boolean {
-        val fileName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-        val extension = fileName?.substringAfterLast('.', "")
-
-        if ("" == extension) return false
-
-        return supportedTrackFilesExtensions.any { it == extension }
     }
 }
 
