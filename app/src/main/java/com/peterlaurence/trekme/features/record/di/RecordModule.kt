@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.record.presentation.di
+package com.peterlaurence.trekme.features.record.di
 
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.Module

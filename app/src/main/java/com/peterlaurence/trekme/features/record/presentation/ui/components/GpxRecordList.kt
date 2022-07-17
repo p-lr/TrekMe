@@ -11,7 +11,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +28,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColo
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textButtonColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
-import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingData
+import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import kotlinx.parcelize.Parcelize
 
@@ -44,7 +43,7 @@ fun GpxRecordListStateful(
     onElevationGraphClick: (RecordingData) -> Unit,
     onDeleteClick: (List<RecordingData>) -> Unit
 ) {
-    val data by statViewModel.getRecordingData().observeAsState(listOf())
+    val data by statViewModel.recordingDataFlow.collectAsState()
     val dataById = data.associateBy { it.file.path }
 
     var isMultiSelectionMode by rememberSaveable {
