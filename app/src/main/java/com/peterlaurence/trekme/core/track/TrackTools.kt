@@ -5,12 +5,14 @@ import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.features.common.domain.interactors.georecord.hasTrustedElevations
 import java.io.File
 import java.util.*
 
 object TrackTools {
     /**
      * Rename a GPX file.
+     * TODO: move this function to data layer
      */
     fun renameGpxFile(gpxFile: File, newFile: File): Boolean {
         return try {
@@ -62,7 +64,7 @@ object TrackTools {
 
     fun getGeoStatistics(geoRecord: GeoRecord): GeoStatistics {
         val statCalculatorList = geoRecord.routes.map { route ->
-            val distanceCalculator = distanceCalculatorFactory(geoRecord.hasTrustedElevations)
+            val distanceCalculator = distanceCalculatorFactory(geoRecord.hasTrustedElevations())
             val statCalculator = TrackStatCalculator(distanceCalculator)
             route.routeMarkers.forEach {
                 statCalculator.addTrackPoint(it.lat, it.lon, it.elevation, it.time)

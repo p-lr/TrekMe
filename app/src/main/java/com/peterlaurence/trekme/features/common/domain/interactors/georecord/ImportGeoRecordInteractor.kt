@@ -10,8 +10,11 @@ import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.core.track.TrackTools
+import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
+import com.peterlaurence.trekme.features.common.domain.model.ElevationSourceInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -92,6 +95,14 @@ class ImportGeoRecordInteractor @Inject constructor(
             GeoRecordImportResult.GeoRecordImportError
         }
     }
+}
+
+fun GeoRecord.hasTrustedElevations() : Boolean {
+    return elevationSourceInfo.hasTrustedElevations()
+}
+
+fun ElevationSourceInfo?.hasTrustedElevations() : Boolean {
+    return this?.elevationSource == ElevationSource.IGN_RGE_ALTI
 }
 
 private const val TAG = "TrackImporter"

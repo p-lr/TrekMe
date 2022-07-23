@@ -39,7 +39,7 @@ class TrackStatCalculatorTest {
      */
     @Test
     fun distanceTest() {
-        statCalculator.addTrackPointList(trackPoints)
+        trackPoints.forEach { statCalculator.addTrackPoint(it.latitude, it.longitude, it.elevation, it.time) }
 
         /* Tolerate 15m error */
         assertEquals(27_267.0, statCalculator.getStatistics().distance, 15.0)
@@ -50,7 +50,7 @@ class TrackStatCalculatorTest {
      */
     @Test
     fun elevationTest() {
-        statCalculator.addTrackPointList(trackPoints)
+        trackPoints.forEach { statCalculator.addTrackPoint(it.latitude, it.longitude, it.elevation, it.time) }
         val stats = statCalculator.getStatistics()
 
         assertNull(stats.elevationMax)

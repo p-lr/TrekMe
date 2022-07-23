@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * Client code uses the [update] method to trigger either a graph data generation or an update.
  *
- * @author P.Laurence on 13/12/20
+ * @since 2020/12/13
  */
 class ElevationRepository(
     private val dispatcher: CoroutineDispatcher,
@@ -102,7 +102,7 @@ class ElevationRepository(
     ): TrackElevationsSubSampled = withContext(dispatcher) {
         /* We'll work on the first track only */
         val firstTrack = gpx.tracks.firstOrNull() ?: return@withContext TrackElevationsSubSampled(
-            listOf(), ElevationSource.GPS, false
+            listOf(), GpxElevationSource.GPS, false
         )
         val trustedElevations = gpx.hasTrustedElevations()
 
@@ -131,7 +131,7 @@ class ElevationRepository(
         /* Needs update if it wasn't already trusted and there was no errors */
         val needsUpdate = !trustedElevations && noError.get()
 
-        val eleSource = if (needsUpdate) ElevationSource.IGN_RGE_ALTI else gpx.getElevationSource()
+        val eleSource = if (needsUpdate) GpxElevationSource.IGN_RGE_ALTI else gpx.getElevationSource()
 
         TrackElevationsSubSampled(segmentElevations, eleSource, needsUpdate)
     }
@@ -203,7 +203,7 @@ class ElevationRepository(
         gpx: Gpx,
         id: UUID,
         segmentElevationList: List<SegmentElevationsSubSampled>,
-        eleSource: ElevationSource,
+        eleSource: GpxElevationSource,
         needsUpdate: Boolean
     ): ElevationState {
         val firstTrack = gpx.tracks.firstOrNull()
@@ -319,7 +319,7 @@ class ElevationRepository(
 
     private data class TrackElevationsSubSampled(
         val segmentElevations: List<SegmentElevationsSubSampled>,
-        val elevationSource: ElevationSource,
+        val elevationSource: GpxElevationSource,
         val needsUpdate: Boolean
     )
 }
@@ -333,7 +333,7 @@ data class ElevationData(
     val segmentElePoints: List<SegmentElePoints> = listOf(),
     val eleMin: Double = 0.0,
     val eleMax: Double = 0.0,
-    val elevationSource: ElevationSource,
+    val elevationSource: GpxElevationSource,
     val needsUpdate: Boolean,
     val sampling: Int
 ) : ElevationState

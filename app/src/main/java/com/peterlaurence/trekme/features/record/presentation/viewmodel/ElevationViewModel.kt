@@ -8,7 +8,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.core.repositories.recording.*
-import com.peterlaurence.trekme.core.lib.gpx.model.ElevationSourceInfo
+import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSourceInfo
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackSegment
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -100,7 +100,7 @@ class ElevationViewModel @Inject constructor(
                 track.copy(trackSegments = trackSegments)
             } else track
         }
-        val newMetadata = gpx.metadata?.copy(elevationSourceInfo = ElevationSourceInfo(eleData.elevationSource, eleData.sampling))
+        val newMetadata = gpx.metadata?.copy(elevationSourceInfo = GpxElevationSourceInfo(eleData.elevationSource, eleData.sampling))
         val newGpx = gpx.copy(tracks = newTracks, metadata = newMetadata)
 
         viewModelScope.launch(Dispatchers.IO) {

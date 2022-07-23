@@ -188,7 +188,7 @@ class GpxRecordService : Service() {
              * elevation value. */
             val metadata = Metadata(
                 trackName, date.time, trackStatCalculatorList.mergeBounds(),
-                elevationSourceInfo = ElevationSourceInfo(ElevationSource.GPS, 1)
+                elevationSourceInfo = GpxElevationSourceInfo(GpxElevationSource.GPS, 1)
             )
 
             val trkList = ArrayList<Track>()

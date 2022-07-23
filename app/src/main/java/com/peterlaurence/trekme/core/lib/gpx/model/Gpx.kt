@@ -17,12 +17,12 @@ data class Gpx(
 )
 
 /**
- * For instance, only trust [ElevationSource.IGN_RGE_ALTI].
+ * For instance, only trust [GpxElevationSource.IGN_RGE_ALTI].
  */
 fun Gpx.hasTrustedElevations(): Boolean {
-    return metadata?.elevationSourceInfo?.elevationSource == ElevationSource.IGN_RGE_ALTI
+    return metadata?.elevationSourceInfo?.elevationSource == GpxElevationSource.IGN_RGE_ALTI
 }
 
-fun Gpx.getElevationSource(): ElevationSource {
-    return metadata?.elevationSourceInfo?.elevationSource ?: ElevationSource.UNKNOWN
+fun Gpx.getElevationSource(): GpxElevationSource {
+    return metadata?.elevationSourceInfo?.elevationSource ?: GpxElevationSource.UNKNOWN
 }

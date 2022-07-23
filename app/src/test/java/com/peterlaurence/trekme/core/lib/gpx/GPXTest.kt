@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.lib.gpx
 
-import com.peterlaurence.trekme.core.lib.gpx.model.ElevationSource
+import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSource
 import com.peterlaurence.trekme.core.lib.gpx.model.Gpx
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -63,10 +63,10 @@ class GPXTest {
                     assertEquals(2, trackList.size) // 1 track, 1 route
                     val eleSource = metadata.elevationSourceInfo
                     assertNotNull(eleSource)
-                    assertEquals(ElevationSource.GPS, eleSource.elevationSource)
+                    assertEquals(GpxElevationSource.GPS, eleSource.elevationSource)
                     assertEquals(20, eleSource.sampling)
 
-                    val (trackSegmentList, name, id, statistics) = trackList[0]
+                    val (trackSegmentList, name, id) = trackList[0]
                     assertEquals("Example track", name)
                     assertEquals("12345", id)
                     assertEquals(1, trackSegmentList.size)
@@ -145,10 +145,10 @@ class GPXTest {
             assertEquals(2, trackList.size)
             val eleSource = metadata.elevationSourceInfo
             assertNotNull(eleSource)
-            assertEquals(ElevationSource.GPS, eleSource.elevationSource)
+            assertEquals(GpxElevationSource.GPS, eleSource.elevationSource)
             assertEquals(20, eleSource.sampling)
 
-            val (trackSegmentList, name, id, statistics) = trackList[0]
+            val (trackSegmentList, name, id) = trackList[0]
             assertEquals("Example track", name)
             assertEquals("12345", id)
             assertEquals(1, trackSegmentList.size)
