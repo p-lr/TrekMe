@@ -20,7 +20,7 @@ import com.peterlaurence.trekme.core.repositories.recording.ElevationData
 import com.peterlaurence.trekme.core.repositories.recording.NoElevationData
 import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.util.exhaustive
-import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSource
+import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -91,9 +91,9 @@ class ElevationFragment : Fragment() {
                                 b.elevationBottomTop.text =
                                     UnitFormatter.formatElevation(config.eleMax - config.eleMin)
                                 b.elevationSrcTxt.text = when (config.elevationSource) {
-                                    GpxElevationSource.GPS -> getString(R.string.elevation_src_gps)
-                                    GpxElevationSource.IGN_RGE_ALTI -> getString(R.string.elevation_src_ign_rge_alti)
-                                    GpxElevationSource.UNKNOWN -> getString(R.string.elevation_src_unknown)
+                                    ElevationSource.GPS -> getString(R.string.elevation_src_gps)
+                                    ElevationSource.IGN_RGE_ALTI -> getString(R.string.elevation_src_ign_rge_alti)
+                                    ElevationSource.UNKNOWN -> getString(R.string.elevation_src_unknown)
                                 }
                             } else {
                                 b.showGraph(false)

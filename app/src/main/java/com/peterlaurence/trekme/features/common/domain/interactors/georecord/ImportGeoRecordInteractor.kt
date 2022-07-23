@@ -108,4 +108,8 @@ fun ElevationSourceInfo?.hasTrustedElevations() : Boolean {
     return this?.elevationSource == ElevationSource.IGN_RGE_ALTI
 }
 
+fun GeoRecord.getElevationSource(): ElevationSource {
+    return elevationSourceInfo?.elevationSource ?: ElevationSource.UNKNOWN
+}
+
 private const val TAG = "TrackImporter"

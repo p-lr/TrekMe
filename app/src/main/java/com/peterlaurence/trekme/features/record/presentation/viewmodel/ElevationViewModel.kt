@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
@@ -11,6 +12,7 @@ import com.peterlaurence.trekme.core.repositories.recording.*
 import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSourceInfo
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackSegment
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
+import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -100,7 +102,9 @@ class ElevationViewModel @Inject constructor(
                 track.copy(trackSegments = trackSegments)
             } else track
         }
-        val newMetadata = gpx.metadata?.copy(elevationSourceInfo = GpxElevationSourceInfo(eleData.elevationSource, eleData.sampling))
+        val newMetadata = gpx.metadata?.copy(
+            elevationSourceInfo = GpxElevationSourceInfo(eleData.elevationSource.toGpxElevationSource(), eleData.sampling)
+        )
         val newGpx = gpx.copy(tracks = newTracks, metadata = newMetadata)
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -117,6 +121,14 @@ class ElevationViewModel @Inject constructor(
             } else {
                 repository.reset()
             }
+        }
+    }
+
+    private fun ElevationSource.toGpxElevationSource() : GpxElevationSource {
+        return when(this) {
+            ElevationSource.GPS -> GpxElevationSource.GPS
+            ElevationSource.IGN_RGE_ALTI -> GpxElevationSource.IGN_RGE_ALTI
+            ElevationSource.UNKNOWN -> GpxElevationSource.UNKNOWN
         }
     }
 }
