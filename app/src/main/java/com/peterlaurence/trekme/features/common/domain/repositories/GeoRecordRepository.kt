@@ -196,7 +196,7 @@ class GeoRecordRepository @Inject constructor(
 
     private suspend fun makeRecordingData(gpxFile: File, geoRecord: GeoRecord): RecordingData {
         return withContext(ioDispatcher) {
-            val routeIds: List<String> = geoRecord.routes.map { it.id }
+            val routeIds: List<String> = geoRecord.routeGroups.flatMap { it.routes }.map { it.id }
             val statistics = geoRecord.let {
                 TrackTools.getGeoStatistics(it)
             }

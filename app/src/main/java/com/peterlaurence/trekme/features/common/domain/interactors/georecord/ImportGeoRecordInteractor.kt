@@ -40,7 +40,8 @@ class ImportGeoRecordInteractor @Inject constructor(
         uri: Uri, contentResolver: ContentResolver, map: Map
     ): GeoRecordImportResult {
         return runCatching {
-            geoRecordParser.parse(uri, contentResolver)?.let { (routes, markers) ->
+            geoRecordParser.parse(uri, contentResolver)?.let { (uuid, routeGroups, markers) ->
+                val routes = routeGroups.flatMap { it.routes }
                 setRoutesAndMarkersToMap(map, routes, markers)
             } ?: GeoRecordImportResult.GeoRecordImportError
         }.onFailure {
@@ -72,14 +73,16 @@ class ImportGeoRecordInteractor @Inject constructor(
         val pair = geoRecordParser.parse(input, defaultName)
 
         return if (pair != null) {
-            return setRoutesAndMarkersToMap(map, pair.routes, pair.markers)
+            val newRoutes = pair.routeGroups.flatMap { it.routes }
+            return setRoutesAndMarkersToMap(map, newRoutes, pair.markers)
         } else {
             GeoRecordImportResult.GeoRecordImportError
         }
     }
 
     private suspend fun setRoutesAndMarkersToMap(
-        map: Map, newRoutes: List<Route>,
+        map: Map,
+        newRoutes: List<Route>,
         wayPoints: List<Marker>,
     ): GeoRecordImportResult {
         return try {

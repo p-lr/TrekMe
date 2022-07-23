@@ -63,7 +63,7 @@ object TrackTools {
     }
 
     fun getGeoStatistics(geoRecord: GeoRecord): GeoStatistics {
-        val statCalculatorList = geoRecord.routes.map { route ->
+        val statCalculatorList = geoRecord.routeGroups.flatMap { it.routes }.map { route ->
             val distanceCalculator = distanceCalculatorFactory(geoRecord.hasTrustedElevations())
             val statCalculator = TrackStatCalculator(distanceCalculator)
             route.routeMarkers.forEach {

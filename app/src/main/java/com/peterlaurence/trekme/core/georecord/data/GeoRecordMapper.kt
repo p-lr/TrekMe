@@ -1,17 +1,17 @@
 package com.peterlaurence.trekme.core.georecord.data
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.RouteGroup
 import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.hasTrustedElevations
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSourceInfo
+import java.util.*
 
 /**
  * Converts a [Gpx] instance into view-specific types.
- * Theoretically, this method should return a list of [GeoRecord], as a track may contain several
- * segments, each of which map to a [Route].
  * Should be invoked off UI thread.
  */
 fun convertGpx(
@@ -22,19 +22,27 @@ fun convertGpx(
         gpxEleSourceInfoToDomain(it)
     }
 
-    val routes = gpx.tracks.mapIndexed { index, track ->
+    val routeGroups = gpx.tracks.mapIndexed { index, track ->
         gpxTrackToRoute(track, eleSourceInfo.hasTrustedElevations(), index, defaultName)
-    }.flatten()
+    }
 
     val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
         gpxWaypointToMarker(wpt, index, defaultName)
     }
 
-    return GeoRecord(routes, waypoints, gpx.metadata?.time, eleSourceInfo, gpx.metadata?.name)
+    return GeoRecord(
+        UUID.randomUUID(),
+        routeGroups,
+        waypoints,
+        gpx.metadata?.time,
+        eleSourceInfo,
+        gpx.metadata?.name
+    )
 }
 
 /**
- * Converts a [Track] into a list of [Route] (a single [Track] may contain several [TrackSegment]).
+ * Converts a [Track] into a [RouteGroup] (a single [Track] may contain several [TrackSegment], and
+ * each [TrackSegment] corresponds to a [Route]).
  * Should be invoked off UI thread.
  */
 fun gpxTrackToRoute(
@@ -42,7 +50,7 @@ fun gpxTrackToRoute(
     elevationTrusted: Boolean,
     index: Int,
     defaultName: String
-): List<Route> {
+): RouteGroup {
 
     /* The route name is the track name if it has one. Otherwise we take the default name */
     val name = track.name.ifEmpty {
@@ -68,6 +76,8 @@ fun gpxTrackToRoute(
             initialVisibility = true, /* The route should be visible by default */
             elevationTrusted = elevationTrusted
         )
+    }.let {
+        RouteGroup(track.id ?: UUID.randomUUID().toString(), routes = it, name = track.name)
     }
 }
 
