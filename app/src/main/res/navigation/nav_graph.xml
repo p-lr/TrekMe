@@ -57,7 +57,11 @@
     <fragment
         android:id="@+id/elevationFragment"
         android:name="com.peterlaurence.trekme.features.record.presentation.ui.components.elevationgraph.ElevationFragment"
-        android:label="ElevationFragment" />
+        android:label="ElevationFragment" >
+        <argument
+            android:name="id"
+            app:argType="android.os.ParcelUuid" />
+    </fragment>
     <action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProGraph"/>
     <navigation android:id="@+id/mapCreationGraph"
         app:startDestination="@id/mapCreateFragment">

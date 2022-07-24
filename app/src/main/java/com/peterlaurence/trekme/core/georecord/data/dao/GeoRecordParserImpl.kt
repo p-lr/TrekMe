@@ -40,14 +40,14 @@ class GeoRecordParserImpl @Inject constructor(
         return runCatching {
             withContext(dispatcher) {
                 readUri(uri, contentResolver) { origStream ->
-                    val trackName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
+                    val name = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
                         ?: "A track"
-                    val destFile = File(copyFolder, trackName)
+                    val destFile = File(copyFolder, name)
                     FileOutputStream(destFile).use { fis ->
                         origStream.copyTo(fis)
                     }
                     FileInputStream(destFile).use { fis ->
-                        parse(fis, trackName)?.let { geoRecord ->
+                        parse(fis, name)?.let { geoRecord ->
                             Pair(geoRecord, destFile)
                         }
                     }
@@ -56,9 +56,9 @@ class GeoRecordParserImpl @Inject constructor(
         }.getOrNull()
     }
 
-    override suspend fun parse(inputStream: InputStream, defaultTrackName: String): GeoRecord? {
+    override suspend fun parse(inputStream: InputStream, defaultName: String): GeoRecord? {
         return parseGpxSafely(inputStream)?.let { gpx ->
-            convertGpx(gpx, defaultTrackName)
+            convertGpx(gpx, defaultName)
         }
     }
 }

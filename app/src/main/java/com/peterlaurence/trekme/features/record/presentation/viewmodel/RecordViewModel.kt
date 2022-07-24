@@ -20,6 +20,7 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.repositories.GeoRecordRepository
+import com.peterlaurence.trekme.features.record.domain.interactors.RecordingInteractor
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -39,6 +41,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RecordViewModel @Inject constructor(
     private val geoRecordRepository: GeoRecordRepository,
+    private val recordingInteractor: RecordingInteractor,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val app: Application,
     private val settings: Settings,
@@ -55,8 +58,8 @@ class RecordViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            eventBus.mapSelectedEvent.collect { (mapId, recordPath) ->
-                onMapSelectedForRecord(mapId, recordPath)
+            eventBus.mapSelectedEvent.collect { (mapId, recordId) ->
+                onMapSelectedForRecord(mapId, recordId)
             }
         }
 
@@ -118,15 +121,13 @@ class RecordViewModel @Inject constructor(
     }
 
 
-    private fun onMapSelectedForRecord(mapId: Int, recordPath: String) {
+    private fun onMapSelectedForRecord(mapId: Int, recordId: UUID) {
         val map = mapRepository.getMap(mapId) ?: return
 
-        val recording = geoRecordRepository.recordingDataFlow.value.firstOrNull {
-            it.file.path == recordPath
-        }?.file ?: return
+        val uri = recordingInteractor.getRecordUri(recordId) ?: return
 
         viewModelScope.launch {
-            importGeoRecordInteractor.applyGpxFileToMap(recording, map).let {
+            importGeoRecordInteractor.applyGpxUriToMap(uri, app.contentResolver, map).let {
                 /* Once done, notify the rest of the app */
                 appEventBus.postGeoRecordImportResult(it)
             }

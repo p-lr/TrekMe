@@ -3,13 +3,14 @@ package com.peterlaurence.trekme.features.record.presentation.events
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import java.util.*
 
 class RecordEventBus {
-    private val _mapSelectedEvent = MutableSharedFlow<Pair<Int, String>>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _mapSelectedEvent = MutableSharedFlow<Pair<Int, UUID>>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val mapSelectedEvent = _mapSelectedEvent.asSharedFlow()
 
-    fun setMapSelectedForRecord(mapId: Int, recordPath: String) {
-        _mapSelectedEvent.tryEmit(Pair(mapId, recordPath))
+    fun setMapSelectedForRecord(mapId: Int, recordId: UUID) {
+        _mapSelectedEvent.tryEmit(Pair(mapId, recordId))
     }
 
     /* region recording */
@@ -17,11 +18,11 @@ class RecordEventBus {
             MutableSharedFlow<RecordingNameChangeEvent>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val recordingNameChangeEvent = _recordingNameChangeEvent.asSharedFlow()
 
-    fun postRecordingNameChange(initialValue: String, newValue: String) {
-        _recordingNameChangeEvent.tryEmit(RecordingNameChangeEvent(initialValue, newValue))
+    fun postRecordingNameChange(id: UUID, newValue: String) {
+        _recordingNameChangeEvent.tryEmit(RecordingNameChangeEvent(id, newValue))
     }
 
-    data class RecordingNameChangeEvent(val initialValue: String, val newValue: String)
+    data class RecordingNameChangeEvent(val id: UUID, val newValue: String)
 
     /**********************************************************************************************/
 

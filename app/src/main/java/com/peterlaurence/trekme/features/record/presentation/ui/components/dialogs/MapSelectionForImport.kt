@@ -1,10 +1,12 @@
 package com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs
 
 import android.os.Bundle
+import android.os.ParcelUuid
 import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -16,16 +18,16 @@ class MapSelectionForImport : MapChoiceDialog() {
     lateinit var eventBus: RecordEventBus
 
     override fun onOkPressed(mapId: Int) {
-        val recordPath = arguments?.getString(RECORD_ID) ?: return
-        eventBus.setMapSelectedForRecord(mapId, recordPath)
+        val recordId = arguments?.getParcelable<ParcelUuid>(RECORD_ID)?.uuid ?: return
+        eventBus.setMapSelectedForRecord(mapId, recordId)
     }
 
     companion object {
         @JvmStatic
-        fun newInstance(recordPath: String): DialogFragment {
+        fun newInstance(recordId: UUID): DialogFragment {
             val fragment = MapSelectionForImport()
             val args = Bundle()
-            args.putString(RECORD_ID, recordPath)
+            args.putParcelable(RECORD_ID, ParcelUuid(recordId))
             fragment.arguments = args
             return fragment
         }

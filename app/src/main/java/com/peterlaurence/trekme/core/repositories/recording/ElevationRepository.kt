@@ -51,7 +51,7 @@ class ElevationRepository(
     )
     val events = _events.asSharedFlow()
 
-    private var lastGpxId: UUID? = null
+    private var lastId: UUID? = null
     private var job: Job? = null
     private val sampling = 20
 
@@ -66,13 +66,11 @@ class ElevationRepository(
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
 
     /**
-     * Computes elevation data from the given [GpxForElevation] and updates the exposed
+     * Computes elevation data for the given [GeoRecord] and updates the exposed
      * [elevationRepoState].
-     *
-     * @param id The id of [gpx], used to decide whether to cancel the ongoing work or not.
      */
     fun update(geoRecord: GeoRecord) {
-        if (geoRecord.id != lastGpxId) {
+        if (geoRecord.id != lastId) {
             job?.cancel()
             job = primaryScope.launch {
                 _elevationRepoState.emit(Calculating)
@@ -86,7 +84,7 @@ class ElevationRepository(
             job?.invokeOnCompletion {
                 job = null
             }
-            lastGpxId = geoRecord.id
+            lastId = geoRecord.id
         }
     }
 
@@ -98,7 +96,7 @@ class ElevationRepository(
      * If the gpx doesn't have trusted elevations, try to get sub-sampled real elevations. Otherwise,
      * or if any error happens while fetching real elevations, fallback to just sub-sampling existing
      * elevations.
-     * The sub-sampling is done by taking a point every [sampling]m.
+     * The sub-sampling is done by taking a point every [sampling] meters.
      */
     private suspend fun getElevationsSampled(
         geoRecord: GeoRecord

@@ -13,10 +13,12 @@ import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSourceInfo
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackSegment
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
+import com.peterlaurence.trekme.features.record.domain.interactors.RecordingInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -35,10 +37,11 @@ import javax.inject.Inject
  **/
 @HiltViewModel
 class ElevationViewModel @Inject constructor(
+    private val recordingInteractor: RecordingInteractor,
     private val repository: ElevationRepository,
     private val gpxRepository: GpxRepository,
     private val appEventBus: AppEventBus,
-    private val app: Application
+    private val app: Application,
 ) : ViewModel() {
     val elevationPoints = repository.elevationRepoState
 
@@ -114,13 +117,12 @@ class ElevationViewModel @Inject constructor(
         }
     }
 
-    fun onUpdateGraph() = viewModelScope.launch {
-        gpxRepository.gpxForElevation.collect {
-            if (it != null) {
-                repository.update(it.gpx, it.id)
-            } else {
-                repository.reset()
-            }
+    fun onUpdateGraph(id: UUID) = viewModelScope.launch {
+        val geoRecord = recordingInteractor.getRecord(id)
+        if (geoRecord != null) {
+            repository.update(geoRecord)
+        } else {
+            repository.reset()
         }
     }
 

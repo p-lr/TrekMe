@@ -12,15 +12,15 @@ class ImportRecordingsInteractor @Inject constructor(
     private val geoRecordRepository: GeoRecordRepository,
     val app: Application,
     private val appEventBus: AppEventBus
-){
+) {
     suspend fun importRecordings(uriList: List<Uri>) {
-        val contentResolver = app.applicationContext.contentResolver
         var successCnt = 0
         uriList.forEach { uri ->
-            if (geoRecordRepository.importRecordingFromUri(uri, contentResolver)) successCnt++
+            if (geoRecordRepository.importRecordingFromUri(uri)) successCnt++
         }
         if (uriList.isNotEmpty() && uriList.size == successCnt) {
-            val msg = app.applicationContext.getString(R.string.recording_imported_success, uriList.size)
+            val msg =
+                app.applicationContext.getString(R.string.recording_imported_success, uriList.size)
             appEventBus.postMessage(StandardMessage(msg))
         }
     }

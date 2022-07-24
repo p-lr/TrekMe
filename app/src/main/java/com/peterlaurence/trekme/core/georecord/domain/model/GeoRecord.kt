@@ -16,7 +16,7 @@ data class GeoRecord(
     val markers: List<Marker>,
     val time: Long?,
     val elevationSourceInfo: ElevationSourceInfo?,
-    val name: String?
+    val name: String
 )
 
 /**

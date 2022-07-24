@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.navArgs
 import com.google.android.material.slider.LabelFormatter.LABEL_GONE
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
@@ -39,6 +40,7 @@ class ElevationFragment : Fragment() {
     private var binding: FragmentElevationBinding? = null
 
     private val viewModel: ElevationViewModel by viewModels()
+    private val args: ElevationFragmentArgs by navArgs()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         /* The action bar isn't managed by Compose */
@@ -58,7 +60,7 @@ class ElevationFragment : Fragment() {
 
         val b = binding ?: return
 
-        viewModel.onUpdateGraph()
+        viewModel.onUpdateGraph(args.id.uuid)
 
         b.slider.labelBehavior = LABEL_GONE
         b.slider.addOnChangeListener { _, value, _ ->

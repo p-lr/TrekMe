@@ -31,6 +31,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import kotlinx.parcelize.Parcelize
+import java.util.*
 
 @Composable
 fun GpxRecordListStateful(
@@ -44,18 +45,18 @@ fun GpxRecordListStateful(
     onDeleteClick: (List<RecordingData>) -> Unit
 ) {
     val data by statViewModel.recordingDataFlow.collectAsState()
-    val dataById = data.associateBy { it.file.path }
+    val dataById = data.associateBy { it.id }
 
     var isMultiSelectionMode by rememberSaveable {
         mutableStateOf(false)
     }
     var dataToModel by rememberSaveable {
-        mutableStateOf(mutableMapOf<String, SelectableRecordingData>())
+        mutableStateOf(mutableMapOf<UUID, SelectableRecordingData>())
     }
 
     val model = remember(data, dataToModel, isMultiSelectionMode) {
         data.map {
-            val existing = dataToModel[it.file.path]
+            val existing = dataToModel[it.id]
             it.toModel(existing?.isSelected ?: false).also { selectable ->
                 dataToModel[selectable.id] = selectable
             }
@@ -315,17 +316,16 @@ private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingData 
             } ?: "-"
         )
     }
-    val id = file.path
 
     return SelectableRecordingData(name, stats, isSelected, id)
 }
 
-private fun getSelected(dataById: Map<String, RecordingData>, model: List<SelectableRecordingData>): RecordingData? {
+private fun getSelected(dataById: Map<UUID, RecordingData>, model: List<SelectableRecordingData>): RecordingData? {
     val selectedId = model.firstOrNull { it.isSelected }?.id ?: return null
     return dataById[selectedId]
 }
 
-private fun getSelectedList(dataById: Map<String, RecordingData>, model: List<SelectableRecordingData>): List<RecordingData> {
+private fun getSelectedList(dataById: Map<UUID, RecordingData>, model: List<SelectableRecordingData>): List<RecordingData> {
     val selectedIds = model.filter { it.isSelected }
     return selectedIds.mapNotNull { dataById[it.id] }
 }
@@ -348,5 +348,5 @@ private sealed interface Action {
 private data class SelectableRecordingData(
     val name: String, @Stable val stats: RecordStats?,
     val isSelected: Boolean,
-    val id: String
+    val id: UUID
 ) : Parcelable

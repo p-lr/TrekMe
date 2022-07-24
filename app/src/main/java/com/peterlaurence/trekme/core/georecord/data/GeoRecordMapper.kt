@@ -36,7 +36,7 @@ fun convertGpx(
         waypoints,
         gpx.metadata?.time,
         eleSourceInfo,
-        gpx.metadata?.name
+        gpx.metadata?.name ?: defaultName
     )
 }
 

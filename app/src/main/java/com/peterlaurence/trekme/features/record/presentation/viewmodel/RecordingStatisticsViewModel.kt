@@ -5,23 +5,18 @@ package com.peterlaurence.trekme.features.record.presentation.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
-import com.peterlaurence.trekme.core.repositories.recording.GpxRepository
-import com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.features.common.domain.repositories.GeoRecordRepository
 import com.peterlaurence.trekme.features.record.domain.interactors.DeleteRecordingInteractor
 import com.peterlaurence.trekme.features.record.domain.interactors.ImportRecordingsInteractor
+import com.peterlaurence.trekme.features.record.domain.interactors.RecordingInteractor
 import com.peterlaurence.trekme.features.record.domain.interactors.RenameRecordingInteractor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.FileInputStream
 import javax.inject.Inject
 
 
@@ -37,11 +32,11 @@ import javax.inject.Inject
 class RecordingStatisticsViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     private val routeRepository: RouteRepository,
-    private val geoRecordRepository: GeoRecordRepository,
+    geoRecordRepository: GeoRecordRepository,
+    private val recordingInteractor: RecordingInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
     private val renameRecordingInteractor: RenameRecordingInteractor,
     private val deleteRecordingInteractor: DeleteRecordingInteractor,
-    private val gpxRepository: GpxRepository,
     private val eventBus: RecordEventBus,
 ) : ViewModel() {
     val recordingDataFlow: StateFlow<List<RecordingData>> = geoRecordRepository.recordingDataFlow
@@ -63,11 +58,11 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     fun getRecordingUri(recordingData: RecordingData): Uri? {
-        return TrekmeFilesProvider.generateUri(recordingData.file)
+        return recordingInteractor.getRecordUri(recordingData.id)
     }
 
     private suspend fun onRecordingNameChangeEvent(event: RecordEventBus.RecordingNameChangeEvent) {
-        renameRecordingInteractor.renameRecording(event.initialValue, event.newValue)
+        renameRecordingInteractor.renameRecording(event.id, event.newValue)
     }
 
     fun onRequestDeleteRecordings(recordingDataList: List<RecordingData>) = viewModelScope.launch {
@@ -94,25 +89,6 @@ class RecordingStatisticsViewModel @Inject constructor(
             /* Remove them on disk */
             mapRepository.getCurrentMapList().forEach { map ->
                 routeRepository.deleteRoutesUsingId(map, trkIds)
-            }
-        }
-    }
-
-    fun onRequestShowElevation(recordingData: RecordingData) = viewModelScope.launch {
-        /* If we already computed elevation data for this same gpx file, no need to continue */
-        val gpxForElevation = gpxRepository.gpxForElevation.replayCache.firstOrNull()
-        if (gpxForElevation != null && gpxForElevation.gpxFile == recordingData.file) return@launch
-
-        /* Notify the repo that we're about to submit new data, invalidating the existing one */
-        gpxRepository.resetGpxForElevation()
-
-        withContext(Dispatchers.IO) {
-            val file = recordingData.file
-            val inputStream = runCatching { FileInputStream(file) }.getOrNull()
-                ?: return@withContext
-            val gpx = parseGpxSafely(inputStream)
-            if (gpx != null) {
-                gpxRepository.setGpxForElevation(gpx, file)
             }
         }
     }

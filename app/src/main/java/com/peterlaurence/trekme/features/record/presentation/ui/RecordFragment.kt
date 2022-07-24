@@ -4,6 +4,7 @@ package com.peterlaurence.trekme.features.record.presentation.ui
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.ParcelUuid
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -177,6 +178,7 @@ class RecordFragment : Fragment() {
                             if (fragmentActivity != null) {
                                 val editFieldDialog = TrackFileNameEdit.newInstance(
                                     getString(R.string.track_file_name_change),
+                                    data.id,
                                     data.name
                                 )
                                 editFieldDialog.show(
@@ -188,7 +190,7 @@ class RecordFragment : Fragment() {
                         onChooseMapForRecord = { data ->
                             val fragmentActivity = activity
                             if (fragmentActivity != null) {
-                                val dialog = MapSelectionForImport.newInstance(data.file.path)
+                                val dialog = MapSelectionForImport.newInstance(data.id)
                                 dialog.show(
                                     fragmentActivity.supportFragmentManager,
                                     "MapSelectionForImport"
@@ -212,8 +214,10 @@ class RecordFragment : Fragment() {
                             intentBuilder.startChooser()
                         },
                         onElevationGraphClick = { data ->
-                            statViewModel.onRequestShowElevation(data)
-                            findNavController().navigate(R.id.action_recordFragment_to_elevationFragment)
+                            val action = RecordFragmentDirections.actionRecordFragmentToElevationFragment(
+                                ParcelUuid(data.id)
+                            )
+                            findNavController().navigate(action)
                         },
                         onDeleteClick = { dataList ->
                             statViewModel.onRequestDeleteRecordings(dataList)

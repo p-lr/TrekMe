@@ -8,6 +8,6 @@ class DeleteRecordingInteractor @Inject constructor(
     private val geoRecordRepository: GeoRecordRepository
 ) {
     suspend fun deleteRecording(recordingDataList: List<RecordingData>): Boolean {
-        return geoRecordRepository.deleteRecordings(recordingDataList)
+        return geoRecordRepository.deleteRecordings(recordingDataList.map { it.id })
     }
 }
