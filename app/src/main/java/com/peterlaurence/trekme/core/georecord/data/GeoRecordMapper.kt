@@ -16,18 +16,18 @@ import java.util.*
  */
 fun convertGpx(
     gpx: Gpx,
-    defaultName: String = "track"
+    name: String? = null
 ): GeoRecord {
     val eleSourceInfo = gpx.metadata?.elevationSourceInfo?.let {
         gpxEleSourceInfoToDomain(it)
     }
 
     val routeGroups = gpx.tracks.mapIndexed { index, track ->
-        gpxTrackToRoute(track, eleSourceInfo.hasTrustedElevations(), index, defaultName)
+        gpxTrackToRoute(track, eleSourceInfo.hasTrustedElevations(), index, name ?: "track")
     }
 
     val waypoints = gpx.wayPoints.mapIndexed { index, wpt ->
-        gpxWaypointToMarker(wpt, index, defaultName)
+        gpxWaypointToMarker(wpt, index)
     }
 
     return GeoRecord(
@@ -36,7 +36,7 @@ fun convertGpx(
         waypoints,
         gpx.metadata?.time,
         eleSourceInfo,
-        gpx.metadata?.name ?: defaultName
+        name ?: gpx.metadata?.name ?: "recording"
     )
 }
 
@@ -84,13 +84,12 @@ fun gpxTrackToRoute(
 fun gpxWaypointToMarker(
     wpt: TrackPoint,
     index: Int,
-    defaultName: String
 ): Marker {
     return wpt.toMarker().apply {
         name = if (wpt.name?.isNotEmpty() == true) {
             wpt.name ?: ""
         } else {
-            "$defaultName-wpt${index + 1}"
+            "wpt-${index + 1}"
         }
     }
 }

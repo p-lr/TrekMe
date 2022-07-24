@@ -20,6 +20,8 @@ class GeoRecordParserImpl @Inject constructor(
     @IoDispatcher
     private val dispatcher: CoroutineDispatcher
 ): GeoRecordParser {
+    private val defaultRecordingName = "A track"
+
     override suspend fun parse(
         uri: Uri, contentResolver: ContentResolver
     ): GeoRecord? {
@@ -27,7 +29,7 @@ class GeoRecordParserImpl @Inject constructor(
             withContext(dispatcher) {
                 readUri(uri, contentResolver) {
                     val trackName = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-                        ?: "A track"
+                        ?: defaultRecordingName
                     parse(it, trackName)
                 }
             }
@@ -41,7 +43,7 @@ class GeoRecordParserImpl @Inject constructor(
             withContext(dispatcher) {
                 readUri(uri, contentResolver) { origStream ->
                     val name = FileUtils.getFileRealFileNameFromURI(contentResolver, uri)
-                        ?: "A track"
+                        ?: defaultRecordingName
                     val destFile = File(copyFolder, name)
                     FileOutputStream(destFile).use { fis ->
                         origStream.copyTo(fis)

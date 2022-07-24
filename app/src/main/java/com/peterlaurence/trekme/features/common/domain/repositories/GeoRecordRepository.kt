@@ -42,7 +42,8 @@ class GeoRecordRepository @Inject constructor(
                     val existingRecordingData = recordingDataFlow.value.firstOrNull { recordingData ->
                         recordingData.id == geoRecord.id
                     }
-                    existingRecordingData ?: makeRecordingData(geoRecord)
+                    val recordingData = existingRecordingData ?: makeRecordingData(geoRecord)
+                    recordingData.copy(name = geoRecord.name)
                 }
 
                 recordingDataFlow.value = recordingDataList.mostRecentFirst()
@@ -62,19 +63,7 @@ class GeoRecordRepository @Inject constructor(
     }
 
     suspend fun renameRecording(id: UUID, newName: String) {
-        val success = geoRecordDao.renameRecording(id, newName)
-
-        if (success) {
-            val existing = recordingDataFlow.value.firstOrNull {
-                it.id == id
-            } ?: return
-            val newData = existing.copy(name = newName)
-
-            val byFile = recordingDataFlow.value.associateBy { it.id }.toMutableMap()
-            byFile[id] = newData
-
-            recordingDataFlow.value = byFile.values.toList().mostRecentFirst()
-        }
+        geoRecordDao.renameRecording(id, newName)
     }
 
     /**

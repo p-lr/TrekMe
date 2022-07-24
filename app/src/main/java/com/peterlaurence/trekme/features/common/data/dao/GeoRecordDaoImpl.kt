@@ -110,17 +110,18 @@ class GeoRecordDaoImpl(
         }
     }
 
-    /**
-     * Remove the existing file matching by id, then add the new file along with the new
-     * [RecordingData] instance.
-     */
     override suspend fun renameRecording(id: UUID, newName: String): Boolean {
-        val existing = fileForId[id] ?: return false
+        val existing = geoRecordFlow.value.firstOrNull { it.id == id }
+        if (existing != null) {
+            geoRecordFlow.value = geoRecordFlow.value - existing + existing.copy(name = newName)
+        }
 
-        val newFile = File(existing.parent, newName + "." + FileUtils.getFileExtension(existing))
+        val file = fileForId[id] ?: return false
+        val newFile = File(file.parent, newName + "." + FileUtils.getFileExtension(file))
+        fileForId[id] = newFile
 
         return withContext(Dispatchers.IO) {
-            TrackTools.renameGpxFile(existing, newFile)
+            TrackTools.renameGpxFile(file, newFile)
         }
     }
 
@@ -152,7 +153,7 @@ class GeoRecordDaoImpl(
 
     private suspend fun parse(file: File): GeoRecord? {
         return try {
-            geoRecordParser.parse(FileInputStream(file), "A track")
+            geoRecordParser.parse(FileInputStream(file), file.nameWithoutExtension)
         } catch (e: Exception) {
             Log.e("GeoRecord", "The file ${file.name} was parsed with error ${stackTraceToString(e)}")
             null
