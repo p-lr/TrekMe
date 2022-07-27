@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.georecord.data
+package com.peterlaurence.trekme.core.georecord.data.mapper
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.RouteGroup
@@ -14,7 +14,7 @@ import java.util.*
  * Converts a [Gpx] instance into view-specific types.
  * Should be invoked off UI thread.
  */
-fun convertGpx(
+fun gpxToDomain(
     gpx: Gpx,
     name: String? = null
 ): GeoRecord {
@@ -45,7 +45,7 @@ fun convertGpx(
  * each [TrackSegment] corresponds to a [Route]).
  * Should be invoked off UI thread.
  */
-fun gpxTrackToRoute(
+private fun gpxTrackToRoute(
     track: Track,
     elevationTrusted: Boolean,
     index: Int,
@@ -81,7 +81,7 @@ fun gpxTrackToRoute(
     }
 }
 
-fun gpxWaypointToMarker(
+private fun gpxWaypointToMarker(
     wpt: TrackPoint,
     index: Int,
 ): Marker {
@@ -94,7 +94,7 @@ fun gpxWaypointToMarker(
     }
 }
 
-fun gpxEleSourceInfoToDomain(gpxElevationSourceInfo: GpxElevationSourceInfo): ElevationSourceInfo {
+private fun gpxEleSourceInfoToDomain(gpxElevationSourceInfo: GpxElevationSourceInfo): ElevationSourceInfo {
     val elevationSource = when(gpxElevationSourceInfo.elevationSource) {
         GpxElevationSource.GPS -> ElevationSource.GPS
         GpxElevationSource.IGN_RGE_ALTI -> ElevationSource.IGN_RGE_ALTI

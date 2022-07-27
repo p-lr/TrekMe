@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.georecord.data.dao
 
 import android.content.ContentResolver
 import android.net.Uri
-import com.peterlaurence.trekme.core.georecord.data.convertGpx
+import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
@@ -60,7 +60,7 @@ class GeoRecordParserImpl @Inject constructor(
 
     override suspend fun parse(inputStream: InputStream, defaultName: String): GeoRecord? {
         return parseGpxSafely(inputStream)?.let { gpx ->
-            convertGpx(gpx, defaultName)
+            gpxToDomain(gpx, defaultName)
         }
     }
 }

@@ -16,7 +16,6 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.dao.GeoRecordDao
-import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.*

@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.appName
-import com.peterlaurence.trekme.core.georecord.data.convertGpx
+import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
@@ -181,13 +181,15 @@ class GpxRecordService : Service() {
             val id = generateTrackId(trackName)
 
             val track = Track(trkSegList, trackName, id = id)
+            val bounds = trackStatCalculatorList.mergeBounds()
 
             /* Make the metadata. We indicate the source of elevation is the GPS, regardless of the
-             * actual source (which might be wifi, etc. It doesn't matter because GPS elevation is
-             * considered not trustworthy), with a sampling of 1 since each point has its own
-             * elevation value. */
+             * actual source (which might be wifi, etc), with a sampling of 1 since each point has
+             * its own elevation value. Note that GPS elevation isn't considered trustworthy. */
             val metadata = Metadata(
-                trackName, date.time, trackStatCalculatorList.mergeBounds(),
+                trackName,
+                date.time,
+                bounds, // This isn't mandatory to put this into the metadata, but since we can..
                 elevationSourceInfo = GpxElevationSourceInfo(GpxElevationSource.GPS, 1)
             )
 
@@ -206,10 +208,10 @@ class GpxRecordService : Service() {
                 writeGpx(gpx, fos)
 
                 /* Now that the file is written, send an event to the application */
-                val boundingBox = gpx.metadata?.bounds?.let {
+                val boundingBox = bounds?.let {
                     BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
                 }
-                val geoRecord = convertGpx(gpx)
+                val geoRecord = gpxToDomain(gpx)
                 eventsGpx.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, geoRecord, boundingBox))
             } catch (e: Exception) {
                 eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_error)))
