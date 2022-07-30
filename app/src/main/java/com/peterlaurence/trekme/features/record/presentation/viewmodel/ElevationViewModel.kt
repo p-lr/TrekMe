@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
@@ -13,7 +14,6 @@ import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSourceInfo
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackSegment
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
-import com.peterlaurence.trekme.features.record.domain.interactors.RecordingInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +37,7 @@ import javax.inject.Inject
  **/
 @HiltViewModel
 class ElevationViewModel @Inject constructor(
-    private val recordingInteractor: RecordingInteractor,
+    private val geoRecordInteractor: GeoRecordInteractor,
     private val repository: ElevationRepository,
     private val gpxRepository: GpxRepository,
     private val appEventBus: AppEventBus,
@@ -118,7 +118,7 @@ class ElevationViewModel @Inject constructor(
     }
 
     fun onUpdateGraph(id: UUID) = viewModelScope.launch {
-        val geoRecord = recordingInteractor.getRecord(id)
+        val geoRecord = geoRecordInteractor.getRecord(id)
         if (geoRecord != null) {
             repository.update(geoRecord)
         } else {

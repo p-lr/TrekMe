@@ -2,14 +2,14 @@ package com.peterlaurence.trekme.features.common.di
 
 import android.app.Application
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.georecord.data.datasource.FileBasedSourceImpl
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
+import com.peterlaurence.trekme.core.georecord.domain.datasource.FileBasedSource
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.features.common.data.dao.GeoRecordDaoImpl
-import com.peterlaurence.trekme.features.common.domain.dao.GeoRecordDao
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import dagger.Module
 import dagger.Provides
@@ -31,14 +31,14 @@ object CommonModule {
 
     @Singleton
     @Provides
-    fun bindGeoRecordDao(
+    fun bindGeoRecordFileBasedSource(
         trekMeContext: TrekMeContext,
         app: Application,
         geoRecordParser: GeoRecordParser,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         appEventBus: AppEventBus,
         gpxRecordEvents: GpxRecordEvents
-    ): GeoRecordDao = GeoRecordDaoImpl(
+    ): FileBasedSource = FileBasedSourceImpl(
         trekMeContext,
         app,
         geoRecordParser,

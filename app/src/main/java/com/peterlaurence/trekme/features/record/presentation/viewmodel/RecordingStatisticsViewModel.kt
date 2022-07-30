@@ -5,13 +5,11 @@ package com.peterlaurence.trekme.features.record.presentation.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
-import com.peterlaurence.trekme.features.common.domain.repositories.GeoRecordRepository
-import com.peterlaurence.trekme.features.record.domain.interactors.DeleteRecordingInteractor
+import com.peterlaurence.trekme.features.common.domain.repositories.RecordingDataRepository
 import com.peterlaurence.trekme.features.record.domain.interactors.ImportRecordingsInteractor
-import com.peterlaurence.trekme.features.record.domain.interactors.RecordingInteractor
-import com.peterlaurence.trekme.features.record.domain.interactors.RenameRecordingInteractor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,14 +30,12 @@ import javax.inject.Inject
 class RecordingStatisticsViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     private val routeRepository: RouteRepository,
-    geoRecordRepository: GeoRecordRepository,
-    private val recordingInteractor: RecordingInteractor,
+    recordingDataRepository: RecordingDataRepository,
+    private val geoRecordInteractor: GeoRecordInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
-    private val renameRecordingInteractor: RenameRecordingInteractor,
-    private val deleteRecordingInteractor: DeleteRecordingInteractor,
     private val eventBus: RecordEventBus,
 ) : ViewModel() {
-    val recordingDataFlow: StateFlow<List<RecordingData>> = geoRecordRepository.recordingDataFlow
+    val recordingDataFlow: StateFlow<List<RecordingData>> = recordingDataRepository.recordingDataFlow
 
     init {
         viewModelScope.launch {
@@ -58,17 +54,17 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     fun getRecordingUri(recordingData: RecordingData): Uri? {
-        return recordingInteractor.getRecordUri(recordingData.id)
+        return geoRecordInteractor.getRecordUri(recordingData.id)
     }
 
     private suspend fun onRecordingNameChangeEvent(event: RecordEventBus.RecordingNameChangeEvent) {
-        renameRecordingInteractor.renameRecording(event.id, event.newValue)
+        geoRecordInteractor.rename(event.id, event.newValue)
     }
 
     fun onRequestDeleteRecordings(recordingDataList: List<RecordingData>) = viewModelScope.launch {
         /* Remove GPX files */
         launch {
-            val success = deleteRecordingInteractor.deleteRecording(recordingDataList)
+            val success = geoRecordInteractor.delete(recordingDataList.map { it.id })
             /* If only one removal failed, notify the user */
             if (!success) {
                 eventBus.postRecordingDeletionFailed()

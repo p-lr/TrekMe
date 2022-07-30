@@ -9,6 +9,7 @@ import androidx.core.location.LocationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
@@ -19,8 +20,6 @@ import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
-import com.peterlaurence.trekme.features.common.domain.repositories.GeoRecordRepository
-import com.peterlaurence.trekme.features.record.domain.interactors.RecordingInteractor
 import com.peterlaurence.trekme.service.GpxRecordService
 import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
@@ -36,12 +35,11 @@ import javax.inject.Inject
 /**
  * The view-model associated with the record fragment.
  *
- * @author P.Laurence on 16/04/20
+ * @since 2020/04/16
  */
 @HiltViewModel
 class RecordViewModel @Inject constructor(
-    private val geoRecordRepository: GeoRecordRepository,
-    private val recordingInteractor: RecordingInteractor,
+    private val geoRecordInteractor: GeoRecordInteractor,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val app: Application,
     private val settings: Settings,
@@ -124,7 +122,7 @@ class RecordViewModel @Inject constructor(
     private fun onMapSelectedForRecord(mapId: Int, recordId: UUID) {
         val map = mapRepository.getMap(mapId) ?: return
 
-        val uri = recordingInteractor.getRecordUri(recordId) ?: return
+        val uri = geoRecordInteractor.getRecordUri(recordId) ?: return
 
         viewModelScope.launch {
             importGeoRecordInteractor.applyGpxUriToMap(uri, app.contentResolver, map).let {

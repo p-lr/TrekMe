@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.common.data.dao
+package com.peterlaurence.trekme.core.georecord.data.datasource
 
 import android.app.Application
 import android.net.Uri
@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
+import com.peterlaurence.trekme.core.georecord.domain.datasource.FileBasedSource
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.supportedGeoRecordFilesExtensions
 import com.peterlaurence.trekme.core.track.TrackTools
@@ -15,7 +16,6 @@ import com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.features.common.domain.dao.GeoRecordDao
 import com.peterlaurence.trekme.util.FileUtils
 import com.peterlaurence.trekme.util.stackTraceToString
 import kotlinx.coroutines.*
@@ -24,14 +24,14 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
-class GeoRecordDaoImpl(
+class FileBasedSourceImpl(
     private val trekMeContext: TrekMeContext,
     private val app: Application,
     private val geoRecordParser: GeoRecordParser,
     private val ioDispatcher: CoroutineDispatcher,
     private val appEventBus: AppEventBus,
-    private val gpxRecordEvents: GpxRecordEvents
-): GeoRecordDao {
+    private val gpxRecordEvents: GpxRecordEvents,
+): FileBasedSource {
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
     private val contentResolver = app.applicationContext.contentResolver
     private val supportedFileFilter = filter@{ dir: File, filename: String ->
@@ -89,7 +89,7 @@ class GeoRecordDaoImpl(
      * Resolves the given uri to an actual file, and copies it to the app's storage location for
      * recordings. Then, the copied file is parsed to get the corresponding [GeoRecord] instance.
      */
-    override suspend fun importRecordingFromUri(
+    override suspend fun importGeoRecordFromUri(
         uri: Uri
     ): GeoRecord? {
         val outputDir = trekMeContext.recordingsDir ?: return null
@@ -109,7 +109,7 @@ class GeoRecordDaoImpl(
         }
     }
 
-    override suspend fun renameRecording(id: UUID, newName: String): Boolean {
+    override suspend fun renameGeoRecord(id: UUID, newName: String): Boolean {
         val existing = geoRecordFlow.value.firstOrNull { it.id == id }
         if (existing != null) {
             geoRecordFlow.value = geoRecordFlow.value - existing + existing.copy(name = newName)
@@ -124,7 +124,7 @@ class GeoRecordDaoImpl(
         }
     }
 
-    override suspend fun deleteRecordings(ids: List<UUID>): Boolean = coroutineScope {
+    override suspend fun deleteGeoRecords(ids: List<UUID>): Boolean = coroutineScope {
         var success = true
         for (id in ids) {
             val file = fileForId[id] ?: continue
