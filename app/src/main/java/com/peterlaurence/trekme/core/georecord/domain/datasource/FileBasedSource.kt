@@ -2,11 +2,12 @@ package com.peterlaurence.trekme.core.georecord.domain.datasource
 
 import android.net.Uri
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 interface FileBasedSource {
-    fun getGeoRecordsFlow(): StateFlow<List<GeoRecord>>
+    fun getGeoRecordsFlow(): StateFlow<List<GeoRecordLightWeight>>
     fun getUri(id: UUID): Uri?
     suspend fun getRecord(id: UUID): GeoRecord?
     suspend fun importGeoRecordFromUri(uri: Uri): GeoRecord?

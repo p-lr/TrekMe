@@ -3,15 +3,23 @@ package com.peterlaurence.trekme.core.georecord.domain.repository
 import android.net.Uri
 import com.peterlaurence.trekme.core.georecord.domain.datasource.FileBasedSource
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 import javax.inject.Inject
 
+/**
+ * Since [GeoRecord]s are potentially heavy objects, this repository only exposes a [StateFlow] of
+ * [GeoRecordLightWeight].
+ * However, it's still possible to get a single [GeoRecord] using [getGeoRecord].
+ *
+ * @since 2022/07/30
+ */
 class GeoRecordRepository @Inject constructor(
     private val fileBasedSource: FileBasedSource
 ) {
     /* For the moment, the repository only exposes the flow from the file-based source */
-    fun getGeoRecordsFlow(): StateFlow<List<GeoRecord>> {
+    fun getGeoRecordsFlow(): StateFlow<List<GeoRecordLightWeight>> {
         return fileBasedSource.getGeoRecordsFlow()
     }
 
@@ -23,10 +31,6 @@ class GeoRecordRepository @Inject constructor(
         return fileBasedSource.getRecord(id)
     }
 
-    /**
-     * Resolves the given uri to an actual file, and copies it to the app's storage location for
-     * recordings. Then, the copied file is parsed to get the corresponding [GeoRecord] instance.
-     */
     suspend fun importGeoRecordFromUri(uri: Uri): GeoRecord? {
         return fileBasedSource.importGeoRecordFromUri(uri)
     }

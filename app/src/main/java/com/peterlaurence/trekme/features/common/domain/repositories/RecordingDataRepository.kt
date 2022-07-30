@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.georecord.domain.repository.GeoRecordReposi
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,16 +34,26 @@ class RecordingDataRepository @Inject constructor(
 
     init {
         primaryScope.launch {
+            /**
+             * When a [RecordingData] already exists, just update the name. Otherwise, make new
+             * [RecordingData]s by requesting full [GeoRecord]s.
+             */
             geoRecordRepository.getGeoRecordsFlow().collect { geoRecordList ->
-                val recordingDataList = geoRecordList.map { geoRecord ->
+                val newIds = mutableListOf<UUID>()
+                val recordingDataList = geoRecordList.mapNotNull { (id, name) ->
                     val existingRecordingData = recordingDataFlow.value.firstOrNull { recordingData ->
-                        recordingData.id == geoRecord.id
+                        recordingData.id == id
                     }
-                    val recordingData = existingRecordingData ?: makeRecordingData(geoRecord)
-                    recordingData.copy(name = geoRecord.name)
+                    if (existingRecordingData == null) {
+                        newIds.add(id)
+                    }
+                    /* The id is the same, but the name might have changed */
+                    existingRecordingData?.copy(name = name)
                 }
 
-                recordingDataFlow.value = recordingDataList.mostRecentFirst()
+                val newRecordings = makeRecordingData(newIds)
+
+                recordingDataFlow.value = (recordingDataList + newRecordings).mostRecentFirst()
             }
         }
     }
@@ -51,7 +62,21 @@ class RecordingDataRepository @Inject constructor(
         it.time ?: -1
     }
 
-    private suspend fun makeRecordingData(geoRecord: GeoRecord): RecordingData {
+    private suspend fun makeRecordingData(ids: List<UUID>): List<RecordingData> {
+        val concurrency = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(2)
+
+        return ids.asFlow().map {  id ->
+            flow {
+                val geoRecord = makeRecordingData(id)
+                if (geoRecord != null) {
+                    emit(geoRecord)
+                }
+            }
+        }.flowOn(ioDispatcher).flattenMerge(concurrency).toList()
+    }
+
+    private suspend fun makeRecordingData(id: UUID): RecordingData? {
+        val geoRecord = geoRecordRepository.getGeoRecord(id) ?: return null
         return withContext(ioDispatcher) {
             val routeIds: List<String> = geoRecord.routeGroups.flatMap { it.routes }.map { it.id }
             val statistics = geoRecord.let {

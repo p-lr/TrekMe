@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.datasource.FileBasedSource
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import com.peterlaurence.trekme.core.georecord.domain.model.supportedGeoRecordFilesExtensions
 import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider
@@ -23,12 +24,12 @@ import kotlinx.coroutines.flow.*
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 class FileBasedSourceImpl(
     private val trekMeContext: TrekMeContext,
     private val app: Application,
     private val geoRecordParser: GeoRecordParser,
-    private val ioDispatcher: CoroutineDispatcher,
     private val appEventBus: AppEventBus,
     private val gpxRecordEvents: GpxRecordEvents,
 ): FileBasedSource {
@@ -42,21 +43,20 @@ class FileBasedSourceImpl(
 
         supportedGeoRecordFilesExtensions.any { filename.endsWith(".$it") }
     }
+    private val fileForId = ConcurrentHashMap<UUID, File>()
 
-    private val geoRecordFlow = MutableStateFlow<List<GeoRecord>>(emptyList())
+    private val geoRecordFlow = MutableStateFlow<List<GeoRecordLightWeight>>(emptyList())
 
     init {
+        initGeoRecords()
+
         primaryScope.launch {
             gpxRecordEvents.gpxFileWriteEvent.collect {
                 /* Remember the file <-> id association */
                 fileForId[it.geoRecord.id] = it.gpxFile
 
-                geoRecordFlow.value = geoRecordFlow.value + it.geoRecord
+                geoRecordFlow.value = geoRecordFlow.value + GeoRecordLightWeight(it.geoRecord.id, it.geoRecord.name)
             }
-        }
-
-        primaryScope.launch {
-            initGeoRecords()
         }
     }
 
@@ -67,9 +67,8 @@ class FileBasedSourceImpl(
     private val recordFiles: Array<File>
         get() = trekMeContext.recordingsDir?.listFiles(supportedFileFilter) ?: emptyArray()
 
-    private val fileForId = mutableMapOf<UUID, File>()
 
-    override fun getGeoRecordsFlow(): StateFlow<List<GeoRecord>> {
+    override fun getGeoRecordsFlow(): StateFlow<List<GeoRecordLightWeight>> {
         return geoRecordFlow
     }
 
@@ -80,8 +79,8 @@ class FileBasedSourceImpl(
     }
 
     override suspend fun getRecord(id: UUID): GeoRecord? {
-        return fileForId[id]?.let {
-            geoRecordParser.parse(FileInputStream(it), it.name)
+        return fileForId[id]?.let { file ->
+            parse(file)?.copy(id = id)
         }
     }
 
@@ -97,7 +96,7 @@ class FileBasedSourceImpl(
         return if (result != null) {
             val (geoRecord, file) = result
             fileForId[geoRecord.id] = file
-            geoRecordFlow.value = geoRecordFlow.value + geoRecord
+            geoRecordFlow.value = geoRecordFlow.value + GeoRecordLightWeight(geoRecord.id, geoRecord.name)
             geoRecord
         } else {
             // TODO: this isn't the responsibility of the data layer
@@ -112,7 +111,7 @@ class FileBasedSourceImpl(
     override suspend fun renameGeoRecord(id: UUID, newName: String): Boolean {
         val existing = geoRecordFlow.value.firstOrNull { it.id == id }
         if (existing != null) {
-            geoRecordFlow.value = geoRecordFlow.value - existing + existing.copy(name = newName)
+            geoRecordFlow.value = geoRecordFlow.value - existing + GeoRecordLightWeight(id, newName)
         }
 
         val file = fileForId[id] ?: return false
@@ -159,20 +158,13 @@ class FileBasedSourceImpl(
         }
     }
 
-    private suspend fun initGeoRecords() {
-        val concurrency = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(2)
-        val geoRecordList = recordFiles.asFlow().mapNotNull { file ->
-            flow {
-                val geoRecord = parse(file)
-                if (geoRecord != null) {
-                    /* Remember the file <-> id association */
-                    fileForId[geoRecord.id] = file
+    private fun initGeoRecords() {
+        val geoRecords = recordFiles.map { file ->
+            val id = UUID.randomUUID()
+            fileForId[id] = file
+            GeoRecordLightWeight(id, file.nameWithoutExtension)
+        }
 
-                    emit(geoRecord)
-                }
-            }
-        }.flowOn(ioDispatcher).flattenMerge(concurrency).toList()
-
-        geoRecordFlow.value = geoRecordList
+        geoRecordFlow.value = geoRecords
     }
 }
