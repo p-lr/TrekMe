@@ -20,7 +20,6 @@ import com.peterlaurence.trekme.features.record.domain.repositories.ElePoint
 import com.peterlaurence.trekme.features.record.domain.repositories.ElevationData
 import com.peterlaurence.trekme.features.record.domain.repositories.NoElevationData
 import com.peterlaurence.trekme.util.dpToPx
-import com.peterlaurence.trekme.util.exhaustive
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -111,7 +110,7 @@ class ElevationFragment : Fragment() {
                             b.showGraph(false)
                             b.loadingMsg.text = getString(R.string.no_ele_profile_data)
                         }
-                    }.exhaustive
+                    }
                 }
             }
         }

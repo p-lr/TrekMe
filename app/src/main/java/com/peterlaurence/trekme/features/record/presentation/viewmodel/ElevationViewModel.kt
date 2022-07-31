@@ -4,10 +4,10 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
+import com.peterlaurence.trekme.features.record.domain.interactors.UpdateElevationGraphInteractor
 import com.peterlaurence.trekme.features.record.domain.interactors.UpdateGeoRecordElevationsInteractor
 import com.peterlaurence.trekme.features.record.domain.repositories.ElevationCorrectionErrorEvent
 import com.peterlaurence.trekme.features.record.domain.repositories.ElevationData
@@ -34,9 +34,9 @@ import javax.inject.Inject
  **/
 @HiltViewModel
 class ElevationViewModel @Inject constructor(
-    private val geoRecordInteractor: GeoRecordInteractor,
     private val repository: ElevationRepository,
     private val updateGeoRecordElevationsInteractor: UpdateGeoRecordElevationsInteractor,
+    private val updateElevationGraphInteractor: UpdateElevationGraphInteractor,
     private val appEventBus: AppEventBus,
     private val app: Application,
 ) : ViewModel() {
@@ -84,11 +84,6 @@ class ElevationViewModel @Inject constructor(
     }
 
     fun onUpdateGraph(id: UUID) = viewModelScope.launch {
-        val geoRecord = geoRecordInteractor.getRecord(id)
-        if (geoRecord != null) {
-            repository.update(geoRecord)
-        } else {
-            repository.reset()
-        }
+        updateElevationGraphInteractor.updateElevationGraph(id)
     }
 }
