@@ -1,5 +1,12 @@
 package com.peterlaurence.trekme.util
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.flowWithLifecycle
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -65,5 +72,22 @@ private class MappedStateFlow<T, R>(private val source: StateFlow<T>, private va
 
     override suspend fun collect(collector: FlowCollector<R>): Nothing {
         source.collect { value -> collector.emit(mapper(value)) }
+    }
+}
+
+
+@Composable
+fun <T> launchFlowCollectionWithLifecycle(
+    flow: Flow<T>,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    minActiveState: Lifecycle.State = Lifecycle.State.RESUMED,
+    flowCollector: FlowCollector<T>
+) {
+    val lifeCycleAwareFlow = remember(flow, lifecycleOwner) {
+        flow.flowWithLifecycle(lifecycleOwner.lifecycle, minActiveState)
+    }
+
+    LaunchedEffect(lifecycleOwner) {
+        lifeCycleAwareFlow.collect(flowCollector)
     }
 }

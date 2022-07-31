@@ -4,6 +4,8 @@ import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
+import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
+import com.peterlaurence.trekme.features.common.domain.repositories.RecordingDataRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,4 +22,10 @@ object CommonModule {
         markersDao: MarkersDao,
         geoRecordParser: GeoRecordParser
     ): ImportGeoRecordInteractor = ImportGeoRecordInteractor(repo, markersDao, geoRecordParser)
+
+    @Singleton
+    @Provides
+    fun bindRecordingDataStateOwner(repository: RecordingDataRepository): RecordingDataStateOwner {
+        return repository
+    }
 }

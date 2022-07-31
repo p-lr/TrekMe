@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.core.georecord.domain.repository.GeoRecordRepository
+import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -27,10 +28,10 @@ class RecordingDataRepository @Inject constructor(
     private val geoRecordRepository: GeoRecordRepository,
     @IoDispatcher
     private val ioDispatcher: CoroutineDispatcher,
-) {
+) : RecordingDataStateOwner {
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
 
-    val recordingDataFlow = MutableStateFlow<List<RecordingData>>(emptyList())
+    override val recordingDataFlow = MutableStateFlow<List<RecordingData>>(emptyList())
 
     init {
         primaryScope.launch {

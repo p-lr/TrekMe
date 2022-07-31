@@ -64,10 +64,8 @@ fun MapScreen(
 
     LaunchedEffect(lifecycleOwner) {
         launch {
-            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                locationFlowLifecycleAware.collect {
-                    viewModel.locationOrientationLayer.onLocation(it)
-                }
+            locationFlowLifecycleAware.collect {
+                viewModel.locationOrientationLayer.onLocation(it)
             }
         }
         launch {

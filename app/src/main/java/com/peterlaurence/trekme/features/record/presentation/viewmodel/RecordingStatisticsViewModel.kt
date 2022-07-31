@@ -7,12 +7,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.RouteInteractor
-import com.peterlaurence.trekme.features.common.domain.repositories.RecordingDataRepository
+import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.record.domain.interactors.ImportRecordingsInteractor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,18 +29,32 @@ import javax.inject.Inject
 @HiltViewModel
 class RecordingStatisticsViewModel @Inject constructor(
     private val routeInteractor: RouteInteractor,
-    recordingDataRepository: RecordingDataRepository,
+    recordingDataStateOwner: RecordingDataStateOwner,
     private val geoRecordInteractor: GeoRecordInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
     private val eventBus: RecordEventBus,
 ) : ViewModel() {
-    val recordingDataFlow: StateFlow<List<RecordingData>> = recordingDataRepository.recordingDataFlow
+
+    val recordingDataFlow: StateFlow<List<RecordingData>> = recordingDataStateOwner.recordingDataFlow
+
+    private val newRecordingEventChannel = Channel<Unit>(1)
+    val newRecordingEventFlow = newRecordingEventChannel.receiveAsFlow()
 
     init {
         viewModelScope.launch {
             eventBus.recordingNameChangeEvent.collect {
                 onRecordingNameChangeEvent(it)
             }
+        }
+
+        /* Emit an event when there's a new element in the list */
+        viewModelScope.launch {
+            recordingDataFlow.scan(recordingDataFlow.value.size) { s, l ->
+                if (l.size > s) {
+                    newRecordingEventChannel.send(Unit)
+                }
+                l.size
+            }.collect()
         }
     }
 

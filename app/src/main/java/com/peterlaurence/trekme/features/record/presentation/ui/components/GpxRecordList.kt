@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
@@ -30,6 +31,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.textButton
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
+import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -63,10 +65,17 @@ fun GpxRecordListStateful(
         }
     }
 
+    val lazyListState = rememberLazyListState()
+
+    launchFlowCollectionWithLifecycle(statViewModel.newRecordingEventFlow) {
+        lazyListState.animateScrollToItem(0)
+    }
+
     GpxRecordList(
         modifier = modifier,
         data = model,
-        isMultiSelectionMode = isMultiSelectionMode
+        isMultiSelectionMode = isMultiSelectionMode,
+        lazyListState = lazyListState
     ) { action ->
         when(action) {
             Action.OnMultiSelectionClick -> {
@@ -126,6 +135,7 @@ private fun GpxRecordList(
     modifier: Modifier = Modifier,
     data: List<SelectableRecordingData>,
     isMultiSelectionMode: Boolean,
+    lazyListState: LazyListState,
     actioner: Actioner,
 ) {
     val selectionCount by remember(data) {
@@ -134,16 +144,14 @@ private fun GpxRecordList(
         }
     }
 
-    val state = rememberLazyListState()
-
     Card(modifier) {
         Column {
             RecordingActionBar(isMultiSelectionMode, actioner)
             LazyColumn(
                 Modifier
-                    .drawVerticalScrollbar(state)
+                    .drawVerticalScrollbar(lazyListState)
                     .weight(1f),
-                state = state
+                state = lazyListState
             ) {
                 itemsIndexed(
                     items = data,
