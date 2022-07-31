@@ -11,6 +11,7 @@ interface FileBasedSource {
     fun getUri(id: UUID): Uri?
     suspend fun getRecord(id: UUID): GeoRecord?
     suspend fun importGeoRecordFromUri(uri: Uri): GeoRecord?
+    suspend fun updateGeoRecord(geoRecord: GeoRecord): Boolean
     suspend fun renameGeoRecord(id: UUID, newName: String): Boolean
     suspend fun deleteGeoRecords(ids: List<UUID>): Boolean
 }

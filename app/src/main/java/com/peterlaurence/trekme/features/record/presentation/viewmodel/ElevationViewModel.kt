@@ -5,19 +5,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
-import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
-import com.peterlaurence.trekme.core.repositories.recording.*
-import com.peterlaurence.trekme.core.lib.gpx.model.GpxElevationSourceInfo
-import com.peterlaurence.trekme.core.lib.gpx.model.TrackSegment
-import com.peterlaurence.trekme.core.lib.gpx.writeGpx
-import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
+import com.peterlaurence.trekme.features.record.domain.interactors.UpdateGeoRecordElevationsInteractor
+import com.peterlaurence.trekme.features.record.domain.repositories.ElevationCorrectionErrorEvent
+import com.peterlaurence.trekme.features.record.domain.repositories.ElevationData
+import com.peterlaurence.trekme.features.record.domain.repositories.ElevationRepository
+import com.peterlaurence.trekme.features.record.domain.repositories.NoNetworkEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.FileOutputStream
 import java.util.*
 import javax.inject.Inject
 
@@ -39,7 +36,7 @@ import javax.inject.Inject
 class ElevationViewModel @Inject constructor(
     private val geoRecordInteractor: GeoRecordInteractor,
     private val repository: ElevationRepository,
-    private val gpxRepository: GpxRepository,
+    private val updateGeoRecordElevationsInteractor: UpdateGeoRecordElevationsInteractor,
     private val appEventBus: AppEventBus,
     private val app: Application,
 ) : ViewModel() {
@@ -50,11 +47,8 @@ class ElevationViewModel @Inject constructor(
             repository.elevationRepoState.collect { state ->
                 when (state) {
                     is ElevationData -> {
-                        val gpxForElevation = gpxRepository.gpxForElevation.replayCache.firstOrNull()
-                        gpxForElevation?.also { gpxForEle ->
-                            if (gpxForEle.id == state.id && state.needsUpdate) {
-                                updateGpxFileWithTrustedElevations(gpxForEle, state)
-                            }
+                        if (state.needsUpdate) {
+                            updateGeoRecordElevationsInteractor.updateElevations(state)
                         }
                     }
                     else -> {
@@ -77,42 +71,14 @@ class ElevationViewModel @Inject constructor(
                         } else {
                             ctx.getString(R.string.elevation_service_down)
                         }
-                        appEventBus.postMessage(WarningMessage(ctx.getString(R.string.warning_title), msg))
+                        appEventBus.postMessage(
+                            WarningMessage(
+                                ctx.getString(R.string.warning_title),
+                                msg
+                            )
+                        )
                     }
                 }
-            }
-        }
-    }
-
-    private fun updateGpxFileWithTrustedElevations(gpxForElevation: GpxForElevation, eleData: ElevationData) {
-        val segmentElePoints = eleData.segmentElePoints
-
-        /* Safeguard - don't erase file content with empty data */
-        if (segmentElePoints.isEmpty()) return
-
-        val gpx = gpxForElevation.gpx
-        /* Update the first track only */
-        val newTracks = gpx.tracks.mapIndexed { iTrack, track ->
-            if (iTrack == 0) {
-                val trackSegments = track.trackSegments.zip(segmentElePoints).map { (segment, segmentElePt) ->
-                    if (segment.trackPoints.size == segmentElePt.points.size) {
-                        val newTrackPoints = segment.trackPoints.zip(segmentElePt.points).map {
-                            it.first.copy(elevation = it.second.elevation)
-                        }
-                        TrackSegment(newTrackPoints)
-                    } else segment
-                }
-                track.copy(trackSegments = trackSegments)
-            } else track
-        }
-        val newMetadata = gpx.metadata?.copy(
-            elevationSourceInfo = GpxElevationSourceInfo(eleData.elevationSource.toGpxElevationSource(), eleData.sampling)
-        )
-        val newGpx = gpx.copy(tracks = newTracks, metadata = newMetadata)
-
-        viewModelScope.launch(Dispatchers.IO) {
-            runCatching {
-                writeGpx(newGpx, FileOutputStream(gpxForElevation.gpxFile))
             }
         }
     }
@@ -123,14 +89,6 @@ class ElevationViewModel @Inject constructor(
             repository.update(geoRecord)
         } else {
             repository.reset()
-        }
-    }
-
-    private fun ElevationSource.toGpxElevationSource() : GpxElevationSource {
-        return when(this) {
-            ElevationSource.GPS -> GpxElevationSource.GPS
-            ElevationSource.IGN_RGE_ALTI -> GpxElevationSource.IGN_RGE_ALTI
-            ElevationSource.UNKNOWN -> GpxElevationSource.UNKNOWN
         }
     }
 }

@@ -23,7 +23,6 @@ import com.peterlaurence.trekme.core.repositories.map.RouteRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
-import com.peterlaurence.trekme.core.repositories.recording.ElevationRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.data.orientation.OrientationSourceImpl
 import com.peterlaurence.trekme.events.AppEventBus
@@ -145,12 +144,6 @@ object AppModule {
     @Singleton
     @Provides
     fun bindLayerOverlayRepository(): LayerOverlayRepository = LayerOverlayRepository()
-
-    @Singleton
-    @Provides
-    fun bindElevationRepository(ignApiRepository: IgnApiRepository): ElevationRepository {
-        return ElevationRepository(Dispatchers.Default, Dispatchers.IO, ignApiRepository)
-    }
 
     @Singleton
     @Provides

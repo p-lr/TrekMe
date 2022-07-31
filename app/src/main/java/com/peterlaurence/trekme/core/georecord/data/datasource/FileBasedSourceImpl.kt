@@ -7,13 +7,16 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.georecord.data.mapper.toGpx
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.datasource.FileBasedSource
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import com.peterlaurence.trekme.core.georecord.domain.model.supportedGeoRecordFilesExtensions
+import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider
+import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
@@ -23,6 +26,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -32,6 +36,8 @@ class FileBasedSourceImpl(
     private val geoRecordParser: GeoRecordParser,
     private val appEventBus: AppEventBus,
     private val gpxRecordEvents: GpxRecordEvents,
+    @IoDispatcher
+    private val ioDispatcher: CoroutineDispatcher
 ): FileBasedSource {
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
     private val contentResolver = app.applicationContext.contentResolver
@@ -121,6 +127,17 @@ class FileBasedSourceImpl(
         return withContext(Dispatchers.IO) {
             TrackTools.renameGpxFile(file, newFile)
         }
+    }
+
+    override suspend fun updateGeoRecord(geoRecord: GeoRecord): Boolean {
+        val file = fileForId[geoRecord.id] ?: return false
+
+        return runCatching {
+            val gpx = geoRecord.toGpx()
+            withContext(ioDispatcher) {
+                writeGpx(gpx, FileOutputStream(file))
+            }
+        }.isSuccess
     }
 
     override suspend fun deleteGeoRecords(ids: List<UUID>): Boolean = coroutineScope {

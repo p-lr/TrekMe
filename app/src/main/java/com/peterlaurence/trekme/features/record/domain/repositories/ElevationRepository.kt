@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.repositories.recording
+package com.peterlaurence.trekme.features.record.domain.repositories
 
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -223,7 +223,7 @@ class ElevationRepository(
         val minEle = subSampledPoints.minByOrNull { it.ele }?.ele ?: 0.0
         val maxEle = subSampledPoints.maxByOrNull { it.ele }?.ele ?: 0.0
 
-        return ElevationData(geoRecord.id, segmentElePoints, minEle, maxEle, eleSource, needsUpdate, sampling)
+        return ElevationData(geoRecord, segmentElePoints, minEle, maxEle, eleSource, needsUpdate, sampling)
     }
 
     private fun interpolateSegment(
@@ -332,7 +332,7 @@ private const val elevationServiceHost = "wxs.ign.fr"
 sealed interface ElevationState
 object Calculating : ElevationState
 data class ElevationData(
-    val id: UUID,
+    val geoRecord: GeoRecord,
     val segmentElePoints: List<SegmentElePoints> = listOf(),
     val eleMin: Double = 0.0,
     val eleMax: Double = 0.0,

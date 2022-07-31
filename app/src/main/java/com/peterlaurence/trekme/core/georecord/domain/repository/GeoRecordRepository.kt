@@ -39,6 +39,10 @@ class GeoRecordRepository @Inject constructor(
         return fileBasedSource.renameGeoRecord(id, newName)
     }
 
+    suspend fun updateGeoRecord(geoRecord: GeoRecord) {
+        fileBasedSource.updateGeoRecord(geoRecord)
+    }
+
     suspend fun deleteGeoRecords(ids: List<UUID>): Boolean {
         return fileBasedSource.deleteGeoRecords(ids)
     }
