@@ -6,8 +6,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
-import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.features.common.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.common.domain.repositories.RecordingDataRepository
 import com.peterlaurence.trekme.features.record.domain.interactors.ImportRecordingsInteractor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
@@ -28,8 +27,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RecordingStatisticsViewModel @Inject constructor(
-    private val mapRepository: MapRepository,
-    private val routeRepository: RouteRepository,
+    private val routeInteractor: RouteInteractor,
     recordingDataRepository: RecordingDataRepository,
     private val geoRecordInteractor: GeoRecordInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
@@ -62,7 +60,7 @@ class RecordingStatisticsViewModel @Inject constructor(
     }
 
     fun onRequestDeleteRecordings(recordingDataList: List<RecordingData>) = viewModelScope.launch {
-        /* Remove GPX files */
+        /* Remove recordings */
         launch {
             val success = geoRecordInteractor.delete(recordingDataList.map { it.id })
             /* If only one removal failed, notify the user */
@@ -71,21 +69,10 @@ class RecordingStatisticsViewModel @Inject constructor(
             }
         }
 
-        /* Remove corresponding tracks on existing maps */
+        /* Remove corresponding routes on existing maps */
         launch {
-            val trkIds = recordingDataList.flatMap { it.routeIds }
-
-            /* Remove in-memory routes now */
-            mapRepository.getCurrentMapList().forEach { map ->
-                map.routes.value.filter { it.id in trkIds }.forEach { route ->
-                    map.deleteRoute(route)
-                }
-            }
-
-            /* Remove them on disk */
-            mapRepository.getCurrentMapList().forEach { map ->
-                routeRepository.deleteRoutesUsingId(map, trkIds)
-            }
+            val routeIds = recordingDataList.flatMap { it.routeIds }
+            routeInteractor.removeRoutesOnMaps(routeIds)
         }
     }
 }

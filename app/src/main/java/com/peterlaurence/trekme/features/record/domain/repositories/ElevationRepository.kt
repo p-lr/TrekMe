@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.getElevationSource
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.hasTrustedElevations
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
+import com.peterlaurence.trekme.features.record.domain.model.*
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
@@ -41,15 +42,15 @@ class ElevationRepository(
     private val dispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
     private val ignApiRepository: IgnApiRepository
-) {
+) : ElevationStateOwner {
     private val _elevationRepoState = MutableStateFlow<ElevationState>(Calculating)
-    val elevationRepoState: StateFlow<ElevationState> = _elevationRepoState.asStateFlow()
+    override val elevationState: StateFlow<ElevationState> = _elevationRepoState.asStateFlow()
 
     private val _events = MutableSharedFlow<ElevationEvent>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    val events = _events.asSharedFlow()
+    override val events = _events.asSharedFlow()
 
     private var lastId: UUID? = null
     private var job: Job? = null
@@ -329,32 +330,6 @@ class ElevationRepository(
 
 private const val elevationServiceHost = "wxs.ign.fr"
 
-sealed interface ElevationState
-object Calculating : ElevationState
-data class ElevationData(
-    val geoRecord: GeoRecord,
-    val segmentElePoints: List<SegmentElePoints> = listOf(),
-    val eleMin: Double = 0.0,
-    val eleMax: Double = 0.0,
-    val elevationSource: ElevationSource,
-    val needsUpdate: Boolean,
-    val sampling: Int
-) : ElevationState
-object NoElevationData : ElevationState
-
-sealed class ElevationEvent
-data class NoNetworkEvent(val internetOk: Boolean, val restApiOk: Boolean) : ElevationEvent()
-object ElevationCorrectionErrorEvent : ElevationEvent()
-
-/**
- * A point representing the elevation at a given distance from the departure.
- *
- * @param dist distance in meters
- * @param elevation altitude in meters
- */
-data class ElePoint(val dist: Double, val elevation: Double)
-
-data class SegmentElePoints(val points: List<ElePoint>)
 
 private sealed class ElevationResult
 private object Error : ElevationResult()

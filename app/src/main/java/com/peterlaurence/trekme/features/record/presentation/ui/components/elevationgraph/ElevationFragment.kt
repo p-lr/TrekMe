@@ -15,12 +15,12 @@ import com.google.android.material.slider.LabelFormatter.LABEL_GONE
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.databinding.FragmentElevationBinding
-import com.peterlaurence.trekme.features.record.domain.repositories.Calculating
-import com.peterlaurence.trekme.features.record.domain.repositories.ElePoint
-import com.peterlaurence.trekme.features.record.domain.repositories.ElevationData
-import com.peterlaurence.trekme.features.record.domain.repositories.NoElevationData
+import com.peterlaurence.trekme.features.record.domain.model.ElePoint
 import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
+import com.peterlaurence.trekme.features.record.domain.model.Calculating
+import com.peterlaurence.trekme.features.record.domain.model.ElevationData
+import com.peterlaurence.trekme.features.record.domain.model.NoElevationData
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.ElevationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -70,7 +70,7 @@ class ElevationFragment : Fragment() {
     private fun collectElevationPoints() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                viewModel.elevationPoints.collect { config ->
+                viewModel.elevationState.collect { config ->
                     val b = binding ?: return@collect
                     when (config) {
                         is ElevationData -> {

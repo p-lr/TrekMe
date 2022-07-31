@@ -15,8 +15,8 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.core.map.BoundingBox
+import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.intersects
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
@@ -41,12 +41,12 @@ import javax.inject.Inject
 class RecordViewModel @Inject constructor(
     private val geoRecordInteractor: GeoRecordInteractor,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
+    private val getMapInteractor: GetMapInteractor,
     private val app: Application,
     private val settings: Settings,
     private val gpxRecordEvents: GpxRecordEvents,
     private val eventBus: RecordEventBus,
     private val appEventBus: AppEventBus,
-    private val mapRepository: MapRepository,
 ) : ViewModel() {
     init {
         viewModelScope.launch {
@@ -99,7 +99,7 @@ class RecordViewModel @Inject constructor(
 
         var importCount = 0
         supervisorScope {
-            mapRepository.getCurrentMapList().forEach { map ->
+            getMapInteractor.getMapList().forEach { map ->
                 launch {
                     if (map.intersects(boundingBox)) {
                         /* Import the new route */
@@ -120,7 +120,7 @@ class RecordViewModel @Inject constructor(
 
 
     private fun onMapSelectedForRecord(mapId: Int, recordId: UUID) {
-        val map = mapRepository.getMap(mapId) ?: return
+        val map = getMapInteractor.getMap(mapId) ?: return
 
         val uri = geoRecordInteractor.getRecordUri(recordId) ?: return
 

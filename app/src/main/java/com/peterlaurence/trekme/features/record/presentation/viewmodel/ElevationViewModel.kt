@@ -9,17 +9,17 @@ import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.features.record.domain.interactors.UpdateElevationGraphInteractor
 import com.peterlaurence.trekme.features.record.domain.interactors.UpdateGeoRecordElevationsInteractor
-import com.peterlaurence.trekme.features.record.domain.repositories.ElevationCorrectionErrorEvent
-import com.peterlaurence.trekme.features.record.domain.repositories.ElevationData
-import com.peterlaurence.trekme.features.record.domain.repositories.ElevationRepository
-import com.peterlaurence.trekme.features.record.domain.repositories.NoNetworkEvent
+import com.peterlaurence.trekme.features.record.domain.model.ElevationCorrectionErrorEvent
+import com.peterlaurence.trekme.features.record.domain.model.ElevationData
+import com.peterlaurence.trekme.features.record.domain.model.ElevationStateOwner
+import com.peterlaurence.trekme.features.record.domain.model.NoNetworkEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 /**
- * This view-model listens to the [ElevationRepository]'s state changes. Whenever the repository
+ * This view-model listens to the [ElevationStateOwner]'s state changes. Whenever the repository
  * notifies that a gpx file needs to be updated (through [ElevationData.needsUpdate]), this
  * view-model performs the update. When it happens, it means that the repository successfully
  * fetched elevation data from a trusted source.
@@ -27,24 +27,24 @@ import javax.inject.Inject
  * elevation source is the GPS. When the repository requires an update, the elevation source is
  * necessarily different.
  *
- * This view-model also notifies the UI of other events coming from the [ElevationRepository], such
+ * This view-model also notifies the UI of other events coming from the [ElevationStateOwner], such
  * as when an error occurred, or when there's no network.
  *
  * @since 2020/12/13
  **/
 @HiltViewModel
 class ElevationViewModel @Inject constructor(
-    private val repository: ElevationRepository,
+    private val elevationStateOwner: ElevationStateOwner,
     private val updateGeoRecordElevationsInteractor: UpdateGeoRecordElevationsInteractor,
     private val updateElevationGraphInteractor: UpdateElevationGraphInteractor,
     private val appEventBus: AppEventBus,
     private val app: Application,
 ) : ViewModel() {
-    val elevationPoints = repository.elevationRepoState
+    val elevationState = elevationStateOwner.elevationState
 
     init {
         viewModelScope.launch {
-            repository.elevationRepoState.collect { state ->
+            elevationState.collect { state ->
                 when (state) {
                     is ElevationData -> {
                         if (state.needsUpdate) {
@@ -58,7 +58,7 @@ class ElevationViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            repository.events.collect {
+            elevationStateOwner.events.collect {
                 val ctx = app.applicationContext
                 when (it) {
                     ElevationCorrectionErrorEvent -> {

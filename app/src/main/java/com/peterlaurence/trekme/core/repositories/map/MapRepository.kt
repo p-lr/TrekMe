@@ -96,8 +96,6 @@ class MapRepository {
         _mapFlow.value = map
     }
 
-    fun getSettingsMap() = _settingsMapFlow.value
-
     fun setSettingsMap(map: Map) {
         _settingsMapFlow.value = map
     }

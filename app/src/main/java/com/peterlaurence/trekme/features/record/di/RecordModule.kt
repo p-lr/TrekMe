@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.record.di
 
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
+import com.peterlaurence.trekme.features.record.domain.model.ElevationStateOwner
 import com.peterlaurence.trekme.features.record.domain.repositories.ElevationRepository
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.Module
@@ -21,5 +22,11 @@ object RecordModule {
     @Provides
     fun bindElevationRepository(ignApiRepository: IgnApiRepository): ElevationRepository {
         return ElevationRepository(Dispatchers.Default, Dispatchers.IO, ignApiRepository)
+    }
+
+    @ActivityRetainedScoped
+    @Provides
+    fun bindElevationStateOwner(elevationRepository: ElevationRepository): ElevationStateOwner {
+        return elevationRepository
     }
 }

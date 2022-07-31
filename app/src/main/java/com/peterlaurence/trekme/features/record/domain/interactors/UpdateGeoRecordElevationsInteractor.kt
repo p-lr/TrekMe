@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.di.DefaultDispatcher
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSourceInfo
-import com.peterlaurence.trekme.features.record.domain.repositories.ElevationData
+import com.peterlaurence.trekme.features.record.domain.model.ElevationData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
