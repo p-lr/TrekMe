@@ -4,29 +4,27 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
-import com.peterlaurence.trekme.core.track.distanceCalculatorFactory
-import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
-import com.peterlaurence.trekme.util.chunk
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.core.track.distanceCalculatorFactory
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.getElevationSource
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.hasTrustedElevations
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
+import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
+import com.peterlaurence.trekme.features.record.domain.datasource.model.ApiStatus
+import com.peterlaurence.trekme.features.record.domain.datasource.model.Error
+import com.peterlaurence.trekme.features.record.domain.datasource.model.NonTrusted
+import com.peterlaurence.trekme.features.record.domain.datasource.model.TrustedElevations
 import com.peterlaurence.trekme.features.record.domain.model.*
-import com.peterlaurence.trekme.util.performRequest
+import com.peterlaurence.trekme.util.chunk
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import okhttp3.OkHttpClient
-import java.net.InetAddress
 import java.util.*
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Generates elevation graph data, as state of the exposed [elevationRepoState]. Possible states are:
+ * Generates elevation graph data, as state of the exposed [elevationState]. Possible states are:
  * * [Calculating] indicating that a computation is ongoing
  * * [ElevationData] which contains corrected elevation data
  *
@@ -41,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ElevationRepository(
     private val dispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
-    private val ignApiRepository: IgnApiRepository
+    private val elevationDataSource: ElevationDataSource
 ) : ElevationStateOwner {
     private val _elevationRepoState = MutableStateFlow<ElevationState>(Calculating)
     override val elevationState: StateFlow<ElevationState> = _elevationRepoState.asStateFlow()
@@ -57,18 +55,10 @@ class ElevationRepository(
     private val sampling = 20
 
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .cache(null)
-        .build()
-
-    private val json = Json { isLenient = true; ignoreUnknownKeys = true }
 
     /**
      * Computes elevation data for the given [GeoRecord] and updates the exposed
-     * [elevationRepoState].
+     * [elevationState].
      */
     fun update(geoRecord: GeoRecord) {
         if (geoRecord.id != lastId) {
@@ -103,9 +93,10 @@ class ElevationRepository(
         geoRecord: GeoRecord
     ): TrackElevationsSubSampled = withContext(dispatcher) {
         /* We'll work on the first track only */
-        val firstRouteGroup = geoRecord.routeGroups.firstOrNull() ?: return@withContext TrackElevationsSubSampled(
-            listOf(), ElevationSource.GPS, false
-        )
+        val firstRouteGroup =
+            geoRecord.routeGroups.firstOrNull() ?: return@withContext TrackElevationsSubSampled(
+                listOf(), ElevationSource.GPS, false
+            )
         val trustedElevations = geoRecord.hasTrustedElevations()
 
         suspend fun sampleWithoutApi(): List<SegmentElevationsSubSampled> {
@@ -133,7 +124,8 @@ class ElevationRepository(
         /* Needs update if it wasn't already trusted and there was no errors */
         val needsUpdate = !trustedElevations && noError.get()
 
-        val eleSource = if (needsUpdate) ElevationSource.IGN_RGE_ALTI else geoRecord.getElevationSource()
+        val eleSource =
+            if (needsUpdate) ElevationSource.IGN_RGE_ALTI else geoRecord.getElevationSource()
 
         TrackElevationsSubSampled(segmentElevations, eleSource, needsUpdate)
     }
@@ -151,11 +143,11 @@ class ElevationRepository(
                 pointsFlow.chunk(40).buffer(8).flowOn(dispatcher).map { pts ->
                     flow {
                         /* If we fail to fetch elevation for one chunk, stop the whole flow */
-                        val points = when (val eleResult = getElevations(
+                        val points = when (val eleResult = elevationDataSource.getElevations(
                             pts.map { it.lat }, pts.map { it.lon })
                         ) {
                             Error -> {
-                                val apiStatus = checkElevationRestApi()
+                                val apiStatus = checkElevationDataSource()
                                 if (!apiStatus.internetOk || !apiStatus.restApiOk) {
                                     _events.tryEmit(
                                         NoNetworkEvent(
@@ -213,7 +205,12 @@ class ElevationRepository(
         var distanceOffset = 0.0
         val segmentElePoints = firstRouteGroup.routes.zip(segmentElevationList)
             .map { (route, segmentEleSubSampled) ->
-                val elePoints = interpolateSegment(geoRecord.hasTrustedElevations(), segmentEleSubSampled, route, distanceOffset)
+                val elePoints = interpolateSegment(
+                    geoRecord.hasTrustedElevations(),
+                    segmentEleSubSampled,
+                    route,
+                    distanceOffset
+                )
                 elePoints.lastOrNull()?.also {
                     distanceOffset = it.dist
                 }
@@ -224,7 +221,15 @@ class ElevationRepository(
         val minEle = subSampledPoints.minByOrNull { it.ele }?.ele ?: 0.0
         val maxEle = subSampledPoints.maxByOrNull { it.ele }?.ele ?: 0.0
 
-        return ElevationData(geoRecord, segmentElePoints, minEle, maxEle, eleSource, needsUpdate, sampling)
+        return ElevationData(
+            geoRecord,
+            segmentElePoints,
+            minEle,
+            maxEle,
+            eleSource,
+            needsUpdate,
+            sampling
+        )
     }
 
     private fun interpolateSegment(
@@ -259,58 +264,9 @@ class ElevationRepository(
         }
     }
 
-    /**
-     * Determine if we have an internet connection, then check the availability of the elevation
-     * REST api.
-     */
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun checkElevationRestApi(): ApiStatus = withContext(ioDispatcher) {
-        val internetOk = runCatching {
-            val ip = InetAddress.getByName("google.com")
-            ip.hostAddress != ""
-        }
-
-        return@withContext if (internetOk.isSuccess) {
-            val apiOk = runCatching {
-                val apiIp = InetAddress.getByName(elevationServiceHost)
-                apiIp.hostAddress != ""
-            }
-            ApiStatus(true, apiOk.getOrDefault(false))
-        } else {
-            ApiStatus(internetOk = false, restApiOk = false)
-        }
+    private suspend fun checkElevationDataSource(): ApiStatus {
+        return elevationDataSource.checkStatus()
     }
-
-    /**
-     * TODO: move this into data layer
-     */
-    private suspend fun getElevations(
-        latList: List<Double>,
-        lonList: List<Double>
-    ): ElevationResult {
-        val ignApi = ignApiRepository.getApi() ?: return Error
-        val longitudeList = lonList.joinToString(separator = "|") { it.toString() }
-        val latitudeList = latList.joinToString(separator = "|") { it.toString() }
-        val url =
-            "https://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList"
-        val req = ignApiRepository.requestBuilder.url(url).build()
-
-        val eleList = withTimeoutOrNull(4000) {
-            client.performRequest<ElevationsResponse>(req, json)?.elevations?.map { it.z }
-        } ?: return Error
-
-        return if (eleList.contains(-99999.0)) {
-            NonTrusted
-        } else TrustedElevations(eleList)
-    }
-
-    @Serializable
-    private data class ElevationsResponse(val elevations: List<EleIgnPt>)
-
-    @Serializable
-    private data class EleIgnPt(val lat: Double, val lon: Double, val z: Double, val acc: Double)
-
-    private data class ApiStatus(val internetOk: Boolean = false, val restApiOk: Boolean = false)
 
     private data class SegmentElevationsSubSampled(val points: List<PointIndexed>)
 
@@ -328,10 +284,6 @@ class ElevationRepository(
     )
 }
 
-private const val elevationServiceHost = "wxs.ign.fr"
 
 
-private sealed class ElevationResult
-private object Error : ElevationResult()
-private object NonTrusted : ElevationResult()
-private data class TrustedElevations(val elevations: List<Double>) : ElevationResult()
+
