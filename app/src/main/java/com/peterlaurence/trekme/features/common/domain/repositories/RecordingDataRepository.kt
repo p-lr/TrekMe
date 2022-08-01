@@ -6,7 +6,10 @@ import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.core.georecord.domain.repository.GeoRecordRepository
+import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
+import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
+import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -31,7 +34,7 @@ class RecordingDataRepository @Inject constructor(
 ) : RecordingDataStateOwner {
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
 
-    override val recordingDataFlow = MutableStateFlow<List<RecordingData>>(emptyList())
+    override val recordingDataFlow = MutableStateFlow<RecordingsState>(Loading)
 
     init {
         primaryScope.launch {
@@ -42,9 +45,12 @@ class RecordingDataRepository @Inject constructor(
             geoRecordRepository.getGeoRecordsFlow().collect { geoRecordList ->
                 val newIds = mutableListOf<UUID>()
                 val recordingDataList = geoRecordList.mapNotNull { (id, name) ->
-                    val existingRecordingData = recordingDataFlow.value.firstOrNull { recordingData ->
-                        recordingData.id == id
-                    }
+                    val recordingsState = recordingDataFlow.value
+                    val existingRecordingData = if (recordingsState is RecordingsAvailable) {
+                        recordingsState.recordings.firstOrNull { recordingData ->
+                            recordingData.id == id
+                        }
+                    } else null
                     if (existingRecordingData == null) {
                         newIds.add(id)
                     }
@@ -54,7 +60,7 @@ class RecordingDataRepository @Inject constructor(
 
                 val newRecordings = makeRecordingData(newIds)
 
-                recordingDataFlow.value = (recordingDataList + newRecordings).mostRecentFirst()
+                recordingDataFlow.value = RecordingsAvailable((recordingDataList + newRecordings).mostRecentFirst())
             }
         }
     }

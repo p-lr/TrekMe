@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
+import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
+import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
 import com.peterlaurence.trekme.features.record.domain.interactors.ImportRecordingsInteractor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
@@ -35,7 +37,7 @@ class RecordingStatisticsViewModel @Inject constructor(
     private val eventBus: RecordEventBus,
 ) : ViewModel() {
 
-    val recordingDataFlow: StateFlow<List<RecordingData>> = recordingDataStateOwner.recordingDataFlow
+    val recordingDataFlow: StateFlow<RecordingsState> = recordingDataStateOwner.recordingDataFlow
 
     private val newRecordingEventChannel = Channel<Unit>(1)
     val newRecordingEventFlow = newRecordingEventChannel.receiveAsFlow()
@@ -49,11 +51,11 @@ class RecordingStatisticsViewModel @Inject constructor(
 
         /* Emit an event when there's a new element in the list */
         viewModelScope.launch {
-            recordingDataFlow.scan(recordingDataFlow.value.size) { s, l ->
-                if (l.size > s) {
+            recordingDataFlow.filterIsInstance<RecordingsAvailable>().scan(0) { s, l ->
+                if (l.recordings.size > s) {
                     newRecordingEventChannel.send(Unit)
                 }
-                l.size
+                l.recordings.size
             }.collect()
         }
     }

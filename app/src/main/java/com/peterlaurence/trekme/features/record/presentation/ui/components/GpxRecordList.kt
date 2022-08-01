@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
+import com.peterlaurence.trekme.features.common.domain.model.Loading
+import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
@@ -46,7 +48,14 @@ fun GpxRecordListStateful(
     onElevationGraphClick: (RecordingData) -> Unit,
     onDeleteClick: (List<RecordingData>) -> Unit
 ) {
-    val data by statViewModel.recordingDataFlow.collectAsState()
+    val state by statViewModel.recordingDataFlow.collectAsState()
+
+    if (state is Loading) {
+        LoadingList(modifier)
+        return
+    }
+
+    val data = (state as RecordingsAvailable).recordings
     val dataById = data.associateBy { it.id }
 
     var isMultiSelectionMode by rememberSaveable {
@@ -127,7 +136,6 @@ fun GpxRecordListStateful(
         }
     }
 }
-
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -306,6 +314,25 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
                     id = R.string.recording_delete_desc
                 )
             )
+        }
+    }
+}
+
+@Composable
+private fun LoadingList(modifier: Modifier = Modifier) {
+    Card(modifier.fillMaxSize()) {
+        Column {
+            TopAppBar(
+                title = {
+                    Text(
+                        stringResource(id = R.string.recordings_list_title),
+                        color = textColor(),
+                        fontSize = 17.sp
+                    )
+                },
+                backgroundColor = surfaceBackground()
+            )
+            LinearProgressIndicator(Modifier.fillMaxWidth())
         }
     }
 }
