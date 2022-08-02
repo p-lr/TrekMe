@@ -121,9 +121,10 @@ fun SearchAppBar(
                                 DropdownMenuItem(onClick = onShowLayerOverlay) {
                                     Text(stringResource(id = R.string.mapcreate_overlay_layers))
                                 }
-                                DropdownMenuItem(onClick = onUseTrack) {
-                                    Text(stringResource(id = R.string.mapcreate_from_track))
-                                }
+                                // TODO: un-comment when feature is complete
+//                                DropdownMenuItem(onClick = onUseTrack) {
+//                                    Text(stringResource(id = R.string.mapcreate_from_track))
+//                                }
                             }
                         }
                     }
