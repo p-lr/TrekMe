@@ -155,7 +155,7 @@ class ElevationGraphView @JvmOverloads constructor(
         }
 
         highlightPtX = translateX(virtualPoint.dist, distMax)
-        highlightPtY = translateY(virtualPoint.elevation - eleMin, eleRange)
+        highlightPtY = translateY(virtualPoint.elevation - eleMin, eleRange, distMax)
 
         eleText = formatElevation(virtualPoint.elevation)
         distText = formatDistance(virtualPoint.dist)
@@ -193,12 +193,12 @@ class ElevationGraphView @JvmOverloads constructor(
         val path = Path()
         val firstPt: ElePoint = firstOrNull() ?: return null
         val x0 = translateX(0.0, distMax)
-        val y0 = translateY(firstPt.elevation - eleMin, eleMax - eleMin)
+        val y0 = translateY(firstPt.elevation - eleMin, eleMax - eleMin, distMax)
         path.moveTo(x0, y0)
         for (point in this) {
             path.lineTo(
                     translateX(point.dist, distMax),
-                    translateY(point.elevation - eleMin, eleMax - eleMin)
+                    translateY(point.elevation - eleMin, eleMax - eleMin, distMax)
             )
         }
 
@@ -209,9 +209,10 @@ class ElevationGraphView @JvmOverloads constructor(
         return paddingLeft + ((width - paddingLeft - paddingRight - maxDistanceMargin) * x / xRange).toFloat()
     }
 
-    private fun translateY(y: Double, yRange: Double): Float {
+    private fun translateY(y: Double, yRange: Double, distMax: Double): Float {
+        val ratio = (yRange / distMax).coerceIn(0.20..1.0)
         return height - paddingBottom - minElevationMargin -
-                ((height - paddingBottom - paddingTop - minElevationMargin - maxElevationMargin) * y / yRange).toFloat()
+                ((height - paddingBottom - paddingTop - minElevationMargin - maxElevationMargin) * y * ratio / yRange).toFloat()
     }
 
     init {
