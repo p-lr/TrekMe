@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -30,13 +29,14 @@ import kotlin.coroutines.suspendCoroutine
  */
 class Billing(
     val application: Application,
-    private val oneTimeSku: String,
-    private val subSkuList: List<String>,
+    private val oneTimeId: String,
+    private val subIdList: List<String>,
     private val purchaseVerifier: PurchaseVerifier,
     private val appEventBus: AppEventBus
 ) : BillingApi {
 
-    override val purchaseAcknowledgedEvent = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
+    override val purchaseAcknowledgedEvent =
+        MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
 
     private lateinit var purchasePendingCallback: () -> Unit
 
@@ -55,8 +55,8 @@ class Billing(
         fun acknowledge() {
             purchases?.forEach {
                 if (
-                    it.skus.any { sku ->
-                        sku == oneTimeSku || sku in subSkuList
+                    it.products.any { id ->
+                        id == oneTimeId || id in subIdList
                     }
                 ) {
                     if (it.purchaseState == Purchase.PurchaseState.PURCHASED && !it.isAcknowledged) {
@@ -77,10 +77,11 @@ class Billing(
         }
     }
 
-    private val skuDetailsForId = mutableMapOf<UUID, SkuDetails>()
+    private val productDetailsForId = mutableMapOf<UUID, ProductDetails>()
 
     private val billingClient =
-        BillingClient.newBuilder(application).setListener(purchaseUpdatedListener).enablePendingPurchases().build()
+        BillingClient.newBuilder(application).setListener(purchaseUpdatedListener)
+            .enablePendingPurchases().build()
 
     /**
      * Attempts to connect the billing service. This function immediately returns.
@@ -112,12 +113,12 @@ class Billing(
     }
 
     private fun shouldAcknowledgePurchase(purchase: Purchase): Boolean {
-        return (purchase.skus.any { it == oneTimeSku })
+        return (purchase.products.any { it == oneTimeId })
                 && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
     }
 
     private fun shouldAcknowledgeSubPurchase(purchase: Purchase): Boolean {
-        return (purchase.skus.any { it in subSkuList })
+        return (purchase.products.any { it in subIdList })
                 && purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged
     }
 
@@ -134,14 +135,20 @@ class Billing(
     override suspend fun acknowledgePurchase(): Boolean {
         runCatching { awaitConnect() }.onFailure { return false }
 
-        val inAppPurchases = queryPurchasesAsync(BillingClient.SkuType.INAPP)
+        val inAppQuery = QueryPurchasesParams.newBuilder()
+            .setProductType(BillingClient.ProductType.INAPP)
+            .build()
+        val inAppPurchases = queryPurchasesAsync(inAppQuery)
         val oneTimeAck = inAppPurchases.second.getOneTimePurchase()?.let {
             if (shouldAcknowledgePurchase(it)) {
                 acknowledge(it)
             } else false
         } ?: false
 
-        val subs = queryPurchasesAsync(BillingClient.SkuType.SUBS)
+        val subQuery = QueryPurchasesParams.newBuilder()
+            .setProductType(BillingClient.ProductType.SUBS)
+            .build()
+        val subs = queryPurchasesAsync(subQuery)
         val subAck = subs.second.getSubPurchase()?.let {
             if (shouldAcknowledgeSubPurchase(it)) {
                 acknowledge(it)
@@ -154,7 +161,10 @@ class Billing(
     override suspend fun isPurchased(): Boolean {
         runCatching { awaitConnect() }.onFailure { return false }
 
-        val inAppPurchases = queryPurchasesAsync(BillingClient.SkuType.INAPP)
+        val inAppQuery = QueryPurchasesParams.newBuilder()
+            .setProductType(BillingClient.ProductType.INAPP)
+            .build()
+        val inAppPurchases = queryPurchasesAsync(inAppQuery)
         val oneTimeLicense = inAppPurchases.second.getValidOneTimePurchase()?.let {
             if (purchaseVerifier.checkTime(it.purchaseTime) !is AccessGranted) {
                 consume(it.purchaseToken)
@@ -163,26 +173,29 @@ class Billing(
         }
 
         return if (oneTimeLicense == null) {
-            val subs = queryPurchasesAsync(BillingClient.SkuType.SUBS)
+            val subQuery = QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build()
+            val subs = queryPurchasesAsync(subQuery)
             subs.second.getValidSubPurchase() != null
         } else true
     }
 
     private fun List<Purchase>.getOneTimePurchase(): Purchase? {
-        return firstOrNull { it.skus.any { sku -> sku == oneTimeSku } }
+        return firstOrNull { it.products.any { id -> id == oneTimeId } }
     }
 
     private fun List<Purchase>.getSubPurchase(): Purchase? {
-        return firstOrNull { it.skus.any { sku -> sku in subSkuList } }
+        return firstOrNull { it.products.any { id -> id in subIdList } }
     }
 
     private fun List<Purchase>.getValidOneTimePurchase(): Purchase? {
-        return firstOrNull { it.skus.any { sku -> sku == oneTimeSku } && it.isAcknowledged }
+        return firstOrNull { it.products.any { id -> id == oneTimeId } && it.isAcknowledged }
     }
 
     private fun List<Purchase>.getValidSubPurchase(): Purchase? {
         return firstOrNull {
-            it.skus.any { sku -> sku in subSkuList } &&
+            it.products.any { id -> id in subIdList } &&
                     it.isAcknowledged
         }
     }
@@ -199,11 +212,11 @@ class Billing(
      * @throws [ProductNotFoundException], [NotSupportedException], [IllegalStateException]
      */
     override suspend fun getSubDetails(index: Int): SubscriptionDetails {
-        val subSku = subSkuList.getOrNull(index) ?: error("no sku for index $index")
+        val subId = subIdList.getOrNull(index) ?: error("no sku for index $index")
         awaitConnect()
-        val (billingResult, skuDetailsList) = querySubDetails(subSku)
+        val (billingResult, skuDetailsList) = querySubDetails(subId)
         return when (billingResult.responseCode) {
-            OK -> skuDetailsList.find { it.sku == subSku }?.let {
+            OK -> skuDetailsList.find { it.productId == subId }?.let {
                 makeSubscriptionDetails(it)
             } ?: throw ProductNotFoundException()
             FEATURE_NOT_SUPPORTED -> throw NotSupportedException()
@@ -230,13 +243,19 @@ class Billing(
         }
     }
 
-    private suspend fun querySubDetails(subSku: String): SkuQueryResult = suspendCoroutine {
-        val skuList = ArrayList<String>()
-        skuList.add(subSku)
-        val params = SkuDetailsParams.newBuilder()
-        params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS)
-        billingClient.querySkuDetailsAsync(params.build()) { billingResult, skuDetailsList ->
-            it.resume(SkuQueryResult(billingResult, skuDetailsList ?: listOf()))
+    private suspend fun querySubDetails(subId: String): ProductDetailsResult = suspendCoroutine {
+        val productList =
+            listOf(
+                QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(subId)
+                    .setProductType(BillingClient.ProductType.SUBS)
+                    .build()
+            )
+
+        val params = QueryProductDetailsParams.newBuilder().setProductList(productList)
+        billingClient.queryProductDetailsAsync(params.build()) { billingResult,
+                                                                 productDetailsList ->
+            it.resume(ProductDetailsResult(billingResult, productDetailsList))
         }
     }
 
@@ -247,9 +266,9 @@ class Billing(
      * By collecting a [callbackFlow], the real collector is on a different call stack. So the
      * [BillingClient] has no reference on the collector.
      */
-    private suspend fun queryPurchasesAsync(skuType: String): Pair<BillingResult, List<Purchase>> =
+    private suspend fun queryPurchasesAsync(params: QueryPurchasesParams): Pair<BillingResult, List<Purchase>> =
         callbackFlow {
-            billingClient.queryPurchasesAsync(skuType) { r, p ->
+            billingClient.queryPurchasesAsync(params) { r, p ->
                 trySend(Pair(r, p))
             }
             awaitClose { /* We can't do anything, but it doesn't matter */ }
@@ -275,20 +294,29 @@ class Billing(
         awaitClose { /* We can't do anything, but it doesn't matter */ }
     }.first()
 
-    private data class SkuQueryResult(
+    private data class ProductDetailsResult(
         val billingResult: BillingResult,
-        val skuDetailsList: List<SkuDetails>
+        val productDetailsList: List<ProductDetails>
     )
 
     override fun launchBilling(
         id: UUID,
         purchasePendingCb: () -> Unit
     ) {
-        val skuDetails = skuDetailsForId[id] ?: return
-        val flowParams = BillingFlowParams.newBuilder()
-            .setSkuDetails(skuDetails)
-            .build()
-        this.purchasePendingCallback = purchasePendingCb
+        val productDetails = productDetailsForId[id] ?: return
+        val offerToken = productDetails.subscriptionOfferDetails?.get(0)?.offerToken ?: return
+        val productDetailsParamsList =
+            listOf(
+                BillingFlowParams.ProductDetailsParams.newBuilder()
+                    .setProductDetails(productDetails)
+                    .setOfferToken(offerToken)
+                    .build()
+            )
+        val flowParams =
+            BillingFlowParams.newBuilder()
+                .setProductDetailsParamsList(productDetailsParamsList)
+                .build()
+
         val billingParams = BillingParams(billingClient, flowParams)
 
         /* Since we need an Activity to start the billing flow, we send an event which the activity
@@ -296,7 +324,7 @@ class Billing(
         appEventBus.startBillingFlow(billingParams)
     }
 
-    private fun makeSubscriptionDetails(skuDetails: SkuDetails): SubscriptionDetails {
+    private fun makeSubscriptionDetails(productDetails: ProductDetails): SubscriptionDetails? {
         /**
          * Trial periods are given in the form "P1W" -> 1 week, or "P4D" -> 4 days.
          */
@@ -312,12 +340,29 @@ class Billing(
 
         /* Assign an id and remember it (needed for purchase) */
         val id = UUID.randomUUID()
-        skuDetailsForId[id] = skuDetails
+        productDetailsForId[id] = productDetails
+
+        /* For the moment, we only support the base plan */
+        val offer = productDetails.subscriptionOfferDetails?.firstOrNull() ?: return null
+
+        /* The trial is the first pricing phase with 0 as price amount */
+        val trialData =
+            offer.pricingPhases.pricingPhaseList.firstOrNull { it.priceAmountMicros == 0L }
+        val trialInfo = if (trialData != null) {
+            TrialAvailable(trialDurationInDays = parseTrialPeriodInDays(trialData.billingPeriod))
+        } else {
+            TrialUnavailable
+        }
+
+        /* The "real" price phase is the first phase with a price other than 0 */
+        val realPricePhase = offer.pricingPhases.pricingPhaseList.firstOrNull {
+            it.priceAmountMicros != 0L
+        } ?: return null
 
         return SubscriptionDetails(
             id = id,
-            price = skuDetails.price,
-            trialDurationInDays = parseTrialPeriodInDays(skuDetails.freeTrialPeriod)
+            price = realPricePhase.formattedPrice,
+            trialInfo = trialInfo
         )
     }
 }

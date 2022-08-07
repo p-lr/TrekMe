@@ -22,6 +22,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
+import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
+import com.peterlaurence.trekme.core.billing.domain.model.TrialInfo
+import com.peterlaurence.trekme.core.billing.domain.model.TrialUnavailable
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.shop.presentation.ui.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.PriceButton
@@ -34,19 +37,19 @@ fun GpsProPurchaseHeaderStateful(
     val purchaseState by viewModel.purchaseFlow.collectAsState()
     val subDetails by viewModel.subscriptionDetailsFlow.collectAsState(initial = null)
 
-    GpsProPurchaseHeader(purchaseState, subDetails?.trialDurationInDays)
+    GpsProPurchaseHeader(purchaseState, subDetails?.trialInfo)
 }
 
 @Composable
-private fun GpsProPurchaseHeader(purchaseState: PurchaseState, trialDuration: Int?) {
+private fun GpsProPurchaseHeader(purchaseState: PurchaseState, trialInfo: TrialInfo?) {
     val subTitle = when (purchaseState) {
         PurchaseState.CHECK_PENDING -> stringResource(id = R.string.module_check_pending)
         PurchaseState.PURCHASED -> stringResource(id = R.string.module_owned)
         PurchaseState.NOT_PURCHASED -> {
-            if (trialDuration != null) {
-                stringResource(id = R.string.free_trial).format(trialDuration)
-            } else {
-                stringResource(id = R.string.module_error)
+            when (trialInfo) {
+                is TrialAvailable -> stringResource(id = R.string.free_trial).format(trialInfo.trialDurationInDays)
+                TrialUnavailable -> stringResource(id = R.string.module_trial_consumed)
+                null -> stringResource(id = R.string.module_error)
             }
         }
         PurchaseState.PURCHASE_PENDING -> stringResource(id = R.string.module_check_pending)

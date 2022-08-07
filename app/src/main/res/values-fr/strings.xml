@@ -369,4 +369,5 @@
     <string name="duration_desc">Temps total</string>
     <string name="speed_desc">Vitesse moyenne</string>
     <string name="multi_selection_desc">Mode sélection multiple</string>
+    <string name="module_trial_consumed">Vous avez déjà bénéficié de la période d\'essai</string>
 </resources>
