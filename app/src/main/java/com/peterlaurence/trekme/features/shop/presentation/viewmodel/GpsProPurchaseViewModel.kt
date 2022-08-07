@@ -1,24 +1,21 @@
 package com.peterlaurence.trekme.features.shop.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.peterlaurence.trekme.core.repositories.gpspro.GpsProPurchaseRepo
-import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
+import com.peterlaurence.trekme.core.billing.domain.interactors.GpsProPurchaseInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class GpsProPurchaseViewModel @Inject constructor(
-    private val repo: GpsProPurchaseRepo,
-    private val appEventBus: AppEventBus,
+    gpsProStateOwner: GpsProStateOwner,
+    private val gpsProPurchaseInteractor: GpsProPurchaseInteractor,
 ) : ViewModel() {
-    val purchaseFlow = repo.purchaseFlow
-    val subscriptionDetailsFlow = repo.subDetailsFlow
+    val purchaseFlow = gpsProStateOwner.purchaseFlow
+    val subscriptionDetailsFlow = gpsProStateOwner.subDetailsFlow
 
     fun buy() {
-        val billingParams = repo.getSubscriptionBillingParams()
-        if (billingParams != null) {
-            appEventBus.startBillingFlow(billingParams)
-        }
+        gpsProPurchaseInteractor.buyGpsPro()
     }
 }
 

@@ -20,10 +20,10 @@ import androidx.fragment.app.findFragment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.repositories.gpspro.*
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
 import com.peterlaurence.trekme.features.gpspro.presentation.ui.components.IconCircle
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.gpspro.domain.repositories.*
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.BluetoothDeviceStub
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.GpsProViewModel
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.selectedDevice

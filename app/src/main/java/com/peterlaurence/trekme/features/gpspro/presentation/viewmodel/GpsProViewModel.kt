@@ -20,7 +20,7 @@ import com.peterlaurence.trekme.core.location.InternalGps
 import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
 import com.peterlaurence.trekme.core.location.LocationProducerInfo
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.core.repositories.gpspro.GpsProDiagnosisRepo
+import com.peterlaurence.trekme.features.gpspro.domain.repositories.GpsProDiagnosisRepo
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first

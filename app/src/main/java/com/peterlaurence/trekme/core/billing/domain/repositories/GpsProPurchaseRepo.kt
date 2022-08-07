@@ -1,8 +1,10 @@
-package com.peterlaurence.trekme.core.repositories.gpspro
+package com.peterlaurence.trekme.core.billing.domain.repositories
 
-import com.peterlaurence.trekme.billing.*
-import com.peterlaurence.trekme.billing.common.PurchaseState
-import com.peterlaurence.trekme.di.GpsPro
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
+import com.peterlaurence.trekme.core.billing.di.GpsPro
+import com.peterlaurence.trekme.core.billing.domain.api.BillingApi
+import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
+import com.peterlaurence.trekme.core.billing.domain.model.SubscriptionDetails
 import com.peterlaurence.trekme.di.MainDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -15,16 +17,16 @@ import javax.inject.Singleton
 
 @Singleton
 class GpsProPurchaseRepo @Inject constructor(
-        @MainDispatcher mainDispatcher: CoroutineDispatcher,
-        @GpsPro private val billing: Billing
-) {
+    @MainDispatcher mainDispatcher: CoroutineDispatcher,
+    @GpsPro private val billing: BillingApi
+) : GpsProStateOwner {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())
 
     private val _purchaseFlow = MutableStateFlow(PurchaseState.CHECK_PENDING)
-    val purchaseFlow = _purchaseFlow.asStateFlow()
+    override val purchaseFlow = _purchaseFlow.asStateFlow()
 
     private val _subDetailsFlow = MutableStateFlow<SubscriptionDetails?>(null)
-    val subDetailsFlow = _subDetailsFlow.asStateFlow()
+    override val subDetailsFlow = _subDetailsFlow.asStateFlow()
 
     init {
         scope.launch {
@@ -40,8 +42,7 @@ class GpsProPurchaseRepo @Inject constructor(
 
             /* Otherwise, do normal checks */
             if (!ackDone) {
-                val p = billing.getPurchase()
-                val result = if (p != null) {
+                val result = if (billing.isPurchased()) {
                     PurchaseState.PURCHASED
                 } else {
                     updateSubscriptionInfo()
@@ -63,11 +64,11 @@ class GpsProPurchaseRepo @Inject constructor(
         }
     }
 
-    fun getSubscriptionBillingParams(): BillingParams? {
+    fun buySubscription() {
         val ignLicenseDetails = _subDetailsFlow.value
-        return if (ignLicenseDetails != null) {
-            billing.launchBilling(ignLicenseDetails.skuDetails, this::onPurchasePending)
-        } else null
+        if (ignLicenseDetails != null) {
+            billing.launchBilling(ignLicenseDetails.id, this::onPurchasePending)
+        }
     }
 
     private fun onPurchasePending() {

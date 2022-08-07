@@ -1,10 +1,10 @@
-package com.peterlaurence.trekme.core.repositories.offers.extended
+package com.peterlaurence.trekme.core.billing.domain.repositories
 
-import com.peterlaurence.trekme.billing.Billing
-import com.peterlaurence.trekme.billing.BillingParams
-import com.peterlaurence.trekme.billing.SubscriptionDetails
-import com.peterlaurence.trekme.billing.common.PurchaseState
-import com.peterlaurence.trekme.di.IGN
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
+import com.peterlaurence.trekme.core.billing.di.IGN
+import com.peterlaurence.trekme.core.billing.domain.api.BillingApi
+import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
+import com.peterlaurence.trekme.core.billing.domain.model.SubscriptionDetails
 import com.peterlaurence.trekme.di.MainDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -18,22 +18,22 @@ import javax.inject.Singleton
 @Singleton
 class ExtendedOfferRepository @Inject constructor(
     @MainDispatcher mainDispatcher: CoroutineDispatcher,
-    @IGN private val billing: Billing
-) {
+    @IGN private val billingApi: BillingApi
+) : ExtendedOfferStateOwner {
     private val scope = CoroutineScope(mainDispatcher + SupervisorJob())
 
     private val _purchaseFlow = MutableStateFlow(PurchaseState.CHECK_PENDING)
-    val purchaseFlow = _purchaseFlow.asStateFlow()
+    override val purchaseFlow = _purchaseFlow.asStateFlow()
 
     private val _yearlySubDetailsFlow = MutableStateFlow<SubscriptionDetails?>(null)
-    val yearlySubDetailsFlow = _yearlySubDetailsFlow.asStateFlow()
+    override val yearlySubDetailsFlow = _yearlySubDetailsFlow.asStateFlow()
 
     private val _monthlySubDetailsFlow = MutableStateFlow<SubscriptionDetails?>(null)
-    val monthlySubDetailsFlow = _monthlySubDetailsFlow.asStateFlow()
+    override val monthlySubDetailsFlow = _monthlySubDetailsFlow.asStateFlow()
 
     init {
         scope.launch {
-            billing.purchaseAcknowledgedEvent.collect {
+            billingApi.purchaseAcknowledgedEvent.collect {
                 onPurchaseAcknowledged()
             }
         }
@@ -41,7 +41,7 @@ class ExtendedOfferRepository @Inject constructor(
         scope.launch {
 
             /* Check if we just need to acknowledge the purchase */
-            val ackDone = billing.acknowledgePurchase()
+            val ackDone = billingApi.acknowledgePurchase()
 
             /* Otherwise, do normal checks */
             if (!ackDone) {
@@ -53,8 +53,7 @@ class ExtendedOfferRepository @Inject constructor(
     }
 
     suspend fun updatePurchaseState() {
-        val p = billing.getPurchase()
-        val result = if (p != null) {
+        val result = if (billingApi.isPurchased()) {
             PurchaseState.PURCHASED
         } else {
             updateSubscriptionInfo()
@@ -64,7 +63,7 @@ class ExtendedOfferRepository @Inject constructor(
     }
 
     fun acknowledgePurchase() = scope.launch {
-        val ackDone = billing.acknowledgePurchase()
+        val ackDone = billingApi.acknowledgePurchase()
         if (ackDone) {
             onPurchaseAcknowledged()
         }
@@ -73,30 +72,30 @@ class ExtendedOfferRepository @Inject constructor(
     private fun updateSubscriptionInfo() {
         scope.launch {
             runCatching {
-                val subDetails = billing.getSubDetails(1)
+                val subDetails = billingApi.getSubDetails(1)
                 _yearlySubDetailsFlow.value = subDetails
             }
         }
         scope.launch {
             runCatching {
-                val subDetails = billing.getSubDetails(0)
+                val subDetails = billingApi.getSubDetails(0)
                 _monthlySubDetailsFlow.value = subDetails
             }
         }
     }
 
-    fun getYearlySubscriptionBillingParams(): BillingParams? {
+    fun buyYearlySubscription() {
         val subscriptionDetails = _yearlySubDetailsFlow.value
-        return if (subscriptionDetails != null) {
-            billing.launchBilling(subscriptionDetails.skuDetails, this::onPurchasePending)
-        } else null
+        if (subscriptionDetails != null) {
+            billingApi.launchBilling(subscriptionDetails.id, this::onPurchasePending)
+        }
     }
 
-    fun getMonthlySubscriptionBillingParams(): BillingParams? {
+    fun buyMonthlySubscription() {
         val subscriptionDetails = _monthlySubDetailsFlow.value
-        return if (subscriptionDetails != null) {
-            billing.launchBilling(subscriptionDetails.skuDetails, this::onPurchasePending)
-        } else null
+        if (subscriptionDetails != null) {
+            billingApi.launchBilling(subscriptionDetails.id, this::onPurchasePending)
+        }
     }
 
     private fun onPurchasePending() {

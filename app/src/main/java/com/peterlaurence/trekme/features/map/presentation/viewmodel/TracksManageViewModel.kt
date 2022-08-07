@@ -3,7 +3,8 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.*
-import com.peterlaurence.trekme.billing.common.PurchaseState
+import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.georecord.domain.interactors.IsUriSupportedInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.events.AppEventBus
@@ -11,7 +12,6 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
-import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
@@ -28,7 +28,7 @@ import javax.inject.Inject
 class TracksManageViewModel @Inject constructor(
     private val mapRepository: MapRepository,
     private val routeRepository: RouteRepository,
-    extendedOfferRepository: ExtendedOfferRepository,
+    extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val isUriSupportedInteractor: IsUriSupportedInteractor,
     private val app: Application,
@@ -39,7 +39,7 @@ class TracksManageViewModel @Inject constructor(
     private val _tracks = MutableLiveData<List<Route>>()
     val tracks: LiveData<List<Route>> = _tracks
 
-    val hasExtendedOffer: LiveData<Boolean> = extendedOfferRepository.purchaseFlow.asLiveData(viewModelScope.coroutineContext).map {
+    val hasExtendedOffer: LiveData<Boolean> = extendedOfferStateOwner.purchaseFlow.asLiveData(viewModelScope.coroutineContext).map {
             it == PurchaseState.PURCHASED
         }
 

@@ -1,9 +1,13 @@
-package com.peterlaurence.trekme.billing
+package com.peterlaurence.trekme.core.billing.data.api
 
 import android.app.Application
 import android.util.Log
 import com.android.billingclient.api.*
 import com.android.billingclient.api.BillingClient.BillingResponseCode.*
+import com.peterlaurence.trekme.core.billing.data.model.BillingParams
+import com.peterlaurence.trekme.core.billing.domain.api.BillingApi
+import com.peterlaurence.trekme.core.billing.domain.model.*
+import com.peterlaurence.trekme.events.AppEventBus
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -11,30 +15,30 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-typealias PurchasePendingCallback = () -> Unit
 
 /**
  * Manages a subscription along with a one-time purchase.
  * To access some functionality, a user should have an active subscription, or a valid one-time
  * purchase.
  *
- * @author P.Laurence on 06/08/2019
+ * @since 2019/08/06
  */
 class Billing(
     val application: Application,
     private val oneTimeSku: String,
     private val subSkuList: List<String>,
-    private val purchaseVerifier: PurchaseVerifier
-) : PurchasesUpdatedListener {
+    private val purchaseVerifier: PurchaseVerifier,
+    private val appEventBus: AppEventBus
+) : BillingApi {
 
-    val purchaseAcknowledgedEvent = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
-    private val billingClient =
-        BillingClient.newBuilder(application).setListener(this).enablePendingPurchases().build()
+    override val purchaseAcknowledgedEvent = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
 
-    private lateinit var purchasePendingCallback: PurchasePendingCallback
+    private lateinit var purchasePendingCallback: () -> Unit
 
     private var connected = false
     private val connectionStateListener = object : BillingClientStateListener {
@@ -47,27 +51,7 @@ class Billing(
         }
     }
 
-    /**
-     * Attempts to connect the billing service. This function immediately returns.
-     * See also [awaitConnect], which suspends at most 10s.
-     * Don't try to make this a suspend function - the [billingClient] keeps a reference on the
-     * [BillingClientStateListener] so it would keep a reference on a continuation (leading to
-     * insidious memory leaks, depending on who invokes that suspending function).
-     * Done this way, we're sure that the [billingClient] only has a reference on this [Billing]
-     * instance.
-     */
-    private fun connectClient() {
-        if (billingClient.isReady) {
-            connected = true
-            return
-        }
-        billingClient.startConnection(connectionStateListener)
-    }
-
-    override fun onPurchasesUpdated(
-        billingResult: BillingResult,
-        purchases: MutableList<Purchase>?
-    ) {
+    private val purchaseUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
         fun acknowledge() {
             purchases?.forEach {
                 if (
@@ -91,6 +75,28 @@ class Billing(
                 acknowledge()
             }
         }
+    }
+
+    private val skuDetailsForId = mutableMapOf<UUID, SkuDetails>()
+
+    private val billingClient =
+        BillingClient.newBuilder(application).setListener(purchaseUpdatedListener).enablePendingPurchases().build()
+
+    /**
+     * Attempts to connect the billing service. This function immediately returns.
+     * See also [awaitConnect], which suspends at most 10s.
+     * Don't try to make this a suspend function - the [billingClient] keeps a reference on the
+     * [BillingClientStateListener] so it would keep a reference on a continuation (leading to
+     * insidious memory leaks, depending on who invokes that suspending function).
+     * Done this way, we're sure that the [billingClient] only has a reference on this [Billing]
+     * instance.
+     */
+    private fun connectClient() {
+        if (billingClient.isReady) {
+            connected = true
+            return
+        }
+        billingClient.startConnection(connectionStateListener)
     }
 
     private fun acknowledgePurchase(purchase: Purchase) {
@@ -119,13 +125,13 @@ class Billing(
      * This is one of the first things to do. If either the one-time or the subscription are among
      * the purchases, check if it should be acknowledged. This call is required when the
      * acknowledgement wasn't done right after a billing flow (typically when the payment method is
-     * slow and the user didn't wait the end of the procedure with the [onPurchasesUpdated] call).
+     * slow and the user didn't wait the end of the procedure with the [purchaseUpdatedListener] call).
      * So we can end up with a purchase which is in [Purchase.PurchaseState.PURCHASED] state but not
      * acknowledged.
      *
      * @return Whether acknowledgment as done or not.
      */
-    suspend fun acknowledgePurchase(): Boolean {
+    override suspend fun acknowledgePurchase(): Boolean {
         runCatching { awaitConnect() }.onFailure { return false }
 
         val inAppPurchases = queryPurchasesAsync(BillingClient.SkuType.INAPP)
@@ -145,8 +151,8 @@ class Billing(
         return oneTimeAck || subAck
     }
 
-    suspend fun getPurchase(): Purchase? {
-        runCatching { awaitConnect() }.onFailure { return null }
+    override suspend fun isPurchased(): Boolean {
+        runCatching { awaitConnect() }.onFailure { return false }
 
         val inAppPurchases = queryPurchasesAsync(BillingClient.SkuType.INAPP)
         val oneTimeLicense = inAppPurchases.second.getValidOneTimePurchase()?.let {
@@ -156,11 +162,10 @@ class Billing(
             } else it
         }
 
-        if (oneTimeLicense == null) {
+        return if (oneTimeLicense == null) {
             val subs = queryPurchasesAsync(BillingClient.SkuType.SUBS)
-            return subs.second.getValidSubPurchase()
-        }
-        return oneTimeLicense
+            subs.second.getValidSubPurchase() != null
+        } else true
     }
 
     private fun List<Purchase>.getOneTimePurchase(): Purchase? {
@@ -193,13 +198,13 @@ class Billing(
      * Get the details of a subscription.
      * @throws [ProductNotFoundException], [NotSupportedException], [IllegalStateException]
      */
-    suspend fun getSubDetails(index: Int = 0): SubscriptionDetails {
+    override suspend fun getSubDetails(index: Int): SubscriptionDetails {
         val subSku = subSkuList.getOrNull(index) ?: error("no sku for index $index")
         awaitConnect()
         val (billingResult, skuDetailsList) = querySubDetails(subSku)
         return when (billingResult.responseCode) {
             OK -> skuDetailsList.find { it.sku == subSku }?.let {
-                SubscriptionDetails(it)
+                makeSubscriptionDetails(it)
             } ?: throw ProductNotFoundException()
             FEATURE_NOT_SUPPORTED -> throw NotSupportedException()
             SERVICE_DISCONNECTED -> error("should retry")
@@ -270,45 +275,50 @@ class Billing(
         awaitClose { /* We can't do anything, but it doesn't matter */ }
     }.first()
 
-    data class SkuQueryResult(
+    private data class SkuQueryResult(
         val billingResult: BillingResult,
         val skuDetailsList: List<SkuDetails>
     )
 
-    fun launchBilling(
-        skuDetails: SkuDetails,
-        purchasePendingCb: PurchasePendingCallback
-    ): BillingParams {
+    override fun launchBilling(
+        id: UUID,
+        purchasePendingCb: () -> Unit
+    ) {
+        val skuDetails = skuDetailsForId[id] ?: return
         val flowParams = BillingFlowParams.newBuilder()
             .setSkuDetails(skuDetails)
             .build()
         this.purchasePendingCallback = purchasePendingCb
-        return BillingParams(billingClient, flowParams)
+        val billingParams = BillingParams(billingClient, flowParams)
+
+        /* Since we need an Activity to start the billing flow, we send an event which the activity
+         * is listening */
+        appEventBus.startBillingFlow(billingParams)
     }
-}
 
-class NotSupportedException : Exception()
-class ProductNotFoundException : Exception()
-
-data class BillingParams(val billingClient: BillingClient, val flowParams: BillingFlowParams)
-
-data class SubscriptionDetails(val skuDetails: SkuDetails) {
-    val price: String
-        get() = skuDetails.price
-    val trialDurationInDays: Int
-        get() = parseTrialPeriodInDays(skuDetails.freeTrialPeriod)
-
-    /**
-     * Trial periods are given in the form "P1W" -> 1 week, or "P4D" -> 4 days.
-     */
-    private fun parseTrialPeriodInDays(period: String): Int {
-        if (period.isEmpty()) return 0
-        val qty = period.filter { it.isDigit() }.toInt()
-        return when (period.lowercase().last()) {
-            'w' -> qty * 7
-            'd' -> qty
-            else -> qty
+    private fun makeSubscriptionDetails(skuDetails: SkuDetails): SubscriptionDetails {
+        /**
+         * Trial periods are given in the form "P1W" -> 1 week, or "P4D" -> 4 days.
+         */
+        fun parseTrialPeriodInDays(period: String): Int {
+            if (period.isEmpty()) return 0
+            val qty = period.filter { it.isDigit() }.toInt()
+            return when (period.lowercase().last()) {
+                'w' -> qty * 7
+                'd' -> qty
+                else -> qty
+            }
         }
+
+        /* Assign an id and remember it (needed for purchase) */
+        val id = UUID.randomUUID()
+        skuDetailsForId[id] = skuDetails
+
+        return SubscriptionDetails(
+            id = id,
+            price = skuDetails.price,
+            trialDurationInDays = parseTrialPeriodInDays(skuDetails.freeTrialPeriod)
+        )
     }
 }
 

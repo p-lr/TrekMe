@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.billing
+package com.peterlaurence.trekme.core.billing.domain.model
 
 interface PurchaseVerifier {
     fun checkTime(timeMillis: Long): AccessState

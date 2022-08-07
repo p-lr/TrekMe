@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.billing.common
+package com.peterlaurence.trekme.core.billing.data.api.components
 
-import com.peterlaurence.trekme.billing.*
+import com.peterlaurence.trekme.core.billing.domain.model.*
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs

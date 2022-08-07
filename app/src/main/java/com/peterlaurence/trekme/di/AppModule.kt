@@ -1,12 +1,8 @@
 package com.peterlaurence.trekme.di
 
-import android.app.Application
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.billing.Billing
-import com.peterlaurence.trekme.billing.gpspro.buildGpsProBilling
-import com.peterlaurence.trekme.billing.ign.buildIgnBilling
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.location.*
@@ -78,25 +74,6 @@ object AppModule {
         return CoroutineScope(SupervisorJob() + Dispatchers.Main)
     }
 
-    /**
-     * A single instance of [Billing] is used across the app. This object isn't expensive to create.
-     */
-    @IGN
-    @Singleton
-    @Provides
-    fun bindIgnBilling(application: Application): Billing {
-        return buildIgnBilling(application)
-    }
-
-    /**
-     * A single instance of [Billing] is used across the app. This object isn't expensive to create.
-     */
-    @GpsPro
-    @Singleton
-    @Provides
-    fun bindGpsProBilling(application: Application): Billing {
-        return buildGpsProBilling(application)
-    }
 
     @Singleton
     @Provides
@@ -190,14 +167,6 @@ object AppModule {
         @ApplicationContext context: Context
     ): OrientationSource = OrientationSourceImpl(context)
 }
-
-@Retention(AnnotationRetention.BINARY)
-@Qualifier
-annotation class IGN
-
-@Retention(AnnotationRetention.BINARY)
-@Qualifier
-annotation class GpsPro
 
 @Retention(AnnotationRetention.BINARY)
 @Qualifier

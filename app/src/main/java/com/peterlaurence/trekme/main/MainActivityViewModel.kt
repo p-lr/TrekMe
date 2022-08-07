@@ -5,13 +5,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.billing.common.PurchaseState
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.TrekMeContext
+import com.peterlaurence.trekme.core.billing.domain.interactors.ExtendedOfferInteractor
+import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
 import com.peterlaurence.trekme.core.location.InternalGps
 import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
-import com.peterlaurence.trekme.core.repositories.gpspro.GpsProPurchaseRepo
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
-import com.peterlaurence.trekme.core.repositories.offers.extended.ExtendedOfferRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter
@@ -35,7 +35,7 @@ import javax.inject.Inject
  * It is also important because the activity might start after an Intent with a result code. In this
  * case, [attemptedAtLeastOnce] is true and we shall not trigger background processing.
  *
- * @author P.Laurence on 07/10/2019
+ * @since 2019/10/07
  */
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
@@ -43,8 +43,8 @@ class MainActivityViewModel @Inject constructor(
     private val trekMeContext: TrekMeContext,
     private val settings: Settings,
     private val mapRepository: MapRepository,
-    private val extendedOfferRepository: ExtendedOfferRepository,
-    private val gpsProRepository: GpsProPurchaseRepo,
+    private val extendedOfferInteractor: ExtendedOfferInteractor,
+    private val gpsProStateOwner: GpsProStateOwner,
     private val appEventBus: AppEventBus,
     private val updateMapsInteractor: UpdateMapsInteractor
 ) : ViewModel() {
@@ -102,7 +102,7 @@ class MainActivityViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            gpsProRepository.purchaseFlow.collect { state ->
+            gpsProStateOwner.purchaseFlow.collect { state ->
                 when (state) {
                     PurchaseState.PURCHASED -> {
                         gpsProPurchased.value = true
@@ -120,7 +120,7 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun onActivityResume() {
-        extendedOfferRepository.acknowledgePurchase()
+        extendedOfferInteractor.acknowledgePurchase()
     }
 
     private suspend fun warnIfBadStorageState() {

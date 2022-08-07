@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.events
 
-import com.peterlaurence.trekme.billing.BillingParams
+import com.peterlaurence.trekme.core.billing.data.model.BillingParams
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 /**
  * Application-wide event-bus.
  *
- * @author P.Laurence on 31/10/2020
+ * @since 2020/10/31
  */
 class AppEventBus {
     private val _genericMessageEvents = MutableSharedFlow<GenericMessage>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
