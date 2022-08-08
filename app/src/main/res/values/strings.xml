@@ -469,7 +469,6 @@
     <string name="new_features">Exclusive features will be added</string>
     <string name="module_owned">You own this module</string>
     <string name="module_purchase_pending">Purchase pending…</string>
-    <string name="module_trial_consumed">You already benefited from the free trial</string>
     <string name="module_error">Temporary unavailable</string>
     <string name="free_trial">%1$dd of free trial</string>
     <string name="one_year">1 year</string>

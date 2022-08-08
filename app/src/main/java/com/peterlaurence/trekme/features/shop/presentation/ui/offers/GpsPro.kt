@@ -48,7 +48,7 @@ private fun GpsProPurchaseHeader(purchaseState: PurchaseState, trialInfo: TrialI
         PurchaseState.NOT_PURCHASED -> {
             when (trialInfo) {
                 is TrialAvailable -> stringResource(id = R.string.free_trial).format(trialInfo.trialDurationInDays)
-                TrialUnavailable -> stringResource(id = R.string.module_trial_consumed)
+                TrialUnavailable -> null
                 null -> stringResource(id = R.string.module_error)
             }
         }

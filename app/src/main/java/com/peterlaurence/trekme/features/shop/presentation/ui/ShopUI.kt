@@ -116,7 +116,7 @@ fun ShopCarousel(
 }
 
 @Composable
-fun Header(title: String, subTitle: String) {
+fun Header(title: String, subTitle: String?) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -138,16 +138,18 @@ fun Header(title: String, subTitle: String) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            title, //stringResource(id = R.string.trekme_extended_offer),
+            title,
             color = Color.White,
             fontWeight = FontWeight.Medium,
             fontSize = 18.sp
         )
-        Text(
-            subTitle, //stringResource(id = R.string.trekme_extended_trial),
-            color = Color.White,
-            fontSize = 12.sp
-        )
+        if (subTitle != null) {
+            Text(
+                subTitle,
+                color = Color.White,
+                fontSize = 12.sp
+            )
+        }
     }
 }
 

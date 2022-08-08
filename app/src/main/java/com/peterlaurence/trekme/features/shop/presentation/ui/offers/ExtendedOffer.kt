@@ -35,20 +35,24 @@ fun ExtendedOfferHeaderStateful(viewModel: ExtendedOfferViewModel = viewModel())
     val monthlySubDetails by viewModel.monthlySubscriptionDetailsFlow.collectAsState(initial = null)
     val yearlySubDetails by viewModel.yearlySubscriptionDetailsFlow.collectAsState(initial = null)
 
-    /* Monthly and yearly trials should have the same duration */
-    ExtendedOfferHeader(purchaseState, yearlySubDetails?.trialInfo ?: monthlySubDetails?.trialInfo)
+    /* Monthly and yearly trials should have the same trial duration */
+    val monthlyTrial = monthlySubDetails?.trialInfo
+    val yearlyTrial = yearlySubDetails?.trialInfo
+    val trialInfo = if (monthlyTrial is TrialAvailable && yearlyTrial is TrialAvailable) {
+        monthlyTrial
+    } else TrialUnavailable
+    ExtendedOfferHeader(purchaseState, trialInfo)
 }
 
 @Composable
-private fun ExtendedOfferHeader(purchaseState: PurchaseState, trialInfo: TrialInfo?) {
+private fun ExtendedOfferHeader(purchaseState: PurchaseState, trialInfo: TrialInfo) {
     val subTitle = when (purchaseState) {
         PurchaseState.CHECK_PENDING -> stringResource(id = R.string.module_check_pending)
         PurchaseState.PURCHASED -> stringResource(id = R.string.module_owned)
         PurchaseState.NOT_PURCHASED -> {
             when (trialInfo) {
                 is TrialAvailable -> stringResource(id = R.string.free_trial).format(trialInfo.trialDurationInDays)
-                TrialUnavailable -> stringResource(id = R.string.module_trial_consumed)
-                null -> stringResource(id = R.string.module_error)
+                TrialUnavailable -> null
             }
         }
         PurchaseState.PURCHASE_PENDING -> stringResource(id = R.string.module_check_pending)
