@@ -6,22 +6,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.HorizontalPager
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.PagerState
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.rememberPagerState
@@ -111,74 +103,6 @@ fun ShopCarousel(
                     1 -> (secondOffer.footerButtons)()
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun Header(title: String, subTitle: String?) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .drawBehind {
-                drawRect(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF448AFF),
-                            Color(0xFF40C4FF)
-                        ),
-                        center = Offset.Zero,
-                        radius = size.width
-                    ),
-                    size = size
-                )
-            },
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            title,
-            color = Color.White,
-            fontWeight = FontWeight.Medium,
-            fontSize = 18.sp
-        )
-        if (subTitle != null) {
-            Text(
-                subTitle,
-                color = Color.White,
-                fontSize = 12.sp
-            )
-        }
-    }
-}
-
-
-
-
-
-@Composable
-fun PriceButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    duration: String,
-    price: String,
-    color: Color = Color(0xFF448AFF),
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = color,
-            contentColor = Color.White
-        )
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(duration)
-            Text(price)
         }
     }
 }

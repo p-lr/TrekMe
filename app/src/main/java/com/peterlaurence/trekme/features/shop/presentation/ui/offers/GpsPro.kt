@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,8 +28,8 @@ import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
 import com.peterlaurence.trekme.core.billing.domain.model.TrialInfo
 import com.peterlaurence.trekme.core.billing.domain.model.TrialUnavailable
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
-import com.peterlaurence.trekme.features.shop.presentation.ui.Header
-import com.peterlaurence.trekme.features.shop.presentation.ui.PriceButton
+import com.peterlaurence.trekme.features.shop.presentation.ui.components.Header
+import com.peterlaurence.trekme.features.shop.presentation.ui.components.PriceButton
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.GpsProPurchaseViewModel
 
 @Composable
@@ -120,16 +122,38 @@ fun GpsProPurchaseFooterStateful(viewModel: GpsProPurchaseViewModel = viewModel(
     val purchaseState by viewModel.purchaseFlow.collectAsState()
     val subDetails by viewModel.subscriptionDetailsFlow.collectAsState(initial = null)
 
-    GpsProPurchaseFooter(purchaseState, price = subDetails?.price, viewModel::buy)
+    val uriHandler = LocalUriHandler.current
+    val subscriptionCenterUri = stringResource(id = R.string.subscription_center)
+
+    GpsProPurchaseFooter(
+        purchaseState,
+        price = subDetails?.price,
+        viewModel::buy,
+        manageSubscriptionCb = {
+            uriHandler.openUri(subscriptionCenterUri)
+        }
+    )
 }
 
 @Composable
 private fun GpsProPurchaseFooter(
     purchaseState: PurchaseState,
     price: String?,
-    buyCb: () -> Unit
+    buyCb: () -> Unit,
+    manageSubscriptionCb: () -> Unit
 ) {
-    if (purchaseState == PurchaseState.NOT_PURCHASED && price != null) {
+    if (purchaseState == PurchaseState.PURCHASED) {
+        Button(
+            onClick = manageSubscriptionCb,
+            modifier = Modifier.padding(bottom = 18.dp),
+            shape = RoundedCornerShape(50),
+        ) {
+            Text(
+                text = stringResource(id = R.string.manage_subscription_btn),
+                letterSpacing = 1.2.sp
+            )
+        }
+    } else if (purchaseState == PurchaseState.NOT_PURCHASED && price != null) {
         PriceButton(
             onClick = buyCb,
             modifier = Modifier.padding(bottom = 16.dp),

@@ -476,4 +476,6 @@
     <string name="ign_caution">The IGN map server is sometimes slow. During IGN map creation, tiles appear slowly or not
     at all. If this happens, don\'t worry — retrying a few hours later usually works.</string>
     <string name="nb">PS</string>
+    <string name="manage_subscription_btn">MANAGE SUBSCRIPTION</string>
+    <string name="subscription_center" translatable="false">https://play.google.com/store/account/subscriptions</string>
 </resources>

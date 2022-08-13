@@ -241,7 +241,7 @@ class MapViewModel @Inject constructor(
 /**
  * When the [Map] changes, the [MapState] also changes. A [DataState] guarantees this consistency,
  * as opposed to combining separates flows of [Map] and [MapState], which would produce ephemeral
- * illegal combinations.
+ * inconsistent combinations.
  */
 data class DataState(val map: Map, val mapState: MapState)
 

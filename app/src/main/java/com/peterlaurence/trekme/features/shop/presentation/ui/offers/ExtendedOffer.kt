@@ -2,6 +2,8 @@ package com.peterlaurence.trekme.features.shop.presentation.ui.offers
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -11,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -25,8 +28,8 @@ import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
 import com.peterlaurence.trekme.core.billing.domain.model.TrialInfo
 import com.peterlaurence.trekme.core.billing.domain.model.TrialUnavailable
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
-import com.peterlaurence.trekme.features.shop.presentation.ui.Header
-import com.peterlaurence.trekme.features.shop.presentation.ui.PriceButton
+import com.peterlaurence.trekme.features.shop.presentation.ui.components.Header
+import com.peterlaurence.trekme.features.shop.presentation.ui.components.PriceButton
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ExtendedOfferViewModel
 
 @Composable
@@ -159,12 +162,18 @@ fun ExtendedOfferFooterStateful(viewModel: ExtendedOfferViewModel = viewModel())
     val monthlySubDetails by viewModel.monthlySubscriptionDetailsFlow.collectAsState(initial = null)
     val yearlySubDetails by viewModel.yearlySubscriptionDetailsFlow.collectAsState(initial = null)
 
+    val uriHandler = LocalUriHandler.current
+    val subscriptionCenterUri = stringResource(id = R.string.subscription_center)
+
     ExtendedOfferFooter(
         purchaseState,
         pricePerMonth = monthlySubDetails?.price,
         pricePerYear = yearlySubDetails?.price,
         buyMonthlyOffer = viewModel::buyMonthly,
-        buyYearlyOffer = viewModel::buyYearly
+        buyYearlyOffer = viewModel::buyYearly,
+        manageSubscriptionCb = {
+            uriHandler.openUri(subscriptionCenterUri)
+        }
     )
 }
 
@@ -174,29 +183,42 @@ private fun ExtendedOfferFooter(
     pricePerMonth: String?,
     pricePerYear: String?,
     buyMonthlyOffer: () -> Unit,
-    buyYearlyOffer: () -> Unit
+    buyYearlyOffer: () -> Unit,
+    manageSubscriptionCb: () -> Unit
 ) {
-    if (purchaseState != PurchaseState.NOT_PURCHASED) return
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        if (pricePerMonth != null) {
-            PriceButton(
-                onClick = buyMonthlyOffer,
-                duration = stringResource(id = R.string.one_month),
-                price = pricePerMonth,
-                color = Color(0xFF4CAF50)
+    if (purchaseState == PurchaseState.PURCHASED) {
+        Button(
+            onClick = manageSubscriptionCb,
+            modifier = Modifier.padding(bottom = 18.dp),
+            shape = RoundedCornerShape(50),
+        ) {
+            Text(
+                text = stringResource(id = R.string.manage_subscription_btn),
+                letterSpacing = 1.2.sp
             )
         }
-        if (pricePerYear != null) {
-            PriceButton(
-                onClick = buyYearlyOffer,
-                duration = stringResource(id = R.string.one_year),
-                price = pricePerYear
-            )
+    } else if (purchaseState == PurchaseState.NOT_PURCHASED) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            if (pricePerMonth != null) {
+                PriceButton(
+                    onClick = buyMonthlyOffer,
+                    duration = stringResource(id = R.string.one_month),
+                    price = pricePerMonth,
+                    color = Color(0xFF4CAF50)
+                )
+            }
+            if (pricePerYear != null) {
+                PriceButton(
+                    onClick = buyYearlyOffer,
+                    duration = stringResource(id = R.string.one_year),
+                    price = pricePerYear
+                )
+            }
         }
     }
 }
