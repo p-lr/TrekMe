@@ -23,8 +23,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 32
-        versionCode 165
-        versionName "3.1.0"
+        versionCode 166
+        versionName "3.1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -62,7 +62,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 //    implementation project(":mapview-debug")     // for dev purposes
 //    implementation project(":mapcompose-debug")  // for dev purposes
-    implementation 'ovh.plrapps:mapcompose:2.1.4'
+    implementation 'ovh.plrapps:mapcompose:2.2.3'
     implementation 'com.android.billingclient:billing:5.0.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
@@ -70,11 +70,11 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
-    implementation 'androidx.fragment:fragment-ktx:1.5.1'
+    implementation 'androidx.fragment:fragment-ktx:1.5.2'
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
     implementation 'androidx.activity:activity-compose:1.5.1'
     implementation "androidx.compose.ui:ui:$compose_libs_version"
