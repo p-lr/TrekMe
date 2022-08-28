@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
-import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,7 +46,7 @@ fun WmtsUI(
 ) {
     when (wmtsState) {
         is MapReady -> {
-            MapUI(state = wmtsState.mapState)
+            MapUI(modifier, state = wmtsState.mapState)
         }
         is Loading -> {
             LoadingScreen()
@@ -330,14 +329,20 @@ fun WmtsScaffold(
                 }
             }
         },
-    ) {
+    ) { innerPadding ->
+        val modifier = Modifier.fillMaxSize().padding(innerPadding)
+
         when (uiState) {
             is GeoplaceList -> {
-                GeoPlaceListUI(uiState, onGeoPlaceSelection)
+                GeoPlaceListUI(
+                    modifier,
+                    uiState,
+                    onGeoPlaceSelection
+                )
             }
             is Wmts -> {
                 WmtsUI(
-                    Modifier.fillMaxSize(),
+                    modifier,
                     uiState.wmtsState,
                     onValidateArea,
                 )

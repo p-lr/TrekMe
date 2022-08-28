@@ -15,8 +15,12 @@ import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.GeoplaceList
 
 @Composable
-fun GeoPlaceListUI(uiState: GeoplaceList, onGeoPlaceSelection: (GeoPlace) -> Unit) {
-    LazyColumn {
+fun GeoPlaceListUI(
+    modifier: Modifier = Modifier,
+    uiState: GeoplaceList,
+    onGeoPlaceSelection: (GeoPlace) -> Unit
+) {
+    LazyColumn(modifier) {
         items(uiState.geoPlaceList) { place ->
             Column(Modifier.clickable { onGeoPlaceSelection(place) }) {
                 Text(

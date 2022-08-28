@@ -56,7 +56,7 @@ import javax.inject.Inject
  * * keeping track of the layer (as to each [WmtsSource] may correspond multiple layers)
  * * exposes [UiState] and [TopBarState] for the view made mostly in Compose
  *
- * @author P.Laurence on 09/11/19
+ * @since 2019/11/09
  */
 @HiltViewModel
 class WmtsViewModel @Inject constructor(
