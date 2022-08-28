@@ -103,7 +103,7 @@ class RecordViewModel @Inject constructor(
                 launch {
                     if (map.intersects(boundingBox)) {
                         /* Import the new route */
-                        val result = importGeoRecordInteractor.applyGpxFileToMap(event.gpxFile, map)
+                        val result = importGeoRecordInteractor.applyGeoRecordFileToMap(event.gpxFile, map)
                         appEventBus.postGeoRecordImportResult(result)
                         if (result is GeoRecordImportResult.GeoRecordImportOk && result.newRouteCount >= 1) {
                             importCount++
@@ -125,7 +125,7 @@ class RecordViewModel @Inject constructor(
         val uri = geoRecordInteractor.getRecordUri(recordId) ?: return
 
         viewModelScope.launch {
-            importGeoRecordInteractor.applyGpxUriToMap(uri, app.contentResolver, map).let {
+            importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map).let {
                 /* Once done, notify the rest of the app */
                 appEventBus.postGeoRecordImportResult(it)
             }

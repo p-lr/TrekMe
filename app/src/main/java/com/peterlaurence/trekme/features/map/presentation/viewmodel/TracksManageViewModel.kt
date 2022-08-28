@@ -70,11 +70,11 @@ class TracksManageViewModel @Inject constructor(
     }
 
     /**
-     * The business logic of parsing a GPX file (given as an [Uri]).
+     * The business logic of parsing a geo record (given as an [Uri]).
      */
-    fun applyGpxUri(uri: Uri) = viewModelScope.launch {
+    fun applyUri(uri: Uri) = viewModelScope.launch {
         map?.let {
-            importGeoRecordInteractor.applyGpxUriToMap(
+            importGeoRecordInteractor.applyGeoRecordUriToMap(
                 uri,
                 app.applicationContext.contentResolver,
                 it

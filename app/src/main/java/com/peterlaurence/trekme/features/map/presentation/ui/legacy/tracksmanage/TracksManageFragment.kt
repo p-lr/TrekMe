@@ -274,7 +274,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             }
 
             /* Import the file */
-            viewModel.applyGpxUri(uri)
+            viewModel.applyUri(uri)
         }
     }
 

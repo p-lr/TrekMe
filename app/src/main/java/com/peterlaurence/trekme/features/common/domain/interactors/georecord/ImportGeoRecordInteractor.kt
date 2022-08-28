@@ -7,7 +7,6 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.repositories.map.RouteRepository
-import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
@@ -25,6 +24,8 @@ import javax.inject.Inject
 
 /**
  * Interactor to import a [GeoRecord] into a map.
+ * A [GeoRecord] is the domain representation of a recording. It can correspond to a gpx file, or
+ * other format which may be supported in the future.
  *
  * @since 03/03/17 -- converted to Kotlin on 16/09/18
  */
@@ -34,9 +35,9 @@ class ImportGeoRecordInteractor @Inject constructor(
     private val geoRecordParser: GeoRecordParser
 ) {
     /**
-     * Applies the GPX content given as an [Uri] to the provided [Map].
+     * Applies the geo record content given as an [Uri] to the provided [Map].
      */
-    suspend fun applyGpxUriToMap(
+    suspend fun applyGeoRecordUriToMap(
         uri: Uri, contentResolver: ContentResolver, map: Map
     ): GeoRecordImportResult {
         return runCatching {
@@ -50,22 +51,22 @@ class ImportGeoRecordInteractor @Inject constructor(
     }
 
     /**
-     * Applies the GPX content given as a [File] to the provided [Map].
+     * Applies the geo record content given as a [File] to the provided [Map].
      */
-    suspend fun applyGpxFileToMap(file: File, map: Map): GeoRecordImportResult {
+    suspend fun applyGeoRecordFileToMap(file: File, map: Map): GeoRecordImportResult {
         return try {
             val fileInputStream = FileInputStream(file)
-            applyGpxInputStreamToMap(fileInputStream, map, file.name)
+            applyGeoRecordInputStreamToMap(fileInputStream, map, file.name)
         } catch (e: Exception) {
             GeoRecordImportResult.GeoRecordImportError
         }
     }
 
     /**
-     * Parses a [Gpx] from the given [InputStream]. Then, on the calling [CoroutineScope] (which
+     * Parses a geo record from the given [InputStream]. Then, on the calling [CoroutineScope] (which
      * [CoroutineDispatcher] should be [Dispatchers.Main]), applies the result on the provided [Map].
      */
-    private suspend fun applyGpxInputStreamToMap(
+    private suspend fun applyGeoRecordInputStreamToMap(
         input: InputStream,
         map: Map,
         defaultName: String
