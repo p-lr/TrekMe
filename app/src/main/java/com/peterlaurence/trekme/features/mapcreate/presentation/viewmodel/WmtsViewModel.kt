@@ -41,6 +41,9 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.componen
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
+import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
+import com.peterlaurence.trekme.features.mapcreate.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.layers.RouteLayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -68,7 +71,9 @@ class WmtsViewModel @Inject constructor(
     private val layerOverlayRepository: LayerOverlayRepository,
     private val mapCreateEventBus: MapCreateEventBus,
     private val locationSource: LocationSource,
-    private val geocodingRepository: GeocodingRepository
+    private val geocodingRepository: GeocodingRepository,
+    private val parseGeoRecordInteractor: ParseGeoRecordInteractor,
+    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(Wmts(Loading))
@@ -90,6 +95,8 @@ class WmtsViewModel @Inject constructor(
     private val searchFieldState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
     private var topBarLayersEnabled = false
     private var topBarOverflowMenuEnabled = false
+
+    private val routeLayer = RouteLayer(viewModelScope, wgs84ToNormalizedInteractor)
 
     private val scaleAndScrollInitConfig = mapOf(
         WmtsSource.IGN to listOf(
@@ -210,9 +217,13 @@ class WmtsViewModel @Inject constructor(
         eventListState.removeFirstOrNull()
     }
 
-    fun onTrackImport(uri: Uri) {
-
-        // TODO: implement
+    fun onTrackImport(uri: Uri) = viewModelScope.launch {
+        parseGeoRecordInteractor.parseGeoRecord(uri, app.applicationContext.contentResolver)?.also {
+            val mapState = _wmtsState.value.getMapState()
+            if (mapState != null) {
+                routeLayer.setGeoRecord(it, mapState)
+            }
+        }
     }
 
     private fun updateMapState(wmtsSource: WmtsSource, restorePrevious: Boolean = true) {
