@@ -18,7 +18,6 @@ import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.mapsource.wmts.*
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
-import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
@@ -172,8 +171,6 @@ class WmtsViewModel @Inject constructor(
     private val activePrimaryLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
         WmtsSource.IGN to defaultIgnLayer
     )
-
-    private val projection = MercatorProjection()
 
     init {
         wmtsSourceRepository.wmtsSourceState.map { source ->
@@ -552,13 +549,13 @@ class WmtsViewModel @Inject constructor(
 
         viewModelScope.launch {
             /* Project lat/lon off UI thread */
-            val projectedValues = withContext(Dispatchers.Default) {
-                projection.doProjection(location.latitude, location.longitude)
+            val normalized = withContext(Dispatchers.Default) {
+                wgs84ToNormalizedInteractor.getNormalized(location.latitude, location.longitude)
             }
 
             /* Update the position */
-            if (projectedValues != null) {
-                updatePosition(mapState, projectedValues[0], projectedValues[1])
+            if (normalized != null) {
+                updatePosition(mapState, normalized.x, normalized.y)
             }
         }
     }
@@ -566,14 +563,9 @@ class WmtsViewModel @Inject constructor(
     /**
      * Update the position on the map. The first time we update the position, we add the
      * position marker.
-     *
-     * @param X the projected X coordinate
-     * @param Y the projected Y coordinate
+     * [x] and [y] are expected to be normalized coordinates.
      */
-    private fun updatePosition(mapState: MapState, X: Double, Y: Double) {
-        val x = normalize(X, X0, X1)
-        val y = normalize(Y, Y0, Y1)
-
+    private fun updatePosition(mapState: MapState, x: Double, y: Double) {
         if (mapState.hasMarker(positionMarkerId)) {
             mapState.moveMarker(positionMarkerId, x, y)
         } else {
@@ -581,10 +573,6 @@ class WmtsViewModel @Inject constructor(
                 PositionMarker()
             }
         }
-    }
-
-    private fun normalize(t: Double, min: Double, max: Double): Double {
-        return (t - min) / (max - min)
     }
 
     fun zoomOnPosition() {
@@ -636,11 +624,8 @@ class WmtsViewModel @Inject constructor(
         }
 
         /* If it's in the bounds, add a marker */
-        val projected = projection.doProjection(place.lat, place.lon) ?: return
-
-        val x = normalize(projected[0], X0, X1)
-        val y = normalize(projected[1], Y0, Y1)
-        updatePlacePosition(mapState, x, y)
+        val normalized = wgs84ToNormalizedInteractor.getNormalized(place.lat, place.lon) ?: return
+        updatePlacePosition(mapState, normalized.x, normalized.y)
 
         viewModelScope.launch {
             mapState.centerOnMarker(placeMarkerId, 0.25f)
