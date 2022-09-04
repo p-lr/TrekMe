@@ -100,9 +100,9 @@ class WmtsViewModel @Inject constructor(
 
     private val scaleAndScrollInitConfig = mapOf(
         WmtsSource.IGN to listOf(
-            ScaleLimitsConfig(maxScale = 0.5f),
+            ScaleLimitsConfig(maxScale = 0.25f),
             ScaleForZoomOnPositionConfig(scale = 0.125f),
-            LevelLimitsConfig(levelMax = 17),
+            LevelLimitsConfig(levelMax = 16),
             BoundariesConfig(
                 listOf(
                     BoundingBox(41.21, 51.05, -4.92, 8.37),        // France
@@ -253,6 +253,7 @@ class WmtsViewModel @Inject constructor(
                 )
             }.apply {
                 addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
+                disableFlingZoom()
             }
 
             /* Apply configuration */

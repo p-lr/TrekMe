@@ -36,7 +36,7 @@ class TileStreamProviderIgn(urlTileBuilder: UrlTileBuilder, val layer: Layer) : 
             }
         }
         /* Safeguard */
-        if (zoomLvl > 17) return OutOfBounds
+        if (zoomLvl > 16) return OutOfBounds
 
         return base.getTileStream(row, col, zoomLvl)
     }
