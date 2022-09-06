@@ -95,7 +95,8 @@ class WmtsViewModel @Inject constructor(
     private val areaController = AreaUiController()
 
     private val searchFieldState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
-    private var topBarLayersEnabled = false
+    private var hasPrimaryLayers = false
+    private var hasOverlayLayers = false
     private var hasTrackImport = false
 
     private val routeLayer = RouteLayer(viewModelScope, wgs84ToNormalizedInteractor)
@@ -310,7 +311,8 @@ class WmtsViewModel @Inject constructor(
             } else MapReady(mapState)
 
             _topBarState.value = Collapsed(
-                hasLayers = topBarLayersEnabled,
+                hasPrimaryLayers = hasPrimaryLayers,
+                hasOverlayLayers = hasOverlayLayers,
                 hasTrackImport = hasTrackImport
             )
 
@@ -325,7 +327,11 @@ class WmtsViewModel @Inject constructor(
 
     private fun updateTopBarConfig(wmtsSource: WmtsSource) {
         hasTrackImport = extendedOfferStateOwner.purchaseFlow.value == PurchaseState.PURCHASED
-        topBarLayersEnabled = wmtsSource == WmtsSource.IGN
+        hasPrimaryLayers = when (wmtsSource) {
+            WmtsSource.IGN, WmtsSource.OPEN_STREET_MAP -> true
+            else -> false
+        }
+        hasOverlayLayers = wmtsSource == WmtsSource.IGN
     }
 
     fun getAvailablePrimaryLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
@@ -646,7 +652,8 @@ class WmtsViewModel @Inject constructor(
 
         /* Collapse the top bar */
         _topBarState.value = Collapsed(
-            hasLayers = topBarLayersEnabled,
+            hasPrimaryLayers = hasPrimaryLayers,
+            hasOverlayLayers = hasOverlayLayers,
             hasTrackImport = hasTrackImport
         )
     }
@@ -697,7 +704,7 @@ private fun WmtsState.getMapState(): MapState? {
 
 sealed interface TopBarState
 object Empty : TopBarState
-data class Collapsed(val hasLayers: Boolean, val hasTrackImport: Boolean) : TopBarState {
-    val hasOverflowMenu: Boolean = hasLayers || hasTrackImport
+data class Collapsed(val hasPrimaryLayers: Boolean, val hasOverlayLayers: Boolean, val hasTrackImport: Boolean) : TopBarState {
+    val hasOverflowMenu: Boolean = hasOverlayLayers || hasTrackImport
 }
 data class SearchMode(val textValueState: MutableState<TextFieldValue>) : TopBarState

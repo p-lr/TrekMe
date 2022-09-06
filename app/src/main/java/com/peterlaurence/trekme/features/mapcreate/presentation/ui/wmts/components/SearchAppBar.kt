@@ -80,7 +80,7 @@ fun SearchAppBar(
                             tint = Color.White
                         )
                     }
-                    if (state.hasLayers) {
+                    if (state.hasPrimaryLayers) {
                         IconButton(onClick = onLayerSelection) {
                             Icon(
                                 painter = painterResource(id = R.drawable.layer),
@@ -118,7 +118,7 @@ fun SearchAppBar(
                                 onDismissRequest = { expanded = false },
                                 offset = DpOffset(0.dp, 0.dp)
                             ) {
-                                if (state.hasLayers) {
+                                if (state.hasOverlayLayers) {
                                     DropdownMenuItem(onClick = onShowLayerOverlay) {
                                         Text(stringResource(id = R.string.mapcreate_overlay_layers))
                                     }
