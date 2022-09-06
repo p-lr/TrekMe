@@ -80,8 +80,8 @@ fun TrekMeExtendedContent() {
     CheckSeparator()
     TitleRow(R.string.trekme_extended_specificities)
     LineItem(id = R.string.no_ads)
+    LineItem(id = R.string.create_map_from_track)
     LineItem(id = R.string.center_on_track)
-    LineItem(id = R.string.new_features)
 
     NotaBene()
 }

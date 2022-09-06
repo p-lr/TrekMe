@@ -359,7 +359,8 @@
     <string name="tracks_manage_frgmt_title">Gestion des traces</string>
     <string name="settings_frgmt_title">Réglages</string>
     <string name="map_settings_frgmt_title">Réglages de carte</string>
-    <string name="center_on_track">Centrer directement sur une trace depuis la gestion des traces d\'une carte</string>
+    <string name="center_on_track">Centrez directement sur une trace depuis la gestion des traces d\'une carte</string>
+    <string name="create_map_from_track">Créez une carte à partir d\'une trace gpx</string>
     <string name="rate_the_app">Noter l\'application</string>
     <string name="user_feedback">Retours et suggestions</string>
     <string name="feedback_desc">Vous avez des idées d\'amélioration ou quelques soucis, n\'hésitez pas à m\'envoyer un mail.</string>

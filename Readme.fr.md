@@ -89,13 +89,22 @@ sources suivantes :
 </p>
 
 Quand vous avez fait votre choix, la carte s'affiche après un délai de quelques secondes.
-Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse, comme dans la vidéo ci-dessous.
+Vous pouvez alors zoomer et vous déplacer sur la zone qui vous intérresse.
+
+Si zoomer manuellement sur la zone qui vous intéresse n'est pas la méthode la plus facile, il
+existe trois autres possibilités :
+
+- Centrer sur votre position, comme dans cette vidéo : 
 
 https://user-images.githubusercontent.com/15638794/136759759-33378909-cba7-4434-a09a-2c40cc16b71b.mp4
 
-Il est aussi possible de rechercher un lieu particulier avec le bouton recherche. Pour l'IGN, il a des fonctionnalités 
-supplémentaires comme le [choix de différentes couches](doc/ign_layers.fr.md). Quand vous avec trouvé la bonne zone, 
-un bouton en bas à droite de l'écran fait apparaître une zone bleue qui définit ce qui sera téléchargé. 
+- Rechercher un lieu particulier avec le bouton recherche. 
+- Importer une trace GPX (disponible seulement avec l'offre Extended). Pour cela, dépliez le menu en
+haut à droite (les trois petits points), puis sélectionnez "Importer une trace". Pour l'IGN, c'est
+aussi depuis ce menu qu'on définit le [choix de différentes couches](doc/ign_layers.fr.md). 
+
+Quand vous avec trouvé la bonne zone, un bouton en bas à droite de l'écran fait apparaître une zone 
+bleue qui définit ce qui sera téléchargé. 
 Cette zone est modifiable en déplaçant les deux ronds bleus (voir la vidéo ci-dessous).
 
 https://user-images.githubusercontent.com/15638794/136759807-dc5b183e-e181-4bae-af52-5fa2418f06cf.mp4

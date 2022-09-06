@@ -89,14 +89,16 @@ From the "Create map" option menu, you get to choose between available providers
 </p>
 
 When you've made your choice, the map appears shortly.
-From there, you can center on your current location, as shown in the video below.
+From there, you can zoom into the area in the world you want to capture. If this isn't the most handy
+way to find your area of interest, there are others ways:
+
+- You can center on your current location, as shown in the video below.
 
 [Zoom on position](https://user-images.githubusercontent.com/15638794/136757539-ac589d8e-fbf4-4e71-aac0-cdac7a446c02.mp4)
 
-
-If you prefer, you can zoom into the area in the world you want to capture. Or, you can search for a 
-particular place, using the search button in the top bar. 
-
+- You can search for a particular place, using the search button in the top bar.
+- Import a GPX track, using the menu at top-right corner. This feature is available as part of the 
+Extended offer.
 
 When you found the place you're looking for, press the area button (at the bottom-right of the screen)
 so an area of selection appears. 
