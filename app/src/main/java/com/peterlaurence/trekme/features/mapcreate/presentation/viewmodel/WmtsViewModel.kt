@@ -10,6 +10,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
 import com.peterlaurence.trekme.core.map.BoundingBox
 import com.peterlaurence.trekme.core.map.TileStreamProvider
@@ -72,7 +74,8 @@ class WmtsViewModel @Inject constructor(
     private val locationSource: LocationSource,
     private val geocodingRepository: GeocodingRepository,
     private val parseGeoRecordInteractor: ParseGeoRecordInteractor,
-    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
+    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
+    private val extendedOfferStateOwner: ExtendedOfferStateOwner
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(Wmts(Loading))
@@ -93,9 +96,10 @@ class WmtsViewModel @Inject constructor(
 
     private val searchFieldState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
     private var topBarLayersEnabled = false
-    private var topBarOverflowMenuEnabled = false
+    private var hasTrackImport = false
 
     private val routeLayer = RouteLayer(viewModelScope, wgs84ToNormalizedInteractor)
+    private val geoRecordUrls = mutableSetOf<Uri>()
 
     private val scaleAndScrollInitConfig = mapOf(
         WmtsSource.IGN to listOf(
@@ -215,6 +219,7 @@ class WmtsViewModel @Inject constructor(
     }
 
     fun onTrackImport(uri: Uri) = viewModelScope.launch {
+        geoRecordUrls.add(uri)
         parseGeoRecordInteractor.parseGeoRecord(uri, app.applicationContext.contentResolver)?.also {
             val mapState = _wmtsState.value.getMapState()
             if (mapState != null) {
@@ -306,7 +311,7 @@ class WmtsViewModel @Inject constructor(
 
             _topBarState.value = Collapsed(
                 hasLayers = topBarLayersEnabled,
-                hasOverflowMenu = topBarOverflowMenuEnabled
+                hasTrackImport = hasTrackImport
             )
 
             /* Restore the location marker right now - even if subsequent updates will do it anyway. */
@@ -319,32 +324,8 @@ class WmtsViewModel @Inject constructor(
     }
 
     private fun updateTopBarConfig(wmtsSource: WmtsSource) {
-        when (wmtsSource) {
-            WmtsSource.IGN -> {
-                topBarLayersEnabled = true
-                topBarOverflowMenuEnabled = true
-            }
-            WmtsSource.SWISS_TOPO -> {
-                topBarLayersEnabled = false
-                topBarOverflowMenuEnabled = false
-            }
-            WmtsSource.OPEN_STREET_MAP -> {
-                topBarLayersEnabled = true
-                topBarOverflowMenuEnabled = false
-            }
-            WmtsSource.USGS -> {
-                topBarLayersEnabled = false
-                topBarOverflowMenuEnabled = false
-            }
-            WmtsSource.IGN_SPAIN -> {
-                topBarLayersEnabled = false
-                topBarOverflowMenuEnabled = false
-            }
-            WmtsSource.ORDNANCE_SURVEY -> {
-                topBarLayersEnabled = false
-                topBarOverflowMenuEnabled = false
-            }
-        }
+        hasTrackImport = extendedOfferStateOwner.purchaseFlow.value == PurchaseState.PURCHASED
+        topBarLayersEnabled = wmtsSource == WmtsSource.IGN
     }
 
     fun getAvailablePrimaryLayersForSource(wmtsSource: WmtsSource): List<Layer>? {
@@ -503,7 +484,7 @@ class WmtsViewModel @Inject constructor(
             val tileStreamProvider = runCatching {
                 createTileStreamProvider(wmtsSource)
             }.getOrNull() ?: return@launch
-            val request = DownloadMapRequest(wmtsSource, mapSpec, tileCount, tileStreamProvider)
+            val request = DownloadMapRequest(wmtsSource, mapSpec, tileCount, tileStreamProvider, geoRecordUrls)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
@@ -666,7 +647,7 @@ class WmtsViewModel @Inject constructor(
         /* Collapse the top bar */
         _topBarState.value = Collapsed(
             hasLayers = topBarLayersEnabled,
-            hasOverflowMenu = topBarOverflowMenuEnabled
+            hasTrackImport = hasTrackImport
         )
     }
 }
@@ -716,5 +697,7 @@ private fun WmtsState.getMapState(): MapState? {
 
 sealed interface TopBarState
 object Empty : TopBarState
-data class Collapsed(val hasLayers: Boolean, val hasOverflowMenu: Boolean) : TopBarState
+data class Collapsed(val hasLayers: Boolean, val hasTrackImport: Boolean) : TopBarState {
+    val hasOverflowMenu: Boolean = hasLayers || hasTrackImport
+}
 data class SearchMode(val textValueState: MutableState<TextFieldValue>) : TopBarState
