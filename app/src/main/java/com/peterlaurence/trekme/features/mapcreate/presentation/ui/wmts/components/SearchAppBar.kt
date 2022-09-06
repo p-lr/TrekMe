@@ -118,12 +118,17 @@ fun SearchAppBar(
                                 onDismissRequest = { expanded = false },
                                 offset = DpOffset(0.dp, 0.dp)
                             ) {
-                                DropdownMenuItem(onClick = onShowLayerOverlay) {
-                                    Text(stringResource(id = R.string.mapcreate_overlay_layers))
+                                if (state.hasLayers) {
+                                    DropdownMenuItem(onClick = onShowLayerOverlay) {
+                                        Text(stringResource(id = R.string.mapcreate_overlay_layers))
+                                    }
                                 }
-//                                DropdownMenuItem(onClick = onUseTrack) {
-//                                    Text(stringResource(id = R.string.mapcreate_from_track))
-//                                }
+
+                                if (state.hasTrackImport) {
+                                    DropdownMenuItem(onClick = onUseTrack) {
+                                        Text(stringResource(id = R.string.mapcreate_from_track))
+                                    }
+                                }
                             }
                         }
                     }

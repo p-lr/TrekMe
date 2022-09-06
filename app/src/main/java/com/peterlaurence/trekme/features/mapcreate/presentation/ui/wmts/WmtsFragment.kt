@@ -179,7 +179,7 @@ class WmtsFragment : Fragment() {
         wmtsSource?.also {
             val bundle = LayerOverlayDataBundle(it)
             val action =
-                WmtsFragmentDirections.actionGoogleMapWmtsViewFragmentToLayerOverlayFragment(
+                WmtsFragmentDirections.actionWmtsFragmentToLayerOverlayFragment(
                     bundle
                 )
             findNavController().navigate(action)

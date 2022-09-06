@@ -1,15 +1,13 @@
 package com.peterlaurence.trekme.service
 
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -29,6 +27,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
@@ -73,6 +72,12 @@ class DownloadService : Service() {
 
     @Inject
     lateinit var appEventBus: AppEventBus
+
+    @Inject
+    lateinit var importGeoRecordInteractor: ImportGeoRecordInteractor
+
+    @Inject
+    lateinit var app: Application
 
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
@@ -225,7 +230,7 @@ class DownloadService : Service() {
         /* Specific to OSM, don't use more than 2 workers */
         val effectiveWorkerCount = if (source == WmtsSource.OPEN_STREET_MAP) 2 else workerCount
         launchDownloadTask(effectiveWorkerCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
-        postProcess(request.mapSpec, source)
+        postProcess(request.mapSpec, source, request.geoRecordUris)
     }
 
     private suspend fun createDestDir(): File? {
@@ -268,7 +273,7 @@ class DownloadService : Service() {
         repository.postDownloadEvent(progressEvent)
     }
 
-    private fun postProcess(mapSpec: MapSpec, source: WmtsSource) {
+    private fun postProcess(mapSpec: MapSpec, source: WmtsSource, geoRecordUris: Set<Uri>) {
         val mapOrigin = Wmts(licensed = source == WmtsSource.IGN)
 
         val map = buildMap(mapSpec, mapOrigin, destDir)
@@ -276,6 +281,9 @@ class DownloadService : Service() {
         scope.launch {
             map.createNomediaFile()
             saveMapInteractor.addAndSaveMap(map)
+            geoRecordUris.forEach { uri ->
+                importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map)
+            }
 
             /* Notify that the download is finished correctly.
              * Don't attempt to send more notifications, they will be dismissed anyway since the
