@@ -122,6 +122,8 @@ class WmtsViewModel @Inject constructor(
         ),
         WmtsSource.OPEN_STREET_MAP to listOf(
             ScaleLimitsConfig(maxScale = 0.25f),
+            ScaleForZoomOnPositionConfig(scale = 0.125f),
+            LevelLimitsConfig(levelMax = 16),
             BoundariesConfig(
                 listOf(
                     BoundingBox(-80.0, 83.0, -180.0, 180.0)        // World
