@@ -17,6 +17,14 @@ fun writeToFile(st: String, out: File, errCb: () -> Unit) {
     }
 }
 
+fun writeToFile(st: String, out: File): Result<Unit> {
+    return runCatching {
+        PrintWriter(out).use {
+            it.print(st)
+        }
+    }
+}
+
 /**
  * Reads an [Uri] and invokes the provided [reader].
  *

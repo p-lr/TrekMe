@@ -82,7 +82,7 @@ class ScaleIndicatorLayer(
                         val distance = distanceCalculator.compute(state.widthPx, scale).toInt()
                         val snap = computeSnapValue(distance)
                         snapScale = scale
-                        state.scaleText = UnitFormatter.formatDistance(snap.toDouble(), precision = 0u)
+                        state.scaleText = UnitFormatter.formatDistance(snap.toDouble(), precision = 0)
                         (snap.toFloat() / distance).also {
                             snapWidthRatio = it
                         }

@@ -2,9 +2,7 @@ package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.peterlaurence.trekme.core.location.Location
@@ -14,14 +12,19 @@ import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
 fun MapLayout(
+    modifier: Modifier = Modifier,
     mapUiState: MapUiState,
     isShowingDistance: Boolean,
     isShowingSpeed: Boolean,
     isShowingGpsData: Boolean,
     isShowingScaleIndicator: Boolean,
     location: Location?,
+    elevationFix: Int,
+    onElevationFixUpdate: (Int) -> Unit
 ) {
-    Box {
+    var isShowingElevationFixDialog by remember { mutableStateOf(false) }
+
+    Box(modifier) {
         MapUI(state = mapUiState.mapState) {
             val landmarkPositions = mapUiState.landmarkLinesState.landmarksSnapshot
             if (landmarkPositions.isNotEmpty()) {
@@ -63,7 +66,23 @@ fun MapLayout(
         }
 
         if (isShowingGpsData) {
-            GpsDataOverlay(location, Modifier.align(Alignment.BottomStart))
+            GpsDataOverlay(
+                Modifier.align(Alignment.BottomStart),
+                location,
+                onFixElevationClick = {
+                    isShowingElevationFixDialog = true
+                }
+            )
+        }
+
+        if (isShowingElevationFixDialog) {
+            ElevationFixDialog(
+                elevationFix,
+                onElevationFixUpdate = onElevationFixUpdate,
+                onDismiss = {
+                    isShowingElevationFixDialog = false
+                }
+            )
         }
     }
 }

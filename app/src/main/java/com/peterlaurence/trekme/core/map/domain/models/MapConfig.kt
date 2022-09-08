@@ -10,6 +10,7 @@ data class MapConfig(
     val imageExtension: String,
     var calibration: Calibration?,
     var sizeInBytes: Long?,
+    val elevationFix: Int = 0
 )
 
 data class Level(val level: Int, val tileSize: Size)

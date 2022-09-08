@@ -14,7 +14,7 @@ object UnitFormatter {
      * measurement system.
      * Defaults to using 2 digits for decimal precision (for km and mi).
      */
-    fun formatDistance(dist: Double, precision: UInt = 2u): String {
+    fun formatDistance(dist: Double, precision: Int = 2): String {
         return when (system) {
             MeasurementSystem.METRIC -> {
                 if (dist <= 1000) {

@@ -4,7 +4,7 @@ import com.peterlaurence.trekme.core.map.data.models.MapGson
 import com.peterlaurence.trekme.core.map.domain.models.*
 
 
-fun MapGson.toDomain(): MapConfig? {
+fun MapGson.toDomain(elevationFix: Int): MapConfig? {
     val origin = providerToMapOrigin[provider.generated_by] ?: return null
     val imageExtension = provider?.image_extension ?: return null
     val calibrationMethod = runCatching {
@@ -33,7 +33,8 @@ fun MapGson.toDomain(): MapConfig? {
                 }
             )
         },
-        sizeInBytes = sizeInBytes
+        sizeInBytes = sizeInBytes,
+        elevationFix = elevationFix
     )
 }
 

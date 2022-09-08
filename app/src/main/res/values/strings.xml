@@ -212,6 +212,8 @@
     <string name="center_on_position_btn_desc" translatable="false">Center on position button</string>
     <string name="compass_fab_desc" translatable="false">Compass</string>
     <string name="map_screen_loc_outside_map">Your location is outside this map</string>
+    <string name="elevation_fix_title">Set the elevation fix</string>
+    <string name="elevation_fix_name">Fix</string>
 
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>

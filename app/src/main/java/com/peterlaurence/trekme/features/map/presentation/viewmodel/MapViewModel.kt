@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.interactors.ElevationFixInteractor
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
@@ -40,7 +41,8 @@ class MapViewModel @Inject constructor(
     private val mapFeatureEvents: MapFeatureEvents,
     gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
-    private val mapLicenseInteractor: MapLicenseInteractor
+    private val mapLicenseInteractor: MapLicenseInteractor,
+    private val elevationFixInteractor: ElevationFixInteractor
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
 
@@ -49,6 +51,9 @@ class MapViewModel @Inject constructor(
 
     val locationFlow: Flow<Location> = locationSource.locationFlow
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
+    val elevationFixFlow: StateFlow<Int> = mapRepository.currentMapFlow.flatMapMerge {
+        it?.getElevationFix() ?: MutableStateFlow(0)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
         viewModelScope,
@@ -175,6 +180,10 @@ class MapViewModel @Inject constructor(
 
     fun alignToNorth() = viewModelScope.launch {
         dataStateFlow.first().mapState.rotateTo(0f)
+    }
+
+    fun onElevationFixUpdate(fix: Int) = viewModelScope.launch {
+        elevationFixInteractor.setElevationFix(dataStateFlow.first().map, fix)
     }
 
     fun isShowingDistanceFlow(): StateFlow<Boolean> = distanceLayer.isVisible

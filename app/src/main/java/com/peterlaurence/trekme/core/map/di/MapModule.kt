@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.di
+package com.peterlaurence.trekme.core.map.di
 
 import android.app.Application
 import com.google.gson.Gson
@@ -11,18 +11,22 @@ import com.peterlaurence.trekme.core.map.domain.dao.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
+import com.peterlaurence.trekme.di.IoDispatcher
+import com.peterlaurence.trekme.di.MainDispatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.json.Json
 import java.util.HashMap
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DaoModule {
+object MapModule {
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -40,6 +44,17 @@ object DaoModule {
         }
         return GsonBuilder().serializeNulls().setPrettyPrinting().registerTypeAdapterFactory(factory)
             .create()
+    }
+
+    @MapJson
+    @Singleton
+    @Provides
+    fun provideJson(): Json {
+        return Json {
+            prettyPrint = true
+            isLenient = true
+            ignoreUnknownKeys = true
+        }
     }
 
     @Singleton
@@ -76,8 +91,9 @@ object DaoModule {
     @Provides
     fun provideMapLoaderDao(
         gson: Gson,
+        @MapJson json: Json
     ): MapLoaderDao {
-        return MapLoaderDaoImpl(gson, Dispatchers.Default)
+        return MapLoaderDaoImpl(gson, json, Dispatchers.IO)
     }
 
     @Singleton
@@ -120,4 +136,20 @@ object DaoModule {
     fun providesGpxDao(@IoDispatcher ioDispatcher: CoroutineDispatcher): GeoRecordParser {
         return GeoRecordParserImpl(ioDispatcher)
     }
+
+    @Singleton
+    @Provides
+    fun provideMapSource(
+        @IoDispatcher dispatcher: CoroutineDispatcher,
+        @MapJson json: Json
+    ): UpdateElevationFixDao {
+        return UpdateElevationFixDaoImpl(dispatcher, json)
+    }
 }
+
+/**
+ * To be used for serialization / deserialization of file-based maps
+ */
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class MapJson

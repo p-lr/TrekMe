@@ -56,6 +56,7 @@ fun MapScreen(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val locationFlow = viewModel.locationFlow
+    val elevationFix by viewModel.elevationFixFlow.collectAsState()
     val locationFlowLifecycleAware = remember(locationFlow, lifecycleOwner) {
         locationFlow.flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.RESUMED)
     }
@@ -108,6 +109,7 @@ fun MapScreen(
                     rotationMode,
                     snackBarEvents,
                     location,
+                    elevationFix,
                     onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
                     onMainMenuClick = viewModel::onMainMenuClick,
                     onManageTracks = onNavigateToTracksManage,
@@ -120,7 +122,8 @@ fun MapScreen(
                     onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
                     onToggleShowGpsData = viewModel::toggleShowGpsData,
                     onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
-                    onCompassClick = viewModel::alignToNorth
+                    onCompassClick = viewModel::alignToNorth,
+                    onElevationFixUpdate = viewModel::onElevationFixUpdate
                 )
 
                 stats?.also {
@@ -150,6 +153,7 @@ private fun MapScaffold(
     rotationMode: RotationMode,
     snackBarEvents: List<SnackBarEvent>,
     location: Location?,
+    elevationFix: Int,
     onSnackBarShown: () -> Unit,
     onMainMenuClick: () -> Unit,
     onManageTracks: () -> Unit,
@@ -162,7 +166,8 @@ private fun MapScaffold(
     onToggleLockOnPosition: () -> Unit,
     onToggleShowGpsData: () -> Unit,
     onPositionFabClick: () -> Unit,
-    onCompassClick: () -> Unit
+    onCompassClick: () -> Unit,
+    onElevationFixUpdate: (Int) -> Unit
 ) {
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -232,14 +237,17 @@ private fun MapScaffold(
                 }
             }
         }
-    ) {
+    ) { paddingValues ->
         MapLayout(
+            Modifier.padding(paddingValues),
             uiState,
             isShowingDistance,
             isShowingSpeed,
             isShowingGpsData,
             isShowingScaleIndicator,
             location,
+            elevationFix,
+            onElevationFixUpdate
         )
     }
 }

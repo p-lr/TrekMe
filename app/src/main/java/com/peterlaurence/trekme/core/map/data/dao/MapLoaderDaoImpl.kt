@@ -8,17 +8,20 @@ import com.google.gson.JsonSyntaxException
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.data.models.MapGson
+import com.peterlaurence.trekme.core.map.data.models.MapPropertiesKtx
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
 import com.peterlaurence.trekme.core.map.mappers.toDomain
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.io.File
-import javax.inject.Inject
 
-class MapLoaderDaoImpl @Inject constructor(
+class MapLoaderDaoImpl constructor(
     private val gson: Gson,
-    private val defaultDispatcher: CoroutineDispatcher
+    private val json: Json,
+    private val ioDispatcher: CoroutineDispatcher
 ) : MapLoaderDao {
 
     /**
@@ -37,7 +40,7 @@ class MapLoaderDaoImpl @Inject constructor(
      *
      * @param dirs The directories in which to search for new maps.
      */
-    private suspend fun findMaps(dirs: List<File>) = withContext(defaultDispatcher) {
+    private suspend fun findMaps(dirs: List<File>) = withContext(ioDispatcher) {
         mapCreationTask(gson, MAP_FILENAME, *dirs.toTypedArray())
     }
 
@@ -47,7 +50,7 @@ class MapLoaderDaoImpl @Inject constructor(
      *
      * @author P.Laurence on 30/04/2017 -- converted to Kotlin on 05/05/2019
      */
-    private fun mapCreationTask(mGson: Gson, mapFileName: String, vararg dirs: File): List<Map> {
+    private suspend fun mapCreationTask(mGson: Gson, mapFileName: String, vararg dirs: File): List<Map> {
         val mapFilesFoundList = mutableListOf<File>()
         val mapList = mutableListOf<Map>()
 
@@ -95,9 +98,10 @@ class MapLoaderDaoImpl @Inject constructor(
             try {
                 /* json deserialization */
                 val mapGson = mGson.fromJson(jsonString, MapGson::class.java)
+                val elevationFix = f.parentFile?.let { getElevationFix(it) } ?: 0
 
                 /* Convert to domain type */
-                val mapConfig = mapGson.toDomain() ?: continue
+                val mapConfig = mapGson.toDomain(elevationFix) ?: continue
 
                 val thumbnailImage = if (mapGson.thumbnail != null) {
                     getThumbnail(File(f.parent, mapGson.thumbnail))
@@ -120,6 +124,16 @@ class MapLoaderDaoImpl @Inject constructor(
     private fun getThumbnail(file: File): Bitmap? {
         val bmOptions = BitmapFactory.Options()
         return BitmapFactory.decodeFile(file.absolutePath, bmOptions)
+    }
+
+    private suspend fun getElevationFix(rootDir: File): Int = withContext(ioDispatcher) {
+        val propertiesFile = File(rootDir, propertiesFileName)
+        if (!propertiesFile.exists()) {
+            return@withContext 0
+        }
+        val str = propertiesFile.readText()
+        val properties = json.decodeFromString<MapPropertiesKtx>(str)
+        properties.elevationFix
     }
 }
 

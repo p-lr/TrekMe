@@ -3,9 +3,7 @@ package com.peterlaurence.trekme.core.map
 import android.graphics.Bitmap
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.projection.Projection
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import java.io.File
 
 /**
@@ -54,6 +52,8 @@ data class Map(
     private var _landmarks: MutableList<Landmark>? = null
     private var _markerList: MutableList<Marker>? = null
     private val _routes = MutableStateFlow<List<Route>>(listOf())
+
+    private val _elevationFix: MutableStateFlow<Int> = MutableStateFlow(config.elevationFix)
 
     /**
      * The calibration status is either :
@@ -185,6 +185,12 @@ data class Map(
     fun deleteRoute(route: Route) {
         _routes.value = _routes.value - route
     }
+
+    fun setElevationFix(fix: Int) {
+        _elevationFix.update { fix }
+    }
+
+    fun getElevationFix(): StateFlow<Int> = _elevationFix
 
     val levelList: List<Level>
         get() = config.levels
