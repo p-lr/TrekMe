@@ -4,6 +4,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
@@ -42,6 +44,7 @@ class MapViewModel @Inject constructor(
     gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
     private val mapLicenseInteractor: MapLicenseInteractor,
+    extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val elevationFixInteractor: ElevationFixInteractor
 ) : ViewModel() {
     private val dataStateFlow = MutableSharedFlow<DataState>(1, 0, BufferOverflow.DROP_OLDEST)
@@ -54,6 +57,7 @@ class MapViewModel @Inject constructor(
     val elevationFixFlow: StateFlow<Int> = mapRepository.currentMapFlow.flatMapMerge {
         it?.getElevationFix() ?: MutableStateFlow(0)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+    val purchaseFlow: StateFlow<PurchaseState> = extendedOfferStateOwner.purchaseFlow
 
     val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
         viewModelScope,

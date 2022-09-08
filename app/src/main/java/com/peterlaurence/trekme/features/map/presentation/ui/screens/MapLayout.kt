@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
@@ -20,6 +21,7 @@ fun MapLayout(
     isShowingScaleIndicator: Boolean,
     location: Location?,
     elevationFix: Int,
+    purchaseState: PurchaseState,
     onElevationFixUpdate: (Int) -> Unit
 ) {
     var isShowingElevationFixDialog by remember { mutableStateOf(false) }
@@ -66,9 +68,12 @@ fun MapLayout(
         }
 
         if (isShowingGpsData) {
+            val isElevationModifiable = purchaseState == PurchaseState.PURCHASED
             GpsDataOverlay(
                 Modifier.align(Alignment.BottomStart),
                 location,
+                isElevationModifiable,
+                elevationFix = if (isElevationModifiable) elevationFix else 0,
                 onFixElevationClick = {
                     isShowingElevationFixDialog = true
                 }

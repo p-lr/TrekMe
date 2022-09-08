@@ -34,6 +34,8 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 fun GpsDataOverlay(
     modifier: Modifier = Modifier,
     location: Location?,
+    isElevationModifiable: Boolean,
+    elevationFix: Int,
     onFixElevationClick: () -> Unit = {}
 ) {
     Column(
@@ -62,23 +64,29 @@ fun GpsDataOverlay(
             value = location?.longitude?.let { UnitFormatter.formatLatLon(location.longitude) }
                 ?: "")
         Row(
-            Modifier.fillMaxWidth().clickable(onClick = onFixElevationClick),
+            Modifier.fillMaxWidth().then(
+                if (isElevationModifiable) {
+                    Modifier.clickable(onClick = onFixElevationClick)
+                } else Modifier
+            ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             KeyValueRow(key = stringResource(id = R.string.elevation_short),
-                value = location?.altitude?.let { UnitFormatter.formatElevation(location.altitude) }
+                value = location?.altitude?.let { UnitFormatter.formatElevation(location.altitude + elevationFix) }
                     ?: "")
-            Image(
-                painter = painterResource(id = R.drawable.ic_edit_black_24dp),
-                modifier = Modifier
-                    .background(Color(0x45FFFFFF), shape = CircleShape)
-                    .clip(CircleShape)
-                    .padding(3.dp).alpha(1f)
-                    .size(17.dp),
-                colorFilter = ColorFilter.tint(Color.White),
-                contentDescription = null
-            )
+            if (isElevationModifiable) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_edit_black_24dp),
+                    modifier = Modifier
+                        .background(Color(0x45FFFFFF), shape = CircleShape)
+                        .clip(CircleShape)
+                        .padding(3.dp).alpha(1f)
+                        .size(17.dp),
+                    colorFilter = ColorFilter.tint(Color.White),
+                    contentDescription = null
+                )
+            }
         }
     }
 }
@@ -103,7 +111,9 @@ private fun GpsDataOverlayPreview() {
                 54.78,
                 altitude = 100.2,
                 locationProducerInfo = LocationProducerBtInfo("Garmin", "")
-            )
+            ),
+            isElevationModifiable = true,
+            elevationFix = 0
         )
     }
 }

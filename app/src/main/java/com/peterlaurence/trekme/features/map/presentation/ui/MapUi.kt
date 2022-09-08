@@ -23,6 +23,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
@@ -41,6 +42,7 @@ fun MapScreen(
     onNavigateToTracksManage: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val purchaseState by viewModel.purchaseFlow.collectAsState()
     val isShowingOrientation by viewModel.orientationVisibilityFlow()
         .collectAsState(initial = false)
     val isShowingDistance by viewModel.isShowingDistanceFlow().collectAsState()
@@ -110,6 +112,7 @@ fun MapScreen(
                     snackBarEvents,
                     location,
                     elevationFix,
+                    purchaseState,
                     onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
                     onMainMenuClick = viewModel::onMainMenuClick,
                     onManageTracks = onNavigateToTracksManage,
@@ -154,6 +157,7 @@ private fun MapScaffold(
     snackBarEvents: List<SnackBarEvent>,
     location: Location?,
     elevationFix: Int,
+    purchaseState: PurchaseState,
     onSnackBarShown: () -> Unit,
     onMainMenuClick: () -> Unit,
     onManageTracks: () -> Unit,
@@ -247,6 +251,7 @@ private fun MapScaffold(
             isShowingScaleIndicator,
             location,
             elevationFix,
+            purchaseState,
             onElevationFixUpdate
         )
     }
