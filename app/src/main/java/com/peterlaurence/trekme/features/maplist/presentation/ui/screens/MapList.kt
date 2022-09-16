@@ -37,6 +37,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVe
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.*
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
+import com.peterlaurence.trekme.features.maplist.presentation.ui.components.ConfirmDialog
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.*
 import com.peterlaurence.trekme.util.pxToDp
 
@@ -156,7 +157,8 @@ private fun ImagePlaceHolder(mapStub: MapStub, onSetMapImage: (Int, Uri) -> Unit
 
     if (addImageDialogState.value) {
         ConfirmDialog(
-            addImageDialogState, { launcher.launch("image/*") },
+            addImageDialogState,
+            onConfirmPressed = { launcher.launch("image/*") },
             contentText = stringResource(id = R.string.choose_map_thumbnail),
             confirmButtonText = stringResource(id = R.string.ok_dialog),
             cancelButtonText = stringResource(id = R.string.cancel_dialog_string)
@@ -215,51 +217,16 @@ private fun ButtonRow(
 
     if (deleteDialogState.value) {
         ConfirmDialog(
-            deleteDialogState, onDelete,
+            deleteDialogState,
+            onConfirmPressed = onDelete,
             contentText = stringResource(id = R.string.map_delete_question),
             confirmButtonText = stringResource(id = R.string.delete_dialog),
             cancelButtonText = stringResource(id = R.string.cancel_dialog_string),
-            confirmColor = colorResource(id = R.color.colorAccentRed)
+            confirmColorBackground = colorResource(id = R.color.colorAccentRed)
         )
     }
 }
 
-@Composable
-private fun ConfirmDialog(
-    openState: MutableState<Boolean>,
-    onConfirmPressed: () -> Unit,
-    contentText: String,
-    confirmButtonText: String,
-    cancelButtonText: String,
-    confirmColor: Color = colorResource(id = R.color.colorAccent)
-) {
-    AlertDialog(
-        onDismissRequest = { openState.value = false },
-        text = {
-            Text(contentText, fontSize = 16.sp)
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    openState.value = false
-                    onConfirmPressed()
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = confirmColor)
-            ) {
-                Text(confirmButtonText)
-            }
-        },
-        dismissButton = {
-            OutlinedButtonColored(
-                onClick = {
-                    openState.value = false
-                },
-                color = colorResource(id = R.color.colorDarkGrey),
-                text = cancelButtonText
-            )
-        }
-    )
-}
 
 @Composable
 private fun PendingScreen() {

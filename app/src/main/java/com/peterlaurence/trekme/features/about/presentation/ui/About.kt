@@ -8,6 +8,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -108,7 +109,8 @@ private fun ColumnScope.AppRatingSection(
             .align(Alignment.CenterHorizontally),
         onClick = onAppRating,
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = accentColor()
+            backgroundColor = accentColor(),
+            contentColor = Color.White
         ),
         shape = RoundedCornerShape(50)
     ) {
