@@ -66,13 +66,14 @@ private fun ColumnScope.UserManualSection(
         stringResource(
             id = R.string.user_manual_title
         ),
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 18.sp,
         color = MaterialTheme.colors.primary
     )
     Text(
         stringResource(id = R.string.user_manual_desc),
         modifier = Modifier.padding(top = 8.dp),
+        fontWeight = FontWeight.Light,
         color = textColor()
     )
     Button(
@@ -94,13 +95,14 @@ private fun ColumnScope.AppRatingSection(
         stringResource(
             id = R.string.rating_title
         ),
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 18.sp,
         color = MaterialTheme.colors.primary
     )
     Text(
         stringResource(id = R.string.rating_desc),
         modifier = Modifier.padding(top = 8.dp),
+        fontWeight = FontWeight.Light,
         color = textColor()
     )
     Button(
@@ -124,13 +126,14 @@ private fun ColumnScope.UserFeedback(
 ) {
     Text(
         stringResource(id = R.string.user_feedback),
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 18.sp,
         color = MaterialTheme.colors.primary
     )
     Text(
         stringResource(id = R.string.feedback_desc),
         modifier = Modifier.padding(top = 8.dp),
+        fontWeight = FontWeight.Light,
         color = textColor()
     )
     FloatingActionButton(
@@ -153,13 +156,14 @@ private fun ColumnScope.UserFeedback(
 private fun PrivacyPolicy() {
     Text(
         stringResource(id = R.string.privacy_policy_title),
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 18.sp,
         color = MaterialTheme.colors.primary
     )
     Text(
         stringResource(id = R.string.privacy_policy_desc),
         modifier = Modifier.padding(top = 8.dp),
+        fontWeight = FontWeight.Light,
         color = textColor()
     )
 
@@ -172,13 +176,13 @@ private fun PrivacyPolicy() {
         addStyle(
             style = SpanStyle(
                 fontSize = 16.sp,
+                fontWeight = FontWeight.Light,
                 color = textColor()
             ), start = 0, end = endIndex + 1
         )
         addStyle(
             style = SpanStyle(
                 color = accentColor(),
-                fontSize = 16.sp
             ), start = startIndex, end = endIndex
         )
 
