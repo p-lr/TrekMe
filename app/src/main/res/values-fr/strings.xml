@@ -326,6 +326,7 @@
     <string name="map_screen_loc_outside_map">Vous êtes hors de cette carte</string>
     <string name="elevation_fix_title">Définir une correction pour l\'altitude</string>
     <string name="elevation_fix_name">Correction</string>
+    <string name="elevation_fix_help">La correction est ajoutée à l\'altitude fournie par le GPS</string>
     <string name="map_delete_landmark">Supprimer le marqueur</string>
     <string name="map_move_landmark">Déplacer le marqueur</string>
     <string name="no_ele_profile_data">Ce fichier GPX est peut-être vide, ou une erreur s\'est produite.</string>

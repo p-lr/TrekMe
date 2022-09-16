@@ -214,6 +214,7 @@
     <string name="map_screen_loc_outside_map">Your location is outside this map</string>
     <string name="elevation_fix_title">Set the elevation fix</string>
     <string name="elevation_fix_name">Fix</string>
+    <string name="elevation_fix_help">The fix value is added to the elevation from the GPS</string>
 
     <!-- Marker manager fragment -->
     <string name="marker_name_label">Name</string>

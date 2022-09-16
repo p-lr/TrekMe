@@ -1,18 +1,20 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 
 @Composable
@@ -46,14 +48,33 @@ fun ElevationFixDialog(
             }
         },
         text = {
-            OutlinedTextField(
-                value = text,
-                label = { Text(text = stringResource(id = R.string.elevation_fix_name)) },
-                onValueChange = {
-                    text = it
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
+            Column {
+                OutlinedTextField(
+                    value = text,
+                    label = { Text(text = stringResource(id = R.string.elevation_fix_name)) },
+                    onValueChange = {
+                        text = it
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    text = stringResource(id = R.string.elevation_fix_help),
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.Light,
+                    fontSize = 13.sp
+                )
+            }
         }
     )
+}
+
+@Preview
+@Composable
+private fun DialogPreview() {
+    TrekMeTheme {
+        ElevationFixDialog(elevationFix = 25, onElevationFixUpdate = {}, onDismiss = {})
+    }
 }
