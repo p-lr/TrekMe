@@ -93,7 +93,7 @@ object MapModule {
         gson: Gson,
         @MapJson json: Json
     ): MapLoaderDao {
-        return MapLoaderDaoImpl(gson, json, Dispatchers.IO)
+        return MapLoaderDaoFileBased(gson, json, Dispatchers.IO)
     }
 
     @Singleton

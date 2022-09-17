@@ -17,12 +17,15 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
-class MapLoaderDaoImpl constructor(
+class MapLoaderDaoFileBased constructor(
     private val gson: Gson,
     private val json: Json,
     private val ioDispatcher: CoroutineDispatcher
 ) : MapLoaderDao {
+
+    private val fileForId = ConcurrentHashMap<Int, File>()
 
     /**
      * Parses all [Map]s inside the provided list of directories, and returns a list of [Map].

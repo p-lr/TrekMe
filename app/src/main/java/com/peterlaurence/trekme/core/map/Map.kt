@@ -233,11 +233,10 @@ data class Map(
         get() = config.size.height
 
     /**
-     * The unique id that identifies the [Map]. It can later be used to retrieve the
-     * [Map] instance from the map loader.
+     * The unique id that identifies the [Map] during the lifetime of the application.
+     * It cannot be used to identify a map across app restart.
      */
-    val id: Int
-        get() = configFile.path.hashCode()
+    val id: Int = MapIdGenerator.increment()
 
     enum class CalibrationStatus {
         OK, NONE, ERROR

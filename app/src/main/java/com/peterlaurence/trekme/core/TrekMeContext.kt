@@ -103,16 +103,16 @@ class TrekMeContextAndroid : TrekMeContext {
     /**
      * We distinguish two cases:
      * * Android < 10: We use the "trekme" folder in the internal memory as the default app dir.
-     * Using [Context.getExternalFilesDirs], we indirectly the directory of the SD card (if there
+     * Using [Context.getExternalFilesDirs], we indirectly the directory on the SD card (if there
      * is one). The first [File] returned returned by that last api is a folder on the internal
      * memory whose files are removed when the app is uninstalled. This isn't the original behavior
-     * if TrekMe so we don't use it on Android 9 and below.
+     * of TrekMe so we don't use it on Android 9 and below.
      * * Android >= 10: We no longer use the "trekme" folder. Scoped storage imposes that the [File]
      * api can only be used within files returned by [Context.getExternalFilesDirs] - files that are
      * private to the app, either on the internal memory or on a SD card. So on Android 10 and above,
-     * maps are deleted upon app uninstall. To circle around this issue, the map save & restore
-     * features have been redesigned so that the user has more control on where maps are saved and
-     * from where to restore.
+     * maps are deleted upon app uninstall. To circumvent this issue, the map save & restore
+     * feature has been redesigned so that the user has more control on where maps are saved and
+     * where they're restored from.
      */
     private fun resolveDirs(applicationContext: Context) {
         val dirs: List<File> = applicationContext.getExternalFilesDirs(null).filterNotNull()

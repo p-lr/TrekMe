@@ -27,7 +27,8 @@ import kotlin.collections.ArrayList
  * For instance, [LibvipsMapSeeker] is the only seeker used, because TrekMe only supports one kind
  * of file-based maps.
  * This is typically used after a [MapArchive] has been extracted.
- * TODO: This class should probably be renamed as "MapImportInteractor"
+ * TODO: This class should probably be renamed as "MapImportInteractor", and the [LibvipsMapSeeker]
+ * should be a DAO injected as dependency.
  *
  * @author P.Laurence on 23/06/16 -- Converted to Kotlin on 27/10/19
  */
