@@ -90,10 +90,11 @@ object MapModule {
     @Singleton
     @Provides
     fun provideMapLoaderDao(
+        registry: FileBasedMapRegistry,
         gson: Gson,
         @MapJson json: Json
     ): MapLoaderDao {
-        return MapLoaderDaoFileBased(gson, json, Dispatchers.IO)
+        return MapLoaderDaoFileBased(registry, gson, json, Dispatchers.IO)
     }
 
     @Singleton
