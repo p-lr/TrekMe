@@ -88,6 +88,8 @@ class MapLoaderDaoFileBased constructor(
 
         /* Now parse the json files found */
         for (f in mapFilesFoundList) {
+            val rootDir = f.parentFile ?: continue
+
             /* Get json file content as String */
             val jsonString: String
             try {
@@ -101,17 +103,20 @@ class MapLoaderDaoFileBased constructor(
             try {
                 /* json deserialization */
                 val mapGson = mGson.fromJson(jsonString, MapGson::class.java)
-                val elevationFix = f.parentFile?.let { getElevationFix(it) } ?: 0
+                val elevationFix = getElevationFix(rootDir)
 
                 /* Convert to domain type */
                 val mapConfig = mapGson.toDomain(elevationFix) ?: continue
 
                 val thumbnailImage = if (mapGson.thumbnail != null) {
-                    getThumbnail(File(f.parent, mapGson.thumbnail))
+                    getThumbnail(File(rootDir, mapGson.thumbnail))
                 } else null
 
                 /* Map creation */
                 val map = Map(mapConfig, f, thumbnailImage)
+
+                /* Remember map root folder */
+                fileForId[map.id] = rootDir
 
                 mapList.add(map)
             } catch (e: JsonSyntaxException) {
