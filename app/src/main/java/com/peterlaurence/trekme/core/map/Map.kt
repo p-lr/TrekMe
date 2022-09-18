@@ -32,13 +32,6 @@ data class Map(
     val configSnapshot: MapConfig
         get() = config.copy()
 
-    /**
-     * The [File] which is the folder containing the map.
-     * When the directory changed (after e.g a rename), the config file must be updated.
-     */
-    val directory: File?
-        get() = configFile.parentFile
-
     val name: String = config.name
 
     val thumbnailSize = 256

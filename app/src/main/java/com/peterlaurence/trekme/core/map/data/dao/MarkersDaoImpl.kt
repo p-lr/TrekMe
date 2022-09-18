@@ -16,6 +16,7 @@ import java.io.File
 
 
 class MarkersDaoImpl(
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val mainDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
     private val gson: Gson
@@ -25,7 +26,8 @@ class MarkersDaoImpl(
      * Get markers by reading the markers.json file.
      */
     override suspend fun getMarkersForMap(map: Map): Boolean = withContext(ioDispatcher) {
-        val markerFile = File(map.directory, MAP_MARKER_FILENAME)
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext false
+        val markerFile = File(directory, MAP_MARKER_FILENAME)
         if (!markerFile.exists()) return@withContext false
 
         val markerGson = runCatching {
@@ -52,8 +54,9 @@ class MarkersDaoImpl(
             MarkerGson().apply { markers = map.markers?.map { it.toEntity() } ?: listOf() }
         val jsonString = gson.toJson(markerGson)
 
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
         withContext(ioDispatcher) {
-            val markerFile = File(map.directory, MAP_MARKER_FILENAME)
+            val markerFile = File(directory, MAP_MARKER_FILENAME)
             writeToFile(jsonString, markerFile) {
                 Log.e(this.javaClass.name, "Error while saving the markers")
             }

@@ -7,12 +7,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class MapSizeComputeDaoImpl(
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val defaultDispatcher: CoroutineDispatcher
 ) : MapSizeComputeDao {
 
     override suspend fun computeMapSize(map: Map): Result<Long> = runCatching {
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: throw Exception("No map for this id")
         withContext(defaultDispatcher) {
-            val size = map.directory!!.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
+            val size = directory.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
             withContext(Dispatchers.Main) {
                 map.setSizeInBytes(size)
             }

@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.wifip2p.domain.service.*
@@ -43,6 +44,8 @@ import kotlin.coroutines.resumeWithException
 @AndroidEntryPoint
 class WifiP2pService : Service() {
     @Inject lateinit var mapRepository: MapRepository
+
+    @Inject lateinit var fileBasedMapRegistry: FileBasedMapRegistry
 
     @Inject lateinit var mapImporter: MapImporter
 
@@ -530,11 +533,11 @@ class WifiP2pService : Service() {
         outputStream.writeUTF(map.name)
 
         /* The uncompressed size is expected to come second */
-        val size = FileUtils.dirSize(map.directory)
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return
+        val size = FileUtils.dirSize(directory)
         outputStream.writeLong(size)
 
         /* Finally comes the compressed stream */
-        val directory = map.directory ?: return
         zipTask(directory, outputStream, object : ZipProgressionListener {
             override fun fileListAcquired() {
                 wifiP2pState = Loading(0)

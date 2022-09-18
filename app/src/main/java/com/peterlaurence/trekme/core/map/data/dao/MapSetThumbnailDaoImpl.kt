@@ -13,14 +13,16 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 
 class MapSetThumbnailDaoImpl(
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val defaultDispatcher: CoroutineDispatcher,
     private val mapSaverDao: MapSaverDao,
     private val contentResolver: ContentResolver
 ) : MapSetThumbnailDao {
 
     override suspend fun setThumbnail(map: Map, uri: Uri): Result<Map> {
-        val targetFile = File(map.directory, THUMBNAIL_NAME)
-        val imageOutputStream: OutputStream = kotlin.runCatching {
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return Result.failure(Exception("No map for this id"))
+        val targetFile = File(directory, THUMBNAIL_NAME)
+        val imageOutputStream: OutputStream = runCatching {
                 FileOutputStream(targetFile)
             }.getOrElse {
             return Result.failure(it)
@@ -35,6 +37,7 @@ class MapSetThumbnailDaoImpl(
                 config = map.configSnapshot.copy(thumbnail = THUMBNAIL_NAME),
                 thumbnailImage = thumbnailImage
             )
+            fileBasedMapRegistry.setRootFolder(newMap.id, directory)
             mapSaverDao.save(newMap)
             Result.success(newMap)
         } else {

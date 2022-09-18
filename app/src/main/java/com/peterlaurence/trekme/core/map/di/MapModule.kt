@@ -70,21 +70,23 @@ object MapModule {
     @Singleton
     @Provides
     fun provideGetMarkersForMapDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         gson: Gson
     ) : MarkersDao {
-        return MarkersDaoImpl(mainDispatcher, ioDispatcher, gson)
+        return MarkersDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, gson)
     }
 
     @Singleton
     @Provides
     fun provideGetLandmarksForMapDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         gson: Gson
     ) : LandmarksDao {
-        return LandmarksDaoImpl(mainDispatcher, ioDispatcher, gson)
+        return LandmarksDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, gson)
     }
 
     @Singleton
@@ -100,31 +102,36 @@ object MapModule {
     @Singleton
     @Provides
     fun provideMapDeleteDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
-    ) : MapDeleteDao = MapDeleteDaoImpl(ioDispatcher)
+    ) : MapDeleteDao = MapDeleteDaoImpl(fileBasedMapRegistry, ioDispatcher)
 
     @Singleton
     @Provides
     fun provideMapRenameDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         mapSaverDao: MapSaverDao
     ) : MapRenameDao {
-        return MapRenameDaoImpl(mainDispatcher, ioDispatcher, mapSaverDao)
+        return MapRenameDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, mapSaverDao)
     }
 
     @Singleton
     @Provides
     fun provideMapSetThumbnailDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
         mapSaverDao: MapSaverDao,
         app: Application
     ): MapSetThumbnailDao {
-        return MapSetThumbnailDaoImpl(Dispatchers.Default, mapSaverDao, app.contentResolver)
+        return MapSetThumbnailDaoImpl(fileBasedMapRegistry, Dispatchers.Default, mapSaverDao, app.contentResolver)
     }
 
     @Singleton
     @Provides
-    fun provideMapSizeComputeDao(): MapSizeComputeDao = MapSizeComputeDaoImpl(Dispatchers.Default)
+    fun provideMapSizeComputeDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
+    ): MapSizeComputeDao = MapSizeComputeDaoImpl(fileBasedMapRegistry, Dispatchers.Default)
 
     @Singleton
     @Provides
@@ -141,10 +148,11 @@ object MapModule {
     @Singleton
     @Provides
     fun provideMapSource(
+        fileBasedMapRegistry: FileBasedMapRegistry,
         @IoDispatcher dispatcher: CoroutineDispatcher,
         @MapJson json: Json
     ): UpdateElevationFixDao {
-        return UpdateElevationFixDaoImpl(dispatcher, json)
+        return UpdateElevationFixDaoImpl(fileBasedMapRegistry, dispatcher, json)
     }
 }
 

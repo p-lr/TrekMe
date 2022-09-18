@@ -7,11 +7,12 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
 class MapDeleteDaoImpl(
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val ioDispatcher: CoroutineDispatcher
 ) : MapDeleteDao {
     override suspend fun deleteMap(map: Map) {
         /* Delete the map directory in a separate thread */
-        val mapDirectory = map.directory
+        val mapDirectory = fileBasedMapRegistry.getRootFolder(map.id) ?: return
         withContext(ioDispatcher) {
             FileUtils.deleteRecursive(mapDirectory)
         }

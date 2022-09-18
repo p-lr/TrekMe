@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.data.models.RouteGson
 import com.peterlaurence.trekme.core.map.data.models.RouteInfoKtx
@@ -31,6 +32,7 @@ import javax.inject.Inject
  * one more year - ideally as long as reasonably possible.
  */
 class RouteRepository @Inject constructor(
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     @IoDispatcher val ioDispatcher: CoroutineDispatcher,
     @MainDispatcher val mainDispatcher: CoroutineDispatcher
 ) {
@@ -46,7 +48,8 @@ class RouteRepository @Inject constructor(
 
     suspend fun importRoutes(map: Map) = withContext(ioDispatcher) {
         routeDirNameForId.clear()
-        val legacyRouteFile = File(map.directory, LEGACY_MAP_ROUTE_FILENAME)
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+        val legacyRouteFile = File(directory, LEGACY_MAP_ROUTE_FILENAME)
         val routes = if (legacyRouteFile.exists()) {
             /* Import legacy */
             val routes = getLegacyRoutes(gson, legacyRouteFile)
@@ -62,7 +65,7 @@ class RouteRepository @Inject constructor(
             routes
         } else {
             val dir =
-                getOrCreateDirectory(map.directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
+                getOrCreateDirectory(directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
             getRoutes(dir)
         }
 
@@ -74,8 +77,9 @@ class RouteRepository @Inject constructor(
 
     suspend fun saveNewRoute(map: Map, route: Route) = withContext(ioDispatcher) {
         runCatching {
+            val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
             val dir =
-                getOrCreateDirectory(map.directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
+                getOrCreateDirectory(directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
             routeDirNameForId[route.id] = route.name ?: route.id
             val routeKtx = route.toRouteKtx()
             val routeInfoKtx = route.toRouteInfoKtx()
@@ -85,8 +89,9 @@ class RouteRepository @Inject constructor(
 
     suspend fun saveRouteInfo(map: Map, route: Route) = withContext(ioDispatcher) {
         runCatching {
+            val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
             val dir =
-                getOrCreateDirectory(map.directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
+                getOrCreateDirectory(directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
             val routeInfoKtx = route.toRouteInfoKtx()
             serializeRouteInfo(dir, route.id, routeInfoKtx)
         }
@@ -101,7 +106,8 @@ class RouteRepository @Inject constructor(
     }
 
     private suspend fun deleteRouteUsingDirName(map: Map, route: Route) = withContext(ioDispatcher) {
-        val root = File(map.directory, MAP_ROUTES_DIRECTORY)
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+        val root = File(directory, MAP_ROUTES_DIRECTORY)
         runCatching {
             val routeDirName = routeDirNameForId[route.id]
             if (routeDirName != null) {
@@ -119,7 +125,8 @@ class RouteRepository @Inject constructor(
      * This operation performs quickly since [RouteInfoKtx] is a small object.
      */
     suspend fun deleteRoutesUsingId(map: Map, ids: List<String>) = withContext(ioDispatcher) {
-        val root = File(map.directory, MAP_ROUTES_DIRECTORY)
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+        val root = File(directory, MAP_ROUTES_DIRECTORY)
 
         val dirList = runCatching {
             root.listFiles { it: File ->

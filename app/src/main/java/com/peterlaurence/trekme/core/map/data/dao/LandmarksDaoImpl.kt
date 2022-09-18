@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 class LandmarksDaoImpl (
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val mainDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
     private val gson: Gson
@@ -22,8 +23,9 @@ class LandmarksDaoImpl (
      * Right after, if the result is not null, updates the [Map] on the main thread.
      */
     override suspend fun getLandmarksForMap(map: Map): Boolean {
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return false
         val landmarkGson = withContext(ioDispatcher) {
-            val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
+            val landmarkFile = File(directory, MAP_LANDMARK_FILENAME)
             if (!landmarkFile.exists()) return@withContext null
 
             try {
@@ -45,10 +47,11 @@ class LandmarksDaoImpl (
      * Re-writes the landmarks.json file.
      */
     override suspend fun saveLandmarks(map: Map) = withContext(mainDispatcher) {
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
         val jsonString = gson.toJson(LandmarkGson(map.landmarks ?: listOf()))
 
         withContext(ioDispatcher) {
-            val landmarkFile = File(map.directory, MAP_LANDMARK_FILENAME)
+            val landmarkFile = File(directory, MAP_LANDMARK_FILENAME)
             writeToFile(jsonString, landmarkFile) {
                 Log.e(this.javaClass.name, "Error while saving the landmarks")
             }

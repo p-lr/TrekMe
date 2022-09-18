@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.location.*
+import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
@@ -77,8 +78,10 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindRouteRepository(): RouteRepository = RouteRepository(
-        Dispatchers.IO, Dispatchers.Main
+    fun bindRouteRepository(
+        fileBasedMapRegistry: FileBasedMapRegistry
+    ): RouteRepository = RouteRepository(
+        fileBasedMapRegistry, Dispatchers.IO, Dispatchers.Main
     )
 
     @Singleton

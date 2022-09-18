@@ -13,14 +13,15 @@ import java.io.File
 /**
  * This is a file based implementation of [UpdateElevationFixDao].
  */
-class UpdateElevationFixDaoImpl (
+class UpdateElevationFixDaoImpl(
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val ioDispatcher: CoroutineDispatcher,
     private val json: Json
 ) : UpdateElevationFixDao {
 
     override suspend fun setElevationFix(map: Map, fix: Int): Boolean = withContext(ioDispatcher) {
-        val dir = map.directory ?: return@withContext false
-        val propertiesFile = File(dir, propertiesFileName)
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext false
+        val propertiesFile = File(directory, propertiesFileName)
         if (!propertiesFile.exists()) {
             propertiesFile.createNewFile()
         }

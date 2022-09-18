@@ -9,7 +9,7 @@ import java.io.File
  * index this content for media files.
  */
 @Suppress("BlockingMethodInNonBlockingContext")
-suspend fun Map.createNomediaFile() = withContext(Dispatchers.IO) {
+suspend fun createNomediaFile(directory: File) = withContext(Dispatchers.IO) {
     val noMedia = File(directory, ".nomedia")
     noMedia.createNewFile()
 }

@@ -114,7 +114,7 @@ class MapLoaderDaoFileBased constructor(
                 val map = Map(mapConfig, f, thumbnailImage)
 
                 /* Remember map root folder */
-                registry.fileForId[map.id] = rootDir
+                registry.setRootFolder(map.id, rootDir)
 
                 mapList.add(map)
             } catch (e: JsonSyntaxException) {

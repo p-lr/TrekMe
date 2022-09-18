@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 class MapRenameDaoImpl(
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val mainDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
     private val mapSaverDao: MapSaverDao
@@ -20,7 +21,7 @@ class MapRenameDaoImpl(
      */
     override suspend fun renameMap(map: Map, newName: String): Result<Map> = withContext(mainDispatcher) {
         /* Update the containing folder */
-        val directory = map.directory ?: return@withContext Result.failure(Exception("No parent folder"))
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext Result.failure(Exception("No parent folder"))
         val newDirectory = withContext(ioDispatcher) {
             runCatching {
                 val dir = File(directory.parentFile, newName)
@@ -31,8 +32,10 @@ class MapRenameDaoImpl(
             }
         }
 
-        /* Update the name */
+        /* Update the name and directory */
         val newMap = map.copy(config = map.configSnapshot.copy(name = newName), configFile = File(newDirectory, map.configFile.name))
+        fileBasedMapRegistry.setRootFolder(newMap.id, newDirectory)
+
         mapSaverDao.save(newMap)
 
         Result.success(newMap)

@@ -165,7 +165,7 @@ class MapImporter @Inject constructor(
                 val map = mapList.firstOrNull()
                 if (map != null) {
                     /* The nomedia file might already exist, but we do it just in case */
-                    map.createNomediaFile()
+                    createNomediaFile(parentFolder)
                     return map
                 }
             }
@@ -221,7 +221,7 @@ class MapImporter @Inject constructor(
             status = MapParserStatus.NEW_MAP
 
             val map = Map(mapConfig, jsonFile, thumbnailImage)
-            map.createNomediaFile()
+            createNomediaFile(parentFolder)
 
             saveMapInteractor.addAndSaveMap(map)
             return map
