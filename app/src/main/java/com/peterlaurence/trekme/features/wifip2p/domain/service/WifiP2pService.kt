@@ -21,7 +21,8 @@ import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
-import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
+import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
+import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import com.peterlaurence.trekme.features.wifip2p.domain.service.*
 import com.peterlaurence.trekme.util.*
@@ -47,7 +48,7 @@ class WifiP2pService : Service() {
 
     @Inject lateinit var fileBasedMapRegistry: FileBasedMapRegistry
 
-    @Inject lateinit var mapImporter: MapImporter
+    @Inject lateinit var mapImportInteractor: MapImportInteractor
 
     @Inject
     @ApplicationContext
@@ -507,12 +508,12 @@ class WifiP2pService : Service() {
                 /* Import the map */
                 scope.launch {
                     val result = withContext(Dispatchers.IO) {
-                        mapImporter.importFromFile(dir)
+                        mapImportInteractor.importFromFile(dir)
                     }
                     /* The receiver resets the WifiP2P connection */
                     when (result.status) {
-                        MapImporter.MapParserStatus.NEW_MAP,
-                        MapImporter.MapParserStatus.EXISTING_MAP -> exitWithReason(
+                        MapParseStatus.NEW_MAP,
+                        MapParseStatus.EXISTING_MAP -> exitWithReason(
                             MapSuccessfullyLoaded(result.map?.name
                                 ?: ""), true)
                         else -> exitWithReason(WithError(WifiP2pServiceErrors.MAP_IMPORT_ERROR), true)

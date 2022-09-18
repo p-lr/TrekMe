@@ -11,7 +11,7 @@ import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.mapimporter.MapImporter.MapParserStatus
+import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import com.peterlaurence.trekme.databinding.MapArchiveCardBinding
 
 /**
@@ -69,11 +69,11 @@ class MapArchiveViewHolder(binding: MapArchiveCardBinding) : RecyclerView.ViewHo
         extractionLabel.setText(R.string.extraction_error)
     }
 
-    fun onMapImported(status: MapParserStatus) {
+    fun onMapImported(status: MapParseStatus) {
         when (status) {
-            MapParserStatus.NEW_MAP -> mapCreationLabel.setText(R.string.imported_new_map)
-            MapParserStatus.EXISTING_MAP -> mapCreationLabel.setText(R.string.imported_untouched)
-            MapParserStatus.UNKNOWN_MAP_ORIGIN, MapParserStatus.NO_MAP -> mapCreationLabel.setText(R.string.map_import_error)
+            MapParseStatus.NEW_MAP -> mapCreationLabel.setText(R.string.imported_new_map)
+            MapParseStatus.EXISTING_MAP -> mapCreationLabel.setText(R.string.imported_untouched)
+            MapParseStatus.UNKNOWN_MAP_ORIGIN, MapParseStatus.NO_MAP -> mapCreationLabel.setText(R.string.map_import_error)
         }
         progressBarIndMapCreation.visibility = View.GONE
         iconMapCreated.visibility = View.VISIBLE

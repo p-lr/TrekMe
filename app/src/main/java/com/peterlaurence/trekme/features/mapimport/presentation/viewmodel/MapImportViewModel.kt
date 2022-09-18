@@ -5,8 +5,9 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.*
 import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
+import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import com.peterlaurence.trekme.core.map.maparchive.unarchive
-import com.peterlaurence.trekme.core.map.mapimporter.MapImporter
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel.ItemData
@@ -26,7 +27,7 @@ import javax.inject.Inject
 class MapImportViewModel @Inject constructor(
         private val settings: Settings,
         private val app: Application,
-        private val mapImporter: MapImporter
+        private val mapImportInteractor: MapImportInteractor
 ) : ViewModel() {
     private val _itemLiveData = MutableLiveData<List<ItemData>>()
     val itemLiveData: LiveData<List<ItemData>> = _itemLiveData
@@ -75,7 +76,7 @@ class MapImportViewModel @Inject constructor(
                         /* Import the extracted map */
                         override fun onUnzipFinished(outputDirectory: File, percent: Double) {
                             viewModelScope.launch {
-                                val res = mapImporter.importFromFile(outputDirectory)
+                                val res = mapImportInteractor.importFromFile(outputDirectory)
                                 _unzipEvents.postValue(UnzipMapImportedEvent(item.id, res.map, res.status))
                             }
 
@@ -102,4 +103,4 @@ sealed class UnzipEvent {
 data class UnzipProgressEvent(override val itemId: Int, val p: Int) : UnzipEvent()
 data class UnzipErrorEvent(override val itemId: Int) : UnzipEvent()
 data class UnzipFinishedEvent(override val itemId: Int, val outputFolder: File) : UnzipEvent()
-data class UnzipMapImportedEvent(override val itemId: Int, val map: Map?, val status: MapImporter.MapParserStatus) : UnzipEvent()
+data class UnzipMapImportedEvent(override val itemId: Int, val map: Map?, val status: MapParseStatus) : UnzipEvent()

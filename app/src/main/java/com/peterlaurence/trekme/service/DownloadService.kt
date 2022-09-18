@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.core.map.TileStreamProvider
 import com.peterlaurence.trekme.core.map.createNomediaFile
+import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.Wmts
 import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
@@ -60,6 +61,9 @@ class DownloadService : Service() {
     private val downloadServiceNofificationId = 128565
     private val workerCount = 8
     private val stopAction = "stop"
+
+    @Inject
+    lateinit var fileBasedMapRegistry: FileBasedMapRegistry
 
     @Inject
     lateinit var saveMapInteractor: SaveMapInteractor
@@ -279,7 +283,8 @@ class DownloadService : Service() {
         val map = buildMap(mapSpec, mapOrigin, destDir)
 
         scope.launch {
-            map.createNomediaFile()
+            fileBasedMapRegistry.setRootFolder(map.id, destDir)
+            createNomediaFile(destDir)
             saveMapInteractor.addAndSaveMap(map)
             geoRecordUris.forEach { uri ->
                 importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map)

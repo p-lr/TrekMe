@@ -25,7 +25,7 @@ class MapParserTest {
     @Test
     fun legacyMapRoutesParse() = runBlocking {
         val mapDirURL =
-            MapImporterTest::class.java.classLoader!!.getResource("map-with-legacy-routes")
+            MapImportInteractorTest::class.java.classLoader!!.getResource("map-with-legacy-routes")
         val mapDir = File(mapDirURL.toURI())
 
         assertTrue(mapDir.exists())
@@ -62,7 +62,7 @@ class MapParserTest {
 
     @Test
     fun mapRoutesParse() = runBlocking {
-        val mapDirURL = MapImporterTest::class.java.classLoader!!.getResource("map-with-routes")
+        val mapDirURL = MapImportInteractorTest::class.java.classLoader!!.getResource("map-with-routes")
         val mapDir = File(mapDirURL.toURI())
 
         assertTrue(mapDir.exists())

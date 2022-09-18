@@ -154,6 +154,16 @@ object MapModule {
     ): UpdateElevationFixDao {
         return UpdateElevationFixDaoImpl(fileBasedMapRegistry, dispatcher, json)
     }
+
+    @Singleton
+    @Provides
+    fun provideMapSeekerDao(
+        mapLoaderDao: MapLoaderDao,
+        mapSaverDao: MapSaverDao,
+        fileBasedMapRegistry: FileBasedMapRegistry
+    ): MapSeekerDao {
+        return MapSeekerDaoImpl(mapLoaderDao, mapSaverDao, fileBasedMapRegistry)
+    }
 }
 
 /**
