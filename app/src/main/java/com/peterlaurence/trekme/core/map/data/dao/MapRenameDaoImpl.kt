@@ -33,7 +33,7 @@ class MapRenameDaoImpl(
         }
 
         /* Update the name and directory */
-        val newMap = map.copy(config = map.configSnapshot.copy(name = newName), configFile = File(newDirectory, map.configFile.name))
+        val newMap = map.copy(config = map.configSnapshot.copy(name = newName))
         fileBasedMapRegistry.setRootFolder(newMap.id, newDirectory)
 
         mapSaverDao.save(newMap)

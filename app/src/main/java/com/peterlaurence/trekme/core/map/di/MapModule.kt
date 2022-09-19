@@ -60,11 +60,12 @@ object MapModule {
     @Singleton
     @Provides
     fun provideMapSaverDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         gson: Gson
     ): MapSaverDao {
-        return MapSaverDaoImpl(mainDispatcher, ioDispatcher, gson)
+        return MapSaverDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, gson)
     }
 
     @Singleton
@@ -135,8 +136,11 @@ object MapModule {
 
     @Singleton
     @Provides
-    fun provideArchiveMapDao(app: Application): ArchiveMapDao {
-        return ArchiveMapDaoImpl(app, Dispatchers.Default)
+    fun provideArchiveMapDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
+        app: Application
+    ): ArchiveMapDao {
+        return ArchiveMapDaoImpl(fileBasedMapRegistry, app, Dispatchers.Default)
     }
 
     @Singleton

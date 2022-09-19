@@ -21,6 +21,7 @@ import java.util.*
  * parent folder of the [Map].
  */
 class ArchiveMapDaoImpl(
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val app: Application,
     private val defaultDispatcher: CoroutineDispatcher
 ) : ArchiveMapDao {
@@ -36,7 +37,7 @@ class ArchiveMapDaoImpl(
                         ?: return
                     /* The underlying task which writes into the stream is responsible for closing this stream. */
                     withContext(defaultDispatcher) {
-                        val mapFolder = map.configFile.parentFile
+                        val mapFolder = fileBasedMapRegistry.getRootFolder(map.id)
                         if (mapFolder != null) {
                             zipTask(mapFolder, out, listener)
                         }

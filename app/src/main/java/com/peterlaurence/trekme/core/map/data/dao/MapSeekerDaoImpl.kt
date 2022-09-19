@@ -135,12 +135,9 @@ class MapSeekerDaoImpl(
             size, imageExtension, calibration = null, sizeInBytes = null
         )
 
-        /* The json file */
-        val jsonFile = File(parentFolder, MAP_FILENAME)
-
         status = MapParseStatus.NEW_MAP
 
-        val map = Map(mapConfig, jsonFile, thumbnailImage)
+        val map = Map(mapConfig, thumbnailImage)
         fileBasedMapRegistry.setRootFolder(map.id, parentFolder)
         createNomediaFile(parentFolder)
 

@@ -4,13 +4,11 @@ import android.graphics.Bitmap
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.*
-import java.io.File
 
 /**
  * A map contains all the information that defines a map. That includes :
  *
  *  * The name that will appear in the map choice list
- *  * The directory that contains image data and configuration file
  *  * The calibration method along with calibration points
  *  * Points of interest
  * ...
@@ -22,11 +20,9 @@ import java.io.File
  *
  * @param config the [MapConfig] object that includes information relative to levels,
  * the tile size, the name of the map, etc.
- * @param configFile the [File] for serialization.
  */
 data class Map(
     private val config: MapConfig,
-    val configFile: File,
     val thumbnailImage: Bitmap? = null
 ) {
     val configSnapshot: MapConfig

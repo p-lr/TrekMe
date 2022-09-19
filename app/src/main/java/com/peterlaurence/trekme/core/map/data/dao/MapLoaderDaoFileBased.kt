@@ -111,7 +111,7 @@ class MapLoaderDaoFileBased constructor(
                 } else null
 
                 /* Map creation */
-                val map = Map(mapConfig, f, thumbnailImage)
+                val map = Map(mapConfig, thumbnailImage)
 
                 /* Remember map root folder */
                 registry.setRootFolder(map.id, rootDir)

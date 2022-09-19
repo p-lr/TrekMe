@@ -2,14 +2,17 @@ package com.peterlaurence.trekme.core.map.data.dao
 
 import android.util.Log
 import com.google.gson.Gson
+import com.peterlaurence.trekme.core.map.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.mappers.toEntity
 import com.peterlaurence.trekme.util.writeToFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import java.io.File
 
 class MapSaverDaoImpl (
+    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val mainDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
     private val gson: Gson
@@ -19,8 +22,9 @@ class MapSaverDaoImpl (
             gson.toJson(map.configSnapshot.toEntity())
         }
 
+        val rootFolder = fileBasedMapRegistry.getRootFolder(map.id) ?: return
         withContext(ioDispatcher) {
-            val configFile = map.configFile
+            val configFile = File(rootFolder, MAP_FILENAME)
             writeToFile(jsonString, configFile) {
                 Log.e(this::class.java.name, "Error while saving the map")
             }
