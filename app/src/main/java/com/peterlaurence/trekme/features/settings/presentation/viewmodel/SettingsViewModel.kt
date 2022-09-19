@@ -34,7 +34,7 @@ class SettingsViewModel @Inject constructor(
 
     init {
         /* App dir list */
-        _appDirListLiveData.value = trekMeContext.mapsDirList?.map { it.absolutePath }
+        _appDirListLiveData.value = trekMeContext.rootDirList?.map { it.absolutePath }
                 ?: emptyList()
     }
 

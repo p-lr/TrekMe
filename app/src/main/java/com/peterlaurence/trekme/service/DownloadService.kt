@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.MAP_FOLDER_NAME
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.core.map.TileStreamProvider
@@ -244,7 +245,8 @@ class DownloadService : Service() {
         val folderName = "map-" + dateFormat.format(date)
 
         val appDir = settings.getAppDir().firstOrNull() ?: error("App dir should be defined")
-        val destFolder = File(appDir, folderName)
+        val mapFolder = File(appDir, MAP_FOLDER_NAME)
+        val destFolder = File(mapFolder, folderName)
 
         return if (destFolder.mkdirs()) {
             destFolder

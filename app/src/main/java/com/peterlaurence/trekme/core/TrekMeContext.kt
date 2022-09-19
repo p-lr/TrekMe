@@ -4,6 +4,10 @@ import android.content.Context
 import android.os.Build.VERSION_CODES.Q
 import android.os.Environment
 import android.util.Log
+import com.peterlaurence.trekme.core.map.CREDENTIALS_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.MAP_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.MAP_IMPORTED_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.RECORDINGS_FOLDER_NAME
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -28,7 +32,7 @@ interface TrekMeContext {
     val defaultMapsDownloadDir: File?
     val importedDir: File?
     val recordingsDir: File?
-    var mapsDirList: List<File>?
+    var rootDirList: List<File>?
     val credentialsDir: File
     suspend fun isAppDirReadOnly(): Boolean
     suspend fun init(applicationContext: Context)
@@ -40,37 +44,30 @@ class TrekMeContextAndroid : TrekMeContext {
 
     override val defaultMapsDownloadDir: File? by lazy {
         defaultAppDir?.let {
-            File(it, "downloaded")
+            File(it, MAP_FOLDER_NAME)
         }
     }
 
     /* Where zip archives are extracted */
     override val importedDir: File? by lazy {
         defaultAppDir?.let {
-            File(it, "imported")
+            File(it, MAP_IMPORTED_FOLDER_NAME)
         }
     }
 
     override val recordingsDir: File? by lazy {
         defaultAppDir?.let {
-            File(it, "recordings")
+            File(it, RECORDINGS_FOLDER_NAME)
         }
     }
 
-    /* Where maps are searched */
-    override var mapsDirList: List<File>? = null
-
-    /* Where maps can be downloaded */
-    val downloadDirList: List<File>? by lazy {
-        mapsDirList?.map {
-            File(it, "downloaded")
-        }
-    }
+    /* Possible root folders */
+    override var rootDirList: List<File>? = null
 
     private val TAG = "TrekMeContextAndroid"
 
     override val credentialsDir: File by lazy {
-        File(defaultAppDir, "credentials")
+        File(defaultAppDir, CREDENTIALS_FOLDER_NAME)
     }
 
     /**
@@ -119,12 +116,12 @@ class TrekMeContextAndroid : TrekMeContext {
 
         if (android.os.Build.VERSION.SDK_INT >= Q) {
             defaultAppDir = dirs.firstOrNull()
-            mapsDirList = dirs
+            rootDirList = dirs
         } else {
             @Suppress("DEPRECATION")
             defaultAppDir = File(Environment.getExternalStorageDirectory(), appFolderName)
             val otherDirs = dirs.drop(1)
-            mapsDirList = listOf(defaultAppDir!!) + otherDirs
+            rootDirList = listOf(defaultAppDir!!) + otherDirs
         }
     }
 
@@ -146,7 +143,7 @@ class TrekMeContextAndroid : TrekMeContext {
         createDir(credentialsDir, "credentials")
 
         /* Downloads */
-        createDir(defaultMapsDownloadDir, "downloads")
+        createDir(defaultMapsDownloadDir, "maps")
 
         /* Recordings */
         createDir(recordingsDir, "recordings")
