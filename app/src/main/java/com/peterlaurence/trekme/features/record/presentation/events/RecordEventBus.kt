@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 import java.util.*
 
 class RecordEventBus {
-    private val _mapSelectedEvent = MutableSharedFlow<Pair<Int, UUID>>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _mapSelectedEvent = MutableSharedFlow<Pair<UUID, UUID>>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val mapSelectedEvent = _mapSelectedEvent.asSharedFlow()
 
-    fun setMapSelectedForRecord(mapId: Int, recordId: UUID) {
+    fun setMapSelectedForRecord(mapId: UUID, recordId: UUID) {
         _mapSelectedEvent.tryEmit(Pair(mapId, recordId))
     }
 

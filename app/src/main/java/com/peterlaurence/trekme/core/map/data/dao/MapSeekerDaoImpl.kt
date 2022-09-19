@@ -131,6 +131,7 @@ class MapSeekerDaoImpl(
         val name = parentFolder.name
 
         val mapConfig = MapConfig(
+            uuid = UUID.randomUUID(),
             name, thumbnail = thumbnail, levelList, mapOrigin,
             size, imageExtension, calibration = null, sizeInBytes = null
         )

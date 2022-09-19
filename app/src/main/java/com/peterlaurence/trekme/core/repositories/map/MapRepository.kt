@@ -5,6 +5,7 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFrag
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.*
 
 /**
  * This repository holds:
@@ -28,7 +29,7 @@ class MapRepository {
      *
      * @return the [Map] or `null` if the given id is unknown.
      */
-    fun getMap(mapId: Int): Map? {
+    fun getMap(mapId: UUID): Map? {
         return when (val mapListState = _mapListFlow.value) {
             Loading -> null
             is MapList -> mapListState.mapList.firstOrNull { it.id == mapId }

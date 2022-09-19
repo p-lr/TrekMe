@@ -35,7 +35,7 @@ class MarkerLayer(
     private val dataStateFlow: Flow<DataState>,
     markerMovedEvent: Flow<MapFeatureEvents.MarkerMovedEvent>,
     private val mapInteractor: MapInteractor,
-    private val onMarkerEdit: (Marker, Int, String) -> Unit
+    private val onMarkerEdit: (Marker, UUID, String) -> Unit
 ) : MapViewModel.MarkerTapListener {
     private var markerListState = mutableMapOf<String, MarkerState>()
 
@@ -61,7 +61,7 @@ class MarkerLayer(
         markerListState[markerState.id] = markerState
     }
 
-    suspend fun onMarkersChanged(mapId: Int) {
+    suspend fun onMarkersChanged(mapId: UUID) {
         val (map, mapState) = dataStateFlow.first()
         if (mapId == map.id) {
             onMapUpdate(map, mapState)
@@ -87,7 +87,7 @@ class MarkerLayer(
         mapState.moveMarker(markerId, pos.x, pos.y)
     }
 
-    override fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double) {
+    override fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double) {
         if (id.startsWith(markerGrabPrefix)) {
             onMarkerGrabTap(id, mapState)
             return

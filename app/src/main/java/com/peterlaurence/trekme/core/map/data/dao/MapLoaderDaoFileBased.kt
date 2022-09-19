@@ -10,6 +10,7 @@ import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.map.data.models.MapGson
 import com.peterlaurence.trekme.core.map.data.models.MapPropertiesKtx
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
+import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.mappers.toDomain
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,6 +21,7 @@ import java.io.File
 
 class MapLoaderDaoFileBased constructor(
     private val registry: FileBasedMapRegistry,
+    private val mapSaverDao: MapSaverDao,
     private val gson: Gson,
     private val json: Json,
     private val ioDispatcher: CoroutineDispatcher
@@ -103,6 +105,12 @@ class MapLoaderDaoFileBased constructor(
                 val mapGson = mGson.fromJson(jsonString, MapGson::class.java)
                 val elevationFix = getElevationFix(rootDir)
 
+                /* Map uuid was introduced 2022/09/19, but it should have been done from the start.
+                 * This is why we check here if there's an uuid, otherwise we create one and we
+                 * save the map (we need the uuid to be persisted for e.g favorites maps to work
+                 * properly). */
+                val shouldSaveUUID = mapGson.uuid == null
+
                 /* Convert to domain type */
                 val mapConfig = mapGson.toDomain(elevationFix) ?: continue
 
@@ -115,6 +123,11 @@ class MapLoaderDaoFileBased constructor(
 
                 /* Remember map root folder */
                 registry.setRootFolder(map.id, rootDir)
+
+                /* See above for explanation */
+                if (shouldSaveUUID) {
+                    mapSaverDao.save(map)
+                }
 
                 mapList.add(map)
             } catch (e: JsonSyntaxException) {

@@ -25,6 +25,7 @@ import java.util.List;
  * @author P.Laurence
  */
 public class MapGson {
+    public String uuid;
     public String name;
     public String thumbnail;
     public List<Level> levels;

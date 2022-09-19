@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepositor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -47,7 +48,7 @@ class MapListViewModel @Inject constructor(
         }
     }
 
-    fun setMap(mapId: Int) {
+    fun setMap(mapId: UUID) {
         val map = mapRepository.getMap(mapId) ?: return
 
         // 1- Sets the map to the main entity responsible for this
@@ -63,7 +64,7 @@ class MapListViewModel @Inject constructor(
      * Toggle the favorite flag on the [MapStub], then trigger UI update while saving favorites in
      * the settings.
      */
-    fun toggleFavorite(mapId: Int) {
+    fun toggleFavorite(mapId: UUID) {
         val state = _mapListState.value
         if (state is MapListState.MapList) {
             val stub = state.mapList.firstOrNull { it.mapId == mapId }
@@ -82,7 +83,7 @@ class MapListViewModel @Inject constructor(
         }
     }
 
-    fun deleteMap(mapId: Int) {
+    fun deleteMap(mapId: UUID) {
         val map = mapRepository.getMap(mapId)
         if (map != null) {
             viewModelScope.launch {
@@ -91,7 +92,7 @@ class MapListViewModel @Inject constructor(
         }
     }
 
-    fun onMapSettings(mapId: Int) {
+    fun onMapSettings(mapId: UUID) {
         val map = mapRepository.getMap(mapId) ?: return
         mapRepository.setSettingsMap(map)
     }
@@ -100,7 +101,7 @@ class MapListViewModel @Inject constructor(
         onBoardingRepository.setMapCreateOnBoarding(flag = showOnBoarding)
     }
 
-    private fun updateMapListInFragment(mapList: List<Map>, favoriteMapIds: List<Int>) {
+    private fun updateMapListInFragment(mapList: List<Map>, favoriteMapIds: List<UUID>) {
         /* Order map list with favorites first */
         val stubList = mapList.map { it.toMapStub() }.let {
             if (favoriteMapIds.isNotEmpty()) {
@@ -129,7 +130,7 @@ sealed interface MapListState {
     data class MapList(val mapList: List<MapStub>) : MapListState
 }
 
-class MapStub(val mapId: Int) {
+class MapStub(val mapId: UUID) {
     var isFavorite: Boolean by mutableStateOf(false)
     var title: String by mutableStateOf("")
     var image: Bitmap? by mutableStateOf(null)
@@ -143,7 +144,7 @@ class MapStub(val mapId: Int) {
     }
 
     override fun hashCode(): Int {
-        var result = mapId
+        var result = mapId.hashCode()
         result = 31 * result + isFavorite.hashCode()
         result = 31 * result + title.hashCode()
         result = 31 * result + (image?.hashCode() ?: 0)

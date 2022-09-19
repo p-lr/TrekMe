@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 
@@ -148,5 +149,5 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun getMapIndex(mapId: Int): Int = mapRepository.getCurrentMapList().indexOfFirst { it.id == mapId }
+    fun getMapIndex(mapId: UUID): Int = mapRepository.getCurrentMapList().indexOfFirst { it.id == mapId }
 }

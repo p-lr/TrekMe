@@ -25,11 +25,12 @@ import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCu
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
+import java.util.*
 
 @Composable
 fun MarkerEditScreen(
     marker: Marker,
-    mapId: Int,
+    mapId: UUID,
     markerId: String,
     mapFeatureEvents: MapFeatureEvents,
     mapInteractor: MapInteractor,

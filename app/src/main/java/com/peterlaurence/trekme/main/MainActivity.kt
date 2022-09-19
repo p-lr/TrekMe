@@ -57,6 +57,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.InetAddress
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -417,7 +418,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      * Navigate to the map-list fragment, optionally providing the id of the map the map-list fragment
      * should immediately scroll to.
      */
-    private fun showMapListFragment(mapId: Int? = null) {
+    private fun showMapListFragment(mapId: UUID? = null) {
         if (getString(R.string.fragment_map_list) != navController.currentDestination?.label) {
             val action = NavGraphDirections.actionGlobalMapListFragment().apply {
                 if (mapId != null) {
@@ -564,11 +565,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             builder?.setSmallIcon(R.drawable.ic_map_black_24dp)
                     ?.setContentTitle(getString(R.string.archive_dialog_title))
-            notifyMgr?.notify(event.mapId, builder?.build())
+            notifyMgr?.notify(event.mapId.hashCode(), builder?.build())
         }
         builder?.setContentText(String.format(getString(R.string.archive_notification_msg), event.mapName))
         builder?.setProgress(100, event.p, false)
-        notifyMgr?.notify(event.mapId, builder!!.build())
+        notifyMgr?.notify(event.mapId.hashCode(), builder!!.build())
     }
 
     private fun onZipFinishedEvent(event: ArchiveMapInteractor.ZipFinishedEvent) {
@@ -579,7 +580,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         /* When the loop is finished, updates the notification */
         builder.setContentText(archiveOkMsg) // Removes the progress bar
                 .setProgress(0, 0, false)
-        notifyMgr?.notify(event.mapId, builder.build())
+        notifyMgr?.notify(event.mapId.hashCode(), builder.build())
         Snackbar.make(binding.navView, archiveOkMsg, Snackbar.LENGTH_SHORT).show()
     }
 

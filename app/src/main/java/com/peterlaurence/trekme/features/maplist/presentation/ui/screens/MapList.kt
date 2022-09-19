@@ -40,6 +40,7 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.ConfirmDialog
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.*
 import com.peterlaurence.trekme.util.pxToDp
+import java.util.*
 
 @Composable
 fun MapListStateful(state: MapListState, intents: MapListIntents) {
@@ -104,7 +105,7 @@ private fun LazyItemScope.MapCard(mapStub: MapStub, intents: MapListIntents) {
 }
 
 @Composable
-private fun ImagePlaceHolder(mapStub: MapStub, onSetMapImage: (Int, Uri) -> Unit) {
+private fun ImagePlaceHolder(mapStub: MapStub, onSetMapImage: (UUID, Uri) -> Unit) {
     val addImageDialogState = remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -299,7 +300,7 @@ class MapListView @JvmOverloads constructor(
         val settingsViewModel: MapSettingsViewModel = viewModel()
 
         val intents = object : MapListIntents {
-            override fun onMapClicked(mapId: Int) {
+            override fun onMapClicked(mapId: UUID) {
                 val navController = findNavController()
                 if (navController.currentDestination?.id == R.id.mapListFragment) {
                     viewModel.setMap(mapId)
@@ -307,11 +308,11 @@ class MapListView @JvmOverloads constructor(
                 }
             }
 
-            override fun onMapFavorite(mapId: Int) {
+            override fun onMapFavorite(mapId: UUID) {
                 viewModel.toggleFavorite(mapId)
             }
 
-            override fun onMapSettings(mapId: Int) {
+            override fun onMapSettings(mapId: UUID) {
                 viewModel.onMapSettings(mapId)
 
                 /* Navigate to the MapSettingsFragment*/
@@ -320,11 +321,11 @@ class MapListView @JvmOverloads constructor(
                 findNavController().navigate(action)
             }
 
-            override fun onSetMapImage(mapId: Int, uri: Uri) {
+            override fun onSetMapImage(mapId: UUID, uri: Uri) {
                 settingsViewModel.setMapImage(mapId, uri)
             }
 
-            override fun onMapDelete(mapId: Int) {
+            override fun onMapDelete(mapId: UUID) {
                 viewModel.deleteMap(mapId)
             }
 
@@ -346,10 +347,10 @@ class MapListView @JvmOverloads constructor(
 }
 
 interface MapListIntents {
-    fun onMapClicked(mapId: Int)
-    fun onMapFavorite(mapId: Int)
-    fun onMapSettings(mapId: Int)
-    fun onSetMapImage(mapId: Int, uri: Uri)
-    fun onMapDelete(mapId: Int)
+    fun onMapClicked(mapId: UUID)
+    fun onMapFavorite(mapId: UUID)
+    fun onMapSettings(mapId: UUID)
+    fun onSetMapImage(mapId: UUID, uri: Uri)
+    fun onMapDelete(mapId: UUID)
     fun navigateToMapCreate(showOnBoarding: Boolean)
 }

@@ -62,7 +62,7 @@ class LandmarkLayer(
         }
     }
 
-    override fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double) {
+    override fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double) {
         if (id.startsWith(markerGrabPrefix)) {
             onMarkerGrabTap(id, mapState)
             return

@@ -17,6 +17,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,12 +32,16 @@ import javax.inject.Singleton
  * multiple instances of DataStore using the same file name would break.
  */
 @Singleton
-class Settings @Inject constructor(private val trekMeContext: TrekMeContext, private val app: Application) {
-    private val sharedPref: SharedPreferences = app.applicationContext.getSharedPreferences(oldSettingsFile, Context.MODE_PRIVATE)
+class Settings @Inject constructor(
+    private val trekMeContext: TrekMeContext,
+    private val app: Application
+) {
+    private val sharedPref: SharedPreferences =
+        app.applicationContext.getSharedPreferences(oldSettingsFile, Context.MODE_PRIVATE)
 
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-            name = settings,
-            produceMigrations = { listOf(SharedPreferencesMigration({ sharedPref })) }
+        name = settings,
+        produceMigrations = { listOf(SharedPreferencesMigration({ sharedPref })) }
     )
 
     private val dataStore: DataStore<Preferences>
@@ -51,7 +56,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     private val gpsDataVisibility = booleanPreferencesKey("gpsDataVisibility")
     private val magnifyingFactor = intPreferencesKey("magnifyingFactor")
     private val maxScale = floatPreferencesKey("maxScale")
-    private val lastMapId = intPreferencesKey("lastMapId")
+    private val lastMapId = stringPreferencesKey("lastMapId")
     private val defineScaleWhenCentered = booleanPreferencesKey("defineScaleWhenCentered")
     private val showScaleIndicator = booleanPreferencesKey("showScaleIndicator")
     private val scaleRatioCentered = floatPreferencesKey("scaleRatioCentered")
@@ -69,7 +74,7 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     fun getAppDir(): Flow<File?> {
         return dataStore.data.map { pref ->
             pref[appDirKey]?.let { if (checkAppPath(it)) File(it) else null }
-                    ?: trekMeContext.defaultAppDir
+                ?: trekMeContext.defaultAppDir
         }
     }
 
@@ -247,13 +252,17 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
     /**
      * The ids of maps which are marked as favorites.
      */
-    fun getFavoriteMapIds(): Flow<List<Int>> {
+    fun getFavoriteMapIds(): Flow<List<UUID>> {
         return dataStore.data.map { pref ->
-            pref[favoriteMaps]?.let { it.map { id -> id.toInt() } } ?: listOf()
+            pref[favoriteMaps]?.let {
+                it.mapNotNull { id ->
+                    runCatching { UUID.fromString(id) }.getOrNull()
+                }
+            } ?: listOf()
         }
     }
 
-    suspend fun setFavoriteMapIds(ids: List<Int>) {
+    suspend fun setFavoriteMapIds(ids: List<UUID>) {
         dataStore.edit { settings ->
             settings[favoriteMaps] = ids.map { id -> id.toString() }.toSet()
         }
@@ -263,18 +272,18 @@ class Settings @Inject constructor(private val trekMeContext: TrekMeContext, pri
      * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
      * empty.
      */
-    fun getLastMapId(): Flow<Int?> {
+    fun getLastMapId(): Flow<UUID?> {
         return dataStore.data.map { pref ->
-            pref[lastMapId]?.let { id -> if (id != -1) id else null }
+            pref[lastMapId]?.let { id -> if (id != "") UUID.fromString(id) else null }
         }
     }
 
     /**
      * Set and saves the last map id, for further use.
      */
-    suspend fun setLastMapId(id: Int) {
+    suspend fun setLastMapId(id: UUID) {
         dataStore.edit {
-            it[lastMapId] = id
+            it[lastMapId] = id.toString()
         }
     }
 

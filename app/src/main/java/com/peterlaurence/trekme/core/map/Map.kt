@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.*
+import java.util.UUID
 
 /**
  * A map contains all the information that defines a map. That includes :
@@ -25,6 +26,12 @@ data class Map(
     private val config: MapConfig,
     val thumbnailImage: Bitmap? = null
 ) {
+    /**
+     * The unique id that identifies the [Map].
+     * It can be used to identify the map across app restarts.
+     */
+    val id: UUID = config.uuid
+
     val configSnapshot: MapConfig
         get() = config.copy()
 
@@ -220,12 +227,6 @@ data class Map(
         get() = config.size.width
     val heightPx: Int
         get() = config.size.height
-
-    /**
-     * The unique id that identifies the [Map] during the lifetime of the application.
-     * It cannot be used to identify a map across app restart.
-     */
-    val id: Int = MapIdGenerator.increment()
 
     enum class CalibrationStatus {
         OK, NONE, ERROR

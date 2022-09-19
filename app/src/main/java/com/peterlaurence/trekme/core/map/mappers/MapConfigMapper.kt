@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.core.map.mappers
 
 import com.peterlaurence.trekme.core.map.data.models.MapGson
 import com.peterlaurence.trekme.core.map.domain.models.*
+import java.util.UUID
 
 
 fun MapGson.toDomain(elevationFix: Int): MapConfig? {
@@ -12,6 +13,7 @@ fun MapGson.toDomain(elevationFix: Int): MapConfig? {
     }.getOrNull() ?: return null
 
     return MapConfig(
+        uuid = getOrCreateUUID(this),
         name = name,
         thumbnail = thumbnail,
         levels = levels.map {
@@ -38,6 +40,12 @@ fun MapGson.toDomain(elevationFix: Int): MapConfig? {
     )
 }
 
+private fun getOrCreateUUID(mapGson: MapGson): UUID {
+    return mapGson.uuid?.let { uuid ->
+        runCatching { UUID.fromString(uuid) }.getOrNull()
+    } ?: UUID.randomUUID()
+}
+
 
 private val providerToMapOrigin = mapOf(
     MapGson.MapSource.IGN_LICENSED to Wmts(licensed = true),
@@ -47,6 +55,7 @@ private val providerToMapOrigin = mapOf(
 
 fun MapConfig.toEntity(): MapGson {
     val mapGson = MapGson()
+    mapGson.uuid = uuid.toString()
     mapGson.name = name
     mapGson.thumbnail = thumbnail
     mapGson.levels = levels.map { lvl ->

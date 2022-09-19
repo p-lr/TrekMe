@@ -9,6 +9,7 @@ import androidx.lifecycle.asLiveData
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.features.wifip2p.domain.service.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -46,12 +47,12 @@ class WifiP2pViewModel @Inject constructor(
     /**
      * Current user requests to send a map (to another user)
      */
-    fun onRequestSend(mapId: Int) {
+    fun onRequestSend(mapId: UUID) {
         val state = state.value
         if (state == null || state is Stopped) {
             startService(
-                StartSend::class.java.name, mapOf(),
-                    mapOf(WifiP2pService.MAP_ID_ARG to mapId))
+                StartSend::class.java.name, mapOf(WifiP2pService.MAP_ID_ARG to mapId.toString())
+            )
             return
         }
         /* We're trying to start the service while it's already started */
@@ -62,14 +63,10 @@ class WifiP2pViewModel @Inject constructor(
         startService(StopAction::class.java.name)
     }
 
-    private fun startService(action: String, stringExtras: Map<String, String> = mapOf(),
-                             intExtras: Map<String, Int> = mapOf()) {
+    private fun startService(action: String, stringExtras: Map<String, String> = mapOf()) {
         val intent = Intent(app, WifiP2pService::class.java)
         intent.action = action
         for (pair in stringExtras) {
-            intent.putExtra(pair.key, pair.value)
-        }
-        for (pair in intExtras) {
             intent.putExtra(pair.key, pair.value)
         }
         app.startService(intent)

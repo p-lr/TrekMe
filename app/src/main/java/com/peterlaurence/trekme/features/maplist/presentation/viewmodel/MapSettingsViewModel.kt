@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -42,7 +43,7 @@ class MapSettingsViewModel @Inject constructor(
     /**
      * Changes the thumbnail of a [Map].
      */
-    fun setMapImage(mapId: Int, uri: Uri) = viewModelScope.launch {
+    fun setMapImage(mapId: UUID, uri: Uri) = viewModelScope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
 
         try {

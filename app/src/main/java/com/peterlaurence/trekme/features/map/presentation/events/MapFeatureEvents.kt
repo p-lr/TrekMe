@@ -4,23 +4,24 @@ import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
+import java.util.*
 
 class MapFeatureEvents {
     /* region markers */
     private val _navigateToMarkerEdit = MutableSharedFlow<MarkerEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val navigateToMarkerEdit = _navigateToMarkerEdit.asSharedFlow()
-    fun postMarkerEditEvent(marker: Marker, mapId: Int, markerId: String) = _navigateToMarkerEdit.tryEmit(
+    fun postMarkerEditEvent(marker: Marker, mapId: UUID, markerId: String) = _navigateToMarkerEdit.tryEmit(
         MarkerEditEvent(marker, mapId, markerId)
     )
-    data class MarkerEditEvent(val marker: Marker, val mapId: Int, val markerId: String)
+    data class MarkerEditEvent(val marker: Marker, val mapId: UUID, val markerId: String)
 
 
     private val _markerMoved = MutableSharedFlow<MarkerMovedEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val markerMoved = _markerMoved.asSharedFlow()
-    fun postMarkerMovedEvent(marker: Marker, mapId: Int, markerId: String) = _markerMoved.tryEmit(
+    fun postMarkerMovedEvent(marker: Marker, mapId: UUID, markerId: String) = _markerMoved.tryEmit(
         MarkerMovedEvent(marker, mapId, markerId)
     )
-    data class MarkerMovedEvent(val marker: Marker, val mapId: Int, val markerId: String)
+    data class MarkerMovedEvent(val marker: Marker, val mapId: UUID, val markerId: String)
     /* endregion */
 
     /* region routes */

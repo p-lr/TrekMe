@@ -119,7 +119,7 @@ class RecordViewModel @Inject constructor(
     }
 
 
-    private fun onMapSelectedForRecord(mapId: Int, recordId: UUID) {
+    private fun onMapSelectedForRecord(mapId: UUID, recordId: UUID) {
         val map = getMapInteractor.getMap(mapId) ?: return
 
         val uri = geoRecordInteractor.getRecordUri(recordId) ?: return

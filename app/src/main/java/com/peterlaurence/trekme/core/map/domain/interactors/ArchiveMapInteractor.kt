@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 /**
@@ -78,8 +79,8 @@ class ArchiveMapInteractor @Inject constructor(
     private data class ArchiveTaskData(val map: Map, val uri: Uri)
 
     sealed class ZipEvent
-    data class ZipProgressEvent(val p: Int, val mapName: String, val mapId: Int) : ZipEvent()
-    data class ZipFinishedEvent(val mapId: Int) : ZipEvent()
+    data class ZipProgressEvent(val p: Int, val mapName: String, val mapId: UUID) : ZipEvent()
+    data class ZipFinishedEvent(val mapId: UUID) : ZipEvent()
     object ZipError : ZipEvent()
     object ZipCloseEvent : ZipEvent()    // sent after a ZipFinishedEvent to mark as fully completed
 }

@@ -17,7 +17,7 @@ class MapSelectionForImport : MapChoiceDialog() {
     @Inject
     lateinit var eventBus: RecordEventBus
 
-    override fun onOkPressed(mapId: Int) {
+    override fun onOkPressed(mapId: UUID) {
         val recordId = arguments?.getParcelable<ParcelUuid>(RECORD_ID)?.uuid ?: return
         eventBus.setMapSelectedForRecord(mapId, recordId)
     }

@@ -22,6 +22,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
+import java.util.*
 import javax.inject.Inject
 
 class MapInteractor @Inject constructor(
@@ -93,13 +94,13 @@ class MapInteractor @Inject constructor(
         markersDao.saveMarkers(map)
     }
 
-    fun deleteLandmark(landmark: Landmark, mapId: Int) = scope.launch {
+    fun deleteLandmark(landmark: Landmark, mapId: UUID) = scope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteLandmark(landmark)
         landmarksDao.saveLandmarks(map)
     }
 
-    fun deleteMarker(marker: Marker, mapId: Int) = scope.launch {
+    fun deleteMarker(marker: Marker, mapId: UUID) = scope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteMarker(marker)
         markersDao.saveMarkers(map)
@@ -108,7 +109,7 @@ class MapInteractor @Inject constructor(
     /**
      * Save all markers (debounced).
      */
-    fun saveMarkers(mapId: Int) {
+    fun saveMarkers(mapId: UUID) {
         updateMarkerJob?.cancel()
         updateMarkerJob = scope.launch {
             delay(1000)

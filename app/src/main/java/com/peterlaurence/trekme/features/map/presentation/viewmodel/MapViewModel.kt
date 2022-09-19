@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -247,7 +248,7 @@ class MapViewModel @Inject constructor(
     /* endregion */
 
     interface MarkerTapListener {
-        fun onMarkerTap(mapState: MapState, mapId: Int, id: String, x: Double, y: Double)
+        fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double)
     }
 }
 

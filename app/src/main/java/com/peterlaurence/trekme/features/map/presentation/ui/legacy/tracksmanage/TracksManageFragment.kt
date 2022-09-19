@@ -31,6 +31,7 @@ import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.map
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -310,9 +311,9 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             const val ROUTE_ID = "routeId"
             const val MAP_ID = "mapId"
 
-            fun newInstance(mapId: Int, routeId: String): ChangeRouteNameFragment {
+            fun newInstance(mapId: UUID, routeId: String): ChangeRouteNameFragment {
                 val bundle = Bundle()
-                bundle.putInt(MAP_ID, mapId)
+                bundle.putSerializable(MAP_ID, mapId)
                 bundle.putSerializable(ROUTE_ID, routeId)
                 val fragment = ChangeRouteNameFragment()
                 fragment.arguments = bundle
@@ -326,7 +327,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             val editText = view.findViewById<View>(R.id.track_name_edittext) as EditText
 
             val routeId = arguments?.get(ROUTE_ID) as? String ?: return builder.create()
-            val mapId = arguments?.get(MAP_ID) as? Int
+            val mapId = arguments?.getSerializable(MAP_ID) as? UUID
 
             val route = viewModel.getRoute(routeId) ?: return builder.create()
             editText.setText(route.name)

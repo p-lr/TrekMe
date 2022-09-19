@@ -15,6 +15,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.Map
 import com.peterlaurence.trekme.core.repositories.map.MapRepository
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 import javax.inject.Inject
 
 
@@ -66,7 +67,7 @@ abstract class MapChoiceDialog : DialogFragment(), MapChoiceSelectionListener {
         return builder.create()
     }
 
-    abstract fun onOkPressed(mapId: Int)
+    abstract fun onOkPressed(mapId: UUID)
 
     override fun onMapSelected(map: Map, position: Int) {
         selectedIndex = position

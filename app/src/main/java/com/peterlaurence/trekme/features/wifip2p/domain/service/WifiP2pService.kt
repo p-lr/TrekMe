@@ -38,6 +38,7 @@ import java.io.File
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.*
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -246,8 +247,10 @@ class WifiP2pService : Service() {
             importedDir = intent.getStringExtra(IMPORTED_PATH_ARG)?.let { File(it) }
         }
         if (intent.action == StartSend::class.java.name) {
-            val mapId = intent.getIntExtra(MAP_ID_ARG, -1)
-            val map = mapRepository.getMap(mapId)
+            val mapId = intent.getStringExtra(MAP_ID_ARG)?.let {
+                runCatching { UUID.fromString(it) }.getOrNull()
+            }
+            val map = mapId?.let { mapRepository.getMap(mapId) }
             if (map != null) {
                 mode = StartSend(map)
             } else {
