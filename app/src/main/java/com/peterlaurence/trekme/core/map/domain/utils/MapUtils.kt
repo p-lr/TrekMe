@@ -1,5 +1,6 @@
-package com.peterlaurence.trekme.core.map
+package com.peterlaurence.trekme.core.map.domain.utils
 
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

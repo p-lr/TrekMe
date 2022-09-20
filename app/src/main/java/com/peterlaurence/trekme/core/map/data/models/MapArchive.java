@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map;
+package com.peterlaurence.trekme.core.map.data.models;
 
 import java.io.File;
 

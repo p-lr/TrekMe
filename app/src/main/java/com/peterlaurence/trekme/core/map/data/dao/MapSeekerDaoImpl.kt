@@ -4,8 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
-import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.createNomediaFile
+import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSeekerDao

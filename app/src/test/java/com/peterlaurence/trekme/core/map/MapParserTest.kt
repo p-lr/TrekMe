@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.map
 
 import com.peterlaurence.trekme.core.map.maploader.MapLoader
-import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals

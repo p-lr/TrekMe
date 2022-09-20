@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.maparchive
+package com.peterlaurence.trekme.core.map.data.utils
 
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.util.unzipTask

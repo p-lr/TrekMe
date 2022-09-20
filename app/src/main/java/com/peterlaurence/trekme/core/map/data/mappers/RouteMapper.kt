@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.mappers
+package com.peterlaurence.trekme.core.map.data.mappers
 
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route

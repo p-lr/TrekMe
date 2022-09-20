@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.common.domain.interactors
 
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
-import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import javax.inject.Inject
 
 class RouteInteractor @Inject constructor(

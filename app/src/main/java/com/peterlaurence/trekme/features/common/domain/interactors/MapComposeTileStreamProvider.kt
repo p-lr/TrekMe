@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.features.common.domain.interactors
 
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import ovh.plrapps.mapcompose.core.TileStreamProvider

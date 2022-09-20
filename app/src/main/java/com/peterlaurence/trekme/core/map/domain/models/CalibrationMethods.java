@@ -1,8 +1,6 @@
-package com.peterlaurence.trekme.core.map;
+package com.peterlaurence.trekme.core.map.domain.models;
 
 import androidx.annotation.Nullable;
-
-import com.peterlaurence.trekme.core.map.domain.models.CalibrationPoint;
 
 import java.util.Arrays;
 import java.util.Comparator;

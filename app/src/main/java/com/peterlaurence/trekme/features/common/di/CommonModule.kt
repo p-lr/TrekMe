@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.features.common.di
 
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
-import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.common.domain.repositories.RecordingDataRepository

@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.location.Location
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor

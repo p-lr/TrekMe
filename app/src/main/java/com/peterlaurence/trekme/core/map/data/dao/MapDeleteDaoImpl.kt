@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.map.data.dao
 
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.MapDeleteDao
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher

@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor

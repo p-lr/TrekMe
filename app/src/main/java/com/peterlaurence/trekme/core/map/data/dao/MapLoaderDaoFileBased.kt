@@ -6,12 +6,12 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.peterlaurence.trekme.core.map.MAP_FILENAME
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.data.models.MapGson
 import com.peterlaurence.trekme.core.map.data.models.MapPropertiesKtx
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
-import com.peterlaurence.trekme.core.map.mappers.toDomain
+import com.peterlaurence.trekme.core.map.data.mappers.toDomain
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext

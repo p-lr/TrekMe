@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.dialogs.ColorSelectDialog

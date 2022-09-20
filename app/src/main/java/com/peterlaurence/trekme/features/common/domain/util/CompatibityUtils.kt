@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.common.domain.util
 
-import com.peterlaurence.trekme.core.map.TileStream
-import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.map.domain.models.TileStream
+import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamProvider
 
 fun TileStreamProvider.toMapComposeTileStreamProvider(): MapComposeTileStreamProvider {

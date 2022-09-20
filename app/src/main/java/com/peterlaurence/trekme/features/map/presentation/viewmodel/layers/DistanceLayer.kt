@@ -4,8 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.core.geotools.distanceApprox
-import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.getLonLat
+import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.utils.getLonLat
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import com.peterlaurence.trekme.util.throttle
 import kotlinx.coroutines.CoroutineScope

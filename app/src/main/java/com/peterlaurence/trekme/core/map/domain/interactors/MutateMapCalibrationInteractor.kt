@@ -1,11 +1,11 @@
 package com.peterlaurence.trekme.core.map.domain.interactors
 
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationMethod
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import javax.inject.Inject
 
 class MutateMapCalibrationInteractor @Inject constructor(

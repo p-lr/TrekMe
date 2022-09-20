@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.map.domain.interactors
 
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
-import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import javax.inject.Inject
 
 class SaveMapInteractor @Inject constructor(

@@ -19,11 +19,11 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
 import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.wifip2p.domain.service.*
 import com.peterlaurence.trekme.util.*
 import dagger.hilt.android.AndroidEntryPoint

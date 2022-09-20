@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map
+package com.peterlaurence.trekme.core.map.domain.models
 
 sealed interface MapLicense
 object FreeLicense : MapLicense

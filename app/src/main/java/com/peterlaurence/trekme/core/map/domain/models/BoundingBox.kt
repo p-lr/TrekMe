@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map
+package com.peterlaurence.trekme.core.map.domain.models
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

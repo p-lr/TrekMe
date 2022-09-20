@@ -23,7 +23,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.maplist.presentation.events.MapImageImportResult
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import com.peterlaurence.trekme.util.isFrench

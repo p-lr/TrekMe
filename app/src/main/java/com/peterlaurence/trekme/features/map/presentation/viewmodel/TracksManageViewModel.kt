@@ -8,10 +8,10 @@ import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.georecord.domain.interactors.IsUriSupportedInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
-import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus

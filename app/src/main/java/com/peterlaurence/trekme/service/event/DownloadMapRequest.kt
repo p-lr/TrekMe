@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.service.event
 
 import android.net.Uri
-import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 

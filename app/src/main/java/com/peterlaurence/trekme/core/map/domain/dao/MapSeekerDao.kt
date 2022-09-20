@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.map.domain.dao
 
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import java.io.File
 

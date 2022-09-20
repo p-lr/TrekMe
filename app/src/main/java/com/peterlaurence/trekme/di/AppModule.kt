@@ -6,7 +6,6 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.location.*
-import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
@@ -15,8 +14,7 @@ import com.peterlaurence.trekme.core.repositories.location.LocationSourceImpl
 import com.peterlaurence.trekme.core.repositories.location.producers.GoogleLocationProducer
 import com.peterlaurence.trekme.core.repositories.location.producers.NmeaOverBluetoothProducer
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
-import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
@@ -74,15 +72,6 @@ object AppModule {
         // Run this code when providing an instance of CoroutineScope
         return CoroutineScope(SupervisorJob() + Dispatchers.Main)
     }
-
-
-    @Singleton
-    @Provides
-    fun bindRouteRepository(
-        fileBasedMapRegistry: FileBasedMapRegistry
-    ): RouteRepository = RouteRepository(
-        fileBasedMapRegistry, Dispatchers.IO, Dispatchers.Main
-    )
 
     @Singleton
     @Provides

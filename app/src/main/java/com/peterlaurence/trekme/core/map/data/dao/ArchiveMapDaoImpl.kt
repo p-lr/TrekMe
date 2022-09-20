@@ -4,7 +4,7 @@ import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.ArchiveMapDao
 import com.peterlaurence.trekme.util.ZipProgressionListener
 import com.peterlaurence.trekme.util.stackTraceAsString

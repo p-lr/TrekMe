@@ -1,11 +1,11 @@
 package com.peterlaurence.trekme.core.map.domain.interactors
 
 import android.util.Log
-import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.MapArchive
+import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.data.models.MapArchive
 import com.peterlaurence.trekme.core.map.domain.dao.MapSeekerDao
 import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

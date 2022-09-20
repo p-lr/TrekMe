@@ -14,9 +14,9 @@ import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResu
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.WarningMessage
-import com.peterlaurence.trekme.core.map.BoundingBox
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
-import com.peterlaurence.trekme.core.map.intersects
+import com.peterlaurence.trekme.core.map.domain.models.intersects
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor

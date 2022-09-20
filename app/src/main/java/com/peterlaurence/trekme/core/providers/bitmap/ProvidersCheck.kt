@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.providers.bitmap
 
-import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 
 /**
  * Check an IGN api, along with the associated credentials.

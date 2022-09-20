@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.providers.stream
 
-import com.peterlaurence.trekme.core.map.TileResult
-import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.map.domain.models.TileResult
+import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttp
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderRetry
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder

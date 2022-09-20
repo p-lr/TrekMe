@@ -4,10 +4,10 @@ import android.app.Application
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.*
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
 import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
-import com.peterlaurence.trekme.core.map.maparchive.unarchive
+import com.peterlaurence.trekme.core.map.data.utils.unarchive
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.util.UnzipProgressionListener
 import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel.ItemData

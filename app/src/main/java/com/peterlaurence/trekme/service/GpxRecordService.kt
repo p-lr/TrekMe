@@ -28,7 +28,7 @@ import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
-import com.peterlaurence.trekme.core.map.BoundingBox
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*

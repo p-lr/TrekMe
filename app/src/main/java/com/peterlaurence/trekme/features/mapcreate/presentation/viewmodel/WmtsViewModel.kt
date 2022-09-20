@@ -13,9 +13,9 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
-import com.peterlaurence.trekme.core.map.BoundingBox
-import com.peterlaurence.trekme.core.map.TileStreamProvider
-import com.peterlaurence.trekme.core.map.contains
+import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
+import com.peterlaurence.trekme.core.map.domain.models.contains
 import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.mapsource.wmts.*
 import com.peterlaurence.trekme.core.location.Location

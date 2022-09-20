@@ -1,9 +1,9 @@
 package com.peterlaurence.trekme.features.maplist.domain.interactors
 
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationPoint
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.maplist.domain.model.CalibrationData
 import com.peterlaurence.trekme.features.maplist.domain.model.LatLonPoint
 import kotlinx.coroutines.Dispatchers

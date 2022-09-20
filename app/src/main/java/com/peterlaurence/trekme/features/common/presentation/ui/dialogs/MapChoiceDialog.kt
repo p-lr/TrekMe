@@ -12,8 +12,8 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject

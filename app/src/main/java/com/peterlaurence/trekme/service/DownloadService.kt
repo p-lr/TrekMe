@@ -17,12 +17,12 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.MAP_FOLDER_NAME
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
-import com.peterlaurence.trekme.core.map.TileStreamProvider
-import com.peterlaurence.trekme.core.map.createNomediaFile
+import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
+import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
 import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.Wmts
-import com.peterlaurence.trekme.core.map.mapbuilder.buildMap
+import com.peterlaurence.trekme.core.map.domain.models.buildMap
 import com.peterlaurence.trekme.core.mapsource.WmtsSource
 import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
 import com.peterlaurence.trekme.core.mapsource.wmts.Tile

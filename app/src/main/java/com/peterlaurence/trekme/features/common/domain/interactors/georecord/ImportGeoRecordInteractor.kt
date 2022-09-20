@@ -3,10 +3,10 @@ package com.peterlaurence.trekme.features.common.domain.interactors.georecord
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.Marker
-import com.peterlaurence.trekme.core.repositories.map.RouteRepository
+import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord

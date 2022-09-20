@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map.mappers
+package com.peterlaurence.trekme.core.map.data.mappers
 
 import com.peterlaurence.trekme.core.map.data.models.MapGson
 import com.peterlaurence.trekme.core.map.domain.models.*

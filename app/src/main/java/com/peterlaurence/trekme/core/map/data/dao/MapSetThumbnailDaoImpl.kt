@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.map.data.dao
 
 import android.content.ContentResolver
 import android.net.Uri
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSetThumbnailDao
 import com.peterlaurence.trekme.util.makeThumbnail

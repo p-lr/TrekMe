@@ -4,16 +4,16 @@ import android.graphics.Bitmap.CompressFormat
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
-import com.peterlaurence.trekme.core.map.TileResult
-import com.peterlaurence.trekme.core.map.TileStream
-import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.map.domain.models.TileResult
+import com.peterlaurence.trekme.core.map.domain.models.TileStream
+import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 
 class TileStreamProviderOverlay(
-        private val layerPrimary: TileStreamProvider,
-        private val layersOverlay: List<TileStreamWithAlpha>
+    private val layerPrimary: TileStreamProvider,
+    private val layersOverlay: List<TileStreamWithAlpha>
 ) : TileStreamProvider {
     private val paint = Paint(Paint.FILTER_BITMAP_FLAG).apply {
         alpha = 180

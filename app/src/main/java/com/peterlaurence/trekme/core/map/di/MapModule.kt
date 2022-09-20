@@ -169,6 +169,16 @@ object MapModule {
     ): MapSeekerDao {
         return MapSeekerDaoImpl(mapLoaderDao, mapSaverDao, fileBasedMapRegistry)
     }
+
+    @Singleton
+    @Provides
+    fun provideRouteDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        @MainDispatcher mainDispatcher: CoroutineDispatcher
+    ): RouteDao {
+        return RouteDaoImpl(fileBasedMapRegistry, ioDispatcher, mainDispatcher)
+    }
 }
 
 /**

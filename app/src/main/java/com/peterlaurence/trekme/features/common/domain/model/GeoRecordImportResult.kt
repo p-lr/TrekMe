@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.features.common.domain.model
 
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 

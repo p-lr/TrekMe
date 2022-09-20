@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.core.billing.domain.interactors.ExtendedOfferInt
 import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
 import com.peterlaurence.trekme.core.location.InternalGps
 import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
-import com.peterlaurence.trekme.core.repositories.map.MapRepository
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter

@@ -1,29 +1,26 @@
-package com.peterlaurence.trekme.core.repositories.map
+package com.peterlaurence.trekme.core.map.data.dao
 
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.peterlaurence.trekme.core.map.*
-import com.peterlaurence.trekme.core.map.Map
-import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
-import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.data.models.RouteGson
 import com.peterlaurence.trekme.core.map.data.models.RouteInfoKtx
 import com.peterlaurence.trekme.core.map.data.models.RouteKtx
-import com.peterlaurence.trekme.core.map.mappers.toDomain
-import com.peterlaurence.trekme.core.map.mappers.toMarker
-import com.peterlaurence.trekme.core.map.mappers.toRouteInfoKtx
-import com.peterlaurence.trekme.core.map.mappers.toRouteKtx
-import com.peterlaurence.trekme.di.IoDispatcher
-import com.peterlaurence.trekme.di.MainDispatcher
-import com.peterlaurence.trekme.util.FileUtils.*
+import com.peterlaurence.trekme.core.map.domain.dao.RouteDao
+import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.core.map.data.mappers.toDomain
+import com.peterlaurence.trekme.core.map.data.mappers.toMarker
+import com.peterlaurence.trekme.core.map.data.mappers.toRouteInfoKtx
+import com.peterlaurence.trekme.core.map.data.mappers.toRouteKtx
+import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import javax.inject.Inject
 
 /**
  * When routes are imported in a map, we check whether the map uses the legacy routes format.
@@ -31,11 +28,11 @@ import javax.inject.Inject
  * The original routes format was deprecated in September 2021 and should be supported for at least
  * one more year - ideally as long as reasonably possible.
  */
-class RouteRepository @Inject constructor(
+class RouteDaoImpl(
     private val fileBasedMapRegistry: FileBasedMapRegistry,
-    @IoDispatcher val ioDispatcher: CoroutineDispatcher,
-    @MainDispatcher val mainDispatcher: CoroutineDispatcher
-) {
+    private val ioDispatcher: CoroutineDispatcher,
+    private val mainDispatcher: CoroutineDispatcher
+): RouteDao {
     private val format = Json {
         prettyPrint = true
         isLenient = true
@@ -46,7 +43,7 @@ class RouteRepository @Inject constructor(
     /* Associates a route id and the directory name of the serialized route */
     private val routeDirNameForId = mutableMapOf<String, String>()
 
-    suspend fun importRoutes(map: Map) = withContext(ioDispatcher) {
+    override suspend fun importRoutes(map: Map) = withContext(ioDispatcher) {
         routeDirNameForId.clear()
         val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
         val legacyRouteFile = File(directory, LEGACY_MAP_ROUTE_FILENAME)
@@ -75,7 +72,7 @@ class RouteRepository @Inject constructor(
         }
     }
 
-    suspend fun saveNewRoute(map: Map, route: Route) = withContext(ioDispatcher) {
+    override suspend fun saveNewRoute(map: Map, route: Route): Unit = withContext(ioDispatcher) {
         runCatching {
             val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
             val dir =
@@ -87,7 +84,7 @@ class RouteRepository @Inject constructor(
         }
     }
 
-    suspend fun saveRouteInfo(map: Map, route: Route) = withContext(ioDispatcher) {
+    override suspend fun saveRouteInfo(map: Map, route: Route): Unit = withContext(ioDispatcher) {
         runCatching {
             val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
             val dir =
@@ -97,7 +94,7 @@ class RouteRepository @Inject constructor(
         }
     }
 
-    suspend fun deleteRoute(map: Map, route: Route) = withContext(ioDispatcher) {
+    override suspend fun deleteRoute(map: Map, route: Route): Unit = withContext(ioDispatcher) {
         // routes created from 3.0.0 and above have an id serialized
         deleteRoutesUsingId(map, listOf(route.id))
 
@@ -105,26 +102,12 @@ class RouteRepository @Inject constructor(
         deleteRouteUsingDirName(map, route)
     }
 
-    private suspend fun deleteRouteUsingDirName(map: Map, route: Route) = withContext(ioDispatcher) {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
-        val root = File(directory, MAP_ROUTES_DIRECTORY)
-        runCatching {
-            val routeDirName = routeDirNameForId[route.id]
-            if (routeDirName != null) {
-                val mapDir = File(root, routeDirName)
-                if (mapDir.exists()) {
-                    mapDir.deleteRecursively()
-                }
-            }
-        }
-    }
-
     /**
      * Walk through routes on disk. If there's a match between [RouteInfoKtx]'s id and one of the
      * id in the provided [ids], we delete the route.
      * This operation performs quickly since [RouteInfoKtx] is a small object.
      */
-    suspend fun deleteRoutesUsingId(map: Map, ids: List<String>) = withContext(ioDispatcher) {
+    override suspend fun deleteRoutesUsingId(map: Map, ids: List<String>): Unit = withContext(ioDispatcher) {
         val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
         val root = File(directory, MAP_ROUTES_DIRECTORY)
 
@@ -137,7 +120,7 @@ class RouteRepository @Inject constructor(
         dirList.forEach { dir ->
             val infoFile = File(dir, MAP_ROUTE_INFO_FILENAME)
             val routeInfoKtx = runCatching<RouteInfoKtx> {
-                getStringFromFile(infoFile).let {
+                FileUtils.getStringFromFile(infoFile).let {
                     format.decodeFromString(it)
                 }
             }.getOrNull()
@@ -145,6 +128,20 @@ class RouteRepository @Inject constructor(
             if (routeInfoKtx?.id in ids) {
                 runCatching {
                     dir.deleteRecursively()
+                }
+            }
+        }
+    }
+
+    private suspend fun deleteRouteUsingDirName(map: Map, route: Route) = withContext(ioDispatcher) {
+        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+        val root = File(directory, MAP_ROUTES_DIRECTORY)
+        runCatching {
+            val routeDirName = routeDirNameForId[route.id]
+            if (routeDirName != null) {
+                val mapDir = File(root, routeDirName)
+                if (mapDir.exists()) {
+                    mapDir.deleteRecursively()
                 }
             }
         }
@@ -168,14 +165,14 @@ class RouteRepository @Inject constructor(
         return dirList.mapNotNull { dir ->
             val infoFile = File(dir, MAP_ROUTE_INFO_FILENAME)
             val routeInfoKtx = runCatching<RouteInfoKtx> {
-                getStringFromFile(infoFile).let {
+                FileUtils.getStringFromFile(infoFile).let {
                     format.decodeFromString(it)
                 }
             }.getOrNull() ?: return@mapNotNull null
 
             val markersFile = File(dir, MAP_ROUTE_MARKERS_FILENAME)
             val routeMarkerKtx = runCatching<RouteKtx> {
-                getStringFromFile(markersFile).let {
+                FileUtils.getStringFromFile(markersFile).let {
                     format.decodeFromString(it)
                 }
             }.getOrNull() ?: return@mapNotNull null
@@ -195,6 +192,7 @@ class RouteRepository @Inject constructor(
         }
     }
 
+
     /**
      * Get the routes, using the legacy format.
      * A file named 'routes.json' (also referred as track file) is expected at the same level of the
@@ -206,7 +204,7 @@ class RouteRepository @Inject constructor(
      */
     private fun getLegacyRoutes(gson: Gson, routeFile: File): List<Route> {
         return try {
-            val jsonString = getStringFromFile(routeFile)
+            val jsonString = FileUtils.getStringFromFile(routeFile)
             val routeGson = gson.fromJson(jsonString, RouteGson::class.java)
             routeGson.routes.map { it.toDomain() }
         } catch (e: Exception) {
@@ -252,7 +250,7 @@ class RouteRepository @Inject constructor(
             }
         }
         val routeInfoKtxJson = format.encodeToString(routeInfoKtx)
-        writeToFile(routeInfoKtxJson, routeInfoFile)
+        FileUtils.writeToFile(routeInfoKtxJson, routeInfoFile)
     }
 
     private fun serializeRouteMarkers(
@@ -269,7 +267,7 @@ class RouteRepository @Inject constructor(
             }
         }
         val routeKtsJson = format.encodeToString(routeKtx)
-        writeToFile(routeKtsJson, routeMarkersFile)
+        FileUtils.writeToFile(routeKtsJson, routeMarkersFile)
     }
 
     private fun File.safeDelete() = runCatching {
@@ -277,4 +275,4 @@ class RouteRepository @Inject constructor(
     }
 }
 
-private const val TAG = "RouteRepository"
+private const val TAG = "RouteDao"

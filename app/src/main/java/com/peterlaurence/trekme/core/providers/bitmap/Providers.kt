@@ -2,10 +2,10 @@ package com.peterlaurence.trekme.core.providers.bitmap
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import com.peterlaurence.trekme.core.map.OutOfBounds
-import com.peterlaurence.trekme.core.map.TileResult
-import com.peterlaurence.trekme.core.map.TileStream
-import com.peterlaurence.trekme.core.map.TileStreamProvider
+import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
+import com.peterlaurence.trekme.core.map.domain.models.TileResult
+import com.peterlaurence.trekme.core.map.domain.models.TileStream
+import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 import java.io.BufferedInputStream
 import java.io.InputStream
@@ -17,7 +17,8 @@ import java.net.URL
  * tile using the provided [UrlTileBuilder] to build an [URL] and make an HTTP request.
  * The caller is responsible for closing the stream.
  */
-class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder, private val requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
+class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder, private val requestProperties: Map<String, String> = mapOf()) :
+    TileStreamProvider {
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         val url = URL(urlTileBuilder.build(zoomLvl, row, col))
         val connection = createConnection(url)
@@ -45,7 +46,8 @@ class TileStreamProviderHttp(private val urlTileBuilder: UrlTileBuilder, private
  * Same as [TileStreamProviderHttp], but using user-agent authentication.
  */
 class TileStreamProviderHttpAuth(private val urlTileBuilder: UrlTileBuilder, private val userAgent: String,
-                                 requestProperties: Map<String, String> = mapOf()) : TileStreamProvider {
+                                 requestProperties: Map<String, String> = mapOf()) :
+    TileStreamProvider {
     private val tileStreamProviderHttp = TileStreamProviderHttp(urlTileBuilder, requestProperties)
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {

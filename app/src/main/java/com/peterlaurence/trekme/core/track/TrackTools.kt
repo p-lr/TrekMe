@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.track
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.core.map.Map
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.hasTrustedElevations
