@@ -7,9 +7,12 @@ import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
@@ -67,7 +70,6 @@ class WifiP2pFragment : Fragment() {
         }
 
         _binding = FragmentWifip2pBinding.inflate(inflater, container, false)
-        setHasOptionsMenu(true)
 
         binding.receiveBtn.setOnClickListener {
             viewModel.onRequestReceive()
@@ -88,28 +90,33 @@ class WifiP2pFragment : Fragment() {
         return binding.root
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        /* Clear the existing action menu */
-        menu.clear()
-
-        /* Fill the new one */
-        inflater.inflate(R.menu.menu_fragment_wifip2p, menu)
-
-        super.onCreateOptionsMenu(menu, inflater)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupMenu()
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.help_wifip2p_id -> {
-                val url = getString(R.string.wifip2p_help_url)
-                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                startActivity(browserIntent)
-                true
+    private fun setupMenu() {
+        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                /* Clear the existing action menu */
+                menu.clear()
+
+                /* Fill the new one */
+                menuInflater.inflate(R.menu.menu_fragment_wifip2p, menu)
             }
-            else -> super.onOptionsItemSelected(item)
-        }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.help_wifip2p_id -> {
+                        val url = getString(R.string.wifip2p_help_url)
+                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(browserIntent)
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun onState(state: WifiP2pState) {

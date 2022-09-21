@@ -11,9 +11,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.getDrawable
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -57,7 +60,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
 
         /* Going back to the map and center on a route is only available in the extended offer. */
         viewModel.hasExtendedOffer.observe(this) {
@@ -122,6 +124,11 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupMenu()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
 
@@ -131,30 +138,33 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         trackGoToMapMenuItem = null
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.menu_fragment_tracks_manage, menu)
-        trackRenameMenuItem = menu.findItem(R.id.track_rename_id)
-        trackGoToMapMenuItem = menu.findItem(R.id.track_go_to_map_id)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
+    private fun setupMenu() {
+        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menu.clear()
+                menuInflater.inflate(R.menu.menu_fragment_tracks_manage, menu)
+                trackRenameMenuItem = menu.findItem(R.id.track_rename_id)
+                trackGoToMapMenuItem = menu.findItem(R.id.track_go_to_map_id)
+            }
 
-    @Deprecated("Deprecated in Java")
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val selectedRoute = trackAdapter?.selectedRoute ?: return true
-        when (item.itemId) {
-            R.id.track_rename_id -> {
-                val map = viewModel.map ?: return true
-                val fragment = ChangeRouteNameFragment.newInstance(map.id, selectedRoute.id)
-                fragment.show(parentFragmentManager, "rename route")
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                val selectedRoute = trackAdapter?.selectedRoute ?: return true
+                return when (menuItem.itemId) {
+                    R.id.track_rename_id -> {
+                        val map = viewModel.map ?: return true
+                        val fragment = ChangeRouteNameFragment.newInstance(map.id, selectedRoute.id)
+                        fragment.show(parentFragmentManager, "rename route")
+                        true
+                    }
+                    R.id.track_go_to_map_id -> {
+                        findNavController().navigateUp()
+                        viewModel.goToRouteOnMap(selectedRoute)
+                        true
+                    }
+                    else -> false
+                }
             }
-            R.id.track_go_to_map_id -> {
-                findNavController().navigateUp()
-                viewModel.goToRouteOnMap(selectedRoute)
-            }
-        }
-        return super.onOptionsItemSelected(item)
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun onGpxParseResult(event: GeoRecordImportResult.GeoRecordImportOk) {

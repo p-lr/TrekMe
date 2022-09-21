@@ -89,8 +89,6 @@ class MapImportFragment : Fragment() {
                 }
             }
         }
-
-        setHasOptionsMenu(false)
     }
 
     override fun onCreateView(
