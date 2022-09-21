@@ -82,6 +82,7 @@ fun TrekMeExtendedContent() {
     LineItem(id = R.string.no_ads)
     LineItem(id = R.string.create_map_from_track)
     LineItem(id = R.string.center_on_track)
+    LineItem(id = R.string.define_elevation_fix)
 
     NotaBene()
 }
