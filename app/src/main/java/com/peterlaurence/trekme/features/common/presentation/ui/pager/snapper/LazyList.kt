@@ -193,7 +193,8 @@ class LazyListSnapperLayoutInfo(
         val indexOffset = (flingIndexDelta - currentItemOffsetRatio).roundToInt()
 
         return (curr.index + indexOffset).coerceIn(0, itemCount - 1)
-            .also { result ->
+            .also {
+//                    result ->
 //                SnapperLog.d {
 //                    "determineTargetIndex. " +
 //                            "result: $result, " +

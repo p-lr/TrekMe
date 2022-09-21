@@ -21,6 +21,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.to
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
 import kotlinx.parcelize.Parcelize
 import java.text.NumberFormat
+import java.util.*
 
 
 /**
@@ -173,7 +174,7 @@ open class WmtsLevelsDialog : DialogFragment() {
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1.toDomain(), p2.toDomain())
 
         /* Format the number of transactions according to the current locale */
-        val currentLocale = ConfigurationCompat.getLocales(resources.configuration).get(0)
+        val currentLocale = ConfigurationCompat.getLocales(resources.configuration).get(0) ?: Locale.ENGLISH
         val numberFormat = NumberFormat.getNumberInstance(currentLocale)
 
         /* Show the map size in Mo */

@@ -83,7 +83,7 @@ class MarkerLayer(
         markerId: String,
         mapState: MapState
     ) {
-        val pos = mapInteractor.getMarkerPosition(map, marker) ?: return
+        val pos = mapInteractor.getMarkerPosition(map, marker)
         mapState.moveMarker(markerId, pos.x, pos.y)
     }
 

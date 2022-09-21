@@ -78,7 +78,8 @@ fun MarkerShape(
             defaultWidth = 24.dp,
             defaultHeight = 48.dp,
             viewportWidth = 24f,
-            viewportHeight = 48f
+            viewportHeight = 48f,
+            autoMirror = false
         ) { _, _ ->
             Path(
                 pathData = pathNodes,
@@ -107,7 +108,8 @@ fun ArrowsShape(
             defaultWidth = 24.dp,
             defaultHeight = 48.dp,
             viewportWidth = 24f,
-            viewportHeight = 48f
+            viewportHeight = 48f,
+            autoMirror = false
         ) { _, _ ->
             Path(
                 pathData = leftArrowPath,

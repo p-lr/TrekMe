@@ -165,7 +165,8 @@ fun MorphingShape(
             defaultWidth = 48.dp,
             defaultHeight = 48.dp,
             viewportWidth = 48f,
-            viewportHeight = 48f
+            viewportHeight = 48f,
+            autoMirror = false
         ) { _, _ ->
             Path(
                 pathData = pathNodes,

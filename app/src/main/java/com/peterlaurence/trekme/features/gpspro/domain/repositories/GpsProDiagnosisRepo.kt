@@ -57,7 +57,7 @@ class GpsProDiagnosisRepo @Inject constructor(
 
     private suspend fun getNmeaSentencesSample(timeout: Long): List<String> = withContext(ioDispatcher) {
         val sentences = mutableListOf<String>()
-        withTimeoutOrNull(timeout) {
+        withTimeoutOrNull<Unit>(timeout) {
             gpsProEvents.nmeaSentencesFlow.collect {
                 sentences.add(it)
             }
