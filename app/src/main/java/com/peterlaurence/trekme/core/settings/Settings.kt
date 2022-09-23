@@ -269,12 +269,13 @@ class Settings @Inject constructor(
     }
 
     /**
-     * @return The last map id, or null if it's undefined. The returned id is guarantied to be not
-     * empty.
+     * @return The last map id, or null if it's undefined.
      */
     fun getLastMapId(): Flow<UUID?> {
         return dataStore.data.map { pref ->
-            pref[lastMapId]?.let { id -> if (id != "") UUID.fromString(id) else null }
+            pref[lastMapId]?.let { id -> if (id != "") {
+                runCatching { UUID.fromString(id) }.getOrNull()
+            } else null }
         }
     }
 
