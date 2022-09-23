@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.map
+package com.peterlaurence.trekme.core.map.data
 
 /* Maps */
 const val MAP_FOLDER_NAME = "maps"

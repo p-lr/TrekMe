@@ -1,106 +1,20 @@
 package com.peterlaurence.trekme.features.mapimport.presentation.viewmodel
 
-import android.app.Application
-import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.*
-import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
-import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
-import com.peterlaurence.trekme.core.map.data.utils.unarchive
-import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.util.UnzipProgressionListener
-import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel.ItemData
+import androidx.lifecycle.ViewModel
+import com.peterlaurence.trekme.features.mapimport.domain.model.MapArchive
+import com.peterlaurence.trekme.features.mapimport.domain.repository.MapArchiveRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
-import java.io.File
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 /**
- * This view-model manages [ItemData]s, which are wrappers around [DocumentFile]s.
- * The view supplies the list of [DocumentFile]s when the user selects a directory.
+ * This view-model manages [MapArchive]s.
  */
 @HiltViewModel
 class MapImportViewModel @Inject constructor(
-        private val settings: Settings,
-        private val app: Application,
-        private val mapImportInteractor: MapImportInteractor
+    mapArchiveRepository: MapArchiveRepository,
 ) : ViewModel() {
-    private val _itemLiveData = MutableLiveData<List<ItemData>>()
-    val itemLiveData: LiveData<List<ItemData>> = _itemLiveData
 
-    private var viewModelsMap = mapOf<Int, ItemData>()
-
-    private val _unzipEvents = MutableLiveData<UnzipEvent>()
-
-    /**
-     * Only emit distinct [UnzipEvent]. For example, sending multiple times an [UnzipProgressEvent]
-     * with a progress of 30% is useless.
-     */
-    val unzipEvents: LiveData<UnzipEvent> = _unzipEvents.asFlow().distinctUntilChanged().asLiveData()
-
-    /**
-     * The view gives the view-model the list of [DocumentFile].
-     * Then we prepare the model and notify the view with the corresponding list of [ItemData].
-     */
-    fun updateUriList(docs: List<DocumentFile>) {
-        viewModelsMap = docs.mapNotNull {
-            it.name?.let { name ->
-                ItemData(name, it.uri, it.length())
-            }
-        }.associateBy {
-            it.id
-        }
-
-        _itemLiveData.postValue(viewModelsMap.values.toList())
-    }
-
-    /**
-     * Launch the unzip of an archive.
-     */
-    fun unarchiveAsync(item: ItemData) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val inputStream = app.contentResolver.openInputStream(item.uri) ?: return@launch
-            val rootFolder = settings.getAppDir().firstOrNull() ?: return@launch
-            val outputFolder = File(rootFolder, "imported")
-
-            unarchive(inputStream, outputFolder, item.name, item.length,
-                    object : UnzipProgressionListener {
-                        override fun onProgress(p: Int) {
-                            _unzipEvents.postValue(UnzipProgressEvent(item.id, p))
-                        }
-
-                        /* Import the extracted map */
-                        override fun onUnzipFinished(outputDirectory: File, percent: Double) {
-                            viewModelScope.launch {
-                                val res = mapImportInteractor.importFromFile(outputDirectory)
-                                _unzipEvents.postValue(UnzipMapImportedEvent(item.id, res.map, res.status))
-                            }
-
-                            _unzipEvents.postValue(UnzipFinishedEvent(item.id, outputDirectory))
-                        }
-
-                        override fun onUnzipError() {
-                            _unzipEvents.postValue(UnzipErrorEvent(item.id))
-                        }
-                    }
-            )
-        }
-    }
-
-    class ItemData(val name: String, val uri: Uri, val length: Long) {
-        val id: Int = uri.hashCode()
-    }
+    val archives: StateFlow<List<MapArchive>> = mapArchiveRepository.archivesFlow
 }
 
-sealed class UnzipEvent {
-    abstract val itemId: Int
-}
-
-data class UnzipProgressEvent(override val itemId: Int, val p: Int) : UnzipEvent()
-data class UnzipErrorEvent(override val itemId: Int) : UnzipEvent()
-data class UnzipFinishedEvent(override val itemId: Int, val outputFolder: File) : UnzipEvent()
-data class UnzipMapImportedEvent(override val itemId: Int, val map: Map?, val status: MapParseStatus) : UnzipEvent()

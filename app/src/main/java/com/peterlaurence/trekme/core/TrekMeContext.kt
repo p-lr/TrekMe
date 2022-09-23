@@ -4,10 +4,10 @@ import android.content.Context
 import android.os.Build.VERSION_CODES.Q
 import android.os.Environment
 import android.util.Log
-import com.peterlaurence.trekme.core.map.CREDENTIALS_FOLDER_NAME
-import com.peterlaurence.trekme.core.map.MAP_FOLDER_NAME
-import com.peterlaurence.trekme.core.map.MAP_IMPORTED_FOLDER_NAME
-import com.peterlaurence.trekme.core.map.RECORDINGS_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.data.CREDENTIALS_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.data.MAP_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.data.MAP_IMPORTED_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.data.RECORDINGS_FOLDER_NAME
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

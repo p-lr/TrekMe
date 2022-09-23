@@ -22,22 +22,26 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
+import com.peterlaurence.trekme.features.mapimport.domain.interactor.MapArchiveInteractor
+import com.peterlaurence.trekme.features.mapimport.domain.model.MapArchive
+import com.peterlaurence.trekme.features.mapimport.domain.model.UnzipMapImportedEvent
 import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel
-import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.UnzipMapImportedEvent
 import com.peterlaurence.trekme.util.RecyclerItemClickListener
+import com.peterlaurence.trekme.util.collectWhileStarted
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * Displays the list of maps archives available for import.
  * Leverages the Storage Access Framework (SAF) to get the list of [DocumentFile]s from a directory
  * selected by the user. The SAF guarantees that the application is granted access to that folder.
  * Using ContentResolver, an InputStream is created from a [DocumentFile] when the user selects it
- * press the extract button. Then, the view-model is involved for the rest of the process.
+ * press the extract button.
  *
- * @author P.Laurence on 08/06/16 -- Converted to Kotlin on 18/01/19
+ * @since 08/06/16 -- Converted to Kotlin on 18/01/19
  */
 @AndroidEntryPoint
 class MapImportFragment : Fragment() {
@@ -46,9 +50,12 @@ class MapImportFragment : Fragment() {
 
     private var mapArchiveAdapter: MapArchiveAdapter? = null
     private var fabEnabled = false
-    private lateinit var data: List<MapImportViewModel.ItemData>
-    private var itemSelected: MapImportViewModel.ItemData? = null
+    private lateinit var data: List<MapArchive>
+    private var itemSelected: MapArchive? = null
     private val viewModel: MapImportViewModel by viewModels()
+
+    @Inject
+    lateinit var mapArchiveInteractor: MapArchiveInteractor
 
     private val mapImportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -57,7 +64,7 @@ class MapImportFragment : Fragment() {
                     showProgressBar()
                     binding.buttonImport.isEnabled = false
                     val zipDocs = listZipDocs(uri)
-                    viewModel.updateUriList(zipDocs)
+                    mapArchiveInteractor.setArchives(zipDocs)
                 }
             }
         }
@@ -66,27 +73,13 @@ class MapImportFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.itemLiveData.observe(this) {
-            it?.let { mapArchiveList ->
-                this.data = mapArchiveList
-                mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
+        viewModel.archives.collectWhileStarted(this) { mapArchiveList ->
+            this.data = mapArchiveList
+            mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
+            if (mapArchiveList.isNotEmpty()) {
                 binding.progressListUris.visibility = View.GONE
                 binding.welcomePanel.visibility = View.GONE
                 binding.archiveListPanel.visibility = View.VISIBLE
-            }
-        }
-
-        viewModel.unzipEvents.observe(this) {
-            it?.let { event ->
-                val itemData = data.firstOrNull { item ->
-                    item.id == event.itemId
-                } ?: return@let
-
-                mapArchiveAdapter?.setUnzipEventForItem(itemData, event)
-
-                if (event is UnzipMapImportedEvent) {
-                    onMapImported()
-                }
             }
         }
     }
@@ -187,8 +180,20 @@ class MapImportFragment : Fragment() {
             fab.background.setTint(resources.getColor(R.color.colorAccent, null))
 
             fab.setOnClickListener {
-                itemSelected?.let { item ->
-                    viewModel.unarchiveAsync(item)
+                itemSelected?.let { archive ->
+                    lifecycleScope.launch {
+                        mapArchiveInteractor.unarchiveAndGetEvents(archive).collect { event ->
+                            val active = data.firstOrNull { item ->
+                                item.id == event.archiveId
+                            } ?: return@collect
+
+                            mapArchiveAdapter?.setUnzipEventForItem(active, event)
+
+                            if (event is UnzipMapImportedEvent) {
+                                onMapImported()
+                            }
+                        }
+                    }
                 }
             }
         }

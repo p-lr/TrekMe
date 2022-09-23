@@ -3,7 +3,10 @@ package com.peterlaurence.trekme.core.map.data.dao
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.peterlaurence.trekme.core.map.*
+import com.peterlaurence.trekme.core.map.data.LEGACY_MAP_ROUTE_FILENAME
+import com.peterlaurence.trekme.core.map.data.MAP_ROUTES_DIRECTORY
+import com.peterlaurence.trekme.core.map.data.MAP_ROUTE_INFO_FILENAME
+import com.peterlaurence.trekme.core.map.data.MAP_ROUTE_MARKERS_FILENAME
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.data.models.RouteGson
 import com.peterlaurence.trekme.core.map.data.models.RouteInfoKtx

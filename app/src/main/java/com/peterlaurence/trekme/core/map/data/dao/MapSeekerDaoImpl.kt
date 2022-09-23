@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.core.map.data.dao
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import com.peterlaurence.trekme.core.map.MAP_FILENAME
+import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao

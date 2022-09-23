@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.map
 
 
+import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Before

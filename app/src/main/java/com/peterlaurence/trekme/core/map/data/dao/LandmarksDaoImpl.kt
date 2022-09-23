@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.map.data.dao
 
 import android.util.Log
 import com.google.gson.Gson
-import com.peterlaurence.trekme.core.map.MAP_LANDMARK_FILENAME
+import com.peterlaurence.trekme.core.map.data.MAP_LANDMARK_FILENAME
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.data.models.LandmarkGson
 import com.peterlaurence.trekme.core.map.domain.dao.LandmarksDao

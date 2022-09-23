@@ -14,7 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.MAP_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.data.MAP_FOLDER_NAME
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider

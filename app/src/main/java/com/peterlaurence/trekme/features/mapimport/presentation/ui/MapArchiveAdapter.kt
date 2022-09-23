@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.view.ViewStub
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.databinding.MapArchiveCardBinding
+import com.peterlaurence.trekme.features.mapimport.domain.model.*
 import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.*
 
 /**
@@ -22,8 +23,8 @@ import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.*
  */
 class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
 
-    private var data: List<MapImportViewModel.ItemData>? = null
-    private val viewHolderForItem = mutableMapOf<MapImportViewModel.ItemData, MapArchiveViewHolder>()
+    private var data: List<MapArchive>? = null
+    private val viewHolderForItem = mutableMapOf<MapArchive, MapArchiveViewHolder>()
     private var selectedPosition = -1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MapArchiveViewHolder {
@@ -59,7 +60,7 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
     }
 
 
-    fun setMapArchiveList(mapArchiveList: List<MapImportViewModel.ItemData>) {
+    fun setMapArchiveList(mapArchiveList: List<MapArchive>) {
         data = mapArchiveList
         notifyDataSetChanged()
     }
@@ -68,7 +69,7 @@ class MapArchiveAdapter : RecyclerView.Adapter<MapArchiveViewHolder>() {
         selectedPosition = pos
     }
 
-    fun setUnzipEventForItem(itemData: MapImportViewModel.ItemData, event: UnzipEvent) {
+    fun setUnzipEventForItem(itemData: MapArchive, event: UnzipEvent) {
         val viewHolder = viewHolderForItem[itemData] ?: return
         when (event) {
             is UnzipProgressEvent -> viewHolder.onProgress(event.p)
