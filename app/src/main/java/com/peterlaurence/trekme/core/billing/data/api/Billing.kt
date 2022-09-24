@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 
 /**
@@ -138,7 +136,7 @@ class Billing(
         val inAppQuery = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.INAPP)
             .build()
-        val inAppPurchases = queryPurchasesAsync(inAppQuery)
+        val inAppPurchases = queryPurchases(inAppQuery)
         val oneTimeAck = inAppPurchases.second.getOneTimePurchase()?.let {
             if (shouldAcknowledgePurchase(it)) {
                 acknowledge(it)
@@ -148,7 +146,7 @@ class Billing(
         val subQuery = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.SUBS)
             .build()
-        val subs = queryPurchasesAsync(subQuery)
+        val subs = queryPurchases(subQuery)
         val subAck = subs.second.getSubPurchase()?.let {
             if (shouldAcknowledgeSubPurchase(it)) {
                 acknowledge(it)
@@ -164,7 +162,7 @@ class Billing(
         val inAppQuery = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.INAPP)
             .build()
-        val inAppPurchases = queryPurchasesAsync(inAppQuery)
+        val inAppPurchases = queryPurchases(inAppQuery)
         val oneTimeLicense = inAppPurchases.second.getValidOneTimePurchase()?.let {
             if (purchaseVerifier.checkTime(it.purchaseTime) !is AccessGranted) {
                 consume(it.purchaseToken)
@@ -176,7 +174,7 @@ class Billing(
             val subQuery = QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build()
-            val subs = queryPurchasesAsync(subQuery)
+            val subs = queryPurchases(subQuery)
             subs.second.getValidSubPurchase() != null
         } else true
     }
@@ -243,7 +241,14 @@ class Billing(
         }
     }
 
-    private suspend fun querySubDetails(subId: String): ProductDetailsResult = suspendCoroutine {
+    /**
+     * Using a [callbackFlow] instead of [suspendCancellableCoroutine], as we have no way to remove
+     * the provided callback given to [BillingClient.queryPurchasesAsync] - so creating a memory
+     * leak.
+     * By collecting a [callbackFlow], the real collector is on a different call stack. So the
+     * [BillingClient] has no reference on the collector.
+     */
+    private suspend fun querySubDetails(subId: String): ProductDetailsResult = callbackFlow {
         val productList =
             listOf(
                 QueryProductDetailsParams.Product.newBuilder()
@@ -255,9 +260,11 @@ class Billing(
         val params = QueryProductDetailsParams.newBuilder().setProductList(productList)
         billingClient.queryProductDetailsAsync(params.build()) { billingResult,
                                                                  productDetailsList ->
-            it.resume(ProductDetailsResult(billingResult, productDetailsList))
+            trySend(ProductDetailsResult(billingResult, productDetailsList))
         }
-    }
+
+        awaitClose { /* We can't do anything, but it doesn't matter */ }
+    }.first()
 
     /**
      * Using a [callbackFlow] instead of [suspendCancellableCoroutine], as we have no way to remove
@@ -266,7 +273,7 @@ class Billing(
      * By collecting a [callbackFlow], the real collector is on a different call stack. So the
      * [BillingClient] has no reference on the collector.
      */
-    private suspend fun queryPurchasesAsync(params: QueryPurchasesParams): Pair<BillingResult, List<Purchase>> =
+    private suspend fun queryPurchases(params: QueryPurchasesParams): Pair<BillingResult, List<Purchase>> =
         callbackFlow {
             billingClient.queryPurchasesAsync(params) { r, p ->
                 trySend(Pair(r, p))
