@@ -151,7 +151,7 @@ class MapImportFragment : Fragment() {
     }
 
     private suspend fun listZipDocs(uri: Uri): List<DocumentFile> = withContext(Dispatchers.IO) {
-        val context = context ?: return@withContext listOf<DocumentFile>()
+        val context = context?.applicationContext ?: return@withContext listOf<DocumentFile>()
         val docFile = DocumentFile.fromTreeUri(context, uri)
                 ?: return@withContext listOf<DocumentFile>()
         if (docFile.isDirectory) {
