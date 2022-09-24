@@ -9,6 +9,8 @@ import com.peterlaurence.trekme.features.mapimport.data.dao.MapArchiveRegistryIm
 import com.peterlaurence.trekme.features.mapimport.data.dao.UnarchiveDaoImpl
 import com.peterlaurence.trekme.features.mapimport.domain.dao.MapArchiveRegistry
 import com.peterlaurence.trekme.features.mapimport.domain.dao.UnarchiveDao
+import com.peterlaurence.trekme.features.mapimport.domain.model.MapArchiveStateOwner
+import com.peterlaurence.trekme.features.mapimport.domain.repository.MapArchiveRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,6 +21,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object MapImportModule {
+    @Provides
+    @Singleton
+    fun providesMapArchiveStateOwner(repository: MapArchiveRepository): MapArchiveStateOwner {
+        return repository
+    }
+
     @Provides
     @Singleton
     fun provideMapArchiveRegistry() : MapArchiveRegistry {

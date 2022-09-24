@@ -4,16 +4,17 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.MimeTypeMap
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -107,9 +108,10 @@ class MapImportFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupMenu()
+
         binding.buttonImport.setOnClickListener {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            mapImportLauncher.launch(intent)
+            onImportButtonClick()
         }
 
         val recyclerViewMapImport = binding.recyclerViewMapImport
@@ -148,6 +150,33 @@ class MapImportFragment : Fragment() {
             dividerItemDecoration.setDrawable(divider)
         }
         recyclerViewMapImport.addItemDecoration(dividerItemDecoration)
+    }
+
+    private fun setupMenu() {
+        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                /* Clear the existing action menu */
+                menu.clear()
+
+                /* Fill the new one */
+                menuInflater.inflate(R.menu.menu_fragment_map_import, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.import_maps_menu_button -> {
+                        onImportButtonClick()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun onImportButtonClick() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        mapImportLauncher.launch(intent)
     }
 
     private suspend fun listZipDocs(uri: Uri): List<DocumentFile> = withContext(Dispatchers.IO) {
