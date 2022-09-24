@@ -2,16 +2,13 @@ package com.peterlaurence.trekme.features.mapimport.presentation.ui
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.*
-import android.webkit.MimeTypeMap
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -30,17 +27,11 @@ import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImp
 import com.peterlaurence.trekme.util.RecyclerItemClickListener
 import com.peterlaurence.trekme.util.collectWhileStarted
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
  * Displays the list of maps archives available for import.
- * Leverages the Storage Access Framework (SAF) to get the list of [DocumentFile]s from a directory
- * selected by the user. The SAF guarantees that the application is granted access to that folder.
- * Using ContentResolver, an InputStream is created from a [DocumentFile] when the user selects it
- * press the extract button.
  *
  * @since 08/06/16 -- Converted to Kotlin on 18/01/19
  */
@@ -58,18 +49,18 @@ class MapImportFragment : Fragment() {
     @Inject
     lateinit var mapArchiveInteractor: MapArchiveInteractor
 
-    private val mapImportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                lifecycleScope.launch {
-                    showProgressBar()
-                    binding.buttonImport.isEnabled = false
-                    val zipDocs = listZipDocs(uri)
-                    mapArchiveInteractor.setArchives(zipDocs)
+    private val mapImportLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.data?.let { uri ->
+                    lifecycleScope.launch {
+                        showProgressBar()
+                        binding.buttonImport.isEnabled = false
+                        mapArchiveInteractor.seekArchivesAtLocation(uri)
+                    }
                 }
             }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,8 +77,8 @@ class MapImportFragment : Fragment() {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         /* The action bar isn't managed by Compose */
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
@@ -142,8 +133,8 @@ class MapImportFragment : Fragment() {
 
         /* Item decoration : divider */
         val dividerItemDecoration = DividerItemDecoration(
-                view.context,
-                DividerItemDecoration.VERTICAL
+            view.context,
+            DividerItemDecoration.VERTICAL
         )
         val divider = ContextCompat.getDrawable(view.context, R.drawable.divider)
         if (divider != null) {
@@ -177,19 +168,6 @@ class MapImportFragment : Fragment() {
     private fun onImportButtonClick() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         mapImportLauncher.launch(intent)
-    }
-
-    private suspend fun listZipDocs(uri: Uri): List<DocumentFile> = withContext(Dispatchers.IO) {
-        val context = context?.applicationContext ?: return@withContext listOf<DocumentFile>()
-        val docFile = DocumentFile.fromTreeUri(context, uri)
-                ?: return@withContext listOf<DocumentFile>()
-        if (docFile.isDirectory) {
-            val zipDocs = docFile.listFiles().filter {
-                MimeTypeMap.getSingleton().getExtensionFromMimeType(it.type) == "zip"
-            }
-
-            zipDocs
-        } else listOf()
     }
 
     private fun singleSelect(position: Int) {

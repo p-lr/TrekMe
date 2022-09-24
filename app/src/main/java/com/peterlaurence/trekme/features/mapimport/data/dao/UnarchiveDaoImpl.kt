@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.mapimport.data.dao
 
 import android.app.Application
+import androidx.documentfile.provider.DocumentFile
 import com.peterlaurence.trekme.core.map.data.MAP_IMPORTED_FOLDER_NAME
 import com.peterlaurence.trekme.core.map.data.utils.unarchive
 import com.peterlaurence.trekme.core.map.domain.dao.MapSeekerDao
@@ -26,6 +27,9 @@ import java.util.*
  * A file based implementation, which:
  * 1. Extracts the archive into a predefined folder
  * 2. Imports the map from the extracted folder
+ *
+ * Using ContentResolver, an InputStream is created from a [DocumentFile] when the user chooses to
+ * extract an archive.
  */
 class UnarchiveDaoImpl(
     private val app: Application,

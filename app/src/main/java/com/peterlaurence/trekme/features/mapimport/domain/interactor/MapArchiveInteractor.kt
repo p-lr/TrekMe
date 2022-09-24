@@ -1,7 +1,8 @@
 package com.peterlaurence.trekme.features.mapimport.domain.interactor
 
-import androidx.documentfile.provider.DocumentFile
+import android.net.Uri
 import com.peterlaurence.trekme.features.mapimport.domain.dao.MapArchiveRegistry
+import com.peterlaurence.trekme.features.mapimport.domain.dao.MapArchiveSeeker
 import com.peterlaurence.trekme.features.mapimport.domain.dao.UnarchiveDao
 import com.peterlaurence.trekme.features.mapimport.domain.model.MapArchive
 import com.peterlaurence.trekme.features.mapimport.domain.model.UnzipEvent
@@ -13,9 +14,12 @@ import javax.inject.Inject
 class MapArchiveInteractor @Inject constructor(
     private val repository: MapArchiveRepository,
     private val registry: MapArchiveRegistry,
+    private val mapArchiveSeeker: MapArchiveSeeker,
     private val unarchiveDao: UnarchiveDao,
 ) {
-    fun setArchives(docs: List<DocumentFile>) {
+    suspend fun seekArchivesAtLocation(uri: Uri) {
+        val docs = mapArchiveSeeker.seek(uri)
+
         val archives = docs.mapNotNull { doc ->
             doc.name?.let {
                 val uuid = UUID.randomUUID()
