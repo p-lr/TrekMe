@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.main
 
 import android.Manifest
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -99,11 +100,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             gpsProEvents.postBluetoothPermissionResult(isGranted)
         }
 
+    private val bluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_OK -> appEventBus.bluetoothEnabled(true)
+            Activity.RESULT_CANCELED -> appEventBus.bluetoothEnabled(false)
+        }
+    }
+
     companion object {
         /* Permission-group codes */
         private const val REQUEST_LOCATION = 1
         private const val REQUEST_MAP_CREATION = 2
         private const val REQUEST_STORAGE = 3
+        private const val REQUEST_NOTIFICATION = 4
         private val PERMISSION_STORAGE = arrayOf(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -163,6 +172,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         PERMISSION_BACKGROUND_LOC,
                         REQUEST_LOCATION
                 )
+            }
+        }
+
+        fun requestNotificationPermission(activity: Activity) {
+            if (Build.VERSION.SDK_INT < 33) return
+            val permission = ActivityCompat.checkSelfPermission(activity, POST_NOTIFICATIONS)
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, arrayOf(POST_NOTIFICATIONS), REQUEST_NOTIFICATION)
             }
         }
 
@@ -309,6 +326,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         appEventBus.requestBluetoothEnableFlow.collectWhileStarted(this) {
             bluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+        }
+
+        appEventBus.requestNotificationPermFlow.collectWhileStarted(this) {
+            requestNotificationPermission(this@MainActivity)
         }
 
         appEventBus.billingFlow.collectWhileStarted(this) {
@@ -582,13 +603,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 .setProgress(0, 0, false)
         notifyMgr?.notify(event.mapId.hashCode(), builder.build())
         Snackbar.make(binding.navView, archiveOkMsg, Snackbar.LENGTH_SHORT).show()
-    }
-
-    private val bluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        when (result.resultCode) {
-            Activity.RESULT_OK -> appEventBus.bluetoothEnabled(true)
-            Activity.RESULT_CANCELED -> appEventBus.bluetoothEnabled(false)
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

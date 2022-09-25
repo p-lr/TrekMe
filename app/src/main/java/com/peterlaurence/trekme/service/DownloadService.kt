@@ -111,6 +111,10 @@ class DownloadService : Service() {
         onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT)
 
         notificationManager = NotificationManagerCompat.from(this)
+
+        if (!notificationManager.areNotificationsEnabled() && android.os.Build.VERSION.SDK_INT >= 33) {
+            appEventBus.requestNotificationPermission()
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? {

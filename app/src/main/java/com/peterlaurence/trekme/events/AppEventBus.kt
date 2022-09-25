@@ -49,6 +49,13 @@ class AppEventBus {
 
     /**********************************************************************************************/
 
+    private val _requestNotificationPermFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val requestNotificationPermFlow = _requestNotificationPermFlow.asSharedFlow()
+
+    fun requestNotificationPermission() = _requestNotificationPermFlow.tryEmit(Unit)
+
+    /**********************************************************************************************/
+
     private val _billingFLow = MutableSharedFlow<BillingParams>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val billingFlow = _billingFLow.asSharedFlow()
 
