@@ -273,9 +273,11 @@ class Settings @Inject constructor(
      */
     fun getLastMapId(): Flow<UUID?> {
         return dataStore.data.map { pref ->
-            pref[lastMapId]?.let { id -> if (id != "") {
-                runCatching { UUID.fromString(id) }.getOrNull()
-            } else null }
+            runCatching {
+                pref[lastMapId]?.let { id ->
+                    if (id != "") UUID.fromString(id) else null
+                }
+            }.getOrNull()
         }
     }
 
