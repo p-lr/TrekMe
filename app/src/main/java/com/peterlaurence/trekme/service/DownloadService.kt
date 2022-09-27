@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.os.IBinder
@@ -14,21 +12,12 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.data.MAP_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
+import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
+import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
-import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
-import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
-import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
-import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
-import com.peterlaurence.trekme.core.map.domain.models.Wmts
-import com.peterlaurence.trekme.core.map.domain.models.buildMap
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
-import com.peterlaurence.trekme.core.mapsource.wmts.Tile
-import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
-import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.service.event.*
@@ -39,11 +28,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
-import java.io.File
-import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 
 
@@ -60,17 +44,13 @@ import javax.inject.Inject
 class DownloadService : Service() {
     private val notificationChannelId = "peterlaurence.DownloadService"
     private val downloadServiceNofificationId = 128565
-    private val workerCount = 8
     private val stopAction = "stop"
 
     @Inject
-    lateinit var fileBasedMapRegistry: FileBasedMapRegistry
+    lateinit var mapDownloadDao: MapDownloadDao
 
     @Inject
     lateinit var saveMapInteractor: SaveMapInteractor
-
-    @Inject
-    lateinit var settings: Settings
 
     @Inject
     lateinit var repository: DownloadRepository
@@ -91,9 +71,8 @@ class DownloadService : Service() {
     private lateinit var notificationManager: NotificationManagerCompat
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private lateinit var destDir: File
 
-    private val progressEvent = MapDownloadPending(0.0)
+    private val progressEvent = MapDownloadPending(0)
 
     companion object {
         private val _started = MutableStateFlow(false)
@@ -104,11 +83,21 @@ class DownloadService : Service() {
         super.onCreate()
 
         val notificationIntent = Intent(this, MainActivity::class.java)
-        onTapPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        onTapPendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val stopIntent = Intent(this, DownloadService::class.java)
         stopIntent.action = stopAction
-        onStopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT)
+        onStopPendingIntent = PendingIntent.getService(
+            this,
+            0,
+            stopIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
+        )
 
         notificationManager = NotificationManagerCompat.from(this)
 
@@ -128,7 +117,7 @@ class DownloadService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         /* If the user used the notification action-stop button, stop the service */
         if (intent.action == stopAction) {
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopService()
             return START_NOT_STICKY
         }
@@ -144,25 +133,34 @@ class DownloadService : Service() {
 
         /* From here, we know that the service is being created by the activity */
         notificationBuilder = NotificationCompat.Builder(applicationContext, notificationChannelId)
-                .setContentTitle(getText(R.string.app_name))
-                .setContentText(getText(R.string.service_download_action))
-                .setSmallIcon(R.drawable.ic_file_download_24dp)
-                .setContentIntent(onTapPendingIntent)
-                .setColor(getColor(R.color.colorAccent))
-                .addAction(R.drawable.ic_stop_black_24dp, getString(R.string.service_download_stop), onStopPendingIntent)
-                .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setOnlyAlertOnce(true)
-                .apply {
-                    if (icon != null) {
-                        setLargeIcon(icon)
-                    }
+            .setContentTitle(getText(R.string.app_name))
+            .setContentText(getText(R.string.service_download_action))
+            .setSmallIcon(R.drawable.ic_file_download_24dp)
+            .setContentIntent(onTapPendingIntent)
+            .setColor(getColor(R.color.colorAccent))
+            .addAction(
+                R.drawable.ic_stop_black_24dp,
+                getString(R.string.service_download_stop),
+                onStopPendingIntent
+            )
+            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setOnlyAlertOnce(true)
+            .apply {
+                if (icon != null) {
+                    setLargeIcon(icon)
                 }
+            }
 
         /* This is only needed on Devices on Android O and above */
         if (android.os.Build.VERSION.SDK_INT >= 26) {
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val chan = NotificationChannel(notificationChannelId, getText(R.string.service_download_name), NotificationManager.IMPORTANCE_DEFAULT)
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val chan = NotificationChannel(
+                notificationChannelId,
+                getText(R.string.service_download_name),
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
             chan.enableLights(true)
             chan.lightColor = Color.MAGENTA
             notificationManager.createNotificationChannel(chan)
@@ -172,7 +170,7 @@ class DownloadService : Service() {
         startForeground(downloadServiceNofificationId, notificationBuilder.build())
 
         /* Get ready for download and request download spec */
-        progressEvent.progress = 0.0
+        progressEvent.progress = 0
 
         scope.launch {
             /* Only process the first event */
@@ -189,86 +187,35 @@ class DownloadService : Service() {
     }
 
     private suspend fun processRequestDownloadMapEvent(request: DownloadMapRequest) {
-        val source = request.source
-        val tileSequence = request.mapSpec.tileSequence
-        val tileStreamProvider = request.tileStreamProvider
-
-        /* Throttle progress notification to every seconds */
-        val throttledTask = scope.throttle(1000) { p: Double ->
-            (this::onDownloadProgress)(p)
+        val throttledTask = scope.throttle(1000) { p: Int ->
+            onDownloadProgress(p)
         }
-        val threadSafeTileIterator = ThreadSafeTileIterator(tileSequence.iterator(), request.numberOfTiles) { p ->
-            if (started.value) {
-                throttledTask.trySend(p)
+
+        when (val result =
+            mapDownloadDao.processRequest(
+                request,
+                onProgress = { p -> throttledTask.trySend(p) }
+            )
+        ) {
+            is MapDownloadDao.MapDownloadResult.Error -> {
+                repository.postDownloadEvent(MapDownloadStorageError)
+                stopService()
             }
-        }
-
-        /* Init the progress bar */
-        onDownloadProgress(0.0)
-
-        /* Create the destination folder, or else fail-fast */
-        val destDirRes = createDestDir()
-        if (destDirRes != null) {
-            destDir = destDirRes
-        } else {
-            /* Storage issue, warn and stop the service */
-            repository.postDownloadEvent(MapDownloadStorageError)
-            stopService()
-            return
-        }
-
-        /* A writer which has a folder for each level, and a folder for each row. It does that with
-         * using indexes instead of real level, row and col numbers. This greatly simplifies how a
-         * tile is later retrieved from a bitmap provider. */
-        val tileWriter = object : TileWriter(destDir) {
-            override fun write(tile: Tile, bitmap: Bitmap) {
-                val tileDir = File(destDir, tile.indexLevel.toString() + File.separator + tile.indexRow.toString())
-                tileDir.mkdirs()
-                val tileFile = File(tileDir, tile.indexCol.toString() + ".jpg")
-                try {
-                    val out = FileOutputStream(tileFile)
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-                    out.flush()
-                    out.close()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+            is MapDownloadDao.MapDownloadResult.Success -> {
+                postProcess(result.map, request.geoRecordUris)
             }
-        }
-
-        /* Specific to OSM, don't use more than 2 workers */
-        val effectiveWorkerCount = if (source == WmtsSource.OPEN_STREET_MAP) 2 else workerCount
-        launchDownloadTask(effectiveWorkerCount, threadSafeTileIterator, tileWriter, tileStreamProvider)
-        postProcess(request.mapSpec, source, request.geoRecordUris)
-    }
-
-    private suspend fun createDestDir(): File? {
-        /* Create a new folder */
-        val date = Date()
-        val dateFormat = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.ENGLISH)
-        val folderName = "map-" + dateFormat.format(date)
-
-        val appDir = settings.getAppDir().firstOrNull() ?: error("App dir should be defined")
-        val mapFolder = File(appDir, MAP_FOLDER_NAME)
-        val destFolder = File(mapFolder, folderName)
-
-        return if (destFolder.mkdirs()) {
-            destFolder
-        } else {
-            null
         }
     }
 
     @SuppressLint("RestrictedApi")
-    private fun onDownloadProgress(progress: Double) {
-        if (progress == 100.0) {
+    private fun onDownloadProgress(progress: Int) {
+        if (progress == 100) {
             notificationBuilder.setOngoing(false)
             notificationBuilder.setProgress(0, 0, false)
             notificationBuilder.setContentText(getText(R.string.service_download_finished))
-            // TODO: Remove this when the library supports removing actions
             notificationBuilder.mActions.clear()
         } else {
-            notificationBuilder.setProgress(100, progress.toInt(), false)
+            notificationBuilder.setProgress(100, progress, false)
         }
         try {
             notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
@@ -277,20 +224,13 @@ class DownloadService : Service() {
             Log.e(TAG, stackTraceToString(e))
         }
 
-
         /* Send a message carrying the progress info */
         progressEvent.progress = progress
         repository.postDownloadEvent(progressEvent)
     }
 
-    private fun postProcess(mapSpec: MapSpec, source: WmtsSource, geoRecordUris: Set<Uri>) {
-        val mapOrigin = Wmts(licensed = source == WmtsSource.IGN)
-
-        val map = buildMap(mapSpec, mapOrigin, destDir)
-
+    private fun postProcess(map: Map, geoRecordUris: Set<Uri>) {
         scope.launch {
-            fileBasedMapRegistry.setRootFolder(map.id, destDir)
-            createNomediaFile(destDir)
             saveMapInteractor.addAndSaveMap(map)
             geoRecordUris.forEach { uri ->
                 importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map)
@@ -310,66 +250,6 @@ class DownloadService : Service() {
         scope.cancel()
         stopSelf()
     }
-
-    private suspend fun launchDownloadTask(
-            workerCount: Int, tileIterator: ThreadSafeTileIterator,
-            tileWriter: TileWriter, tileStreamProvider: TileStreamProvider
-    ) = coroutineScope {
-        for (i in 0 until workerCount) {
-            val bitmapProvider = BitmapProvider(tileStreamProvider)
-            launchTileDownload(tileIterator, bitmapProvider, tileWriter)
-        }
-    }
-
-    private fun CoroutineScope.launchTileDownload(
-            tileIterator: ThreadSafeTileIterator, bitmapProvider: BitmapProvider,
-            tileWriter: TileWriter
-    ) = launch(Dispatchers.IO) {
-        val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
-        val options = BitmapFactory.Options()
-        options.inBitmap = bitmap
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888
-        bitmapProvider.setBitmapOptions(options)
-
-        while (started.value) {
-            val tile = tileIterator.next() ?: break
-            bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level).also {
-                /* Only write if there was no error */
-                if (it != null && started.value) {
-                    tileWriter.write(tile, bitmap)
-                }
-            }
-        }
-    }
-}
-
-private class ThreadSafeTileIterator(private val tileIterator: Iterator<Tile>, val totalSize: Long,
-                                     val progressListener: (Double) -> Unit) {
-    /* Progress in percent */
-    var progress = 0.0
-    private var tileIndex: Long = 0
-
-    fun next(): Tile? {
-        return synchronized(this) {
-            if (tileIterator.hasNext()) {
-                updateProgress()
-                tileIterator.next()
-            } else {
-                progress = 100.0
-                null
-            }
-        }
-    }
-
-    private fun updateProgress() {
-        tileIndex++
-        progress = tileIndex * 100.0 / totalSize
-        progressListener(progress)
-    }
-}
-
-private abstract class TileWriter(val destDir: File) {
-    abstract fun write(tile: Tile, bitmap: Bitmap)
 }
 
 private const val TAG = "DownloadService.kt"

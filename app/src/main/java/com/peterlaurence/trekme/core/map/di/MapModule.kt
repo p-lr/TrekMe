@@ -11,6 +11,7 @@ import com.peterlaurence.trekme.core.map.domain.dao.*
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.projection.UniversalTransverseMercator
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.di.MainDispatcher
 import dagger.Module
@@ -178,6 +179,15 @@ object MapModule {
         @MainDispatcher mainDispatcher: CoroutineDispatcher
     ): RouteDao {
         return RouteDaoImpl(fileBasedMapRegistry, ioDispatcher, mainDispatcher)
+    }
+
+    @Singleton
+    @Provides
+    fun provideMapDownloadDao(
+        settings: Settings,
+        fileBasedMapRegistry: FileBasedMapRegistry,
+    ): MapDownloadDao {
+        return MapDownloadDaoImpl(settings, fileBasedMapRegistry)
     }
 }
 
