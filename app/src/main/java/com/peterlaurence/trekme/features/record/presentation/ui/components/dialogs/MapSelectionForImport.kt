@@ -5,6 +5,7 @@ import android.os.ParcelUuid
 import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
+import com.peterlaurence.trekme.util.parcelable
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject
@@ -18,7 +19,7 @@ class MapSelectionForImport : MapChoiceDialog() {
     lateinit var eventBus: RecordEventBus
 
     override fun onOkPressed(mapId: UUID) {
-        val recordId = arguments?.getParcelable<ParcelUuid>(RECORD_ID)?.uuid ?: return
+        val recordId = arguments?.parcelable<ParcelUuid>(RECORD_ID)?.uuid ?: return
         eventBus.setMapSelectedForRecord(mapId, recordId)
     }
 

@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.databinding.DialogColorSelectBinding
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.events.TrackColorChangeEvent
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
+import com.peterlaurence.trekme.util.parcelable
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
@@ -73,7 +74,7 @@ class ColorSelectDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogColorSelectBinding.inflate(LayoutInflater.from(context))
 
-        savedInstanceState?.getParcelable<PaletteVariant>(paletteBundleKey)?.also {
+        savedInstanceState?.parcelable<PaletteVariant>(paletteBundleKey)?.also {
             paletteVariant = it
         }
 

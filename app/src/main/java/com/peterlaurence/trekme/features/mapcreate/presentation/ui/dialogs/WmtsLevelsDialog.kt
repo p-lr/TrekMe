@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
+import com.peterlaurence.trekme.util.parcelable
 import kotlinx.parcelize.Parcelize
 import java.text.NumberFormat
 import java.util.*
@@ -66,7 +67,7 @@ open class WmtsLevelsDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.dialog_wmts, null)
-        downloadFormDataBundle = arguments?.getParcelable(ARG_WMTS_SOURCE)
+        downloadFormDataBundle = arguments?.parcelable(ARG_WMTS_SOURCE)
         downloadFormDataBundle?.also {
             minLevel = it.levelMin
             maxLevel = it.levelMax
@@ -169,7 +170,7 @@ open class WmtsLevelsDialog : DialogFragment() {
      * instantly done.
      */
     fun updateMapSize() {
-        val (p1, p2) = getPointsOfArea()
+        val (p1, p2) = getPointsOfArea() ?: return
 
         val tileCount = getNumberOfTiles(currentMinLevel, currentMaxLevel, p1.toDomain(), p2.toDomain())
 
@@ -191,14 +192,14 @@ open class WmtsLevelsDialog : DialogFragment() {
      * Provide the view-model all necessary information to start the download.
      */
     private fun onDownloadFormConfirmed() {
-        val (p1, p2) = getPointsOfArea()
+        val (p1, p2) = getPointsOfArea() ?: return
         wmtsSource?.let { mapSource ->
             viewModel.onDownloadFormConfirmed(mapSource, p1, p2, currentMinLevel, currentMaxLevel)
         }
     }
 
-    private fun getPointsOfArea(): Pair<Point, Point> {
-        val data = arguments?.get(ARG_WMTS_SOURCE) as DownloadFormDataBundle
+    private fun getPointsOfArea(): Pair<Point, Point>? {
+        val data = arguments?.parcelable<DownloadFormDataBundle>(ARG_WMTS_SOURCE) ?: return null
         val p1 = data.p1
         val p2 = data.p2
         return Pair(p1, p2)

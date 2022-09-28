@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.os.ParcelUuid
 import android.view.*
 import android.widget.EditText
 import android.widget.TextView
@@ -32,6 +33,7 @@ import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
 import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
+import com.peterlaurence.trekme.util.parcelable
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.map
 import java.util.*
@@ -323,8 +325,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
 
             fun newInstance(mapId: UUID, routeId: String): ChangeRouteNameFragment {
                 val bundle = Bundle()
-                bundle.putSerializable(MAP_ID, mapId)
-                bundle.putSerializable(ROUTE_ID, routeId)
+                bundle.putParcelable(MAP_ID, ParcelUuid(mapId))
+                bundle.putString(ROUTE_ID, routeId)
                 val fragment = ChangeRouteNameFragment()
                 fragment.arguments = bundle
                 return fragment
@@ -336,8 +338,8 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             val view = View.inflate(context, R.layout.change_trackname_fragment, null)
             val editText = view.findViewById<View>(R.id.track_name_edittext) as EditText
 
-            val routeId = arguments?.get(ROUTE_ID) as? String ?: return builder.create()
-            val mapId = arguments?.getSerializable(MAP_ID) as? UUID
+            val routeId = arguments?.getString(ROUTE_ID) ?: return builder.create()
+            val mapId = arguments?.parcelable<ParcelUuid>(MAP_ID)?.uuid
 
             val route = viewModel.getRoute(routeId) ?: return builder.create()
             editText.setText(route.name)

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.ParcelUuid
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
+import com.peterlaurence.trekme.util.parcelable
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject
@@ -29,7 +30,7 @@ class TrackFileNameEdit : EditFieldDialog() {
     }
 
     override fun onEditField(initialValue: String, newValue: String) {
-        val id = arguments?.getParcelable<ParcelUuid>(ARG_ID)?.uuid
+        val id = arguments?.parcelable<ParcelUuid>(ARG_ID)?.uuid
         if (id != null) {
             eventBus.postRecordingNameChange(id, newValue)
         }
