@@ -20,6 +20,7 @@ import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -38,6 +39,7 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.peterlaurence.trekme.BuildConfig
 import com.peterlaurence.trekme.NavGraphDirections
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.interactors.ArchiveMapInteractor
@@ -250,6 +252,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                onBackPressedCustom()
+            }
+        })
+
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapArchiveEvents.mapArchiveEventFlow.collect { event ->
@@ -283,7 +291,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val headerView = binding.navView.getHeaderView(0)
         val versionTextView = headerView.findViewById<TextView>(R.id.app_version)
         try {
-            val version = "v." + packageManager.getPackageInfo(packageName, 0).versionName
+            val version = "v." + BuildConfig.VERSION_NAME
             versionTextView.text = version
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
@@ -357,21 +365,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     /**
      * If the side menu is opened, just close it.
-     * Otherwise, if the navigation component reports that there's no previous destination, display
+     * If the navigation component reports that there's no previous destination, display
      * a confirmation snackbar to back once more before killing the app.
+     * Otherwise, navigate up.
      */
-    override fun onBackPressed() {
+    private fun onBackPressedCustom() {
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
         } else if (navController.previousBackStackEntry == null) {
             /* BACK button twice to exit */
             if (snackBarExit.isShown) {
-                super.onBackPressed()
+                finish()
             } else {
                 snackBarExit.show()
             }
-        } else super.onBackPressed()
+        } else {
+            navController.navigateUp()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
