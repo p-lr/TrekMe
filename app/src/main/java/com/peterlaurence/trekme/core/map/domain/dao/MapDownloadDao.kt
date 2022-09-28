@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.map.domain.dao
 
-import com.peterlaurence.trekme.service.event.DownloadMapRequest
+import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.service.event.MapDownloadEvent
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadEvent
 
 interface MapDownloadDao {
     suspend fun processRequest(request: DownloadMapRequest, onProgress: (Int) -> Unit): MapDownloadResult

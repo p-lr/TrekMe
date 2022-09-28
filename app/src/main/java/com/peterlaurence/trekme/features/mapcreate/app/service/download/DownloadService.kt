@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.service
+package com.peterlaurence.trekme.features.mapcreate.app.service.download
 
 import android.annotation.SuppressLint
 import android.app.*
@@ -14,13 +14,13 @@ import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
 import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
+import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.main.MainActivity
-import com.peterlaurence.trekme.service.event.*
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.util.stackTraceToString
 import com.peterlaurence.trekme.util.throttle

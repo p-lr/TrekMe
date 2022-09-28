@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.repositories.download
 
-import com.peterlaurence.trekme.service.event.DownloadMapRequest
-import com.peterlaurence.trekme.service.event.MapDownloadEvent
+import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
+import com.peterlaurence.trekme.core.map.domain.models.MapDownloadEvent
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow

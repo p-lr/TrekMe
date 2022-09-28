@@ -13,9 +13,6 @@ import com.peterlaurence.trekme.core.mapsource.wmts.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.service.DownloadService
-import com.peterlaurence.trekme.service.event.DownloadMapRequest
-import com.peterlaurence.trekme.service.event.MapDownloadStorageError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
@@ -32,14 +29,14 @@ class MapDownloadDaoImpl(
     override suspend fun processRequest(
         request: DownloadMapRequest,
         onProgress: (Int) -> Unit
-    ): MapDownloadDao.MapDownloadResult {
+    ): MapDownloadDao.MapDownloadResult = coroutineScope {
         val source = request.source
         val tileSequence = request.mapSpec.tileSequence
         val tileStreamProvider = request.tileStreamProvider
 
         val threadSafeTileIterator =
             ThreadSafeTileIterator(tileSequence.iterator(), request.numberOfTiles) { p ->
-                if (DownloadService.started.value) {
+                if (isActive) {
                     onProgress(p.toInt())
                 }
             }
@@ -49,7 +46,7 @@ class MapDownloadDaoImpl(
 
         /* Create the destination folder, or else fail-fast */
         val destDir = createDestDir()
-            ?: return MapDownloadDao.MapDownloadResult.Error(MapDownloadStorageError)
+            ?: return@coroutineScope MapDownloadDao.MapDownloadResult.Error(MapDownloadStorageError)
 
         /* A writer which has a folder for each level, and a folder for each row. It does that with
          * using indexes instead of real level, row and col numbers. This greatly simplifies how a
@@ -77,11 +74,11 @@ class MapDownloadDaoImpl(
             effectiveWorkerCount,
             threadSafeTileIterator,
             tileWriter,
-            tileStreamProvider
+            tileStreamProvider,
         )
         val map = postProcess(request.mapSpec, source, destDir)
 
-        return MapDownloadDao.MapDownloadResult.Success(map)
+        MapDownloadDao.MapDownloadResult.Success(map)
     }
 
     private suspend fun postProcess(mapSpec: MapSpec, source: WmtsSource, destDir: File): Map {
@@ -97,7 +94,7 @@ class MapDownloadDaoImpl(
 
     private suspend fun launchDownloadTask(
         workerCount: Int, tileIterator: ThreadSafeTileIterator,
-        tileWriter: TileWriter, tileStreamProvider: TileStreamProvider
+        tileWriter: TileWriter, tileStreamProvider: TileStreamProvider,
     ) = coroutineScope {
         for (i in 0 until workerCount) {
             val bitmapProvider = BitmapProvider(tileStreamProvider)
@@ -107,7 +104,7 @@ class MapDownloadDaoImpl(
 
     private fun CoroutineScope.launchTileDownload(
         tileIterator: ThreadSafeTileIterator, bitmapProvider: BitmapProvider,
-        tileWriter: TileWriter
+        tileWriter: TileWriter,
     ) = launch(Dispatchers.IO) {
         val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
         val options = BitmapFactory.Options()
@@ -115,11 +112,11 @@ class MapDownloadDaoImpl(
         options.inPreferredConfig = Bitmap.Config.ARGB_8888
         bitmapProvider.setBitmapOptions(options)
 
-        while (DownloadService.started.value) {
+        while (isActive) {
             val tile = tileIterator.next() ?: break
             bitmapProvider.getBitmap(row = tile.row, col = tile.col, zoomLvl = tile.level).also {
                 /* Only write if there was no error */
-                if (it != null && DownloadService.started.value) {
+                if (it != null && isActive) {
                     tileWriter.write(tile, bitmap)
                 }
             }

@@ -20,6 +20,8 @@ import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.mapsource.wmts.*
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
+import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
+import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.layers.*
 import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
@@ -31,8 +33,6 @@ import com.peterlaurence.trekme.core.repositories.mapcreate.GeocodingRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
-import com.peterlaurence.trekme.service.DownloadService
-import com.peterlaurence.trekme.service.event.DownloadMapRequest
 import com.peterlaurence.trekme.ui.common.PositionMarker
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.DownloadFormDataBundle
 import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus

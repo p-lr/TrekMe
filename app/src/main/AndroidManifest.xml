@@ -47,7 +47,7 @@
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name="com.peterlaurence.trekme.service.DownloadService"
+            android:name="com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService"
             android:enabled="true"
             android:exported="false" />
         <service
