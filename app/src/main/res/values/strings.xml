@@ -43,7 +43,7 @@
     <string name="offer_gateway_free_trial">Free trial</string>
 
     <!-- GpxRecordService -->
-    <string name="service_gpx_record_name" translatable="false">Gpx recording service</string>
+    <string name="service_gpx_record_name">Gpx recording service</string>
     <string name="service_gpx_record_action">GPX recording</string>
     <string name="service_gpx_location_error">Error while requesting your location :(</string>
     <string name="service_gpx_error">Error while saving the GPX file :(</string>
@@ -57,7 +57,7 @@
     <string name="service_download_already_running">A download is already pending. Please wait for the current download to complete before starting a new one.</string>
 
     <!-- WifiP2pService -->
-    <string name="service_wifip2p_name" translatable="false">WifiP2p service</string>
+    <string name="service_wifip2p_name">Map sharing service</string>
     <string name="service_wifip2p_action">Map send and receive</string>
 
     <!-- MapDownloadDialog -->

@@ -66,6 +66,7 @@
     <string name="download_map_dialog_title">Téléchargement</string>
     <string name="download_map_dialog_msg">Téléchargement de la carte %s…</string>
     <string name="confirm_import">Vous pouvez maintenant importer la carte</string>
+    <string name="service_gpx_record_name">Service d\'enregistrement Gpx</string>
     <string name="service_gpx_record_action">Enregistrement GPX</string>
     <string name="record_menu_title">Enregistrement GPX</string>
     <string name="control_card_title">Commandes</string>
@@ -84,7 +85,7 @@
     <string name="min_zoom">Zoom minimum</string>
     <string name="wmts_settings_dialog">Configuration de la carte</string>
     <string name="max_zoom">Zoom maximum</string>
-    <string name="service_download_name">Service de téléchargement de TrekMe</string>
+    <string name="service_download_name">Service de téléchargement de carte</string>
     <string name="service_download_action">Téléchargement de carte</string>
     <string name="download">Télécharger</string>
     <string name="service_download_stop">Arrêter</string>
@@ -160,6 +161,7 @@
     <string name="preference_rotate_free">Rotation libre</string>
     <string name="no_storage_perm">TrekMe a besoin d\'avoir accès au stockage interne pour y stocker des cartes, notamment. Rassurez-vous, cette application ne tentera jamais d\'accéder à vos données personnelles.\n\nPour modifier les permissions de TrekMe, il faut aller dans vos réglages Android dans la section Applications > TrekMe.</string>
     <string name="swiss_topo_source_description">Office fédéral de topographie</string>
+    <string name="service_wifip2p_name">Service de partage de carte</string>
     <string name="service_wifip2p_action">Envoi et réception de carte</string>
     <string name="share_menu_title">Recevoir et envoyer</string>
     <string name="wifip2p_stop_btn">Stop</string>

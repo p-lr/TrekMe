@@ -209,7 +209,7 @@ class WifiP2pService : Service() {
 
             /* Stop the WifiP2p framework */
             scope.launch(NonCancellable) {
-                stopForeground(true)
+                stopForeground(STOP_FOREGROUND_REMOVE)
                 resetWifiP2p()
 
                 /* Stop the service */
