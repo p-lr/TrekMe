@@ -5,21 +5,17 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
-import com.peterlaurence.trekme.core.map.domain.interactors.SaveMapInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.MapDownloadInteractor
 import com.peterlaurence.trekme.core.map.domain.models.*
-import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
-import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.util.stackTraceToString
@@ -37,8 +33,11 @@ import javax.inject.Inject
  *
  * It is started in the foreground to avoid Android 8.0 (API lvl 26)
  * [background execution limit](https://developer.android.com/about/versions/oreo/background.html).
- * So when there is a map download, the user can always see it with the icon on the upper left
- * corner of the device.
+ * When there is a map download, if the user has granted the notification permission, the user can
+ * see the icon on the upper left corner of the device (and see the download progression from the
+ * notifications).
+ * If the user revoked the notification permission, the download progression can always be seen from
+ * the map list.
  */
 @AndroidEntryPoint
 class DownloadService : Service() {
@@ -47,22 +46,13 @@ class DownloadService : Service() {
     private val stopAction = "stop"
 
     @Inject
-    lateinit var mapDownloadDao: MapDownloadDao
-
-    @Inject
-    lateinit var saveMapInteractor: SaveMapInteractor
+    lateinit var mapDownloadInteractor: MapDownloadInteractor
 
     @Inject
     lateinit var repository: DownloadRepository
 
     @Inject
     lateinit var appEventBus: AppEventBus
-
-    @Inject
-    lateinit var importGeoRecordInteractor: ImportGeoRecordInteractor
-
-    @Inject
-    lateinit var app: Application
 
     private lateinit var onTapPendingIntent: PendingIntent
     private lateinit var onStopPendingIntent: PendingIntent
@@ -71,8 +61,6 @@ class DownloadService : Service() {
     private lateinit var notificationManager: NotificationManagerCompat
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
-    private val progressEvent = MapDownloadPending(0)
 
     companion object {
         private val _started = MutableStateFlow(false)
@@ -170,13 +158,11 @@ class DownloadService : Service() {
         startForeground(downloadServiceNofificationId, notificationBuilder.build())
 
         /* Get ready for download and request download spec */
-        progressEvent.progress = 0
-
         scope.launch {
             /* Only process the first event */
             val request = repository.getDownloadMapRequest()
             if (request != null) {
-                processRequestDownloadMapEvent(request)
+                processDownloadRequest(request)
             }
         }
 
@@ -186,25 +172,18 @@ class DownloadService : Service() {
         return START_NOT_STICKY
     }
 
-    private suspend fun processRequestDownloadMapEvent(request: DownloadMapRequest) {
+    private suspend fun processDownloadRequest(request: DownloadMapRequest) {
         val throttledTask = scope.throttle(1000) { p: Int ->
             onDownloadProgress(p)
         }
 
-        when (val result =
-            mapDownloadDao.processRequest(
-                request,
-                onProgress = { p -> throttledTask.trySend(p) }
-            )
-        ) {
-            is MapDownloadDao.MapDownloadResult.Error -> {
-                repository.postDownloadEvent(MapDownloadStorageError)
-                stopService()
-            }
-            is MapDownloadDao.MapDownloadResult.Success -> {
-                postProcess(result.map, request.geoRecordUris)
-            }
-        }
+        mapDownloadInteractor.processDownloadRequest(
+            request, onProgress = { p -> throttledTask.trySend(p) }
+        )
+
+        /* Whatever the outcome, stop the service. Don't attempt to send more notifications, they
+         * will be dismissed anyway since the service is about to stop. */
+        stopService()
     }
 
     @SuppressLint("RestrictedApi")
@@ -222,26 +201,6 @@ class DownloadService : Service() {
         } catch (e: RuntimeException) {
             // can't figure out why it's (rarely) thrown. Log it for now
             Log.e(TAG, stackTraceToString(e))
-        }
-
-        /* Send a message carrying the progress info */
-        progressEvent.progress = progress
-        repository.postDownloadEvent(progressEvent)
-    }
-
-    private fun postProcess(map: Map, geoRecordUris: Set<Uri>) {
-        scope.launch {
-            saveMapInteractor.addAndSaveMap(map)
-            geoRecordUris.forEach { uri ->
-                importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map)
-            }
-
-            /* Notify that the download is finished correctly.
-             * Don't attempt to send more notifications, they will be dismissed anyway since the
-             * service is about to stop. */
-            repository.postDownloadEvent(MapDownloadFinished(map.id))
-
-            stopService()
         }
     }
 

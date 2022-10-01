@@ -29,7 +29,7 @@ class MapDownloadDaoImpl(
     override suspend fun processRequest(
         request: DownloadMapRequest,
         onProgress: (Int) -> Unit
-    ): MapDownloadDao.MapDownloadResult = coroutineScope {
+    ): MapDownloadResult = coroutineScope {
         val source = request.source
         val tileSequence = request.mapSpec.tileSequence
         val tileStreamProvider = request.tileStreamProvider
@@ -46,7 +46,7 @@ class MapDownloadDaoImpl(
 
         /* Create the destination folder, or else fail-fast */
         val destDir = createDestDir()
-            ?: return@coroutineScope MapDownloadDao.MapDownloadResult.Error(MapDownloadStorageError)
+            ?: return@coroutineScope MapDownloadResult.Error(MapDownloadStorageError)
 
         /* A writer which has a folder for each level, and a folder for each row. It does that with
          * using indexes instead of real level, row and col numbers. This greatly simplifies how a
@@ -78,7 +78,7 @@ class MapDownloadDaoImpl(
         )
         val map = postProcess(request.mapSpec, source, destDir)
 
-        MapDownloadDao.MapDownloadResult.Success(map)
+        MapDownloadResult.Success(map)
     }
 
     private suspend fun postProcess(mapSpec: MapSpec, source: WmtsSource, destDir: File): Map {
