@@ -26,18 +26,17 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import kotlinx.parcelize.Parcelize
+import java.util.*
 
 @Composable
 fun RecordItem(
     modifier: Modifier = Modifier,
-    name: String,
-    stats: RecordStats? = null,
-    isSelected: Boolean,
+    item: SelectableRecordingItem,
     isMultiSelectionMode: Boolean,
     index: Int,
     onClick: () -> Unit = {}
 ) {
-    val background = if (isSelected) {
+    val background = if (item.isSelected) {
         if (isSystemInDarkTheme()) Color(0xff3b5072) else Color(0xffc1d8ff)
     } else {
         if (index % 2 == 1) surfaceBackground() else {
@@ -55,7 +54,7 @@ fun RecordItem(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (isMultiSelectionMode && isSelected) {
+            if (isMultiSelectionMode && item.isSelected) {
                 Image(
                     painter = painterResource(id = R.drawable.check),
                     modifier = Modifier
@@ -67,10 +66,10 @@ fun RecordItem(
             } else {
                 Spacer(modifier = Modifier.width(16.dp))
             }
-            Text(text = name, color = textColor())
+            Text(text = item.name, color = textColor())
         }
 
-        if (stats != null) {
+        if (item.stats != null) {
             FlowRow(
                 modifier = Modifier
                     .padding(start = 24.dp, end = 24.dp, top = 8.dp)
@@ -80,11 +79,11 @@ fun RecordItem(
                 crossAxisSpacing = 8.dp,
                 tryAlign = true
             ) {
-                DistanceItem(stats.distance)
-                ElevationUpStack(stats.elevationUpStack)
-                ElevationDownStack(stats.elevationDownStack)
-                ChronoItem(stats.duration)
-                SpeedItem(stats.speed)
+                DistanceItem(item.stats.distance)
+                ElevationUpStack(item.stats.elevationUpStack)
+                ElevationDownStack(item.stats.elevationDownStack)
+                ChronoItem(item.stats.duration)
+                SpeedItem(item.stats.speed)
             }
         }
     }
@@ -173,15 +172,18 @@ private fun StatItem(
 private fun RecordItemPreview() {
     TrekMeTheme {
         RecordItem(
-            name = "Track name",
-            stats = RecordStats(
-                "11.51 km",
-                "+127 m",
-                "-655 m",
-                "2h46",
-                "8.2 km/h"
+            item = SelectableRecordingItem(
+                "Track name",
+                stats = RecordStats(
+                    "11.51 km",
+                    "+127 m",
+                    "-655 m",
+                    "2h46",
+                    "8.2 km/h"
+                ),
+                isSelected = false,
+                id = UUID.randomUUID()
             ),
-            isSelected = false,
             isMultiSelectionMode = false,
             index = 0
         )

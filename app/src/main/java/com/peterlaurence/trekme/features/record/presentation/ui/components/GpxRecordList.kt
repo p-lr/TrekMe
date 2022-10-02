@@ -35,7 +35,7 @@ import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.UUID
 
 @Composable
 fun GpxRecordListStateful(
@@ -61,16 +61,17 @@ fun GpxRecordListStateful(
     var isMultiSelectionMode by rememberSaveable {
         mutableStateOf(false)
     }
-    var dataToModel by rememberSaveable {
-        mutableStateOf(mutableMapOf<UUID, SelectableRecordingData>())
+
+    var itemById by rememberSaveable {
+        mutableStateOf(mapOf<UUID, SelectableRecordingItem>())
     }
 
-    val model = remember(data, dataToModel, isMultiSelectionMode) {
+    val items: List<SelectableRecordingItem> = remember(data, itemById, isMultiSelectionMode) {
         data.map {
-            val existing = dataToModel[it.id]
-            it.toModel(existing?.isSelected ?: false).also { selectable ->
-                dataToModel[selectable.id] = selectable
-            }
+            val existing = itemById[it.id]
+            it.toModel(existing?.isSelected ?: false)
+        }.also {
+            itemById = it.associateBy { item -> item.id }
         }
     }
 
@@ -82,7 +83,7 @@ fun GpxRecordListStateful(
 
     GpxRecordList(
         modifier = modifier,
-        data = model,
+        items = items,
         isMultiSelectionMode = isMultiSelectionMode,
         lazyListState = lazyListState
     ) { action ->
@@ -90,15 +91,15 @@ fun GpxRecordListStateful(
             Action.OnMultiSelectionClick -> {
                 isMultiSelectionMode = !isMultiSelectionMode
                 if (!isMultiSelectionMode) {
-                    dataToModel = dataToModel.mapValues {
+                    itemById = itemById.mapValues {
                         it.value.copy(isSelected = false)
-                    }.toMutableMap()
+                    }
                 }
             }
             Action.OnImportMenuCLick -> onImportMenuClick()
             is Action.OnRecordClick -> {
                 val selectable = action.selectable
-                val copy = dataToModel.toMutableMap()
+                val copy = itemById.toMutableMap()
                 if (isMultiSelectionMode) {
                     copy[selectable.id] = selectable.copy(isSelected = !selectable.isSelected)
                 } else {
@@ -111,26 +112,26 @@ fun GpxRecordListStateful(
                     }
                 }
 
-                dataToModel = copy
+                itemById = copy
             }
             Action.OnEditClick -> {
-                val selected = getSelected(dataById, model) ?: return@GpxRecordList
+                val selected = getSelected(dataById, items) ?: return@GpxRecordList
                 onRenameRecord(selected)
             }
             Action.OnChooseMapClick -> {
-                val selected = getSelected(dataById, model) ?: return@GpxRecordList
+                val selected = getSelected(dataById, items) ?: return@GpxRecordList
                 onChooseMapForRecord(selected)
             }
             Action.OnShareClick -> {
-                val selectedList = getSelectedList(dataById, model)
+                val selectedList = getSelectedList(dataById, items)
                 onShareRecords(selectedList)
             }
             Action.OnElevationGraphClick -> {
-                val selected = getSelected(dataById, model) ?: return@GpxRecordList
+                val selected = getSelected(dataById, items) ?: return@GpxRecordList
                 onElevationGraphClick(selected)
             }
             Action.OnRemoveClick -> {
-                val selectedList = getSelectedList(dataById, model)
+                val selectedList = getSelectedList(dataById, items)
                 onDeleteClick(selectedList)
             }
         }
@@ -141,14 +142,14 @@ fun GpxRecordListStateful(
 @Composable
 private fun GpxRecordList(
     modifier: Modifier = Modifier,
-    data: List<SelectableRecordingData>,
+    items: List<SelectableRecordingItem>,
     isMultiSelectionMode: Boolean,
     lazyListState: LazyListState,
     actioner: Actioner,
 ) {
-    val selectionCount by remember(data) {
+    val selectionCount by remember(items) {
         derivedStateOf {
-            data.count { it.isSelected }
+            items.count { it.isSelected }
         }
     }
 
@@ -162,14 +163,12 @@ private fun GpxRecordList(
                 state = lazyListState
             ) {
                 itemsIndexed(
-                    items = data,
+                    items = items,
                     key = { _, it -> it.id }
                 ) { index, record ->
-                    RecordItem(
+                     RecordItem(
                         Modifier.animateItemPlacement(),
-                        name = record.name,
-                        stats = record.stats,
-                        isSelected = record.isSelected,
+                        item = record,
                         isMultiSelectionMode = isMultiSelectionMode,
                         index = index,
                         onClick = { actioner(Action.OnRecordClick(record)) }
@@ -337,7 +336,7 @@ private fun LoadingList(modifier: Modifier = Modifier) {
     }
 }
 
-private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingData {
+private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingItem {
     val stats = statistics?.let {
         RecordStats(
             distance = UnitFormatter.formatDistance(it.distance),
@@ -352,15 +351,15 @@ private fun RecordingData.toModel(isSelected: Boolean): SelectableRecordingData 
         )
     }
 
-    return SelectableRecordingData(name, stats, isSelected, id)
+    return SelectableRecordingItem(name, stats, isSelected, id)
 }
 
-private fun getSelected(dataById: Map<UUID, RecordingData>, model: List<SelectableRecordingData>): RecordingData? {
+private fun getSelected(dataById: Map<UUID, RecordingData>, model: List<SelectableRecordingItem>): RecordingData? {
     val selectedId = model.firstOrNull { it.isSelected }?.id ?: return null
     return dataById[selectedId]
 }
 
-private fun getSelectedList(dataById: Map<UUID, RecordingData>, model: List<SelectableRecordingData>): List<RecordingData> {
+private fun getSelectedList(dataById: Map<UUID, RecordingData>, model: List<SelectableRecordingItem>): List<RecordingData> {
     val selectedIds = model.filter { it.isSelected }
     return selectedIds.mapNotNull { dataById[it.id] }
 }
@@ -370,7 +369,7 @@ private typealias Actioner = (Action) -> Unit
 private sealed interface Action {
     object OnMultiSelectionClick : Action
     object OnImportMenuCLick : Action
-    data class OnRecordClick(val selectable: SelectableRecordingData) : Action
+    data class OnRecordClick(val selectable: SelectableRecordingItem) : Action
     object OnEditClick : Action
     object OnChooseMapClick : Action
     object OnShareClick : Action
@@ -380,8 +379,8 @@ private sealed interface Action {
 
 @Stable
 @Parcelize
-private data class SelectableRecordingData(
+data class SelectableRecordingItem(
     val name: String, @Stable val stats: RecordStats?,
     val isSelected: Boolean,
-    val id: UUID
+    @Stable val id: UUID
 ) : Parcelable
