@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -22,23 +21,21 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListIntents
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapStub
+import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
 import com.peterlaurence.trekme.util.pxToDp
 import java.util.UUID
 
 @Composable
 internal fun MapCard(
     modifier: Modifier = Modifier,
-    mapStub: MapStub,
+    mapItem: MapItem,
     intents: MapListIntents
 ) {
     Card(modifier) {
@@ -46,7 +43,7 @@ internal fun MapCard(
             Modifier
                 .fillMaxWidth()
                 .height(155.dp)
-                .clickable { intents.onMapClicked(mapStub.mapId) }
+                .clickable { intents.onMapClicked(mapItem.mapId) }
         ) {
             Row {
                 Column(
@@ -55,39 +52,39 @@ internal fun MapCard(
                         .weight(1f)
                 ) {
                     Text(
-                        text = mapStub.title,
+                        text = mapItem.title,
                         color = textColor(),
                         fontSize = 24.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                ImagePlaceHolder(mapStub, intents::onSetMapImage)
+                ImagePlaceHolder(mapItem, intents::onSetMapImage)
             }
             ButtonRow(
-                Modifier.align(Alignment.BottomStart), mapStub.isFavorite,
-                onMapSettings = { intents::onMapSettings.invoke(mapStub.mapId) },
-                onDelete = { intents::onMapDelete.invoke(mapStub.mapId) },
-                onMapFavorite = { intents::onMapFavorite.invoke(mapStub.mapId) }
+                Modifier.align(Alignment.BottomStart), mapItem.isFavorite,
+                onMapSettings = { intents::onMapSettings.invoke(mapItem.mapId) },
+                onDelete = { intents::onMapDelete.invoke(mapItem.mapId) },
+                onMapFavorite = { intents::onMapFavorite.invoke(mapItem.mapId) }
             )
         }
     }
 }
 
 @Composable
-private fun ImagePlaceHolder(mapStub: MapStub, onSetMapImage: (UUID, Uri) -> Unit) {
+private fun ImagePlaceHolder(mapItem: MapItem, onSetMapImage: (UUID, Uri) -> Unit) {
     val addImageDialogState = remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            onSetMapImage(mapStub.mapId, uri)
+            onSetMapImage(mapItem.mapId, uri)
         }
     }
 
     Box(modifier = Modifier.padding(top = 16.dp, end = 16.dp)) {
-        val image = mapStub.image
+        val image = mapItem.image
         if (image != null) {
             Image(
                 modifier = Modifier

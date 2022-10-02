@@ -1,0 +1,43 @@
+package com.peterlaurence.trekme.features.maplist.presentation.ui.components
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.maplist.presentation.model.DownloadItem
+
+@Composable
+fun DownloadCard(modifier: Modifier = Modifier, downloadItem: DownloadItem, onCancel: () -> Unit) {
+    Card(modifier, elevation = 4.dp) {
+        Column(Modifier.padding(start = 8.dp, end = 16.dp)) {
+            Text(stringResource(id = R.string.download_pending_item), Modifier.padding(start = 8.dp, top = 8.dp))
+            LinearProgressIndicator(
+                progress = downloadItem.progress / 100f,
+                modifier = Modifier.padding(start = 9.dp, top = 8.dp, bottom = 4.dp).fillMaxWidth()
+            )
+
+            TextButton(onClick = onCancel) {
+                Text(
+                    text = stringResource(id = R.string.cancel_dialog_string).uppercase(),
+                    color = MaterialTheme.colors.primary
+                )
+            }
+        }
+
+    }
+}
+
+@Preview(widthDp = 350)
+@Composable
+private fun DownloadCardPreview() {
+    TrekMeTheme {
+        DownloadCard(downloadItem = DownloadItem().apply { progress = 25 }, onCancel = {})
+    }
+}

@@ -22,8 +22,6 @@ import com.peterlaurence.trekme.util.stackTraceToString
 import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 
@@ -43,7 +41,10 @@ import javax.inject.Inject
 class DownloadService : Service() {
     private val notificationChannelId = "peterlaurence.DownloadService"
     private val downloadServiceNofificationId = 128565
-    private val stopAction = "stop"
+
+    companion object {
+        const val stopAction = "stop"
+    }
 
     @Inject
     lateinit var mapDownloadInteractor: MapDownloadInteractor
@@ -61,11 +62,6 @@ class DownloadService : Service() {
     private lateinit var notificationManager: NotificationManagerCompat
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
-    companion object {
-        private val _started = MutableStateFlow(false)
-        val started = _started.asStateFlow()
-    }
 
     override fun onCreate() {
         super.onCreate()
@@ -111,7 +107,7 @@ class DownloadService : Service() {
         }
 
         /* Notify that a download is already running */
-        if (started.value) {
+        if (repository.started.value) {
             repository.postDownloadEvent(MapDownloadAlreadyRunning)
             return START_NOT_STICKY
         }
@@ -166,7 +162,7 @@ class DownloadService : Service() {
             }
         }
 
-        _started.value = true
+        repository.setDownloadInProgress(true)
         appEventBus.postMessage(StandardMessage(getString(R.string.download_confirm)))
 
         return START_NOT_STICKY
@@ -205,7 +201,7 @@ class DownloadService : Service() {
     }
 
     private fun stopService() {
-        _started.value = false
+        repository.setDownloadInProgress(false)
         scope.cancel()
         stopSelf()
     }

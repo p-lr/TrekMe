@@ -6,7 +6,9 @@ import android.util.AttributeSet
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
@@ -32,16 +34,26 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.components.Pend
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListState
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListViewModel
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
-import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapStub
+import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
+import com.peterlaurence.trekme.features.maplist.presentation.ui.components.DownloadCard
 import java.util.*
 
 @Composable
 fun MapListStateful(state: MapListState, intents: MapListIntents) {
     val listState = rememberLazyListState()
-    when (state) {
-        is MapListState.Loading -> PendingScreen()
-        is MapListState.MapList -> {
-            if (state.mapList.isNotEmpty()) {
+    Column {
+        if (state.isDownloadPending) {
+            DownloadCard(
+                Modifier.background(backgroundColor()).padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+                state.downloadItem,
+                intents::onCancelDownload
+            )
+        }
+
+        if (state.isMapListLoading && !state.isDownloadPending) {
+            PendingScreen()
+        } else {
+            if (state.mapItems.isNotEmpty()) {
                 LazyColumn(
                     Modifier
                         .background(backgroundColor())
@@ -50,7 +62,7 @@ fun MapListStateful(state: MapListState, intents: MapListIntents) {
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(state.mapList, key = { it.mapId }) { map ->
+                    items(state.mapItems, key = { it.mapId }) { map ->
                         AnimatedMapCard(map, intents)
                     }
                 }
@@ -63,8 +75,8 @@ fun MapListStateful(state: MapListState, intents: MapListIntents) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun LazyItemScope.AnimatedMapCard(mapStub: MapStub, intents: MapListIntents) {
-    MapCard(Modifier.animateItemPlacement(), mapStub, intents)
+private fun LazyItemScope.AnimatedMapCard(mapItem: MapItem, intents: MapListIntents) {
+    MapCard(Modifier.animateItemPlacement(), mapItem, intents)
 }
 
 
@@ -118,6 +130,10 @@ class MapListView @JvmOverloads constructor(
                 val navController = findNavController()
                 navController.navigate(R.id.action_global_mapCreateFragment)
             }
+
+            override fun onCancelDownload() {
+                viewModel.onCancelDownload()
+            }
         }
 
         val mapListState by viewModel.mapListState
@@ -134,19 +150,20 @@ interface MapListIntents {
     fun onSetMapImage(mapId: UUID, uri: Uri)
     fun onMapDelete(mapId: UUID)
     fun navigateToMapCreate(showOnBoarding: Boolean)
+    fun onCancelDownload()
 }
 
 @Preview
 @Composable
 private fun MapCardPreview() {
     val mapList = listOf(
-        MapStub(UUID.randomUUID()).apply {
+        MapItem(UUID.randomUUID()).apply {
             title = "A map 1"
         },
-        MapStub(UUID.randomUUID()).apply {
+        MapItem(UUID.randomUUID()).apply {
             title = "A map 2"
         },
-        MapStub(UUID.randomUUID()).apply {
+        MapItem(UUID.randomUUID()).apply {
             title = "A map 3"
         }
     )
@@ -173,9 +190,11 @@ private fun MapCardPreview() {
         override fun navigateToMapCreate(showOnBoarding: Boolean) {
         }
 
+        override fun onCancelDownload() {
+        }
     }
 
     TrekMeTheme {
-        MapListStateful(MapListState.MapList(mapList), intents)
+        MapListStateful(MapListState(mapList, false), intents)
     }
 }
