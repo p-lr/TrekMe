@@ -176,28 +176,29 @@ class DownloadService : Service() {
         mapDownloadInteractor.processDownloadRequest(
             request, onProgress = { p -> throttledTask.trySend(p) }
         )
+        onDownloadFinished()
 
         /* Whatever the outcome, stop the service. Don't attempt to send more notifications, they
          * will be dismissed anyway since the service is about to stop. */
         stopService()
     }
 
-    @SuppressLint("RestrictedApi")
     private fun onDownloadProgress(progress: Int) {
-        if (progress == 100) {
-            notificationBuilder.setOngoing(false)
-            notificationBuilder.setProgress(0, 0, false)
-            notificationBuilder.setContentText(getText(R.string.service_download_finished))
-            notificationBuilder.mActions.clear()
-        } else {
-            notificationBuilder.setProgress(100, progress, false)
-        }
+        notificationBuilder.setProgress(100, progress, false)
         try {
             notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
         } catch (e: RuntimeException) {
             // can't figure out why it's (rarely) thrown. Log it for now
             Log.e(TAG, stackTraceToString(e))
         }
+    }
+
+    @SuppressLint("RestrictedApi")
+    private fun onDownloadFinished() {
+        notificationBuilder.setOngoing(false)
+        notificationBuilder.setProgress(0, 0, false)
+        notificationBuilder.setContentText(getText(R.string.service_download_finished))
+        notificationBuilder.mActions.clear()
     }
 
     private fun stopService() {
