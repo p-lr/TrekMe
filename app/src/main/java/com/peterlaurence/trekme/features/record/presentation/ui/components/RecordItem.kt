@@ -30,7 +30,8 @@ import java.util.*
 
 @Composable
 fun RecordItem(
-    modifier: Modifier = Modifier,
+    // Using lambda instead of direct reference to avoid unnecessary recompositions
+    modifierProvider: () -> Modifier = { Modifier },
     item: SelectableRecordingItem,
     isMultiSelectionMode: Boolean,
     index: Int,
@@ -45,7 +46,7 @@ fun RecordItem(
     }
 
     Column(
-        modifier
+        modifierProvider()
             .background(background)
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp)
