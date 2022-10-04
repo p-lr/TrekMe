@@ -151,9 +151,12 @@ class FileBasedSourceImpl(
                             success = false
                         } else {
                             fileForId.remove(id)
-                            val existing = geoRecordFlow.value.firstOrNull { it.id == id }
-                            if (existing != null) {
-                                geoRecordFlow.value = geoRecordFlow.value - existing
+                            // Atomically update the list
+                            geoRecordFlow.update { current ->
+                                val existing = current.firstOrNull { it.id == id }
+                                if (existing != null) {
+                                    current - existing
+                                } else current
                             }
                         }
                     }
