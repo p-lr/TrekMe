@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.features.maplist.presentation.viewmodel
 
 import android.app.Application
 import android.content.Intent
-import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.map.domain.interactors.DeleteMapInteractor
@@ -13,9 +12,11 @@ import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
-import com.peterlaurence.trekme.features.maplist.presentation.model.DownloadItem
 import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.*
@@ -39,9 +40,8 @@ class MapListViewModel @Inject constructor(
      * This state mirrors the MapListState from [MapRepository], with the difference that a
      * [MapItem] has additional view-related properties.
      */
-    private val _mapListState: MutableState<MapListState> =
-        mutableStateOf(MapListState(emptyList(), true))
-    val mapListState: State<MapListState> = _mapListState
+    private val _mapListState = MutableStateFlow(MapListState(emptyList(), true))
+    val mapListState: StateFlow<MapListState> = _mapListState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -60,8 +60,10 @@ class MapListViewModel @Inject constructor(
             downloadRepository.downloadEvent.collect { event ->
                 when(event) {
                     is MapDownloadPending -> {
-                        _mapListState.value.downloadItem.progress = event.progress
-                        _mapListState.value = _mapListState.value.copy(isDownloadPending = true)
+                        _mapListState.value = _mapListState.value.copy(
+                            downloadProgress = event.progress,
+                            isDownloadPending = true
+                        )
                     }
                     else -> { /* Nothing to do */ }
                 }
@@ -93,12 +95,15 @@ class MapListViewModel @Inject constructor(
      */
     fun toggleFavorite(mapId: UUID) {
         val state = _mapListState.value
-        val mapItem = state.mapItems.firstOrNull { it.mapId == mapId }
-        mapItem?.apply {
-            isFavorite = !isFavorite
-        }
 
-        val ids = state.mapItems.filter { it.isFavorite }.map { it.mapId }
+        val mapItems = state.mapItems.map {
+            if (it.mapId == mapId) {
+                it.copy(isFavorite = !it.isFavorite)
+            } else it
+        }
+        _mapListState.value = state.copy(mapItems = mapItems)
+
+        val ids = _mapListState.value.mapItems.filter { it.isFavorite }.map { it.mapId }
         val mapList = mapRepository.getCurrentMapList()
         updateMapListInFragment(mapList, ids)
 
@@ -134,31 +139,22 @@ class MapListViewModel @Inject constructor(
 
     private fun updateMapListInFragment(mapList: List<Map>, favoriteMapIds: List<UUID>) {
         /* Order map list with favorites first */
-        val items = mapList.map { it.toMapStub() }.let {
-            if (favoriteMapIds.isNotEmpty()) {
-                it.sortedByDescending { stub ->
-                    if (favoriteMapIds.contains(stub.mapId)) {
-                        stub.isFavorite = true
-                        1
-                    } else -1
-                }
-            } else it
-        }
+        val items = mapList.map {
+            val isFavorite = favoriteMapIds.isNotEmpty() && favoriteMapIds.contains(it.id)
+            it.toMapItem(isFavorite)
+        }.sortedByDescending { it.isFavorite }
 
         _mapListState.value = MapListState(items, false)  // update with a copy of the list
     }
 
-    private fun Map.toMapStub(): MapItem {
-        return MapItem(id).apply {
-            title = name
-            image = this@toMapStub.thumbnailImage
-        }
+    private fun Map.toMapItem(isFavorite: Boolean): MapItem {
+        return MapItem(id, title = name, isFavorite = isFavorite, image = thumbnailImage)
     }
 }
 
 data class MapListState(
     val mapItems: List<MapItem>,
     val isMapListLoading: Boolean,
-    val downloadItem: DownloadItem = DownloadItem(),
+    val downloadProgress: Int = 0,
     val isDownloadPending: Boolean = false
 )

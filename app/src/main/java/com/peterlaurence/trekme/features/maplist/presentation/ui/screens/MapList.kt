@@ -13,8 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,8 +43,10 @@ fun MapListStateful(state: MapListState, intents: MapListIntents) {
     Column {
         if (state.isDownloadPending) {
             DownloadCard(
-                Modifier.background(backgroundColor()).padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
-                state.downloadItem,
+                Modifier
+                    .background(backgroundColor())
+                    .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+                state.downloadProgress,
                 intents::onCancelDownload
             )
         }
@@ -136,7 +137,7 @@ class MapListView @JvmOverloads constructor(
             }
         }
 
-        val mapListState by viewModel.mapListState
+        val mapListState by viewModel.mapListState.collectAsState()
         TrekMeTheme {
             MapListStateful(mapListState, intents)
         }
@@ -157,25 +158,24 @@ interface MapListIntents {
 @Composable
 private fun MapCardPreview() {
     val mapList = listOf(
-        MapItem(UUID.randomUUID()).apply {
-            title = "A map 1"
-        },
-        MapItem(UUID.randomUUID()).apply {
-            title = "A map 2"
-        },
-        MapItem(UUID.randomUUID()).apply {
-            title = "A map 3"
-        }
+        MapItem(UUID.randomUUID(), title = "A map 1"),
+        MapItem(UUID.randomUUID(), title = "A map 2"),
+        MapItem(UUID.randomUUID(), title = "A map 1")
     )
+
+    var mapListState by remember { mutableStateOf(MapListState(mapList, false)) }
 
     val intents = object : MapListIntents {
         override fun onMapClicked(mapId: UUID) {
         }
 
         override fun onMapFavorite(mapId: UUID) {
-            mapList.firstOrNull { it.mapId == mapId }?.apply {
-                isFavorite = !isFavorite
+            val newList = mapList.map {
+                if (it.mapId == mapId) {
+                    it.copy(isFavorite = !it.isFavorite)
+                } else it
             }
+            mapListState = MapListState(newList, false)
         }
 
         override fun onMapSettings(mapId: UUID) {
@@ -195,6 +195,6 @@ private fun MapCardPreview() {
     }
 
     TrekMeTheme {
-        MapListStateful(MapListState(mapList, false), intents)
+        MapListStateful(mapListState, intents)
     }
 }

@@ -11,16 +11,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.maplist.presentation.model.DownloadItem
 
 @Composable
-fun DownloadCard(modifier: Modifier = Modifier, downloadItem: DownloadItem, onCancel: () -> Unit) {
+fun DownloadCard(modifier: Modifier = Modifier, downloadProgress: Int, onCancel: () -> Unit) {
     Card(modifier, elevation = 4.dp) {
         Column(Modifier.padding(start = 8.dp, end = 16.dp)) {
-            Text(stringResource(id = R.string.download_pending_item), Modifier.padding(start = 8.dp, top = 8.dp))
+            Text(
+                stringResource(id = R.string.download_pending_item),
+                Modifier.padding(start = 8.dp, top = 8.dp)
+            )
             LinearProgressIndicator(
-                progress = downloadItem.progress / 100f,
-                modifier = Modifier.padding(start = 9.dp, top = 8.dp, bottom = 4.dp).fillMaxWidth()
+                progress = downloadProgress / 100f,
+                modifier = Modifier
+                    .padding(start = 9.dp, top = 8.dp, bottom = 4.dp)
+                    .fillMaxWidth()
             )
 
             TextButton(onClick = onCancel) {
@@ -38,6 +42,6 @@ fun DownloadCard(modifier: Modifier = Modifier, downloadItem: DownloadItem, onCa
 @Composable
 private fun DownloadCardPreview() {
     TrekMeTheme {
-        DownloadCard(downloadItem = DownloadItem().apply { progress = 25 }, onCancel = {})
+        DownloadCard(downloadProgress = 25, onCancel = {})
     }
 }
