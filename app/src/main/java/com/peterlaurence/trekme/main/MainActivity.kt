@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.main
 
 import android.Manifest
+import android.Manifest.permission.NEARBY_WIFI_DEVICES
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.app.Notification
@@ -115,6 +116,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private const val REQUEST_MAP_CREATION = 2
         private const val REQUEST_STORAGE = 3
         private const val REQUEST_NOTIFICATION = 4
+        private const val REQUEST_NEARBY_WIFI = 5
         private val PERMISSION_STORAGE = arrayOf(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -182,6 +184,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val permission = ActivityCompat.checkSelfPermission(activity, POST_NOTIFICATIONS)
             if (permission != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(activity, arrayOf(POST_NOTIFICATIONS), REQUEST_NOTIFICATION)
+            }
+        }
+
+        fun requestNearbyWifiPermission(activity: Activity) {
+            if (Build.VERSION.SDK_INT < 33) return
+            val permission = ActivityCompat.checkSelfPermission(activity, NEARBY_WIFI_DEVICES)
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, arrayOf(NEARBY_WIFI_DEVICES), REQUEST_NEARBY_WIFI)
             }
         }
 
@@ -338,6 +348,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         appEventBus.requestNotificationPermFlow.collectWhileStarted(this) {
             requestNotificationPermission(this@MainActivity)
+        }
+
+        appEventBus.requestNearbyWifiDevicesPerlPermFlow.collectWhileStarted(this) {
+            requestNearbyWifiPermission(this@MainActivity)
         }
 
         appEventBus.billingFlow.collectWhileStarted(this) {

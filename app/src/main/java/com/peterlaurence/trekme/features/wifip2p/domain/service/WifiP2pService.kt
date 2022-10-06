@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
 import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.wifip2p.domain.service.*
 import com.peterlaurence.trekme.util.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,6 +51,8 @@ class WifiP2pService : Service() {
     @Inject lateinit var fileBasedMapRegistry: FileBasedMapRegistry
 
     @Inject lateinit var mapImportInteractor: MapImportInteractor
+
+    @Inject lateinit var appEventBus: AppEventBus
 
     @Inject
     @ApplicationContext
@@ -174,6 +177,8 @@ class WifiP2pService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+
+        appEventBus.requestNearbyWifiDevicesPerm()
 
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
