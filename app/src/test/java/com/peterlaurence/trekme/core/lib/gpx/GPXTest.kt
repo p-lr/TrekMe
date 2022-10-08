@@ -21,7 +21,7 @@ import kotlin.test.fail
 /**
  * GPX tests.
  *
- * @author P.Laurence on 12/02/17.
+ * @since 2017/02/12
  */
 @RunWith(RobolectricTestRunner::class)
 class GPXTest {

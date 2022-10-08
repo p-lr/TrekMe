@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.core.map
 
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
+import com.peterlaurence.trekme.core.map.domain.models.intersects
 import org.junit.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

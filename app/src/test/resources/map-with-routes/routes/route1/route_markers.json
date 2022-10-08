@@ -2,19 +2,15 @@
   "markers": [
     {
       "comment": null,
-      "lat": 0.0,
+      "lat": 40.1,
       "lon": 0.0,
-      "name": "marker1",
-      "proj_x": 6198798.5047565,
-      "proj_y": -2418744.7142449305
+      "name": "marker1"
     },
     {
       "comment": null,
-      "lat": 0.0,
-      "lon": 0.0,
-      "name": "marker2",
-      "proj_x": 6198798.5047565,
-      "proj_y": -2418744.7142449305
+      "lat": 42.1,
+      "lon": 12.57,
+      "name": "marker2"
     }
   ]
 }

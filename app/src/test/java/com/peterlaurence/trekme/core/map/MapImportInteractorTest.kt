@@ -2,29 +2,41 @@ package com.peterlaurence.trekme.core.map
 
 
 import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
+import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
+import com.peterlaurence.trekme.core.map.data.dao.MapLoaderDaoFileBased
+import com.peterlaurence.trekme.core.map.data.dao.MapSaverDaoImpl
+import com.peterlaurence.trekme.core.map.data.dao.MapSeekerDaoImpl
+import com.peterlaurence.trekme.core.map.di.MapModule
+import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
+import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-
 import java.io.File
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.fail
 
 /**
  * Unit tests for importing maps.
  *
- * @author P.Laurence on 19/08/16 -- Converted to Kotlin on 27/10/19
+ * @since 2016/08/19 -- Converted to Kotlin on 2019/10/27
  */
 @RunWith(RobolectricTestRunner::class)
 class MapImportInteractorTest {
-    private val mapLoader = MapLoader(Dispatchers.Unconfined, Dispatchers.Default, Dispatchers.IO)
+    private val registry = FileBasedMapRegistry()
+    private val gson = MapModule.provideGson()
+    private val mapSaverDao = MapSaverDaoImpl(registry, Dispatchers.Unconfined, Dispatchers.IO, gson)
+    private val mapLoaderDao = MapLoaderDaoFileBased(
+        registry, mapSaverDao, gson, MapModule.provideJson(), Dispatchers.IO
+    )
+    private val mapRepository = MapRepository()
+    private val mapSeekerDao = MapSeekerDaoImpl(mapLoaderDao, mapSaverDao, registry)
 
-    @Before
-    fun clear() {
-        mapLoader.clearMaps()
-    }
+    private val mapImportInteractor = MapImportInteractor(mapRepository, mapSeekerDao)
 
     @Test
     fun libvipsMapImporter() {
@@ -42,7 +54,7 @@ class MapImportInteractorTest {
 
                 runBlocking {
                     try {
-                        val res = MapImportInteractor.importFromFile(libVipsMapDir, mapLoader)
+                        val res = mapImportInteractor.importFromFile(libVipsMapDir)
                         val map = assertNotNull(res.map)
 
                         /* A subfolder under "libvips" subdirectory has been voluntarily created, to test
@@ -50,15 +62,14 @@ class MapImportInteractorTest {
                          * extracted from an archive, we don't know whether the map was zipped within a
                          * subdirectory or not. A way to know that is to analyse the extracted file structure.
                          */
-                        assertEquals(expectedParentFolder, map.directory)
                         assertEquals("mapname", map.name)
 
                         assertEquals(4, map.configSnapshot.levels.size.toLong())
                         assertEquals(256, map.configSnapshot.levels[0].tileSize.width.toLong())
                         assertEquals(".jpg", map.imageExtension)
                         assertEquals(true, File(expectedParentFolder, ".nomedia").exists())
-                        assertNull(map.image)
-                    } catch (e: MapImportInteractor.MapParseException) {
+                        assertNull(map.thumbnailImage)
+                    } catch (e: Exception) {
                         fail()
                     }
                 }
@@ -73,13 +84,13 @@ class MapImportInteractorTest {
             if (libVipsMapDir.exists()) {
                 runBlocking {
                     try {
-                        val res = MapImportInteractor.importFromFile(libVipsMapDir, mapLoader)
+                        val res = mapImportInteractor.importFromFile(libVipsMapDir)
                         val map = assertNotNull(res.map)
                         assertEquals("La Réunion - Est", map.name)
                         assertEquals(3, map.configSnapshot.levels.size.toLong())
                         val expectedParentFolder = File(libVipsMapDir, "reunion-est")
                         assertEquals(true, File(expectedParentFolder, ".nomedia").exists())
-                    } catch (e: MapImportInteractor.MapParseException) {
+                    } catch (e: Exception) {
                         fail()
                     }
                 }
@@ -92,7 +103,8 @@ class MapImportInteractorTest {
 
         init {
             try {
-                val mapDirURL = MapImportInteractorTest::class.java.classLoader!!.getResource("maps")
+                val mapDirURL =
+                    MapImportInteractorTest::class.java.classLoader!!.getResource("maps")
                 mMapsDirectory = File(mapDirURL.toURI())
             } catch (e: Exception) {
                 println("No resource file for map test directory.")
