@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentGpsProBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,7 +54,7 @@ class GpsProFragment : Fragment() {
                     else -> false
                 }
             }
-        })
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onDestroyView() {

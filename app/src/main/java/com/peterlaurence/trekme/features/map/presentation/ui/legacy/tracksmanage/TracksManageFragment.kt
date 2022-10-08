@@ -26,7 +26,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
-import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.databinding.FragmentTracksManageBinding
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.dialogs.ColorSelectDialog
@@ -46,7 +45,7 @@ import javax.inject.Inject
  * * Rename existing tracks,
  * * Import new tracks from existing GPX files.
  *
- * @author P.Laurence on 01/03/17 -- Converted to Kotlin on 24/04/19
+ * @since 2017/03/01 -- Converted to Kotlin on 2019/04/24
  */
 @AndroidEntryPoint
 class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
@@ -268,7 +267,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
     }
 
     private fun updateMenuVisibility(routeCnt: Int) {
-        val selectedInRange = trackAdapter?.selectedRouteIndex ?: -1 in 0 until routeCnt
+        val selectedInRange = (trackAdapter?.selectedRouteIndex ?: -1) in 0 until routeCnt
         trackRenameMenuItem?.isVisible = routeCnt > 0 && selectedInRange
     }
 
@@ -298,21 +297,6 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
         /* Search for all documents available via installed storage providers */
         intent.type = "*/*"
         chooseTrackLauncher.launch(intent)
-    }
-
-    interface TrackChangeListener {
-        /**
-         * When new [Route] are added or modified, this method is called.
-         *
-         * @param map       the [Map] associated with the change
-         * @param routeList a list of [Route]
-         */
-        fun onTrackChanged(map: Map, routeList: List<Route>)
-
-        /**
-         * When the visibility of a [Route] is changed, this method is called.
-         */
-        fun onTrackVisibilityChanged()
     }
 
     @AndroidEntryPoint
