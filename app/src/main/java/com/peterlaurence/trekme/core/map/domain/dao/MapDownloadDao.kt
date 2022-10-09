@@ -5,5 +5,4 @@ import com.peterlaurence.trekme.core.map.domain.models.MapDownloadResult
 
 interface MapDownloadDao {
     suspend fun processRequest(request: DownloadMapRequest, onProgress: (Int) -> Unit): MapDownloadResult
-
 }

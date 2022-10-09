@@ -106,7 +106,7 @@ class WmtsViewModel @Inject constructor(
         WmtsSource.IGN to listOf(
             ScaleLimitsConfig(maxScale = 0.25f),
             ScaleForZoomOnPositionConfig(scale = 0.125f),
-            LevelLimitsConfig(levelMax = 16),
+            LevelLimitsConfig(levelMax = 18),
             BoundariesConfig(
                 listOf(
                     BoundingBox(41.21, 51.05, -4.92, 8.37),        // France

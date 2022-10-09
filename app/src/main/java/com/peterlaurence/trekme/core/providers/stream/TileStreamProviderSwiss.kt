@@ -4,7 +4,6 @@ import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttp
-import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderRetry
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 
 /**
@@ -15,7 +14,7 @@ class TileStreamProviderSwiss(urlTileBuilder: UrlTileBuilder) : TileStreamProvid
             "Referer" to "https://wmts.geo.admin.ch",
             "User-Agent" to "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
     )
-    private val base = TileStreamProviderRetry(TileStreamProviderHttp(urlTileBuilder, requestProperties))
+    private val base = TileStreamProviderHttp(urlTileBuilder, requestProperties)
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
         /* Filter-out inaccessible tiles at lower levels */

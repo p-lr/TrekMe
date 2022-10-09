@@ -4,7 +4,6 @@ import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttp
-import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderRetry
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 
 /**
@@ -13,7 +12,7 @@ import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
  * @author Jules Cheron
  */
 class TileStreamProviderOrdnanceSurvey(urlTileBuilder: UrlTileBuilder) : TileStreamProvider {
-    private val base = TileStreamProviderRetry(TileStreamProviderHttp(urlTileBuilder))
+    private val base = TileStreamProviderHttp(urlTileBuilder)
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
 

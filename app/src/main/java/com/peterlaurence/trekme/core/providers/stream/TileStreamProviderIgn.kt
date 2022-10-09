@@ -4,7 +4,6 @@ import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
-import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderRetry
 import com.peterlaurence.trekme.core.providers.layers.IgnClassic
 import com.peterlaurence.trekme.core.providers.layers.Layer
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
@@ -23,7 +22,7 @@ class TileStreamProviderIgn(urlTileBuilder: UrlTileBuilder, val layer: Layer) : 
     private val base: TileStreamProvider
 
     init {
-        base = TileStreamProviderRetry(TileStreamProviderHttpAuth(urlTileBuilder, "TrekMe"))
+        base = TileStreamProviderHttpAuth(urlTileBuilder, "TrekMe")
     }
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
@@ -36,7 +35,7 @@ class TileStreamProviderIgn(urlTileBuilder: UrlTileBuilder, val layer: Layer) : 
             }
         }
         /* Safeguard */
-        if (zoomLvl > 16) return OutOfBounds
+        if (zoomLvl > 18) return OutOfBounds
 
         return base.getTileStream(row, col, zoomLvl)
     }
