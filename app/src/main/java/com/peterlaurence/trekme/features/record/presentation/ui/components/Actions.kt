@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.features.record.presentation.ui.components
 
 import android.view.animation.OvershootInterpolator
-import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.Text
@@ -157,9 +157,34 @@ private fun PlayPauseStop(
 
 @Preview(showBackground = true)
 @Composable
-fun Preview0() {
+private fun StartStopPreview() {
+    var state by remember { mutableStateOf(GpxRecordState.STOPPED) }
     TrekMeTheme {
-        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, 0f)
+        PlayPauseStop(state,
+            onStartStopClick = {
+                state =
+                    if (state == GpxRecordState.STOPPED) GpxRecordState.STARTED else GpxRecordState.STOPPED
+            },
+            onPauseResumeClick = {
+                state =
+                    if (state == GpxRecordState.PAUSED) GpxRecordState.RESUMED else GpxRecordState.PAUSED
+            }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+@ExperimentalAnimationApi
+fun Preview0() {
+    val transition: Transition<Boolean> = updateTransition(targetState = false, label = "")
+    val t: Float by transition.animateFloat(
+        transitionSpec = { spring(stiffness = 50f) }, label = ""
+    ) { state ->
+        if (state) 0f else 1f
+    }
+    TrekMeTheme {
+        MorphingShape(Modifier, pausePath, playPathDest, Color.Blue, t)
     }
 }
 
