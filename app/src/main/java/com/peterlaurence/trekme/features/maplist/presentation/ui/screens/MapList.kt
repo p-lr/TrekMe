@@ -154,13 +154,14 @@ interface MapListIntents {
     fun onCancelDownload()
 }
 
-@Preview
+@Preview(heightDp = 450)
 @Composable
 private fun MapCardPreview() {
     val mapList = listOf(
         MapItem(UUID.randomUUID(), title = "A map 1"),
         MapItem(UUID.randomUUID(), title = "A map 2"),
-        MapItem(UUID.randomUUID(), title = "A map 1")
+        MapItem(UUID.randomUUID(), title = "A map 3"),
+        MapItem(UUID.randomUUID(), title = "A map 4")
     )
 
     var mapListState by remember { mutableStateOf(MapListState(mapList, false)) }
@@ -170,11 +171,11 @@ private fun MapCardPreview() {
         }
 
         override fun onMapFavorite(mapId: UUID) {
-            val newList = mapList.map {
+            val newList = mapListState.mapItems.map {
                 if (it.mapId == mapId) {
                     it.copy(isFavorite = !it.isFavorite)
                 } else it
-            }
+            }.sortedByDescending { it.isFavorite }
             mapListState = MapListState(newList, false)
         }
 
@@ -185,6 +186,10 @@ private fun MapCardPreview() {
         }
 
         override fun onMapDelete(mapId: UUID) {
+            val newList = mapListState.mapItems.filter {
+                it.mapId != mapId
+            }
+            mapListState = MapListState(newList, false)
         }
 
         override fun navigateToMapCreate(showOnBoarding: Boolean) {
