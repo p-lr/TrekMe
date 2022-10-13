@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.maplist.presentation.ui.screens
 
 import android.content.Context
+import android.content.res.Configuration
 import android.net.Uri
 import android.util.AttributeSet
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -155,6 +156,7 @@ interface MapListIntents {
 }
 
 @Preview(heightDp = 450)
+@Preview(heightDp = 450, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MapCardPreview() {
     val mapList = listOf(
@@ -164,7 +166,11 @@ private fun MapCardPreview() {
         MapItem(UUID.randomUUID(), title = "A map 4")
     )
 
-    var mapListState by remember { mutableStateOf(MapListState(mapList, false)) }
+    var mapListState by remember {
+        mutableStateOf(
+            MapListState(mapList, false, downloadProgress = 25, isDownloadPending = true)
+        )
+    }
 
     val intents = object : MapListIntents {
         override fun onMapClicked(mapId: UUID) {

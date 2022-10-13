@@ -22,9 +22,11 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListIntents
@@ -46,19 +48,16 @@ internal fun MapCard(
                 .clickable { intents.onMapClicked(mapItem.mapId) }
         ) {
             Row {
-                Column(
-                    Modifier
+                Text(
+                    modifier = Modifier
                         .padding(start = 16.dp, top = 16.dp)
-                        .weight(1f)
-                ) {
-                    Text(
-                        text = mapItem.title,
-                        color = textColor(),
-                        fontSize = 24.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                        .weight(1f),
+                    text = mapItem.title,
+                    color = textColor(),
+                    fontSize = 24.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
                 ImagePlaceHolder(mapItem, intents::onSetMapImage)
             }
             ButtonRow(
@@ -192,6 +191,36 @@ private fun ButtonRow(
             cancelButtonText = stringResource(id = R.string.cancel_dialog_string),
             confirmColorBackground = colorResource(id = R.color.colorAccentRed)
         )
+    }
+}
+
+@Preview
+@Composable
+private fun MapCardPreview() {
+    val intents = object : MapListIntents {
+        override fun onMapClicked(mapId: UUID) {
+        }
+
+        override fun onMapFavorite(mapId: UUID) {
+        }
+
+        override fun onMapSettings(mapId: UUID) {
+        }
+
+        override fun onSetMapImage(mapId: UUID, uri: Uri) {
+        }
+
+        override fun onMapDelete(mapId: UUID) {
+        }
+
+        override fun navigateToMapCreate(showOnBoarding: Boolean) {
+        }
+
+        override fun onCancelDownload() {
+        }
+    }
+    TrekMeTheme {
+        MapCard(mapItem = MapItem(UUID.randomUUID(), title = "Terra Incognita"), intents = intents)
     }
 }
 
