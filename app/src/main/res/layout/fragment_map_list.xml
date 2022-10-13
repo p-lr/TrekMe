@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListView
+    <com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListStateful
         android:id="@+id/mapListUI"
         android:layout_width="0dp"
         android:layout_height="0dp"

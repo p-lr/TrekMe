@@ -39,7 +39,7 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.components.Down
 import java.util.*
 
 @Composable
-fun MapListStateful(state: MapListState, intents: MapListIntents) {
+fun MapList(state: MapListState, intents: MapListIntents) {
     val listState = rememberLazyListState()
     Column {
         if (state.isDownloadPending) {
@@ -82,7 +82,7 @@ private fun LazyItemScope.AnimatedMapCard(mapItem: MapItem, intents: MapListInte
 }
 
 
-class MapListView @JvmOverloads constructor(
+class MapListStateful @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
@@ -140,7 +140,7 @@ class MapListView @JvmOverloads constructor(
 
         val mapListState by viewModel.mapListState.collectAsState()
         TrekMeTheme {
-            MapListStateful(mapListState, intents)
+            MapList(mapListState, intents)
         }
     }
 }
@@ -158,7 +158,7 @@ interface MapListIntents {
 @Preview(heightDp = 450)
 @Preview(heightDp = 450, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun MapCardPreview() {
+private fun MapListPreview() {
     val mapList = listOf(
         MapItem(UUID.randomUUID(), title = "A map 1"),
         MapItem(UUID.randomUUID(), title = "A map 2"),
@@ -206,6 +206,6 @@ private fun MapCardPreview() {
     }
 
     TrekMeTheme {
-        MapListStateful(mapListState, intents)
+        MapList(mapListState, intents)
     }
 }
