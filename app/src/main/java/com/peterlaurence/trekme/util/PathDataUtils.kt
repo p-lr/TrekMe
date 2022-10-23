@@ -47,7 +47,6 @@ fun lerp(fromPathNodes: List<PathNode>, toPathNodes: List<PathNode>, t: Float): 
         } else if (from is PathNode.Close && to is PathNode.Close) {
             PathNode.Close
         } else {
-            println(from)
             // TODO: support all possible SVG path data types
             throw IllegalStateException("Unsupported SVG PathNode command")
         }

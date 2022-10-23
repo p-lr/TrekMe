@@ -33,7 +33,7 @@ import com.peterlaurence.trekme.core.repositories.mapcreate.GeocodingRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
-import com.peterlaurence.trekme.ui.common.PositionMarker
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.DownloadFormDataBundle
 import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFragment

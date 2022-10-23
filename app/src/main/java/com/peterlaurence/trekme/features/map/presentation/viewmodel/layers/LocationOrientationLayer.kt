@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
-import com.peterlaurence.trekme.ui.common.PositionOrientationMarker
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionOrientationMarker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
