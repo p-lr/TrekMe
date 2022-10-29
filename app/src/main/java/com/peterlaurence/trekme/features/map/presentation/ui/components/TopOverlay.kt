@@ -15,11 +15,12 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 
 /**
- * An overlay to show optional information. It can display :
+ * An overlay at the top of the screen, just below the topbar, to show optional information.
+ * It can display :
  * • The current speed
  * • The distance between two points
  *
- * @author P.Laurence on 2017/06/03 -- converted to compose on 2021/11/06
+ * @since 2017/06/03 -- converted to compose on 2021/11/06
  */
 @Composable
 fun TopOverlay(

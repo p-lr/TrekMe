@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -9,11 +10,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
+import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.map.presentation.ui.components.Beacon
+import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
+import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 
 @Composable
 fun MapTopAppBar(
@@ -34,7 +43,8 @@ fun MapTopAppBar(
     onToggleLockPosition: () -> Unit,
     onToggleShowGpsData: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expandedMenu by remember { mutableStateOf(false) }
+    var expandedAddOnMap by remember { mutableStateOf(false) }
 
     TopAppBar(
         title = {},
@@ -44,22 +54,60 @@ fun MapTopAppBar(
             }
         },
         actions = {
-            IconButton(onClick = onAddMarker) {
+            IconButton(
+                onClick = { expandedAddOnMap = true },
+                modifier = Modifier.width(36.dp)
+            ) {
                 Icon(
-                    painterResource(id = R.drawable.ic_add_location_white_24dp),
-                    contentDescription = stringResource(id = R.string.mapview_add_marker),
+                    painterResource(id = R.drawable.ic_map_marker_plus),
+                    contentDescription = stringResource(id = R.string.mapview_add_elements),
                     tint = Color.White
                 )
             }
-            IconButton(onClick = onAddLandmark) {
-                Icon(
-                    painterResource(id = R.drawable.lighthouse_24dp),
-                    contentDescription = stringResource(id = R.string.mapview_add_landmark),
-                    tint = Color.White
-                )
+
+            Box(
+                Modifier
+                    .height(24.dp)
+                    .wrapContentSize(Alignment.BottomEnd, true)
+            ) {
+                DropdownMenu(
+                    expanded = expandedAddOnMap,
+                    onDismissRequest = { expandedAddOnMap = false }
+                ) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        mainAxisAlignment = FlowMainAxisAlignment.SpaceEvenly,
+                        tryAlign = true
+                    ) {
+                        IconAndText(
+                            { modifier -> Marker(modifier) },
+                            R.string.mapview_add_marker,
+                            onClick = {
+                                expandedAddOnMap = false
+                                onAddMarker()
+                            }
+                        )
+                        IconAndText(
+                            { modifier -> LandMark(modifier) },
+                            R.string.mapview_add_landmark,
+                            onClick = {
+                                expandedAddOnMap = false
+                                onAddLandmark()
+                            }
+                        )
+                        IconAndText(
+                            { modifier ->
+                                val radius = with(LocalDensity.current) { 20.dp.toPx() }
+                                Beacon(modifier, beaconVicinityRadiusPx = radius)
+                            },
+                            R.string.mapview_add_beacon,
+                            onClick = {}
+                        )
+                    }
+                }
             }
             IconButton(
-                onClick = { expanded = true },
+                onClick = { expandedMenu = true },
                 modifier = Modifier.width(36.dp)
             ) {
                 Icon(
@@ -74,8 +122,8 @@ fun MapTopAppBar(
                     .wrapContentSize(Alignment.BottomEnd, true)
             ) {
                 DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
+                    expanded = expandedMenu,
+                    onDismissRequest = { expandedMenu = false },
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
                     DropdownMenuItem(onClick = onManageTracks) {
@@ -128,5 +176,30 @@ fun MapTopAppBar(
             }
         }
     )
+}
 
+@Composable
+private fun IconAndText(icon: @Composable (Modifier) -> Unit, textId: Int, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .height(90.dp)
+            .padding(16.dp)
+            .clickable(onClick = onClick)
+
+    ) {
+        icon(Modifier.align(Alignment.TopCenter))
+        Text(stringResource(id = textId), Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun IconAndTextPreview() {
+    TrekMeTheme {
+        IconAndText(
+            { modifier -> Marker(modifier) },
+            R.string.mapview_add_marker,
+            onClick = {}
+        )
+    }
 }

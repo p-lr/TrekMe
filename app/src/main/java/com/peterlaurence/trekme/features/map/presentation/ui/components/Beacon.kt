@@ -36,7 +36,7 @@ fun Beacon(
     modifier: Modifier = Modifier,
     animationDurationMs: Int = 1500,
     beaconVicinityRadiusPx: Float,
-    scale: Float,
+    scale: Float = 1f,
     isStatic: Boolean = true
 ) {
     val animatedProgress = remember { Animatable(0f) }
@@ -75,7 +75,7 @@ fun Beacon(
                 PathEffect.dashPathEffect(floatArrayOf(dashSize, dashSize), 0f)
             }
 
-            Canvas(modifier = modifier.rotate(angle)) {
+            Canvas(modifier = Modifier.rotate(angle)) {
                 drawCircle(strokeColor, radius, style = Stroke(width = 1.dp.toPx(), pathEffect = pathEffect))
             }
         }

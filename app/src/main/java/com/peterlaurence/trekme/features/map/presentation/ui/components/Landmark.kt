@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun LandMark(
     modifier: Modifier = Modifier,
-    isStatic: Boolean
+    isStatic: Boolean = true
 ) = Marker(
     modifier,
     backgroundColor = color,

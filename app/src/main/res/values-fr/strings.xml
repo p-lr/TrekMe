@@ -33,7 +33,8 @@
     <string name="manage_tracks_menu">Gérer les traces</string>
     <string name="import_tracks_menu_title">Traces</string>
     <string name="import_tracks_warning">Le fichier sélectionné a un format inconnu. Les extensions connues sont :</string>
-    <string name="mapview_add_marker">Ajouter un repère</string>
+    <string name="mapview_add_marker">Marqueur</string>
+    <string name="mapview_add_beacon">Balise</string>
     <string name="move_marker">Déplacer</string>
     <string name="marker_name_label">Nom</string>
     <string name="comment_label">Commentaire</string>
@@ -131,7 +132,8 @@
     <string name="mapcreate_warning_others">Il y a un souci avec les serveurs du fournisseur de cette carte. Les indisponibilités ne durent en général que quelques heures.</string>
     <string name="general_help_link"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#que-faire-si">Besoin d\'aide ?</a></string>
     <string name="mapcreate_btn_nav_credentials">Corriger mes identifiants</string>
-    <string name="mapview_add_landmark">Ajouter un repère</string>
+    <string name="mapview_add_elements">Placer sur la carte</string>
+    <string name="mapview_add_landmark">Repère</string>
     <string name="callout_landmark_title">Repère</string>
     <string name="settings_menu_title">Paramètres</string>
     <string name="root_folder_category">Dossier racine</string>
