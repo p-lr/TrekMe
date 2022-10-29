@@ -70,13 +70,13 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
-    implementation 'androidx.fragment:fragment-ktx:1.5.3'
+    implementation 'androidx.fragment:fragment-ktx:1.5.4'
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
-    implementation 'androidx.activity:activity-compose:1.6.0'
+    implementation 'androidx.activity:activity-compose:1.6.1'
     implementation "androidx.compose.ui:ui:$compose_libs_version"
     implementation "androidx.compose.material:material:$compose_libs_version"
     implementation "androidx.compose.foundation:foundation:$compose_libs_version"
@@ -84,7 +84,7 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_libs_version"
     implementation "androidx.compose.runtime:runtime-livedata:$compose_libs_version"
     implementation "androidx.compose.ui:ui-util:$compose_libs_version"
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.preference:preference-ktx:1.2.0'
@@ -99,7 +99,7 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testImplementation 'org.robolectric:robolectric:4.6.1'
+    testImplementation 'org.robolectric:robolectric:4.7.3'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test:core:1.4.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
