@@ -3,17 +3,15 @@ package com.peterlaurence.trekme.features.map.domain.interactors
 import android.content.Context
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
-import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.map.domain.models.MapBounds
 import com.peterlaurence.trekme.core.map.domain.dao.LandmarksDao
-import com.peterlaurence.trekme.core.map.domain.models.Landmark
-import com.peterlaurence.trekme.core.map.domain.models.Marker
-import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
+import com.peterlaurence.trekme.core.map.domain.models.*
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.Projection
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import com.peterlaurence.trekme.di.ApplicationScope
+import com.peterlaurence.trekme.features.map.domain.models.BeaconWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
@@ -60,6 +58,18 @@ class MapInteractor @Inject constructor(
             }
         }
 
+    suspend fun addBeacon(map: Map, x: Double, y: Double): Beacon {
+        return withContext(scope.coroutineContext) {
+            val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
+            val name = context.getString(R.string.beacon_default_name)
+            // TODO fetch last radius from data store
+
+            Beacon(name, lat = lonLat[1], lon = lonLat[0]).also {
+                map.addBeacon(it)
+            }
+        }
+    }
+
     /**
      * Update the landmark position and save.
      * [x] and [y] are expected to be normalized coordinates.
@@ -94,6 +104,24 @@ class MapInteractor @Inject constructor(
         markersDao.saveMarkers(map)
     }
 
+    /**
+     * Update the marker position and save.
+     * [x] and [y] are expected to be normalized coordinates.
+     */
+    suspend fun updateAndSaveBeacon(beacon: Beacon, map: Map, x: Double, y: Double): Beacon {
+        val mapBounds = map.mapBounds
+
+        val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)
+
+        val updatedBeacon = beacon.copy(lat = lonLat[1], lon = lonLat[0])
+
+        scope.launch {
+            // TODO: save beacon
+        }
+
+        return updatedBeacon
+    }
+
     fun deleteLandmark(landmark: Landmark, mapId: UUID) = scope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteLandmark(landmark)
@@ -116,6 +144,11 @@ class MapInteractor @Inject constructor(
             val map = mapRepository.getMap(mapId) ?: return@launch
             markersDao.saveMarkers(map)
         }
+    }
+
+    suspend fun getBeaconPositions(map: Map): List<BeaconWithNormalizedPos> {
+        // TODO: implement
+        return emptyList()
     }
 
     /**

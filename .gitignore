@@ -11,8 +11,7 @@ build
 /app/src/main/assets/tiles
 /captures
 /app/release
-/mapview-debug/*
-/mapcompose-debug/*
+/mapcompose-local/*
 deploy-release.sh
 compile_sign_and_run.sh
 compile_and_deploy_release.sh

@@ -37,6 +37,7 @@ fun MapTopAppBar(
     onToggleShowOrientation: () -> Unit,
     onAddMarker: () -> Unit,
     onAddLandmark: () -> Unit,
+    onAddBeacon: () -> Unit,
     onShowDistance: () -> Unit,
     onToggleDistanceOnTrack: () -> Unit,
     onToggleSpeed: () -> Unit,
@@ -101,7 +102,10 @@ fun MapTopAppBar(
                                 Beacon(modifier, beaconVicinityRadiusPx = radius)
                             },
                             R.string.mapview_add_beacon,
-                            onClick = {}
+                            onClick = {
+                                expandedAddOnMap = false
+                                onAddBeacon()
+                            }
                         )
                     }
                 }
@@ -183,9 +187,8 @@ private fun IconAndText(icon: @Composable (Modifier) -> Unit, textId: Int, onCli
     Box(
         modifier = Modifier
             .height(90.dp)
-            .padding(16.dp)
             .clickable(onClick = onClick)
-
+            .padding(16.dp)
     ) {
         icon(Modifier.align(Alignment.TopCenter))
         Text(stringResource(id = textId), Modifier.align(Alignment.BottomCenter))

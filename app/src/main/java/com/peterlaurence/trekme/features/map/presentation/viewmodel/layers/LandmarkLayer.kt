@@ -62,12 +62,12 @@ class LandmarkLayer(
         }
     }
 
-    override fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double) {
+    override fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double): Boolean {
         if (id.startsWith(markerGrabPrefix)) {
             onMarkerGrabTap(id, mapState)
-            return
+            return true
         }
-        val landmarkState = landmarkListState[id] ?: return
+        val landmarkState = landmarkListState[id] ?: return false
 
         scope.launch {
             var shouldAnimate by mutableStateOf(true)
@@ -117,6 +117,7 @@ class LandmarkLayer(
                 )
             }
         }
+        return true
     }
 
     private fun attachMarkerGrab(

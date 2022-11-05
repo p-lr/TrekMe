@@ -2,10 +2,7 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
@@ -45,15 +42,17 @@ fun Beacon(
     }
 
     val radius = beaconVicinityRadiusPx * scale
+    val sizeDp = with(LocalDensity.current) {
+        (radius * 2).toDp() + 2.dp
+    }
 
     Box(
-        modifier = modifier,
+        modifier = modifier.size(sizeDp),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = modifier.size(29.dp)) {
+        Canvas(modifier = Modifier.size(29.dp)) {
             drawCircle(color, 5.dp.toPx())
             drawCircle(color, radius * (1 - animatedProgress.value), alpha = 0.2f)
-
         }
 
         if (animatedProgress.value == 0f) {
@@ -75,7 +74,7 @@ fun Beacon(
                 PathEffect.dashPathEffect(floatArrayOf(dashSize, dashSize), 0f)
             }
 
-            Canvas(modifier = Modifier.rotate(angle)) {
+            Canvas(modifier = Modifier.size(sizeDp).rotate(angle)) {
                 drawCircle(strokeColor, radius, style = Stroke(width = 1.dp.toPx(), pathEffect = pathEffect))
             }
         }
@@ -95,7 +94,7 @@ fun BeaconPreview() {
             Button(onClick = { isStatic = !isStatic }) {
                 Text("Toggle")
             }
-            Slider(value = scale, onValueChange = { scale = it })
+            Slider(value = scale, onValueChange = { scale = it }, valueRange = 0f..2f)
             Beacon(Modifier.size(100.dp), beaconVicinityRadiusPx = 100f, scale = scale, isStatic = isStatic)
         }
     }

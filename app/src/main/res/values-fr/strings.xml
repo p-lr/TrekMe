@@ -336,6 +336,7 @@
     <string name="map_move_landmark">Déplacer le marqueur</string>
     <string name="no_ele_profile_data">Ce fichier GPX est peut-être vide, ou une erreur s\'est produite.</string>
     <string name="landmark_default_name">Repère</string>
+    <string name="beacon_default_name">Balise</string>
     <string name="preference_show_scale_indicator">Afficher l\'indicateur d\'échelle</string>
     <string name="shop_menu_title">Boutique</string>
     <string name="trekme_extended_trial">Essai gratuit de 7j</string>

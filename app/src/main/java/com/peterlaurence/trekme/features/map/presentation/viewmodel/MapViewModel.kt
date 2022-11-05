@@ -6,20 +6,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
-import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.core.location.Location
 import com.peterlaurence.trekme.core.location.LocationSource
-import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.interactors.ElevationFixInteractor
 import com.peterlaurence.trekme.core.map.domain.models.ErrorIgnLicense
 import com.peterlaurence.trekme.core.map.domain.models.FreeLicense
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.ValidIgnLicense
-import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.core.orientation.OrientationSource
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapLicenseInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
@@ -72,11 +72,7 @@ class MapViewModel @Inject constructor(
         }
     )
 
-    val landmarkLayer: LandmarkLayer = LandmarkLayer(
-        viewModelScope,
-        dataStateFlow,
-        mapInteractor
-    )
+    val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, dataStateFlow, mapInteractor)
 
     val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
@@ -88,10 +84,9 @@ class MapViewModel @Inject constructor(
         }
     )
 
-    val distanceLayer = DistanceLayer(
-        viewModelScope,
-        dataStateFlow.map { it.mapState }
-    )
+    val beaconLayer: BeaconLayer = BeaconLayer(viewModelScope, dataStateFlow, mapInteractor)
+
+    val distanceLayer = DistanceLayer(viewModelScope, dataStateFlow.map { it.mapState })
 
     private val scaleIndicatorLayer = ScaleIndicatorLayer(
         viewModelScope,
@@ -231,8 +226,13 @@ class MapViewModel @Inject constructor(
         mapState.shouldLoopScale = true
 
         mapState.onMarkerClick { id, x, y ->
-            landmarkLayer.onMarkerTap(mapState, map.id, id, x, y)
-            markerLayer.onMarkerTap(mapState, map.id, id, x, y)
+            val landmarkHandled = landmarkLayer.onMarkerTap(mapState, map.id, id, x, y)
+            if (landmarkHandled) return@onMarkerClick
+
+            val markerHandled = markerLayer.onMarkerTap(mapState, map.id, id, x, y)
+            if (markerHandled) return@onMarkerClick
+
+            beaconLayer.onMarkerTap(mapState, map.id, id, x, y)
         }
         /* endregion */
 
@@ -250,7 +250,7 @@ class MapViewModel @Inject constructor(
     /* endregion */
 
     interface MarkerTapListener {
-        fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double)
+        fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double) : Boolean
     }
 }
 

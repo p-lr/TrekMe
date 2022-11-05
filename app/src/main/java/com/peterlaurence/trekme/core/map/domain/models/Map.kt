@@ -46,6 +46,7 @@ data class Map(
         private set
     private var _landmarks: MutableList<Landmark>? = null
     private var _markerList: MutableList<Marker>? = null
+    private var _beaconList: MutableList<Beacon> = mutableListOf()
     private val _routes = MutableStateFlow<List<Route>>(listOf())
 
     private val _elevationFix: MutableStateFlow<Int> = MutableStateFlow(config.elevationFix)
@@ -156,6 +157,18 @@ data class Map(
 
     fun deleteLandmark(landmark: Landmark) {
         _landmarks?.remove(landmark)
+    }
+
+    val beacons: List<Beacon>
+        get() = _beaconList
+
+    fun setBeacons(beacons: List<Beacon>) {
+        _beaconList.clear()
+        _beaconList.addAll(beacons)
+    }
+
+    fun addBeacon(beacon: Beacon) {
+        _beaconList.add(beacon)
     }
 
     val routes: StateFlow<List<Route>> = _routes.asStateFlow()
