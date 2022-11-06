@@ -17,9 +17,7 @@ import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedP
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.*
 import java.util.*
 import javax.inject.Inject
 
@@ -58,15 +56,13 @@ class MapInteractor @Inject constructor(
             }
         }
 
-    suspend fun addBeacon(map: Map, x: Double, y: Double): Beacon {
+    suspend fun makeBeacon(map: Map, x: Double, y: Double): Beacon {
         return withContext(scope.coroutineContext) {
             val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
             val name = context.getString(R.string.beacon_default_name)
             // TODO fetch last radius from data store
 
-            Beacon(name, lat = lonLat[1], lon = lonLat[0]).also {
-                map.addBeacon(it)
-            }
+            Beacon(id = UUID.randomUUID().toString(), name = name, lat = lonLat[1], lon = lonLat[0])
         }
     }
 
@@ -115,6 +111,10 @@ class MapInteractor @Inject constructor(
 
         val updatedBeacon = beacon.copy(lat = lonLat[1], lon = lonLat[0])
 
+        map.beacons.update { formerList ->
+            formerList.filter { it.id != beacon.id } + updatedBeacon
+        }
+
         scope.launch {
             // TODO: save beacon
         }
@@ -146,9 +146,19 @@ class MapInteractor @Inject constructor(
         }
     }
 
-    suspend fun getBeaconPositions(map: Map): List<BeaconWithNormalizedPos> {
-        // TODO: implement
-        return emptyList()
+    suspend fun getBeaconPositionsFlow(map: Map): Flow<List<BeaconWithNormalizedPos>> {
+        return map.beacons.map { beaconList ->
+            beaconList.map { beacon ->
+                val (x, y) = getNormalizedCoordinates(
+                    beacon.lat,
+                    beacon.lon,
+                    map.mapBounds,
+                    map.projection
+                )
+
+                BeaconWithNormalizedPos(beacon, x, y)
+            }
+        }
     }
 
     /**

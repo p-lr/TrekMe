@@ -14,9 +14,8 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -27,20 +26,46 @@ class BeaconLayer(
     private val dataStateFlow: Flow<DataState>,
     private val mapInteractor: MapInteractor,
 ) : MapViewModel.MarkerTapListener {
+    /**
+     * Correspondence between beacon (domain) ids and their associated view state.
+     * BeaconState has an "idOnMap" which is correspond to the domain id prefixed with [beaconPrefix].
+     * This is useful for click listeners to quickly identify whether the click is done on a beacon
+     * or not.
+     */
     private var beaconListState = mutableMapOf<String, BeaconState>()
 
     init {
-        dataStateFlow.map { (map, mapState) ->
-            onMapUpdate(map, mapState)
-        }.launchIn(scope)
+        scope.launch {
+            dataStateFlow.collectLatest { (map, mapState) ->
+                beaconListState.clear()
+                onMapUpdate(map, mapState)
+            }
+        }
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
-        mapInteractor.getBeaconPositions(map).map { (beacon, x, y) ->
-            val state = addBeaconOnMap(beacon, mapState, x, y)
-            state
-        }.associateBy { it.id }.also {
-            beaconListState = it.toMutableMap()
+        mapInteractor.getBeaconPositionsFlow(map).collect {
+            for (beaconWithNormalizedPos in it) {
+                val existing = beaconListState[beaconWithNormalizedPos.beacon.id]
+                if (existing != null) {
+                    existing.apply {
+                        beacon = beaconWithNormalizedPos.beacon
+                    }
+                } else {
+                    val beaconState = addBeaconOnMap(
+                        beaconWithNormalizedPos.beacon,
+                        mapState,
+                        beaconWithNormalizedPos.x,
+                        beaconWithNormalizedPos.y
+                    )
+                    beaconListState[beaconWithNormalizedPos.beacon.id] = beaconState
+                }
+            }
+            val iter = beaconListState.iterator()
+            val ids = it.map { b -> b.beacon.id }
+            for (entry in iter) {
+                if (entry.key !in ids) iter.remove()
+            }
         }
     }
 
@@ -48,10 +73,10 @@ class BeaconLayer(
         val (map, mapState) = dataStateFlow.first()
         val x = mapState.centroidX
         val y = mapState.centroidY
-        val beacon = mapInteractor.addBeacon(map, x, y)
+        val beacon = mapInteractor.makeBeacon(map, x, y)
         val beaconState = addBeaconOnMap(beacon, mapState, x, y)
         morphToDynamic(beaconState, x, y, mapState)
-        beaconListState[beaconState.id] = beaconState
+        beaconListState[beacon.id] = beaconState
     }
 
     override fun onMarkerTap(
@@ -69,22 +94,22 @@ class BeaconLayer(
     }
 
     private fun onBeaconGrabTap(beaconGrabId: String, mapState: MapState) {
-        val beaconId = beaconGrabId.substringAfter('-')
+        val beaconId = beaconGrabId.substringAfter("$beaconPrefix-")
         val beaconState = beaconListState[beaconId] ?: return
         beaconState.isStatic = true
-        mapState.updateMarkerClickable(beaconId, true)
 
-        val markerInfo = mapState.getMarkerInfo(beaconId) ?: return
-        val beacon = beaconState.beacon ?: return
+        mapState.updateMarkerClickable(beaconState.idOnMap, true)
+
+        val markerInfo = mapState.getMarkerInfo(beaconState.idOnMap) ?: return
+        val beacon = beaconState.beacon
         scope.launch {
             dataStateFlow.first().also {
-                val updatedBeacon = mapInteractor.updateAndSaveBeacon(
+                mapInteractor.updateAndSaveBeacon(
                     beacon,
                     it.map,
                     markerInfo.x,
                     markerInfo.y
                 )
-                beaconListState[beaconId]?.beacon = updatedBeacon
             }
         }
     }
@@ -95,7 +120,7 @@ class BeaconLayer(
         x: Double,
         y: Double
     ): BeaconState {
-        val id = "$beaconPrefix-${UUID.randomUUID()}"
+        val id = "$beaconPrefix-${beacon.id}"
         val state = BeaconState(id, beacon)
         mapState.addMarker(
             id,
@@ -108,7 +133,7 @@ class BeaconLayer(
         ) {
             Beacon(
                 Modifier,
-                beaconVicinityRadiusPx = 100f,
+                beaconVicinityRadiusPx = state.beacon.radius,
                 isStatic = state.isStatic,
                 scale = mapState.scale
             )
@@ -117,9 +142,9 @@ class BeaconLayer(
     }
 
     private fun morphToDynamic(beaconState: BeaconState, x: Double, y: Double, mapState: MapState) {
-        mapState.updateMarkerClickable(beaconState.id, false)
+        mapState.updateMarkerClickable(beaconState.idOnMap, false)
         beaconState.isStatic = false
-        attachMarkerGrab(beaconState.id, x, y, mapState, beaconState)
+        attachMarkerGrab(beaconState.idOnMap, x, y, mapState, beaconState)
     }
 
     private fun attachMarkerGrab(
@@ -148,6 +173,7 @@ class BeaconLayer(
 private const val beaconPrefix = "beacon"
 private const val beaconGrabPrefix = "grabBeacon"
 
-private data class BeaconState(val id: String, var beacon: Beacon) {
+private class BeaconState(val idOnMap: String, initBeacon: Beacon) {
+    var beacon by mutableStateOf<Beacon>(initBeacon)
     var isStatic by mutableStateOf(true)
 }

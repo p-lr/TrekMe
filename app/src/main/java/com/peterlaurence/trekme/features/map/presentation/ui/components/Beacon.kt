@@ -74,7 +74,9 @@ fun Beacon(
                 PathEffect.dashPathEffect(floatArrayOf(dashSize, dashSize), 0f)
             }
 
-            Canvas(modifier = Modifier.size(sizeDp).rotate(angle)) {
+            Canvas(modifier = Modifier
+                .size(sizeDp)
+                .rotate(angle)) {
                 drawCircle(strokeColor, radius, style = Stroke(width = 1.dp.toPx(), pathEffect = pathEffect))
             }
         }
@@ -90,12 +92,14 @@ fun BeaconPreview() {
     TrekMeTheme {
         var isStatic by remember { mutableStateOf(true) }
         var scale by remember { mutableStateOf(1f) }
+        var radius by remember { mutableStateOf(100f) }
         Column(Modifier.padding(horizontal = 16.dp)) {
             Button(onClick = { isStatic = !isStatic }) {
                 Text("Toggle")
             }
             Slider(value = scale, onValueChange = { scale = it }, valueRange = 0f..2f)
-            Beacon(Modifier.size(100.dp), beaconVicinityRadiusPx = 100f, scale = scale, isStatic = isStatic)
+            Slider(value = radius, onValueChange = { radius = it }, valueRange = 100f..200f)
+            Beacon(Modifier.size(100.dp), beaconVicinityRadiusPx = radius, scale = scale, isStatic = isStatic)
         }
     }
 }
