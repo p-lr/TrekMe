@@ -56,19 +56,14 @@ fun CalibrationStateful(
                 }
             }
 
-            Scaffold(scaffoldState = scaffoldState) {
-                Column {
+            Scaffold(scaffoldState = scaffoldState) { paddingValues ->
+                Column(Modifier.padding(paddingValues)) {
                     val mapUiState = uiState as MapUiState
                     val calibrationPoints = mapUiState.calibrationPoints
                     val calibrationPointModel = calibrationPoints.getOrNull(
                         mapUiState.selected.value.index
                     )
                     val calibrationMethod by mapUiState.calibrationMethodStateFlow.collectAsState()
-                    /* Since the number of points can be changed anytime, don't allow selecting an
-                     * otherwise impossible point. */
-                    if (mapUiState.selected.value.index + 1 > calibrationMethod.pointCount) {
-                        viewModel.onPointSelectionChange(PointId.One)
-                    }
 
                     Calibration(
                         mapUiState.selected.value,
@@ -106,16 +101,16 @@ private fun Calibration(
             Row {
                 LatLonPrefix(stringResource(id = R.string.latitude_short))
                 LatLonTextField(
-                    value = calibrationPointModel?.lat?.toString() ?: "",
-                    onValueChange = { calibrationPointModel?.lat = it.toDoubleOrNull() }
+                    value = calibrationPointModel?.lat ?: "",
+                    onValueChange = { calibrationPointModel?.lat = it }
                 )
             }
 
             Row {
                 LatLonPrefix(stringResource(id = R.string.longitude_short))
                 LatLonTextField(
-                    value = calibrationPointModel?.lon?.toString() ?: "",
-                    onValueChange = { calibrationPointModel?.lon = it.toDoubleOrNull() }
+                    value = calibrationPointModel?.lon ?: "",
+                    onValueChange = { calibrationPointModel?.lon = it }
                 )
             }
         }

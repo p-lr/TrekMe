@@ -68,8 +68,8 @@ class CalibrationViewModel @Inject constructor(
         /* Prepare the calibration data */
         val map = mapRepository.settingsMapFlow.value ?: return
         val data = calibrationPoints.map {
-            val lat = it.lat ?: 0.0
-            val lon = it.lon ?: 0.0
+            val lat = it.lat.toDoubleOrNull() ?: 0.0
+            val lon = it.lon.toDoubleOrNull() ?: 0.0
             CalibrationData(lat, lon, it.x, it.y)
         }
 
@@ -121,7 +121,7 @@ class CalibrationViewModel @Inject constructor(
             if (pt != null) {
                 val latLon = calibrationInteractor.getLatLonForCalibrationPoint(pt, map)
                 if (latLon != null) {
-                    CalibrationPointModel(pt.normalizedX, pt.normalizedY, latLon.lat, latLon.lon)
+                    CalibrationPointModel(pt.normalizedX, pt.normalizedY, latLon.lat.toString(), latLon.lon.toString())
                 } else {
                     createCalibrationPointFromIndex(index)
                 }
@@ -157,10 +157,10 @@ class CalibrationViewModel @Inject constructor(
 
     private fun createCalibrationPointFromIndex(index: Int): CalibrationPointModel? {
         return when (index) {
-            0 -> CalibrationPointModel(0.0, 0.0, null, null)
-            1 -> CalibrationPointModel(1.0, 1.0, null, null)
-            2 -> CalibrationPointModel(1.0, 0.0, null, null)
-            3 -> CalibrationPointModel(0.0, 1.0, null, null)
+            0 -> CalibrationPointModel(0.0, 0.0, "", "")
+            1 -> CalibrationPointModel(1.0, 1.0, "", "")
+            2 -> CalibrationPointModel(1.0, 0.0, "", "")
+            3 -> CalibrationPointModel(0.0, 1.0, "", "")
             else -> null
         }
     }
@@ -172,7 +172,7 @@ enum class PointId(val index: Int) {
     One(0), Two(1), Three(2), Four(3)
 }
 
-class CalibrationPointModel(x: Double, y: Double, lat: Double?, lon: Double?) {
+class CalibrationPointModel(x: Double, y: Double, lat: String, lon: String) {
     var x by mutableStateOf(x)
     var y by mutableStateOf(y)
     var lat by mutableStateOf(lat)
