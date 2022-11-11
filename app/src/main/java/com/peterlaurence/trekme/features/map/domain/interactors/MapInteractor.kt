@@ -134,6 +134,16 @@ class MapInteractor @Inject constructor(
         markersDao.saveMarkers(map)
     }
 
+    fun deleteBeacon(beacon: Beacon, mapId: UUID) = scope.launch {
+        val map = mapRepository.getMap(mapId) ?: return@launch
+
+        map.beacons.update { formerList ->
+            formerList.filter { it.id != beacon.id }
+        }
+
+        // TODO: effectively delete beacon on data layer
+    }
+
     /**
      * Save all markers (debounced).
      */

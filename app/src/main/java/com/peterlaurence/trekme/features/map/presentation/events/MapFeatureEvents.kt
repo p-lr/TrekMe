@@ -1,8 +1,10 @@
 package com.peterlaurence.trekme.features.map.presentation.events
 
+import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import java.util.*
 
@@ -22,6 +24,16 @@ class MapFeatureEvents {
         MarkerMovedEvent(marker, mapId, markerId)
     )
     data class MarkerMovedEvent(val marker: Marker, val mapId: UUID, val markerId: String)
+    /* endregion */
+
+    /* region beacon */
+    private val _navigateToBeaconEdit = Channel<BeaconEditEvent>(1)
+    val navigateToBeaconEdit = _navigateToBeaconEdit.consumeAsFlow()
+    fun postBeaconEditEvent(beacon: Beacon, mapId: UUID, beaconId: String) = _navigateToBeaconEdit.trySend(
+        BeaconEditEvent(beacon, mapId, beaconId)
+    )
+
+    data class BeaconEditEvent(val beacon: Beacon, val mapId: UUID, val beaconId: String)
     /* endregion */
 
     /* region routes */

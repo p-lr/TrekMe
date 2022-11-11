@@ -5,13 +5,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Beacon
+import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
+import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -19,12 +26,15 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.util.*
 
 class BeaconLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val mapInteractor: MapInteractor,
+    private val onBeaconEdit: (Beacon, mapId: UUID, beaconId: String) -> Unit
 ) : MapViewModel.MarkerTapListener {
     /**
      * Correspondence between beacon (domain) ids and their associated view state.
@@ -64,7 +74,7 @@ class BeaconLayer(
             val iter = beaconListState.iterator()
             val ids = it.map { b -> b.beacon.id }
             for (entry in iter) {
-                if (entry.key !in ids) iter.remove()
+                if (entry.key !in ids && entry.value.isStatic) iter.remove()
             }
         }
     }
@@ -89,6 +99,64 @@ class BeaconLayer(
         if (id.startsWith(beaconGrabPrefix)) {
             onBeaconGrabTap(id, mapState)
             return true
+        }
+        val beaconId = id.substringAfter("$beaconPrefix-")
+        val beaconState = beaconListState[beaconId] ?: return false
+
+        scope.launch {
+            var shouldAnimate by mutableStateOf(true)
+
+            val calloutHeight = dpToPx(beaconCalloutHeightDp).toInt()
+
+            /* Whatever the size of the beacon, the callout will always be positioned at a fixed
+             * distance */
+            val calloutPadding = dpToPx(48f).toInt()
+            val calloutWidth = dpToPx(beaconCalloutWidthDp).toInt()
+
+            val pos = positionCallout(
+                mapState,
+                calloutWidth,
+                calloutHeight,
+                x,
+                y,
+                calloutPadding,
+                calloutPadding
+            )
+
+            val calloutId = "$calloutPrefix-$beaconId"
+            mapState.addCallout(
+                calloutId, x, y,
+                relativeOffset = Offset(pos.relativeAnchorLeft, pos.relativeAnchorTop),
+                absoluteOffset = Offset(pos.absoluteAnchorLeft, pos.absoluteAnchorTop),
+                autoDismiss = true, clickable = false, zIndex = 3f
+            ) {
+                val beacon = beaconListState[beaconId]?.beacon ?: return@addCallout
+                val subTitle = beacon.let {
+                    "${stringResource(id = R.string.latitude_short)} : ${df.format(it.lat)}  " +
+                            "${stringResource(id = R.string.longitude_short)} : ${df.format(it.lon)}"
+                }
+                val title = beacon.name
+
+                MarkerCallout(
+                    DpSize(beaconCalloutWidthDp.dp, beaconCalloutHeightDp.dp),
+                    title = title,
+                    subTitle = subTitle,
+                    shouldAnimate,
+                    onAnimationDone = { shouldAnimate = false },
+                    onEditAction = {
+                        onBeaconEdit(beacon, mapId, beaconId)
+                    },
+                    onDeleteAction = {
+                        mapState.removeCallout(calloutId)
+                        mapState.removeMarker(id)
+                        mapInteractor.deleteBeacon(beacon, mapId)
+                    },
+                    onMoveAction = {
+                        mapState.removeCallout(calloutId)
+                        morphToDynamic(beaconState, x, y, mapState)
+                    }
+                )
+            }
         }
         return true
     }
@@ -128,8 +196,6 @@ class BeaconLayer(
             y,
             relativeOffset = Offset(-0.5f, -0.5f),
             zIndex = 1f,
-            clickableAreaCenterOffset = Offset(0f, -0.22f),
-            clickableAreaScale = Offset(0.7f, 0.5f)
         ) {
             Beacon(
                 Modifier,
@@ -172,6 +238,14 @@ class BeaconLayer(
 
 private const val beaconPrefix = "beacon"
 private const val beaconGrabPrefix = "grabBeacon"
+private const val calloutPrefix = "callout"
+
+private const val beaconCalloutWidthDp = 200
+private const val beaconCalloutHeightDp = 120
+
+private val df = DecimalFormat("#.####").apply {
+    roundingMode = RoundingMode.CEILING
+}
 
 private class BeaconState(val idOnMap: String, initBeacon: Beacon) {
     var beacon by mutableStateOf<Beacon>(initBeacon)
