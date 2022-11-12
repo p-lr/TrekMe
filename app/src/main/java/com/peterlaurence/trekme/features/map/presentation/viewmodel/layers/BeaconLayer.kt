@@ -34,7 +34,7 @@ class BeaconLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val mapInteractor: MapInteractor,
-    private val onBeaconEdit: (Beacon, mapId: UUID, beaconId: String) -> Unit
+    private val onBeaconEdit: (Beacon, mapId: UUID) -> Unit
 ) : MapViewModel.MarkerTapListener {
     /**
      * Correspondence between beacon (domain) ids and their associated view state.
@@ -60,6 +60,7 @@ class BeaconLayer(
                 if (existing != null) {
                     existing.apply {
                         beacon = beaconWithNormalizedPos.beacon
+                        mapState.moveMarker(existing.idOnMap, beaconWithNormalizedPos.x, beaconWithNormalizedPos.y)
                     }
                 } else {
                     val beaconState = addBeaconOnMap(
@@ -144,7 +145,7 @@ class BeaconLayer(
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onEditAction = {
-                        onBeaconEdit(beacon, mapId, beaconId)
+                        onBeaconEdit(beacon, mapId)
                     },
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)

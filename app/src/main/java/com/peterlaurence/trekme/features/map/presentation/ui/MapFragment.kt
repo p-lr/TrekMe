@@ -45,6 +45,13 @@ class MapFragment : Fragment() {
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            mapFeatureEvents.navigateToBeaconEdit.collect { (beacon, mapId) ->
+                val action = MapFragmentDirections.actionMapFragmentToBeaconEditFragment(beacon, mapId)
+                findNavController().navigate(action)
+            }
+        }
+
         val binding = FragmentMapBinding.inflate(inflater, container, false)
 
         binding.mapScreen.apply {

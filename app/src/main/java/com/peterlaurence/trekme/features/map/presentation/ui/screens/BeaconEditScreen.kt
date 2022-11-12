@@ -21,41 +21,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
-import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
+import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
 import java.util.*
 
 @Composable
-fun MarkerEditStateful(
-    marker: Marker,
+fun BeaconEditStateful(
+    beacon: Beacon,
     mapId: UUID,
-    markerId: String,
-    mapFeatureEvents: MapFeatureEvents,
-    mapInteractor: MapInteractor,
+    beaconInteractor: BeaconInteractor,
     onBackAction: () -> Unit
 ) {
-    var name by remember {
-        mutableStateOf(marker.name ?: "")
-    }
+    var name by remember { mutableStateOf(beacon.name) }
+    var latField by remember { mutableStateOf(beacon.lat.toString()) }
+    var lonField by remember { mutableStateOf(beacon.lon.toString()) }
+    var commentField by remember { mutableStateOf(beacon.comment) }
 
-    var latField by remember {
-        mutableStateOf(marker.lat.toString())
-    }
-
-    var lonField by remember {
-        mutableStateOf(marker.lon.toString())
-    }
-
-    var commentField by remember {
-        mutableStateOf(marker.comment ?: "")
-    }
-
-    val onMarkerMove = remember {
-        { mapFeatureEvents.postMarkerMovedEvent(marker, mapId, markerId) }
+    fun makeBeacon(): Beacon {
+        return Beacon(beacon.id, name,
+            lat = latField.toDoubleOrNull() ?: beacon.lat,
+            lon = lonField.toDoubleOrNull() ?: beacon.lon,
+            radius = beacon.radius,
+            comment = commentField
+        )
     }
 
     Scaffold(
@@ -70,7 +61,7 @@ fun MarkerEditStateful(
             )
         }
     ) { paddingValues ->
-        MarkerEditScreen(
+        BeaconEditScreen(
             modifier = Modifier.padding(paddingValues),
             name = name,
             latitudeField = latField,
@@ -78,36 +69,32 @@ fun MarkerEditStateful(
             commentField = commentField,
             onNameChange = {
                 name = it
-                marker.name = it
-                mapInteractor.saveMarkers(mapId)
+                beaconInteractor.saveBeacon(mapId, makeBeacon())
             },
             onLatChange = {
-                latField = it
-                runCatching {
-                    marker.lat = it.toDouble()
+                val newLat = it.toDoubleOrNull()
+                if (newLat != null) {
+                    latField = it
+                    beaconInteractor.saveBeacon(mapId, makeBeacon())
                 }
-                onMarkerMove()
-                mapInteractor.saveMarkers(mapId)
             },
             onLonChange = {
-                lonField = it
-                runCatching {
-                    marker.lon = it.toDouble()
+                val newLon = it.toDoubleOrNull()
+                if (newLon != null) {
+                    lonField = it
+                    beaconInteractor.saveBeacon(mapId, makeBeacon())
                 }
-                onMarkerMove()
-                mapInteractor.saveMarkers(mapId)
             },
             onCommentChange = {
                 commentField = it
-                marker.comment = it
-                mapInteractor.saveMarkers(mapId)
+                beaconInteractor.saveBeacon(mapId, makeBeacon())
             }
         )
     }
 }
 
 @Composable
-private fun MarkerEditScreen(
+private fun BeaconEditScreen(
     modifier: Modifier = Modifier,
     name: String,
     latitudeField: String,
@@ -204,9 +191,9 @@ private fun MarkerEditScreen(
 
 @Preview(widthDp = 350, heightDp = 500)
 @Composable
-private fun MarkerEditPreview() {
+private fun BeaconEditPreview() {
     TrekMeTheme {
-        MarkerEditScreen(
+        BeaconEditScreen(
             name = "A marker",
             latitudeField = "12.57",
             longitudeField = "46.58",

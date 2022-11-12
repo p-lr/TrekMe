@@ -113,6 +113,9 @@
         <action
             android:id="@+id/action_mapFragment_to_tracksManageFragment"
             app:destination="@id/tracksManageFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_beaconEditFragment"
+            app:destination="@id/beaconEditFragment" />
     </fragment>
     <action android:id="@+id/action_global_mapFragment" app:destination="@id/mapFragment"/>
     <fragment
@@ -168,4 +171,15 @@
         android:name="com.peterlaurence.trekme.features.about.presentation.ui.AboutFragment"
         android:label="AboutFragment" />
     <action android:id="@+id/action_global_aboutFragment" app:destination="@id/aboutFragment" />
+    <fragment
+        android:id="@+id/beaconEditFragment"
+        android:name="com.peterlaurence.trekme.features.map.presentation.ui.BeaconEditFragment"
+        android:label="BeaconEditFragment" >
+        <argument
+            android:name="beacon"
+            app:argType="com.peterlaurence.trekme.core.map.domain.models.Beacon" />
+        <argument
+            android:name="mapId"
+            app:argType="java.util.UUID" />
+    </fragment>
 </navigation>

@@ -88,8 +88,8 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         dataStateFlow,
         mapInteractor,
-        onBeaconEdit = { beacon, mapId, beaconId ->
-            mapFeatureEvents.postBeaconEditEvent(beacon, mapId, beaconId)
+        onBeaconEdit = { beacon, mapId ->
+            mapFeatureEvents.postBeaconEditEvent(beacon, mapId)
         }
     )
 

@@ -4,7 +4,6 @@ import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import java.util.*
 
@@ -17,7 +16,7 @@ class MapFeatureEvents {
     )
     data class MarkerEditEvent(val marker: Marker, val mapId: UUID, val markerId: String)
 
-
+    // TODO: once markers are refactored to be based on a flow (like beacons), we no longer need that event
     private val _markerMoved = MutableSharedFlow<MarkerMovedEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val markerMoved = _markerMoved.asSharedFlow()
     fun postMarkerMovedEvent(marker: Marker, mapId: UUID, markerId: String) = _markerMoved.tryEmit(
@@ -27,13 +26,13 @@ class MapFeatureEvents {
     /* endregion */
 
     /* region beacon */
-    private val _navigateToBeaconEdit = Channel<BeaconEditEvent>(1)
-    val navigateToBeaconEdit = _navigateToBeaconEdit.consumeAsFlow()
-    fun postBeaconEditEvent(beacon: Beacon, mapId: UUID, beaconId: String) = _navigateToBeaconEdit.trySend(
-        BeaconEditEvent(beacon, mapId, beaconId)
+    private val _navigateToBeaconEdit = MutableSharedFlow<BeaconEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)
+    val navigateToBeaconEdit = _navigateToBeaconEdit.asSharedFlow()
+    fun postBeaconEditEvent(beacon: Beacon, mapId: UUID) = _navigateToBeaconEdit.tryEmit(
+        BeaconEditEvent(beacon, mapId)
     )
 
-    data class BeaconEditEvent(val beacon: Beacon, val mapId: UUID, val beaconId: String)
+    data class BeaconEditEvent(val beacon: Beacon, val mapId: UUID)
     /* endregion */
 
     /* region routes */
