@@ -11,7 +11,7 @@ import androidx.navigation.fragment.navArgs
 import com.peterlaurence.trekme.databinding.FragmentMarkerEditBinding
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.features.map.presentation.ui.screens.MarkerEditScreen
+import com.peterlaurence.trekme.features.map.presentation.ui.screens.MarkerEditStateful
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -42,7 +42,7 @@ class MarkerEditFragment : Fragment() {
         binding.markerEditScreen.apply {
             setContent {
                 TrekMeTheme {
-                    MarkerEditScreen(
+                    MarkerEditStateful(
                         args.marker,
                         args.mapId,
                         args.markerId,

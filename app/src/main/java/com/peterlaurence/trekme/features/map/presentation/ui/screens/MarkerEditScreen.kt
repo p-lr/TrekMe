@@ -18,17 +18,19 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import java.util.*
 
 @Composable
-fun MarkerEditScreen(
+fun MarkerEditStateful(
     marker: Marker,
     mapId: UUID,
     markerId: String,
@@ -67,8 +69,9 @@ fun MarkerEditScreen(
                 }
             )
         }
-    ) {
-        MarkerEditUi(
+    ) { paddingValues ->
+        MarkerEditScreen(
+            modifier = Modifier.padding(paddingValues),
             name = name,
             latitudeField = latField,
             longitudeField = lonField,
@@ -104,20 +107,21 @@ fun MarkerEditScreen(
 }
 
 @Composable
-private fun MarkerEditUi(
+private fun MarkerEditScreen(
+    modifier: Modifier = Modifier,
     name: String,
     latitudeField: String,
     longitudeField: String,
     commentField: String,
-    onNameChange: (String) -> Unit,
-    onLatChange: (String) -> Unit,
-    onLonChange: (String) -> Unit,
-    onCommentChange: (String) -> Unit
+    onNameChange: (String) -> Unit = {},
+    onLatChange: (String) -> Unit = {},
+    onLonChange: (String) -> Unit = {},
+    onCommentChange: (String) -> Unit = {}
 ) {
     val accentColor = accentColor()
 
     Column(
-        Modifier
+        modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.surface)
             .verticalScroll(rememberScrollState()),
@@ -195,6 +199,19 @@ private fun MarkerEditUi(
                 cursorBrush = SolidColor(MaterialTheme.colors.primary)
             )
         }
+    }
+}
+
+@Preview(widthDp = 350, heightDp = 500)
+@Composable
+fun MarkerEditPreview() {
+    TrekMeTheme {
+        MarkerEditScreen(
+            name = "A marker",
+            latitudeField = "12.57",
+            longitudeField = "46.58",
+            commentField = "A comment"
+        )
     }
 }
 
