@@ -197,6 +197,7 @@ class BeaconLayer(
             y,
             relativeOffset = Offset(-0.5f, -0.5f),
             zIndex = 1f,
+            clipShape = null
         ) {
             Beacon(
                 Modifier,
