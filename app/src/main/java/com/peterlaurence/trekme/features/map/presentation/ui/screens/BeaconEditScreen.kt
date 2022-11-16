@@ -30,6 +30,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCu
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
+import com.peterlaurence.trekme.features.map.presentation.ui.screens.DistanceUnit.*
 import com.peterlaurence.trekme.util.capitalize
 import java.util.*
 
@@ -42,7 +43,7 @@ fun BeaconEditStateful(
 ) {
     var name by remember { mutableStateOf(beacon.name) }
     var radius by remember { mutableStateOf(beacon.radius.toString()) }
-    var distanceUnit by remember { mutableStateOf(DistanceUnit.Meters) }
+    var distanceUnit by remember { mutableStateOf(Meters) }
     var latField by remember { mutableStateOf(beacon.lat.toString()) }
     var lonField by remember { mutableStateOf(beacon.lon.toString()) }
     var commentField by remember { mutableStateOf(beacon.comment) }
@@ -52,7 +53,9 @@ fun BeaconEditStateful(
             beacon.id, name,
             lat = latField.toDoubleOrNull() ?: beacon.lat,
             lon = lonField.toDoubleOrNull() ?: beacon.lon,
-            radius = beacon.radius,
+            radius = radius.toDoubleOrNull()?.let {
+                convertToMeters(it, distanceUnit)
+            }?.toFloat() ?: beacon.radius,
             comment = commentField
         )
     }
@@ -97,9 +100,11 @@ fun BeaconEditStateful(
                 }
 
                 radius = res
+                beaconInteractor.saveBeacon(mapId, makeBeacon())
             },
             onDistanceUnitChange = {
                 distanceUnit = it
+                beaconInteractor.saveBeacon(mapId, makeBeacon())
             },
             onLatChange = {
                 val newLat = it.toDoubleOrNull()
@@ -219,7 +224,7 @@ private fun BeaconEditScreen(
                                 modifier = Modifier.padding(start = 21.dp, bottom = 8.dp)
                             )
 
-                            for (unit in DistanceUnit.values()) {
+                            for (unit in values()) {
                                 Row(
                                     modifier = Modifier
                                         .clickable {
@@ -330,27 +335,36 @@ private enum class DistanceUnit {
 @Composable
 private fun translateUnit(unit: DistanceUnit, shortVariant: Boolean = false): String {
     return when (unit) {
-        DistanceUnit.Meters -> {
+        Meters -> {
             if (shortVariant) {
                 stringResource(id = R.string.meters_short)
             } else stringResource(id = R.string.meters)
         }
-        DistanceUnit.KiloMeters -> {
+        KiloMeters -> {
             if (shortVariant) {
                 stringResource(id = R.string.kilometers_short)
             } else stringResource(id = R.string.kilometers)
         }
-        DistanceUnit.Yards -> {
+        Yards -> {
             if (shortVariant) {
                 stringResource(id = R.string.yards_short)
             } else stringResource(id = R.string.yards)
 
         }
-        DistanceUnit.Miles -> {
+        Miles -> {
             if (shortVariant) {
                 stringResource(id = R.string.miles_short)
             } else stringResource(id = R.string.miles)
         }
+    }
+}
+
+private fun convertToMeters(distance: Double, unit: DistanceUnit): Double {
+    return when (unit) {
+        Meters -> distance
+        KiloMeters -> distance * 1000
+        Yards -> distance * 0.9144
+        Miles -> distance * 1609.34
     }
 }
 
@@ -359,9 +373,9 @@ private fun translateUnit(unit: DistanceUnit, shortVariant: Boolean = false): St
 private fun BeaconEditPreview() {
     TrekMeTheme {
         BeaconEditScreen(
-            name = "A marker",
+            name = "A beacon",
             radius = "150",
-            distanceUnit = DistanceUnit.Meters,
+            distanceUnit = Meters,
             latitudeField = "12.57",
             longitudeField = "46.58",
             commentField = "A comment"
