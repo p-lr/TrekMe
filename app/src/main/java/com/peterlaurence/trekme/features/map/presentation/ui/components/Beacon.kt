@@ -2,10 +2,8 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
@@ -15,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,6 +74,23 @@ fun Beacon(
             },
         contentAlignment = Alignment.Center
     ) {}
+}
+
+/**
+ * Represents the clickable area of a beacon. It has a fixed size.
+ */
+@Composable
+fun BeaconClickArea() {
+    BoxWithConstraints(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+        Canvas(Modifier) {
+            drawCircle(
+                color = color,
+                alpha = 0.3f,
+                radius = maxWidth.toPx() / 2,
+                style = Fill
+            )
+        }
+    }
 }
 
 private val color = Color(0xFF9C27B0)

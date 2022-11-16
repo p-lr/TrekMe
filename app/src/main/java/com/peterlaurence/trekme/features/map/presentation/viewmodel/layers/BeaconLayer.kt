@@ -13,6 +13,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Beacon
+import com.peterlaurence.trekme.features.map.presentation.ui.components.BeaconClickArea
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
@@ -60,7 +61,11 @@ class BeaconLayer(
                 if (existing != null) {
                     existing.apply {
                         beacon = beaconWithNormalizedPos.beacon
-                        mapState.moveMarker(existing.idOnMap, beaconWithNormalizedPos.x, beaconWithNormalizedPos.y)
+                        mapState.moveMarker(
+                            existing.idOnMap,
+                            beaconWithNormalizedPos.x,
+                            beaconWithNormalizedPos.y
+                        )
                     }
                 } else {
                     val beaconState = addBeaconOnMap(
@@ -150,6 +155,7 @@ class BeaconLayer(
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)
                         mapState.removeMarker(id)
+                        mapState.removeMarker(beaconState.idOnMap)
                         mapInteractor.deleteBeacon(beacon, mapId)
                     },
                     onMoveAction = {
@@ -167,7 +173,7 @@ class BeaconLayer(
         val beaconState = beaconListState[beaconId] ?: return
         beaconState.isStatic = true
 
-        mapState.updateMarkerClickable(beaconState.idOnMap, true)
+        mapState.updateMarkerClickable(idOfClickArea(beaconState.idOnMap), true)
 
         val markerInfo = mapState.getMarkerInfo(beaconState.idOnMap) ?: return
         val beacon = beaconState.beacon
@@ -197,7 +203,8 @@ class BeaconLayer(
             y,
             relativeOffset = Offset(-0.5f, -0.5f),
             zIndex = 1f,
-            clipShape = null
+            clipShape = null,
+            clickable = false    // a beacon should not be clickable
         ) {
             Beacon(
                 Modifier,
@@ -206,11 +213,20 @@ class BeaconLayer(
                 scale = mapState.scale
             )
         }
+
+        mapState.addMarker(
+            idOfClickArea(id),
+            x, y,
+            relativeOffset = Offset(-0.5f, -0.5f),
+            zIndex = 1f,
+        ) {
+            BeaconClickArea()
+        }
         return state
     }
 
     private fun morphToDynamic(beaconState: BeaconState, x: Double, y: Double, mapState: MapState) {
-        mapState.updateMarkerClickable(beaconState.idOnMap, false)
+        mapState.updateMarkerClickable(idOfClickArea(beaconState.idOnMap), false)
         beaconState.isStatic = false
         attachMarkerGrab(beaconState.idOnMap, x, y, mapState, beaconState)
     }
@@ -222,7 +238,7 @@ class BeaconLayer(
         mapState: MapState,
         beaconState: BeaconState
     ) {
-        val grabId = "$beaconGrabPrefix-$beaconId"
+        val grabId = idOfGrab(beaconId)
         mapState.addMarker(grabId, xMarker, yMarker, Offset(-0.5f, -0.5f), zIndex = 0f) {
             MarkerGrab(
                 morphedIn = !beaconState.isStatic,
@@ -231,15 +247,22 @@ class BeaconLayer(
                 }
             )
         }
+
+        val clickableAreaId = idOfClickArea(beaconId)
         mapState.enableMarkerDrag(grabId) { _, x, y, dx, dy, _, _ ->
             mapState.moveMarker(grabId, x + dx, y + dy)
             mapState.moveMarker(beaconId, x + dx, y + dy)
+            mapState.moveMarker(clickableAreaId, x + dx, y + dy)
         }
     }
+
+    private fun idOfGrab(beaconId: String) = "$beaconGrabPrefix-$beaconId"
+    private fun idOfClickArea(beaconId: String) = "$beaconClickAreaPrefix-$beaconId"
 }
 
 private const val beaconPrefix = "beacon"
 private const val beaconGrabPrefix = "grabBeacon"
+private const val beaconClickAreaPrefix = "beaconClickArea"
 private const val calloutPrefix = "callout"
 
 private const val beaconCalloutWidthDp = 200
