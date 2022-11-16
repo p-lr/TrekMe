@@ -1,6 +1,8 @@
 package com.peterlaurence.trekme.features.common.presentation.ui.text
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -19,7 +21,12 @@ fun TextFieldCustom(
     text: String,
     onTextChange: (String) -> Unit,
     label: String? = null,
-    limit: Int? = null
+    limit: Int? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    showClearIcon: Boolean = false,
+    readOnly: Boolean = false,
+    enabled: Boolean = true,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     var hasFocus by remember { mutableStateOf(false) }
 
@@ -29,7 +36,8 @@ fun TextFieldCustom(
                 .fillMaxWidth()
                 .onFocusChanged {
                     hasFocus = it.hasFocus
-                },
+                }
+            ,
             value = text,
             label = {
                 if (label != null) {
@@ -42,12 +50,15 @@ fun TextFieldCustom(
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.Transparent,
             ),
+            readOnly = readOnly,
+            enabled = enabled,
+            interactionSource = interactionSource,
             onValueChange = {
                 if (limit == null || it.length <= limit) onTextChange(it)
             },
             singleLine = true,
             trailingIcon = {
-                if (text.isNotEmpty() && hasFocus) {
+                if (text.isNotEmpty() && hasFocus && showClearIcon) {
                     IconButton(onClick = { onTextChange("") }) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
@@ -55,7 +66,8 @@ fun TextFieldCustom(
                         )
                     }
                 }
-            }
+            },
+            keyboardOptions = keyboardOptions
         )
         if (limit != null) {
             if (hasFocus) {

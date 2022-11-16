@@ -220,8 +220,11 @@
     <string name="elevation_fix_name">Fix</string>
     <string name="elevation_fix_help">The fix value is added to the elevation from the GPS</string>
 
-    <!-- Marker manager fragment -->
+    <!-- Marker, landmark, beacon edit fragment -->
     <string name="marker_name_label">Name</string>
+    <string name="beacon_setting_title">Beacon extent</string>
+    <string name="beacon_radius_label">Radius</string>
+    <string name="beacon_unit_label">Unit</string>
     <string name="wgs84_label">WGS84 coordinates</string>
     <string name="projection_label">Projected coordinates</string>
     <string name="comment_label">Comment</string>
@@ -487,4 +490,14 @@
     <string name="nb">PS</string>
     <string name="manage_subscription_btn">MANAGE SUBSCRIPTION</string>
     <string name="subscription_center" translatable="false">https://play.google.com/store/account/subscriptions</string>
+
+    <!-- General -->
+    <string name="meters_short" translatable="false">m</string>
+    <string name="meters">meters</string>
+    <string name="kilometers_short" translatable="false">km</string>
+    <string name="kilometers">kilometers</string>
+    <string name="yards_short" translatable="false">yd</string>
+    <string name="yards" translatable="false">yards</string>
+    <string name="miles_short" translatable="false">mi</string>
+    <string name="miles" translatable="false">miles</string>
 </resources>

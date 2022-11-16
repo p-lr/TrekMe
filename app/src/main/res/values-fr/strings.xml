@@ -37,6 +37,9 @@
     <string name="mapview_add_beacon">Balise</string>
     <string name="move_marker">Déplacer</string>
     <string name="marker_name_label">Nom</string>
+    <string name="beacon_setting_title">Taille balise</string>
+    <string name="beacon_radius_label">Rayon</string>
+    <string name="beacon_unit_label">Unité</string>
     <string name="comment_label">Commentaire</string>
     <string name="save_action">Enregistrer</string>
     <string name="wgs84_label">Coordonnées WGS84</string>
@@ -381,4 +384,8 @@
     <string name="speed_desc">Vitesse moyenne</string>
     <string name="multi_selection_desc">Mode sélection multiple</string>
     <string name="manage_subscription_btn">GÉRER L\'ABONNEMENT</string>
+
+    <!-- General -->
+    <string name="meters">mètres</string>
+    <string name="kilometers">kilomètres</string>
 </resources>
