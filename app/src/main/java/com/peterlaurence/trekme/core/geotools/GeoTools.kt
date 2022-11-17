@@ -108,7 +108,7 @@ fun earthRadius(lat: Double): Double {
 fun pointAtDistanceAndAngle(
     lat1: Double,
     lon1: Double,
-    distance: Int,
+    distance: Float,
     angle: AngleDegree
 ): DoubleArray {
     val theta = distance / radiusAvg

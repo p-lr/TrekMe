@@ -9,6 +9,6 @@ data class Beacon(
     val name: String,
     val lat: Double,
     val lon: Double,
-    val radius: Float = 50f,
+    val radius: Float = 100f,
     val comment: String = ""
 ): Parcelable

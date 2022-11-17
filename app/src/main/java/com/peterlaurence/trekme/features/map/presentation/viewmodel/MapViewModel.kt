@@ -20,6 +20,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
+import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapLicenseInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
@@ -41,6 +42,7 @@ class MapViewModel @Inject constructor(
     locationSource: LocationSource,
     orientationSource: OrientationSource,
     mapInteractor: MapInteractor,
+    beaconInteractor: BeaconInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
@@ -88,6 +90,7 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         dataStateFlow,
         mapInteractor,
+        beaconInteractor,
         onBeaconEdit = { beacon, mapId ->
             mapFeatureEvents.postBeaconEditEvent(beacon, mapId)
         }

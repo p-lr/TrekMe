@@ -1,8 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
@@ -11,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Map
+import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Beacon
 import com.peterlaurence.trekme.features.map.presentation.ui.components.BeaconClickArea
@@ -21,9 +20,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -35,6 +32,7 @@ class BeaconLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val mapInteractor: MapInteractor,
+    private val beaconInteractor: BeaconInteractor,
     private val onBeaconEdit: (Beacon, mapId: UUID) -> Unit
 ) : MapViewModel.MarkerTapListener {
     /**
@@ -71,6 +69,7 @@ class BeaconLayer(
                     val beaconState = addBeaconOnMap(
                         beaconWithNormalizedPos.beacon,
                         mapState,
+                        map,
                         beaconWithNormalizedPos.x,
                         beaconWithNormalizedPos.y
                     )
@@ -90,7 +89,7 @@ class BeaconLayer(
         val x = mapState.centroidX
         val y = mapState.centroidY
         val beacon = mapInteractor.makeBeacon(map, x, y)
-        val beaconState = addBeaconOnMap(beacon, mapState, x, y)
+        val beaconState = addBeaconOnMap(beacon, mapState, map, x, y)
         morphToDynamic(beaconState, x, y, mapState)
         beaconListState[beacon.id] = beaconState
     }
@@ -189,14 +188,16 @@ class BeaconLayer(
         }
     }
 
-    private fun addBeaconOnMap(
+    private suspend fun addBeaconOnMap(
         beacon: Beacon,
         mapState: MapState,
+        map: Map,
         x: Double,
         y: Double
     ): BeaconState {
         val id = "$beaconPrefix-${beacon.id}"
         val state = BeaconState(id, beacon)
+
         mapState.addMarker(
             id,
             x,
@@ -206,9 +207,14 @@ class BeaconLayer(
             clipShape = null,
             clickable = false    // a beacon should not be clickable
         ) {
+            /* Listen to beacon state change and asynchronously update the radius */
+            val radiusPx by produceState(initialValue = 0f) {
+                value = beaconInteractor.getBeaconRadiusInPx(state.beacon, map)
+            }
+
             Beacon(
                 Modifier,
-                beaconVicinityRadiusPx = state.beacon.radius,
+                beaconVicinityRadiusPx = radiusPx,
                 isStatic = state.isStatic,
                 scale = mapState.scale
             )

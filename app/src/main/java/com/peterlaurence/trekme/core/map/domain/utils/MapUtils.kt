@@ -23,6 +23,7 @@ suspend fun createNomediaFile(directory: File) = withContext(Dispatchers.IO) {
  *
  * @return An array of two elements: the longitude and the latitude
  */
+@Deprecated("", ReplaceWith("Use the suspend variant getLonLatFromNormalizedCoordinate"))
 fun getLonLat(x: Double, y: Double, map: Map): DoubleArray? {
     val bounds = map.mapBounds
     val projection = map.projection

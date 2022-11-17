@@ -17,11 +17,11 @@ class GeoToolsTest {
 
     @Test
     fun pointAtDistanceAndAngleTest() {
-        val res1 = pointAtDistanceAndAngle(48.7221055, 2.5055106, 384260, 269.17f)
+        val res1 = pointAtDistanceAndAngle(48.7221055, 2.5055106, 384260f, 269.17f)
         assertEquals(res1[0], 48.5536439, 0.00004)
         assertEquals(res1[1], -2.7187781, 0.00004)
 
-        val res2 = pointAtDistanceAndAngle(16.218611, -61.745765, 413, 118.06f)
+        val res2 = pointAtDistanceAndAngle(16.218611, -61.745765, 413f, 118.06f)
         assertEquals(res2[0], 16.216855, 0.00001)
         assertEquals(res2[1], -61.742333, 0.00002)
     }
