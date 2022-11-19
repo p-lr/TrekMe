@@ -57,16 +57,6 @@ class MapInteractor @Inject constructor(
             }
         }
 
-    suspend fun makeBeacon(map: Map, x: Double, y: Double): Beacon {
-        return withContext(scope.coroutineContext) {
-            val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
-            val name = context.getString(R.string.beacon_default_name)
-            // TODO fetch last radius from data store
-
-            Beacon(id = UUID.randomUUID().toString(), name = name, lat = lonLat[1], lon = lonLat[0])
-        }
-    }
-
     /**
      * Update the landmark position and save.
      * [x] and [y] are expected to be normalized coordinates.
@@ -101,28 +91,6 @@ class MapInteractor @Inject constructor(
         markersDao.saveMarkers(map)
     }
 
-    /**
-     * Update the marker position and save.
-     * [x] and [y] are expected to be normalized coordinates.
-     */
-    suspend fun updateAndSaveBeacon(beacon: Beacon, map: Map, x: Double, y: Double): Beacon {
-        val mapBounds = map.mapBounds
-
-        val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)
-
-        val updatedBeacon = beacon.copy(lat = lonLat[1], lon = lonLat[0])
-
-        map.beacons.update { formerList ->
-            formerList.filter { it.id != beacon.id } + updatedBeacon
-        }
-
-        scope.launch {
-            // TODO: save beacon
-        }
-
-        return updatedBeacon
-    }
-
     fun deleteLandmark(landmark: Landmark, mapId: UUID) = scope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteLandmark(landmark)
@@ -135,16 +103,6 @@ class MapInteractor @Inject constructor(
         markersDao.saveMarkers(map)
     }
 
-    fun deleteBeacon(beacon: Beacon, mapId: UUID) = scope.launch {
-        val map = mapRepository.getMap(mapId) ?: return@launch
-
-        map.beacons.update { formerList ->
-            formerList.filter { it.id != beacon.id }
-        }
-
-        // TODO: effectively delete beacon on data layer
-    }
-
     /**
      * Save all markers (debounced).
      */
@@ -154,21 +112,6 @@ class MapInteractor @Inject constructor(
             delay(1000)
             val map = mapRepository.getMap(mapId) ?: return@launch
             markersDao.saveMarkers(map)
-        }
-    }
-
-    suspend fun getBeaconPositionsFlow(map: Map): Flow<List<BeaconWithNormalizedPos>> {
-        return map.beacons.map { beaconList ->
-            beaconList.map { beacon ->
-                val (x, y) = getNormalizedCoordinates(
-                    beacon.lat,
-                    beacon.lon,
-                    map.mapBounds,
-                    map.projection
-                )
-
-                BeaconWithNormalizedPos(beacon, x, y)
-            }
         }
     }
 

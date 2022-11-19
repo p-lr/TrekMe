@@ -71,7 +71,7 @@ object MapModule {
 
     @Singleton
     @Provides
-    fun provideGetMarkersForMapDao(
+    fun provideMarkerDao(
         fileBasedMapRegistry: FileBasedMapRegistry,
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
@@ -82,13 +82,24 @@ object MapModule {
 
     @Singleton
     @Provides
-    fun provideGetLandmarksForMapDao(
+    fun provideLandmarkDao(
         fileBasedMapRegistry: FileBasedMapRegistry,
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         gson: Gson
     ) : LandmarksDao {
         return LandmarksDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, gson)
+    }
+
+    @Singleton
+    @Provides
+    fun provideBeaconDao(
+        fileBasedMapRegistry: FileBasedMapRegistry,
+        @MainDispatcher mainDispatcher: CoroutineDispatcher,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        @MapJson json: Json
+    ) : BeaconDao {
+        return BeaconsDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, json)
     }
 
     @Singleton
@@ -176,9 +187,10 @@ object MapModule {
     fun provideRouteDao(
         fileBasedMapRegistry: FileBasedMapRegistry,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
-        @MainDispatcher mainDispatcher: CoroutineDispatcher
+        @MainDispatcher mainDispatcher: CoroutineDispatcher,
+        @MapJson json: Json
     ): RouteDao {
-        return RouteDaoImpl(fileBasedMapRegistry, ioDispatcher, mainDispatcher)
+        return RouteDaoImpl(fileBasedMapRegistry, ioDispatcher, mainDispatcher, json)
     }
 
     @Singleton

@@ -31,7 +31,6 @@ import java.util.*
 class BeaconLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
-    private val mapInteractor: MapInteractor,
     private val beaconInteractor: BeaconInteractor,
     private val onBeaconEdit: (Beacon, mapId: UUID) -> Unit
 ) : MapViewModel.MarkerTapListener {
@@ -53,7 +52,7 @@ class BeaconLayer(
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
-        mapInteractor.getBeaconPositionsFlow(map).collect {
+        beaconInteractor.getBeaconPositionsFlow(map).collect {
             for (beaconWithNormalizedPos in it) {
                 val existing = beaconListState[beaconWithNormalizedPos.beacon.id]
                 if (existing != null) {
@@ -88,7 +87,7 @@ class BeaconLayer(
         val (map, mapState) = dataStateFlow.first()
         val x = mapState.centroidX
         val y = mapState.centroidY
-        val beacon = mapInteractor.makeBeacon(map, x, y)
+        val beacon = beaconInteractor.makeBeacon(map, x, y)
         val beaconState = addBeaconOnMap(beacon, mapState, map, x, y)
         morphToDynamic(beaconState, x, y, mapState)
         beaconListState[beacon.id] = beaconState
@@ -156,7 +155,7 @@ class BeaconLayer(
                         mapState.removeCallout(calloutId)
                         mapState.removeMarker(id)
                         mapState.removeMarker(beaconState.idOnMap)
-                        mapInteractor.deleteBeacon(beacon, mapId)
+                        beaconInteractor.deleteBeacon(beacon, mapId)
                     },
                     onMoveAction = {
                         mapState.removeCallout(calloutId)
@@ -179,7 +178,7 @@ class BeaconLayer(
         val beacon = beaconState.beacon
         scope.launch {
             dataStateFlow.first().also {
-                mapInteractor.updateAndSaveBeacon(
+                beaconInteractor.updateAndSaveBeacon(
                     beacon,
                     it.map,
                     markerInfo.x,

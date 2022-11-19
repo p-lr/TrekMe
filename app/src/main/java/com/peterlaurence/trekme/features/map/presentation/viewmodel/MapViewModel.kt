@@ -89,7 +89,6 @@ class MapViewModel @Inject constructor(
     val beaconLayer: BeaconLayer = BeaconLayer(
         viewModelScope,
         dataStateFlow,
-        mapInteractor,
         beaconInteractor,
         onBeaconEdit = { beacon, mapId ->
             mapFeatureEvents.postBeaconEditEvent(beacon, mapId)

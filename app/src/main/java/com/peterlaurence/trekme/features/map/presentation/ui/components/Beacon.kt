@@ -62,7 +62,7 @@ fun Beacon(
         modifier = modifier
             .size(sizeDp)
             .drawBehind {
-                drawCircle(color, 5.dp.toPx())
+                drawCircle(color, 4.dp.toPx(), alpha = 0.7f)
                 drawCircle(color, radius * (1 - animatedProgress.value), alpha = 0.2f)
                 if (animatedProgress.value == 0f) {
                     drawCircle(

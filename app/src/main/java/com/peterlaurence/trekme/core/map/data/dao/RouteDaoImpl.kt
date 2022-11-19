@@ -34,13 +34,9 @@ import java.io.File
 class RouteDaoImpl(
     private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val ioDispatcher: CoroutineDispatcher,
-    private val mainDispatcher: CoroutineDispatcher
+    private val mainDispatcher: CoroutineDispatcher,
+    private val json: Json
 ): RouteDao {
-    private val format = Json {
-        prettyPrint = true
-        isLenient = true
-        ignoreUnknownKeys = true
-    }
     private val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
 
     /* Associates a route id and the directory name of the serialized route */
@@ -124,7 +120,7 @@ class RouteDaoImpl(
             val infoFile = File(dir, MAP_ROUTE_INFO_FILENAME)
             val routeInfoKtx = runCatching<RouteInfoKtx> {
                 FileUtils.getStringFromFile(infoFile).let {
-                    format.decodeFromString(it)
+                    json.decodeFromString(it)
                 }
             }.getOrNull()
 
@@ -169,14 +165,14 @@ class RouteDaoImpl(
             val infoFile = File(dir, MAP_ROUTE_INFO_FILENAME)
             val routeInfoKtx = runCatching<RouteInfoKtx> {
                 FileUtils.getStringFromFile(infoFile).let {
-                    format.decodeFromString(it)
+                    json.decodeFromString(it)
                 }
             }.getOrNull() ?: return@mapNotNull null
 
             val markersFile = File(dir, MAP_ROUTE_MARKERS_FILENAME)
             val routeMarkerKtx = runCatching<RouteKtx> {
                 FileUtils.getStringFromFile(markersFile).let {
-                    format.decodeFromString(it)
+                    json.decodeFromString(it)
                 }
             }.getOrNull() ?: return@mapNotNull null
 
@@ -252,7 +248,7 @@ class RouteDaoImpl(
                 Log.e(TAG, "Error while creating $MAP_ROUTE_INFO_FILENAME")
             }
         }
-        val routeInfoKtxJson = format.encodeToString(routeInfoKtx)
+        val routeInfoKtxJson = json.encodeToString(routeInfoKtx)
         FileUtils.writeToFile(routeInfoKtxJson, routeInfoFile)
     }
 
@@ -269,7 +265,7 @@ class RouteDaoImpl(
                 Log.e(TAG, "Error while creating $MAP_ROUTE_MARKERS_FILENAME")
             }
         }
-        val routeKtsJson = format.encodeToString(routeKtx)
+        val routeKtsJson = json.encodeToString(routeKtx)
         FileUtils.writeToFile(routeKtsJson, routeMarkersFile)
     }
 
