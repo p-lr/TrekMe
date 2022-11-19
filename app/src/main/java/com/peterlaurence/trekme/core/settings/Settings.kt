@@ -10,6 +10,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.location.InternalGps
 import com.peterlaurence.trekme.core.location.LocationProducerInfo
+import com.peterlaurence.trekme.core.units.DistanceUnit
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -56,6 +57,7 @@ class Settings @Inject constructor(
     private val gpsDataVisibility = booleanPreferencesKey("gpsDataVisibility")
     private val magnifyingFactor = intPreferencesKey("magnifyingFactor")
     private val maxScale = floatPreferencesKey("maxScale")
+    private val unitForBeaconRadius = stringPreferencesKey("unitForBeaconRadius")
     private val lastMapId = stringPreferencesKey("lastMapId")
     private val defineScaleWhenCentered = booleanPreferencesKey("defineScaleWhenCentered")
     private val showScaleIndicator = booleanPreferencesKey("showScaleIndicator")
@@ -124,6 +126,18 @@ class Settings @Inject constructor(
     suspend fun setMaxScale(scale: Float) {
         dataStore.edit {
             it[maxScale] = scale
+        }
+    }
+
+    fun getUnitForBeaconRadius(): Flow<DistanceUnit> {
+        return dataStore.data.map { pref ->
+            pref[unitForBeaconRadius]?.let { DistanceUnit.valueOf(it) } ?: DistanceUnit.Meters
+        }
+    }
+
+    suspend fun setUnitForBeaconRadius(unit: DistanceUnit) {
+        dataStore.edit { settings ->
+            settings[unitForBeaconRadius] = unit.name
         }
     }
 

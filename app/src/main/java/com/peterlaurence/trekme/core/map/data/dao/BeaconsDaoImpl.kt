@@ -62,4 +62,4 @@ class BeaconsDaoImpl(
     }
 }
 
-private const val TAG = "RouBeaconsDaoteDao"
+private const val TAG = "BeaconsDao"

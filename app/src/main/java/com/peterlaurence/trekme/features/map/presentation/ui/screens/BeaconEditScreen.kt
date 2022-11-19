@@ -26,27 +26,37 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
+import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.core.units.DistanceUnit
+import com.peterlaurence.trekme.core.units.DistanceUnit.*
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
-import com.peterlaurence.trekme.features.map.presentation.ui.screens.DistanceUnit.*
 import com.peterlaurence.trekme.util.capitalize
+import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.math.roundToInt
 
 @Composable
 fun BeaconEditStateful(
     beacon: Beacon,
     mapId: UUID,
     beaconInteractor: BeaconInteractor,
+    settings: Settings,
     onBackAction: () -> Unit
 ) {
+    val distanceUnit by settings.getUnitForBeaconRadius().collectAsState(initial = Meters)
+
     var name by remember { mutableStateOf(beacon.name) }
-    var radius by remember { mutableStateOf(beacon.radius.toString()) }
-    var distanceUnit by remember { mutableStateOf(Meters) }
+    var radius by remember(distanceUnit) {
+        mutableStateOf(convertMetersTo(beacon.radius.toDouble(), distanceUnit).toString())
+    }
     var latField by remember { mutableStateOf(beacon.lat.toString()) }
     var lonField by remember { mutableStateOf(beacon.lon.toString()) }
     var commentField by remember { mutableStateOf(beacon.comment) }
+
+    val scope = rememberCoroutineScope()
 
     fun makeBeacon(): Beacon {
         return Beacon(
@@ -103,7 +113,9 @@ fun BeaconEditStateful(
                 beaconInteractor.saveBeacon(mapId, makeBeacon())
             },
             onDistanceUnitChange = {
-                distanceUnit = it
+                scope.launch {
+                    settings.setUnitForBeaconRadius(it)
+                }
                 beaconInteractor.saveBeacon(mapId, makeBeacon())
             },
             onLatChange = {
@@ -216,7 +228,8 @@ private fun BeaconEditScreen(
                         Column(
                             Modifier
                                 .padding(top = 16.dp)
-                                .width(IntrinsicSize.Min)) {
+                                .width(IntrinsicSize.Min)
+                        ) {
                             Text(
                                 stringResource(id = R.string.beacon_unit_label),
                                 fontWeight = FontWeight.Medium,
@@ -244,7 +257,10 @@ private fun BeaconEditScreen(
                                     )
                                     Spacer(modifier = Modifier.width(0.dp))
                                     Text(
-                                        translateUnit(unit = unit, shortVariant = false).capitalize(),
+                                        translateUnit(
+                                            unit = unit,
+                                            shortVariant = false
+                                        ).capitalize(),
                                         color = textColor(),
                                         style = TextStyle(
                                             lineHeightStyle = LineHeightStyle(
@@ -328,10 +344,6 @@ private fun BeaconEditScreen(
     }
 }
 
-private enum class DistanceUnit {
-    Meters, KiloMeters, Yards, Miles
-}
-
 @Composable
 private fun translateUnit(unit: DistanceUnit, shortVariant: Boolean = false): String {
     return when (unit) {
@@ -365,6 +377,17 @@ private fun convertToMeters(distance: Double, unit: DistanceUnit): Double {
         KiloMeters -> distance * 1000
         Yards -> distance * 0.9144
         Miles -> distance * 1609.34
+    }
+}
+
+private fun convertMetersTo(distanceInMeters: Double, unit: DistanceUnit): Double {
+    return when (unit) {
+        Meters -> distanceInMeters
+        KiloMeters -> distanceInMeters / 1000
+        Yards -> distanceInMeters / 0.9144
+        Miles -> distanceInMeters / 1609.34
+    }.let {
+        (it * 100.0).roundToInt() / 100.0
     }
 }
 

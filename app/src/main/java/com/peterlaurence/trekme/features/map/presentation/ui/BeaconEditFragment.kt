@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.databinding.FragmentBeaconEditBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
@@ -21,6 +22,9 @@ class BeaconEditFragment : Fragment() {
 
     @Inject
     lateinit var beaconInteractor: BeaconInteractor
+
+    @Inject
+    lateinit var settings: Settings
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +46,7 @@ class BeaconEditFragment : Fragment() {
                         args.beacon,
                         args.mapId,
                         beaconInteractor,
+                        settings,
                         onBackAction = {
                             findNavController().navigateUp()
                         }
