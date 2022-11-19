@@ -81,7 +81,7 @@ fun MapTopAppBar(
                         tryAlign = true
                     ) {
                         IconAndText(
-                            { modifier -> Marker(modifier) },
+                            { modifier -> Marker(modifier.padding(top = 8.dp)) },
                             R.string.mapview_add_marker,
                             onClick = {
                                 expandedAddOnMap = false
@@ -89,7 +89,7 @@ fun MapTopAppBar(
                             }
                         )
                         IconAndText(
-                            { modifier -> LandMark(modifier) },
+                            { modifier -> LandMark(modifier.padding(top = 8.dp)) },
                             R.string.mapview_add_landmark,
                             onClick = {
                                 expandedAddOnMap = false
@@ -188,7 +188,7 @@ private fun IconAndText(icon: @Composable (Modifier) -> Unit, textId: Int, onCli
         modifier = Modifier
             .height(90.dp)
             .clickable(onClick = onClick)
-            .padding(16.dp)
+            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp)
     ) {
         icon(Modifier.align(Alignment.TopCenter))
         Text(stringResource(id = textId), Modifier.align(Alignment.BottomCenter))
@@ -200,7 +200,19 @@ private fun IconAndText(icon: @Composable (Modifier) -> Unit, textId: Int, onCli
 fun IconAndTextPreview() {
     TrekMeTheme {
         IconAndText(
-            { modifier -> Marker(modifier) },
+            { modifier -> Marker(modifier.padding(top = 8.dp))},
+            R.string.mapview_add_marker,
+            onClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun IconAndTextPreview2() {
+    TrekMeTheme {
+        IconAndText(
+            { modifier -> Beacon(modifier, beaconVicinityRadiusPx = 50f) },
             R.string.mapview_add_marker,
             onClick = {}
         )

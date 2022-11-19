@@ -149,6 +149,7 @@ class BeaconLayer(
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onEditAction = {
+                        mapState.removeCallout(calloutId)
                         onBeaconEdit(beacon, mapId)
                     },
                     onDeleteAction = {
