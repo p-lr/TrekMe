@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.util
+package com.peterlaurence.trekme.util.android
 
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle

@@ -19,7 +19,7 @@ import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
-import com.peterlaurence.trekme.util.parcelable
+import com.peterlaurence.trekme.util.android.parcelable
 import kotlinx.parcelize.Parcelize
 import java.text.NumberFormat
 import java.util.*

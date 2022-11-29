@@ -12,7 +12,7 @@ import com.peterlaurence.trekme.databinding.DialogColorSelectBinding
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.events.TrackColorChangeEvent
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.views.SelectableColor
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
-import com.peterlaurence.trekme.util.parcelable
+import com.peterlaurence.trekme.util.android.parcelable
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject

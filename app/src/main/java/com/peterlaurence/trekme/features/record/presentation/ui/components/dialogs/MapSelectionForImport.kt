@@ -5,7 +5,7 @@ import android.os.ParcelUuid
 import androidx.fragment.app.DialogFragment
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.MapChoiceDialog
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
-import com.peterlaurence.trekme.util.parcelable
+import com.peterlaurence.trekme.util.android.parcelable
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject

@@ -32,7 +32,7 @@ import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
 import com.peterlaurence.trekme.util.collectWhileResumedIn
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
-import com.peterlaurence.trekme.util.parcelable
+import com.peterlaurence.trekme.util.android.parcelable
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.map
 import java.util.*

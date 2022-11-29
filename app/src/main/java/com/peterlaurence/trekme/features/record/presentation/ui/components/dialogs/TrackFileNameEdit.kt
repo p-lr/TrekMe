@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.os.ParcelUuid
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.EditFieldDialog
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
-import com.peterlaurence.trekme.util.parcelable
+import com.peterlaurence.trekme.util.android.parcelable
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject
