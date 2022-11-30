@@ -56,10 +56,10 @@ class AppEventBus {
 
     /**********************************************************************************************/
 
-    private val _requestNearbyWifiDevicesPerlPermFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val requestNearbyWifiDevicesPerlPermFlow = _requestNearbyWifiDevicesPerlPermFlow.asSharedFlow()
+    private val _requestNearbyWifiDevicesPermFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    val requestNearbyWifiDevicesPermFlow = _requestNearbyWifiDevicesPermFlow.asSharedFlow()
 
-    fun requestNearbyWifiDevicesPerm() = _requestNearbyWifiDevicesPerlPermFlow.tryEmit(Unit)
+    fun requestNearbyWifiDevicesPerm() = _requestNearbyWifiDevicesPermFlow.tryEmit(Unit)
 
 
     /**********************************************************************************************/

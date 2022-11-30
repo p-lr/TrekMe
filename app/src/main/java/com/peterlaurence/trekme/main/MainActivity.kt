@@ -1,8 +1,5 @@
 package com.peterlaurence.trekme.main
 
-import android.Manifest
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,7 +12,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
@@ -43,6 +39,7 @@ import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
+import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
 import com.peterlaurence.trekme.util.android.*
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
@@ -81,21 +78,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Snackbar.make(binding.drawerLayout, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
     }
     private val viewModel: MainActivityViewModel by viewModels()
-
-    private val requestBtConnectPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            gpsProEvents.postBluetoothPermissionResult(isGranted)
-        }
-
-    private val bluetoothLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            when (result.resultCode) {
-                Activity.RESULT_OK -> appEventBus.bluetoothEnabled(true)
-                Activity.RESULT_CANCELED -> appEventBus.bluetoothEnabled(false)
-            }
-        }
 
     private fun checkMapCreationPermission(): Boolean {
         return hasPermissions(this, *PERMISSIONS_MAP_CREATION)
@@ -157,6 +139,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         /* Handle application wide map-archive related events */
         MapArchiveEventHandler(this, lifecycle, binding.root, mapArchiveEvents)
 
+        /* Handle permission request events */
+        PermissionRequestHandler(this, lifecycle, appEventBus, gpsProEvents)
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         val drawer = binding.drawerLayout
@@ -207,22 +192,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
-        appEventBus.requestBackgroundLocationSignal.collectWhileStarted(this) {
-            requestBackgroundLocationPermission(this@MainActivity)
-        }
-
-        appEventBus.requestBluetoothEnableFlow.collectWhileStarted(this) {
-            bluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-        }
-
-        appEventBus.requestNotificationPermFlow.collectWhileStarted(this) {
-            requestNotificationPermission(this@MainActivity)
-        }
-
-        appEventBus.requestNearbyWifiDevicesPerlPermFlow.collectWhileStarted(this) {
-            requestNearbyWifiPermission(this@MainActivity)
-        }
-
         appEventBus.billingFlow.collectWhileStarted(this) {
             it.billingClient.launchBillingFlow(this, it.flowParams)
         }
@@ -233,12 +202,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
             showBtDeviceSettingsFragment()
-        }
-
-        gpsProEvents.requestBluetoothPermissionFlow.collectWhileStarted(this) {
-            if (Build.VERSION.SDK_INT >= VERSION_CODES.S) {
-                requestBtConnectPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
-            }
         }
 
         downloadRepository.downloadEvent.collectWhileStarted(this) {
