@@ -68,7 +68,7 @@
         <fragment
             android:id="@+id/wmtsFragment"
             android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFragment"
-            android:label="@string/google_map_wmts_label">
+            android:label="@string/map_wmts_label">
             <action
                 android:id="@+id/action_WmtsFragment_to_layerOverlayFragment"
                 app:destination="@id/layerOverlayFragment" />

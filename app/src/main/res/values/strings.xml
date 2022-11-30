@@ -327,7 +327,7 @@
     <string name="mapcreate_overlay_layers">Overlay layers</string>
     <string name="mapcreate_from_track">Use a track</string>
     <string name="wmts_settings_dialog">Map configuration</string>
-    <string name="google_map_wmts_label" translatable="false">GoogleMapWmtsViewFragment</string>
+    <string name="map_wmts_label" translatable="false">WmtsFragment</string>
     <string name="min_zoom">Minimum zoom</string>
     <string name="max_zoom">Maximun zoom</string>
     <string name="map_size">Map size</string>

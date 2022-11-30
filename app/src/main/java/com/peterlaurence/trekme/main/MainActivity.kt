@@ -39,6 +39,7 @@ import com.peterlaurence.trekme.events.WarningMessage
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
+import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
 import com.peterlaurence.trekme.util.android.*
 import com.peterlaurence.trekme.util.collectWhileStarted
@@ -136,6 +137,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
 
+        /* Handle application wide map download events */
+        MapDownloadEventHandler(this, lifecycle, downloadRepository,
+            onDownloadFinished = { uuid ->
+                /* Only if the user is still on the WmtsFragment, navigate to the map list */
+                if (getString(R.string.map_wmts_label) == navController.currentDestination?.label) {
+                    showMapListFragment(uuid)
+                }
+            }
+        )
+
         /* Handle application wide map-archive related events */
         MapArchiveEventHandler(this, lifecycle, binding.root, mapArchiveEvents)
 
@@ -202,10 +213,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
             showBtDeviceSettingsFragment()
-        }
-
-        downloadRepository.downloadEvent.collectWhileStarted(this) {
-            onMapDownloadEvent(it)
         }
     }
 
@@ -347,13 +354,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navController.navigate(R.id.action_global_shopFragment)
     }
 
-    private fun showMessageInSnackbar(message: String) {
+    fun showMessageInSnackbar(message: String) {
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout) ?: return
         val snackbar = Snackbar.make(drawer, message, Snackbar.LENGTH_LONG)
         snackbar.show()
     }
 
-    private fun showWarningDialog(
+    fun showWarningDialog(
         message: String,
         title: String,
         dismiss: DialogInterface.OnDismissListener?
@@ -404,32 +411,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         .show()
                 }
             }
-        }
-    }
-
-    private fun onMapDownloadEvent(event: MapDownloadEvent) {
-        when (event) {
-            is MapDownloadFinished -> {
-                /* Only if the user is still on the GoogleMapWmtsFragment, navigate to the map list */
-                if (getString(R.string.google_map_wmts_label) == navController.currentDestination?.label) {
-                    showMapListFragment(event.mapId)
-                }
-                showMessageInSnackbar(getString(R.string.service_download_finished))
-            }
-            is MapDownloadStorageError -> showWarningDialog(
-                getString(R.string.service_download_bad_storage),
-                getString(R.string.warning_title),
-                null
-            )
-            is MapDownloadPending -> {
-                // Nothing particular to do, the service which fire those events already sends
-                // notifications with the progression.
-            }
-            is MapDownloadAlreadyRunning -> showWarningDialog(
-                getString(R.string.service_download_already_running),
-                getString(R.string.warning_title),
-                null
-            )
         }
     }
 
