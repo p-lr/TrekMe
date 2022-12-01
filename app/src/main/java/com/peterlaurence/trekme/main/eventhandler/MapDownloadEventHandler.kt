@@ -31,7 +31,7 @@ class MapDownloadEventHandler(
         when (event) {
             is MapDownloadFinished -> {
                 onDownloadFinished(event.mapId)
-                showMessageInSnackbar(getString(R.string.service_download_finished))
+                showSnackbar(getString(R.string.service_download_finished))
             }
             is MapDownloadStorageError -> showWarningDialog(
                 getString(R.string.service_download_bad_storage),

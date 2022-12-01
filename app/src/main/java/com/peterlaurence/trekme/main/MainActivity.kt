@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun warnIfNotInternet() {
         lifecycleScope.launchWhenCreated {
             if (!checkInternet()) {
-                showMessageInSnackbar(getString(R.string.no_internet))
+                showSnackbar(getString(R.string.no_internet))
             }
         }
     }
@@ -148,7 +148,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
 
         /* Handle application wide map-archive related events */
-        MapArchiveEventHandler(this, lifecycle, binding.root, mapArchiveEvents)
+        MapArchiveEventHandler(this, lifecycle, mapArchiveEvents)
 
         /* Handle permission request events */
         PermissionRequestHandler(this, lifecycle, appEventBus, gpsProEvents)
@@ -354,9 +354,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navController.navigate(R.id.action_global_shopFragment)
     }
 
-    fun showMessageInSnackbar(message: String) {
+    fun showSnackbar(message: String, isLong: Boolean = true) {
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout) ?: return
-        val snackbar = Snackbar.make(drawer, message, Snackbar.LENGTH_LONG)
+        val snackbar = Snackbar.make(drawer, message, if (isLong) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT)
         snackbar.show()
     }
 

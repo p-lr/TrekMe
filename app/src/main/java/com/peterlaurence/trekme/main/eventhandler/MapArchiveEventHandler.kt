@@ -1,24 +1,26 @@
 package com.peterlaurence.trekme.main.eventhandler
 
-import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
-import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.interactors.ArchiveMapInteractor
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
+import com.peterlaurence.trekme.main.MainActivity
 import kotlinx.coroutines.launch
 
+/**
+ * Handles application wide map archive events. This class is intended to be used by the main
+ * activity only.
+ */
 class MapArchiveEventHandler(
-    private val activity: Activity, private val lifecycle: Lifecycle, private val view: View,
+    private val activity: MainActivity, private val lifecycle: Lifecycle,
     mapArchiveEvents: MapArchiveEvents
 ) {
 
@@ -98,6 +100,6 @@ class MapArchiveEventHandler(
         builder.setContentText(archiveOkMsg) // Removes the progress bar
             .setProgress(0, 0, false)
         notifyMgr?.notify(event.mapId.hashCode(), builder.build())
-        Snackbar.make(view, archiveOkMsg, Snackbar.LENGTH_SHORT).show()
+        activity.showSnackbar(archiveOkMsg, isLong = false)
     }
 }
