@@ -21,7 +21,7 @@
     <string name="help_url">https://github.com/peterLaurence/TrekMe/blob/master/Readme.md#summary</string>
     <string name="confirm_exit">Click BACK again to exit</string>
     <string name="no_internet">You must be connected to internet to create a map</string>
-    <string name="no_storage_perm">TrekMe absolutely needs internal storage access, because it stores maps and other data there. Don\'t worry, it will never attempt to access your private data.\n\n You can give TrekMe this permission in your Android settings, in Applications > TrekMe.</string>
+    <string name="no_storage_perm">TrekMe absolutely needs internal storage access, because it stores maps and other data there. Don\'t worry, it will never attempt to access your private data.\n\nYou can give TrekMe this permission in your Android settings, in Applications > TrekMe.</string>
     <string name="warning_title">Warning</string>
     <string name="solution_title">Solution</string>
     <string name="bad_storage_status">There is something wrong with your SD card: we can\'t write to it.\nThis has nothing to do with TrekMe, and it won\'t be able to download maps or save changes.</string>

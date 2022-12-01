@@ -1,13 +1,8 @@
 package com.peterlaurence.trekme.main
 
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
-import android.os.Build.VERSION_CODES
 import android.os.Bundle
-import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
@@ -17,7 +12,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.ActivityCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
@@ -55,7 +49,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var fragmentManager: FragmentManager? = null
-    private lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
 
     private val navController: NavController
         get() = findNavController(R.id.nav_host_fragment)
@@ -75,54 +69,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     @Inject
     lateinit var appEventBus: AppEventBus
 
+    private var permissionRequestHandler: PermissionRequestHandler? = null
+
     private val snackBarExit: Snackbar by lazy {
         Snackbar.make(binding.drawerLayout, R.string.confirm_exit, Snackbar.LENGTH_SHORT)
     }
+
     private val viewModel: MainActivityViewModel by viewModels()
-
-    private fun checkMapCreationPermission(): Boolean {
-        return hasPermissions(this, *PERMISSIONS_MAP_CREATION)
-    }
-
-    /**
-     * Request all the required permissions for map creation.
-     */
-    private fun requestMapCreationPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            PERMISSIONS_MAP_CREATION,
-            REQUEST_MAP_CREATION
-        )
-    }
-
-    /**
-     * Determine if we have an internet connection.
-     */
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun checkInternet(): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val ip = InetAddress.getByName("google.com")
-            ip.hostAddress != ""
-        } catch (e: Throwable) {
-            false
-        }
-    }
-
-    private fun warnIfNotInternet() {
-        lifecycleScope.launchWhenCreated {
-            if (!checkInternet()) {
-                showSnackbar(getString(R.string.no_internet))
-            }
-        }
-    }
-
-    private fun warnNoStoragePerm() {
-        showWarningDialog(getString(R.string.no_storage_perm), getString(R.string.warning_title)) {
-            if (!shouldInit(this)) {
-                finish()
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,7 +104,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MapArchiveEventHandler(this, lifecycle, mapArchiveEvents)
 
         /* Handle permission request events */
-        PermissionRequestHandler(this, lifecycle, appEventBus, gpsProEvents)
+        permissionRequestHandler =
+            PermissionRequestHandler(this, lifecycle, appEventBus, gpsProEvents)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -251,7 +205,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      * notifying the view-model that everything is ready.
      */
     public override fun onStart() {
-        requestMinimalPermissions(this)
+        permissionRequestHandler?.requestMinimalPermission()
 
         viewModel.onActivityStart()
 
@@ -319,9 +273,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun showMapCreateFragment() {
         navController.navigate(R.id.action_global_mapCreateFragment)
-        if (!checkMapCreationPermission()) {
-            requestMapCreationPermission()
-        }
+        permissionRequestHandler?.requestMapCreationPermission()
         warnIfNotInternet()
     }
 
@@ -356,62 +308,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     fun showSnackbar(message: String, isLong: Boolean = true) {
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout) ?: return
-        val snackbar = Snackbar.make(drawer, message, if (isLong) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT)
-        snackbar.show()
+        Snackbar.make(
+            drawer, message, if (isLong) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
+        ).show()
     }
 
     fun showWarningDialog(
         message: String,
         title: String,
-        dismiss: DialogInterface.OnDismissListener?
+        onDismiss: DialogInterface.OnDismissListener?
     ) {
         val builder = AlertDialog.Builder(this)
         builder.setMessage(message).setTitle(title)
         builder.setPositiveButton(getString(R.string.ok_dialog), null)
-        if (dismiss != null) {
-            builder.setOnDismissListener(dismiss)
+        if (onDismiss != null) {
+            builder.setOnDismissListener(onDismiss)
         }
         val dialog = builder.create()
         dialog.show()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        /* In the case of storage perm, we should restart the app (only applicable for Android < 10) */
-        if (requestCode == REQUEST_STORAGE) {
-            /* If Android >= 10 we don't need to restart the activity as we don't request write permission */
-            if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) return
-
-            if (grantResults.size == 2) {
-                /* Storage read perm is at index 0 */
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    /* Restart the activity to ensure that every component can access local storage */
-                    finish()
-                    startActivity(intent)
-                } else if (shouldShowRequestPermissionRationale(permissions[0])) {
-                    /* User has deny from permission dialog */
-                    warnNoStoragePerm()
-                } else {
-                    /* User has deny permission and checked never show permission dialog so we redirect to Application settings page */
-                    Snackbar.make(
-                        binding.root,
-                        resources.getString(R.string.storage_perm_denied),
-                        Snackbar.LENGTH_INDEFINITE
-                    )
-                        .setAction(resources.getString(R.string.ok_dialog)) {
-                            val intent = Intent()
-                            intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
-                            val uri = Uri.fromParts("package", this@MainActivity.packageName, null)
-                            intent.data = uri
-                            startActivity(intent)
-                        }
-                        .show()
-                }
-            }
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -431,6 +345,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             supportActionBar?.show()
         } else {
             supportActionBar?.hide()
+        }
+    }
+
+    /**
+     * Determine if we have an internet connection.
+     */
+    @Suppress("BlockingMethodInNonBlockingContext")
+    private suspend fun checkInternet(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val ip = InetAddress.getByName("google.com")
+            ip.hostAddress != ""
+        } catch (e: Throwable) {
+            false
+        }
+    }
+
+    private fun warnIfNotInternet() {
+        lifecycleScope.launchWhenCreated {
+            if (!checkInternet()) {
+                showSnackbar(getString(R.string.no_internet))
+            }
         }
     }
 }
