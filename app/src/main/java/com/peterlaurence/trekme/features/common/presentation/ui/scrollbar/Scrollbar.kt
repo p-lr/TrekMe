@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.DrawResult
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -87,6 +88,10 @@ private fun Modifier.drawScrollbar(
         drawContent()
         drawScrollbar()
     }
+}.drawBehind {
+    // drawWithCache + scrollState is broken in compose 1.3.0+ - let's trigger a redraw when the scroll state changes
+    state.value
+    state.maxValue
 }
 
 private fun Modifier.drawScrollbar(
@@ -118,6 +123,13 @@ private fun Modifier.drawScrollbar(
         drawContent()
         drawScrollbar()
     }
+}.drawBehind {
+    // drawWithCache + lazyListState is broken in compose 1.3.0+ - let's trigger a redraw when the scroll state changes
+    state.firstVisibleItemIndex
+    state.firstVisibleItemScrollOffset
+    state.layoutInfo.totalItemsCount
+    state.layoutInfo.viewportStartOffset
+    state.layoutInfo.viewportEndOffset
 }
 
 private fun CacheDrawScope.onDrawScrollbar(
