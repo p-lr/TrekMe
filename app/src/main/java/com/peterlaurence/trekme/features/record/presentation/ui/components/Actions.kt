@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
-import com.peterlaurence.trekme.service.GpxRecordState
+import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
 import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.MorphingButton
 import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.MorphingShape
 import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.PathData

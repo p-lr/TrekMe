@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.service
+package com.peterlaurence.trekme.features.record.app.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -24,11 +24,12 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
-import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
+import com.peterlaurence.trekme.features.record.app.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import com.peterlaurence.trekme.core.lib.gpx.model.*
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
+import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
 import com.peterlaurence.trekme.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -312,10 +313,6 @@ class GpxRecordService : Service() {
         private const val NOTIFICATION_ID = "peterlaurence.GpxRecordService"
         private const val SERVICE_ID = 126585
     }
-}
-
-enum class GpxRecordState {
-    STOPPED, STARTED, PAUSED, RESUMED
 }
 
 private const val THREAD_NAME = "GpxRecordServiceThread"

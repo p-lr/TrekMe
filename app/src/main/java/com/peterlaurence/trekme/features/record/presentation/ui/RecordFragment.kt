@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.databinding.FragmentRecordBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
-import com.peterlaurence.trekme.service.GpxRecordService
+import com.peterlaurence.trekme.features.record.app.service.GpxRecordService
 import com.peterlaurence.trekme.features.record.presentation.ui.components.ActionsStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.GpxRecordListStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.StatusStateful

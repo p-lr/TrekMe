@@ -1,9 +1,9 @@
 package com.peterlaurence.trekme.events.recording
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.service.GpxRecordState
-import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
+import com.peterlaurence.trekme.features.record.app.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
+import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 

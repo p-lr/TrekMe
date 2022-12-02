@@ -20,8 +20,8 @@ import com.peterlaurence.trekme.core.map.domain.models.intersects
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
-import com.peterlaurence.trekme.service.GpxRecordService
-import com.peterlaurence.trekme.service.event.GpxFileWriteEvent
+import com.peterlaurence.trekme.features.record.app.service.GpxRecordService
+import com.peterlaurence.trekme.features.record.app.service.event.GpxFileWriteEvent
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first

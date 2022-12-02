@@ -3,8 +3,8 @@ package com.peterlaurence.trekme.features.record.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.service.GpxRecordService
-import com.peterlaurence.trekme.service.GpxRecordState
+import com.peterlaurence.trekme.features.record.app.service.GpxRecordService
+import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay

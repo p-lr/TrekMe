@@ -45,7 +45,7 @@
         </activity>
 
         <service
-            android:name="com.peterlaurence.trekme.service.GpxRecordService"
+            android:name="com.peterlaurence.trekme.features.record.app.service.GpxRecordService"
             android:foregroundServiceType="location"
             android:enabled="true"
             android:exported="false" />
