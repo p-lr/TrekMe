@@ -16,7 +16,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
-import com.peterlaurence.trekme.features.wifip2p.domain.service.*
+import com.peterlaurence.trekme.features.wifip2p.app.service.*
 import com.peterlaurence.trekme.features.wifip2p.presentation.ui.dialogs.MapSelectionForSend
 import com.peterlaurence.trekme.features.wifip2p.presentation.events.WifiP2pEventBus
 import com.peterlaurence.trekme.features.wifip2p.presentation.viewmodel.Errors

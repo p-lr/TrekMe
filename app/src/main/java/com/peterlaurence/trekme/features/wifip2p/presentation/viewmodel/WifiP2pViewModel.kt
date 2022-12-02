@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.features.wifip2p.domain.service.*
+import com.peterlaurence.trekme.features.wifip2p.app.service.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.*
 import javax.inject.Inject

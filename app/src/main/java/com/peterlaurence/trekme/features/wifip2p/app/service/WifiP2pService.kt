@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.wifip2p.domain.service
+package com.peterlaurence.trekme.features.wifip2p.app.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
 import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.features.wifip2p.domain.service.*
+import com.peterlaurence.trekme.features.wifip2p.app.service.*
 import com.peterlaurence.trekme.util.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
