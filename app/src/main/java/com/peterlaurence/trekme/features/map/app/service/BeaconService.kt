@@ -7,6 +7,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.media.MediaPlayer
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -16,6 +17,7 @@ import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.events.AppEventBus
+import com.peterlaurence.trekme.features.map.domain.core.BeaconVicinityAlgorithm
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,6 +53,8 @@ class BeaconService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var job: Job? = null
 
+    private var sound: MediaPlayer? = null
+
     @Inject
     lateinit var appEventBus: AppEventBus
 
@@ -85,6 +89,8 @@ class BeaconService : Service() {
         if (!notificationManager.areNotificationsEnabled() && android.os.Build.VERSION.SDK_INT >= 33) {
             appEventBus.requestNotificationPermission()
         }
+
+        sound = MediaPlayer.create(applicationContext, R.raw.sonar)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -155,19 +161,20 @@ class BeaconService : Service() {
     }
 
     private suspend fun processBeacons(map: Map) {
+        val algorithm = BeaconVicinityAlgorithm()
         combine(locationSource.locationFlow, map.beacons) { loc, beacons ->
             if (beacons.isEmpty()) stopService()
 
-            println("xxxxxx got loc for ${map.name}, check in ${map.beacons.value.size} beacons")
-            for (beacon in map.beacons.value) {
-
+            val alertedBeacons = algorithm.processLocation(loc, beacons)
+            if (alertedBeacons.isNotEmpty()) {
+                sound?.start()
             }
         }.collect()
     }
 
     private fun stopService() {
-        println("xxxxx stopping service")
         scope.cancel()
+        sound?.release()
         stopSelf()
     }
 }
