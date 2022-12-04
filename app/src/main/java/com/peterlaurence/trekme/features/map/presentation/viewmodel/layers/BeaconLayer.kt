@@ -59,7 +59,7 @@ class BeaconLayer(
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
-        beaconInteractor.getBeaconPositionsFlow(map).collect {
+        beaconInteractor.getBeaconsFlow(map).collect {
             if (it.isNotEmpty()) {
                 mapFeatureEvents.postHasBeacons()
             }
@@ -219,7 +219,7 @@ class BeaconLayer(
             clickable = false    // a beacon should not be clickable
         ) {
             /* Listen to beacon state change and asynchronously update the radius */
-            val radiusPx by produceState(initialValue = 0f) {
+            val radiusPx by produceState(initialValue = 0f, state.beacon) {
                 value = beaconInteractor.getBeaconRadiusInPx(state.beacon, map)
             }
 

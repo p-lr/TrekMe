@@ -26,7 +26,7 @@ class BeaconInteractor @Inject constructor(
     @ApplicationContext private val context: Context,
     @ApplicationScope private val scope: CoroutineScope
 ) {
-    suspend fun getBeaconPositionsFlow(map: Map): Flow<List<BeaconWithNormalizedPos>> {
+    suspend fun getBeaconsFlow(map: Map): Flow<List<BeaconWithNormalizedPos>> {
         /* Import beacons */
         beaconDao.getBeaconsForMap(map)
 
