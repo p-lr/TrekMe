@@ -7,10 +7,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Beacon
 import com.peterlaurence.trekme.features.map.presentation.ui.components.BeaconClickArea
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
@@ -31,8 +32,10 @@ import java.util.*
 class BeaconLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
+    private val purchaseFlow: Flow<PurchaseState>,
     private val beaconInteractor: BeaconInteractor,
-    private val onBeaconEdit: (Beacon, mapId: UUID) -> Unit
+    private val onBeaconEdit: (Beacon, mapId: UUID) -> Unit,
+    private val mapFeatureEvents: MapFeatureEvents
 ) : MapViewModel.MarkerTapListener {
     /**
      * Correspondence between beacon (domain) ids and their associated view state.
@@ -44,15 +47,23 @@ class BeaconLayer(
 
     init {
         scope.launch {
-            dataStateFlow.collectLatest { (map, mapState) ->
-                beaconListState.clear()
-                onMapUpdate(map, mapState)
+            purchaseFlow.collectLatest {
+                if (it == PurchaseState.PURCHASED) {
+                    dataStateFlow.collectLatest { (map, mapState) ->
+                        beaconListState.clear()
+                        onMapUpdate(map, mapState)
+                    }
+                }
             }
         }
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
         beaconInteractor.getBeaconPositionsFlow(map).collect {
+            if (it.isNotEmpty()) {
+                mapFeatureEvents.postHasBeacons()
+            }
+
             for (beaconWithNormalizedPos in it) {
                 val existing = beaconListState[beaconWithNormalizedPos.beacon.id]
                 if (existing != null) {

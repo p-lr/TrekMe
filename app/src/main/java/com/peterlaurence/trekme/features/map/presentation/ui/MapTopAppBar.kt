@@ -32,6 +32,7 @@ fun MapTopAppBar(
     isShowingSpeed: Boolean,
     isLockedOnPosition: Boolean,
     isShowingGpsData: Boolean,
+    hasBeacons: Boolean,
     onMenuClick: () -> Unit,
     onManageTracks: () -> Unit,
     onToggleShowOrientation: () -> Unit,
@@ -96,17 +97,20 @@ fun MapTopAppBar(
                                 onAddLandmark()
                             }
                         )
-                        IconAndText(
-                            { modifier ->
-                                val radius = with(LocalDensity.current) { 20.dp.toPx() }
-                                Beacon(modifier, beaconVicinityRadiusPx = radius)
-                            },
-                            R.string.mapview_add_beacon,
-                            onClick = {
-                                expandedAddOnMap = false
-                                onAddBeacon()
-                            }
-                        )
+
+                        if (hasBeacons) {
+                            IconAndText(
+                                { modifier ->
+                                    val radius = with(LocalDensity.current) { 20.dp.toPx() }
+                                    Beacon(modifier, beaconVicinityRadiusPx = radius)
+                                },
+                                R.string.mapview_add_beacon,
+                                onClick = {
+                                    expandedAddOnMap = false
+                                    onAddBeacon()
+                                }
+                            )
+                        }
                     }
                 }
             }

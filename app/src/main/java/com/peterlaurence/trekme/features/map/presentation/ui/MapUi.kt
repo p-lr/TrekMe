@@ -112,7 +112,8 @@ fun MapScreen(
                     snackBarEvents,
                     location,
                     elevationFix,
-                    purchaseState,
+                    hasElevationFix = purchaseState == PurchaseState.PURCHASED,
+                    hasBeacons = purchaseState == PurchaseState.PURCHASED,
                     onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
                     onMainMenuClick = viewModel::onMainMenuClick,
                     onManageTracks = onNavigateToTracksManage,
@@ -158,7 +159,8 @@ private fun MapScaffold(
     snackBarEvents: List<SnackBarEvent>,
     location: Location?,
     elevationFix: Int,
-    purchaseState: PurchaseState,
+    hasElevationFix: Boolean,
+    hasBeacons: Boolean,
     onSnackBarShown: () -> Unit,
     onMainMenuClick: () -> Unit,
     onManageTracks: () -> Unit,
@@ -207,6 +209,7 @@ private fun MapScaffold(
                 isShowingSpeed,
                 isLockedOnPosition,
                 isShowingGpsData,
+                hasBeacons = hasBeacons,
                 onMenuClick = onMainMenuClick,
                 onManageTracks = onManageTracks,
                 onToggleShowOrientation = onToggleShowOrientation,
@@ -254,7 +257,7 @@ private fun MapScaffold(
             isShowingScaleIndicator,
             location,
             elevationFix,
-            purchaseState,
+            hasElevationFix,
             onElevationFixUpdate
         )
     }

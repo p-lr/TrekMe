@@ -60,6 +60,11 @@
     <string name="service_wifip2p_name">Map sharing service</string>
     <string name="service_wifip2p_action">Map send and receive</string>
 
+    <!-- BeaconService -->
+    <string name="service_beacon_name">Beacon service</string>
+    <string name="service_beacon_notification_name">Beacon monitoring</string>
+    <string name="service_beacon_stop">Stop</string>
+
     <!-- MapDownloadDialog -->
     <string name="map_download_dialog_title">Current map download</string>
     <string name="map_download_dialog_progress">Progress</string>
@@ -184,7 +189,7 @@
     <string name="color_variant_dark">Dark</string>
     <string name="add_track_btn_desc" translatable="false">Add track button</string>
 
-    <!-- MapView fragment -->
+    <!-- Map feature -->
     <string name="mapview_show_speed">Show speed</string>
     <string name="mapview_add_elements">Add elements</string>
     <string name="mapview_add_marker">Marker</string>
@@ -219,8 +224,9 @@
     <string name="elevation_fix_title">Set the elevation fix</string>
     <string name="elevation_fix_name">Fix</string>
     <string name="elevation_fix_help">The fix value is added to the elevation from the GPS</string>
+    <string name="beacon_background_loc_perm">This map has at least one beacon. As a result, the app needs to collect location data even when the app is closed or not in use.\n\nCurrently, the <b>authorization isn\'t granted</b>.</string>
 
-    <!-- Marker, landmark, beacon edit fragment -->
+    <!-- Marker, landmark, beacon edit screens -->
     <string name="marker_name_label">Name</string>
     <string name="beacon_setting_title">Beacon extent</string>
     <string name="beacon_radius_label">Radius</string>

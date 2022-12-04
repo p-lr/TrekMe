@@ -99,7 +99,7 @@ class DownloadService : Service() {
      * Called when the service is started.
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        /* If the user used the notification action-stop button, stop the service */
+        /* If the user used the notification action-stop button or used the stop button withing the app, stop the service */
         if (intent.action == stopAction) {
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopService()
@@ -115,7 +115,6 @@ class DownloadService : Service() {
         val iconDrawable = ContextCompat.getDrawable(applicationContext, R.mipmap.ic_launcher)
         val icon = if (iconDrawable != null) getBitmapFromDrawable(iconDrawable) else null
 
-        /* From here, we know that the service is being created by the activity */
         notificationBuilder = NotificationCompat.Builder(applicationContext, notificationChannelId)
             .setContentTitle(getText(R.string.app_name))
             .setContentText(getText(R.string.service_download_action))

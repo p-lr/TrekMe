@@ -50,6 +50,11 @@
             android:enabled="true"
             android:exported="false" />
         <service
+            android:name="com.peterlaurence.trekme.features.map.app.service.BeaconService"
+            android:foregroundServiceType="location"
+            android:enabled="true"
+            android:exported="false" />
+        <service
             android:name="com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService"
             android:enabled="true"
             android:exported="false" />

@@ -168,6 +168,12 @@
     <string name="swiss_topo_source_description">Office fédéral de topographie</string>
     <string name="service_wifip2p_name">Service de partage de carte</string>
     <string name="service_wifip2p_action">Envoi et réception de carte</string>
+
+    <!-- BeaconService -->
+    <string name="service_beacon_name">Service de balises</string>
+    <string name="service_beacon_notification_name">Gestion des balises</string>
+    <string name="service_beacon_stop">Arrêter</string>
+
     <string name="share_menu_title">Recevoir et envoyer</string>
     <string name="wifip2p_stop_btn">Stop</string>
     <string name="wifip2p_rcv_btn">Recevoir</string>
@@ -335,6 +341,9 @@
     <string name="elevation_fix_title">Définir une correction pour l\'altitude</string>
     <string name="elevation_fix_name">Correction</string>
     <string name="elevation_fix_help">La correction est ajoutée à l\'altitude fournie par le GPS</string>
+    <string name="beacon_background_loc_perm">Cette carte contient des balises, ce qui nécessite de collecter les données de localisation
+        même lorsque l\'application est fermée ou inutilisée.\n\nCette autorisation <b>n\'est pour le moment pas accordée</b>.</string>
+
     <string name="map_delete_landmark">Supprimer le marqueur</string>
     <string name="map_move_landmark">Déplacer le marqueur</string>
     <string name="no_ele_profile_data">Ce fichier GPX est peut-être vide, ou une erreur s\'est produite.</string>

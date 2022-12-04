@@ -4,6 +4,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import java.util.*
 
@@ -33,6 +34,13 @@ class MapFeatureEvents {
     )
 
     data class BeaconEditEvent(val beacon: Beacon, val mapId: UUID)
+
+    private val _hasBeacons = Channel<Unit>(1)
+    val hasBeaconsFlow = _hasBeacons.receiveAsFlow() // This channel-based flow works well with only one collector
+
+    fun postHasBeacons() {
+        _hasBeacons.trySend(Unit)
+    }
     /* endregion */
 
     /* region routes */
