@@ -42,7 +42,7 @@ class BeaconVicinityAlgorithm {
                 true
             } else false
         } else {
-            metadata.outsideCount = metadata.outsideCount++.coerceAtMost(10)
+            metadata.outsideCount = (metadata.outsideCount + 1).coerceAtMost(10)
             if (metadata.outsideCount == 10 && metadata.isAlerted) {
                 metadata.isAlerted = false
             }
