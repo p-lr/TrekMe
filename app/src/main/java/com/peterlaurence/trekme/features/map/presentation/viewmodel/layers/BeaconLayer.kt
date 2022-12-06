@@ -12,10 +12,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.features.map.presentation.ui.components.Beacon
-import com.peterlaurence.trekme.features.map.presentation.ui.components.BeaconClickArea
-import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
-import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
@@ -152,7 +149,7 @@ class BeaconLayer(
                 }
                 val title = beacon.name
 
-                MarkerCallout(
+                BeaconCallout(
                     DpSize(beaconCalloutWidthDp.dp, beaconCalloutHeightDp.dp),
                     title = title,
                     subTitle = subTitle,

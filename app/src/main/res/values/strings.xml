@@ -237,7 +237,11 @@
     <string name="save_action">Save</string>
     <string name="marker_changes_saved">Changes saved</string>
     <string name="show_map_action">Show map</string>
-
+    <string name="beacon_help">A beacon notifies you when you get close enough to it.
+        The vicinity area is indicated with a dashed line.
+        The beacon radius is 50m by default, but can be changed.\nThe alert is only a sound at the moment.
+        \n\nWhen a map has beacons, a service runs in the background. The purpose of this service is to alert you when you get close to a beacon.
+    </string>
     <!-- Record GPX fragment -->
     <string name="recording_frgmt_title">GPX recording</string>
     <string name="control_card_title">Control</string>
