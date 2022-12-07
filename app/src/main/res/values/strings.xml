@@ -484,6 +484,7 @@
     <string name="trekme_extended_ign_overlay_2">Cadastre</string>
     <string name="trekme_extended_ign_overlay_3">Roads, paths and trails</string>
     <string name="trekme_extended_specificities">Specificities</string>
+    <string name="add_beacons">Add beacons to alert you when you get close to specific locations</string>
     <string name="no_ads">No ads</string>
     <string name="create_map_from_track">Create a map from a gpx track</string>
     <string name="center_on_track">Quick center on a track from tracks management screen</string>

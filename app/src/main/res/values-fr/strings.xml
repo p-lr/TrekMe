@@ -366,6 +366,7 @@
     <string name="trekme_extended_ign_overlay_2">Parcelles cadastrales</string>
     <string name="trekme_extended_ign_overlay_3">Réseau des routes, chemins et sentiers</string>
     <string name="trekme_extended_specificities">Particularités</string>
+    <string name="add_beacons">Ajoutez des balises pour vous alerter quand vous vous rapprochez de lieux précis sur la carte</string>
     <string name="no_ads">Pas de publicité</string>
     <string name="new_features">Des fonctionnalités exclusives seront ajoutées</string>
     <string name="offer_suggestion">Disponible avec TrekMe Extended 1 an, 7j d\'essai gratuit</string>
