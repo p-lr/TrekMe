@@ -239,7 +239,7 @@
     <string name="show_map_action">Show map</string>
     <string name="beacon_help">A beacon notifies you when you get close enough to it.
         The vicinity area is indicated with a dashed line.
-        The beacon radius is 50m by default, but can be changed.\nThe alert is only a sound at the moment.
+        The beacon radius is 100m by default, but can be changed.\nThe alert is a sonar sound effect and a vibration.
         \n\nWhen a map has beacons, a service runs in the background. The purpose of this service is to alert you when you get close to a beacon.
     </string>
     <!-- Record GPX fragment -->

@@ -48,8 +48,8 @@
     <string name="show_map_action">Voir carte</string>
     <string name="beacon_help">Une balise sert à vous alerter quand vous rentrez dans la zone de proximité (indiquée en
         pointillés).
-        Le rayon d\'une balise est de 50m par défaut, mais il peut être modifié.
-        \nL\'alerte est sonore uniquement pour le moment.
+        Le rayon d\'une balise est de 100m par défaut, mais il peut être modifié.
+        \nL\'alerte est sonore et utilise le vibreur.
         \n\nQuand une carte contient des balises, un service est lancé en tâche de fond. C\'est ce qui permet de vous alerter.
     </string>
     <string name="delete_marker_question">Supprimer le marker ?</string>

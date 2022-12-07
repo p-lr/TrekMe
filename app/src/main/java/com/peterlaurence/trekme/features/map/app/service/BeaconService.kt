@@ -8,7 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.media.MediaPlayer
-import android.os.IBinder
+import android.os.*
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -29,7 +29,8 @@ import javax.inject.Inject
 
 /**
  * A [Started service](https://developer.android.com/guide/components/services.html#CreatingAService)
- * to monitor beacons even when the user is not interacting with the main application.
+ * to send alerts when the user's current location is close enough to one or more beacons, even when
+ * the user is not interacting with the main application.
  *
  * The service collects active map changes, and when a map has no beacons, the service stops itself.
  * The service can be manually stopped using the action from the notification. Or, when the user
@@ -64,6 +65,10 @@ class BeaconService : Service() {
     @Inject
     lateinit var locationSource: LocationSource
 
+    private var vib: Vibrator? = null
+    private val vibrationPattern = longArrayOf(0, 50, 200, 50, 200, 50, 200, 800, 200, 50, 200, 50, 200, 50)
+    private val vibrationAmplitudes = intArrayOf(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255)
+
     override fun onCreate() {
         super.onCreate()
 
@@ -86,11 +91,20 @@ class BeaconService : Service() {
 
         notificationManager = NotificationManagerCompat.from(this)
 
-        if (!notificationManager.areNotificationsEnabled() && android.os.Build.VERSION.SDK_INT >= 33) {
+        if (!notificationManager.areNotificationsEnabled() && Build.VERSION.SDK_INT >= 33) {
             appEventBus.requestNotificationPermission()
         }
 
         sound = MediaPlayer.create(applicationContext, R.raw.sonar)
+
+        vib = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager =
+                getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+            vibratorManager?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(VIBRATOR_SERVICE) as? Vibrator
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -135,7 +149,7 @@ class BeaconService : Service() {
             }
 
         /* This is only needed on Devices on Android O and above */
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
+        if (Build.VERSION.SDK_INT >= 26) {
             val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val chan = NotificationChannel(
@@ -168,8 +182,18 @@ class BeaconService : Service() {
             val alertedBeacons = algorithm.processLocation(loc, beacons)
             if (alertedBeacons.isNotEmpty()) {
                 sound?.start()
+                vibrate(vibrationPattern)
             }
         }.collect()
+    }
+
+    private fun vibrate(pattern: LongArray) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vib?.vibrate(VibrationEffect.createWaveform(pattern, vibrationAmplitudes, -1))
+        } else {
+            @Suppress("DEPRECATION")
+            vib?.vibrate(pattern, -1)
+        }
     }
 
     private fun stopService() {

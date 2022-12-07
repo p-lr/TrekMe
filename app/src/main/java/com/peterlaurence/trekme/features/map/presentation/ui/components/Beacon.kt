@@ -26,8 +26,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
  * This composable has two modes: static or not. When in static form, it shows a dashed circle.
  *
  * @param beaconVicinityRadiusPx The radius of the beacon at scale 1. This quantity should be
- * computed beforehand. For example, when rendered at scale 1, the beacon represents an area with a
- * radius of 50m.
+ * computed beforehand.
  */
 @Composable
 fun Beacon(
