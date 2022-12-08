@@ -57,6 +57,7 @@ Perhaps most importantly, TrekMe is _designed_ to consume few CPU resources, to 
 * Speed indicator
 * Distance indicator
 * GPX track recording
+* Beacons to alert when getting close to specific locations
 
 ## <a name="TOC-Create-a-map"></a>Create a map
 

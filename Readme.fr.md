@@ -57,6 +57,7 @@ randonnée. L'application est aussi très fluide de manière générale.
 * Indicateur de vitesse
 * Indicateur de distance à vol d'oiseau
 * Verrouiller la vue à la position courante
+* Balises pour alerter à l'approche de lieux précis sur la carte
 
 ## <a name="TOC-Create-a-map"></a>Créer une carte
 
