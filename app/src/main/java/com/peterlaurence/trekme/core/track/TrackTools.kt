@@ -6,6 +6,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.hasTrustedElevations
+import kotlinx.coroutines.flow.update
 import java.io.File
 import java.util.*
 
@@ -50,15 +51,16 @@ object TrackTools {
         return newRouteCount
     }
 
+    /**
+     * TODO: this should be a method "addMarkers" in an interactor
+     */
     fun updateMarkerList(map: Map, newMarkerList: List<Marker>): Int {
         val toBeAdded = newMarkerList.toMutableList()
-        val existing = map.markers
-        existing?.let {
+        val existing = map.markers.value
+        existing.also {
             toBeAdded.removeAll(existing)
         }
-        toBeAdded.forEach {
-            map.addMarker(it)
-        }
+        map.markers.update { it + toBeAdded }
         return toBeAdded.count()
     }
 

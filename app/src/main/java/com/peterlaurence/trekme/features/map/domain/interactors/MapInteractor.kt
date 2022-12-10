@@ -12,7 +12,6 @@ import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalized
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import com.peterlaurence.trekme.di.ApplicationScope
-import com.peterlaurence.trekme.features.map.domain.models.BeaconWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
@@ -52,8 +51,8 @@ class MapInteractor @Inject constructor(
         withContext(scope.coroutineContext) {
             val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
 
-            Marker(lonLat[1], lonLat[0]).also {
-                map.addMarker(it)
+            Marker(lonLat[1], lonLat[0]).also { marker ->
+                map.markers.update { it + marker }
             }
         }
 
@@ -99,7 +98,7 @@ class MapInteractor @Inject constructor(
 
     fun deleteMarker(marker: Marker, mapId: UUID) = scope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
-        map.deleteMarker(marker)
+        map.markers.update { it - marker }
         markersDao.saveMarkers(map)
     }
 
@@ -140,7 +139,7 @@ class MapInteractor @Inject constructor(
         /* Import markers */
         markersDao.getMarkersForMap(map)
 
-        val markers = map.markers ?: return emptyList()
+        val markers = map.markers.value
         return markers.map { marker ->
             val (x, y) = getNormalizedCoordinates(
                 marker.lat,

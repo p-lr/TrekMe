@@ -45,7 +45,7 @@ data class Map(
     var mapBounds = MapBounds(0.0, 0.0, config.size.width.toDouble(), config.size.height.toDouble())
         private set
     private var _landmarks: MutableList<Landmark>? = null
-    private var _markerList: MutableList<Marker>? = null
+    val markers: MutableStateFlow<List<Marker>> = MutableStateFlow(emptyList())
     val beacons: MutableStateFlow<List<Beacon>> = MutableStateFlow(emptyList())
 
     private val _routes = MutableStateFlow<List<Route>>(listOf())
@@ -125,24 +125,6 @@ data class Map(
         } else {
             CalibrationStatus.NONE
         }
-    }
-
-    /**
-     * Markers are lazily loaded.
-     */
-    val markers: List<Marker>?
-        get() = _markerList
-
-    fun setMarkers(markers: List<Marker>) {
-        _markerList = markers.toMutableList()
-    }
-
-    fun addMarker(marker: Marker) {
-        _markerList?.add(marker)
-    }
-
-    fun deleteMarker(marker: Marker) {
-        _markerList?.remove(marker)
     }
 
     val landmarks: List<Landmark>?

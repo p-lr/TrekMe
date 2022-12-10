@@ -40,7 +40,7 @@ class MarkersDaoImpl(
         /* Update the map on the main thread */
         withContext(mainDispatcher) {
             if (markerGson != null) {
-                map.setMarkers(markerGson.markers.map { it.toDomain() })
+                map.markers.value = markerGson.markers.map { it.toDomain() }
                 true
             } else false
         }
@@ -50,12 +50,12 @@ class MarkersDaoImpl(
      * Re-writes the markers.json file.
      */
     override suspend fun saveMarkers(map: Map) = withContext(mainDispatcher) {
-        val markerGson =
-            MarkerGson().apply { markers = map.markers?.map { it.toEntity() } ?: listOf() }
-        val jsonString = gson.toJson(markerGson)
-
         val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
         withContext(ioDispatcher) {
+            val markerGson =
+                MarkerGson().apply { markers = map.markers.value.map { it.toEntity() } }
+            val jsonString = gson.toJson(markerGson)
+
             val markerFile = File(directory, MAP_MARKER_FILENAME)
             writeToFile(jsonString, markerFile) {
                 Log.e(this.javaClass.name, "Error while saving the markers")
