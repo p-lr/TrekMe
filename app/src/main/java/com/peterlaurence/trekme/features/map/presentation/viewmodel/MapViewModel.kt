@@ -19,7 +19,6 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
-import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapLicenseInteractor
@@ -79,10 +78,9 @@ class MapViewModel @Inject constructor(
     val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
         dataStateFlow,
-        mapFeatureEvents.markerMoved,
         mapInteractor,
-        onMarkerEdit = { marker, mapId, markerId ->
-            mapFeatureEvents.postMarkerEditEvent(marker, mapId, markerId)
+        onMarkerEdit = { marker, mapId ->
+            mapFeatureEvents.postMarkerEditEvent(marker, mapId)
         }
     )
 
@@ -137,17 +135,6 @@ class MapViewModel @Inject constructor(
 
         settings.getMaxScale().combine(dataStateFlow) { maxScale, dataState ->
             dataState.mapState.maxScale = maxScale
-        }.launchIn(viewModelScope)
-
-        // TODO: A map should have a StateFlow<List<Marker>>, just like it has a flow of Route.
-        // That would eliminate the need to listen to app events, and allows for better separation
-        // of concern.
-        appEventBus.geoRecordImportEvent.map { event ->
-            if (event is GeoRecordImportResult.GeoRecordImportOk) {
-                if (event.newMarkersCount > 0) {
-                    markerLayer.onMarkersChanged(event.map.id)
-                }
-            }
         }.launchIn(viewModelScope)
     }
 

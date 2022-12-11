@@ -4,9 +4,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MarkerKtx(
-    var lat: Double,
-    var lon: Double,
-    var name: String? = null,
-    var elevation: Double? = null,
-    var comment: String? = null
+    val id: String? = null,  // The id was introduced on 2022/12, existing data may not have an id.
+    val lat: Double,
+    val lon: Double,
+    val name: String? = null,
+    val elevation: Double? = null,
+    val comment: String? = null
 )
+
+@Serializable
+data class MarkerListKtx(val markers: List<MarkerKtx>)

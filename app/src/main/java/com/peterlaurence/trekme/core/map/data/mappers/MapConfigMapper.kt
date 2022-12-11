@@ -53,7 +53,7 @@ private val providerToMapOrigin = mapOf(
     MapGson.MapSource.VIPS to Vips
 )
 
-fun MapConfig.toEntity(): MapGson {
+fun MapConfig.toMarkerGson(): MapGson {
     val mapGson = MapGson()
     mapGson.uuid = uuid.toString()
     mapGson.name = name
@@ -70,11 +70,11 @@ fun MapConfig.toEntity(): MapGson {
         }
     }
     mapGson.provider = MapGson.Provider().apply {
-        generated_by = when(val origin = this@toEntity.origin) {
+        generated_by = when(val origin = this@toMarkerGson.origin) {
             Vips -> MapGson.MapSource.VIPS
             is Wmts -> if (origin.licensed) MapGson.MapSource.IGN_LICENSED else MapGson.MapSource.WMTS
         }
-        image_extension = this@toEntity.imageExtension
+        image_extension = this@toMarkerGson.imageExtension
     }
     mapGson.size = size.let { size ->
         MapGson.MapSize().apply {

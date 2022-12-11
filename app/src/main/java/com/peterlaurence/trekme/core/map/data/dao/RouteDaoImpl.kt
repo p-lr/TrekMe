@@ -14,7 +14,6 @@ import com.peterlaurence.trekme.core.map.data.models.RouteKtx
 import com.peterlaurence.trekme.core.map.domain.dao.RouteDao
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.data.mappers.toDomain
-import com.peterlaurence.trekme.core.map.data.mappers.toMarker
 import com.peterlaurence.trekme.core.map.data.mappers.toRouteInfoKtx
 import com.peterlaurence.trekme.core.map.data.mappers.toRouteKtx
 import com.peterlaurence.trekme.util.FileUtils
@@ -183,7 +182,7 @@ class RouteDaoImpl(
                 elevationTrusted = routeInfoKtx.elevationTrusted,
                 initialVisibility = routeInfoKtx.visible,
                 initialMarkers = routeMarkerKtx.markers.map {
-                    it.toMarker()
+                    it.toDomain()
                 }.toMutableList()
             ).also {
                 routeDirNameForId[it.id] = dir.name

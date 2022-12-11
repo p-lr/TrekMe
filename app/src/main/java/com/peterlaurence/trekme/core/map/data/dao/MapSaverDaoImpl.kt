@@ -5,7 +5,7 @@ import com.google.gson.Gson
 import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
-import com.peterlaurence.trekme.core.map.data.mappers.toEntity
+import com.peterlaurence.trekme.core.map.data.mappers.toMarkerGson
 import com.peterlaurence.trekme.util.writeToFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -19,7 +19,7 @@ class MapSaverDaoImpl (
 ): MapSaverDao {
     override suspend fun save(map: Map) {
         val jsonString = withContext(mainDispatcher) {
-            gson.toJson(map.configSnapshot.toEntity())
+            gson.toJson(map.configSnapshot.toMarkerGson())
         }
 
         val rootFolder = fileBasedMapRegistry.getRootFolder(map.id) ?: return

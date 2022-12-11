@@ -25,7 +25,6 @@ import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
-import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import java.util.*
 
@@ -33,29 +32,22 @@ import java.util.*
 fun MarkerEditStateful(
     marker: Marker,
     mapId: UUID,
-    markerId: String,
-    mapFeatureEvents: MapFeatureEvents,
     mapInteractor: MapInteractor,
     onBackAction: () -> Unit
 ) {
-    var name by remember {
-        mutableStateOf(marker.name ?: "")
-    }
+    var name by remember { mutableStateOf(marker.name) }
+    var latField by remember { mutableStateOf(marker.lat.toString()) }
+    var lonField by remember { mutableStateOf(marker.lon.toString()) }
+    var commentField by remember { mutableStateOf(marker.comment) }
 
-    var latField by remember {
-        mutableStateOf(marker.lat.toString())
-    }
-
-    var lonField by remember {
-        mutableStateOf(marker.lon.toString())
-    }
-
-    var commentField by remember {
-        mutableStateOf(marker.comment ?: "")
-    }
-
-    val onMarkerMove = remember {
-        { mapFeatureEvents.postMarkerMovedEvent(marker, mapId, markerId) }
+    fun makeMarker(): Marker {
+        return Marker(
+            marker.id,
+            lat = latField.toDoubleOrNull() ?: marker.lat,
+            lon = lonField.toDoubleOrNull() ?: marker.lon,
+            name = name,
+            comment = commentField
+        )
     }
 
     Scaffold(
@@ -78,29 +70,25 @@ fun MarkerEditStateful(
             commentField = commentField,
             onNameChange = {
                 name = it
-                marker.name = it
-                mapInteractor.saveMarkers(mapId)
+                mapInteractor.saveMarker(mapId, makeMarker())
             },
             onLatChange = {
-                latField = it
-                runCatching {
-                    marker.lat = it.toDouble()
+                val newLat = it.toDoubleOrNull()
+                if (newLat != null) {
+                    latField = it
+                    mapInteractor.saveMarker(mapId, makeMarker())
                 }
-                onMarkerMove()
-                mapInteractor.saveMarkers(mapId)
             },
             onLonChange = {
-                lonField = it
-                runCatching {
-                    marker.lon = it.toDouble()
+                val newLon = it.toDoubleOrNull()
+                if (newLon != null) {
+                    lonField = it
+                    mapInteractor.saveMarker(mapId, makeMarker())
                 }
-                onMarkerMove()
-                mapInteractor.saveMarkers(mapId)
             },
             onCommentChange = {
                 commentField = it
-                marker.comment = it
-                mapInteractor.saveMarkers(mapId)
+                mapInteractor.saveMarker(mapId, makeMarker())
             }
         )
     }

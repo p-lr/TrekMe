@@ -128,9 +128,6 @@
         <argument
             android:name="mapId"
             app:argType="java.util.UUID" />
-        <argument
-            android:name="markerId"
-            app:argType="string" />
     </fragment>
     <navigation android:id="@+id/map_settings_graph"
         app:startDestination="@id/mapSettingsFragment">

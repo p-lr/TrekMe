@@ -12,19 +12,10 @@ class MapFeatureEvents {
     /* region markers */
     private val _navigateToMarkerEdit = MutableSharedFlow<MarkerEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)
     val navigateToMarkerEdit = _navigateToMarkerEdit.asSharedFlow()
-    fun postMarkerEditEvent(marker: Marker, mapId: UUID, markerId: String) = _navigateToMarkerEdit.tryEmit(
-        MarkerEditEvent(marker, mapId, markerId)
+    fun postMarkerEditEvent(marker: Marker, mapId: UUID) = _navigateToMarkerEdit.tryEmit(
+        MarkerEditEvent(marker, mapId)
     )
-    data class MarkerEditEvent(val marker: Marker, val mapId: UUID, val markerId: String)
-
-    // TODO: once markers are refactored to be based on a flow (like beacons), we no longer need that event
-    private val _markerMoved = MutableSharedFlow<MarkerMovedEvent>(0, 1, BufferOverflow.DROP_OLDEST)
-    val markerMoved = _markerMoved.asSharedFlow()
-    fun postMarkerMovedEvent(marker: Marker, mapId: UUID, markerId: String) = _markerMoved.tryEmit(
-        MarkerMovedEvent(marker, mapId, markerId)
-    )
-    data class MarkerMovedEvent(val marker: Marker, val mapId: UUID, val markerId: String)
-    /* endregion */
+    data class MarkerEditEvent(val marker: Marker, val mapId: UUID)
 
     /* region beacon */
     private val _navigateToBeaconEdit = MutableSharedFlow<BeaconEditEvent>(0, 1, BufferOverflow.DROP_OLDEST)

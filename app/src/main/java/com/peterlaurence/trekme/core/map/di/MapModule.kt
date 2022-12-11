@@ -75,9 +75,9 @@ object MapModule {
         fileBasedMapRegistry: FileBasedMapRegistry,
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
-        gson: Gson
+        @MapJson json: Json
     ) : MarkersDao {
-        return MarkersDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, gson)
+        return MarkersDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, json)
     }
 
     @Singleton

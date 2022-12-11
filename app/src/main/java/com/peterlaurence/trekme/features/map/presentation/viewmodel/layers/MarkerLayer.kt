@@ -13,7 +13,6 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
-import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
@@ -33,22 +32,24 @@ import java.util.*
 class MarkerLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
-    markerMovedEvent: Flow<MapFeatureEvents.MarkerMovedEvent>,
     private val mapInteractor: MapInteractor,
-    private val onMarkerEdit: (Marker, UUID, String) -> Unit
+    private val onMarkerEdit: (Marker, UUID) -> Unit
 ) : MapViewModel.MarkerTapListener {
+    /**
+     * Correspondence between marker (domain) ids and their associated view state.
+     * MarkerState has an "idOnMap" which is correspond to the domain id prefixed with [markerPrefix].
+     * This is useful for click listeners to quickly identify whether the click is done on a marker
+     * or not.
+     */
     private var markerListState = mutableMapOf<String, MarkerState>()
 
     init {
-        dataStateFlow.map { (map, mapState) ->
-            onMapUpdate(map, mapState)
-        }.launchIn(scope)
-
-        combine(dataStateFlow, markerMovedEvent) { (map, mapState), event ->
-            if (map.id == event.mapId) {
-                onMarkerUpdate(map, event.marker, event.markerId, mapState)
+        scope.launch {
+            dataStateFlow.collectLatest { (map, mapState) ->
+                markerListState.clear()
+                onMapUpdate(map, mapState)
             }
-        }.launchIn(scope)
+        }
     }
 
     fun addMarker() = scope.launch {
@@ -58,33 +59,38 @@ class MarkerLayer(
         val marker = mapInteractor.addMarker(map, x, y)
         val markerState = addMarkerOnMap(marker, mapState, x, y)
         morphToDynamic(markerState, x, y, mapState)
-        markerListState[markerState.id] = markerState
-    }
-
-    suspend fun onMarkersChanged(mapId: UUID) {
-        val (map, mapState) = dataStateFlow.first()
-        if (mapId == map.id) {
-            onMapUpdate(map, mapState)
-        }
+        markerListState[marker.id] = markerState
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
-        mapInteractor.getMarkerPositions(map).map { (marker, x, y) ->
-            val state = addMarkerOnMap(marker, mapState, x, y)
-            state
-        }.associateBy { it.id }.also {
-            markerListState = it.toMutableMap()
+        mapInteractor.getMarkersFlow(map).collect {
+            for (markerWithNormalizedPos in it) {
+                val existing = markerListState[markerWithNormalizedPos.marker.id]
+                if (existing != null) {
+                    existing.apply {
+                        marker = markerWithNormalizedPos.marker
+                        mapState.moveMarker(
+                            existing.idOnMap,
+                            markerWithNormalizedPos.x,
+                            markerWithNormalizedPos.y
+                        )
+                    }
+                } else {
+                    val markerState = addMarkerOnMap(
+                        markerWithNormalizedPos.marker,
+                        mapState,
+                        markerWithNormalizedPos.x,
+                        markerWithNormalizedPos.y
+                    )
+                    markerListState[markerWithNormalizedPos.marker.id] = markerState
+                }
+            }
+            val iter = markerListState.iterator()
+            val ids = it.map { b -> b.marker.id }
+            for (entry in iter) {
+                if (entry.key !in ids && entry.value.isStatic) iter.remove()
+            }
         }
-    }
-
-    private suspend fun onMarkerUpdate(
-        map: Map,
-        marker: Marker,
-        markerId: String,
-        mapState: MapState
-    ) {
-        val pos = mapInteractor.getMarkerPosition(map, marker)
-        mapState.moveMarker(markerId, pos.x, pos.y)
     }
 
     override fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double): Boolean {
@@ -92,7 +98,8 @@ class MarkerLayer(
             onMarkerGrabTap(id, mapState)
             return true
         }
-        val markerState = markerListState[id] ?: return false
+        val markerId = id.substringAfter("$markerPrefix-")
+        val markerState = markerListState[markerId] ?: return false
 
         scope.launch {
             var shouldAnimate by mutableStateOf(true)
@@ -113,19 +120,19 @@ class MarkerLayer(
                 markerHeight
             )
 
-            val calloutId = "$calloutPrefix-$id"
+            val calloutId = "$calloutPrefix-$markerId"
             mapState.addCallout(
                 calloutId, x, y,
                 relativeOffset = Offset(pos.relativeAnchorLeft, pos.relativeAnchorTop),
                 absoluteOffset = Offset(pos.absoluteAnchorLeft, pos.absoluteAnchorTop),
                 autoDismiss = true, clickable = false, zIndex = 3f
             ) {
-                val marker = markerListState[id]?.marker ?: return@addCallout
+                val marker = markerListState[markerId]?.marker ?: return@addCallout
                 val subTitle = marker.let {
                     "${stringResource(id = R.string.latitude_short)} : ${df.format(it.lat)}  " +
                             "${stringResource(id = R.string.longitude_short)} : ${df.format(it.lon)}"
                 }
-                val title = marker.name ?: ""
+                val title = marker.name
 
                 MarkerCallout(
                     DpSize(markerCalloutWidthDp.dp, markerCalloutHeightDp.dp),
@@ -134,11 +141,11 @@ class MarkerLayer(
                     shouldAnimate,
                     onAnimationDone = { shouldAnimate = false },
                     onEditAction = {
-                        onMarkerEdit(marker, mapId, id)
+                        onMarkerEdit(marker, mapId)
                     },
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)
-                        mapState.removeMarker(id)
+                        mapState.removeMarker(markerState.idOnMap)
                         mapInteractor.deleteMarker(marker, mapId)
                     },
                     onMoveAction = {
@@ -174,23 +181,22 @@ class MarkerLayer(
     }
 
     private fun onMarkerGrabTap(markerGrabId: String, mapState: MapState) {
-        val markerId = markerGrabId.substringAfter('-')
+        val markerId = markerGrabId.substringAfter("$markerPrefix-")
         val markerState = markerListState[markerId] ?: return
         markerState.isStatic = true
-        mapState.updateMarkerClickable(markerId, true)
 
-        val markerInfo = mapState.getMarkerInfo(markerId)
-        val marker = markerListState[markerId]?.marker
-        if (markerInfo != null && marker != null) {
-            scope.launch {
-                dataStateFlow.first().also {
-                    mapInteractor.updateAndSaveMarker(
-                        marker,
-                        it.map,
-                        markerInfo.x,
-                        markerInfo.y
-                    )
-                }
+        mapState.updateMarkerClickable(markerState.idOnMap, true)
+
+        val markerInfo = mapState.getMarkerInfo(markerState.idOnMap) ?: return
+        val marker = markerState.marker
+        scope.launch {
+            dataStateFlow.first().also {
+                mapInteractor.updateAndSaveMarker(
+                    marker,
+                    it.map,
+                    markerInfo.x,
+                    markerInfo.y
+                )
             }
         }
     }
@@ -201,8 +207,9 @@ class MarkerLayer(
         x: Double,
         y: Double
     ): MarkerState {
-        val id = "$markerPrefix-${UUID.randomUUID()}"
+        val id = "$markerPrefix-${marker.id}"
         val state = MarkerState(id, marker)
+
         mapState.addMarker(
             id,
             x,
@@ -218,9 +225,9 @@ class MarkerLayer(
     }
 
     private fun morphToDynamic(markerState: MarkerState, x: Double, y: Double, mapState: MapState) {
-        mapState.updateMarkerClickable(markerState.id, false)
+        mapState.updateMarkerClickable(markerState.idOnMap, false)
         markerState.isStatic = false
-        attachMarkerGrab(markerState.id, x, y, mapState, markerState)
+        attachMarkerGrab(markerState.idOnMap, x, y, mapState, markerState)
     }
 }
 
@@ -235,6 +242,7 @@ private val df = DecimalFormat("#.####").apply {
     roundingMode = RoundingMode.CEILING
 }
 
-private data class MarkerState(val id: String, val marker: Marker) {
+private class MarkerState(val idOnMap: String, initMarker: Marker) {
+    var marker by mutableStateOf<Marker>(initMarker)
     var isStatic by mutableStateOf(true)
 }

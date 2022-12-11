@@ -51,9 +51,9 @@ class MapInteractor @Inject constructor(
         withContext(scope.coroutineContext) {
             val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
 
-            Marker(lonLat[1], lonLat[0]).also { marker ->
-                map.markers.update { it + marker }
-            }
+            val newMarker = Marker(lat = lonLat[1], lon = lonLat[0])
+            map.markers.update { it + newMarker }
+            newMarker
         }
 
     /**
@@ -82,9 +82,9 @@ class MapInteractor @Inject constructor(
 
         val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)
 
-        marker.apply {
-            lat = lonLat[1]
-            lon = lonLat[0]
+        val updatedMarker = marker.copy(lat = lonLat[1], lon = lonLat[0])
+        map.markers.update {
+            it.filterNot { m -> m.id == marker.id } + updatedMarker
         }
 
         markersDao.saveMarkers(map)
@@ -103,13 +103,18 @@ class MapInteractor @Inject constructor(
     }
 
     /**
-     * Save all markers (debounced).
+     * Save marker (debounced)
      */
-    fun saveMarkers(mapId: UUID) {
+    fun saveMarker(mapId: UUID, marker: Marker) {
         updateMarkerJob?.cancel()
         updateMarkerJob = scope.launch {
             delay(1000)
             val map = mapRepository.getMap(mapId) ?: return@launch
+
+            map.markers.update { formerList ->
+                formerList.filter { it.id != marker.id } + marker
+            }
+
             markersDao.saveMarkers(map)
         }
     }
@@ -149,6 +154,24 @@ class MapInteractor @Inject constructor(
             )
 
             MarkerWithNormalizedPos(marker, x, y)
+        }
+    }
+
+    suspend fun getMarkersFlow(map: Map): Flow<List<MarkerWithNormalizedPos>> {
+        /* Import markers */
+        markersDao.getMarkersForMap(map)
+
+        return map.markers.map { markerList ->
+            markerList.map { marker ->
+                val (x, y) = getNormalizedCoordinates(
+                    marker.lat,
+                    marker.lon,
+                    map.mapBounds,
+                    map.projection
+                )
+
+                MarkerWithNormalizedPos(marker, x, y)
+            }
         }
     }
 

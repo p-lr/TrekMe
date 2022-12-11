@@ -85,13 +85,13 @@ private fun gpxWaypointToMarker(
     wpt: TrackPoint,
     index: Int,
 ): Marker {
-    return wpt.toMarker().apply {
+    return wpt.toMarker(
         name = if (wpt.name?.isNotEmpty() == true) {
             wpt.name ?: ""
         } else {
             "wpt-${index + 1}"
         }
-    }
+    )
 }
 
 private fun gpxEleSourceInfoToDomain(gpxElevationSourceInfo: GpxElevationSourceInfo): ElevationSourceInfo {
@@ -104,4 +104,10 @@ private fun gpxEleSourceInfoToDomain(gpxElevationSourceInfo: GpxElevationSourceI
     return ElevationSourceInfo(elevationSource, gpxElevationSourceInfo.sampling)
 }
 
-fun TrackPoint.toMarker(): Marker = Marker(lat = latitude, lon = longitude, elevation = elevation, time = time)
+fun TrackPoint.toMarker(name: String = ""): Marker = Marker(
+    lat = latitude,
+    lon = longitude,
+    elevation = elevation,
+    time = time,
+    name = name
+)
