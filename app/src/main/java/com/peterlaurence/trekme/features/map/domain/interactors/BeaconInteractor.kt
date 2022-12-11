@@ -48,7 +48,6 @@ class BeaconInteractor @Inject constructor(
         return withContext(scope.coroutineContext) {
             val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
             val name = context.getString(R.string.beacon_default_name)
-            // TODO fetch last radius from data store
 
             Beacon(id = UUID.randomUUID().toString(), name = name, lat = lonLat[1], lon = lonLat[0])
         }

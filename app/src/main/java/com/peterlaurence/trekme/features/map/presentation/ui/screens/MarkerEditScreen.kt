@@ -24,15 +24,15 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
+import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
 import java.util.*
 
 @Composable
 fun MarkerEditStateful(
     marker: Marker,
     mapId: UUID,
-    mapInteractor: MapInteractor,
+    markerInteractor: MarkerInteractor,
     onBackAction: () -> Unit
 ) {
     var name by remember { mutableStateOf(marker.name) }
@@ -70,25 +70,25 @@ fun MarkerEditStateful(
             commentField = commentField,
             onNameChange = {
                 name = it
-                mapInteractor.saveMarker(mapId, makeMarker())
+                markerInteractor.saveMarker(mapId, makeMarker())
             },
             onLatChange = {
                 val newLat = it.toDoubleOrNull()
                 if (newLat != null) {
                     latField = it
-                    mapInteractor.saveMarker(mapId, makeMarker())
+                    markerInteractor.saveMarker(mapId, makeMarker())
                 }
             },
             onLonChange = {
                 val newLon = it.toDoubleOrNull()
                 if (newLon != null) {
                     lonField = it
-                    mapInteractor.saveMarker(mapId, makeMarker())
+                    markerInteractor.saveMarker(mapId, makeMarker())
                 }
             },
             onCommentChange = {
                 commentField = it
-                mapInteractor.saveMarker(mapId, makeMarker())
+                markerInteractor.saveMarker(mapId, makeMarker())
             }
         )
     }

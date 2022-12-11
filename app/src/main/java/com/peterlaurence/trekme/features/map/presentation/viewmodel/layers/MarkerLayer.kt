@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Marker
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
@@ -32,7 +32,7 @@ import java.util.*
 class MarkerLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
-    private val mapInteractor: MapInteractor,
+    private val markerInteractor: MarkerInteractor,
     private val onMarkerEdit: (Marker, UUID) -> Unit
 ) : MapViewModel.MarkerTapListener {
     /**
@@ -56,14 +56,14 @@ class MarkerLayer(
         val (map, mapState) = dataStateFlow.first()
         val x = mapState.centroidX
         val y = mapState.centroidY
-        val marker = mapInteractor.addMarker(map, x, y)
+        val marker = markerInteractor.makeMarker(map, x, y)
         val markerState = addMarkerOnMap(marker, mapState, x, y)
         morphToDynamic(markerState, x, y, mapState)
         markerListState[marker.id] = markerState
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
-        mapInteractor.getMarkersFlow(map).collect {
+        markerInteractor.getMarkersFlow(map).collect {
             for (markerWithNormalizedPos in it) {
                 val existing = markerListState[markerWithNormalizedPos.marker.id]
                 if (existing != null) {
@@ -146,7 +146,7 @@ class MarkerLayer(
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)
                         mapState.removeMarker(markerState.idOnMap)
-                        mapInteractor.deleteMarker(marker, mapId)
+                        markerInteractor.deleteMarker(marker, mapId)
                     },
                     onMoveAction = {
                         mapState.removeCallout(calloutId)
@@ -191,7 +191,7 @@ class MarkerLayer(
         val marker = markerState.marker
         scope.launch {
             dataStateFlow.first().also {
-                mapInteractor.updateAndSaveMarker(
+                markerInteractor.updateAndSaveMarker(
                     marker,
                     it.map,
                     markerInfo.x,

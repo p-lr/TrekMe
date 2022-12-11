@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.peterlaurence.trekme.databinding.FragmentMarkerEditBinding
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MarkerEditStateful
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -20,7 +20,7 @@ class MarkerEditFragment : Fragment() {
     private val args: MarkerEditFragmentArgs by navArgs()
 
     @Inject
-    lateinit var mapInteractor: MapInteractor
+    lateinit var markerInteractor: MarkerInteractor
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +41,7 @@ class MarkerEditFragment : Fragment() {
                     MarkerEditStateful(
                         args.marker,
                         args.mapId,
-                        mapInteractor,
+                        markerInteractor,
                         onBackAction = {
                             findNavController().navigateUp()
                         }

@@ -22,6 +22,7 @@ import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTil
 import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.MapLicenseInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
@@ -41,6 +42,7 @@ class MapViewModel @Inject constructor(
     locationSource: LocationSource,
     orientationSource: OrientationSource,
     mapInteractor: MapInteractor,
+    markerInteractor: MarkerInteractor,
     beaconInteractor: BeaconInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
@@ -78,7 +80,7 @@ class MapViewModel @Inject constructor(
     val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
         dataStateFlow,
-        mapInteractor,
+        markerInteractor,
         onMarkerEdit = { marker, mapId ->
             mapFeatureEvents.postMarkerEditEvent(marker, mapId)
         }

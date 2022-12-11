@@ -4,25 +4,29 @@ import android.content.Context
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.domain.dao.LandmarksDao
-import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
-import com.peterlaurence.trekme.core.map.domain.models.*
+import com.peterlaurence.trekme.core.map.domain.models.Landmark
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.features.map.domain.core.getNormalizedCoordinates
-import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalizedCoordinate
+import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import com.peterlaurence.trekme.di.ApplicationScope
+import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalizedCoordinate
+import com.peterlaurence.trekme.features.map.domain.core.getNormalizedCoordinates
 import com.peterlaurence.trekme.features.map.domain.models.LandmarkWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedPos
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
 class MapInteractor @Inject constructor(
-    private val markersDao: MarkersDao,
     private val landmarksDao: LandmarksDao,
     private val mapRepository: MapRepository,
     private val routeRepository: RouteRepository,
@@ -44,19 +48,6 @@ class MapInteractor @Inject constructor(
         }
 
     /**
-     * Create and add a new marker.
-     * [x] and [y] are expected to be normalized coordinates.
-     */
-    suspend fun addMarker(map: Map, x: Double, y: Double): Marker =
-        withContext(scope.coroutineContext) {
-            val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
-
-            val newMarker = Marker(lat = lonLat[1], lon = lonLat[0])
-            map.markers.update { it + newMarker }
-            newMarker
-        }
-
-    /**
      * Update the landmark position and save.
      * [x] and [y] are expected to be normalized coordinates.
      */
@@ -73,50 +64,10 @@ class MapInteractor @Inject constructor(
         landmarksDao.saveLandmarks(map)
     }
 
-    /**
-     * Update the marker position and save.
-     * [x] and [y] are expected to be normalized coordinates.
-     */
-    fun updateAndSaveMarker(marker: Marker, map: Map, x: Double, y: Double) = scope.launch {
-        val mapBounds = map.mapBounds
-
-        val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)
-
-        val updatedMarker = marker.copy(lat = lonLat[1], lon = lonLat[0])
-        map.markers.update {
-            it.filterNot { m -> m.id == marker.id } + updatedMarker
-        }
-
-        markersDao.saveMarkers(map)
-    }
-
     fun deleteLandmark(landmark: Landmark, mapId: UUID) = scope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
         map.deleteLandmark(landmark)
         landmarksDao.saveLandmarks(map)
-    }
-
-    fun deleteMarker(marker: Marker, mapId: UUID) = scope.launch {
-        val map = mapRepository.getMap(mapId) ?: return@launch
-        map.markers.update { it - marker }
-        markersDao.saveMarkers(map)
-    }
-
-    /**
-     * Save marker (debounced)
-     */
-    fun saveMarker(mapId: UUID, marker: Marker) {
-        updateMarkerJob?.cancel()
-        updateMarkerJob = scope.launch {
-            delay(1000)
-            val map = mapRepository.getMap(mapId) ?: return@launch
-
-            map.markers.update { formerList ->
-                formerList.filter { it.id != marker.id } + marker
-            }
-
-            markersDao.saveMarkers(map)
-        }
     }
 
     /**
@@ -138,52 +89,6 @@ class MapInteractor @Inject constructor(
 
             LandmarkWithNormalizedPos(landmark, x, y)
         }
-    }
-
-    suspend fun getMarkerPositions(map: Map): List<MarkerWithNormalizedPos> {
-        /* Import markers */
-        markersDao.getMarkersForMap(map)
-
-        val markers = map.markers.value
-        return markers.map { marker ->
-            val (x, y) = getNormalizedCoordinates(
-                marker.lat,
-                marker.lon,
-                map.mapBounds,
-                map.projection
-            )
-
-            MarkerWithNormalizedPos(marker, x, y)
-        }
-    }
-
-    suspend fun getMarkersFlow(map: Map): Flow<List<MarkerWithNormalizedPos>> {
-        /* Import markers */
-        markersDao.getMarkersForMap(map)
-
-        return map.markers.map { markerList ->
-            markerList.map { marker ->
-                val (x, y) = getNormalizedCoordinates(
-                    marker.lat,
-                    marker.lon,
-                    map.mapBounds,
-                    map.projection
-                )
-
-                MarkerWithNormalizedPos(marker, x, y)
-            }
-        }
-    }
-
-    suspend fun getMarkerPosition(map: Map, marker: Marker): MarkerWithNormalizedPos {
-        val (x, y) = getNormalizedCoordinates(
-            marker.lat,
-            marker.lon,
-            map.mapBounds,
-            map.projection
-        )
-
-        return MarkerWithNormalizedPos(marker, x, y)
     }
 
     suspend fun loadRoutes(map: Map) {
@@ -231,6 +136,4 @@ class MapInteractor @Inject constructor(
             MarkerWithNormalizedPos(marker, x, y)
         }
     }
-
-    private var updateMarkerJob: Job? = null
 }
