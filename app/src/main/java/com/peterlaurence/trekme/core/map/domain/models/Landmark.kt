@@ -1,8 +1,11 @@
 package com.peterlaurence.trekme.core.map.domain.models
 
+import java.util.*
+
 data class Landmark(
-    var name: String,
-    var lat: Double,
-    var lon: Double,
-    var comment: String = ""
+    val id: String = UUID.randomUUID().toString(),
+    val name: String,
+    val lat: Double,
+    val lon: Double,
+    val comment: String = ""
 )

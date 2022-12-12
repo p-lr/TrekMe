@@ -18,9 +18,7 @@ import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedP
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -37,15 +35,14 @@ class MapInteractor @Inject constructor(
      * Create and add a new landmark.
      * [x] and [y] are expected to be normalized coordinates.
      */
-    suspend fun addLandmark(map: Map, x: Double, y: Double): Landmark =
-        withContext(scope.coroutineContext) {
+    suspend fun makeLandmark(map: Map, x: Double, y: Double): Landmark {
+        return withContext(scope.coroutineContext) {
             val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, map.mapBounds)
             val name = context.getString(R.string.landmark_default_name)
 
-            Landmark(name, lonLat[1], lonLat[0]).also {
-                map.addLandmark(it)
-            }
+            Landmark(name = name, lat = lonLat[1], lon = lonLat[0])
         }
+    }
 
     /**
      * Update the landmark position and save.
@@ -56,9 +53,9 @@ class MapInteractor @Inject constructor(
 
         val lonLat = getLonLatFromNormalizedCoordinate(x, y, map.projection, mapBounds)
 
-        landmark.apply {
-            lat = lonLat[1]
-            lon = lonLat[0]
+        val updatedLandmark = landmark.copy(lat = lonLat[1], lon = lonLat[0])
+        map.landmarks.update {
+            it.filterNot { m -> m.id == landmark.id } + updatedLandmark
         }
 
         landmarksDao.saveLandmarks(map)
@@ -66,28 +63,25 @@ class MapInteractor @Inject constructor(
 
     fun deleteLandmark(landmark: Landmark, mapId: UUID) = scope.launch {
         val map = mapRepository.getMap(mapId) ?: return@launch
-        map.deleteLandmark(landmark)
+        map.landmarks.update { it - landmark }
         landmarksDao.saveLandmarks(map)
     }
 
-    /**
-     * Given a [Map], get the list of [Landmark] along with their normalized position.
-     */
-    suspend fun getLandmarkPositions(map: Map): List<LandmarkWithNormalizedPos> {
+    suspend fun getLandmarksFlow(map: Map): Flow<List<LandmarkWithNormalizedPos>> {
         /* Import landmarks */
         landmarksDao.getLandmarksForMap(map)
 
-        val landmarks = map.landmarks ?: return emptyList()
+        return map.landmarks.map { landmarkList ->
+            landmarkList.map { landmark ->
+                val (x, y) = getNormalizedCoordinates(
+                    landmark.lat,
+                    landmark.lon,
+                    map.mapBounds,
+                    map.projection
+                )
 
-        return landmarks.map { landmark ->
-            val (x, y) = getNormalizedCoordinates(
-                landmark.lat,
-                landmark.lon,
-                map.mapBounds,
-                map.projection
-            )
-
-            LandmarkWithNormalizedPos(landmark, x, y)
+                LandmarkWithNormalizedPos(landmark, x, y)
+            }
         }
     }
 

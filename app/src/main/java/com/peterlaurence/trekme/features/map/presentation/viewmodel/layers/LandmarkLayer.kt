@@ -1,7 +1,9 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
@@ -9,8 +11,8 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
-import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Landmark
+import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.utils.getLonLat
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
@@ -21,8 +23,14 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.positionCallout
 import com.peterlaurence.trekme.util.dpToPx
 import com.peterlaurence.trekme.util.throttle
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.math.RoundingMode
@@ -37,9 +45,42 @@ class LandmarkLayer(
     private var landmarkListState = mutableMapOf<String, LandmarkState>()
 
     init {
-        dataStateFlow.map { (map, mapState) ->
-            onMapUpdate(map, mapState)
-        }.launchIn(scope)
+        scope.launch {
+            dataStateFlow.collectLatest { (map, mapState) ->
+                onMapUpdate(map, mapState)
+            }
+        }
+    }
+
+    private suspend fun onMapUpdate(map: Map, mapState: MapState) {
+        mapInteractor.getLandmarksFlow(map).collect {
+            for (landmarkWithNormalizedPos in it) {
+                val existing = landmarkListState[landmarkWithNormalizedPos.landmark.id]
+                if (existing != null) {
+                    existing.apply {
+                        landmark = landmarkWithNormalizedPos.landmark
+                        mapState.moveMarker(
+                            existing.idOnMap,
+                            landmarkWithNormalizedPos.x,
+                            landmarkWithNormalizedPos.y
+                        )
+                    }
+                } else {
+                    val landmarkState = addLandmarkOnMap(
+                        landmarkWithNormalizedPos.landmark,
+                        mapState,
+                        landmarkWithNormalizedPos.x,
+                        landmarkWithNormalizedPos.y
+                    )
+                    landmarkListState[landmarkWithNormalizedPos.landmark.id] = landmarkState
+                }
+            }
+            val iter = landmarkListState.iterator()
+            val ids = it.map { b -> b.landmark.id }
+            for (entry in iter) {
+                if (entry.key !in ids && entry.value.isStatic) iter.remove()
+            }
+        }
     }
 
     fun addLandmark() = scope.launch {
@@ -47,27 +88,25 @@ class LandmarkLayer(
 
         val x = mapState.centroidX
         val y = mapState.centroidY
-        val landmark = mapInteractor.addLandmark(map, x, y)
+        val landmark = mapInteractor.makeLandmark(map, x, y)
         val landmarkState = addLandmarkOnMap(landmark, mapState, x, y)
         morphToDynamic(landmarkState, x, y, mapState)
-        landmarkListState[landmarkState.id] = landmarkState
+        landmarkListState[landmark.id] = landmarkState
     }
 
-    private suspend fun onMapUpdate(map: Map, mapState: MapState) {
-        mapInteractor.getLandmarkPositions(map).map { (landmark, x, y) ->
-            val state = addLandmarkOnMap(landmark, mapState, x, y)
-            state
-        }.associateBy { it.id }.also {
-            landmarkListState = it.toMutableMap()
-        }
-    }
-
-    override fun onMarkerTap(mapState: MapState, mapId: UUID, id: String, x: Double, y: Double): Boolean {
+    override fun onMarkerTap(
+        mapState: MapState,
+        mapId: UUID,
+        id: String,
+        x: Double,
+        y: Double
+    ): Boolean {
         if (id.startsWith(markerGrabPrefix)) {
             onMarkerGrabTap(id, mapState)
             return true
         }
-        val landmarkState = landmarkListState[id] ?: return false
+        val landmarkId = id.substringAfter("$landmarkPrefix-")
+        val landmarkState = landmarkListState[landmarkId] ?: return false
 
         scope.launch {
             var shouldAnimate by mutableStateOf(true)
@@ -88,14 +127,14 @@ class LandmarkLayer(
                 markerHeight
             )
 
-            val calloutId = "$calloutPrefix-$id"
+            val calloutId = "$calloutPrefix-$landmarkId"
             mapState.addCallout(
                 calloutId, x, y,
                 relativeOffset = Offset(pos.relativeAnchorLeft, pos.relativeAnchorTop),
                 absoluteOffset = Offset(pos.absoluteAnchorLeft, pos.absoluteAnchorTop),
                 autoDismiss = true, clickable = false, zIndex = 3f
             ) {
-                val subTitle = landmarkListState[id]?.landmark?.let {
+                val subTitle = landmarkListState[landmarkId]?.landmark?.let {
                     "${stringResource(id = R.string.latitude_short)} : ${df.format(it.lat)}  " +
                             "${stringResource(id = R.string.longitude_short)} : ${df.format(it.lon)}"
                 } ?: ""
@@ -107,7 +146,7 @@ class LandmarkLayer(
                     onAnimationDone = { shouldAnimate = false },
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)
-                        mapState.removeMarker(id)
+                        mapState.removeMarker(landmarkState.idOnMap)
                         mapInteractor.deleteLandmark(landmarkState.landmark, mapId)
                     },
                     onMoveAction = {
@@ -143,23 +182,22 @@ class LandmarkLayer(
     }
 
     private fun onMarkerGrabTap(markerGrabId: String, mapState: MapState) {
-        val markerId = markerGrabId.substringAfter('-')
+        val markerId = markerGrabId.substringAfter("$landmarkPrefix-")
         val landmarkState = landmarkListState[markerId] ?: return
         landmarkState.isStatic = true
-        mapState.updateMarkerClickable(markerId, true)
 
-        val landmarkInfo = mapState.getMarkerInfo(markerId)
-        val landmark = landmarkListState[markerId]?.landmark
-        if (landmarkInfo != null && landmark != null) {
-            scope.launch {
-                dataStateFlow.first().also {
-                    mapInteractor.updateAndSaveLandmark(
-                        landmark,
-                        it.map,
-                        landmarkInfo.x,
-                        landmarkInfo.y
-                    )
-                }
+        mapState.updateMarkerClickable(landmarkState.idOnMap, true)
+
+        val landmarkInfo = mapState.getMarkerInfo(landmarkState.idOnMap) ?: return
+        val landmark = landmarkState.landmark
+        scope.launch {
+            dataStateFlow.first().also {
+                mapInteractor.updateAndSaveLandmark(
+                    landmark,
+                    it.map,
+                    landmarkInfo.x,
+                    landmarkInfo.y
+                )
             }
         }
     }
@@ -167,8 +205,9 @@ class LandmarkLayer(
     private fun addLandmarkOnMap(
         landmark: Landmark, mapState: MapState, x: Double, y: Double
     ): LandmarkState {
-        val id = "$landmarkPrefix-${UUID.randomUUID()}"
+        val id = "$landmarkPrefix-${landmark.id}"
         val state = LandmarkState(id, landmark)
+
         mapState.addMarker(
             id,
             x,
@@ -184,14 +223,11 @@ class LandmarkLayer(
     }
 
     private fun morphToDynamic(
-        landmarkState: LandmarkState,
-        x: Double,
-        y: Double,
-        mapState: MapState
+        landmarkState: LandmarkState, x: Double, y: Double, mapState: MapState
     ) {
-        mapState.updateMarkerClickable(landmarkState.id, false)
+        mapState.updateMarkerClickable(landmarkState.idOnMap, false)
         landmarkState.isStatic = false
-        attachMarkerGrab(landmarkState.id, x, y, mapState, landmarkState)
+        attachMarkerGrab(landmarkState.idOnMap, x, y, mapState, landmarkState)
     }
 }
 
@@ -236,7 +272,8 @@ private const val landmarkPrefix = "landmark"
 private const val calloutPrefix = "callout"
 private const val markerGrabPrefix = "grabLandmark"
 
-private data class LandmarkState(val id: String, val landmark: Landmark) {
+private class LandmarkState(val idOnMap: String, initLandmark: Landmark) {
+    var landmark by mutableStateOf(initLandmark)
     var isStatic by mutableStateOf(true)
 }
 

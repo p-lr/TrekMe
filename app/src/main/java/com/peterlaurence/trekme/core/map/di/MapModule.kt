@@ -86,9 +86,9 @@ object MapModule {
         fileBasedMapRegistry: FileBasedMapRegistry,
         @MainDispatcher mainDispatcher: CoroutineDispatcher,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
-        gson: Gson
+        @MapJson json: Json
     ) : LandmarksDao {
-        return LandmarksDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, gson)
+        return LandmarksDaoImpl(fileBasedMapRegistry, mainDispatcher, ioDispatcher, json)
     }
 
     @Singleton
