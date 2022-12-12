@@ -19,10 +19,7 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
-import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
-import com.peterlaurence.trekme.features.map.domain.interactors.MapLicenseInteractor
-import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.*
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.*
@@ -43,7 +40,9 @@ class MapViewModel @Inject constructor(
     orientationSource: OrientationSource,
     mapInteractor: MapInteractor,
     markerInteractor: MarkerInteractor,
+    landmarkInteractor: LandmarkInteractor,
     beaconInteractor: BeaconInteractor,
+    routeInteractor: RouteInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
@@ -75,7 +74,7 @@ class MapViewModel @Inject constructor(
         }
     )
 
-    val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, dataStateFlow, mapInteractor)
+    val landmarkLayer: LandmarkLayer = LandmarkLayer(viewModelScope, dataStateFlow, landmarkInteractor)
 
     val markerLayer: MarkerLayer = MarkerLayer(
         viewModelScope,
@@ -111,7 +110,7 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         dataStateFlow,
         mapFeatureEvents.goToRoute,
-        mapInteractor,
+        routeInteractor,
         gpxRecordEvents
     )
 

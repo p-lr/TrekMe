@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.domain.models.Landmark
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalizedCoordinate
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.LandmarkInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkCallout
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
@@ -40,7 +40,7 @@ import java.util.*
 class LandmarkLayer(
     private val scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
-    private val mapInteractor: MapInteractor
+    private val landmarkInteractor: LandmarkInteractor,
 ) : MapViewModel.MarkerTapListener {
     private var landmarkListState = mutableMapOf<String, LandmarkState>()
 
@@ -53,7 +53,7 @@ class LandmarkLayer(
     }
 
     private suspend fun onMapUpdate(map: Map, mapState: MapState) {
-        mapInteractor.getLandmarksFlow(map).collect {
+        landmarkInteractor.getLandmarksFlow(map).collect {
             for (landmarkWithNormalizedPos in it) {
                 val existing = landmarkListState[landmarkWithNormalizedPos.landmark.id]
                 if (existing != null) {
@@ -88,7 +88,7 @@ class LandmarkLayer(
 
         val x = mapState.centroidX
         val y = mapState.centroidY
-        val landmark = mapInteractor.makeLandmark(map, x, y)
+        val landmark = landmarkInteractor.makeLandmark(map, x, y)
         val landmarkState = addLandmarkOnMap(landmark, mapState, x, y)
         morphToDynamic(landmarkState, x, y, mapState)
         landmarkListState[landmark.id] = landmarkState
@@ -147,7 +147,7 @@ class LandmarkLayer(
                     onDeleteAction = {
                         mapState.removeCallout(calloutId)
                         mapState.removeMarker(landmarkState.idOnMap)
-                        mapInteractor.deleteLandmark(landmarkState.landmark, mapId)
+                        landmarkInteractor.deleteLandmark(landmarkState.landmark, mapId)
                     },
                     onMoveAction = {
                         mapState.removeCallout(calloutId)
@@ -192,7 +192,7 @@ class LandmarkLayer(
         val landmark = landmarkState.landmark
         scope.launch {
             dataStateFlow.first().also {
-                mapInteractor.updateAndSaveLandmark(
+                landmarkInteractor.updateAndSaveLandmark(
                     landmark,
                     it.map,
                     landmarkInfo.x,

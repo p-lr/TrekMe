@@ -23,7 +23,7 @@ import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause
 import com.peterlaurence.trekme.events.recording.LiveRoutePoint
 import com.peterlaurence.trekme.events.recording.LiveRouteStop
-import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
+import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
 import com.peterlaurence.trekme.util.parseColor
@@ -46,7 +46,7 @@ class RouteLayer(
     scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val goToRouteFlow: Flow<Route>,
-    private val mapInteractor: MapInteractor,
+    private val routeInteractor: RouteInteractor,
     private val gpxRecordEvents: GpxRecordEvents
 ) {
     val isShowingDistanceOnTrack = MutableStateFlow(false)
@@ -71,7 +71,7 @@ class RouteLayer(
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
                 staticRoutesData.clear()
-                mapInteractor.loadRoutes(map)
+                routeInteractor.loadRoutes(map)
 
                 map.routes.collectLatest { routes ->
                     drawStaticRoutes(mapState, map, routes)
@@ -95,7 +95,7 @@ class RouteLayer(
                         val controller = DistanceOnRouteController(
                             map,
                             mapState,
-                            mapInteractor,
+                            routeInteractor,
                             staticRoutesData,
                             state
                         )
@@ -119,7 +119,7 @@ class RouteLayer(
 
             launch {
                 val pathBuilder = mapState.makePathDataBuilder()
-                mapInteractor.getLiveMarkerPositions(map, route).collect {
+                routeInteractor.getLiveMarkerPositions(map, route).collect {
                     pathBuilder.addPoint(it.x, it.y)
                     val pathData = pathBuilder.build()
                     if (pathData != null) {
@@ -234,7 +234,7 @@ class RouteLayer(
         var yMin: Double? = null
         var yMax: Double? = null
         var size = 0
-        mapInteractor.getExistingMarkerPositions(map, route).collect {
+        routeInteractor.getExistingMarkerPositions(map, route).collect {
             pathBuilder.addPoint(it.x, it.y)
             xMin = it.x.coerceAtMost(xMin ?: it.x)
             xMax = it.x.coerceAtLeast(xMax ?: it.x)
@@ -287,7 +287,7 @@ private data class RouteData(val pathData: PathData, val barycenter: Barycenter,
 private class DistanceOnRouteController(
     private val map: Map,
     private val mapState: MapState,
-    private val mapInteractor: MapInteractor,
+    private val routeInteractor: RouteInteractor,
     private val routesData: ConcurrentMap<Route, RouteData>,
     private val restoreState: DistanceOnRouteControllerRestoreState
 ) {
@@ -486,7 +486,7 @@ private class DistanceOnRouteController(
 
     private suspend fun getRoutePoints(route: Route): List<PointIndexed> {
         var i = 0
-        return mapInteractor.getExistingMarkerPositions(map, route).map {
+        return routeInteractor.getExistingMarkerPositions(map, route).map {
             PointIndexed(i++, it.x, it.y)
         }.toList()
     }
