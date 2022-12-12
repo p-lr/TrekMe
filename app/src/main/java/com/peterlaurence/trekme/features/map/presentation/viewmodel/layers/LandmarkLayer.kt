@@ -13,7 +13,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geotools.distanceApprox
 import com.peterlaurence.trekme.core.map.domain.models.Landmark
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.map.domain.utils.getLonLat
+import com.peterlaurence.trekme.features.map.domain.core.getLonLatFromNormalizedCoordinate
 import com.peterlaurence.trekme.features.map.domain.interactors.MapInteractor
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandMark
 import com.peterlaurence.trekme.features.map.presentation.ui.components.LandmarkCallout
@@ -256,9 +256,9 @@ class LandmarkLinesState(mapState: MapState, private val map: Map) {
         landmarks: List<MarkerDataSnapshot>,
         position: MarkerDataSnapshot
     ): kotlin.collections.Map<String, Double?> = withContext(Dispatchers.Default) {
-        fun computeDistance(aX: Double, aY: Double, bX: Double, bY: Double): Double? {
-            val lonLatA = getLonLat(aX, aY, map) ?: return null
-            val lonLatB = getLonLat(bX, bY, map) ?: return null
+        suspend fun computeDistance(aX: Double, aY: Double, bX: Double, bY: Double): Double {
+            val lonLatA = getLonLatFromNormalizedCoordinate(aX, aY, map.projection, map.mapBounds)
+            val lonLatB = getLonLatFromNormalizedCoordinate(bX, bY, map.projection, map.mapBounds)
             return distanceApprox(lonLatA[1], lonLatA[0], lonLatB[1], lonLatB[0])
         }
 
