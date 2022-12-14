@@ -151,7 +151,7 @@ class CalibrationViewModel @Inject constructor(
         _uiState.value = MapUiState(
             mapState,
             calibrationPoints,
-            calibrationMethodStateFlow = map.calibrationMethodStateFlow
+            calibrationMethod = map.calibrationMethod
         )
     }
 
@@ -191,5 +191,5 @@ data class MapUiState(
     val mapState: MapState,
     val calibrationPoints: List<CalibrationPointModel>,
     val selected: MutableState<PointId> = mutableStateOf(PointId.One),
-    val calibrationMethodStateFlow: StateFlow<CalibrationMethod>
+    val calibrationMethod: CalibrationMethod
 ) : UiState

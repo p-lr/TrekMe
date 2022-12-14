@@ -159,9 +159,6 @@ data class Map(
     val levelList: List<Level>
         get() = config.levels
 
-    private val _calibrationMethodStateFlow = MutableStateFlow(calibrationMethod)
-    val calibrationMethodStateFlow = _calibrationMethodStateFlow.asStateFlow()
-
     val calibrationMethod: CalibrationMethod
         get() {
             val cal = config.calibration

@@ -63,12 +63,11 @@ fun CalibrationStateful(
                     val calibrationPointModel = calibrationPoints.getOrNull(
                         mapUiState.selected.value.index
                     )
-                    val calibrationMethod by mapUiState.calibrationMethodStateFlow.collectAsState()
 
                     Calibration(
                         mapUiState.selected.value,
                         calibrationPointModel,
-                        calibrationMethod,
+                        mapUiState.calibrationMethod,
                         onPointSelection = viewModel::onPointSelectionChange,
                         onSave = viewModel::onSave
                     )
