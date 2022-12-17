@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.core.map.data.dao
 
 import android.content.ContentResolver
 import android.net.Uri
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSetThumbnailDao
@@ -13,14 +14,13 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 
 class MapSetThumbnailDaoImpl(
-    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val defaultDispatcher: CoroutineDispatcher,
     private val mapSaverDao: MapSaverDao,
     private val contentResolver: ContentResolver
 ) : MapSetThumbnailDao {
 
     override suspend fun setThumbnail(map: Map, uri: Uri): Result<Map> {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return Result.failure(Exception("No map for this id"))
+        val directory = (map as? MapFileBased)?.folder ?: return Result.failure(Exception("No map for this id"))
         val targetFile = File(directory, THUMBNAIL_NAME)
         val imageOutputStream: OutputStream = runCatching {
                 FileOutputStream(targetFile)
@@ -39,7 +39,6 @@ class MapSetThumbnailDaoImpl(
                     thumbnailImage = thumbnailImage
                 )
             )
-            fileBasedMapRegistry.setRootFolder(newMap.id, directory)
             mapSaverDao.save(newMap)
             Result.success(newMap)
         } else {

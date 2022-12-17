@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.data.mappers.toDomain
 import com.peterlaurence.trekme.core.map.data.mappers.toRouteInfoKtx
 import com.peterlaurence.trekme.core.map.data.mappers.toRouteKtx
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
@@ -32,7 +33,6 @@ import java.io.File
  * one more year - ideally as long as reasonably possible.
  */
 class RouteDaoImpl(
-    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val ioDispatcher: CoroutineDispatcher,
     private val mainDispatcher: CoroutineDispatcher,
     private val json: Json
@@ -44,7 +44,7 @@ class RouteDaoImpl(
 
     override suspend fun importRoutes(map: Map) = withContext(ioDispatcher) {
         routeDirNameForId.clear()
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+        val directory = (map as? MapFileBased)?.folder ?: return@withContext
         val legacyRouteFile = File(directory, LEGACY_MAP_ROUTE_FILENAME)
         val routes = if (legacyRouteFile.exists()) {
             /* Import legacy */
@@ -73,7 +73,7 @@ class RouteDaoImpl(
 
     override suspend fun saveNewRoute(map: Map, route: Route): Unit = withContext(ioDispatcher) {
         runCatching {
-            val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+            val directory = (map as? MapFileBased)?.folder ?: return@withContext
             val dir =
                 getOrCreateDirectory(directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
             routeDirNameForId[route.id] = route.name ?: route.id
@@ -85,7 +85,7 @@ class RouteDaoImpl(
 
     override suspend fun saveRouteInfo(map: Map, route: Route): Unit = withContext(ioDispatcher) {
         runCatching {
-            val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+            val directory = (map as? MapFileBased)?.folder ?: return@withContext
             val dir =
                 getOrCreateDirectory(directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
             val routeInfoKtx = route.toRouteInfoKtx()
@@ -107,7 +107,7 @@ class RouteDaoImpl(
      * This operation performs quickly since [RouteInfoKtx] is a small object.
      */
     override suspend fun deleteRoutesUsingId(map: Map, ids: List<String>): Unit = withContext(ioDispatcher) {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+        val directory = (map as? MapFileBased)?.folder ?: return@withContext
         val root = File(directory, MAP_ROUTES_DIRECTORY)
 
         val dirList = runCatching {
@@ -133,7 +133,7 @@ class RouteDaoImpl(
     }
 
     private suspend fun deleteRouteUsingDirName(map: Map, route: Route) = withContext(ioDispatcher) {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext
+        val directory = (map as? MapFileBased)?.folder ?: return@withContext
         val root = File(directory, MAP_ROUTES_DIRECTORY)
         runCatching {
             val routeDirName = routeDirNameForId[route.id]

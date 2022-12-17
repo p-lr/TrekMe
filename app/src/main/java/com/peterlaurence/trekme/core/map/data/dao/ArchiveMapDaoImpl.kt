@@ -4,6 +4,7 @@ import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.dao.ArchiveMapDao
 import com.peterlaurence.trekme.util.ZipProgressionListener
@@ -21,7 +22,6 @@ import java.util.*
  * parent folder of the [Map].
  */
 class ArchiveMapDaoImpl(
-    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val app: Application,
     private val defaultDispatcher: CoroutineDispatcher
 ) : ArchiveMapDao {
@@ -37,9 +37,10 @@ class ArchiveMapDaoImpl(
                         ?: return
                     /* The underlying task which writes into the stream is responsible for closing this stream. */
                     withContext(defaultDispatcher) {
-                        val mapFolder = fileBasedMapRegistry.getRootFolder(map.id)
-                        if (mapFolder != null) {
-                            zipTask(mapFolder, out, listener)
+                        when(map) {
+                            is MapFileBased -> {
+                                zipTask(map.folder, out, listener)
+                            }
                         }
                     }
                 }.onFailure {

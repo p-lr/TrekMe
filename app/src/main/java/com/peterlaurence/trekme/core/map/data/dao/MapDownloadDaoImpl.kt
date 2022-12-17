@@ -22,8 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class MapDownloadDaoImpl(
-    private val settings: Settings,
-    private val fileBasedMapRegistry: FileBasedMapRegistry
+    private val settings: Settings
 ) : MapDownloadDao {
     private val workerCount = 8
 
@@ -87,7 +86,6 @@ class MapDownloadDaoImpl(
 
         val map = buildMap(mapSpec, mapOrigin, destDir)
 
-        fileBasedMapRegistry.setRootFolder(map.id, destDir)
         createNomediaFile(destDir)
 
         return map
@@ -167,7 +165,7 @@ class MapDownloadDaoImpl(
             calibration
         )
 
-        return MapFileBased(mapConfig)
+        return MapFileBased(mapConfig, folder)
     }
 }
 

@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.map.data.dao
 
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.data.models.MapPropertiesKtx
 import com.peterlaurence.trekme.core.map.domain.dao.UpdateElevationFixDao
@@ -14,13 +15,12 @@ import java.io.File
  * This is a file based implementation of [UpdateElevationFixDao].
  */
 class UpdateElevationFixDaoImpl(
-    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val ioDispatcher: CoroutineDispatcher,
     private val json: Json
 ) : UpdateElevationFixDao {
 
     override suspend fun setElevationFix(map: Map, fix: Int): Boolean = withContext(ioDispatcher) {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return@withContext false
+        val directory = (map as? MapFileBased)?.folder ?: return@withContext false
         val propertiesFile = File(directory, propertiesFileName)
         if (!propertiesFile.exists()) {
             propertiesFile.createNewFile()

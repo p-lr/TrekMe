@@ -5,6 +5,7 @@ import com.peterlaurence.trekme.core.map.data.MAP_BEACON_FILENAME
 import com.peterlaurence.trekme.core.map.data.mappers.toBeaconKtx
 import com.peterlaurence.trekme.core.map.data.mappers.toDomain
 import com.peterlaurence.trekme.core.map.data.models.BeaconListKtx
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.dao.BeaconDao
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.util.FileUtils
@@ -16,13 +17,12 @@ import kotlinx.serialization.json.Json
 import java.io.File
 
 class BeaconsDaoImpl(
-    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val ioDispatcher: CoroutineDispatcher,
     private val mainDispatcher: CoroutineDispatcher,
     private val json: Json
 ) : BeaconDao {
     override suspend fun getBeaconsForMap(map: Map): Boolean {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return false
+        val directory = (map as? MapFileBased)?.folder ?: return false
         val beaconList = withContext(ioDispatcher) {
             val beaconFile = File(directory, MAP_BEACON_FILENAME)
             if (!beaconFile.exists()) return@withContext null
@@ -43,7 +43,7 @@ class BeaconsDaoImpl(
     }
 
     override suspend fun saveBeacons(map: Map) {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return
+        val directory = (map as? MapFileBased)?.folder ?: return
 
         withContext(ioDispatcher) {
             runCatching {

@@ -21,7 +21,6 @@ import kotlinx.serialization.json.Json
 import java.io.File
 
 class MapLoaderDaoFileBased constructor(
-    private val registry: FileBasedMapRegistry,
     private val mapSaverDao: MapSaverDao,
     private val gson: Gson,
     private val json: Json,
@@ -120,13 +119,10 @@ class MapLoaderDaoFileBased constructor(
                 val mapConfig = mapGson.toDomain(elevationFix, thumbnailImage) ?: continue
 
                 /* Map creation */
-                val map = MapFileBased(mapConfig)
+                val map = MapFileBased(mapConfig, rootDir)
 
                 /* Some properties can be set right after */
                 map.sizeInBytes.value = mapGson.sizeInBytes
-
-                /* Remember map root folder */
-                registry.setRootFolder(map.id, rootDir)
 
                 /* See above for explanation */
                 if (shouldSaveUUID) {

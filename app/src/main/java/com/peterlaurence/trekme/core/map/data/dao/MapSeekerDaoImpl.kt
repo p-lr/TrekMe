@@ -21,7 +21,6 @@ import java.util.*
 class MapSeekerDaoImpl(
     private val mapLoaderDao: MapLoaderDao,
     private val mapSaver: MapSaverDao,
-    private val fileBasedMapRegistry: FileBasedMapRegistry
 ) : MapSeekerDao {
     private val thumbnailAcceptSize = 256
     private val IMAGE_EXTENSIONS = arrayOf("jpg", "gif", "png", "bmp", "webp")
@@ -139,8 +138,7 @@ class MapSeekerDaoImpl(
 
         status = MapParseStatus.NEW_MAP
 
-        val map = MapFileBased(mapConfig)
-        fileBasedMapRegistry.setRootFolder(map.id, parentFolder)
+        val map = MapFileBased(mapConfig, parentFolder)
         createNomediaFile(parentFolder)
 
         mapSaver.save(map)

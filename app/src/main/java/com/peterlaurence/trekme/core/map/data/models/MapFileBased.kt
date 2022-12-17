@@ -5,6 +5,7 @@ import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.io.File
 import java.util.*
 
 /**
@@ -13,6 +14,7 @@ import java.util.*
  */
 class MapFileBased(
     private val config: MapConfig,
+    val folder: File
 ) : Map {
     /**
      * The unique id that identifies the [Map].
@@ -150,7 +152,11 @@ class MapFileBased(
         get() = config.copy()
 
     override fun copy(config: MapConfig): Map {
-        return MapFileBased(config = config)
+        return MapFileBased(config = config, folder = folder)
+    }
+
+    fun copyAndMove(config: MapConfig, folder: File): Map {
+        return MapFileBased(config = config, folder = folder)
     }
 
     override fun equals(other: Any?): Boolean {

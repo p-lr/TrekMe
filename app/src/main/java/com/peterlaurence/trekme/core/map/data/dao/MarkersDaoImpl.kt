@@ -4,6 +4,7 @@ import android.util.Log
 import com.peterlaurence.trekme.core.map.data.MAP_MARKER_FILENAME
 import com.peterlaurence.trekme.core.map.data.mappers.toDomain
 import com.peterlaurence.trekme.core.map.data.mappers.toMarkerKtx
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.data.models.MarkerListKtx
 import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.map.domain.models.Map
@@ -17,7 +18,6 @@ import java.io.File
 
 
 class MarkersDaoImpl(
-    private val fileBasedMapRegistry: FileBasedMapRegistry,
     private val mainDispatcher: CoroutineDispatcher,
     private val ioDispatcher: CoroutineDispatcher,
     private val json: Json
@@ -27,7 +27,7 @@ class MarkersDaoImpl(
      * Get markers by reading the markers.json file.
      */
     override suspend fun getMarkersForMap(map: Map): Boolean {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return false
+        val directory = (map as? MapFileBased)?.folder ?: return false
 
         val markerList = withContext(ioDispatcher) {
             val markerFile = File(directory, MAP_MARKER_FILENAME)
@@ -52,7 +52,7 @@ class MarkersDaoImpl(
      * Re-writes the markers.json file.
      */
     override suspend fun saveMarkers(map: Map) {
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return
+        val directory = (map as? MapFileBased)?.folder ?: return
 
         withContext(ioDispatcher) {
             runCatching {

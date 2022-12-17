@@ -19,8 +19,8 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.domain.interactors.MapImportInteractor
 import com.peterlaurence.trekme.core.map.domain.models.MapParseStatus
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
@@ -47,8 +47,6 @@ import kotlin.coroutines.resumeWithException
 @AndroidEntryPoint
 class WifiP2pService : Service() {
     @Inject lateinit var mapRepository: MapRepository
-
-    @Inject lateinit var fileBasedMapRegistry: FileBasedMapRegistry
 
     @Inject lateinit var mapImportInteractor: MapImportInteractor
 
@@ -542,7 +540,7 @@ class WifiP2pService : Service() {
         outputStream.writeUTF(map.name)
 
         /* The uncompressed size is expected to come second */
-        val directory = fileBasedMapRegistry.getRootFolder(map.id) ?: return
+        val directory = (map as? MapFileBased)?.folder ?: return
         val size = FileUtils.dirSize(directory)
         outputStream.writeLong(size)
 
