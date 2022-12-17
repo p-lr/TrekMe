@@ -40,10 +40,14 @@ object TrackTools {
         for (route in newRouteList) {
             if (hashMap.containsKey(route.id)) {
                 hashMap[route.id]?.also { existing ->
-                    map.replaceRoute(existing, route)
+                    map.routes.update {
+                        it.map { r ->
+                            if (r == existing) route else r
+                        }
+                    }
                 }
             } else {
-                map.addRoute(route)
+                map.routes.update { it + route }
                 newRouteCount++
             }
         }

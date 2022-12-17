@@ -18,6 +18,7 @@ import com.peterlaurence.trekme.core.map.data.mappers.toRouteInfoKtx
 import com.peterlaurence.trekme.core.map.data.mappers.toRouteKtx
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -66,7 +67,7 @@ class RouteDaoImpl(
 
         /* Set the routes on the main thread */
         withContext(mainDispatcher) {
-            map.setRoutes(routes)
+            map.routes.update { routes }
         }
     }
 

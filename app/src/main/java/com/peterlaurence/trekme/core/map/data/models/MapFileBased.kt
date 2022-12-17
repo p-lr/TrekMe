@@ -6,7 +6,6 @@ import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.*
 
@@ -41,7 +40,7 @@ class MapFileBased(
     override val landmarks: MutableStateFlow<List<Landmark>> = MutableStateFlow(emptyList())
     override val beacons: MutableStateFlow<List<Beacon>> = MutableStateFlow(emptyList())
 
-    private val _routes = MutableStateFlow<List<Route>>(listOf())
+    override val routes = MutableStateFlow<List<Route>>(listOf())
 
     private val _elevationFix: MutableStateFlow<Int> = MutableStateFlow(config.elevationFix)
 
@@ -118,29 +117,6 @@ class MapFileBased(
         } else {
             CalibrationStatus.NONE
         }
-    }
-
-    override val routes: StateFlow<List<Route>> = _routes.asStateFlow()
-
-    override fun setRoutes(routes: List<Route>) {
-        _routes.value = routes
-    }
-
-    /**
-     * Add a new route to the map.
-     */
-    override fun addRoute(route: Route) {
-        _routes.value = _routes.value + route
-    }
-
-    override fun replaceRoute(from: Route, to: Route) {
-        _routes.value = _routes.value.map {
-            if (it == from) to else it
-        }
-    }
-
-    override fun deleteRoute(route: Route) {
-        _routes.value = _routes.value - route
     }
 
     override fun setElevationFix(fix: Int) {
