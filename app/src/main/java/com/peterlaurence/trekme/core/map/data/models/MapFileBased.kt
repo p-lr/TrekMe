@@ -5,8 +5,6 @@ import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import java.util.*
 
 /**
@@ -42,7 +40,7 @@ class MapFileBased(
 
     override val routes = MutableStateFlow<List<Route>>(listOf())
 
-    private val _elevationFix: MutableStateFlow<Int> = MutableStateFlow(config.elevationFix)
+    override val elevationFix = MutableStateFlow(config.elevationFix)
 
     /**
      * The calibration status is either :
@@ -118,12 +116,6 @@ class MapFileBased(
             CalibrationStatus.NONE
         }
     }
-
-    override fun setElevationFix(fix: Int) {
-        _elevationFix.update { fix }
-    }
-
-    override fun getElevationFix(): StateFlow<Int> = _elevationFix
 
     override val levelList: List<Level>
         get() = config.levels

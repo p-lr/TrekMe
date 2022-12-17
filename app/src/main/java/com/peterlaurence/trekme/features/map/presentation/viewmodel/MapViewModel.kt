@@ -60,7 +60,7 @@ class MapViewModel @Inject constructor(
     val locationFlow: Flow<Location> = locationSource.locationFlow
     val orientationFlow: Flow<Double> = orientationSource.orientationFlow
     val elevationFixFlow: StateFlow<Int> = mapRepository.currentMapFlow.flatMapMerge {
-        it?.getElevationFix() ?: MutableStateFlow(0)
+        it?.elevationFix ?: MutableStateFlow(0)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
     val purchaseFlow: StateFlow<PurchaseState> = extendedOfferStateOwner.purchaseFlow
 
