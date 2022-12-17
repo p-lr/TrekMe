@@ -164,7 +164,7 @@ class MapDownloadDaoImpl(
             uuid = UUID.randomUUID(),
             name = folder.name, thumbnail = null, thumbnailImage = null,
             levels, mapOrigin, size, imageExtension,
-            calibration, sizeInBytes = null
+            calibration
         )
 
         return MapFileBased(mapConfig)

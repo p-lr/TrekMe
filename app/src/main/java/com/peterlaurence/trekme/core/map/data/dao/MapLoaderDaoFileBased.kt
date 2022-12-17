@@ -122,6 +122,9 @@ class MapLoaderDaoFileBased constructor(
                 /* Map creation */
                 val map = MapFileBased(mapConfig)
 
+                /* Some properties can be set right after */
+                map.sizeInBytes.value = mapGson.sizeInBytes
+
                 /* Remember map root folder */
                 registry.setRootFolder(map.id, rootDir)
 

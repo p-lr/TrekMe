@@ -134,7 +134,7 @@ class MapSeekerDaoImpl(
         val mapConfig = MapConfig(
             uuid = UUID.randomUUID(),
             name, thumbnail = thumbnail, thumbnailImage, levelList, mapOrigin,
-            size, imageExtension, calibration = null, sizeInBytes = null
+            size, imageExtension, calibration = null
         )
 
         status = MapParseStatus.NEW_MAP

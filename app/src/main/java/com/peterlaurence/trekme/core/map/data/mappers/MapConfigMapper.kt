@@ -37,7 +37,6 @@ fun MapGson.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
                 }
             )
         },
-        sizeInBytes = sizeInBytes,
         elevationFix = elevationFix
     )
 }
@@ -98,7 +97,6 @@ fun MapConfig.toMapGson(): MapGson {
             }
         }
     }
-    mapGson.sizeInBytes = sizeInBytes
 
     return mapGson
 }

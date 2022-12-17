@@ -16,7 +16,7 @@ class MapSizeComputeDaoImpl(
         withContext(defaultDispatcher) {
             val size = directory.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
             withContext(Dispatchers.Main) {
-                map.setSizeInBytes(size)
+                map.sizeInBytes.value = size
             }
             size
         }

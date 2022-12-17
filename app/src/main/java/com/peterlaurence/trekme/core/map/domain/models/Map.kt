@@ -28,11 +28,10 @@ interface Map {
     val beacons: MutableStateFlow<List<Beacon>>
     val routes: MutableStateFlow<List<Route>>
     val elevationFix: MutableStateFlow<Int>
+    val sizeInBytes: MutableStateFlow<Long?>
     val projectionName: String?
     val calibrationStatus: CalibrationStatus
     val projection: Projection?
-    val sizeInBytes: Long?
-    fun setSizeInBytes(size: Long)
     val levelList: List<Level>
     val calibrationMethod: CalibrationMethod
     val origin: MapOrigin

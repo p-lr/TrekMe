@@ -19,7 +19,9 @@ class MapSaverDaoImpl (
 ): MapSaverDao {
     override suspend fun save(map: Map) {
         val jsonString = withContext(mainDispatcher) {
-            gson.toJson(map.configSnapshot.toMapGson())
+            val mapGson = map.configSnapshot.toMapGson()
+            mapGson.sizeInBytes = map.sizeInBytes.value
+            gson.toJson(mapGson)
         }
 
         val rootFolder = fileBasedMapRegistry.getRootFolder(map.id) ?: return

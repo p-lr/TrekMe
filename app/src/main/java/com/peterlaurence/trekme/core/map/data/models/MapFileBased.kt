@@ -37,10 +37,9 @@ class MapFileBased(
     override val markers: MutableStateFlow<List<Marker>> = MutableStateFlow(emptyList())
     override val landmarks: MutableStateFlow<List<Landmark>> = MutableStateFlow(emptyList())
     override val beacons: MutableStateFlow<List<Beacon>> = MutableStateFlow(emptyList())
-
     override val routes = MutableStateFlow<List<Route>>(listOf())
-
     override val elevationFix = MutableStateFlow(config.elevationFix)
+    override val sizeInBytes: MutableStateFlow<Long?> = MutableStateFlow(null)
 
     /**
      * The calibration status is either :
@@ -62,13 +61,6 @@ class MapFileBased(
         }
 
     override val projection: Projection? = config.calibration?.projection
-
-    override val sizeInBytes: Long?
-        get() = config.sizeInBytes
-
-    override fun setSizeInBytes(size: Long) {
-        config.sizeInBytes = size
-    }
 
     init {
         calibrate()

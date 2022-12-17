@@ -8,12 +8,9 @@ class UpdateMapSizeInteractor @Inject constructor(
     private val mapSizeComputeDao: MapSizeComputeDao,
     private val saveMapInteractor: SaveMapInteractor
 ) {
-    /**
-     * The "size in bytes" is one of the few mutable properties of a map.
-     */
     suspend fun updateMapSize(map: Map) : Result<Long> {
         return mapSizeComputeDao.computeMapSize(map).onSuccess {
-            map.setSizeInBytes(it)
+            map.sizeInBytes.value = it
             saveMapInteractor.saveMap(map)
         }
     }

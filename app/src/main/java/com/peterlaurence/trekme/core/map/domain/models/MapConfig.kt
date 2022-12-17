@@ -14,7 +14,6 @@ data class MapConfig(
     val size: Size,
     val imageExtension: String,
     var calibration: Calibration?,
-    var sizeInBytes: Long?,
     val elevationFix: Int = 0
 )
 

@@ -137,7 +137,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
             setListPreferenceSummaryAndValue(calibrationPointsNumberPreference, map.calibrationPointsNumber.toString())
             setEditTextPreferenceSummaryAndValue(mapNamePreference, map.name)
 
-            val mapSize = map.sizeInBytes
+            val mapSize = map.sizeInBytes.value
             if (mapSize != null) {
                 sizePreference?.title = getString(R.string.map_size_string)
                 sizePreference?.summary = mapSize.formatSize()
@@ -185,7 +185,7 @@ class MapSettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChange
         }
         sizePreference?.onPreferenceClickListener = Preference.OnPreferenceClickListener { pref ->
             val map = this.map ?: return@OnPreferenceClickListener false
-            if (map.sizeInBytes != null) return@OnPreferenceClickListener false
+            if (map.sizeInBytes.value != null) return@OnPreferenceClickListener false
             pref.title = getString(R.string.map_size_computing)
             lifecycleScope.launchWhenStarted {
                 viewModel.computeMapSize(map)?.also { sizeInBytes ->
