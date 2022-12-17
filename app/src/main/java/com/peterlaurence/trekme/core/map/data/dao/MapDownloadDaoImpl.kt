@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.core.map.data.dao
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.peterlaurence.trekme.core.map.data.MAP_FOLDER_NAME
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
@@ -161,11 +162,12 @@ class MapDownloadDaoImpl(
 
         val mapConfig = MapConfig(
             uuid = UUID.randomUUID(),
-            name = folder.name, thumbnail = null, levels, mapOrigin, size, imageExtension,
+            name = folder.name, thumbnail = null, thumbnailImage = null,
+            levels, mapOrigin, size, imageExtension,
             calibration, sizeInBytes = null
         )
 
-        return Map(mapConfig)
+        return MapFileBased(mapConfig)
     }
 }
 

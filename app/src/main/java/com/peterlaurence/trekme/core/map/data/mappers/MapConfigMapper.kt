@@ -1,11 +1,12 @@
 package com.peterlaurence.trekme.core.map.data.mappers
 
+import android.graphics.Bitmap
 import com.peterlaurence.trekme.core.map.data.models.MapGson
 import com.peterlaurence.trekme.core.map.domain.models.*
 import java.util.UUID
 
 
-fun MapGson.toDomain(elevationFix: Int): MapConfig? {
+fun MapGson.toDomain(elevationFix: Int, thumbnailImage: Bitmap?): MapConfig? {
     val origin = providerToMapOrigin[provider.generated_by] ?: return null
     val imageExtension = provider?.image_extension ?: return null
     val calibrationMethod = runCatching {
@@ -16,6 +17,7 @@ fun MapGson.toDomain(elevationFix: Int): MapConfig? {
         uuid = getOrCreateUUID(this),
         name = name,
         thumbnail = thumbnail,
+        thumbnailImage = thumbnailImage,
         levels = levels.map {
             Level(
                 it.level, it.tile_size.let { tileSize ->
@@ -53,7 +55,7 @@ private val providerToMapOrigin = mapOf(
     MapGson.MapSource.VIPS to Vips
 )
 
-fun MapConfig.toMarkerGson(): MapGson {
+fun MapConfig.toMapGson(): MapGson {
     val mapGson = MapGson()
     mapGson.uuid = uuid.toString()
     mapGson.name = name
@@ -70,11 +72,11 @@ fun MapConfig.toMarkerGson(): MapGson {
         }
     }
     mapGson.provider = MapGson.Provider().apply {
-        generated_by = when(val origin = this@toMarkerGson.origin) {
+        generated_by = when(val origin = this@toMapGson.origin) {
             Vips -> MapGson.MapSource.VIPS
             is Wmts -> if (origin.licensed) MapGson.MapSource.IGN_LICENSED else MapGson.MapSource.WMTS
         }
-        image_extension = this@toMarkerGson.imageExtension
+        image_extension = this@toMapGson.imageExtension
     }
     mapGson.size = size.let { size ->
         MapGson.MapSize().apply {

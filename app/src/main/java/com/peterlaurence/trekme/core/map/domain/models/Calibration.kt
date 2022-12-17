@@ -31,3 +31,7 @@ data class CalibrationPoint(
     val absoluteX: Double,
     val absoluteY: Double
 )
+
+enum class CalibrationStatus {
+    OK, NONE, ERROR
+}

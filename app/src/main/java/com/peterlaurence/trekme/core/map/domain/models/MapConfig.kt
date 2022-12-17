@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.map.domain.models
 
+import android.graphics.Bitmap
 import java.util.UUID
 
 
@@ -7,6 +8,7 @@ data class MapConfig(
     val uuid: UUID,
     val name: String,
     val thumbnail: String?,
+    val thumbnailImage: Bitmap?,
     val levels: List<Level>,
     val origin: MapOrigin,
     val size: Size,

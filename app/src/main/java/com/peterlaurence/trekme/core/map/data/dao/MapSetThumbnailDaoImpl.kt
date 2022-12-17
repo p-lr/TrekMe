@@ -34,8 +34,10 @@ class MapSetThumbnailDaoImpl(
 
         return if (thumbnailImage != null) {
             val newMap = map.copy(
-                config = map.configSnapshot.copy(thumbnail = THUMBNAIL_NAME),
-                thumbnailImage = thumbnailImage
+                config = map.configSnapshot.copy(
+                    thumbnail = THUMBNAIL_NAME,
+                    thumbnailImage = thumbnailImage
+                )
             )
             fileBasedMapRegistry.setRootFolder(newMap.id, directory)
             mapSaverDao.save(newMap)

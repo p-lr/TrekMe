@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
@@ -132,13 +133,13 @@ class MapSeekerDaoImpl(
 
         val mapConfig = MapConfig(
             uuid = UUID.randomUUID(),
-            name, thumbnail = thumbnail, levelList, mapOrigin,
+            name, thumbnail = thumbnail, thumbnailImage, levelList, mapOrigin,
             size, imageExtension, calibration = null, sizeInBytes = null
         )
 
         status = MapParseStatus.NEW_MAP
 
-        val map = Map(mapConfig, thumbnailImage)
+        val map = MapFileBased(mapConfig)
         fileBasedMapRegistry.setRootFolder(map.id, parentFolder)
         createNomediaFile(parentFolder)
 

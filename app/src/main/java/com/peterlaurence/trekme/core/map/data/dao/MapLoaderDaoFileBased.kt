@@ -12,6 +12,7 @@ import com.peterlaurence.trekme.core.map.data.models.MapPropertiesKtx
 import com.peterlaurence.trekme.core.map.domain.dao.MapLoaderDao
 import com.peterlaurence.trekme.core.map.domain.dao.MapSaverDao
 import com.peterlaurence.trekme.core.map.data.mappers.toDomain
+import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.util.FileUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -111,15 +112,15 @@ class MapLoaderDaoFileBased constructor(
                  * properly). */
                 val shouldSaveUUID = mapGson.uuid == null
 
-                /* Convert to domain type */
-                val mapConfig = mapGson.toDomain(elevationFix) ?: continue
-
                 val thumbnailImage = if (mapGson.thumbnail != null) {
                     getThumbnail(File(rootDir, mapGson.thumbnail))
                 } else null
 
+                /* Convert to domain type */
+                val mapConfig = mapGson.toDomain(elevationFix, thumbnailImage) ?: continue
+
                 /* Map creation */
-                val map = Map(mapConfig, thumbnailImage)
+                val map = MapFileBased(mapConfig)
 
                 /* Remember map root folder */
                 registry.setRootFolder(map.id, rootDir)

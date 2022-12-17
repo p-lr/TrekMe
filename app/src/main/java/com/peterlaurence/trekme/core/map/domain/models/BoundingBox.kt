@@ -24,7 +24,7 @@ fun BoundingBox.contains(latitude: Double, longitude: Double): Boolean {
 }
 
 suspend fun Map.intersects(box: BoundingBox): Boolean {
-    if (calibrationStatus != Map.CalibrationStatus.OK) return false
+    if (calibrationStatus != CalibrationStatus.OK) return false
     val mapBounds = mapBounds
     return withContext(Dispatchers.Default) {
         projection?.let { p ->
