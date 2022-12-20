@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.core.map.domain.models.FreeLicense
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.ValidIgnLicense
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
-import com.peterlaurence.trekme.core.orientation.OrientationSource
+import com.peterlaurence.trekme.core.orientation.model.OrientationSource
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents

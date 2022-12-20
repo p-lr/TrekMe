@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.data.fileprovider
+package com.peterlaurence.trekme.core.georecord.app
 
 import android.content.ContentProvider
 import android.content.ContentValues

@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.TrekMeContextAndroid
 import com.peterlaurence.trekme.core.location.*
-import com.peterlaurence.trekme.core.orientation.OrientationSource
+import com.peterlaurence.trekme.core.orientation.model.OrientationSource
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
@@ -19,7 +19,7 @@ import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayReposito
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.core.settings.Settings
-import com.peterlaurence.trekme.data.orientation.OrientationSourceImpl
+import com.peterlaurence.trekme.core.orientation.app.OrientationSourceImpl
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents

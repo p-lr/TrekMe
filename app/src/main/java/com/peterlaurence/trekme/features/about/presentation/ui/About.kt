@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.data.backendApi.privacyPolicyUrl
+import com.peterlaurence.trekme.core.settings.privacyPolicyUrl
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor

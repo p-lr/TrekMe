@@ -15,7 +15,7 @@ import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import com.peterlaurence.trekme.core.georecord.domain.model.supportedGeoRecordFilesExtensions
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
 import com.peterlaurence.trekme.core.track.TrackTools
-import com.peterlaurence.trekme.data.fileprovider.TrekmeFilesProvider
+import com.peterlaurence.trekme.core.georecord.app.TrekmeFilesProvider
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage

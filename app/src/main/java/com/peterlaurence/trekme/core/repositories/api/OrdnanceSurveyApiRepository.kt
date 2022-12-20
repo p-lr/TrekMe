@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.core.repositories.api
 
-import com.peterlaurence.trekme.data.backendApi.backendApiServer
+import com.peterlaurence.trekme.core.settings.backendApiServer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
