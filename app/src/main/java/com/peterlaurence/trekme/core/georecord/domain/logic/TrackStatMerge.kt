@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.track
+package com.peterlaurence.trekme.core.georecord.domain.logic
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.lib.gpx.model.Bounds

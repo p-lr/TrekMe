@@ -11,15 +11,16 @@ import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
-import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSourceInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.update
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.util.HashMap
 import javax.inject.Inject
 
 /**
@@ -88,8 +89,8 @@ class ImportGeoRecordInteractor @Inject constructor(
     ): GeoRecordImportResult {
         return try {
             /* Add the new routes and markers, and save the modifications */
-            val newRouteCount = TrackTools.updateRouteList(map, newRoutes)
-            val newMarkersCount = TrackTools.updateMarkerList(map, wayPoints)
+            val newRouteCount = updateRouteList(map, newRoutes)
+            val newMarkersCount = updateMarkerList(map, wayPoints)
             newRoutes.forEach {
                 routeRepository.saveNewRoute(map, it)
             }
@@ -98,6 +99,43 @@ class ImportGeoRecordInteractor @Inject constructor(
         } catch (e: Exception) {
             GeoRecordImportResult.GeoRecordImportError
         }
+    }
+
+    private fun updateRouteList(map: Map, newRouteList: List<Route>?): Int {
+        if (newRouteList == null) return 0
+        val hashMap = HashMap<String, Route>()
+        val routeList = map.routes.value
+        for (route in routeList) {
+            hashMap[route.id] = route
+        }
+
+        var newRouteCount = 0
+        for (route in newRouteList) {
+            if (hashMap.containsKey(route.id)) {
+                hashMap[route.id]?.also { existing ->
+                    map.routes.update {
+                        it.map { r ->
+                            if (r == existing) route else r
+                        }
+                    }
+                }
+            } else {
+                map.routes.update { it + route }
+                newRouteCount++
+            }
+        }
+
+        return newRouteCount
+    }
+
+    private fun updateMarkerList(map: Map, newMarkerList: List<Marker>): Int {
+        val toBeAdded = newMarkerList.toMutableList()
+        val existing = map.markers.value
+        existing.also {
+            toBeAdded.removeAll(existing)
+        }
+        map.markers.update { it + toBeAdded }
+        return toBeAdded.count()
     }
 }
 

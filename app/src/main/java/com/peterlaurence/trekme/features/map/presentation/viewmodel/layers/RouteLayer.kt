@@ -17,7 +17,7 @@ import com.peterlaurence.trekme.core.georecord.data.mapper.toMarker
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.models.Barycenter
-import com.peterlaurence.trekme.core.track.distanceCalculatorFactory
+import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFactory
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.events.recording.LiveRoutePause

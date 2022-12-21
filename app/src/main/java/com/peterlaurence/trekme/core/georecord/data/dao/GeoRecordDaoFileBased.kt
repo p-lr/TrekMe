@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.georecord.data.datasource
+package com.peterlaurence.trekme.core.georecord.data.dao
 
 import android.app.Application
 import android.net.Uri
@@ -9,12 +9,11 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.georecord.data.mapper.toGpx
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
-import com.peterlaurence.trekme.core.georecord.domain.datasource.FileBasedSource
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordDao
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import com.peterlaurence.trekme.core.georecord.domain.model.supportedGeoRecordFilesExtensions
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
-import com.peterlaurence.trekme.core.track.TrackTools
 import com.peterlaurence.trekme.core.georecord.app.TrekmeFilesProvider
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.events.AppEventBus
@@ -30,7 +29,7 @@ import java.io.FileOutputStream
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class FileBasedSourceImpl(
+class GeoRecordDaoFileBased(
     private val trekMeContext: TrekMeContext,
     private val app: Application,
     private val geoRecordParser: GeoRecordParser,
@@ -38,7 +37,7 @@ class FileBasedSourceImpl(
     private val gpxRecordEvents: GpxRecordEvents,
     @IoDispatcher
     private val ioDispatcher: CoroutineDispatcher
-): FileBasedSource {
+): GeoRecordDao {
     private val primaryScope = ProcessLifecycleOwner.get().lifecycleScope
     private val contentResolver = app.applicationContext.contentResolver
     private val supportedFileFilter = filter@{ dir: File, filename: String ->
@@ -125,7 +124,7 @@ class FileBasedSourceImpl(
         fileForId[id] = newFile
 
         return withContext(Dispatchers.IO) {
-            TrackTools.renameGpxFile(file, newFile)
+            renameGpxFile(file, newFile)
         }
     }
 
@@ -186,5 +185,11 @@ class FileBasedSourceImpl(
         }
 
         geoRecordFlow.value = geoRecords
+    }
+
+    private fun renameGpxFile(gpxFile: File, newFile: File): Boolean {
+        return runCatching {
+            gpxFile.renameTo(newFile)
+        }.getOrElse { false }
     }
 }

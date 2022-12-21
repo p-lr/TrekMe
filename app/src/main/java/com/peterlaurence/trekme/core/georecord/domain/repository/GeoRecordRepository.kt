@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.georecord.domain.repository
 
 import android.net.Uri
-import com.peterlaurence.trekme.core.georecord.domain.datasource.FileBasedSource
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordDao
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecordLightWeight
 import kotlinx.coroutines.flow.StateFlow
@@ -16,34 +16,34 @@ import javax.inject.Inject
  * @since 2022/07/30
  */
 class GeoRecordRepository @Inject constructor(
-    private val fileBasedSource: FileBasedSource
+    private val geoRecordDao: GeoRecordDao
 ) {
     /* For the moment, the repository only exposes the flow from the file-based source */
     fun getGeoRecordsFlow(): StateFlow<List<GeoRecordLightWeight>> {
-        return fileBasedSource.getGeoRecordsFlow()
+        return geoRecordDao.getGeoRecordsFlow()
     }
 
     fun getUri(id: UUID): Uri? {
-        return fileBasedSource.getUri(id)
+        return geoRecordDao.getUri(id)
     }
 
     suspend fun getGeoRecord(id: UUID): GeoRecord? {
-        return fileBasedSource.getRecord(id)
+        return geoRecordDao.getRecord(id)
     }
 
     suspend fun importGeoRecordFromUri(uri: Uri): GeoRecord? {
-        return fileBasedSource.importGeoRecordFromUri(uri)
+        return geoRecordDao.importGeoRecordFromUri(uri)
     }
 
     suspend fun renameGeoRecord(id: UUID, newName: String): Boolean {
-        return fileBasedSource.renameGeoRecord(id, newName)
+        return geoRecordDao.renameGeoRecord(id, newName)
     }
 
     suspend fun updateGeoRecord(geoRecord: GeoRecord) {
-        fileBasedSource.updateGeoRecord(geoRecord)
+        geoRecordDao.updateGeoRecord(geoRecord)
     }
 
     suspend fun deleteGeoRecords(ids: List<UUID>): Boolean {
-        return fileBasedSource.deleteGeoRecords(ids)
+        return geoRecordDao.deleteGeoRecords(ids)
     }
 }

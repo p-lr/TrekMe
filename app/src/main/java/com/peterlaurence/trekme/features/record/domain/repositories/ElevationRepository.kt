@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.geotools.deltaTwoPoints
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.core.track.distanceCalculatorFactory
+import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFactory
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.getElevationSource
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.hasTrustedElevations
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSource

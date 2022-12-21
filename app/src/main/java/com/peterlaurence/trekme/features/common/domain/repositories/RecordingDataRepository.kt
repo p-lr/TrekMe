@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.features.common.domain.repositories
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
-import com.peterlaurence.trekme.core.track.TrackTools
+import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.di.IoDispatcher
 import com.peterlaurence.trekme.core.georecord.domain.repository.GeoRecordRepository
 import com.peterlaurence.trekme.features.common.domain.model.Loading
@@ -86,9 +86,7 @@ class RecordingDataRepository @Inject constructor(
         val geoRecord = geoRecordRepository.getGeoRecord(id) ?: return null
         return withContext(ioDispatcher) {
             val routeIds: List<String> = geoRecord.routeGroups.flatMap { it.routes }.map { it.id }
-            val statistics = geoRecord.let {
-                TrackTools.getGeoStatistics(it)
-            }
+            val statistics = getGeoStatistics(geoRecord)
 
             RecordingData(
                 geoRecord.id,

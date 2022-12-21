@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.core.track
 
+import com.peterlaurence.trekme.core.georecord.domain.logic.TrackStatCalculator
+import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFactory
 import com.peterlaurence.trekme.core.lib.gpx.model.TrackPoint
 import org.junit.Assert.assertEquals
 import org.junit.Before
