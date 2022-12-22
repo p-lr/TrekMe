@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
+import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.GeoplaceList
 
 @Composable

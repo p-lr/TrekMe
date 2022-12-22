@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
-import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
+import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.contains
@@ -29,7 +29,7 @@ import com.peterlaurence.trekme.core.providers.stream.newTileStreamProvider
 import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
 import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
-import com.peterlaurence.trekme.core.repositories.mapcreate.GeocodingRepository
+import com.peterlaurence.trekme.core.geocoding.domain.repository.GeocodingRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
 import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
 import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository

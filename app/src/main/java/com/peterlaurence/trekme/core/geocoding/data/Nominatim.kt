@@ -1,8 +1,9 @@
-package com.peterlaurence.trekme.core.lib.geocoding.backend
+package com.peterlaurence.trekme.core.geocoding.data
 
-import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
-import com.peterlaurence.trekme.core.lib.geocoding.POI
-import com.peterlaurence.trekme.core.lib.geocoding.Street
+import com.peterlaurence.trekme.core.geocoding.domain.model.GeocodingBackend
+import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
+import com.peterlaurence.trekme.core.geocoding.domain.engine.POI
+import com.peterlaurence.trekme.core.geocoding.domain.engine.Street
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -27,7 +28,7 @@ class Nominatim(private val client: OkHttpClient, private val json: Json) : Geoc
     }
 
     private fun makeRequest(query: String): Request {
-        return requestBuilder.url("${nomonatimApi}search?q=$query&format=jsonv2").build()
+        return requestBuilder.url("${nominatimApi}search?q=$query&format=jsonv2").build()
     }
 
     private fun convert(response: List<NominatimJson>): List<GeoPlace>? {
@@ -48,7 +49,7 @@ class Nominatim(private val client: OkHttpClient, private val json: Json) : Geoc
     }
 }
 
-const val nomonatimApi = "https://nominatim.openstreetmap.org/"
+const val nominatimApi = "https://nominatim.openstreetmap.org/"
 
 @Serializable
 private data class NominatimJson(

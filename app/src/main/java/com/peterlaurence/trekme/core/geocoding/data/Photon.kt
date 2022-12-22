@@ -1,14 +1,15 @@
-package com.peterlaurence.trekme.core.lib.geocoding.backend
+package com.peterlaurence.trekme.core.geocoding.data
 
-import com.peterlaurence.trekme.core.lib.geocoding.GeoPlace
-import com.peterlaurence.trekme.core.lib.geocoding.POI
+import com.peterlaurence.trekme.core.geocoding.domain.model.GeocodingBackend
+import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
+import com.peterlaurence.trekme.core.geocoding.domain.engine.POI
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import com.peterlaurence.trekme.core.lib.geocoding.City as GeoCity
-import com.peterlaurence.trekme.core.lib.geocoding.Street as GeoStreet
+import com.peterlaurence.trekme.core.geocoding.domain.engine.City as GeoCity
+import com.peterlaurence.trekme.core.geocoding.domain.engine.Street as GeoStreet
 
 /**
  * A [GeocodingBackend] which uses Komoot's Photon.
