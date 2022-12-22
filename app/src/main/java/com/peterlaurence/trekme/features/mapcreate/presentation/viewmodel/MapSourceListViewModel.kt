@@ -3,8 +3,8 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.util.isEnglish
 import com.peterlaurence.trekme.util.isFrench

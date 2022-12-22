@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.DialogShape

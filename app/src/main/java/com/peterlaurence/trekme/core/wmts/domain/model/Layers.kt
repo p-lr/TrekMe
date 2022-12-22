@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.providers.layers
+package com.peterlaurence.trekme.core.wmts.domain.model
 
 sealed class Layer(open val id: String, open val wmtsName: String)
 

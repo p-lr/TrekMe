@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.providers.stream
 
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
-import com.peterlaurence.trekme.core.mapsource.*
 import com.peterlaurence.trekme.core.providers.urltilebuilder.*
+import com.peterlaurence.trekme.core.wmts.domain.model.*
 
 /**
  * This is the unique place of the app (excluding tests), where we create a [TileStreamProvider]

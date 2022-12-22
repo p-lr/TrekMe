@@ -1,7 +1,4 @@
-package com.peterlaurence.trekme.core.mapsource
-
-import com.peterlaurence.trekme.core.providers.layers.Layer
-import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
+package com.peterlaurence.trekme.core.wmts.domain.model
 
 
 enum class WmtsSource {
@@ -9,9 +6,10 @@ enum class WmtsSource {
 }
 
 sealed interface MapSourceData
-data class IgnSourceData(val api: String, val layer: Layer, val overlays: List<LayerProperties>) :
-    MapSourceData
 
+data class IgnSourceData(
+    val api: String, val layer: Layer, val overlays: List<LayerProperties>
+) : MapSourceData
 object SwissTopoData : MapSourceData
 data class OsmSourceData(val layer: Layer) : MapSourceData
 object UsgsData : MapSourceData

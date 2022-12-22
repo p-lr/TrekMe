@@ -10,10 +10,10 @@ import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.providers.layers.*
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsBinding
-import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.*
 import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsStateful

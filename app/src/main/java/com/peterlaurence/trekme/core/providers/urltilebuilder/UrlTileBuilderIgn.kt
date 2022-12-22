@@ -1,6 +1,9 @@
 package com.peterlaurence.trekme.core.providers.urltilebuilder
 
-import com.peterlaurence.trekme.core.providers.layers.*
+import com.peterlaurence.trekme.core.wmts.domain.model.Cadastre
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnLayerOverlay
+import com.peterlaurence.trekme.core.wmts.domain.model.Layer
+import com.peterlaurence.trekme.core.wmts.domain.model.PlanIgnV2
 
 
 class UrlTileBuilderIgn(private val api: String, private val layer: Layer) : UrlTileBuilder {

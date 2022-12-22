@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.statistics
+package com.peterlaurence.trekme.util.statistics
 
 fun List<Double>.mean(): Double {
     var sum = 0.0

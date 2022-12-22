@@ -13,12 +13,12 @@ import androidx.recyclerview.widget.ItemTouchHelper.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.providers.layers.ignCadastre
-import com.peterlaurence.trekme.core.providers.layers.ignRoad
-import com.peterlaurence.trekme.core.providers.layers.ignSlopes
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.ignCadastre
+import com.peterlaurence.trekme.core.wmts.domain.model.ignRoad
+import com.peterlaurence.trekme.core.wmts.domain.model.ignSlopes
 import com.peterlaurence.trekme.databinding.FragmentLayerOverlayBinding
-import com.peterlaurence.trekme.core.repositories.mapcreate.LayerProperties
+import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LayerSelectDialog
 import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.LayerOverlayViewModel

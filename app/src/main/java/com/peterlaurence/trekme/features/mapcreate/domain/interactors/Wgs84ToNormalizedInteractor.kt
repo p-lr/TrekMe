@@ -1,9 +1,9 @@
 package com.peterlaurence.trekme.features.mapcreate.domain.interactors
 
-import com.peterlaurence.trekme.core.mapsource.wmts.X0
-import com.peterlaurence.trekme.core.mapsource.wmts.X1
-import com.peterlaurence.trekme.core.mapsource.wmts.Y0
-import com.peterlaurence.trekme.core.mapsource.wmts.Y1
+import com.peterlaurence.trekme.core.wmts.domain.model.X0
+import com.peterlaurence.trekme.core.wmts.domain.model.X1
+import com.peterlaurence.trekme.core.wmts.domain.model.Y0
+import com.peterlaurence.trekme.core.wmts.domain.model.Y1
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.features.mapcreate.domain.model.NormalizedPos
 import javax.inject.Inject

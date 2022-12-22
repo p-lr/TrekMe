@@ -1,6 +1,6 @@
-package com.peterlaurence.trekme.core.repositories.mapcreate
+package com.peterlaurence.trekme.features.mapcreate.domain.repository
 
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin

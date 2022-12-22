@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel

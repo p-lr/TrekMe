@@ -13,9 +13,9 @@ import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.mapsource.wmts.getNumberOfTiles
-import com.peterlaurence.trekme.core.mapsource.wmts.toSizeInMo
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
+import com.peterlaurence.trekme.core.wmts.domain.tools.toSizeInMo
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel

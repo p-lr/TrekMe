@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs
 
 import android.os.Bundle
 import android.os.Parcelable
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.SingleSelectDialog
 import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
 import dagger.hilt.android.AndroidEntryPoint

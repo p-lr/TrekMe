@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.providers.urltilebuilder
 
-import com.peterlaurence.trekme.core.providers.layers.openTopoMap
-import com.peterlaurence.trekme.core.providers.layers.osmStreet
-import com.peterlaurence.trekme.core.providers.layers.osmTopo
+import com.peterlaurence.trekme.core.wmts.domain.model.openTopoMap
+import com.peterlaurence.trekme.core.wmts.domain.model.osmStreet
+import com.peterlaurence.trekme.core.wmts.domain.model.osmTopo
 
 /**
  * For OSM, using https://tile.openstreetmap.org/

@@ -15,8 +15,8 @@ import com.peterlaurence.trekme.core.repositories.location.producers.GoogleLocat
 import com.peterlaurence.trekme.core.repositories.location.producers.NmeaOverBluetoothProducer
 import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
-import com.peterlaurence.trekme.core.repositories.mapcreate.LayerOverlayRepository
-import com.peterlaurence.trekme.core.repositories.mapcreate.WmtsSourceRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.LayerOverlayRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.orientation.app.OrientationSourceImpl

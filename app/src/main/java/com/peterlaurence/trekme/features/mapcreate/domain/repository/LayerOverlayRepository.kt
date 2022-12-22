@@ -1,8 +1,8 @@
-package com.peterlaurence.trekme.core.repositories.mapcreate
+package com.peterlaurence.trekme.features.mapcreate.domain.repository
 
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.providers.layers.Layer
-import com.peterlaurence.trekme.core.providers.layers.ignLayersOverlay
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
+import com.peterlaurence.trekme.core.wmts.domain.model.ignLayersOverlay
 import java.util.*
 
 /**
@@ -11,7 +11,7 @@ import java.util.*
  * This repository holds the correspondence between [WmtsSource]s and [LayerProperties], and exposes
  * methods to add, remove, and reorder layers.
  *
- * @author P.Laurence on 2021-01-14
+ * @since 2021-01-14
  */
 class LayerOverlayRepository {
     private val model: MutableMap<WmtsSource, MutableList<LayerProperties>> = mutableMapOf()
@@ -58,5 +58,3 @@ class LayerOverlayRepository {
         }
     }
 }
-
-data class LayerProperties(val layer: Layer, var opacity: Float)

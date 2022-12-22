@@ -4,8 +4,8 @@ import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
-import com.peterlaurence.trekme.core.providers.layers.IgnClassic
-import com.peterlaurence.trekme.core.providers.layers.Layer
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
+import com.peterlaurence.trekme.core.wmts.domain.model.Layer
 import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
 
 /**

@@ -8,9 +8,9 @@ import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
-import com.peterlaurence.trekme.core.mapsource.wmts.Tile
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
+import com.peterlaurence.trekme.core.wmts.domain.model.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
 import com.peterlaurence.trekme.core.settings.Settings

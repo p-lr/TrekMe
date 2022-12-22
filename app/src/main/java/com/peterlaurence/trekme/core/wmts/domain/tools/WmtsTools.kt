@@ -1,23 +1,9 @@
-package com.peterlaurence.trekme.core.mapsource.wmts
+package com.peterlaurence.trekme.core.wmts.domain.tools
 
 import com.peterlaurence.trekme.core.map.domain.models.CalibrationPoint
+import com.peterlaurence.trekme.core.wmts.domain.model.*
 import kotlin.math.*
 
-data class Tile(
-    val level: Int, val row: Int, val col: Int, val indexLevel: Int, val indexRow: Int,
-    val indexCol: Int
-)
-
-data class Point(val X: Double, val Y: Double)
-data class MapSpec(
-    val levelMin: Int,
-    val levelMax: Int,
-    val mapWidthPx: Int,
-    val mapHeightPx: Int,
-    val tileSequence: Sequence<Tile>,
-    val calibrationPoints: Pair<CalibrationPoint, CalibrationPoint>,
-    val tileSize: Int
-)
 
 /**
  * At level 0, a WMTS map (which use WebMercator projection) is contained in a single tile of
@@ -74,6 +60,31 @@ fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point): MapS
         calibrationPoints,
         TILE_SIZE_PX
     )
+}
+
+private fun getTileSequence(
+    levelMin: Int,
+    levelMax: Int,
+    XLeft: Double,
+    YTop: Double,
+    XRight: Double,
+    YBottom: Double
+): Sequence<Tile> {
+    val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
+
+    return Sequence {
+        iterator {
+            for (level in levelMin..levelMax) {
+                with(levelBuilder.getLevelAreaForLevel(level) ?: return@iterator) {
+                    for ((indexRow, i) in (rowTop..rowBottom).withIndex()) {
+                        for ((indexCol, j) in (colLeft..colRight).withIndex()) {
+                            yield(Tile(level, i, j, level - levelMin, indexRow, indexCol))
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 fun getNumberOfTiles(levelMin: Int, levelMax: Int, point1: Point, point2: Point): Long {
@@ -144,30 +155,6 @@ private class LevelBuilder(
     }
 }
 
-private fun getTileSequence(
-    levelMin: Int,
-    levelMax: Int,
-    XLeft: Double,
-    YTop: Double,
-    XRight: Double,
-    YBottom: Double
-): Sequence<Tile> {
-    val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
-
-    return Sequence {
-        iterator {
-            for (level in levelMin..levelMax) {
-                with(levelBuilder.getLevelAreaForLevel(level) ?: return@iterator) {
-                    for ((indexRow, i) in (rowTop..rowBottom).withIndex()) {
-                        for ((indexCol, j) in (colLeft..colRight).withIndex()) {
-                            yield(Tile(level, i, j, level - levelMin, indexRow, indexCol))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 private fun getNumberOfTiles(
     levelMin: Int,
@@ -261,14 +248,3 @@ private fun getLevelArea(
 private fun getTileInMetersForZoom(level: Int): Double {
     return 2 * abs(X0) / 2.0.pow(level.toDouble())
 }
-
-const val X0 = -20037508.3427892476
-const val Y0 = -X0
-const val X1 = -X0
-const val Y1 = -Y0
-
-const val TILE_SIZE_IN_MO = 0.0169
-const val TILE_SIZE_PX = 256
-
-
-

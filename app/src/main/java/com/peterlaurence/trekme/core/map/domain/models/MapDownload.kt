@@ -1,8 +1,8 @@
 package com.peterlaurence.trekme.core.map.domain.models
 
 import android.net.Uri
-import com.peterlaurence.trekme.core.mapsource.WmtsSource
-import com.peterlaurence.trekme.core.mapsource.wmts.MapSpec
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import java.util.*
 
 class DownloadMapRequest(

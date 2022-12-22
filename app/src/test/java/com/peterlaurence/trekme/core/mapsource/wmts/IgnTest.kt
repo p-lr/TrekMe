@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.core.mapsource.wmts
 
+import com.peterlaurence.trekme.core.wmts.domain.model.Point
+import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
