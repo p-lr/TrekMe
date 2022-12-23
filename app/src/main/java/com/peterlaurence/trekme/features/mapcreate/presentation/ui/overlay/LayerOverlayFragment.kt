@@ -23,6 +23,8 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.Layer
 import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.LayerOverlayViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
@@ -30,7 +32,7 @@ import javax.inject.Inject
  * Removal is done with a swipe gesture, while reordering is done using drag & drop using a handle
  * on the right-side.
  *
- * @author P.Laurence on 2021-01-09
+ * @since 2021-01-09
  */
 @AndroidEntryPoint
 class LayerOverlayFragment : Fragment() {
@@ -73,12 +75,17 @@ class LayerOverlayFragment : Fragment() {
         val wmtsSource = wmtsSource ?: return binding.root
         val itemTouchHelper = makeItemTouchHelper(viewModel, wmtsSource)
         itemTouchHelper.attachToRecyclerView(recyclerView)
-        val adapter = LayerOverlayAdapter(itemTouchHelper)
+        val adapter = LayerOverlayAdapter(
+            itemTouchHelper,
+            onOpacityUpdate = { opacity, layerId ->
+                viewModel.updateOpacityForLayer(wmtsSource, layerId, opacity)
+            }
+        )
         recyclerView.adapter = adapter
-        viewModel.init(wmtsSource)
+//        viewModel.init(wmtsSource)
 
-        viewModel.liveData.observe(viewLifecycleOwner) { properties ->
-            if (properties.isNullOrEmpty()) {
+        viewModel.getLayerPropertiesFlow(wmtsSource).map { properties ->
+            if (properties.isEmpty()) {
                 binding.header.visibility = View.GONE
                 binding.emptyMessage.visibility = View.VISIBLE
             } else {
@@ -90,7 +97,7 @@ class LayerOverlayFragment : Fragment() {
                 }
                 adapter.setLayerInfo(dataSet)
             }
-        }
+        }.launchIn(lifecycleScope)
 
         binding.addLayerFab.setOnClickListener {
             val ids = viewModel.getAvailableLayersId(wmtsSource)

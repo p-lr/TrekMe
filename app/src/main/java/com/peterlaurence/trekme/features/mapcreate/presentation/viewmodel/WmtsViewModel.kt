@@ -180,13 +180,17 @@ class WmtsViewModel @Inject constructor(
     )
 
     init {
-        wmtsSourceRepository.wmtsSourceState.map { source ->
-            source?.also { updateMapState(source, false) }
-        }.launchIn(viewModelScope)
+        viewModelScope.launch {
+            wmtsSourceRepository.wmtsSourceState.collectLatest { source ->
+                source?.also { updateMapState(source, false) }
+            }
+        }
 
-        mapCreateEventBus.layerSelectEvent.map {
-            onPrimaryLayerDefined(it)
-        }.launchIn(viewModelScope)
+        viewModelScope.launch {
+            mapCreateEventBus.layerSelectEvent.collectLatest {
+                onPrimaryLayerDefined(it)
+            }
+        }
 
         geocodingRepository.geoPlaceFlow.map { places ->
             if (places != null && _uiState.value is GeoplaceList) {
@@ -231,95 +235,101 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
-    private fun updateMapState(wmtsSource: WmtsSource, restorePrevious: Boolean = true) {
-        viewModelScope.launch {
-            val previousState = _wmtsState.value
-            val previousMapState = previousState.getMapState()
+    /**
+     * Builds the [MapState] and indefinitely suspends while listening for layers change.
+     * Caller must cancel the parent coroutine on [WmtsSource] change.
+     */
+    private suspend fun updateMapState(wmtsSource: WmtsSource, restorePrevious: Boolean = true) = coroutineScope {
+        val previousState = _wmtsState.value
+        val previousMapState = previousState.getMapState()
 
-            /* Shutdown the previous MapState, if any */
-            previousMapState?.shutdown()
+        /* Shutdown the previous MapState, if any */
+        previousMapState?.shutdown()
 
-            /* Display the loading screen while building the new MapState */
-            _wmtsState.value = Loading
-            _topBarState.value = Empty
+        /* Display the loading screen while building the new MapState */
+        _wmtsState.value = Loading
+        _topBarState.value = Empty
 
-            val tileStreamProvider = runCatching {
-                createTileStreamProvider(wmtsSource)
-            }.onFailure {
-                _wmtsState.value = WmtsError.VPS_FAIL
-            }.getOrNull() ?: return@launch
+        val tileStreamProviderFlow = runCatching {
+            createTileStreamProvider(wmtsSource)
+        }.onFailure {
+            _wmtsState.value = WmtsError.VPS_FAIL
+        }.getOrNull() ?: return@coroutineScope
 
-            val mapState = MapState(
-                19, mapSize, mapSize,
-                workerCount = 16
-            ) {
-                magnifyingFactor(
-                    if (wmtsSource == WmtsSource.OPEN_STREET_MAP) 1 else 0
-                )
-            }.apply {
-                addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
-                disableFlingZoom()
-            }
-
-            /* Apply configuration */
-            val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
-            mapConfiguration?.forEach { conf ->
-                when (conf) {
-                    is ScaleLimitsConfig -> {
-                        val minScale = conf.minScale
-                        if (minScale == null) {
-                            mapState.minimumScaleMode = Fit
-                            mapState.scale = 0f
-                        } else {
-                            mapState.minimumScaleMode = Forced(minScale)
-                        }
-                        conf.maxScale?.also { maxScale -> mapState.maxScale = maxScale }
-                    }
-                    is InitScaleAndScrollConfig -> {
-                        mapState.scale = conf.scale
-                        launch {
-                            mapState.setScroll(
-                                Offset(
-                                    conf.scrollX.toFloat(),
-                                    conf.scrollY.toFloat()
-                                )
-                            )
-                        }
-                    }
-                    else -> { /* Nothing to do */
-                    }
-                }
-            }
-
-            /* Apply former settings, if any */
-            if (restorePrevious && previousMapState != null) {
-                mapState.scale = previousMapState.scale
-                launch {
-                    mapState.setScroll(previousMapState.scroll)
-                }
-                /* Restore the location of the place marker */
-                previousMapState.getMarkerInfo(placeMarkerId)?.also { markerInfo ->
-                    updatePlacePosition(mapState, markerInfo.x, markerInfo.y)
-                }
-            }
-
-            /* The top bar configuration depends on the wmtsSource */
-            updateTopBarConfig(wmtsSource)
-
-            /* If we were in area selection, restore it */
-            _wmtsState.value = if (previousState is AreaSelection) {
-                previousState.areaUiController.attach(mapState)
-                AreaSelection(mapState, previousState.areaUiController)
-            } else MapReady(mapState)
-
-            _topBarState.value = Collapsed(
-                hasPrimaryLayers = hasPrimaryLayers,
-                hasOverlayLayers = hasOverlayLayers,
-                hasTrackImport = hasTrackImport
+        val mapState = MapState(
+            19, mapSize, mapSize,
+            workerCount = 16
+        ) {
+            magnifyingFactor(
+                if (wmtsSource == WmtsSource.OPEN_STREET_MAP) 1 else 0
             )
+        }.apply {
+            disableFlingZoom()
+        }
 
-            /* Restore the location marker right now - even if subsequent updates will do it anyway. */
-            updatePositionOneTime()
+        /* Apply configuration */
+        val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
+        mapConfiguration?.forEach { conf ->
+            when (conf) {
+                is ScaleLimitsConfig -> {
+                    val minScale = conf.minScale
+                    if (minScale == null) {
+                        mapState.minimumScaleMode = Fit
+                        mapState.scale = 0f
+                    } else {
+                        mapState.minimumScaleMode = Forced(minScale)
+                    }
+                    conf.maxScale?.also { maxScale -> mapState.maxScale = maxScale }
+                }
+                is InitScaleAndScrollConfig -> {
+                    mapState.scale = conf.scale
+                    launch {
+                        mapState.setScroll(
+                            Offset(
+                                conf.scrollX.toFloat(),
+                                conf.scrollY.toFloat()
+                            )
+                        )
+                    }
+                }
+                else -> { /* Nothing to do */
+                }
+            }
+        }
+
+        /* Apply former settings, if any */
+        if (restorePrevious && previousMapState != null) {
+            mapState.scale = previousMapState.scale
+            launch {
+                mapState.setScroll(previousMapState.scroll)
+            }
+            /* Restore the location of the place marker */
+            previousMapState.getMarkerInfo(placeMarkerId)?.also { markerInfo ->
+                updatePlacePosition(mapState, markerInfo.x, markerInfo.y)
+            }
+        }
+
+        /* The top bar configuration depends on the wmtsSource */
+        updateTopBarConfig(wmtsSource)
+
+        /* If we were in area selection, restore it */
+        _wmtsState.value = if (previousState is AreaSelection) {
+            previousState.areaUiController.attach(mapState)
+            AreaSelection(mapState, previousState.areaUiController)
+        } else MapReady(mapState)
+
+        _topBarState.value = Collapsed(
+            hasPrimaryLayers = hasPrimaryLayers,
+            hasOverlayLayers = hasOverlayLayers,
+            hasTrackImport = hasTrackImport
+        )
+
+        /* Restore the location marker right now - even if subsequent updates will do it anyway. */
+        updatePositionOneTime()
+
+        tileStreamProviderFlow.collect { tileStreamProvider ->
+            mapState.removeAllLayers()
+            mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
         }
     }
 
@@ -363,14 +373,11 @@ class WmtsViewModel @Inject constructor(
         return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] ?: defaultOsmLayer
     }
 
-    private fun onPrimaryLayerDefined(layerId: String) {
+    private suspend fun onPrimaryLayerDefined(layerId: String) {
         val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
         setPrimaryLayerForSourceFromId(wmtsSource, layerId)
 
         updateMapState(wmtsSource, true)
-
-        /* Restore the location marker right now - even if subsequent updates will do it anyway. */
-        updatePositionOneTime()
     }
 
     private fun updatePositionOneTime() {
@@ -389,7 +396,7 @@ class WmtsViewModel @Inject constructor(
     /**
      * Returns the active overlay layers for the given source.
      */
-    private fun getOverlayLayersForSource(wmtsSource: WmtsSource): List<LayerProperties> {
+    private fun getOverlayLayersForSource(wmtsSource: WmtsSource): StateFlow<List<LayerProperties>> {
         return layerOverlayRepository.getLayerProperties(wmtsSource)
     }
 
@@ -398,30 +405,34 @@ class WmtsViewModel @Inject constructor(
      * we should have been able to do so), an [IllegalStateException] is thrown.
      */
     @Throws(ApiFetchError::class)
-    suspend fun createTileStreamProvider(wmtsSource: WmtsSource): TileStreamProvider {
-        val mapSourceData = when (wmtsSource) {
+    suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<TileStreamProvider> {
+        val mapSourceData: Flow<MapSourceData> = when (wmtsSource) {
             WmtsSource.IGN -> {
                 val layer = getActivePrimaryIgnLayer()
-                val overlays = getOverlayLayersForSource(wmtsSource)
-                val ignApi = ignApiRepository.getApi() ?: throw ApiFetchError()
-                IgnSourceData(ignApi, layer, overlays)
+                getOverlayLayersForSource(wmtsSource).map { overlays ->
+                    val ignApi = ignApiRepository.getApi() ?: throw ApiFetchError()
+                    IgnSourceData(ignApi, layer, overlays)
+                }
             }
             WmtsSource.ORDNANCE_SURVEY -> {
                 val api = ordnanceSurveyApiRepository.getApi() ?: throw ApiFetchError()
-                OrdnanceSurveyData(api)
+                flow { emit(OrdnanceSurveyData(api)) }
             }
             WmtsSource.OPEN_STREET_MAP -> {
                 val layer = getActivePrimaryOsmLayer()
-                OsmSourceData(layer)
+                flow { emit(OsmSourceData(layer)) }
             }
-            WmtsSource.SWISS_TOPO -> SwissTopoData
-            WmtsSource.USGS -> UsgsData
-            WmtsSource.IGN_SPAIN -> IgnSpainData
+            WmtsSource.SWISS_TOPO -> flow { emit(SwissTopoData) }
+            WmtsSource.USGS -> flow { emit(UsgsData) }
+            WmtsSource.IGN_SPAIN -> flow { emit(IgnSpainData) }
         }
-        return newTileStreamProvider(mapSourceData).also {
-            /* Don't test the stream provider if it has overlays */
-            if (it !is TileStreamProviderOverlay) {
-                checkTileAccessibility(wmtsSource, it)
+
+        return mapSourceData.map {
+            newTileStreamProvider(it).also { provider ->
+                /* Don't test the stream provider if it has overlays */
+                if (provider !is TileStreamProviderOverlay) {
+                    checkTileAccessibility(wmtsSource, provider)
+                }
             }
         }
     }
@@ -431,7 +442,7 @@ class WmtsViewModel @Inject constructor(
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
 
         /* Specifically for Cadastre IGN layer, set the startMaxLevel to 17 */
-        val hasCadastreOverlay = getOverlayLayersForSource(wmtsSource).any { layerProp ->
+        val hasCadastreOverlay = getOverlayLayersForSource(wmtsSource).value.any { layerProp ->
             layerProp.layer is Cadastre
         }
         val startMaxLevel = if (hasCadastreOverlay) 17 else null
@@ -490,7 +501,7 @@ class WmtsViewModel @Inject constructor(
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {
             val tileStreamProvider = runCatching {
-                createTileStreamProvider(wmtsSource)
+                createTileStreamProvider(wmtsSource).firstOrNull()
             }.getOrNull() ?: return@launch
             val request = DownloadMapRequest(wmtsSource, mapSpec, tileCount, tileStreamProvider, geoRecordUrls)
             downloadRepository.postDownloadMapRequest(request)

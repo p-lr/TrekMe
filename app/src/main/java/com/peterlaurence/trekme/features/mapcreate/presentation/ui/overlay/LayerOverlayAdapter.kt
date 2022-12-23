@@ -13,14 +13,15 @@ import com.peterlaurence.trekme.databinding.LayerItemBinding
 /**
  * Defines how [LayerInfo]s are laid out.
  *
- * @author P.Laurence on 2021-01-12
+ * @since 2021-01-12
  */
 class LayerOverlayAdapter(
-        private val itemTouchHelper: ItemTouchHelper
+        private val itemTouchHelper: ItemTouchHelper,
+        private val onOpacityUpdate: (opacity: Float, layerId: String) -> Unit
 ) : RecyclerView.Adapter<LayerOverlayAdapter.LayerOverlayViewHolder>() {
     private val diffCallback: DiffUtil.ItemCallback<LayerInfo> = object : DiffUtil.ItemCallback<LayerInfo>() {
         override fun areItemsTheSame(oldItem: LayerInfo, newItem: LayerInfo): Boolean {
-            return oldItem.hashCode() == newItem.hashCode()
+            return oldItem.properties.layer.id == newItem.properties.layer.id
         }
 
         override fun areContentsTheSame(oldItem: LayerInfo, newItem: LayerInfo): Boolean {
@@ -56,7 +57,7 @@ class LayerOverlayAdapter(
         holder.slider.value = data.properties.opacity
         holder.slider.clearOnChangeListeners()
         holder.slider.addOnChangeListener { _, value, _ ->
-            data.properties.opacity = value
+            onOpacityUpdate(value, data.properties.layer.id)
         }
     }
 

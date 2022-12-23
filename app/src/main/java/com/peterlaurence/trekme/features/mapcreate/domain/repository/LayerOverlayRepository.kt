@@ -1,8 +1,11 @@
 package com.peterlaurence.trekme.features.mapcreate.domain.repository
 
-import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
+import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.core.wmts.domain.model.ignLayersOverlay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import java.util.*
 
 /**
@@ -14,12 +17,14 @@ import java.util.*
  * @since 2021-01-14
  */
 class LayerOverlayRepository {
-    private val model: MutableMap<WmtsSource, MutableList<LayerProperties>> = mutableMapOf()
-
-    fun getLayerProperties(source: WmtsSource): List<LayerProperties> {
-        return model.getOrPut(source) {
-            mutableListOf()
+    private val layersForSource: Map<WmtsSource, MutableStateFlow<List<LayerProperties>>> =
+        WmtsSource.values().associateWith {
+            MutableStateFlow(emptyList())
         }
+
+    fun getLayerProperties(source: WmtsSource): StateFlow<List<LayerProperties>> {
+        return layersForSource[source]
+            ?: MutableStateFlow(emptyList())  // the right-hand side should never happen
     }
 
     fun getAvailableLayersId(wmtsSource: WmtsSource): List<String> {
@@ -28,33 +33,46 @@ class LayerOverlayRepository {
         } else listOf()
     }
 
-    fun addLayer(wmtsSource: WmtsSource, id: String): List<LayerProperties> {
+    fun addLayer(wmtsSource: WmtsSource, id: String) {
         when (wmtsSource) {
             WmtsSource.IGN -> {
-                val layer = ignLayersOverlay.firstOrNull { it.id == id } ?: return listOf()
-                val existingLayers = getLayerProperties(wmtsSource) as MutableList
-                if (!existingLayers.any { it.layer.id == layer.id }) {
-                    existingLayers.add(LayerProperties(layer, 1f))
+                val layer = ignLayersOverlay.firstOrNull { it.id == id } ?: return
+                layersForSource[wmtsSource]?.update { existingLayers ->
+                    if (!existingLayers.any { it.layer.id == layer.id }) {
+                        existingLayers + LayerProperties(layer, 1f)
+                    } else existingLayers
                 }
             }
             else -> {
             }
         }
-        return getLayerProperties(wmtsSource)
     }
 
-    fun moveLayer(wmtsSource: WmtsSource, from: Int, to: Int): List<LayerProperties>? {
-        return model[wmtsSource]?.let {
+    fun moveLayer(wmtsSource: WmtsSource, from: Int, to: Int) {
+        layersForSource[wmtsSource]?.update {
             if (from in it.indices && to in it.indices) {
-                Collections.swap(it, from, to)
-                it
-            } else null
+                val newList = it.toList()
+                Collections.swap(newList, from, to)
+                newList
+            } else it
         }
     }
 
-    fun removeLayer(wmtsSource: WmtsSource, index: Int): List<LayerProperties>? {
-        return model[wmtsSource]?.also {
-            it.removeAt(index)
+    fun removeLayer(wmtsSource: WmtsSource, index: Int) {
+        layersForSource[wmtsSource]?.update {
+            val newList = it.toMutableList()
+            newList.removeAt(index)
+            newList
+        }
+    }
+
+    fun updateOpacityForLayer(wmtsSource: WmtsSource, layerId: String, opacity: Float) {
+        layersForSource[wmtsSource]?.update {
+            it.map { layerProperties ->
+                if (layerProperties.layer.id == layerId) {
+                    layerProperties.copy(opacity = opacity)
+                } else layerProperties
+            }
         }
     }
 }
