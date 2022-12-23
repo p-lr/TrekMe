@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
+import com.peterlaurence.trekme.features.common.domain.repositories.OnBoardingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

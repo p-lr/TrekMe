@@ -23,15 +23,15 @@ import com.peterlaurence.trekme.features.mapcreate.app.service.download.Download
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
 import com.peterlaurence.trekme.core.providers.stream.newTileStreamProvider
-import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
-import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
-import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.core.geocoding.domain.repository.GeocodingRepository
 import com.peterlaurence.trekme.core.wmts.domain.model.*
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.LayerOverlayRepository
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
 import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
+import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
+import com.peterlaurence.trekme.features.common.data.dao.OrdnanceSurveyApiDao
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.DownloadFormDataBundle
@@ -66,9 +66,9 @@ import javax.inject.Inject
 class WmtsViewModel @Inject constructor(
     private val app: Application,
     private val downloadRepository: DownloadRepository,
-    private val ignApiRepository: IgnApiRepository,
+    private val ignApiDao: IgnApiDao,
     private val wmtsSourceRepository: WmtsSourceRepository,
-    private val ordnanceSurveyApiRepository: OrdnanceSurveyApiRepository,
+    private val ordnanceSurveyApiDao: OrdnanceSurveyApiDao,
     private val layerOverlayRepository: LayerOverlayRepository,
     private val mapCreateEventBus: MapCreateEventBus,
     private val locationSource: LocationSource,
@@ -410,12 +410,12 @@ class WmtsViewModel @Inject constructor(
             WmtsSource.IGN -> {
                 val layer = getActivePrimaryIgnLayer()
                 getOverlayLayersForSource(wmtsSource).map { overlays ->
-                    val ignApi = ignApiRepository.getApi() ?: throw ApiFetchError()
+                    val ignApi = ignApiDao.getApi() ?: throw ApiFetchError()
                     IgnSourceData(ignApi, layer, overlays)
                 }
             }
             WmtsSource.ORDNANCE_SURVEY -> {
-                val api = ordnanceSurveyApiRepository.getApi() ?: throw ApiFetchError()
+                val api = ordnanceSurveyApiDao.getApi() ?: throw ApiFetchError()
                 flow { emit(OrdnanceSurveyData(api)) }
             }
             WmtsSource.OPEN_STREET_MAP -> {

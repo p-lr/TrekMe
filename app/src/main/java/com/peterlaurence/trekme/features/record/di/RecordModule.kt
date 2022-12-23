@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.record.di
 
-import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
 import com.peterlaurence.trekme.di.IoDispatcher
+import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
 import com.peterlaurence.trekme.features.record.data.datasource.IgnElevationDataSource
 import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
 import com.peterlaurence.trekme.features.record.domain.model.ElevationStateOwner
@@ -37,9 +37,9 @@ object RecordModule {
     @ActivityRetainedScoped
     @Provides
     fun bindElevationDataSource(
-        ignApiRepository: IgnApiRepository,
+        ignApiDao: IgnApiDao,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): ElevationDataSource {
-        return IgnElevationDataSource(ignApiRepository, ioDispatcher)
+        return IgnElevationDataSource(ignApiDao, ioDispatcher)
     }
 }

@@ -43,9 +43,7 @@ fun BeaconServiceLauncher(backgroundLocationRequest: Flow<Unit>) {
 
     val backgroundLocationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted ->
-
-    }
+    ) {}
 
     LaunchedEffect(backgroundLocationRequest) {
         backgroundLocationRequest.collect {

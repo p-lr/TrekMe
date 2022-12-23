@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.repositories.download
+package com.peterlaurence.trekme.features.mapcreate.domain.repository
 
 import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.core.map.domain.models.MapDownloadEvent

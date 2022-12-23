@@ -5,7 +5,7 @@ import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.*
-import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.main.MainActivity
 import kotlinx.coroutines.launch
 import java.util.*

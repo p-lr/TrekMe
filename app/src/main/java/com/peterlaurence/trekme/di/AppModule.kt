@@ -9,9 +9,7 @@ import com.peterlaurence.trekme.core.location.*
 import com.peterlaurence.trekme.core.location.domain.*
 import com.peterlaurence.trekme.core.location.domain.model.*
 import com.peterlaurence.trekme.core.orientation.model.OrientationSource
-import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
-import com.peterlaurence.trekme.core.repositories.api.OrdnanceSurveyApiRepository
-import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.core.location.domain.repository.LocationSourceImpl
 import com.peterlaurence.trekme.core.location.app.producer.GoogleLocationProducer
 import com.peterlaurence.trekme.core.location.app.producer.NmeaOverBluetoothProducer
@@ -19,12 +17,14 @@ import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.LayerOverlayRepository
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
-import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
+import com.peterlaurence.trekme.features.common.domain.repositories.OnBoardingRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.orientation.app.OrientationSourceImpl
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
+import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
+import com.peterlaurence.trekme.features.common.data.dao.OrdnanceSurveyApiDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -89,12 +89,11 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun bindIgnApiRepository(): IgnApiRepository = IgnApiRepository()
+    fun bindIgnApiRepository(): IgnApiDao = IgnApiDao()
 
     @Singleton
     @Provides
-    fun bindOrdnanceSurveyApiRepository(): OrdnanceSurveyApiRepository =
-        OrdnanceSurveyApiRepository()
+    fun bindOrdnanceSurveyApiRepository(): OrdnanceSurveyApiDao = OrdnanceSurveyApiDao()
 
     @Singleton
     @Provides

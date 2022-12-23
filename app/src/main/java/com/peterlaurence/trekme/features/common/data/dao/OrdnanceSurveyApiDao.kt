@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.repositories.api
+package com.peterlaurence.trekme.features.common.data.dao
 
 import com.peterlaurence.trekme.core.settings.backendApiServer
 import kotlinx.coroutines.Dispatchers
@@ -9,7 +9,7 @@ import java.net.URL
 /**
  * Lazily fetch the API key for Ordnance Survey.
  */
-class OrdnanceSurveyApiRepository {
+class OrdnanceSurveyApiDao {
     private var api: String? = null
 
     suspend fun getApi(): String? {

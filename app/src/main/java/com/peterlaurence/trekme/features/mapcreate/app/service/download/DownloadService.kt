@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.interactors.MapDownloadInteractor
 import com.peterlaurence.trekme.core.map.domain.models.*
-import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.main.MainActivity

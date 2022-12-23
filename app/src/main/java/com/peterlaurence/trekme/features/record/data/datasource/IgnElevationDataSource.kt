@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.features.record.data.datasource
 
-import com.peterlaurence.trekme.core.repositories.api.IgnApiRepository
+import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
 import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
 import com.peterlaurence.trekme.features.record.domain.datasource.model.*
 import com.peterlaurence.trekme.util.performRequest
@@ -14,7 +14,7 @@ import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
 class IgnElevationDataSource(
-    private val ignApiRepository: IgnApiRepository,
+    private val ignApiDao: IgnApiDao,
     private val ioDispatcher: CoroutineDispatcher
 ): ElevationDataSource {
     private val client = OkHttpClient.Builder()
@@ -32,12 +32,12 @@ class IgnElevationDataSource(
         latList: List<Double>,
         lonList: List<Double>
     ): ElevationResult {
-        val ignApi = ignApiRepository.getApi() ?: return Error
+        val ignApi = ignApiDao.getApi() ?: return Error
         val longitudeList = lonList.joinToString(separator = "|") { it.toString() }
         val latitudeList = latList.joinToString(separator = "|") { it.toString() }
         val url =
             "https://$elevationServiceHost/$ignApi/alti/rest/elevation.json?lon=$longitudeList&lat=$latitudeList"
-        val req = ignApiRepository.requestBuilder.url(url).build()
+        val req = ignApiDao.requestBuilder.url(url).build()
 
         val eleList = withTimeoutOrNull(4000) {
             client.performRequest<ElevationsResponse>(req, json)?.elevations?.map { it.z }

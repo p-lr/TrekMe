@@ -9,8 +9,8 @@ import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
-import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
-import com.peterlaurence.trekme.core.repositories.onboarding.OnBoardingRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
+import com.peterlaurence.trekme.features.common.domain.repositories.OnBoardingRepository
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
 import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
 import dagger.hilt.android.lifecycle.HiltViewModel

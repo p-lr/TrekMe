@@ -25,7 +25,7 @@ import com.peterlaurence.trekme.NavGraphDirections
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
-import com.peterlaurence.trekme.core.repositories.download.DownloadRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
