@@ -24,7 +24,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
-import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*

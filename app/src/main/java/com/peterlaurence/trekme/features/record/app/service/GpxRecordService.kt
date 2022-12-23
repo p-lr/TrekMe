@@ -19,8 +19,8 @@ import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFa
 import com.peterlaurence.trekme.core.georecord.domain.logic.mergeBounds
 import com.peterlaurence.trekme.core.georecord.domain.logic.mergeStats
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.core.location.Location
-import com.peterlaurence.trekme.core.location.LocationSource
+import com.peterlaurence.trekme.core.location.domain.model.Location
+import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents

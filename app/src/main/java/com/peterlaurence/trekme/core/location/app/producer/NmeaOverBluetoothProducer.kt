@@ -1,10 +1,10 @@
-package com.peterlaurence.trekme.core.repositories.location.producers
+package com.peterlaurence.trekme.core.location.app.producer
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
-import com.peterlaurence.trekme.core.location.Location
-import com.peterlaurence.trekme.core.location.LocationProducer
-import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
+import com.peterlaurence.trekme.core.location.domain.model.Location
+import com.peterlaurence.trekme.core.location.domain.model.LocationProducer
+import com.peterlaurence.trekme.core.location.domain.model.LocationProducerBtInfo
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.core.lib.nmea.NmeaAggregator

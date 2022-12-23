@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
-import com.peterlaurence.trekme.core.location.Location
-import com.peterlaurence.trekme.core.location.LocationSource
+import com.peterlaurence.trekme.core.location.domain.model.Location
+import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.ElevationFixInteractor
 import com.peterlaurence.trekme.core.map.domain.models.ErrorIgnLicense
 import com.peterlaurence.trekme.core.map.domain.models.FreeLicense

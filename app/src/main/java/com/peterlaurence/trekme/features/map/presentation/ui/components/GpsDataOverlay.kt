@@ -23,9 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.location.InternalGps
-import com.peterlaurence.trekme.core.location.Location
-import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
+import com.peterlaurence.trekme.core.location.domain.model.InternalGps
+import com.peterlaurence.trekme.core.location.domain.model.Location
+import com.peterlaurence.trekme.core.location.domain.model.LocationProducerBtInfo
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 

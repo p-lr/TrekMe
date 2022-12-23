@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.repositories.location.producers
+package com.peterlaurence.trekme.core.location.app.producer
 
 import android.Manifest
 import android.content.Context
@@ -6,9 +6,9 @@ import android.content.pm.PackageManager
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
-import com.peterlaurence.trekme.core.location.InternalGps
-import com.peterlaurence.trekme.core.location.Location
-import com.peterlaurence.trekme.core.location.LocationProducer
+import com.peterlaurence.trekme.core.location.domain.model.InternalGps
+import com.peterlaurence.trekme.core.location.domain.model.Location
+import com.peterlaurence.trekme.core.location.domain.model.LocationProducer
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -26,11 +26,9 @@ import kotlinx.coroutines.runBlocking
 class GoogleLocationProducer(private val applicationContext: Context) : LocationProducer {
     private val fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(applicationContext)
-    private val locationRequest = LocationRequest.create().apply {
-        interval = 2000
-        priority = Priority.PRIORITY_HIGH_ACCURACY
-        maxWaitTime = 5000  // 5s
-    }
+    private val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000).apply {
+        setMaxUpdateDelayMillis(5000)
+    }.build()
     private val looper = Looper.getMainLooper()
 
     override val locationFlow: Flow<Location> by lazy {

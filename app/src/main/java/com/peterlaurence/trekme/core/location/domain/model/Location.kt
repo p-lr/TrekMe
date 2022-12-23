@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.location
+package com.peterlaurence.trekme.core.location.domain.model
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -13,7 +13,8 @@ import kotlinx.serialization.Serializable
  */
 data class Location(val latitude: Double = 0.0, val longitude: Double = 0.0, val speed: Float? = null,
                     val altitude: Double? = null, val time: Long = 0L,
-                    val locationProducerInfo: LocationProducerInfo)
+                    val locationProducerInfo: LocationProducerInfo
+)
 
 /**
  * The [LocationSource] has two possible modes.

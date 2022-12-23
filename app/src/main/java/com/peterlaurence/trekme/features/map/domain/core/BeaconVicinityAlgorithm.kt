@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.map.domain.core
 
 import com.peterlaurence.trekme.core.geotools.distanceApprox
-import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import kotlinx.coroutines.*
 

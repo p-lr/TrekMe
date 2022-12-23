@@ -13,7 +13,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.location.LocationSource
+import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.events.AppEventBus

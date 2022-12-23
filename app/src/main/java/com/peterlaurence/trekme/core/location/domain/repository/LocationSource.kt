@@ -1,8 +1,8 @@
-package com.peterlaurence.trekme.core.repositories.location
+package com.peterlaurence.trekme.core.location.domain.repository
 
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.peterlaurence.trekme.core.location.*
+import com.peterlaurence.trekme.core.location.domain.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose

@@ -16,8 +16,8 @@ import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.contains
-import com.peterlaurence.trekme.core.location.Location
-import com.peterlaurence.trekme.core.location.LocationSource
+import com.peterlaurence.trekme.core.location.domain.model.Location
+import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
 import com.peterlaurence.trekme.core.providers.bitmap.*

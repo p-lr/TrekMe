@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.peterlaurence.trekme.core.location.Location
+import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import ovh.plrapps.mapcompose.ui.MapUI

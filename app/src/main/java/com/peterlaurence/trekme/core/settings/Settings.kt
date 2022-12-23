@@ -8,8 +8,8 @@ import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.peterlaurence.trekme.core.TrekMeContext
-import com.peterlaurence.trekme.core.location.InternalGps
-import com.peterlaurence.trekme.core.location.LocationProducerInfo
+import com.peterlaurence.trekme.core.location.domain.model.InternalGps
+import com.peterlaurence.trekme.core.location.domain.model.LocationProducerInfo
 import com.peterlaurence.trekme.core.units.DistanceUnit
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import kotlinx.coroutines.flow.Flow

@@ -16,9 +16,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.core.location.InternalGps
-import com.peterlaurence.trekme.core.location.LocationProducerBtInfo
-import com.peterlaurence.trekme.core.location.LocationProducerInfo
+import com.peterlaurence.trekme.core.location.domain.model.InternalGps
+import com.peterlaurence.trekme.core.location.domain.model.LocationProducerBtInfo
+import com.peterlaurence.trekme.core.location.domain.model.LocationProducerInfo
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.features.gpspro.domain.repositories.GpsProDiagnosisRepo
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents

@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.TrekMeContext
 import com.peterlaurence.trekme.core.billing.domain.interactors.ExtendedOfferInteractor
 import com.peterlaurence.trekme.core.billing.domain.model.GpsProStateOwner
-import com.peterlaurence.trekme.core.location.InternalGps
+import com.peterlaurence.trekme.core.location.domain.model.InternalGps
 import com.peterlaurence.trekme.core.map.domain.interactors.UpdateMapsInteractor
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.settings.Settings
