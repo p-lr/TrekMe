@@ -9,7 +9,7 @@ import com.peterlaurence.trekme.core.map.data.models.MarkerKtx
  */
 fun MarkerGson.Marker.toDomain(): Marker {
     return Marker(
-        lat = lat,lon =  lon, name = name, elevation = elevation, comment = comment
+        lat = lat,lon =  lon, name = name, elevation = elevation, comment = comment ?: ""
     )
 }
 

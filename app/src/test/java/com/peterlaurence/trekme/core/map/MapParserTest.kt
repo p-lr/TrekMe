@@ -50,7 +50,7 @@ class MapParserTest {
         routeRepository.importRoutes(map)
         assertEquals(2, map.routes.value.size.toLong())
 
-        val route = map.routes.value[0]
+        val route = map.routes.value.sortedBy { it.name }[0]
         assertEquals("A test route 1", route.name)
         assertTrue(route.visible.value)
         val markers = route.routeMarkers
