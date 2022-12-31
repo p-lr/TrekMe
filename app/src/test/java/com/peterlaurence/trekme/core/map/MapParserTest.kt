@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.core.map
 
-import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.data.dao.MapLoaderDaoFileBased
 import com.peterlaurence.trekme.core.map.data.dao.MapSaverDaoImpl
 import com.peterlaurence.trekme.core.map.data.dao.RouteDaoImpl
@@ -23,14 +22,14 @@ import kotlin.test.assertNotNull
  */
 @RunWith(RobolectricTestRunner::class)
 class MapParserTest {
-    private val registry = FileBasedMapRegistry()
     private val gson = MapModule.provideGson()
-    private val mapSaverDao = MapSaverDaoImpl(registry, Dispatchers.Unconfined, Dispatchers.IO, gson)
+    private val json = MapModule.provideJson()
+    private val mapSaverDao = MapSaverDaoImpl(Dispatchers.Unconfined, Dispatchers.IO, gson)
     private val mapLoaderDao = MapLoaderDaoFileBased(
-        registry, mapSaverDao, gson, MapModule.provideJson(), Dispatchers.IO
+        mapSaverDao, gson, json, Dispatchers.IO
     )
 
-    private val routeDao = RouteDaoImpl(registry, Dispatchers.IO, Dispatchers.Unconfined)
+    private val routeDao = RouteDaoImpl(Dispatchers.IO, Dispatchers.Unconfined, json)
     private val routeRepository = RouteRepository(routeDao)
 
     @Test

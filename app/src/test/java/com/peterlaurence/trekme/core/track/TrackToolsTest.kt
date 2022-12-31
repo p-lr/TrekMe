@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.track
 
 import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
-import com.peterlaurence.trekme.core.georecord.domain.logic.TrackTools
+import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.core.lib.gpx.parseGpx
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
@@ -27,7 +27,7 @@ class TrackToolsTest {
         val gpx = parseGpx(FileInputStream(gpxFile))
         assertEquals(1, gpx.tracks.size)
         val geoRecord = gpxToDomain(gpx)
-        val stats = TrackTools.getGeoStatistics(geoRecord)
+        val stats = getGeoStatistics(geoRecord)
         assertEquals(3773.11, stats.distance, 0.01)
     }
 }

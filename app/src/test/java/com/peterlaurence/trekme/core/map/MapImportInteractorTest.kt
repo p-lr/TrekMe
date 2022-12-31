@@ -2,7 +2,6 @@ package com.peterlaurence.trekme.core.map
 
 
 import com.peterlaurence.trekme.core.map.data.MAP_FILENAME
-import com.peterlaurence.trekme.core.map.data.dao.FileBasedMapRegistry
 import com.peterlaurence.trekme.core.map.data.dao.MapLoaderDaoFileBased
 import com.peterlaurence.trekme.core.map.data.dao.MapSaverDaoImpl
 import com.peterlaurence.trekme.core.map.data.dao.MapSeekerDaoImpl
@@ -27,14 +26,13 @@ import kotlin.test.fail
  */
 @RunWith(RobolectricTestRunner::class)
 class MapImportInteractorTest {
-    private val registry = FileBasedMapRegistry()
     private val gson = MapModule.provideGson()
-    private val mapSaverDao = MapSaverDaoImpl(registry, Dispatchers.Unconfined, Dispatchers.IO, gson)
+    private val mapSaverDao = MapSaverDaoImpl(Dispatchers.Unconfined, Dispatchers.IO, gson)
     private val mapLoaderDao = MapLoaderDaoFileBased(
-        registry, mapSaverDao, gson, MapModule.provideJson(), Dispatchers.IO
+        mapSaverDao, gson, MapModule.provideJson(), Dispatchers.IO
     )
     private val mapRepository = MapRepository()
-    private val mapSeekerDao = MapSeekerDaoImpl(mapLoaderDao, mapSaverDao, registry)
+    private val mapSeekerDao = MapSeekerDaoImpl(mapLoaderDao, mapSaverDao)
 
     private val mapImportInteractor = MapImportInteractor(mapRepository, mapSeekerDao)
 

@@ -20,7 +20,7 @@ class Route(
     val id: String = id ?: UUID.randomUUID().toString()
 
     val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
-    val color: MutableStateFlow<String?> = MutableStateFlow(initialColor)
+    val color: MutableStateFlow<String> = MutableStateFlow(initialColor ?: colorRoute)
 
     val routeMarkersFlow: Flow<Marker> = MutableSharedFlow<Marker>(
         replay = Int.MAX_VALUE, onBufferOverflow = BufferOverflow.DROP_OLDEST
@@ -56,3 +56,5 @@ class Route(
         return id.hashCode()
     }
 }
+
+private const val colorRoute = "#3F51B5"    // default route color

@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.layers.colorRoute
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.TrackAdapter.TrackViewHolder
 
 /**
@@ -95,7 +94,7 @@ class TrackAdapter(
             holder.setVisibleButtonIcon(route.visible.value)
             trackSelectionListener.onVisibilityToggle(route)
         }
-        holder.colorButton.setColorFilter(Color.parseColor(route.color.value ?: colorRoute))
+        holder.colorButton.setColorFilter(Color.parseColor(route.color.value))
         holder.colorButton.setOnClickListener {
             trackSelectionListener.onColorButtonClicked(route)
         }

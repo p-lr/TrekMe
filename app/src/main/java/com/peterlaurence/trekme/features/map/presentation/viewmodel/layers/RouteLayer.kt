@@ -196,7 +196,7 @@ class RouteLayer(
             route.color.collect { color ->
                 mapState.updatePath(
                     route.id,
-                    color = Color(parseColor(color ?: colorRoute))
+                    color = Color(parseColor(color))
                 )
             }
         }
@@ -266,7 +266,7 @@ class RouteLayer(
             route.id,
             pathData,
             color = route.color.value.let { colorStr ->
-                Color(parseColor(colorStr ?: colorRoute))
+                Color(parseColor(colorStr))
             }
         )
     }
@@ -381,7 +381,7 @@ private class DistanceOnRouteController(
             offset = 0,
             count = min(state.i1, state.i2),
             color = route.color.value.let { colorStr ->
-                Color(parseColor(colorStr ?: colorRoute))
+                Color(parseColor(colorStr))
             }
         )
 
@@ -400,7 +400,7 @@ private class DistanceOnRouteController(
             offset = max(state.i1, state.i2),
             count = routePoints.lastIndex - max(state.i1, state.i2),
             color = route.color.value.let { colorStr ->
-                Color(parseColor(colorStr ?: colorRoute))
+                Color(parseColor(colorStr))
             }
         )
 
@@ -525,4 +525,4 @@ private class DistanceOnRouteController(
 }
 
 private const val colorLiveRoute = "#FF9800"
-const val colorRoute = "#3F51B5"    // default route color
+//const val colorRoute = "#3F51B5"    // default route color
