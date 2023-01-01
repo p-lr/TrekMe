@@ -35,7 +35,7 @@ class UpdateGeoRecordElevationsInteractor @Inject constructor(
                             val newRouteMarkers = route.routeMarkers.zip(segmentElePt.points).map {
                                 it.first.copy(elevation = it.second.elevation)
                             }
-                            Route(route.id, route.name, initialMarkers = newRouteMarkers, elevationTrusted = true)
+                            Route(route.id, route.name.value, initialMarkers = newRouteMarkers, elevationTrusted = true)
                         } else route
                     }
                     routeGroup.copy(routes = routes)

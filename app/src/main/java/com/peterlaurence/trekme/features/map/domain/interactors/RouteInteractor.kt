@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.features.map.domain.models.MarkerWithNormalizedP
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 class RouteInteractor @Inject constructor(
@@ -48,6 +49,11 @@ class RouteInteractor @Inject constructor(
 
     suspend fun toggleRouteVisibility(map: Map, route: Route) {
         route.toggleVisibility()
+        routeRepository.saveRouteInfo(map, route)
+    }
+
+    suspend fun renameRoute(map: Map, route: Route, newName: String) {
+        route.name.update { newName }
         routeRepository.saveRouteInfo(map, route)
     }
 }

@@ -11,7 +11,7 @@ import java.util.*
  */
 class Route(
     id: String? = null,
-    var name: String? = null,
+    initialName: String? = null,
     initialVisibility: Boolean = true,
     initialMarkers: List<Marker> = emptyList(),
     initialColor: String? = null, // In the format "#AARRGGBB"
@@ -19,6 +19,7 @@ class Route(
 ) {
     val id: String = id ?: UUID.randomUUID().toString()
 
+    val name: MutableStateFlow<String> = MutableStateFlow(initialName ?: "")
     val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
     val color: MutableStateFlow<String> = MutableStateFlow(initialColor ?: colorRoute)
 

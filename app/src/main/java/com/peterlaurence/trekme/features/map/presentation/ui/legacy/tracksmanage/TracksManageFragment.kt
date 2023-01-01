@@ -326,7 +326,7 @@ class TracksManageFragment : Fragment(), TrackAdapter.TrackSelectionListener {
             val mapId = arguments?.parcelable<ParcelUuid>(MAP_ID)?.uuid
 
             val route = viewModel.getRoute(routeId) ?: return builder.create()
-            editText.setText(route.name)
+            editText.setText(route.name.value)
 
             builder.setView(view)
             builder.setMessage(R.string.track_name_change)

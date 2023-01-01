@@ -93,7 +93,7 @@ class TracksManageViewModel @Inject constructor(
     }
 
     fun renameRoute(route: Route, newName: String) {
-        route.name = newName
+        route.name.value = newName
         saveChanges(route)
 
         /* Notify the view */

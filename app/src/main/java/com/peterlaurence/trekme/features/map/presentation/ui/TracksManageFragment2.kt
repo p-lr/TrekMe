@@ -10,7 +10,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.map.presentation.ui.screens.TracksManageScreen
+import com.peterlaurence.trekme.features.map.presentation.ui.screens.TracksManageStateful
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel2
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,7 +34,7 @@ class TracksManageFragment2 : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 TrekMeTheme {
-                    TracksManageScreen(viewModel)
+                    TracksManageStateful(viewModel)
                 }
             }
         }

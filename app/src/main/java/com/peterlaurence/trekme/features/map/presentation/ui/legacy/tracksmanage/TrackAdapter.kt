@@ -87,7 +87,7 @@ class TrackAdapter(
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
         val route = differ.currentList[position] ?: return
-        holder.trackName.text = route.name
+        holder.trackName.text = route.name.value
         holder.setVisibleButtonIcon(route.visible.value)
         holder.visibleButton.setOnClickListener {
             route.toggleVisibility()

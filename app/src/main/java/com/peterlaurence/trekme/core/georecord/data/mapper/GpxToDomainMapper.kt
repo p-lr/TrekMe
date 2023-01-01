@@ -71,7 +71,7 @@ private fun gpxTrackToRoute(
 
         Route(
             id = segment.id,
-            name = name.formatNameOrId(i),
+            initialName = name.formatNameOrId(i),
             initialMarkers = markers,
             initialVisibility = true, /* The route should be visible by default */
             elevationTrusted = elevationTrusted

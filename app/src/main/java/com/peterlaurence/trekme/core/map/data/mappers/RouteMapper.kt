@@ -17,7 +17,7 @@ fun Route.toRouteInfoKtx(): RouteInfoKtx {
     val r = this
     return RouteInfoKtx(
         id = r.id,
-        name = r.name,
+        name = r.name.value,
         color = r.color.value,
         visible = r.visible.value,
         elevationTrusted = r.elevationTrusted,
@@ -28,7 +28,7 @@ fun RouteGson.Route.toDomain(): Route {
     val domainList = ArrayList<Marker>(routeMarkers.size)
     return Route(
         id = null,
-        name = name,
+        initialName = name,
         initialVisibility = visible,
         initialMarkers = routeMarkers.mapTo(domainList) { it.toDomain() },
         initialColor = color,

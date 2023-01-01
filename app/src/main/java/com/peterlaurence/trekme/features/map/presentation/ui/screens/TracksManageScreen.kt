@@ -5,7 +5,10 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -15,21 +18,19 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.*
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel2
 import com.peterlaurence.trekme.util.parseColorL
 import kotlinx.coroutines.flow.update
 
 @Composable
-fun TracksManageScreen(viewModel: TracksManageViewModel2) {
+fun TracksManageStateful(viewModel: TracksManageViewModel2) {
     val routes by viewModel.getRouteFlow().collectAsState()
     var selectionId: String? by rememberSaveable { mutableStateOf(null) }
 
@@ -44,8 +45,23 @@ fun TracksManageScreen(viewModel: TracksManageViewModel2) {
         }
     )
 
-    TrackList(
+    /* Depending on whether the user has extended offer, we show different menus. */
+    val hasExtendedOffer by viewModel.hasExtendedOffer.collectAsState()
+    val topAppBarState = TopAppBarState(
+        hasOverflowMenu = selectionId != null,
+        hasCenterOnTrack = hasExtendedOffer,
+        currentTrackName = selectableRoutes.firstOrNull { it.isSelected }?.route?.name?.value ?: ""
+    )
+
+    TracksManageScreen(
+        topAppBarState = topAppBarState,
         selectableRoutes = selectableRoutes,
+        onRouteRename = { newName ->
+            val route = selectableRoutes.firstOrNull { it.isSelected }?.route
+            if (route != null) {
+                viewModel.onRenameRoute(route, newName)
+            }
+        },
         onRouteClick = {
             selectionId = it.route.id
         },
@@ -59,14 +75,158 @@ fun TracksManageScreen(viewModel: TracksManageViewModel2) {
 }
 
 @Composable
+private fun TracksManageScreen(
+    topAppBarState: TopAppBarState,
+    selectableRoutes: List<SelectableRoute>,
+    onRouteRename: (String) -> Unit,
+    onRouteClick: (SelectableRoute) -> Unit,
+    onVisibilityToggle: (SelectableRoute) -> Unit = {},
+    onColorChange: (SelectableRoute, Long) -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TrackTopAppbar(
+                state = topAppBarState,
+                onMenuClick = {},
+                onRouteRename = onRouteRename,
+                onCenterOnTrack = {}
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_add_24),
+                    tint = Color.White,
+                    contentDescription = stringResource(
+                        id = R.string.add_track_btn_desc
+                    )
+                )
+            }
+        }
+    ) { padding ->
+        TrackList(
+            Modifier.padding(padding),
+            selectableRoutes = selectableRoutes,
+            onRouteClick = onRouteClick,
+            onVisibilityToggle = onVisibilityToggle,
+            onColorChange = onColorChange
+        )
+    }
+}
+
+@Composable
+private fun TrackTopAppbar(
+    state: TopAppBarState,
+    onMenuClick: () -> Unit,
+    onRouteRename: (String) -> Unit,
+    onCenterOnTrack: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var isShowingRenameModal by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = { Text(text = stringResource(id = R.string.tracks_manage_frgmt_title)) },
+        navigationIcon = {
+            IconButton(onClick = onMenuClick) {
+                Icon(Icons.Filled.Menu, contentDescription = "")
+            }
+        },
+        actions = {
+            if (state.hasOverflowMenu) {
+                IconButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.width(36.dp)
+                ) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+                Box(
+                    Modifier
+                        .height(24.dp)
+                        .wrapContentSize(Alignment.BottomEnd, true)
+                ) {
+                    DropdownMenu(
+                        modifier = Modifier.wrapContentSize(Alignment.TopEnd),
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        offset = DpOffset(0.dp, 0.dp)
+                    ) {
+                        DropdownMenuItem(onClick = {
+                            expanded = false
+                            isShowingRenameModal = true
+                        }) {
+                            Text(stringResource(id = R.string.track_rename_action))
+                        }
+
+                        if (state.hasCenterOnTrack) {
+                            DropdownMenuItem(onClick = onCenterOnTrack) {
+                                Text(stringResource(id = R.string.go_to_track_on_map))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    if (isShowingRenameModal) {
+        var name by remember { mutableStateOf(state.currentTrackName) }
+        AlertDialog(
+            onDismissRequest = { isShowingRenameModal = false },
+            title = {
+                Text(stringResource(id = R.string.track_name_change))
+            },
+            text = {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.Transparent,
+                        textColor = textColor()
+                    )
+                )
+            },
+            buttons = {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(end = 16.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        colors = ButtonDefaults.textButtonColors(contentColor = accentColor()),
+                        onClick = { isShowingRenameModal = false }
+                    ) {
+                        Text(stringResource(id = R.string.cancel_dialog_string))
+                    }
+                    TextButton(
+                        colors = ButtonDefaults.textButtonColors(contentColor = accentColor()),
+                        onClick = {
+                            isShowingRenameModal = false
+                            onRouteRename(name)
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.ok_dialog))
+                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
 private fun TrackList(
+    modifier: Modifier = Modifier,
     selectableRoutes: List<SelectableRoute>,
     onRouteClick: (SelectableRoute) -> Unit,
     onVisibilityToggle: (SelectableRoute) -> Unit = {},
     onColorChange: (SelectableRoute, Long) -> Unit
 ) {
     LazyColumn(
-        Modifier
+        modifier
             .fillMaxSize()
             .background(backgroundColor())
     ) {
@@ -95,6 +255,7 @@ private fun TrackItem(
 ) {
     val visible by selectableRoute.route.visible.collectAsState()
     val color by selectableRoute.route.color.collectAsState()
+    val name by selectableRoute.route.name.collectAsState()
 
     var isShowingColorPicker by remember { mutableStateOf(false) }
 
@@ -115,7 +276,7 @@ private fun TrackItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = selectableRoute.route.name ?: "",
+            text = name,
             color = textColor(),
             modifier = Modifier.weight(1f)
         )
@@ -168,6 +329,12 @@ private fun ColorIndicator(color: String, onClick: () -> Unit = {}) {
         drawCircle(colorContent, r)
     }
 }
+
+private data class TopAppBarState(
+    val hasOverflowMenu: Boolean,
+    val hasCenterOnTrack: Boolean,
+    val currentTrackName: String
+)
 
 private data class SelectableRoute(val route: Route, val isSelected: Boolean)
 
