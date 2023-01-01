@@ -1,6 +1,9 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
 import android.content.res.Configuration
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,14 +26,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.*
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel2
+import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
 import com.peterlaurence.trekme.util.parseColorL
 import kotlinx.coroutines.flow.update
 
 @Composable
-fun TracksManageStateful(viewModel: TracksManageViewModel2) {
+fun TracksManageStateful(
+    viewModel: TracksManageViewModel2,
+    onGoToRoute: (Route) -> Unit,
+    onMenuClick: () -> Unit
+) {
     val routes by viewModel.getRouteFlow().collectAsState()
     var selectionId: String? by rememberSaveable { mutableStateOf(null) }
 
@@ -53,13 +62,48 @@ fun TracksManageStateful(viewModel: TracksManageViewModel2) {
         currentTrackName = selectableRoutes.firstOrNull { it.isSelected }?.route?.name?.value ?: ""
     )
 
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.also {
+            viewModel.onRouteImport(uri)
+        }
+    }
+
+    val scaffoldState = rememberScaffoldState()
+    val errorMsg = stringResource(id = R.string.gpx_import_error_msg)
+    val resultRecap = stringResource(id = R.string.import_result_recap)
+    launchFlowCollectionWithLifecycle(viewModel.routeImportEventFlow) { result ->
+        when (result) {
+            GeoRecordImportResult.GeoRecordImportError -> {
+                scaffoldState.snackbarHostState.showSnackbar(errorMsg)
+            }
+            is GeoRecordImportResult.GeoRecordImportOk -> {
+                scaffoldState.snackbarHostState.showSnackbar(
+                    resultRecap.format(
+                        result.newRouteCount,
+                        result.newMarkersCount
+                    )
+                )
+            }
+        }
+    }
+
     TracksManageScreen(
         topAppBarState = topAppBarState,
+        scaffoldState = scaffoldState,
         selectableRoutes = selectableRoutes,
+        onMenuClick = onMenuClick,
         onRouteRename = { newName ->
             val route = selectableRoutes.firstOrNull { it.isSelected }?.route
             if (route != null) {
                 viewModel.onRenameRoute(route, newName)
+            }
+        },
+        onGoToRoute = {
+            val route = selectableRoutes.firstOrNull { it.isSelected }?.route
+            if (route != null) {
+                onGoToRoute(route)
             }
         },
         onRouteClick = {
@@ -70,6 +114,9 @@ fun TracksManageStateful(viewModel: TracksManageViewModel2) {
         },
         onColorChange = { selectableRoute, c ->
             viewModel.onColorChange(selectableRoute.route, c)
+        },
+        onAddNewRoute = {
+            launcher.launch("*/*")
         }
     )
 }
@@ -77,23 +124,28 @@ fun TracksManageStateful(viewModel: TracksManageViewModel2) {
 @Composable
 private fun TracksManageScreen(
     topAppBarState: TopAppBarState,
+    scaffoldState: ScaffoldState,
     selectableRoutes: List<SelectableRoute>,
+    onMenuClick: () -> Unit,
     onRouteRename: (String) -> Unit,
+    onGoToRoute: () -> Unit,
     onRouteClick: (SelectableRoute) -> Unit,
     onVisibilityToggle: (SelectableRoute) -> Unit = {},
-    onColorChange: (SelectableRoute, Long) -> Unit
+    onColorChange: (SelectableRoute, Long) -> Unit,
+    onAddNewRoute: () -> Unit
 ) {
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             TrackTopAppbar(
                 state = topAppBarState,
-                onMenuClick = {},
+                onMenuClick = onMenuClick,
                 onRouteRename = onRouteRename,
-                onCenterOnTrack = {}
+                onGoToRoute = onGoToRoute
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { /*TODO*/ }) {
+            FloatingActionButton(onClick = onAddNewRoute) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_add_24),
                     tint = Color.White,
@@ -119,7 +171,7 @@ private fun TrackTopAppbar(
     state: TopAppBarState,
     onMenuClick: () -> Unit,
     onRouteRename: (String) -> Unit,
-    onCenterOnTrack: () -> Unit
+    onGoToRoute: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var isShowingRenameModal by remember { mutableStateOf(false) }
@@ -162,7 +214,7 @@ private fun TrackTopAppbar(
                         }
 
                         if (state.hasCenterOnTrack) {
-                            DropdownMenuItem(onClick = onCenterOnTrack) {
+                            DropdownMenuItem(onClick = onGoToRoute) {
                                 Text(stringResource(id = R.string.go_to_track_on_map))
                             }
                         }
