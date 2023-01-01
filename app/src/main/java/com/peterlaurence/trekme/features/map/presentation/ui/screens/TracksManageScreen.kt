@@ -16,13 +16,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel2
-import com.peterlaurence.trekme.util.parseColor
+import com.peterlaurence.trekme.util.parseColorL
 import kotlinx.coroutines.flow.update
 
 @Composable
@@ -45,6 +48,12 @@ fun TracksManageScreen(viewModel: TracksManageViewModel2) {
         selectableRoutes = selectableRoutes,
         onRouteClick = {
             selectionId = it.route.id
+        },
+        onVisibilityToggle = { selectableRoute ->
+            viewModel.toggleRouteVisibility(selectableRoute.route)
+        },
+        onColorChange = { selectableRoute, c ->
+            viewModel.onColorChange(selectableRoute.route, c)
         }
     )
 }
@@ -53,9 +62,14 @@ fun TracksManageScreen(viewModel: TracksManageViewModel2) {
 private fun TrackList(
     selectableRoutes: List<SelectableRoute>,
     onRouteClick: (SelectableRoute) -> Unit,
-    onVisibilityToggle: (SelectableRoute) -> Unit = {}
+    onVisibilityToggle: (SelectableRoute) -> Unit = {},
+    onColorChange: (SelectableRoute, Long) -> Unit
 ) {
-    LazyColumn {
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .background(backgroundColor())
+    ) {
         itemsIndexed(selectableRoutes, key = { _, it -> it.route.id }) { index, selectableRoute ->
             TrackItem(
                 Modifier.clickable {
@@ -63,7 +77,8 @@ private fun TrackList(
                 },
                 selectableRoute,
                 index,
-                onVisibilityToggle = onVisibilityToggle
+                onVisibilityToggle = onVisibilityToggle,
+                onColorChange = onColorChange
             )
         }
     }
@@ -75,10 +90,13 @@ private fun TrackItem(
     modifier: Modifier = Modifier,
     selectableRoute: SelectableRoute,
     index: Int,
-    onVisibilityToggle: (SelectableRoute) -> Unit = {}
+    onVisibilityToggle: (SelectableRoute) -> Unit = {},
+    onColorChange: (SelectableRoute, Long) -> Unit
 ) {
     val visible by selectableRoute.route.visible.collectAsState()
     val color by selectableRoute.route.color.collectAsState()
+
+    var isShowingColorPicker by remember { mutableStateOf(false) }
 
     Row(
         modifier
@@ -92,8 +110,7 @@ private fun TrackItem(
                     }
                 }
             )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-        ,
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -104,7 +121,7 @@ private fun TrackItem(
         )
 
         Row {
-            ColorIndicator(color)
+            ColorIndicator(color, onClick = { isShowingColorPicker = true })
             Spacer(modifier = Modifier.width(10.dp))
             Image(
                 painter = if (visible) {
@@ -112,22 +129,39 @@ private fun TrackItem(
                 } else {
                     painterResource(id = R.drawable.ic_visibility_off_black_24dp)
                 },
-                modifier = Modifier.clickable{ onVisibilityToggle(selectableRoute) },
+                modifier = Modifier.clickable { onVisibilityToggle(selectableRoute) },
                 contentDescription = stringResource(id = R.string.track_visibility_btn),
                 colorFilter = ColorFilter.tint(textColor())
             )
         }
 
     }
+
+    if (isShowingColorPicker) {
+        Dialog(onDismissRequest = { isShowingColorPicker = false }) {
+            ColorPicker(
+                initColor = parseColorL(color),
+                onColorPicked = { c ->
+                    onColorChange(selectableRoute, c)
+                    isShowingColorPicker = false
+                },
+                onCancel = { isShowingColorPicker = false }
+            )
+        }
+    }
 }
 
 @Composable
 private fun ColorIndicator(color: String, onClick: () -> Unit = {}) {
     val colorContent = remember(color) {
-        Color(parseColor(color))
+        Color(parseColorL(color))
     }
     val background = if (isSystemInDarkTheme()) Color(0xffa9b7c6) else Color.White
-    Canvas(modifier = Modifier.size(24.dp).clickable(onClick = onClick)) {
+    Canvas(
+        modifier = Modifier
+            .size(24.dp)
+            .clickable(onClick = onClick)
+    ) {
         val r = 10.dp.toPx()
         val r2 = 12.dp.toPx()
         drawCircle(background, r2)
@@ -145,9 +179,14 @@ private fun TrackListPreview() {
         var selectableRoutes by remember {
             mutableStateOf(
                 listOf(
-                    SelectableRoute(Route(id= "id#1", "A route with a really long name and description"), false),
-                    SelectableRoute(Route(id= "id#2", "A route2"), true),
-                    SelectableRoute(Route(id= "id#3", "A route3"), false),
+                    SelectableRoute(
+                        Route(
+                            id = "id#1",
+                            "A route with a really long name and description"
+                        ), false
+                    ),
+                    SelectableRoute(Route(id = "id#2", "A route2"), true),
+                    SelectableRoute(Route(id = "id#3", "A route3"), false),
                 )
             )
         }
@@ -165,7 +204,8 @@ private fun TrackListPreview() {
             },
             onVisibilityToggle = {
                 it.route.visible.update { v -> !v }
-            }
+            },
+            onColorChange = { _, _ -> }
         )
     }
 }

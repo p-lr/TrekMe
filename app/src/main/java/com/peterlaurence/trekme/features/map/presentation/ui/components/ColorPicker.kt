@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -13,6 +14,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -47,9 +49,17 @@ fun ColorPicker(initColor: Long = 0L, onColorPicked: (Long) -> Unit = {}, onCanc
 
     Column(
         Modifier
+            .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor())
             .padding(top = 16.dp)
     ) {
+        Text(
+            stringResource(id = R.string.color_picker_title),
+            modifier = Modifier.padding(start = 16.dp, bottom = 24.dp),
+            color = textColor(),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium
+        )
         val strokeColor = textColor()
         Row(
             modifier = Modifier
@@ -107,7 +117,6 @@ fun ColorPicker(initColor: Long = 0L, onColorPicked: (Long) -> Unit = {}, onCanc
             Text(
                 stringResource(id = R.string.color_variant_label),
                 modifier = Modifier.padding(top = 13.dp),
-                fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = textColor()
             )
@@ -125,7 +134,6 @@ fun ColorPicker(initColor: Long = 0L, onColorPicked: (Long) -> Unit = {}, onCanc
                     )
                     Text(
                         text = stringResource(id = R.string.color_variant_normal),
-                        fontSize = 13.sp,
                         color = textColor()
                     )
                 }
@@ -142,7 +150,6 @@ fun ColorPicker(initColor: Long = 0L, onColorPicked: (Long) -> Unit = {}, onCanc
                     )
                     Text(
                         text = stringResource(id = R.string.color_variant_light),
-                        fontSize = 13.sp,
                         color = textColor()
                     )
                 }
@@ -159,7 +166,6 @@ fun ColorPicker(initColor: Long = 0L, onColorPicked: (Long) -> Unit = {}, onCanc
                     )
                     Text(
                         text = stringResource(id = R.string.color_variant_dark),
-                        fontSize = 13.sp,
                         color = textColor()
                     )
                 }
@@ -167,7 +173,7 @@ fun ColorPicker(initColor: Long = 0L, onColorPicked: (Long) -> Unit = {}, onCanc
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(end = 16.dp),
             horizontalArrangement = Arrangement.End
         ) {
             TextButton(onClick = onCancel) {

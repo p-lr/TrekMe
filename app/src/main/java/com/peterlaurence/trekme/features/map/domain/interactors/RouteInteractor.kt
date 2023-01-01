@@ -37,4 +37,17 @@ class RouteInteractor @Inject constructor(
             MarkerWithNormalizedPos(marker, x, y)
         }
     }
+
+    /**
+     * Save the color in the "#AARRGGBB" format.
+     */
+    suspend fun setRouteColor(map: Map, route: Route, color: Long) {
+        route.color.value = '#' + java.lang.Long.toHexString(color)
+        routeRepository.saveRouteInfo(map, route)
+    }
+
+    suspend fun toggleRouteVisibility(map: Map, route: Route) {
+        route.toggleVisibility()
+        routeRepository.saveRouteInfo(map, route)
+    }
 }
