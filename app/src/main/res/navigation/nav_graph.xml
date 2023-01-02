@@ -25,11 +25,6 @@
     <action
         android:id="@+id/action_global_settingsFragment"
         app:destination="@id/settingsFragment"/>
-    <fragment
-        android:id="@+id/tracksManageFragment"
-        android:name="com.peterlaurence.trekme.features.map.presentation.ui.legacy.tracksmanage.TracksManageFragment"
-        android:label="fragment_tracks_manage"
-        tools:layout="@layout/fragment_tracks_manage" />
     <action android:id="@+id/action_global_mapCreateFragment"
         app:destination="@id/mapCreationGraph"/>
     <fragment
@@ -111,14 +106,11 @@
             android:id="@+id/action_mapFragment_to_markerEditFragment"
             app:destination="@id/markerEditFragment" />
         <action
-            android:id="@+id/action_mapFragment_to_tracksManageFragment"
-            app:destination="@id/tracksManageFragment" />
-        <action
             android:id="@+id/action_mapFragment_to_beaconEditFragment"
             app:destination="@id/beaconEditFragment" />
         <action
-            android:id="@+id/action_mapFragment_to_tracksManageFragment2"
-            app:destination="@id/tracksManageFragment2" />
+            android:id="@+id/action_mapFragment_to_tracksManageFragment"
+            app:destination="@id/tracksManageFragment" />
     </fragment>
     <action android:id="@+id/action_global_mapFragment" app:destination="@id/mapFragment"/>
     <fragment
@@ -183,7 +175,7 @@
             app:argType="java.util.UUID" />
     </fragment>
     <fragment
-        android:id="@+id/tracksManageFragment2"
-        android:name="com.peterlaurence.trekme.features.map.presentation.ui.TracksManageFragment2"
-        android:label="TracksManageFragment2" />
+        android:id="@+id/tracksManageFragment"
+        android:name="com.peterlaurence.trekme.features.map.presentation.ui.TracksManageFragment"
+        android:label="TracksManageFragment" />
 </navigation>

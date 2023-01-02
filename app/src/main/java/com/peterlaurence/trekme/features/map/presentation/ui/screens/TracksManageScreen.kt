@@ -37,14 +37,14 @@ import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.*
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel2
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
 import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
 import com.peterlaurence.trekme.util.parseColorL
 import kotlinx.coroutines.flow.update
 
 @Composable
 fun TracksManageStateful(
-    viewModel: TracksManageViewModel2,
+    viewModel: TracksManageViewModel,
     onGoToRoute: (Route) -> Unit,
     onMenuClick: () -> Unit
 ) {
@@ -168,14 +168,18 @@ private fun TracksManageScreen(
             }
         }
     ) { padding ->
-        TrackList(
-            Modifier.padding(padding),
-            selectableRoutes = selectableRoutes,
-            onRouteClick = onRouteClick,
-            onVisibilityToggle = onVisibilityToggle,
-            onColorChange = onColorChange,
-            onRemove = onRemove
-        )
+        if (selectableRoutes.isEmpty()) {
+            Text(stringResource(id = R.string.no_track_message), Modifier.padding(16.dp), color = textColor())
+        } else {
+            TrackList(
+                Modifier.padding(padding),
+                selectableRoutes = selectableRoutes,
+                onRouteClick = onRouteClick,
+                onVisibilityToggle = onVisibilityToggle,
+                onColorChange = onColorChange,
+                onRemove = onRemove
+            )
+        }
     }
 }
 

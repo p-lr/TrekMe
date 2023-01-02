@@ -14,12 +14,12 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.TracksManageStateful
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel2
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class TracksManageFragment2 : Fragment() {
+class TracksManageFragment : Fragment() {
 
     @Inject
     lateinit var mapFeatureEvents: MapFeatureEvents
@@ -27,7 +27,7 @@ class TracksManageFragment2 : Fragment() {
     @Inject
     lateinit var appEventBus: AppEventBus
 
-    val viewModel: TracksManageViewModel2 by viewModels()
+    val viewModel: TracksManageViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,

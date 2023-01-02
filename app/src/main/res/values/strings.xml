@@ -175,10 +175,7 @@
     <string name="track_rename_action">Rename</string>
     <string name="go_to_track_on_map">See on the map</string>
     <string name="track_file_name_change">File name</string>
-    <string name="import_result_title">Import result</string>
     <string name="import_result_recap">Import result\n  Routes: %s \n  Waypoints: %s</string>
-    <string name="tracks_label">"Tracks number : "</string>
-    <string name="waypoints_label">"Waypoints number : "</string>
     <string name="gpx_import_error_msg">Oops.. something went wrong during the import</string>
     <string name="track_visibility_btn">Track visibility</string>
     <string name="track_color_btn">Track color</string>
