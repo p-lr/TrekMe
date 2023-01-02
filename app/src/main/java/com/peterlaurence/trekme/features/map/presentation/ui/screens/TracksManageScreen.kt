@@ -4,20 +4,28 @@ import android.content.res.Configuration
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
+import androidx.compose.material.DismissDirection.EndToStart
+import androidx.compose.material.DismissDirection.StartToEnd
+import androidx.compose.material.DismissValue.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -115,6 +123,9 @@ fun TracksManageStateful(
         onColorChange = { selectableRoute, c ->
             viewModel.onColorChange(selectableRoute.route, c)
         },
+        onRemove = { selectableRoute ->
+            viewModel.onRemoveRoute(selectableRoute.route)
+        },
         onAddNewRoute = {
             launcher.launch("*/*")
         }
@@ -132,6 +143,7 @@ private fun TracksManageScreen(
     onRouteClick: (SelectableRoute) -> Unit,
     onVisibilityToggle: (SelectableRoute) -> Unit = {},
     onColorChange: (SelectableRoute, Long) -> Unit,
+    onRemove: (SelectableRoute) -> Unit,
     onAddNewRoute: () -> Unit
 ) {
     Scaffold(
@@ -161,7 +173,8 @@ private fun TracksManageScreen(
             selectableRoutes = selectableRoutes,
             onRouteClick = onRouteClick,
             onVisibilityToggle = onVisibilityToggle,
-            onColorChange = onColorChange
+            onColorChange = onColorChange,
+            onRemove = onRemove
         )
     }
 }
@@ -269,13 +282,15 @@ private fun TrackTopAppbar(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TrackList(
     modifier: Modifier = Modifier,
     selectableRoutes: List<SelectableRoute>,
     onRouteClick: (SelectableRoute) -> Unit,
     onVisibilityToggle: (SelectableRoute) -> Unit = {},
-    onColorChange: (SelectableRoute, Long) -> Unit
+    onColorChange: (SelectableRoute, Long) -> Unit,
+    onRemove: (SelectableRoute) -> Unit
 ) {
     LazyColumn(
         modifier
@@ -283,18 +298,61 @@ private fun TrackList(
             .background(backgroundColor())
     ) {
         itemsIndexed(selectableRoutes, key = { _, it -> it.route.id }) { index, selectableRoute ->
-            TrackItem(
-                Modifier.clickable {
-                    onRouteClick(selectableRoute)
-                },
-                selectableRoute,
-                index,
-                onVisibilityToggle = onVisibilityToggle,
-                onColorChange = onColorChange
+            val dismissState = rememberDismissState(
+                confirmStateChange = {
+                    if (it == DismissedToEnd || it == DismissedToStart) {
+                        onRemove(selectableRoute)
+                    }
+                    true
+                }
             )
+            SwipeToDismiss(
+                state = dismissState,
+                modifier = Modifier.animateItemPlacement(),
+                directions = setOf(StartToEnd, EndToStart),
+                background = {
+                    val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
+                    val color by animateColorAsState(
+                        when (dismissState.targetValue) {
+                            Default -> Color.LightGray
+                            else -> colorResource(id = R.color.colorAccentRed)
+                        }
+                    )
+                    val alignment = when (direction) {
+                        StartToEnd -> Alignment.CenterStart
+                        EndToStart -> Alignment.CenterEnd
+                    }
+                    val icon = Icons.Default.Delete
+                    val scale by animateFloatAsState(
+                        if (dismissState.targetValue == Default) 0.75f else 1f
+                    )
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(color)
+                            .padding(horizontal = 20.dp),
+                        contentAlignment = alignment
+                    ) {
+                        Icon(
+                            icon,
+                            contentDescription = stringResource(id = R.string.delete_dialog),
+                            modifier = Modifier.scale(scale)
+                        )
+                    }
+                },
+            ) {
+                TrackItem(
+                    Modifier.clickable {
+                        onRouteClick(selectableRoute)
+                    },
+                    selectableRoute,
+                    index,
+                    onVisibilityToggle = onVisibilityToggle,
+                    onColorChange = onColorChange
+                )
+            }
         }
     }
-
 }
 
 @Composable
@@ -319,7 +377,7 @@ private fun TrackItem(
                     if (isSystemInDarkTheme()) Color(0xff3b5072) else Color(0xffc1d8ff)
                 } else {
                     if (index % 2 == 1) surfaceBackground() else {
-                        if (isSystemInDarkTheme()) Color(0xff3c3c3c) else Color(0x10000000)
+                        if (isSystemInDarkTheme()) Color(0xff3c3c3c) else Color(0xffeaeaea)
                     }
                 }
             )
@@ -424,7 +482,8 @@ private fun TrackListPreview() {
             onVisibilityToggle = {
                 it.route.visible.update { v -> !v }
             },
-            onColorChange = { _, _ -> }
+            onColorChange = { _, _ -> },
+            onRemove = {}
         )
     }
 }

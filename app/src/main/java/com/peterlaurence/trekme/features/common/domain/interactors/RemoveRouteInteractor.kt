@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-class RouteInteractor @Inject constructor(
+class RemoveRouteInteractor @Inject constructor(
     private val mapRepository: MapRepository,
     private val routeRepository: RouteRepository
 ) {

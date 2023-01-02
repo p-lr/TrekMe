@@ -12,7 +12,7 @@ import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.core.map.domain.repository.RouteRepository
-import com.peterlaurence.trekme.features.common.domain.interactors.RouteInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.legacy.events.TracksEventBus
@@ -28,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TracksManageViewModel @Inject constructor(
     private val mapRepository: MapRepository,
-    private val routeInteractor: RouteInteractor,
+    private val routeInteractor: RemoveRouteInteractor,
     private val routeRepository: RouteRepository,
     extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,

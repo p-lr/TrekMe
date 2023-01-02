@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
-import com.peterlaurence.trekme.features.common.domain.interactors.RouteInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
 import com.peterlaurence.trekme.features.common.domain.model.RecordingDataStateOwner
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
@@ -30,7 +30,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RecordingStatisticsViewModel @Inject constructor(
-    private val routeInteractor: RouteInteractor,
+    private val removeRouteInteractor: RemoveRouteInteractor,
     recordingDataStateOwner: RecordingDataStateOwner,
     private val geoRecordInteractor: GeoRecordInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
@@ -89,7 +89,7 @@ class RecordingStatisticsViewModel @Inject constructor(
         /* Remove corresponding routes on existing maps */
         launch {
             val routeIds = recordingDataList.flatMap { it.routeIds }
-            routeInteractor.removeRoutesOnMaps(routeIds)
+            removeRouteInteractor.removeRoutesOnMaps(routeIds)
         }
     }
 }

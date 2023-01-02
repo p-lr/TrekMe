@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.georecord.domain.interactors.IsUriSupportedInteractor
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
@@ -25,6 +26,7 @@ import javax.inject.Inject
 class TracksManageViewModel2 @Inject constructor(
     private val mapRepository: MapRepository,
     private val routeInteractor: RouteInteractor,
+    private val removeRouteInteractor: RemoveRouteInteractor,
     extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val isUriSupportedInteractor: IsUriSupportedInteractor,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
@@ -55,6 +57,11 @@ class TracksManageViewModel2 @Inject constructor(
     fun onRenameRoute(route: Route, newName: String) = viewModelScope.launch {
         val map = mapRepository.getCurrentMap() ?: return@launch
         routeInteractor.renameRoute(map, route, newName)
+    }
+
+    fun onRemoveRoute(route: Route) = viewModelScope.launch {
+        val map = mapRepository.getCurrentMap() ?: return@launch
+        removeRouteInteractor.removeRoutesOnMap(map, listOf(route.id))
     }
 
     fun onRouteImport(uri: Uri) = viewModelScope.launch {
