@@ -6,6 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
@@ -17,6 +20,7 @@ import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.settings.presentation.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -45,71 +49,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         addPreferencesFromResource(R.xml.app_settings)
 
         initComponents()
-
-        /* Observe the changes in the model */
-        viewModel.appDirListLiveData.observe(this) {
-            it?.let { dirs ->
-                updateDownloadDirList(dirs.toTypedArray())
-            }
-        }
-
-        viewModel.appDirLiveData.observe(this) {
-            it?.let { path ->
-                updateDownloadSelection(path)
-            }
-        }
-
-        viewModel.startOnPolicyLiveData.observe(this) {
-            it?.let { policy ->
-                updateStartOnPolicy(policy)
-            }
-        }
-
-        viewModel.measurementSystemLiveData.observe(this) {
-            it?.let { updateMeasurementSystem(it) }
-        }
-
-        viewModel.maxScaleLiveData.observe(this) {
-            it?.let { maxScale ->
-                updateMaxScale(maxScale)
-
-                mapFeatureEvents.mapScaleFlow.value?.let { scale ->
-                    val scaleRatio = (scale * 100 / maxScale).toInt()
-                    val str = getString(R.string.preference_zoom_when_centered_compl, scaleRatio.toString())
-                    scaleCenteredPref?.title = getString(R.string.preference_zoom_when_centered) + " " + str
-                }
-            }
-        }
-
-        viewModel.magnifyingFactorLiveData.observe(this) {
-            it?.let {
-                updateMagnifyingFactor(it)
-            }
-        }
-
-        viewModel.rotationModeLiveData.observe(this) {
-            it?.let {
-                updateRotationMode(it)
-            }
-        }
-
-        viewModel.defineScaleCentered.observe(this) {
-            it?.let {
-                updateDefineScaleCentered(it)
-            }
-        }
-
-        viewModel.scaleRatioCentered.observe(this) {
-            it?.let {
-                updateScaleRatioCentered(it)
-            }
-        }
-
-        viewModel.showScaleIndicator.observe(this) {
-            it?.let {
-                updateShowScaleIndicator(it)
-            }
-        }
     }
 
     override fun onCreateView(
@@ -124,6 +63,100 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.appDirListFlow.collect { dirs ->
+                    updateDownloadDirList(dirs.toTypedArray())
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.appDirFlow.collect { path ->
+                    updateDownloadSelection(path)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.startOnPolicyFlow.collect { policy ->
+                    updateStartOnPolicy(policy)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.maxScaleFlow.collect { maxScale ->
+                    updateMaxScale(maxScale)
+
+                    mapFeatureEvents.mapScaleFlow.value?.let { scale ->
+                        val scaleRatio = (scale * 100 / maxScale).toInt()
+                        val str = getString(
+                            R.string.preference_zoom_when_centered_compl,
+                            scaleRatio.toString()
+                        )
+                        scaleCenteredPref?.title =
+                            getString(R.string.preference_zoom_when_centered) + " " + str
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.magnifyingFactorFlow.collect {
+                    updateMagnifyingFactor(it)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.rotationModeFlow.collect {
+                    updateRotationMode(it)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.defineScaleCenteredFlow.collect {
+                    updateDefineScaleCentered(it)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.scaleRatioCenteredFlow.collect {
+                    updateScaleRatioCentered(it)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.measurementSystemFlow.collect {
+                    updateMeasurementSystem(it)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.showScaleIndicatorFlow.collect {
+                    updateShowScaleIndicator(it)
+                }
+            }
+        }
     }
 
     private fun updateDownloadDirList(dirs: Array<String>) {
@@ -186,14 +219,22 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun initComponents() {
         startOnPref = preferenceManager.findPreference(getString(R.string.preference_starton_key))
-        measurementSystemPref = preferenceManager.findPreference(getString(R.string.preference_measurement_system))
-        rootFolderPref = preferenceManager.findPreference(getString(R.string.preference_root_location_key))
-        maxScalePref = preferenceManager.findPreference(getString(R.string.preference_max_scale_key))
-        magnifyingPref = preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
-        rotationModePref = preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
-        defineScaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_change_scale_when_centering_key))
-        scaleCenteredPref = preferenceManager.findPreference(getString(R.string.preference_zoom_when_centered_key))
-        showScaleIndicatorPref = preferenceManager.findPreference(getString(R.string.preference_show_scale_indicator_key))
+        measurementSystemPref =
+            preferenceManager.findPreference(getString(R.string.preference_measurement_system))
+        rootFolderPref =
+            preferenceManager.findPreference(getString(R.string.preference_root_location_key))
+        maxScalePref =
+            preferenceManager.findPreference(getString(R.string.preference_max_scale_key))
+        magnifyingPref =
+            preferenceManager.findPreference(getString(R.string.preference_magnifying_key))
+        rotationModePref =
+            preferenceManager.findPreference(getString(R.string.preference_rotation_mode_key))
+        defineScaleCenteredPref =
+            preferenceManager.findPreference(getString(R.string.preference_change_scale_when_centering_key))
+        scaleCenteredPref =
+            preferenceManager.findPreference(getString(R.string.preference_zoom_when_centered_key))
+        showScaleIndicatorPref =
+            preferenceManager.findPreference(getString(R.string.preference_show_scale_indicator_key))
 
         scaleCenteredPref?.title = getString(R.string.preference_zoom_when_centered)
 

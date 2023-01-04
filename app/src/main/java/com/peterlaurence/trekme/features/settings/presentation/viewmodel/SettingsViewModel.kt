@@ -8,7 +8,7 @@ import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.MeasurementSystem
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -18,23 +18,23 @@ class SettingsViewModel @Inject constructor(
         trekMeContext: TrekMeContext,
         private val settings: Settings
 ) : ViewModel() {
-    private val _appDirListLiveData = MutableLiveData<List<String>>()
-    val appDirListLiveData: LiveData<List<String>> = _appDirListLiveData
-    val appDirLiveData: LiveData<String> = settings.getAppDir().map {
+    private val _appDirList = MutableStateFlow<List<String>>(emptyList())
+    val appDirListFlow: StateFlow<List<String>> = _appDirList.asStateFlow()
+    val appDirFlow: Flow<String> = settings.getAppDir().map {
         it?.absolutePath ?: "error"
-    }.asLiveData()
-    val startOnPolicyLiveData: LiveData<StartOnPolicy> = settings.getStartOnPolicy().asLiveData()
-    val maxScaleLiveData: LiveData<Float> = settings.getMaxScale().asLiveData()
-    val magnifyingFactorLiveData: LiveData<Int> = settings.getMagnifyingFactor().asLiveData()
-    val rotationModeLiveData = settings.getRotationMode().asLiveData()
-    val defineScaleCentered: LiveData<Boolean> = settings.getDefineScaleCentered().asLiveData()
-    val scaleRatioCentered: LiveData<Float> = settings.getScaleRatioCentered().asLiveData()
-    val measurementSystemLiveData: LiveData<MeasurementSystem> = settings.getMeasurementSystem().asLiveData()
-    val showScaleIndicator: LiveData<Boolean> = settings.getShowScaleIndicator().asLiveData()
+    }
+    val startOnPolicyFlow: Flow<StartOnPolicy> = settings.getStartOnPolicy()
+    val maxScaleFlow: Flow<Float> = settings.getMaxScale()
+    val magnifyingFactorFlow: Flow<Int> = settings.getMagnifyingFactor()
+    val rotationModeFlow = settings.getRotationMode()
+    val defineScaleCenteredFlow: Flow<Boolean> = settings.getDefineScaleCentered()
+    val scaleRatioCenteredFlow: Flow<Float> = settings.getScaleRatioCentered()
+    val measurementSystemFlow: Flow<MeasurementSystem> = settings.getMeasurementSystem()
+    val showScaleIndicatorFlow: Flow<Boolean> = settings.getShowScaleIndicator()
 
     init {
         /* App dir list */
-        _appDirListLiveData.value = trekMeContext.rootDirList?.map { it.absolutePath }
+        _appDirList.value = trekMeContext.rootDirList?.map { it.absolutePath }
                 ?: emptyList()
     }
 
