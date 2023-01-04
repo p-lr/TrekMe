@@ -140,8 +140,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         /* Only display "Gps Pro" menu if it's purchased */
-        viewModel.gpsProPurchased.observe(this) {
-            it?.also {
+        lifecycleScope.launchWhenCreated {
+            viewModel.gpsProPurchased.collect {
                 val gpsItem = binding.navView.menu.findItem(R.id.nav_gps_plus)
                 gpsItem.isVisible = it
             }

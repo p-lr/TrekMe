@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentWifip2pBinding
 import com.peterlaurence.trekme.features.wifip2p.app.service.*
@@ -44,16 +45,6 @@ class WifiP2pFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        viewModel.state.observe(this) {
-            it?.let { state ->
-                onState(state)
-            }
-        }
-
-        viewModel.errors.observe(this) {
-            it?.let { onError(it) }
-        }
 
         lifecycleScope.launch {
             eventBus.mapSelectedEvent.collect {
@@ -93,6 +84,22 @@ class WifiP2pFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupMenu()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect {
+                    onState(it)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.errors.collect {
+                    onError(it)
+                }
+            }
+        }
     }
 
     private fun setupMenu() {

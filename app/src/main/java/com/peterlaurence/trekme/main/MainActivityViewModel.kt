@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.main
 
 import android.app.Application
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
@@ -57,7 +56,8 @@ class MainActivityViewModel @Inject constructor(
     private val _showMapViewSignal = MutableSharedFlow<Unit>()
     val showMapViewSignal = _showMapViewSignal.asSharedFlow()
 
-    val gpsProPurchased = MutableLiveData(false)
+    private val _gpsProPurchased = MutableSharedFlow<Boolean>()
+    val gpsProPurchased = _gpsProPurchased.asSharedFlow()
 
     /**
      * When the [MainActivity] first starts, we init the [TrekMeContext] and the [UnitFormatter].
@@ -106,12 +106,12 @@ class MainActivityViewModel @Inject constructor(
             gpsProStateOwner.purchaseFlow.collect { state ->
                 when (state) {
                     PurchaseState.PURCHASED -> {
-                        gpsProPurchased.value = true
+                        _gpsProPurchased.emit(true)
                     }
                     PurchaseState.NOT_PURCHASED -> {
                         /* If denied, switch back to internal GPS */
                         settings.setLocationProducerInfo(InternalGps)
-                        gpsProPurchased.value = false
+                        _gpsProPurchased.emit(false)
                     }
                     else -> { /* Nothing to do */
                     }
