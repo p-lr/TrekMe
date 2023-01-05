@@ -13,18 +13,16 @@ import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
-import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
-import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
-import com.peterlaurence.trekme.core.map.domain.models.contains
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
-import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
 import com.peterlaurence.trekme.core.providers.bitmap.*
 import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
 import com.peterlaurence.trekme.core.providers.stream.newTileStreamProvider
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.core.geocoding.domain.repository.GeocodingRepository
+import com.peterlaurence.trekme.core.map.domain.models.*
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.wmts.domain.model.*
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.LayerOverlayRepository
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
@@ -250,11 +248,9 @@ class WmtsViewModel @Inject constructor(
         _wmtsState.value = Loading
         _topBarState.value = Empty
 
-        val tileStreamProviderFlow = runCatching {
-            createTileStreamProvider(wmtsSource)
-        }.onFailure {
+        val tileStreamProviderFlow = createTileStreamProvider(wmtsSource).catch {
             _wmtsState.value = WmtsError.VPS_FAIL
-        }.getOrNull() ?: return@coroutineScope
+        }
 
         val mapState = MapState(
             19, mapSize, mapSize,
@@ -500,9 +496,9 @@ class WmtsViewModel @Inject constructor(
         val mapSpec = getMapSpec(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {
-            val tileStreamProvider = runCatching {
-                createTileStreamProvider(wmtsSource).firstOrNull()
-            }.getOrNull() ?: return@launch
+            val tileStreamProvider = createTileStreamProvider(
+                wmtsSource
+            ).catch {}.firstOrNull() ?: return@launch
             val request = DownloadMapRequest(wmtsSource, mapSpec, tileCount, tileStreamProvider, geoRecordUrls)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
