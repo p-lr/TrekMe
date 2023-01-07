@@ -35,6 +35,7 @@ import com.peterlaurence.trekme.events.maparchive.MapArchiveEvents
 import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
 import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
+import com.peterlaurence.trekme.main.shortcut.Shortcut
 import com.peterlaurence.trekme.util.android.*
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
@@ -147,6 +148,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
+        lifecycleScope.launchWhenCreated {
+            viewModel.showRecordingsFlow.collect {
+                showRecordFragment()
+            }
+        }
+
         appEventBus.genericMessageEvents.collectWhileStarted(this) {
             when (it) {
                 is StandardMessage -> {
@@ -207,7 +214,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     public override fun onStart() {
         permissionRequestHandler?.requestMinimalPermission()
 
-        viewModel.onActivityStart()
+        val shortcut = when(intent.extras?.getString("shortcutKey")) {
+            "recordings" -> Shortcut.RECORDINGS
+            "last-map" -> Shortcut.LAST_MAP
+            else -> null
+        }
+        viewModel.onActivityStart(shortcut)
 
         super.onStart()
     }

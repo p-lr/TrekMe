@@ -16,11 +16,10 @@ import com.peterlaurence.trekme.core.settings.StartOnPolicy
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.WarningMessage
+import com.peterlaurence.trekme.main.shortcut.Shortcut
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -59,13 +58,18 @@ class MainActivityViewModel @Inject constructor(
     private val _gpsProPurchased = MutableSharedFlow<Boolean>()
     val gpsProPurchased = _gpsProPurchased.asSharedFlow()
 
+    private val _showRecordingsSignal = Channel<Unit>(1)
+    val showRecordingsFlow = _showRecordingsSignal.receiveAsFlow()
+
     /**
      * When the [MainActivity] first starts, we init the [TrekMeContext] and the [UnitFormatter].
-     * Then, we either:
+     * The application may be started from a shortcut. In this case, the shortcut takes precedence
+     * over the startup policy.
+     * The startup policy has two cases:
      * * show the last viewed map
      * * show the map list
      */
-    fun onActivityStart() {
+    fun onActivityStart(shortcut: Shortcut? = null) {
         viewModelScope.launch {
             if (attemptedAtLeastOnce) return@launch
             attemptedAtLeastOnce = true // remember that we tried once
@@ -81,23 +85,16 @@ class MainActivityViewModel @Inject constructor(
             /* Get user-pref about metric or imperial system */
             UnitFormatter.system = settings.getMeasurementSystem().first()
 
-            when (settings.getStartOnPolicy().first()) {
-                StartOnPolicy.MAP_LIST -> _showMapListSignal.emit(Unit)
-                StartOnPolicy.LAST_MAP -> {
-                    val id = settings.getLastMapId().firstOrNull()
-                    val found = id?.let {
-                        val map = mapRepository.getMap(id)
-                        map?.let {
-                            mapRepository.setCurrentMap(map)
-                            _showMapViewSignal.emit(Unit)
-                            true
-                        } ?: false
-                    } ?: false
-
-                    if (!found) {
-                        /* Fall back to show the map list */
-                        _showMapListSignal.emit(Unit)
-                    }
+            /* The shortcut takes precedence over the startup policy */
+            if (shortcut != null) {
+                when(shortcut) {
+                    Shortcut.RECORDINGS -> _showRecordingsSignal.send(Unit)
+                    Shortcut.LAST_MAP -> showLastMap()
+                }
+            } else {
+                when (settings.getStartOnPolicy().first()) {
+                    StartOnPolicy.MAP_LIST -> _showMapListSignal.emit(Unit)
+                    StartOnPolicy.LAST_MAP -> showLastMap()
                 }
             }
         }
@@ -122,6 +119,23 @@ class MainActivityViewModel @Inject constructor(
 
     fun onActivityResume() {
         extendedOfferInteractor.acknowledgePurchase()
+    }
+
+    private suspend fun showLastMap() {
+        val id = settings.getLastMapId().firstOrNull()
+        val found = id?.let {
+            val map = mapRepository.getMap(id)
+            map?.let {
+                mapRepository.setCurrentMap(map)
+                _showMapViewSignal.emit(Unit)
+                true
+            } ?: false
+        } ?: false
+
+        if (!found) {
+            /* Fall back to show the map list */
+            _showMapListSignal.emit(Unit)
+        }
     }
 
     private suspend fun warnIfBadStorageState() {

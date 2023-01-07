@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="shortcut_recordings"
+        android:enabled="true"
+        android:icon="@drawable/record_circle"
+        android:shortcutShortLabel="@string/record_shortcut"
+        android:shortcutLongLabel="@string/record_menu_title">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.peterlaurence.trekme"
+            android:targetClass="com.peterlaurence.trekme.main.MainActivity">
+            <extra android:name="shortcutKey" android:value="recordings" />
+        </intent>
+
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="shortcut_last_map"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/map_menu_title"
+        android:shortcutLongLabel="@string/map_menu_title">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.peterlaurence.trekme"
+            android:targetClass="com.peterlaurence.trekme.main.MainActivity">
+            <extra android:name="shortcutKey" android:value="last-map" />
+        </intent>
+
+    </shortcut>
+</shortcuts>
