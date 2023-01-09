@@ -411,8 +411,10 @@ class WmtsViewModel @Inject constructor(
                 }
             }
             WmtsSource.ORDNANCE_SURVEY -> {
-                val api = ordnanceSurveyApiDao.getApi() ?: throw ApiFetchError()
-                flow { emit(OrdnanceSurveyData(api)) }
+                flow {
+                    val api = ordnanceSurveyApiDao.getApi() ?: throw ApiFetchError()
+                    emit(OrdnanceSurveyData(api))
+                }
             }
             WmtsSource.OPEN_STREET_MAP -> {
                 val layer = getActivePrimaryOsmLayer()

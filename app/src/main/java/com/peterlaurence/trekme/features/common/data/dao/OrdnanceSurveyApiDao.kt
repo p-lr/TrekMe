@@ -14,7 +14,7 @@ class OrdnanceSurveyApiDao {
 
     suspend fun getApi(): String? {
         if (api == null) {
-            api = withTimeoutOrNull(3000) {
+            api = withTimeoutOrNull(5000) {
                 queryApi(ordnanceSurveyApiUrl)
             }
         }
