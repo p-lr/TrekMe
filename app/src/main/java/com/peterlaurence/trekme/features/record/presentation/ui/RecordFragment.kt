@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
@@ -135,94 +136,100 @@ class RecordFragment : Fragment() {
     }
 
     private fun configureComposeViews() {
-        binding.recordMainComposeView.setContent {
-            TrekMeTheme {
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .background(backgroundColor())) {
-                    Row(
+        binding.recordMainComposeView.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                TrekMeTheme {
+                    Column(
                         Modifier
-                            .fillMaxWidth()
-                            .height(145.dp)) {
-                        ActionsStateful(
+                            .fillMaxSize()
+                            .background(backgroundColor())
+                    ) {
+                        Row(
                             Modifier
-                                .weight(1f)
-                                .padding(top = 8.dp, start = 8.dp, end = 4.dp, bottom = 4.dp),
-                            viewModel = gpxRecordServiceViewModel,
-                            onStartStopClick = gpxRecordServiceViewModel::onStartStopClicked,
-                            onPauseResumeClick = gpxRecordServiceViewModel::onPauseResumeClicked
-                        )
-                        StatusStateful(
-                            Modifier
-                                .weight(1f)
-                                .padding(top = 8.dp, start = 4.dp, end = 8.dp, bottom = 4.dp),
-                            viewModel = gpxRecordServiceViewModel
+                                .fillMaxWidth()
+                                .height(145.dp)
+                        ) {
+                            ActionsStateful(
+                                Modifier
+                                    .weight(1f)
+                                    .padding(top = 8.dp, start = 8.dp, end = 4.dp, bottom = 4.dp),
+                                viewModel = gpxRecordServiceViewModel,
+                                onStartStopClick = gpxRecordServiceViewModel::onStartStopClicked,
+                                onPauseResumeClick = gpxRecordServiceViewModel::onPauseResumeClicked
+                            )
+                            StatusStateful(
+                                Modifier
+                                    .weight(1f)
+                                    .padding(top = 8.dp, start = 4.dp, end = 8.dp, bottom = 4.dp),
+                                viewModel = gpxRecordServiceViewModel
+                            )
+                        }
+
+                        GpxRecordListStateful(
+                            Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
+                            statViewModel,
+                            onImportMenuClick = {
+                                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+
+                                /* Search for all documents available via installed storage providers */
+                                intent.type = "*/*"
+                                importRecordingsLauncher.launch(intent)
+                            },
+                            onRenameRecord = { data ->
+                                val fragmentActivity = activity
+                                if (fragmentActivity != null) {
+                                    val editFieldDialog = TrackFileNameEdit.newInstance(
+                                        getString(R.string.track_file_name_change),
+                                        data.id,
+                                        data.name
+                                    )
+                                    editFieldDialog.show(
+                                        fragmentActivity.supportFragmentManager,
+                                        "EditFieldDialog" + data.name
+                                    )
+                                }
+                            },
+                            onChooseMapForRecord = { data ->
+                                val fragmentActivity = activity
+                                if (fragmentActivity != null) {
+                                    val dialog = MapSelectionForImport.newInstance(data.id)
+                                    dialog.show(
+                                        fragmentActivity.supportFragmentManager,
+                                        "MapSelectionForImport"
+                                    )
+                                }
+                            },
+                            onShareRecords = { dataList ->
+                                val activity = activity ?: return@GpxRecordListStateful
+                                val intentBuilder = ShareCompat.IntentBuilder(activity)
+                                    .setType("text/plain")
+                                dataList.forEach {
+                                    try {
+                                        val uri = statViewModel.getRecordingUri(it)
+                                        if (uri != null) {
+                                            intentBuilder.addStream(uri)
+                                        }
+                                    } catch (e: IllegalArgumentException) {
+                                        e.printStackTrace()
+                                    }
+                                }
+                                intentBuilder.startChooser()
+                            },
+                            onElevationGraphClick = { data ->
+                                val action =
+                                    RecordFragmentDirections.actionRecordFragmentToElevationFragment(
+                                        ParcelUuid(data.id)
+                                    )
+                                findNavController().navigate(action)
+                            },
+                            onDeleteClick = { dataList ->
+                                statViewModel.onRequestDeleteRecordings(dataList)
+                            }
                         )
                     }
-
-                    GpxRecordListStateful(
-                        Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
-                        statViewModel,
-                        onImportMenuClick = {
-                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                            intent.addCategory(Intent.CATEGORY_OPENABLE)
-                            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-
-                            /* Search for all documents available via installed storage providers */
-                            intent.type = "*/*"
-                            importRecordingsLauncher.launch(intent)
-                        },
-                        onRenameRecord = { data ->
-                            val fragmentActivity = activity
-                            if (fragmentActivity != null) {
-                                val editFieldDialog = TrackFileNameEdit.newInstance(
-                                    getString(R.string.track_file_name_change),
-                                    data.id,
-                                    data.name
-                                )
-                                editFieldDialog.show(
-                                    fragmentActivity.supportFragmentManager,
-                                    "EditFieldDialog" + data.name
-                                )
-                            }
-                        },
-                        onChooseMapForRecord = { data ->
-                            val fragmentActivity = activity
-                            if (fragmentActivity != null) {
-                                val dialog = MapSelectionForImport.newInstance(data.id)
-                                dialog.show(
-                                    fragmentActivity.supportFragmentManager,
-                                    "MapSelectionForImport"
-                                )
-                            }
-                        },
-                        onShareRecords = { dataList ->
-                            val activity = activity ?: return@GpxRecordListStateful
-                            val intentBuilder = ShareCompat.IntentBuilder(activity)
-                                .setType("text/plain")
-                            dataList.forEach {
-                                try {
-                                    val uri = statViewModel.getRecordingUri(it)
-                                    if (uri != null) {
-                                        intentBuilder.addStream(uri)
-                                    }
-                                } catch (e: IllegalArgumentException) {
-                                    e.printStackTrace()
-                                }
-                            }
-                            intentBuilder.startChooser()
-                        },
-                        onElevationGraphClick = { data ->
-                            val action = RecordFragmentDirections.actionRecordFragmentToElevationFragment(
-                                ParcelUuid(data.id)
-                            )
-                            findNavController().navigate(action)
-                        },
-                        onDeleteClick = { dataList ->
-                            statViewModel.onRequestDeleteRecordings(dataList)
-                        }
-                    )
                 }
             }
         }

@@ -40,9 +40,7 @@ class MapCreateFragment : Fragment() {
 
         val binding = FragmentMapCreateBinding.inflate(inflater, container, false)
         binding.mapSourceListView.apply {
-            setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
-            )
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
                 TrekMeTheme {

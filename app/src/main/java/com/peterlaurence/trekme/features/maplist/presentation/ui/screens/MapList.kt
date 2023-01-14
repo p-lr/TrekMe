@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.AbstractComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.findFragment
@@ -90,6 +91,8 @@ class MapListStateful @JvmOverloads constructor(
 
     @Composable
     override fun Content() {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+
         val viewModel: MapListViewModel =
             viewModel(findFragment<MapListFragment>().requireActivity())
         val settingsViewModel: MapSettingsViewModel = viewModel()

@@ -107,7 +107,7 @@ class WmtsFragment : Fragment() {
             showDownloadForm(it)
         }.collectWhileStartedIn(this)
 
-        /* A hack to circumvent a nasty bug causing the AbstractComposeView to be not responsive
+        /* Circumvent a nasty bug causing the AbstractComposeView to be not responsive
          * to touch events at certain state transitions */
         viewModel.wmtsState.map {
             _binding?.wmtsComposeView?.also {
@@ -135,9 +135,7 @@ class WmtsFragment : Fragment() {
         val binding = FragmentWmtsBinding.inflate(inflater, container, false)
         _binding = binding
         binding.wmtsComposeView.apply {
-            setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
-            )
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
                 TrekMeTheme {

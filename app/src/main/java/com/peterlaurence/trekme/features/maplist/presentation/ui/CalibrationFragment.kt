@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
@@ -32,9 +33,12 @@ class CalibrationFragment : Fragment() {
         }
 
         val binding = FragmentCalibrationBinding.inflate(inflater, container, false)
-        binding.calibrationView.setContent {
-            TrekMeTheme {
-                CalibrationStateful(viewModel)
+        binding.calibrationView.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                TrekMeTheme {
+                    CalibrationStateful(viewModel)
+                }
             }
         }
 

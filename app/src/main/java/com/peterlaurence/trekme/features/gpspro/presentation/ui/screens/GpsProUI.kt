@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -163,6 +164,8 @@ class GpsProUIView @JvmOverloads constructor(
 
     @Composable
     override fun Content() {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+
         /* Get a view-model scoped to the GpsProFragment in the nav graph. Once the GpsProFragment
          * is popped from the backstack, the view-model is cleared */
         val f = findFragment<GpsProFragment>()

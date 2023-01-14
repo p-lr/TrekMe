@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentShopBinding
@@ -25,9 +26,12 @@ class ShopFragment : Fragment() {
         val binding = FragmentShopBinding.inflate(inflater, container, false)
         this.binding = binding
 
-        binding.shopScreen.setContent {
-            TrekMeTheme {
-                ShopStateful()
+        binding.shopScreen.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                TrekMeTheme {
+                    ShopStateful()
+                }
             }
         }
 

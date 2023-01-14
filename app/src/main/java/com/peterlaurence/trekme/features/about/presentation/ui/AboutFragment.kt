@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentAboutBinding
@@ -27,9 +28,16 @@ class AboutFragment : Fragment() {
 
         val binding = FragmentAboutBinding.inflate(inflater, container, false)
 
-        binding.aboutUi.setContent {
-            TrekMeTheme {
-                AboutStateful(this::onUserManual, this::onAppRating, this::onSendMail)
+        binding.aboutUi.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                TrekMeTheme {
+                    AboutStateful(
+                        onUserManual = this@AboutFragment::onUserManual,
+                        onAppRating = this@AboutFragment::onAppRating,
+                        onSendMail = this@AboutFragment::onSendMail
+                    )
+                }
             }
         }
 

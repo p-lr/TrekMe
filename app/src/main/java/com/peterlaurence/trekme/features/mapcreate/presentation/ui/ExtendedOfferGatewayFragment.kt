@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
@@ -28,12 +29,15 @@ class ExtendedOfferGatewayFragment : Fragment() {
         }
 
         val binding = FragmentExtendedOfferGatewayBinding.inflate(inflater, container, false)
-        binding.extendedOfferGatewayView.setContent {
-            TrekMeTheme {
-                ExtendedOfferGatewayStateful(
-                    onNavigateToWmtsFragment = ::navigateToWmtsFragment,
-                    onNavigateToShop = ::navigateToShopFragment
-                )
+        binding.extendedOfferGatewayView.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                TrekMeTheme {
+                    ExtendedOfferGatewayStateful(
+                        onNavigateToWmtsFragment = ::navigateToWmtsFragment,
+                        onNavigateToShop = ::navigateToShopFragment
+                    )
+                }
             }
         }
         return binding.root

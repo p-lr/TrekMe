@@ -55,9 +55,7 @@ class MapFragment : Fragment() {
         val binding = FragmentMapBinding.inflate(inflater, container, false)
 
         binding.mapScreen.apply {
-            setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
-            )
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             val onNavigateToTracksManage = {
                 val action = MapFragmentDirections.actionMapFragmentToTracksManageFragment()
