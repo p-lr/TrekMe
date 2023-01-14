@@ -50,8 +50,8 @@ class MapParserTest {
         routeRepository.importRoutes(map)
         assertEquals(2, map.routes.value.size.toLong())
 
-        val route = map.routes.value.sortedBy { it.name }[0]
-        assertEquals("A test route 1", route.name)
+        val route = map.routes.value.sortedBy { it.name.value }[0]
+        assertEquals("A test route 1", route.name.value)
         assertTrue(route.visible.value)
         val markers = route.routeMarkers
         assertEquals(2, markers.size.toLong())
@@ -86,8 +86,8 @@ class MapParserTest {
         routeRepository.importRoutes(map)
         assertEquals(2, map.routes.value.size.toLong())
 
-        val route1 = map.routes.value.sortedBy { it.name }[0]
-        assertEquals("track-10-09-2021_22h09-04s", route1.name)
+        val route1 = map.routes.value.sortedBy { it.name.value }[0]
+        assertEquals("track-10-09-2021_22h09-04s", route1.name.value)
         assertTrue(route1.visible.value)
         val markers1 = route1.routeMarkers
         assertEquals(2, markers1.size.toLong())
@@ -104,8 +104,8 @@ class MapParserTest {
         assertNotNull(lon)
         assertEquals(12.57, lon, 0.0)
 
-        val route2 = map.routes.value.sortedBy { it.name }[1]
-        assertEquals("track-13-07-2021_10h27-44s", route2.name)
+        val route2 = map.routes.value.sortedBy { it.name.value }[1]
+        assertEquals("track-13-07-2021_10h27-44s", route2.name.value)
         assertTrue(route2.visible.value)
         val markers2 = route2.routeMarkers
         assertEquals(2, markers2.size.toLong())
