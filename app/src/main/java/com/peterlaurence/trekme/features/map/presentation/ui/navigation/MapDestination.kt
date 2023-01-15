@@ -16,7 +16,8 @@ internal const val mapDestination = "map_dest"
 
 fun NavGraphBuilder.mapScreen(
     onNavigateToTrackManage: () -> Unit,
-    onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit
+    onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit,
+    onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit
 ) {
     composable(mapDestination) {
         /* Locally override the background color (dark theme or not). Done this way, it
@@ -34,7 +35,8 @@ fun NavGraphBuilder.mapScreen(
             ) {
                 MapScreen(
                     onNavigateToTracksManage = onNavigateToTrackManage,
-                    onNavigateToMarkerEdit = onNavigateToMarkerEdit
+                    onNavigateToMarkerEdit = onNavigateToMarkerEdit,
+                    onNavigateToBeaconEdit = onNavigateToBeaconEdit
                 )
             }
 

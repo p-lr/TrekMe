@@ -8,20 +8,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.navigation.MapGraph
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MapFragment : Fragment() {
-    @Inject
-    lateinit var mapFeatureEvents: MapFeatureEvents
-
     @Inject
     lateinit var appEventBus: AppEventBus
 
@@ -34,14 +27,6 @@ class MapFragment : Fragment() {
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
             hide()
             title = ""
-        }
-
-        /* Handle navigation events */
-        viewLifecycleOwner.lifecycleScope.launch {
-            mapFeatureEvents.navigateToBeaconEdit.collect { (beacon, mapId) ->
-                val action = MapFragmentDirections.actionMapFragmentToBeaconEditFragment(beacon, mapId)
-                findNavController().navigate(action)
-            }
         }
 
         return ComposeView(requireContext()).apply {

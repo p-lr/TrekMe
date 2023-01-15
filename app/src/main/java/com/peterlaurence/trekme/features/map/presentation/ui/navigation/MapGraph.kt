@@ -21,6 +21,9 @@ fun MapGraph(
             onNavigateToTrackManage = { navController.navigateToTracksManage() },
             onNavigateToMarkerEdit = { markerId, mapId ->
                 navController.navigateToMarkerEdit(markerId, mapId.toString())
+            },
+            onNavigateToBeaconEdit = { beaconId, mapId ->
+                navController.navigateToBeaconEdit(beaconId, mapId.toString())
             }
         )
 
@@ -30,5 +33,7 @@ fun MapGraph(
         )
 
         markerEditScreen(onBack = { navController.navigateUp() })
+
+        beaconEditScreen(onBack = { navController.navigateUp() })
     }
 }

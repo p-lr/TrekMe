@@ -65,6 +65,7 @@ class MapViewModel @Inject constructor(
     val purchaseFlow: StateFlow<PurchaseState> = extendedOfferStateOwner.purchaseFlow
 
     val markerEditEvent: Flow<MapFeatureEvents.MarkerEditEvent> = mapFeatureEvents.navigateToMarkerEdit
+    val beaconEditEvent: Flow<MapFeatureEvents.BeaconEditEvent> = mapFeatureEvents.navigateToBeaconEdit
 
     val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
         viewModelScope,

@@ -24,119 +24,118 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.domain.models.Beacon
-import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.units.DistanceUnit
 import com.peterlaurence.trekme.core.units.DistanceUnit.*
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
-import com.peterlaurence.trekme.features.map.domain.interactors.BeaconInteractor
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.BeaconEditViewModel
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.BeaconEditViewModel.Loading
 import com.peterlaurence.trekme.util.capitalize
-import kotlinx.coroutines.launch
-import java.util.*
 import kotlin.math.roundToInt
 
 @Composable
 fun BeaconEditStateful(
-    beacon: Beacon,
-    mapId: UUID,
-    beaconInteractor: BeaconInteractor,
-    settings: Settings,
+    viewModel: BeaconEditViewModel = hiltViewModel(),
     onBackAction: () -> Unit
 ) {
-    val distanceUnit by settings.getUnitForBeaconRadius().collectAsState(initial = Meters)
+    val distanceUnit by viewModel.radiusUnitFlow.collectAsState(initial = Meters)
+    val beaconState by viewModel.beaconState.collectAsState()
 
-    var name by remember { mutableStateOf(beacon.name) }
-    var radius by remember(distanceUnit) {
-        mutableStateOf(convertMetersTo(beacon.radius.toDouble(), distanceUnit).toString())
-    }
-    var latField by remember { mutableStateOf(beacon.lat.toString()) }
-    var lonField by remember { mutableStateOf(beacon.lon.toString()) }
-    var commentField by remember { mutableStateOf(beacon.comment) }
-
-    val scope = rememberCoroutineScope()
-
-    fun makeBeacon(): Beacon {
-        return Beacon(
-            beacon.id, name,
-            lat = latField.toDoubleOrNull() ?: beacon.lat,
-            lon = lonField.toDoubleOrNull() ?: beacon.lon,
-            radius = radius.toDoubleOrNull()?.let {
-                convertToMeters(it, distanceUnit)
-            }?.toFloat() ?: beacon.radius,
-            comment = commentField
-        )
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = onBackAction) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        BeaconEditScreen(
-            modifier = Modifier.padding(paddingValues),
-            name = name,
-            radius = radius,
-            distanceUnit = distanceUnit,
-            latitudeField = latField,
-            longitudeField = lonField,
-            commentField = commentField,
-            onNameChange = {
-                name = it
-                beaconInteractor.saveBeacon(mapId, makeBeacon())
-            },
-            onRadiusChange = { str ->
-                val dotStr = str.replace(',', '.')
-                val res = buildString {
-                    var hasDot = false
-                    dotStr.forEachIndexed { index, c ->
-                        if (c == '.') {
-                            if (index == 0) append('0')
-                            if (!hasDot) append('.')
-                            hasDot = true
-                        } else {
-                            if (c.isDigit()) append(c)
-                        }
-                    }
-                }
-
-                radius = res
-                beaconInteractor.saveBeacon(mapId, makeBeacon())
-            },
-            onDistanceUnitChange = {
-                scope.launch {
-                    settings.setUnitForBeaconRadius(it)
-                }
-                beaconInteractor.saveBeacon(mapId, makeBeacon())
-            },
-            onLatChange = {
-                val newLat = it.toDoubleOrNull()
-                if (newLat != null) {
-                    latField = it
-                    beaconInteractor.saveBeacon(mapId, makeBeacon())
-                }
-            },
-            onLonChange = {
-                val newLon = it.toDoubleOrNull()
-                if (newLon != null) {
-                    lonField = it
-                    beaconInteractor.saveBeacon(mapId, makeBeacon())
-                }
-            },
-            onCommentChange = {
-                commentField = it
-                beaconInteractor.saveBeacon(mapId, makeBeacon())
+    when (val state = beaconState) {
+        Loading -> LoadingScreen()
+        is BeaconEditViewModel.Ready -> {
+            val beacon = state.beacon
+            var name by remember { mutableStateOf(beacon.name) }
+            var radius by remember(distanceUnit) {
+                mutableStateOf(convertMetersTo(beacon.radius.toDouble(), distanceUnit).toString())
             }
-        )
+            var latField by remember { mutableStateOf(beacon.lat.toString()) }
+            var lonField by remember { mutableStateOf(beacon.lon.toString()) }
+            var commentField by remember { mutableStateOf(beacon.comment) }
+
+            val saveBeacon by rememberUpdatedState {
+                viewModel.saveBeacon(
+                    lat = latField.toDoubleOrNull(),
+                    lon = lonField.toDoubleOrNull(),
+                    radius = radius.toDoubleOrNull()?.let {
+                        convertToMeters(it, distanceUnit)
+                    }?.toFloat(),
+                    name = name,
+                    comment = commentField
+                )
+            }
+
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {},
+                        navigationIcon = {
+                            IconButton(onClick = onBackAction) {
+                                Icon(Icons.Filled.ArrowBack, contentDescription = "")
+                            }
+                        }
+                    )
+                }
+            ) { paddingValues ->
+                BeaconEditScreen(
+                    modifier = Modifier.padding(paddingValues),
+                    name = name,
+                    radius = radius,
+                    distanceUnit = distanceUnit,
+                    latitudeField = latField,
+                    longitudeField = lonField,
+                    commentField = commentField,
+                    onNameChange = {
+                        name = it
+                        saveBeacon()
+                    },
+                    onRadiusChange = { str ->
+                        val dotStr = str.replace(',', '.')
+                        val res = buildString {
+                            var hasDot = false
+                            dotStr.forEachIndexed { index, c ->
+                                if (c == '.') {
+                                    if (index == 0) append('0')
+                                    if (!hasDot) append('.')
+                                    hasDot = true
+                                } else {
+                                    if (c.isDigit()) append(c)
+                                }
+                            }
+                        }
+
+                        radius = res
+                        saveBeacon()
+                    },
+                    onDistanceUnitChange = {
+                        viewModel.setBeaconRadiusUnit(it)
+                        saveBeacon()
+                    },
+                    onLatChange = {
+                        val newLat = it.toDoubleOrNull()
+                        if (newLat != null) {
+                            latField = it
+                            saveBeacon()
+                        }
+                    },
+                    onLonChange = {
+                        val newLon = it.toDoubleOrNull()
+                        if (newLon != null) {
+                            lonField = it
+                            saveBeacon()
+                        }
+                    },
+                    onCommentChange = {
+                        commentField = it
+                        saveBeacon()
+                    }
+                )
+            }
+        }
     }
 }
 

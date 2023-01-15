@@ -14,19 +14,17 @@ private const val markerArgId = "marker_arg"
 private const val mapArgId = "map_arg"
 
 fun NavGraphBuilder.markerEditScreen(
-    onBack : () -> Unit
+    onBack: () -> Unit
 ) {
     composable(
-        "$markerEditDestination/{$markerArgId}/{$mapArgId}",
+        route = "$markerEditDestination/{$markerArgId}/{$mapArgId}",
         arguments = listOf(
             navArgument(markerArgId) { type = NavType.StringType },
             navArgument(mapArgId) { type = NavType.StringType },
         )
     ) {
         TrekMeTheme {
-            MarkerEditStateful(
-                onBackAction = onBack
-            )
+            MarkerEditStateful(onBackAction = onBack)
         }
     }
 }

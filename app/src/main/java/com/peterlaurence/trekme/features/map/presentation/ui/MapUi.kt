@@ -41,7 +41,8 @@ fun MapScreen(
     viewModel: MapViewModel = viewModel(),
     statisticsViewModel: StatisticsViewModel = viewModel(),
     onNavigateToTracksManage: () -> Unit,
-    onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit
+    onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit,
+    onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val purchaseState by viewModel.purchaseFlow.collectAsState()
@@ -81,6 +82,11 @@ fun MapScreen(
         launch {
             viewModel.markerEditEvent.collect {
                 onNavigateToMarkerEdit(it.marker.id, it.mapId)
+            }
+        }
+        launch {
+            viewModel.beaconEditEvent.collect {
+                onNavigateToBeaconEdit(it.beacon.id, it.mapId)
             }
         }
     }
