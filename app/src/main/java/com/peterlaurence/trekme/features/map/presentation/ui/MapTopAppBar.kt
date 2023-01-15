@@ -134,7 +134,12 @@ fun MapTopAppBar(
                     onDismissRequest = { expandedMenu = false },
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
-                    DropdownMenuItem(onClick = onManageTracks) {
+                    DropdownMenuItem(
+                        onClick = {
+                            expandedMenu = false
+                            onManageTracks()
+                        }
+                    ) {
                         Text(stringResource(id = R.string.manage_tracks_menu))
                         Spacer(Modifier.weight(1f))
                     }

@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.map.app.beacon
+package com.peterlaurence.trekme.features.map.presentation.ui.modal
 
 import android.Manifest
 import android.content.Intent
@@ -22,12 +22,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.map.app.service.BeaconService
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.BeaconServiceLauncherViewModel
 import com.peterlaurence.trekme.util.compose.annotatedStringResource
-import kotlinx.coroutines.flow.Flow
 
 /**
  * On Android, when a map has beacons, we:
@@ -37,7 +38,9 @@ import kotlinx.coroutines.flow.Flow
  * is granted after the service startup.
  */
 @Composable
-fun BeaconServiceLauncher(backgroundLocationRequest: Flow<Unit>) {
+fun BeaconServiceLauncher(
+    viewModel: BeaconServiceLauncherViewModel = hiltViewModel()
+) {
     var isShowingBackgroundLocationRationale by rememberSaveable { mutableStateOf(false) }
     val context by rememberUpdatedState(LocalContext.current)
 
@@ -45,8 +48,8 @@ fun BeaconServiceLauncher(backgroundLocationRequest: Flow<Unit>) {
         ActivityResultContracts.RequestPermission()
     ) {}
 
-    LaunchedEffect(backgroundLocationRequest) {
-        backgroundLocationRequest.collect {
+    LaunchedEffect(viewModel.backgroundLocationRequest) {
+        viewModel.backgroundLocationRequest.collect {
             /* Start the service */
             val intent = Intent(context, BeaconService::class.java)
             context.startService(intent)

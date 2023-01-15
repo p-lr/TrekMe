@@ -5,17 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.databinding.FragmentMapBinding
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.map.app.beacon.BeaconServiceLauncher
+import com.peterlaurence.trekme.features.map.presentation.ui.navigation.MapGraph
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,6 +22,8 @@ class MapFragment : Fragment() {
     @Inject
     lateinit var mapFeatureEvents: MapFeatureEvents
 
+    @Inject
+    lateinit var appEventBus: AppEventBus
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,30 +56,10 @@ class MapFragment : Fragment() {
         binding.mapScreen.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
-            val onNavigateToTracksManage = {
-                val action = MapFragmentDirections.actionMapFragmentToTracksManageFragment()
-                findNavController().navigate(action)
-            }
-
             setContent {
-                /* Locally override the background color (dark theme or not). Done this way, it
-                 * doesn't add a GPU overdraw. */
-                TrekMeTheme(background = Color.White) {
-                    /* By changing the view-model store owner to the activity in the current
-                     * composition tree (which in this case starts at setContent { .. }) in the
-                     * fragment, calling viewModel() inside a composable will provide us a
-                     * view-model scoped to the activity.
-                     * When this fragment layer will be removed, don't keep that CompositionLocalProvider,
-                     * since the composition tree will start at the activity - so this won't be needed
-                     * anymore. */
-                    CompositionLocalProvider(
-                        LocalViewModelStoreOwner provides requireActivity()
-                    ) {
-                        MapScreen(onNavigateToTracksManage = onNavigateToTracksManage)
-                    }
-
-                    BeaconServiceLauncher(backgroundLocationRequest = mapFeatureEvents.hasBeaconsFlow)
-                }
+                MapGraph(
+                    onMenuClick = appEventBus::openDrawer
+                )
             }
         }
         return binding.root

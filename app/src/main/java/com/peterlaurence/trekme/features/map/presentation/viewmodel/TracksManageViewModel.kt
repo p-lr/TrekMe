@@ -13,6 +13,7 @@ import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteIn
 import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
+import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.util.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -30,6 +31,7 @@ class TracksManageViewModel @Inject constructor(
     extendedOfferStateOwner: ExtendedOfferStateOwner,
     private val isUriSupportedInteractor: IsUriSupportedInteractor,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
+    private val mapFeatureEvents: MapFeatureEvents,
     private val app: Application
 ) : ViewModel() {
 
@@ -79,6 +81,10 @@ class TracksManageViewModel @Inject constructor(
                 _routeImportEvent.send(result)
             }
         }
+    }
+
+    fun centerOnRoute(route: Route) {
+        mapFeatureEvents.postGoToRoute(route)
     }
 }
 

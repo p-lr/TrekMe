@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
@@ -44,7 +45,7 @@ import kotlinx.coroutines.flow.update
 
 @Composable
 fun TracksManageStateful(
-    viewModel: TracksManageViewModel,
+    viewModel: TracksManageViewModel = hiltViewModel(),
     onGoToRoute: (Route) -> Unit,
     onMenuClick: () -> Unit
 ) {
@@ -112,6 +113,7 @@ fun TracksManageStateful(
             val route = selectableRoutes.firstOrNull { it.isSelected }?.route
             if (route != null) {
                 onGoToRoute(route)
+                viewModel.centerOnRoute(route)
             }
         },
         onRouteClick = {
