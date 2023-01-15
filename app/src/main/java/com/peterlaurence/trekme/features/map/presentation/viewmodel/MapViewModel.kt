@@ -64,6 +64,8 @@ class MapViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
     val purchaseFlow: StateFlow<PurchaseState> = extendedOfferStateOwner.purchaseFlow
 
+    val markerEditEvent: Flow<MapFeatureEvents.MarkerEditEvent> = mapFeatureEvents.navigateToMarkerEdit
+
     val locationOrientationLayer: LocationOrientationLayer = LocationOrientationLayer(
         viewModelScope,
         settings,

@@ -5,11 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.peterlaurence.trekme.databinding.FragmentMapBinding
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.ui.navigation.MapGraph
@@ -38,22 +38,13 @@ class MapFragment : Fragment() {
 
         /* Handle navigation events */
         viewLifecycleOwner.lifecycleScope.launch {
-            mapFeatureEvents.navigateToMarkerEdit.collect { (marker, mapId) ->
-                val action = MapFragmentDirections.actionMapFragmentToMarkerEditFragment(marker, mapId)
-                findNavController().navigate(action)
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
             mapFeatureEvents.navigateToBeaconEdit.collect { (beacon, mapId) ->
                 val action = MapFragmentDirections.actionMapFragmentToBeaconEditFragment(beacon, mapId)
                 findNavController().navigate(action)
             }
         }
 
-        val binding = FragmentMapBinding.inflate(inflater, container, false)
-
-        binding.mapScreen.apply {
+        return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
@@ -62,6 +53,5 @@ class MapFragment : Fragment() {
                 )
             }
         }
-        return binding.root
     }
 }

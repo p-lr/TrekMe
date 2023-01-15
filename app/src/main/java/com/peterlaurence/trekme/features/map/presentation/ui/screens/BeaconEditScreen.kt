@@ -192,7 +192,7 @@ private fun BeaconEditScreen(
                 text = radius,
                 label = stringResource(id = R.string.beacon_radius_label),
                 onTextChange = onRadiusChange,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
 
             TextFieldCustom(
@@ -202,7 +202,7 @@ private fun BeaconEditScreen(
                 text = translateUnit(distanceUnit),
                 label = stringResource(id = R.string.beacon_unit_label),
                 onTextChange = { },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 showClearIcon = false,
                 readOnly = true,
                 enabled = true,

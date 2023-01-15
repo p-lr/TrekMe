@@ -10,11 +10,13 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 import com.peterlaurence.trekme.features.map.presentation.ui.modal.BeaconServiceLauncher
 import com.peterlaurence.trekme.features.map.presentation.ui.MapScreen
 import com.peterlaurence.trekme.util.android.activity
+import java.util.*
 
 internal const val mapDestination = "map_dest"
 
 fun NavGraphBuilder.mapScreen(
-    onNavigateToTrackManage: () -> Unit
+    onNavigateToTrackManage: () -> Unit,
+    onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit
 ) {
     composable(mapDestination) {
         /* Locally override the background color (dark theme or not). Done this way, it
@@ -30,7 +32,10 @@ fun NavGraphBuilder.mapScreen(
             CompositionLocalProvider(
                 LocalViewModelStoreOwner provides LocalContext.current.activity
             ) {
-                MapScreen(onNavigateToTracksManage = onNavigateToTrackManage)
+                MapScreen(
+                    onNavigateToTracksManage = onNavigateToTrackManage,
+                    onNavigateToMarkerEdit = onNavigateToMarkerEdit
+                )
             }
 
             BeaconServiceLauncher()

@@ -18,12 +18,17 @@ fun MapGraph(
         modifier = modifier
     ) {
         mapScreen(
-            onNavigateToTrackManage = { navController.navigateToTracksManage() }
+            onNavigateToTrackManage = { navController.navigateToTracksManage() },
+            onNavigateToMarkerEdit = { markerId, mapId ->
+                navController.navigateToMarkerEdit(markerId, mapId.toString())
+            }
         )
 
         tracksManageScreen(
             onNavigateToRoute = { navController.navigateUp() },
             onMenuClick = onMenuClick
         )
+
+        markerEditScreen(onBack = { navController.navigateUp() })
     }
 }

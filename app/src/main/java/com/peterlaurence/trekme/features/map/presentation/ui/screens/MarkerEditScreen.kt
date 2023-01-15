@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -18,33 +19,32 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.map.domain.interactors.MarkerInteractor
-import java.util.*
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.MarkerEditViewModel
 
 @Composable
 fun MarkerEditStateful(
-    marker: Marker,
-    mapId: UUID,
-    markerInteractor: MarkerInteractor,
+    viewModel: MarkerEditViewModel = hiltViewModel(),
     onBackAction: () -> Unit
 ) {
-    var name by remember { mutableStateOf(marker.name) }
-    var latField by remember { mutableStateOf(marker.lat.toString()) }
-    var lonField by remember { mutableStateOf(marker.lon.toString()) }
-    var commentField by remember { mutableStateOf(marker.comment) }
+    val marker by viewModel.markerState.collectAsState()
 
-    fun makeMarker(): Marker {
-        return Marker(
-            marker.id,
-            lat = latField.toDoubleOrNull() ?: marker.lat,
-            lon = lonField.toDoubleOrNull() ?: marker.lon,
+    var name by remember(marker) { mutableStateOf(marker?.name ?: "") }
+    var latField by remember { mutableStateOf(marker?.lat?.toString() ?: "") }
+    var lonField by remember { mutableStateOf(marker?.lon?.toString() ?: "") }
+    var commentField by remember { mutableStateOf(marker?.comment ?: "") }
+
+    val saveMarker by rememberUpdatedState {
+        viewModel.saveMarker(
+            lat = latField.toDoubleOrNull(),
+            lon = lonField.toDoubleOrNull(),
             name = name,
             comment = commentField
         )
@@ -70,25 +70,25 @@ fun MarkerEditStateful(
             commentField = commentField,
             onNameChange = {
                 name = it
-                markerInteractor.saveMarker(mapId, makeMarker())
+                saveMarker()
             },
             onLatChange = {
                 val newLat = it.toDoubleOrNull()
                 if (newLat != null) {
                     latField = it
-                    markerInteractor.saveMarker(mapId, makeMarker())
+                    saveMarker()
                 }
             },
             onLonChange = {
                 val newLon = it.toDoubleOrNull()
                 if (newLon != null) {
                     lonField = it
-                    markerInteractor.saveMarker(mapId, makeMarker())
+                    saveMarker()
                 }
             },
             onCommentChange = {
                 commentField = it
-                markerInteractor.saveMarker(mapId, makeMarker())
+                saveMarker()
             }
         )
     }
@@ -140,6 +140,7 @@ private fun MarkerEditScreen(
                 text = latitudeField,
                 label = stringResource(id = R.string.latitude_short),
                 onTextChange = onLatChange,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
 
             TextFieldCustom(
@@ -149,6 +150,7 @@ private fun MarkerEditScreen(
                 text = longitudeField,
                 label = stringResource(id = R.string.longitude_short),
                 onTextChange = onLonChange,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
         }
 

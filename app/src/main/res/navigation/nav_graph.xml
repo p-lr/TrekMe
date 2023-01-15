@@ -103,27 +103,10 @@
         android:name="com.peterlaurence.trekme.features.map.presentation.ui.MapFragment"
         android:label="MapFragment" >
         <action
-            android:id="@+id/action_mapFragment_to_markerEditFragment"
-            app:destination="@id/markerEditFragment" />
-        <action
             android:id="@+id/action_mapFragment_to_beaconEditFragment"
             app:destination="@id/beaconEditFragment" />
-        <action
-            android:id="@+id/action_mapFragment_to_tracksManageFragment"
-            app:destination="@id/tracksManageFragment" />
     </fragment>
     <action android:id="@+id/action_global_mapFragment" app:destination="@id/mapFragment"/>
-    <fragment
-        android:id="@+id/markerEditFragment"
-        android:name="com.peterlaurence.trekme.features.map.presentation.ui.MarkerEditFragment"
-        android:label="MarkerEditFragment" >
-        <argument
-            android:name="marker"
-            app:argType="com.peterlaurence.trekme.core.map.domain.models.Marker" />
-        <argument
-            android:name="mapId"
-            app:argType="java.util.UUID" />
-    </fragment>
     <navigation android:id="@+id/map_settings_graph"
         app:startDestination="@id/mapSettingsFragment">
         <fragment
@@ -174,8 +157,4 @@
             android:name="mapId"
             app:argType="java.util.UUID" />
     </fragment>
-    <fragment
-        android:id="@+id/tracksManageFragment"
-        android:name="com.peterlaurence.trekme.features.map.presentation.ui.TracksManageFragment"
-        android:label="TracksManageFragment" />
 </navigation>

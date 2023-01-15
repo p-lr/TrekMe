@@ -34,12 +34,14 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
+import java.util.UUID
 
 @Composable
 fun MapScreen(
     viewModel: MapViewModel = viewModel(),
     statisticsViewModel: StatisticsViewModel = viewModel(),
-    onNavigateToTracksManage: () -> Unit
+    onNavigateToTracksManage: () -> Unit,
+    onNavigateToMarkerEdit: (markerId: String, mapId: UUID) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val purchaseState by viewModel.purchaseFlow.collectAsState()
@@ -74,6 +76,11 @@ fun MapScreen(
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.checkMapLicense()
+            }
+        }
+        launch {
+            viewModel.markerEditEvent.collect {
+                onNavigateToMarkerEdit(it.marker.id, it.mapId)
             }
         }
     }
