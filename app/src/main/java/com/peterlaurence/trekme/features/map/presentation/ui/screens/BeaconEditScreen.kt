@@ -292,6 +292,7 @@ private fun BeaconEditScreen(
                 text = latitudeField,
                 label = stringResource(id = R.string.latitude_short),
                 onTextChange = onLatChange,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
 
             TextFieldCustom(
@@ -301,6 +302,7 @@ private fun BeaconEditScreen(
                 text = longitudeField,
                 label = stringResource(id = R.string.longitude_short),
                 onTextChange = onLonChange,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
         }
 

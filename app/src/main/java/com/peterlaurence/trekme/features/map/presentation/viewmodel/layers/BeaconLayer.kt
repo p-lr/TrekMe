@@ -71,6 +71,11 @@ class BeaconLayer(
                             beaconWithNormalizedPos.x,
                             beaconWithNormalizedPos.y
                         )
+                        mapState.moveMarker(
+                            idOfClickArea(existing.idOnMap),
+                            beaconWithNormalizedPos.x,
+                            beaconWithNormalizedPos.y
+                        )
                     }
                 } else {
                     val beaconState = addBeaconOnMap(
