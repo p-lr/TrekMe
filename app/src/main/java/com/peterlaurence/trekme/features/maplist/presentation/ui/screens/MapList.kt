@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.AbstractComposeView
@@ -25,18 +26,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
+import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
+import com.peterlaurence.trekme.features.maplist.presentation.ui.components.DownloadCard
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.GoToMapCreationScreen
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.MapCard
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.PendingScreen
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListState
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListViewModel
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
-import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
-import com.peterlaurence.trekme.features.maplist.presentation.ui.components.DownloadCard
 import java.util.*
 
 @Composable
@@ -46,7 +46,7 @@ fun MapList(state: MapListState, intents: MapListIntents) {
         if (state.isDownloadPending) {
             DownloadCard(
                 Modifier
-                    .background(backgroundColor())
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
                 state.downloadProgress,
                 intents::onCancelDownload
@@ -59,7 +59,7 @@ fun MapList(state: MapListState, intents: MapListIntents) {
             if (state.mapItems.isNotEmpty()) {
                 LazyColumn(
                     Modifier
-                        .background(backgroundColor())
+                        .background(MaterialTheme.colorScheme.background)
                         .drawVerticalScrollbar(listState),
                     state = listState,
                     contentPadding = PaddingValues(8.dp),

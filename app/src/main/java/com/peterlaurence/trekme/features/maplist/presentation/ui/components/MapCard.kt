@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.maplist.presentation.ui.components
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -8,7 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,13 +27,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
-import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListIntents
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
 import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
+import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListIntents
 import com.peterlaurence.trekme.util.pxToDp
-import java.util.UUID
+import java.util.*
 
 @Composable
 internal fun MapCard(
@@ -53,7 +52,6 @@ internal fun MapCard(
                         .padding(start = 16.dp, top = 16.dp)
                         .weight(1f),
                     text = mapItem.title,
-                    color = textColor(),
                     fontSize = 24.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -146,11 +144,9 @@ private fun ButtonRow(
         modifier.padding(start = 8.dp, end = 0.dp, bottom = 0.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val color = accentColor()
         TextButton(onClick = onMapSettings) {
             Text(
                 text = stringResource(id = R.string.map_manage_btn_string).uppercase(),
-                color = color
             )
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -158,7 +154,6 @@ private fun ButtonRow(
             IconButton(onClick = onMapFavorite) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_star_24),
-                    tint = color,
                     contentDescription = null
                 )
             }
@@ -166,7 +161,6 @@ private fun ButtonRow(
             IconButton(onClick = onMapFavorite) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_star_border_24),
-                    tint = color,
                     contentDescription = null
                 )
             }
@@ -176,7 +170,6 @@ private fun ButtonRow(
         }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_delete_forever_black_24dp),
-                tint = color,
                 contentDescription = null
             )
         }
@@ -194,7 +187,8 @@ private fun ButtonRow(
     }
 }
 
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES, showBackground = true)
+@Preview(showBackground = true)
 @Composable
 private fun MapCardPreview() {
     val intents = object : MapListIntents {
@@ -220,7 +214,11 @@ private fun MapCardPreview() {
         }
     }
     TrekMeTheme {
-        MapCard(mapItem = MapItem(UUID.randomUUID(), title = "Terra Incognita"), intents = intents)
+        MapCard(
+            Modifier.padding(16.dp),
+            mapItem = MapItem(UUID.randomUUID(), title = "Terra Incognita"),
+            intents = intents
+        )
     }
 }
 
