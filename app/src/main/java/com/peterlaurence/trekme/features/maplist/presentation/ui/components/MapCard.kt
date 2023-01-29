@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -182,7 +181,7 @@ private fun ButtonRow(
             contentText = stringResource(id = R.string.map_delete_question),
             confirmButtonText = stringResource(id = R.string.delete_dialog),
             cancelButtonText = stringResource(id = R.string.cancel_dialog_string),
-            confirmColorBackground = colorResource(id = R.color.colorAccentRed)
+            confirmColorBackground = MaterialTheme.colorScheme.error
         )
     }
 }
