@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
@@ -21,12 +22,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.events.AppEventBus
-import com.peterlaurence.trekme.databinding.FragmentRecordBinding
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
 import com.peterlaurence.trekme.features.record.app.service.GpxRecordService
+import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import com.peterlaurence.trekme.features.record.presentation.ui.components.ActionsStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.GpxRecordListStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.StatusStateful
@@ -34,11 +35,10 @@ import com.peterlaurence.trekme.features.record.presentation.ui.components.dialo
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocalisationDisclaimer
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.MapSelectionForImport
 import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.TrackFileNameEdit
-import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.GpxRecordServiceViewModel
-import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
+import com.peterlaurence.trekme.util.collectWhileResumed
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -50,11 +50,9 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 class RecordFragment : Fragment() {
-    private var _binding: FragmentRecordBinding? = null
-    private val binding get() = _binding!!
 
     val viewModel: RecordViewModel by activityViewModels()
-    val statViewModel: RecordingStatisticsViewModel by activityViewModels()
+    private val statViewModel: RecordingStatisticsViewModel by activityViewModels()
     private val gpxRecordServiceViewModel: GpxRecordServiceViewModel by activityViewModels()
 
     @Inject
@@ -63,21 +61,22 @@ class RecordFragment : Fragment() {
     @Inject
     lateinit var appEventBus: AppEventBus
 
-    private val importRecordingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val uri = result.data?.data
-            val uriList = if (uri != null) {
-                /* One file selected */
-                listOf(uri)
-            } else {
-                val clipData = result.data?.clipData ?: return@registerForActivityResult
-                (0 until clipData.itemCount).map {
-                    clipData.getItemAt(it).uri
+    private val importRecordingsLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val uri = result.data?.data
+                val uriList = if (uri != null) {
+                    /* One file selected */
+                    listOf(uri)
+                } else {
+                    val clipData = result.data?.clipData ?: return@registerForActivityResult
+                    (0 until clipData.itemCount).map {
+                        clipData.getItemAt(it).uri
+                    }
                 }
+                statViewModel.importRecordings(uriList)
             }
-            statViewModel.importRecordings(uriList)
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,8 +86,10 @@ class RecordFragment : Fragment() {
 
         eventBus.recordingDeletionFailedSignal.collectWhileResumed(this) {
             /* Alert the user that some files could not be deleted */
-            val snackbar = Snackbar.make(requireView(), R.string.files_could_not_be_deleted,
-                Snackbar.LENGTH_SHORT)
+            val snackbar = Snackbar.make(
+                requireView(), R.string.files_could_not_be_deleted,
+                Snackbar.LENGTH_SHORT
+            )
             snackbar.show()
         }
 
@@ -105,38 +106,17 @@ class RecordFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         /* The action bar isn't managed by Compose */
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
             show()
             title = getString(R.string.recording_frgmt_title)
         }
 
-        _binding = FragmentRecordBinding.inflate(inflater, container, false)
-
-        configureComposeViews()
-        return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    private fun onGpxImported(event: GeoRecordImportResult) {
-        when (event) {
-            is GeoRecordImportResult.GeoRecordImportOk ->
-                /* Tell the user that the track will be shortly available in the map */
-                Snackbar.make(binding.root, R.string.track_is_being_added, Snackbar.LENGTH_LONG).show()
-            is GeoRecordImportResult.GeoRecordImportError ->
-                /* Tell the user that an error occurred */
-                Snackbar.make(binding.root, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
-        }
-    }
-
-    private fun configureComposeViews() {
-        binding.recordMainComposeView.apply {
+        return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 TrekMeTheme {
@@ -232,6 +212,20 @@ class RecordFragment : Fragment() {
                     }
                 }
             }
+        }
+    }
+
+    private fun onGpxImported(event: GeoRecordImportResult) {
+        val view = this.view ?: return
+        when (event) {
+            is GeoRecordImportResult.GeoRecordImportOk ->
+                /* Tell the user that the track will be shortly available in the map */
+                Snackbar.make(view, R.string.track_is_being_added, Snackbar.LENGTH_LONG)
+                    .show()
+
+            is GeoRecordImportResult.GeoRecordImportError ->
+                /* Tell the user that an error occurred */
+                Snackbar.make(view, R.string.track_add_error, Snackbar.LENGTH_LONG).show()
         }
     }
 

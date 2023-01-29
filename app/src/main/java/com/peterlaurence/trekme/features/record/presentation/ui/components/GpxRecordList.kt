@@ -2,21 +2,18 @@ package com.peterlaurence.trekme.features.record.presentation.ui.components
 
 import android.os.Parcelable
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
@@ -27,10 +24,7 @@ import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textButtonColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.activeColor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
@@ -182,14 +176,15 @@ private fun GpxRecordList(
                     RecordItem(
                         modifierProvider = { Modifier.animateItemPlacement() },
                         item = item,
-                        isMultiSelectionMode = isMultiSelectionMode,
                         index = index,
                         onClick = { onItemClick(item) }
                     )
                 }
             }
 
-            BottomBarButtons(selectionCount, actioner)
+            if (selectionCount > 0) {
+                BottomBarButtons(selectionCount, actioner)
+            }
         }
     }
 }
@@ -201,30 +196,37 @@ private fun RecordingActionBar(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    TopAppBar(
-        title = {
-            Text(
-                stringResource(id = R.string.recordings_list_title),
-                color = textColor(),
-                fontSize = 17.sp
-            )
-        },
-        actions = {
-            IconButton(onClick = { actioner(Action.OnMultiSelectionClick) }) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(54.dp)
+            .padding(start = 16.dp, end = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            stringResource(id = R.string.recordings_list_title),
+            fontSize = 17.sp
+        )
+        Row {
+            IconButton(
+                onClick = { actioner(Action.OnMultiSelectionClick) },
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = if (isMultiSelectionMode) activeColor() else MaterialTheme.colorScheme.primary
+                ),
+            ) {
                 Icon(
-                    painterResource(id = R.drawable.check_multiple),
+                    painter = painterResource(id = R.drawable.check_multiple),
                     contentDescription = stringResource(id = R.string.multi_selection_desc),
-                    tint = if (isMultiSelectionMode) accentColor() else textButtonColor()
                 )
             }
             IconButton(
                 onClick = { expanded = true },
-                modifier = Modifier.width(36.dp)
+                modifier = Modifier.width(36.dp),
             ) {
                 Icon(
                     Icons.Default.MoreVert,
                     contentDescription = null,
-                    tint = textButtonColor()
                 )
             }
             Box(
@@ -238,16 +240,16 @@ private fun RecordingActionBar(
                     offset = DpOffset(0.dp, 0.dp)
                 ) {
                     DropdownMenuItem(
-                        onClick = { actioner(Action.OnImportMenuCLick) }
-                    ) {
-                        Text(stringResource(id = R.string.recordings_menu_import))
-                        Spacer(Modifier.weight(1f))
-                    }
+                        onClick = { actioner(Action.OnImportMenuCLick) },
+                        text = {
+                            Text(stringResource(id = R.string.recordings_menu_import))
+                            Spacer(Modifier.weight(1f))
+                        }
+                    )
                 }
             }
-        },
-        backgroundColor = surfaceBackground()
-    )
+        }
+    }
 }
 
 @Composable
@@ -258,13 +260,11 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
     ) {
         IconButton(
             onClick = { actioner(Action.OnEditClick) },
+            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount == 1
         ) {
-            Image(
+            Icon(
                 painterResource(id = R.drawable.ic_edit_black_30dp),
-                colorFilter = ColorFilter.tint(
-                    if (selectionCount == 1) accentColor() else textButtonColor()
-                ),
                 contentDescription = stringResource(
                     id = R.string.recording_edit_name_desc
                 )
@@ -272,13 +272,11 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
         }
         IconButton(
             onClick = { actioner(Action.OnChooseMapClick) },
+            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount == 1
         ) {
-            Image(
+            Icon(
                 painterResource(id = R.drawable.import_30dp),
-                colorFilter = ColorFilter.tint(
-                    if (selectionCount == 1) accentColor() else textButtonColor()
-                ),
                 contentDescription = stringResource(
                     id = R.string.recording_import_desc
                 )
@@ -286,13 +284,11 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
         }
         IconButton(
             onClick = { actioner(Action.OnShareClick) },
+            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount > 0
         ) {
-            Image(
+            Icon(
                 painterResource(id = R.drawable.ic_share_black_24dp),
-                colorFilter = ColorFilter.tint(
-                    if (selectionCount > 0) accentColor() else textButtonColor()
-                ),
                 contentDescription = stringResource(
                     id = R.string.recording_share_desc
                 )
@@ -300,13 +296,11 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
         }
         IconButton(
             onClick = { actioner(Action.OnElevationGraphClick) },
+            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount == 1
         ) {
-            Image(
+            Icon(
                 painterResource(id = R.drawable.elevation_graph),
-                colorFilter = ColorFilter.tint(
-                    if (selectionCount == 1) accentColor() else textButtonColor()
-                ),
                 contentDescription = stringResource(
                     id = R.string.recording_show_elevations_desc
                 )
@@ -315,13 +309,11 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
         Spacer(modifier = Modifier.weight(1f))
         IconButton(
             onClick = { actioner(Action.OnRemoveClick) },
+            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             enabled = selectionCount > 0
         ) {
-            Image(
+            Icon(
                 painterResource(id = R.drawable.ic_delete_forever_black_30dp),
-                colorFilter = ColorFilter.tint(
-                    if (selectionCount > 0) colorResource(id = R.color.colorAccentRed) else textButtonColor()
-                ),
                 contentDescription = stringResource(
                     id = R.string.recording_delete_desc
                 )
@@ -334,16 +326,17 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
 private fun LoadingList(modifier: Modifier = Modifier) {
     Card(modifier.fillMaxSize()) {
         Column {
-            TopAppBar(
-                title = {
-                    Text(
-                        stringResource(id = R.string.recordings_list_title),
-                        color = textColor(),
-                        fontSize = 17.sp
-                    )
-                },
-                backgroundColor = surfaceBackground()
-            )
+            Row(
+                modifier = Modifier
+                    .height(54.dp)
+                    .padding(start = 16.dp, end = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(id = R.string.recordings_list_title),
+                    fontSize = 17.sp
+                )
+            }
             LinearProgressIndicator(Modifier.fillMaxWidth())
         }
     }

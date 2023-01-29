@@ -74,6 +74,11 @@ fun backgroundVariant(): Color {
     return if (isSystemInDarkTheme()) Color(0xFF1b1a1f) else Color(0xFFf4eff5)
 }
 
+@Composable
+fun activeColor(): Color {
+    return if (isSystemInDarkTheme()) Color(0xffb79bff) else Color(0xff8f5eff)
+}
+
 val seed = Color(0xFF805600)
 val accentGreen = Color(0xFF4CAF50)
 val light_accentGreen = Color(0xFF006E1C)

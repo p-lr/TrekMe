@@ -7,14 +7,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,9 +21,8 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.activeColor
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -33,15 +31,14 @@ fun RecordItem(
     // Using lambda instead of direct reference to avoid unnecessary recompositions
     modifierProvider: () -> Modifier = { Modifier },
     item: SelectableRecordingItem,
-    isMultiSelectionMode: Boolean,
     index: Int,
     onClick: () -> Unit = {}
 ) {
     val background = if (item.isSelected) {
-        if (isSystemInDarkTheme()) Color(0xff3b5072) else Color(0xffc1d8ff)
+        MaterialTheme.colorScheme.tertiaryContainer
     } else {
-        if (index % 2 == 1) surfaceBackground() else {
-            if (isSystemInDarkTheme()) Color(0xff3c3c3c) else Color(0x10000000)
+        if (index % 2 == 1) MaterialTheme.colorScheme.surfaceVariant else {
+            if (isSystemInDarkTheme()) Color(0xFF6d6154) else Color(0x10000000)
         }
     }
 
@@ -55,19 +52,19 @@ fun RecordItem(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (isMultiSelectionMode && item.isSelected) {
+            if (item.isSelected) {
                 Image(
                     painter = painterResource(id = R.drawable.check),
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
                         .size(14.dp),
-                    colorFilter = ColorFilter.tint(colorResource(id = R.color.colorAccent)),
+                    colorFilter = ColorFilter.tint(activeColor()),
                     contentDescription = null
                 )
             } else {
                 Spacer(modifier = Modifier.width(16.dp))
             }
-            Text(text = item.name, color = textColor())
+            Text(text = item.name, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
         if (item.stats != null) {
@@ -104,6 +101,7 @@ private fun DistanceItem(distance: String) {
     StatItem(
         icon = R.drawable.rule,
         text = distance,
+        tint = MaterialTheme.colorScheme.secondary,
         contentDescription = stringResource(id = R.string.distance_desc)
     )
 }
@@ -113,6 +111,7 @@ private fun ElevationUpStack(elevationUpStack: String) {
     StatItem(
         icon = R.drawable.elevation_up,
         text = elevationUpStack,
+        tint = MaterialTheme.colorScheme.secondary,
         contentDescription = stringResource(id = R.string.elevation_up_stack_desc)
     )
 }
@@ -122,6 +121,7 @@ private fun ElevationDownStack(elevationDownStack: String) {
     StatItem(
         icon = R.drawable.elevation_down,
         text = elevationDownStack,
+        tint = MaterialTheme.colorScheme.secondary,
         contentDescription = stringResource(id = R.string.elevation_down_stack_desc)
     )
 }
@@ -132,7 +132,7 @@ private fun ChronoItem(duration: String) {
         icon = R.drawable.timer_18dp,
         text = duration,
         contentDescription = stringResource(id = R.string.duration_desc),
-        tint = colorResource(id = R.color.colorAccent)
+        tint = MaterialTheme.colorScheme.secondary,
     )
 }
 
@@ -142,7 +142,7 @@ private fun SpeedItem(speed: String) {
         icon = R.drawable.speedometer_medium_18dp,
         text = speed,
         contentDescription = stringResource(R.string.speed_desc),
-        tint = colorResource(id = R.color.colorAccent)
+        tint = MaterialTheme.colorScheme.secondary,
     )
 }
 
@@ -164,7 +164,7 @@ private fun StatItem(
             }
         )
         Spacer(modifier = Modifier.width(4.dp))
-        Text(text, modifier = Modifier.alpha(0.7f), color = textColor())
+        Text(text, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -185,7 +185,6 @@ private fun RecordItemPreview() {
                 isSelected = false,
                 id = UUID.randomUUID()
             ),
-            isMultiSelectionMode = false,
             index = 0
         )
     }
