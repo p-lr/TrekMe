@@ -1,5 +1,7 @@
 package com.peterlaurence.trekme.features.common.presentation.ui.theme.m3
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val md_theme_light_primary = Color(0xFF805600)
@@ -10,10 +12,10 @@ val md_theme_light_secondary = Color(0xFF6F5B40)
 val md_theme_light_onSecondary = Color(0xFFFFFFFF)
 val md_theme_light_secondaryContainer = Color(0xFFF9DEBB)
 val md_theme_light_onSecondaryContainer = Color(0xFF261904)
-val md_theme_light_tertiary = Color(0xFF506441)
+val md_theme_light_tertiary = Color(0xFF625B71)
 val md_theme_light_onTertiary = Color(0xFFFFFFFF)
-val md_theme_light_tertiaryContainer = Color(0xFFD2EABD)
-val md_theme_light_onTertiaryContainer = Color(0xFF0E2004)
+val md_theme_light_tertiaryContainer = Color(0xFFE8DEF8)
+val md_theme_light_onTertiaryContainer = Color(0xFF1D192B)
 val md_theme_light_error = Color(0xFFBA1A1A)
 val md_theme_light_errorContainer = Color(0xFFFFDAD6)
 val md_theme_light_onError = Color(0xFFFFFFFF)
@@ -41,17 +43,17 @@ val md_theme_dark_secondary = Color(0xFFDCC3A1)
 val md_theme_dark_onSecondary = Color(0xFF3D2E16)
 val md_theme_dark_secondaryContainer = Color(0xFF55442A)
 val md_theme_dark_onSecondaryContainer = Color(0xFFF9DEBB)
-val md_theme_dark_tertiary = Color(0xFFB6CEA3)
-val md_theme_dark_onTertiary = Color(0xFF233517)
-val md_theme_dark_tertiaryContainer = Color(0xFF394C2B)
-val md_theme_dark_onTertiaryContainer = Color(0xFFD2EABD)
+val md_theme_dark_tertiary = Color(0xFFCCC2DC)
+val md_theme_dark_onTertiary = Color(0xFF332D41)
+val md_theme_dark_tertiaryContainer = Color(0xFF4A4458)
+val md_theme_dark_onTertiaryContainer = Color(0xFFE8DEF8)
 val md_theme_dark_error = Color(0xFFFFB4AB)
 val md_theme_dark_errorContainer = Color(0xFF93000A)
 val md_theme_dark_onError = Color(0xFF690005)
 val md_theme_dark_onErrorContainer = Color(0xFFFFDAD6)
 val md_theme_dark_background = Color(0xFF1F1B16)
 val md_theme_dark_onBackground = Color(0xFFEAE1D9)
-val md_theme_dark_surface = Color(0xFF1F1B16)
+val md_theme_dark_surface = Color(0xFF313035)
 val md_theme_dark_onSurface = Color(0xFFEAE1D9)
 val md_theme_dark_surfaceVariant = Color(0xFF4F4539)
 val md_theme_dark_onSurfaceVariant = Color(0xFFD2C4B4)
@@ -64,6 +66,13 @@ val md_theme_dark_surfaceTint = Color(0xFFFDBA4B)
 val md_theme_dark_outlineVariant = Color(0xFF4F4539)
 val md_theme_dark_scrim = Color(0xFF000000)
 
+/**
+ * A grey-ish background, different from the default brown one.
+ */
+@Composable
+fun backgroundVariant(): Color {
+    return if (isSystemInDarkTheme()) Color(0xFF1b1a1f) else Color(0xFFf4eff5)
+}
 
 val seed = Color(0xFF805600)
 val accentGreen = Color(0xFF4CAF50)

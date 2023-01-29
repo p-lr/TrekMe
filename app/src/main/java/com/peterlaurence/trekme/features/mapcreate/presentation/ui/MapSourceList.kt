@@ -1,19 +1,16 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Divider
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -25,7 +22,7 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
-import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.backgroundVariant
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
@@ -33,7 +30,11 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSou
 
 @Composable
 private fun SourceList(sources: List<WmtsSource>, onSourceClick: (WmtsSource) -> Unit) {
-    LazyColumn {
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .background(backgroundVariant()),
+    ) {
         items(sources) { wmtsSource ->
             SourceRow(wmtsSource, onSourceClick)
             Divider(thickness = 0.5.dp)
@@ -41,83 +42,78 @@ private fun SourceList(sources: List<WmtsSource>, onSourceClick: (WmtsSource) ->
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SourceRow(source: WmtsSource, onSourceClick: (WmtsSource) -> Unit) {
-    Row(
+    Surface(
+        onClick = { onSourceClick(source) },
         Modifier
             .fillMaxWidth()
             .height(106.dp)
-            .clickable { onSourceClick(source) }
     ) {
-        Column(
-            Modifier
-                .padding(start = 16.dp, top = 24.dp, end = 8.dp)
-                .weight(1f)
-        ) {
-            Text(
-                text = getTitleForSource(source),
-                fontSize = 24.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = colorResource(id = R.color.colorPrimaryTextBlack)
-            )
-            Text(
-                text = getSubtitleForSource(source),
-                color = colorResource(id = R.color.colorPrimaryTextBlack)
-            )
-
-            if (source == WmtsSource.IGN) {
-                val annotatedString = buildAnnotatedString {
-                    val text = stringResource(id = R.string.ign_legal_notice_btn)
-                    append(text)
-                    addStyle(
-                        style = SpanStyle(
-                            color = colorResource(id = R.color.colorPrimaryTextBlack),
-                            fontSize = 12.sp,
-                            textDecoration = TextDecoration.Underline
-                        ), start = 0, end = text.length
-                    )
-                }
-                val openDialog = remember { mutableStateOf(false) }
-
-                if (openDialog.value) {
-                    AlertDialog(
-                        onDismissRequest = {
-                            openDialog.value = false
-                        },
-                        text = {
-                            Text(text = stringResource(id = R.string.ign_legal_notice))
-                        },
-                        buttons = {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 16.dp, bottom = 16.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                OutlinedButtonColored(
-                                    onClick = { openDialog.value = false },
-                                    text = stringResource(id = R.string.ok_dialog)
-                                )
-                            }
-                        }
-                    )
-                }
-
-                ClickableText(
-                    text = annotatedString,
-                    modifier = Modifier.padding(top = 8.dp),
-                    onClick = { openDialog.value = true }
+        Row {
+            Column(
+                Modifier
+                    .padding(start = 16.dp, top = 24.dp, end = 8.dp)
+                    .weight(1f)
+            ) {
+                Text(
+                    text = getTitleForSource(source),
+                    fontSize = 24.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
+                Text(
+                    text = getSubtitleForSource(source),
+                )
+
+                if (source == WmtsSource.IGN) {
+                    val annotatedString = buildAnnotatedString {
+                        val text = stringResource(id = R.string.ign_legal_notice_btn)
+                        append(text)
+                        addStyle(
+                            style = SpanStyle(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 12.sp,
+                                textDecoration = TextDecoration.Underline
+                            ), start = 0, end = text.length
+                        )
+                    }
+                    val openDialog = remember { mutableStateOf(false) }
+
+                    if (openDialog.value) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                openDialog.value = false
+                            },
+                            text = {
+                                Text(text = stringResource(id = R.string.ign_legal_notice))
+                            },
+                            confirmButton = {
+                                OutlinedButton(
+                                    onClick = { openDialog.value = false },
+                                ) {
+                                    Text(stringResource(id = R.string.ok_dialog))
+                                }
+                            },
+                        )
+                    }
+
+                    ClickableText(
+                        text = annotatedString,
+                        modifier = Modifier.padding(top = 8.dp),
+                        onClick = { openDialog.value = true }
+                    )
+                }
             }
+            Image(
+                modifier = Modifier
+                    .padding(top = 8.dp, bottom = 8.dp, end = 16.dp)
+                    .size(90.dp),
+                painter = getImageForSource(source),
+                contentDescription = stringResource(id = R.string.accessibility_mapsource_image)
+            )
         }
-        Image(
-            modifier = Modifier
-                .padding(top = 8.dp, bottom = 8.dp, end = 16.dp)
-                .size(90.dp),
-            painter = getImageForSource(source),
-            contentDescription = stringResource(id = R.string.accessibility_mapsource_image)
-        )
     }
 }
 
