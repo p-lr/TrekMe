@@ -5,7 +5,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,9 +36,7 @@ fun RecordItem(
     val background = if (item.isSelected) {
         MaterialTheme.colorScheme.tertiaryContainer
     } else {
-        if (index % 2 == 1) MaterialTheme.colorScheme.surfaceVariant else {
-            if (isSystemInDarkTheme()) Color(0xFF6d6154) else Color(0x10000000)
-        }
+        if (index % 2 == 1) Color.Transparent else MaterialTheme.colorScheme.surface
     }
 
     Column(

@@ -38,7 +38,7 @@ internal fun MapCard(
     mapItem: MapItem,
     intents: MapListIntents
 ) {
-    Card(modifier) {
+    ElevatedCard(modifier) {
         Box(
             Modifier
                 .fillMaxWidth()
@@ -153,6 +153,7 @@ private fun ButtonRow(
             IconButton(onClick = onMapFavorite) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_star_24),
+                    tint = MaterialTheme.colorScheme.primary,
                     contentDescription = null
                 )
             }
@@ -168,7 +169,7 @@ private fun ButtonRow(
             deleteDialogState.value = true
         }) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_delete_forever_black_24dp),
+                painter = painterResource(id = R.drawable.ic_delete_outline),
                 contentDescription = null
             )
         }

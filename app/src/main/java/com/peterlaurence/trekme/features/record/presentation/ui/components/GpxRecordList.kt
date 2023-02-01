@@ -160,7 +160,7 @@ private fun GpxRecordList(
         }
     }
 
-    Card(modifier) {
+    ElevatedCard(modifier) {
         Column {
             RecordingActionBar(isMultiSelectionMode, actioner)
             LazyColumn(
@@ -324,7 +324,7 @@ private fun BottomBarButtons(selectionCount: Int, actioner: Actioner) {
 
 @Composable
 private fun LoadingList(modifier: Modifier = Modifier) {
-    Card(modifier.fillMaxSize()) {
+    ElevatedCard(modifier.fillMaxSize()) {
         Column {
             Row(
                 modifier = Modifier

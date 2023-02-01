@@ -4,7 +4,7 @@ import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,7 +47,7 @@ private fun Actions(
     onStartStopClick: () -> Unit,
     onPauseResumeClick: () -> Unit
 ) {
-    Card(modifier) {
+    ElevatedCard(modifier) {
         Column(
             Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         ) {

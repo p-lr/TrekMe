@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.record.presentation.ui.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -44,7 +44,7 @@ fun StatusStateful(modifier: Modifier = Modifier, viewModel: GpxRecordServiceVie
 
 @Composable
 private fun Status(modifier: Modifier = Modifier, isBeating: Boolean, subTitle: String) {
-    Card(modifier) {
+    ElevatedCard(modifier) {
         Column(
             Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
