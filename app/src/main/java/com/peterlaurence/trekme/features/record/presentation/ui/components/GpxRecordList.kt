@@ -17,11 +17,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ShareCompat
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.domain.model.Loading
@@ -41,9 +43,7 @@ fun GpxRecordListStateful(
     modifier: Modifier = Modifier,
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
-    onShareRecords: (List<RecordingData>) -> Unit,
     onElevationGraphClick: (RecordingData) -> Unit,
-    onDeleteClick: (List<RecordingData>) -> Unit
 ) {
     val state by statViewModel.recordingDataFlow.collectAsState()
 
@@ -111,6 +111,7 @@ fun GpxRecordListStateful(
         statViewModel.importRecordings(uriList)
     }
 
+    val context = LocalContext.current
     val actioner: Actioner = { action ->
         when (action) {
             Action.OnMultiSelectionClick -> {
@@ -139,7 +140,19 @@ fun GpxRecordListStateful(
             }
             Action.OnShareClick -> {
                 val selectedList = getSelectedList(dataById, items)
-                onShareRecords(selectedList)
+                val intentBuilder = ShareCompat.IntentBuilder(context)
+                    .setType("text/plain")
+                selectedList.forEach {
+                    try {
+                        val uri = statViewModel.getRecordingUri(it)
+                        if (uri != null) {
+                            intentBuilder.addStream(uri)
+                        }
+                    } catch (e: IllegalArgumentException) {
+                        e.printStackTrace()
+                    }
+                }
+                intentBuilder.startChooser()
             }
             Action.OnElevationGraphClick -> {
                 val selected = getSelected(dataById, items)
@@ -149,7 +162,7 @@ fun GpxRecordListStateful(
             }
             Action.OnRemoveClick -> {
                 val selectedList = getSelectedList(dataById, items)
-                onDeleteClick(selectedList)
+                statViewModel.onRequestDeleteRecordings(selectedList)
             }
         }
     }

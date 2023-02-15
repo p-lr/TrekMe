@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -39,7 +38,7 @@ import javax.inject.Inject
  * Holds controls and displays information about the [GpxRecordService].
  * Displays the list of records (gpx files) along their statistics.
  *
- * @author P.Laurence -- converted to Kotlin on 01/11/18
+ * @since 01/11/18
  */
 @AndroidEntryPoint
 class RecordFragment : Fragment() {
@@ -118,31 +117,12 @@ class RecordFragment : Fragment() {
                             modifier = Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
                             statViewModel = statViewModel,
                             recordViewModel = viewModel,
-                            onShareRecords = { dataList ->
-                                val activity = activity ?: return@GpxRecordListStateful
-                                val intentBuilder = ShareCompat.IntentBuilder(activity)
-                                    .setType("text/plain")
-                                dataList.forEach {
-                                    try {
-                                        val uri = statViewModel.getRecordingUri(it)
-                                        if (uri != null) {
-                                            intentBuilder.addStream(uri)
-                                        }
-                                    } catch (e: IllegalArgumentException) {
-                                        e.printStackTrace()
-                                    }
-                                }
-                                intentBuilder.startChooser()
-                            },
                             onElevationGraphClick = { data ->
                                 val action =
                                     RecordFragmentDirections.actionRecordFragmentToElevationFragment(
                                         ParcelUuid(data.id)
                                     )
                                 findNavController().navigate(action)
-                            },
-                            onDeleteClick = { dataList ->
-                                statViewModel.onRequestDeleteRecordings(dataList)
                             }
                         )
                     }
