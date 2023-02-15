@@ -7,21 +7,28 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.record.domain.model.GpxRecordState
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimSolutionDialog
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptimWarningDialog
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocationRationale
 import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.MorphingButton
 import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.MorphingShape
 import com.peterlaurence.trekme.features.record.presentation.ui.components.widgets.PathData
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.GpxRecordServiceViewModel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
 @Composable
 fun ActionsStateful(
@@ -31,6 +38,52 @@ fun ActionsStateful(
     onPauseResumeClick: () -> Unit
 ) {
     val gpxRecordState by viewModel.status.collectAsState()
+    val disableBatterySignal = remember { viewModel.disableBatteryOptSignal.receiveAsFlow() }
+    val showLocalisationRationale = remember { viewModel.showLocalisationRationale.receiveAsFlow() }
+    var isShowingBatteryWarning by rememberSaveable { mutableStateOf(false) }
+    var isShowingBatterySolution by rememberSaveable { mutableStateOf(false) }
+    var isShowingLocationRationale by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(LocalLifecycleOwner.current) {
+        launch {
+            disableBatterySignal.collect {
+                isShowingBatteryWarning = true
+            }
+        }
+
+        launch {
+            showLocalisationRationale.collect {
+                isShowingLocationRationale = true
+            }
+        }
+    }
+
+    if (isShowingBatteryWarning) {
+        BatteryOptimWarningDialog(
+            onShowSolution = {
+                isShowingBatterySolution = true
+                isShowingBatteryWarning = false
+            },
+            onDismissRequest = { isShowingBatteryWarning = false },
+        )
+    }
+
+    if (isShowingBatterySolution) {
+        BatteryOptimSolutionDialog(onDismissRequest = { isShowingBatterySolution = false })
+    }
+
+    if (isShowingLocationRationale) {
+        LocationRationale(
+            onConfirm = {
+                viewModel.requestBackgroundLocationPerm()
+                isShowingLocationRationale = false
+            },
+            onIgnore = {
+                viewModel.onIgnoreLocationRationale()
+                isShowingLocationRationale = false
+            },
+        )
+    }
 
     Actions(
         modifier = modifier,

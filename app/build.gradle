@@ -54,6 +54,7 @@ android {
         jvmTarget = "1.8"
         freeCompilerArgs = ['-Xjvm-default=all-compatibility', '-Xopt-in=androidx.compose.material.ExperimentalMaterialApi']
     }
+    namespace 'com.peterlaurence.trekme'
 }
 
 dependencies {

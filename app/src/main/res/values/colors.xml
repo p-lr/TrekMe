@@ -29,4 +29,7 @@
     <color name="colorWarningPanelBg">#EF6C00</color>
     <color name="colorWarningPanelBorder">#E65100</color>
     <color name="colorGreen">#4CAF50</color>
+    <color name="colorOnSurface">#1F1B16</color>
+    <color name="colorSurface">#FFFBFF</color>
+    <color name="colorSecondary">#FF6F5B40</color>
 </resources>

@@ -28,6 +28,7 @@ import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationProducerBtInfo
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_dark_surface
 
 
 @Composable
@@ -42,8 +43,8 @@ fun GpsDataOverlay(
         modifier
             .width(IntrinsicSize.Min)
             .background(
-                colorResource(id = R.color.colorIndicatorOverlay),
-                RoundedCornerShape(topEnd = 5.dp)
+                md_theme_dark_surface.copy(alpha = 0.5f),
+                RoundedCornerShape(topEnd = 16.dp)
             )
             .padding(8.dp)
     ) {
@@ -81,7 +82,8 @@ fun GpsDataOverlay(
                     modifier = Modifier
                         .background(Color(0x45FFFFFF), shape = CircleShape)
                         .clip(CircleShape)
-                        .padding(3.dp).alpha(1f)
+                        .padding(3.dp)
+                        .alpha(1f)
                         .size(17.dp),
                     colorFilter = ColorFilter.tint(Color.White),
                     contentDescription = null
@@ -93,11 +95,10 @@ fun GpsDataOverlay(
 
 @Composable
 private fun KeyValueRow(key: String, value: String) {
-    val color = colorResource(id = R.color.colorPrimaryTextWhite)
     Row {
-        Text(key, color = color, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
+        Text(key, color = Color.White, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
         Spacer(modifier = Modifier.width(8.dp))
-        Text(value, color = color, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
+        Text(value, color = Color.White, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
     }
 }
 

@@ -95,6 +95,10 @@
     <string name="mapcreate_zoom_on_position">Zoom sur la position</string>
     <string name="min_zoom">Zoom minimum</string>
     <string name="wmts_settings_dialog">Configuration de la carte</string>
+    <string name="wmts_level_min_decrement">Décrémenter le niveau min</string>
+    <string name="wmts_level_min_increment">Incrémenter le niveau min</string>
+    <string name="wmts_level_max_decrement">Décrémenter le niveau max</string>
+    <string name="wmts_level_max_increment">Incrémenter le niveau max</string>
     <string name="max_zoom">Zoom maximum</string>
     <string name="service_download_name">Service de téléchargement de carte</string>
     <string name="service_download_action">Téléchargement de carte</string>
@@ -138,7 +142,6 @@
     <string name="service_download_bad_storage">TrekMe ne peut rien écrire sur votre stockage interne ou votre carte SD. C\'est probablement un problème de permission. Veuillez vérifier que TrekMe dispose de toutes ses autorisations, puis redémarrer votre téléphone est conseillé dans ce cas.</string>
     <string name="mapcreate_warning_ign">Il y a un souci avec les serveurs de l\'IGN. Les indisponibilités ne durent en général que quelques heures.</string>
     <string name="mapcreate_warning_others">Il y a un souci avec les serveurs du fournisseur de cette carte. Les indisponibilités ne durent en général que quelques heures.</string>
-    <string name="general_help_link"><a href="https://github.com/peterLaurence/TrekMe/blob/master/doc/troubleshoot/troubleshoot.fr.md#que-faire-si">Besoin d\'aide ?</a></string>
     <string name="mapcreate_btn_nav_credentials">Corriger mes identifiants</string>
     <string name="mapview_add_elements">Placer sur la carte</string>
     <string name="mapview_add_landmark">Repère</string>
@@ -196,6 +199,7 @@
     <string name="preference_zoom_when_centered">Zoom quand centré</string>
     <string name="preference_change_scale_when_centering">Définir échelle quand centré</string>
     <string name="import_title">Importer depuis des archives</string>
+    <string name="import_desc">Importer des cartes préalablement sauvegardées depuis la liste des cartes > MODIFIER > Sauvegarder</string>
     <string name="ordnance_survey_source_description">Carte de Grande-Bretagne</string>
     <string name="map_import_error">Erreur: le format de la carte n\'est pas reconnu.</string>
     <string name="storage_perm_denied">Veuillez activer la permission de stockage</string>
@@ -211,9 +215,8 @@
     <string name="battery_warn_solution_btn_txt">Voir la solution</string>
     <string name="battery_warn_solution_title">Solution</string>
     <string name="battery_warn_solution_msg">Allez dans les réglages du téléphone, dans \"Applications\" puis \"TrekMe\". Dans les
-        paramètres de Batterie, il faut y trouver un menu \"Optimisation de la batterie\". Par défaut l\'optimisation est activée.
-        Si elle est déactivée, vous n\'avez rien à faire. Sinon, affichez la liste des applis optimisées et descendez presque tout en bas
-        pour y trouver TrekMe. Enfin, vous pouvez déactiver l\'optimisation. C\'était bien caché\…
+        paramètres de Batterie, il faut y trouver un menu \"Utilisation de la batterie\" ou similaire. Par défaut l\'optimisation est activée.
+        Il faut alors désactiver l\'optimisation (sans restriction).
     </string>
     <string name="track_add_error">Une erreur est survenue lors de l\'import de la trace</string>
     <string name="automatic_import_feedback">Trace importée dans %1$d carte(s)</string>
@@ -238,7 +241,7 @@
     <string name="privacy_policy_desc">Nous respectons votre vie privée et ne communiquerons jamais
         votre position ou toute autre donnée personnelle à des tiers. Nous ne stockons pas ces informations
         ailleurs que sur votre appareil.</string>
-    <string name="privacy_policy_link">Consultez notre %1$s.</string>
+    <string name="privacy_policy_link">Consultez la %1$s.</string>
     <string name="privacy_policy">politique de confidentialité</string>
     <string name="solution_title">Solution</string>
     <string name="service_download_already_running">Un téléchargement est déjà en cours. Veuillez attendre la fin du téléchargement avant d\'en lancer un autre.</string>
@@ -335,6 +338,7 @@
     <string name="download_pending_item">Téléchargement en cours</string>
     <string name="choose_map_thumbnail">Vous pouvez choisir une image pour illustrer votre carte.\nContinuer ?</string>
     <string name="validate_area">Valider</string>
+    <string name="search_hint">Recherche…</string>
     <string name="mapcreate_out_of_bounds">Vous êtes hors des limites supportées pour cette carte</string>
     <string name="recording_status_started">Démarré</string>
     <string name="recording_status_stopped">Arrêté</string>
@@ -380,7 +384,7 @@
     <string name="offer_gateway_navigation_button">Voir les offres</string>
     <string name="offer_gateway_check_pending">Vérifications en cours…</string>
     <string name="ign_caution">Le serveur de carte de l\'IGN a parfois des lenteurs. Concrètement, vous voulez créer une carte IGN mais …
-    rien ne s\'affiche. Si cela se produit, ne vous inquiétez pas ; il suffit en général de réessayer plus tard dans la journée.</string>
+    rien ne s\'affiche. Dans ce cas, il est conseillé de réessayer plus tard dans la journée.</string>
     <string name="nb">N.B</string>
     <string name="go_to_track_on_map">Voir sur la carte</string>
     <string name="tracks_manage_frgmt_title">Gestion des traces</string>

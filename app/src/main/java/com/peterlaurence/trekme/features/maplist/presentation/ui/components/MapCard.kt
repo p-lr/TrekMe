@@ -26,7 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
 import com.peterlaurence.trekme.features.maplist.presentation.ui.screens.MapListIntents
 import com.peterlaurence.trekme.util.pxToDp

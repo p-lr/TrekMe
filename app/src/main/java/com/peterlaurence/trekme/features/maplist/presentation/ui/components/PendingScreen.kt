@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 
 @Composable
 internal fun PendingScreen() {

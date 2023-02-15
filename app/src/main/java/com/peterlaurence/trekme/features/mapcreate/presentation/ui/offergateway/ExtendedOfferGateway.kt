@@ -1,19 +1,19 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.offergateway
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -24,10 +24,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentGreen
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.dark_accentGreen
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.ExtendedOfferViewModel
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.surfaceBackground
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 
 @Composable
 fun ExtendedOfferGatewayStateful(
@@ -39,7 +38,9 @@ fun ExtendedOfferGatewayStateful(
     if (purchaseState == PurchaseState.PURCHASED) {
         onNavigateToWmtsFragment()
     }
-    ExtendedOfferGateway(purchaseState, onNavigateToShop)
+    Surface {
+        ExtendedOfferGateway(purchaseState, onNavigateToShop)
+    }
 }
 
 @Composable
@@ -48,9 +49,7 @@ private fun ExtendedOfferGateway(
     onNavigateToShop: () -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .background(surfaceBackground())
-            .padding(32.dp),
+        modifier = Modifier.padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -71,7 +70,6 @@ private fun ShowPending() {
         fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
         modifier = Modifier.padding(bottom = 32.dp),
-        color = textColor()
     )
     Spacer(modifier = Modifier.height(16.dp))
     LinearProgressIndicator()
@@ -92,7 +90,6 @@ private fun SuggestShopNavigation(navigateToShop: () -> Unit) {
         fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
         modifier = Modifier.padding(bottom = 16.dp),
-        color = textColor(),
         style = TextStyle(textAlign = TextAlign.Center)
     )
 
@@ -100,10 +97,8 @@ private fun SuggestShopNavigation(navigateToShop: () -> Unit) {
         stringResource(id = R.string.offer_gateway_free_trial),
         fontSize = 14.sp,
         fontWeight = FontWeight.Medium,
-        modifier = Modifier
-            .padding(bottom = 32.dp)
-            .alpha(0.87f),
-        color = colorResource(id = R.color.colorGreen),
+        modifier = Modifier.padding(bottom = 32.dp),
+        color = if (isSystemInDarkTheme()) dark_accentGreen else accentGreen,
         style = TextStyle(textAlign = TextAlign.Center)
     )
 
@@ -111,11 +106,6 @@ private fun SuggestShopNavigation(navigateToShop: () -> Unit) {
         Button(
             onClick = navigateToShop,
             modifier = Modifier.width(maxWidth * 0.6f),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = accentColor(),
-                contentColor = Color.White
-            ),
-            shape = RoundedCornerShape(50)
         ) {
             Text(text = stringResource(id = R.string.offer_gateway_navigation_button).uppercase())
         }

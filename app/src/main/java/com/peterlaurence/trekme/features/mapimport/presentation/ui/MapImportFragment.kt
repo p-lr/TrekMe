@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -20,15 +21,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.databinding.FragmentMapImportBinding
-import com.peterlaurence.trekme.features.mapimport.domain.interactor.MapArchiveInteractor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapimport.domain.model.MapArchive
 import com.peterlaurence.trekme.features.mapimport.domain.model.UnzipMapImportedEvent
+import com.peterlaurence.trekme.features.mapimport.presentation.ui.components.MapImportUiStateful
 import com.peterlaurence.trekme.features.mapimport.presentation.viewmodel.MapImportViewModel
 import com.peterlaurence.trekme.util.RecyclerItemClickListener
 import com.peterlaurence.trekme.util.collectWhileStarted
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * Displays the list of maps archives available for import.
@@ -46,18 +47,11 @@ class MapImportFragment : Fragment() {
     private var itemSelected: MapArchive? = null
     private val viewModel: MapImportViewModel by viewModels()
 
-    @Inject
-    lateinit var mapArchiveInteractor: MapArchiveInteractor
-
     private val mapImportLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 result.data?.data?.let { uri ->
-                    lifecycleScope.launch {
-                        showProgressBar()
-                        binding.buttonImport.isEnabled = false
-                        mapArchiveInteractor.seekArchivesAtLocation(uri)
-                    }
+                    viewModel.seekArchives(uri)
                 }
             }
         }
@@ -69,7 +63,6 @@ class MapImportFragment : Fragment() {
             this.data = mapArchiveList
             mapArchiveAdapter?.setMapArchiveList(mapArchiveList)
             if (mapArchiveList.isNotEmpty()) {
-                binding.progressListUris.visibility = View.GONE
                 binding.welcomePanel.visibility = View.GONE
                 binding.archiveListPanel.visibility = View.VISIBLE
             }
@@ -87,6 +80,18 @@ class MapImportFragment : Fragment() {
         }
 
         _binding = FragmentMapImportBinding.inflate(inflater, container, false)
+        binding.composeContent.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                TrekMeTheme {
+                    MapImportUiStateful(
+                        viewModel = this@MapImportFragment.viewModel,
+                        onImportClicked = ::onImportButtonClick
+                    )
+                }
+            }
+        }
+
         return binding.root
     }
 
@@ -100,10 +105,6 @@ class MapImportFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupMenu()
-
-        binding.buttonImport.setOnClickListener {
-            onImportButtonClick()
-        }
 
         val recyclerViewMapImport = binding.recyclerViewMapImport
         recyclerViewMapImport.setHasFixedSize(false)
@@ -189,7 +190,7 @@ class MapImportFragment : Fragment() {
             fab.setOnClickListener {
                 itemSelected?.let { archive ->
                     lifecycleScope.launch {
-                        mapArchiveInteractor.unarchiveAndGetEvents(archive).collect { event ->
+                        viewModel.unArchive(archive).collect { event ->
                             val active = data.firstOrNull { item ->
                                 item.id == event.archiveId
                             } ?: return@collect
@@ -215,10 +216,6 @@ class MapImportFragment : Fragment() {
             }
         }
         snackbar.show()
-    }
-
-    private fun showProgressBar() {
-        binding.progressListUris.visibility = View.VISIBLE
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

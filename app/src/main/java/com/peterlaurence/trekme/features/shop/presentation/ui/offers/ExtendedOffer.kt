@@ -1,18 +1,15 @@
 package com.peterlaurence.trekme.features.shop.presentation.ui.offers
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -27,7 +24,8 @@ import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
 import com.peterlaurence.trekme.core.billing.domain.model.TrialInfo
 import com.peterlaurence.trekme.core.billing.domain.model.TrialUnavailable
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentGreen
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.dark_accentGreen
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.PriceButton
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ExtendedOfferViewModel
@@ -99,7 +97,7 @@ private fun CheckSeparator() {
         Icon(
             painterResource(id = R.drawable.check),
             contentDescription = null,
-            tint = Color(0xFF4CAF50)
+            tint = if (isSystemInDarkTheme()) dark_accentGreen else accentGreen
         )
     }
 }
@@ -112,19 +110,18 @@ private fun TitleRow(@StringRes id: Int) {
             .padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        Text(stringResource(id), fontWeight = FontWeight.Medium, color = textColor())
+        Text(stringResource(id), fontWeight = FontWeight.Medium)
     }
 }
 
 @Composable
 private fun LineItem(@StringRes id: Int) {
     Row {
-        Text("\u2022", color = textColor())
+        Text("\u2022")
         Text(
             stringResource(id),
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 8.dp),
-            color = textColor()
         )
     }
 }
@@ -137,22 +134,18 @@ private fun NotaBene() {
             .padding(vertical = 32.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        Divider(
-            Modifier.width(50.dp),
-            color = textColor()
-        )
+        Divider(Modifier.width(50.dp))
     }
 
     Row {
         /* Set alpha to 0.7 for less emphasize */
-        Text(stringResource(id = R.string.nb), Modifier.alpha(0.7f), color = textColor())
+        Text(stringResource(id = R.string.nb), Modifier.alpha(0.7f))
         Text(
             stringResource(R.string.ign_caution),
             fontSize = 14.sp,
             modifier = Modifier
                 .padding(start = 8.dp)
                 .alpha(0.7f),
-            color = textColor(),
             style = TextStyle(textAlign = TextAlign.Justify)
         )
     }
@@ -211,7 +204,7 @@ private fun ExtendedOfferFooter(
                     onClick = buyMonthlyOffer,
                     duration = stringResource(id = R.string.one_month),
                     price = pricePerMonth,
-                    color = Color(0xFF4CAF50)
+                    color = if (isSystemInDarkTheme()) dark_accentGreen else accentGreen
                 )
             }
             if (pricePerYear != null) {

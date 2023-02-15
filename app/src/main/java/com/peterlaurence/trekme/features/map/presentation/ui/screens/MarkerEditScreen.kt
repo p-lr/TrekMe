@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,7 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
@@ -26,9 +25,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.MarkerEditViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarkerEditStateful(
     viewModel: MarkerEditViewModel = hiltViewModel(),
@@ -106,14 +105,11 @@ private fun MarkerEditScreen(
     onLonChange: (String) -> Unit = {},
     onCommentChange: (String) -> Unit = {}
 ) {
-    val accentColor = accentColor()
-
     Column(
         modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.surface)
             .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.Start
     ) {
         Spacer(modifier = Modifier.height(8.dp))
         TextFieldCustom(
@@ -128,8 +124,9 @@ private fun MarkerEditScreen(
 
         Text(
             text = stringResource(id = R.string.wgs84_label),
+            modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 8.dp),
             fontWeight = FontWeight.Bold,
-            color = accentColor
+            color = MaterialTheme.colorScheme.primary
         )
 
         Row {
@@ -156,9 +153,9 @@ private fun MarkerEditScreen(
 
         Text(
             text = stringResource(id = R.string.comment_label),
-            modifier = Modifier.padding(top = 20.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
             fontWeight = FontWeight.Bold,
-            color = accentColor
+            color = MaterialTheme.colorScheme.primary
         )
 
         var hasFocus by remember { mutableStateOf(false) }
@@ -168,7 +165,7 @@ private fun MarkerEditScreen(
                 .fillMaxWidth()
                 .border(
                     if (hasFocus) 2.dp else 1.dp,
-                    MaterialTheme.colors.primary,
+                    MaterialTheme.colorScheme.outline,
                     RoundedCornerShape(10.dp)
                 )
 
@@ -176,7 +173,7 @@ private fun MarkerEditScreen(
             BasicTextField(
                 value = commentField,
                 onValueChange = onCommentChange,
-                textStyle = TextStyle(color = MaterialTheme.colors.onSurface),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
                 modifier = Modifier
                     .heightIn(min = 200.dp)
                     .fillMaxWidth()
@@ -186,7 +183,7 @@ private fun MarkerEditScreen(
                     },
                 singleLine = false,
                 maxLines = 10,
-                cursorBrush = SolidColor(MaterialTheme.colors.primary)
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
             )
         }
     }

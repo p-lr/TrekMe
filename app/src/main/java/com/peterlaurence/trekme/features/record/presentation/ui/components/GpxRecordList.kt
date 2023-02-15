@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.record.presentation.ui.components
 
+import android.os.ParcelUuid
 import android.os.Parcelable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
@@ -24,8 +25,10 @@ import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.domain.model.Loading
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.activeColor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.MapSelectionDialogStateful
+import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.RecordingRenameDialog
+import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
 import kotlinx.parcelize.Parcelize
@@ -35,9 +38,8 @@ import java.util.*
 fun GpxRecordListStateful(
     modifier: Modifier = Modifier,
     statViewModel: RecordingStatisticsViewModel,
+    recordViewModel: RecordViewModel,
     onImportMenuClick: () -> Unit,
-    onRenameRecord: (RecordingData) -> Unit,
-    onChooseMapForRecord: (RecordingData) -> Unit,
     onShareRecords: (List<RecordingData>) -> Unit,
     onElevationGraphClick: (RecordingData) -> Unit,
     onDeleteClick: (List<RecordingData>) -> Unit
@@ -94,6 +96,14 @@ fun GpxRecordListStateful(
         itemById = copy
     }
 
+    var recordingRenameDialogData by rememberSaveable {
+        mutableStateOf<RecordingRenameData?>(null)
+    }
+
+    var recordingForMapImport by rememberSaveable {
+        mutableStateOf<ParcelUuid?>(null)
+    }
+
     val actioner: Actioner = { action ->
         when (action) {
             Action.OnMultiSelectionClick -> {
@@ -108,13 +118,13 @@ fun GpxRecordListStateful(
             Action.OnEditClick -> {
                 val selected = getSelected(dataById, items)
                 if (selected != null) {
-                    onRenameRecord(selected)
+                    recordingRenameDialogData = RecordingRenameData(selected.id, selected.name)
                 }
             }
             Action.OnChooseMapClick -> {
                 val selected = getSelected(dataById, items)
                 if (selected != null) {
-                    onChooseMapForRecord(selected)
+                    recordingForMapImport = ParcelUuid(selected.id)
                 }
             }
             Action.OnShareClick -> {
@@ -142,6 +152,26 @@ fun GpxRecordListStateful(
         onItemClick,
         actioner
     )
+
+    recordingRenameDialogData?.also {
+        RecordingRenameDialog(
+            id = it.id,
+            name = it.name,
+            onRename = { id, newName ->
+                statViewModel.renameRecording(id, newName)
+                recordingRenameDialogData = null
+            },
+            onDismissRequest = { recordingRenameDialogData = null }
+        )
+    }
+
+    recordingForMapImport?.also {
+        MapSelectionDialogStateful(
+            recordId = it.uuid,
+            onMapSelected = { map, recordId -> recordViewModel.importRecordInMap(map.id, recordId) },
+            onDismissRequest = { recordingForMapImport = null }
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -212,7 +242,7 @@ private fun RecordingActionBar(
             IconButton(
                 onClick = { actioner(Action.OnMultiSelectionClick) },
                 colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = if (isMultiSelectionMode) activeColor() else MaterialTheme.colorScheme.primary
+                    contentColor = if (isMultiSelectionMode) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
                 ),
             ) {
                 Icon(
@@ -395,3 +425,7 @@ data class SelectableRecordingItem(
     val isSelected: Boolean,
     val id: UUID
 ) : Parcelable
+
+@Stable
+@Parcelize
+data class RecordingRenameData(val id: UUID, val name: String) : Parcelable

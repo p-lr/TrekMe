@@ -2,9 +2,7 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,8 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 
 @Composable
@@ -35,7 +31,8 @@ fun MarkerCallout(
 ) {
     Callout(
         shouldAnimate = shouldAnimate,
-        onAnimationDone = onAnimationDone
+        onAnimationDone = onAnimationDone,
+        elevation = 0.dp,
     ) {
         Column(
             Modifier.size(size),
@@ -43,7 +40,6 @@ fun MarkerCallout(
         ) {
             Text(
                 text = title,
-                color = textColor(),
                 modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp),
                 fontWeight = FontWeight.Medium,
                 maxLines = 3,
@@ -52,7 +48,6 @@ fun MarkerCallout(
             )
             Text(
                 text = subTitle,
-                color = textColor(),
                 modifier = Modifier.padding(vertical = 4.dp),
                 fontSize = 10.sp
             )
@@ -70,7 +65,7 @@ fun MarkerCallout(
                         .clickable {
                             onEditAction()
                         },
-                    tint = accentColor()
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -86,7 +81,7 @@ fun MarkerCallout(
                         .clickable {
                             onMoveAction()
                         },
-                    tint = accentColor()
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -103,7 +98,7 @@ fun MarkerCallout(
                         .clickable {
                             onDeleteAction()
                         },
-                    tint = accentColor()
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }

@@ -1,20 +1,15 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -26,8 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 
 @Composable
@@ -45,7 +38,8 @@ fun BeaconCallout(
 
     Callout(
         shouldAnimate = shouldAnimate,
-        onAnimationDone = onAnimationDone
+        onAnimationDone = onAnimationDone,
+        elevation = 0.dp,
     ) {
         Column(
             Modifier.size(size),
@@ -57,7 +51,6 @@ fun BeaconCallout(
                     modifier = Modifier
                         .padding(top = 11.dp, start = 24.dp, end = 30.dp)
                         .align(Alignment.TopCenter),
-                    color = textColor(),
                     fontWeight = FontWeight.Medium,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
@@ -67,7 +60,6 @@ fun BeaconCallout(
                     painter = painterResource(id = R.drawable.help_circle_outline),
                     modifier = Modifier
                         .padding(top = 8.dp, end = 8.dp)
-                        .background(Color(0x10000000), shape = CircleShape)
                         .clip(CircleShape)
                         .clickable {
                             isShowingHelpDialog = true
@@ -76,14 +68,13 @@ fun BeaconCallout(
                         .alpha(1f)
                         .size(24.dp)
                         .align(Alignment.TopEnd),
-                    colorFilter = ColorFilter.tint(textColor()),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
                     contentDescription = null
                 )
             }
 
             Text(
                 text = subTitle,
-                color = textColor(),
                 modifier = Modifier.padding(vertical = 4.dp),
                 fontSize = 10.sp
             )
@@ -101,7 +92,7 @@ fun BeaconCallout(
                         .clickable {
                             onEditAction()
                         },
-                    tint = accentColor()
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -118,7 +109,7 @@ fun BeaconCallout(
                         .clickable {
                             onMoveAction()
                         },
-                    tint = accentColor()
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -136,7 +127,7 @@ fun BeaconCallout(
                         .clickable {
                             onDeleteAction()
                         },
-                    tint = accentColor()
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -144,9 +135,16 @@ fun BeaconCallout(
 
     if (isShowingHelpDialog) {
         AlertDialog(
-            text = { Text(text = stringResource(id = R.string.beacon_help), color = textColor()) },
+            text = {
+                Text(text = stringResource(id = R.string.beacon_help))
+            },
             onDismissRequest = { isShowingHelpDialog = false },
-            buttons = {}
+            confirmButton = {
+                Text(
+                    text = stringResource(id = R.string.ok_dialog),
+                    modifier = Modifier.clickable { isShowingHelpDialog = false }
+                )
+            }
         )
     }
 }

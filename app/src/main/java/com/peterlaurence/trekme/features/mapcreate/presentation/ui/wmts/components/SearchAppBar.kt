@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -13,9 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -37,6 +35,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.TopBar
  *
  * @since 2021/08/28
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchAppBar(
     state: TopBarState,
@@ -77,7 +76,6 @@ fun SearchAppBar(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_baseline_search_24),
                             contentDescription = null,
-                            tint = Color.White
                         )
                     }
                     if (state.hasPrimaryLayers) {
@@ -85,7 +83,6 @@ fun SearchAppBar(
                             Icon(
                                 painter = painterResource(id = R.drawable.layer),
                                 contentDescription = null,
-                                tint = Color.White
                             )
                         }
                     }
@@ -93,7 +90,6 @@ fun SearchAppBar(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_gps_fixed_24dp),
                             contentDescription = null,
-                            tint = Color.White
                         )
                     }
                     if (state.hasOverflowMenu) {
@@ -104,7 +100,6 @@ fun SearchAppBar(
                             Icon(
                                 Icons.Default.MoreVert,
                                 contentDescription = null,
-                                tint = Color.White
                             )
                         }
                         Box(
@@ -119,15 +114,17 @@ fun SearchAppBar(
                                 offset = DpOffset(0.dp, 0.dp)
                             ) {
                                 if (state.hasOverlayLayers) {
-                                    DropdownMenuItem(onClick = onShowLayerOverlay) {
-                                        Text(stringResource(id = R.string.mapcreate_overlay_layers))
-                                    }
+                                    DropdownMenuItem(
+                                        onClick = onShowLayerOverlay,
+                                        text = { Text(stringResource(id = R.string.mapcreate_overlay_layers)) }
+                                    )
                                 }
 
                                 if (state.hasTrackImport) {
-                                    DropdownMenuItem(onClick = onUseTrack) {
-                                        Text(stringResource(id = R.string.mapcreate_from_track))
-                                    }
+                                    DropdownMenuItem(
+                                        onClick = onUseTrack,
+                                        text = { Text(stringResource(id = R.string.mapcreate_from_track)) }
+                                    )
                                 }
                             }
                         }
@@ -141,6 +138,7 @@ fun SearchAppBar(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
@@ -153,13 +151,14 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
         },
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 8.dp)
             .focusRequester(focusRequester),
-        textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
+        textStyle = TextStyle(fontSize = 18.sp),
         placeholder = {
             Text(
-                text = "Search…",
+                text = stringResource(id = R.string.search_hint),
                 fontSize = 18.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.alpha(0.5f)
             )
         },
@@ -174,7 +173,7 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
                         Icons.Default.Close,
                         contentDescription = "",
                         modifier = Modifier
-                            .padding(15.dp)
+                            .padding(5.dp)
                             .size(24.dp)
                     )
                 }
@@ -183,13 +182,8 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
         singleLine = true,
         shape = RectangleShape,
         colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.White,
-            cursorColor = Color.White,
-            leadingIconColor = Color.White,
-            trailingIconColor = Color.White,
-            backgroundColor = colorResource(id = R.color.colorPrimary),
+            textColor = MaterialTheme.colorScheme.onSurface,
         )
-
     )
 
     DisposableEffect(Unit) {

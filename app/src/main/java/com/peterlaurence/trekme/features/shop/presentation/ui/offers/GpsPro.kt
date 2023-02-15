@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,7 +27,6 @@ import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
 import com.peterlaurence.trekme.core.billing.domain.model.TrialInfo
 import com.peterlaurence.trekme.core.billing.domain.model.TrialUnavailable
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.PriceButton
 import com.peterlaurence.trekme.features.shop.presentation.viewmodel.GpsProPurchaseViewModel
@@ -73,7 +72,6 @@ fun ColumnScope.GpsProPurchaseUI() {
     )
     Text(
         stringResource(id = R.string.gps_pro_pres_p1_title),
-        color = textColor(),
         fontWeight = FontWeight.Medium,
     )
     Spacer(modifier = Modifier.padding(8.dp))
@@ -81,21 +79,18 @@ fun ColumnScope.GpsProPurchaseUI() {
         stringResource(
             id = R.string.gps_pro_pres_content
         ),
-        color = textColor(),
         textAlign = TextAlign.Justify,
         fontSize = 14.sp
     )
     Spacer(modifier = Modifier.padding(8.dp))
     Text(
         stringResource(id = R.string.gps_pro_pres_p2_title),
-        color = textColor(),
         fontWeight = FontWeight.Medium,
     )
     Spacer(modifier = Modifier.padding(8.dp))
     for (device in supportedDevices) {
         Text(
             "• $device",
-            color = textColor(),
             fontSize = 14.sp
         )
     }
@@ -104,7 +99,6 @@ fun ColumnScope.GpsProPurchaseUI() {
         stringResource(
             id = R.string.gps_pro_pres_ending
         ),
-        color = textColor(),
         textAlign = TextAlign.Justify,
         fontSize = 14.sp
     )

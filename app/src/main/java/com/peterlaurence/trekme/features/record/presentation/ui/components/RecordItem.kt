@@ -20,8 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
 import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.activeColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -55,7 +54,7 @@ fun RecordItem(
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
                         .size(14.dp),
-                    colorFilter = ColorFilter.tint(activeColor()),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onTertiaryContainer),
                     contentDescription = null
                 )
             } else {

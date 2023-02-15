@@ -1,15 +1,14 @@
 package com.peterlaurence.trekme.features.map.presentation.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -18,20 +17,21 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundVariant
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.dark_accentGreen
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.light_accentGreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.Error
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ErrorScaffold(
     error: Error,
     onMainMenuClick: () -> Unit,
     onShopClick: () -> Unit
 ) {
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
 
     Scaffold(
         Modifier,
-        scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
                 title = {},
@@ -41,10 +41,13 @@ fun ErrorScaffold(
                     }
                 }
             )
-        }
-    ) {
+        },
+        containerColor = backgroundVariant(),
+        contentColor = MaterialTheme.colorScheme.onBackground
+    ) { paddingValues ->
         when (error) {
             Error.LicenseError -> MissingOffer(
+                Modifier.padding(paddingValues),
                 message = stringResource(R.string.missing_extended_offer),
                 onShopClick
             )
@@ -54,9 +57,9 @@ fun ErrorScaffold(
 }
 
 @Composable
-private fun MissingOffer(message: String, onShopClick: () -> Unit) {
+private fun MissingOffer(modifier: Modifier, message: String, onShopClick: () -> Unit) {
     Column(
-        Modifier
+        modifier
             .fillMaxSize()
             .padding(horizontal = 32.dp),
         verticalArrangement = Arrangement.Center,
@@ -71,14 +74,13 @@ private fun MissingOffer(message: String, onShopClick: () -> Unit) {
         Text(
             text = message,
             modifier = Modifier.padding(vertical = 32.dp),
-            color = textColor(),
             fontSize = 17.sp,
             textAlign = TextAlign.Center
         )
         OutlinedButtonColored(
             onClick = onShopClick,
             text = stringResource(id = R.string.navigate_to_shop),
-            color = colorResource(id = R.color.colorGreen)
+            color = if (isSystemInDarkTheme()) dark_accentGreen else light_accentGreen
         )
     }
 }

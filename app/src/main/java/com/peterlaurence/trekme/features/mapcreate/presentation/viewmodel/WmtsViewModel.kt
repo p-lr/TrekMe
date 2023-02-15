@@ -7,6 +7,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,16 +33,15 @@ import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
 import com.peterlaurence.trekme.features.common.data.dao.OrdnanceSurveyApiDao
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.DownloadFormDataBundle
-import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFragment
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.AreaUiController
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.PlaceMarker
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.Point
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toModel
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.layers.RouteLayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -68,7 +68,6 @@ class WmtsViewModel @Inject constructor(
     private val wmtsSourceRepository: WmtsSourceRepository,
     private val ordnanceSurveyApiDao: OrdnanceSurveyApiDao,
     private val layerOverlayRepository: LayerOverlayRepository,
-    private val mapCreateEventBus: MapCreateEventBus,
     private val locationSource: LocationSource,
     private val geocodingRepository: GeocodingRepository,
     private val parseGeoRecordInteractor: ParseGeoRecordInteractor,
@@ -85,12 +84,15 @@ class WmtsViewModel @Inject constructor(
     private val _wmtsState = MutableStateFlow<WmtsState>(Loading)
     val wmtsState: StateFlow<WmtsState> = _wmtsState.asStateFlow()
 
+    val wmtsSourceState = wmtsSourceRepository.wmtsSourceState
+
     val eventListState = mutableStateListOf<WmtsEvent>()
 
     private val defaultIgnLayer: IgnLayer = IgnClassic
     private val defaultOsmLayer: OsmLayer = WorldStreetMap
 
     private val areaController = AreaUiController()
+    private var downloadFormData: DownloadFormData? = null
 
     private val searchFieldState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
     private var hasPrimaryLayers = false
@@ -184,12 +186,6 @@ class WmtsViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
-            mapCreateEventBus.layerSelectEvent.collectLatest {
-                onPrimaryLayerDefined(it)
-            }
-        }
-
         geocodingRepository.geoPlaceFlow.map { places ->
             if (places != null && _uiState.value is GeoplaceList) {
                 _uiState.value = GeoplaceList(places)
@@ -261,6 +257,8 @@ class WmtsViewModel @Inject constructor(
             )
         }.apply {
             disableFlingZoom()
+            /* Use grey background to contrast with the material 3 top app bar in light mode */
+            setMapBackground(Color(0xFFF8F8F8))
         }
 
         /* Apply configuration */
@@ -369,8 +367,8 @@ class WmtsViewModel @Inject constructor(
         return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] ?: defaultOsmLayer
     }
 
-    private suspend fun onPrimaryLayerDefined(layerId: String) {
-        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+    fun onPrimaryLayerDefined(layerId: String) = viewModelScope.launch {
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return@launch
         setPrimaryLayerForSourceFromId(wmtsSource, layerId)
 
         updateMapState(wmtsSource, true)
@@ -435,8 +433,8 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
-    fun onValidateArea() {
-        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return
+    fun onValidateArea(): DownloadFormData? {
+        val wmtsSource = wmtsSourceRepository.wmtsSourceState.value ?: return null
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
 
         /* Specifically for Cadastre IGN layer, set the startMaxLevel to 17 */
@@ -450,25 +448,25 @@ class WmtsViewModel @Inject constructor(
             mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
 
         /* At this point, the current state should be AreaSelection */
-        val areaSelectionState = _wmtsState.value as? AreaSelection ?: return
+        val areaSelectionState = _wmtsState.value as? AreaSelection ?: return null
 
         fun interpolate(t: Double, min: Double, max: Double) = min + t * (max - min)
         val p1 = with(areaSelectionState.areaUiController) {
             Point(
                 interpolate(p1x, X0, X1),
                 interpolate(p1y, Y0, Y1)
-            )
+            ).toModel()
         }
         val p2 = with(areaSelectionState.areaUiController) {
             Point(
                 interpolate(p2x, X0, X1),
                 interpolate(p2y, Y0, Y1)
-            )
+            ).toModel()
         }
 
         val mapSourceBundle = if (levelConf != null) {
             if (startMaxLevel != null) {
-                DownloadFormDataBundle(
+                DownloadFormData(
                     wmtsSource,
                     p1,
                     p2,
@@ -477,24 +475,26 @@ class WmtsViewModel @Inject constructor(
                     startMaxLevel
                 )
             } else {
-                DownloadFormDataBundle(wmtsSource, p1, p2, levelConf.levelMin, levelConf.levelMax)
+                DownloadFormData(wmtsSource, p1, p2, levelConf.levelMin, levelConf.levelMax)
             }
         } else {
-            DownloadFormDataBundle(wmtsSource, p1, p2)
+            DownloadFormData(wmtsSource, p1, p2)
         }
 
-        mapCreateEventBus.showDownloadForm(mapSourceBundle)
+        return mapSourceBundle.also {
+            downloadFormData = it
+        }
     }
 
     /**
-     * We start the download with the [DownloadService]. The download request is posted to the
+     * Start the download with the [DownloadService]. The download request is posted to the
      * relevant repository before the service is started.
      * The service then process the request when it starts.
      */
-    fun onDownloadFormConfirmed(
-        wmtsSource: WmtsSource,
-        p1: Point, p2: Point, minLevel: Int, maxLevel: Int
-    ) {
+    fun onDownloadFormConfirmed(minLevel: Int, maxLevel: Int) {
+        val downloadForm = downloadFormData ?: return
+        val (wmtsSource, p1, p2) = downloadForm
+
         val mapSpec = getMapSpec(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {

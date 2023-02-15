@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +25,7 @@ fun ScaleIndicator(
     widthPx: Int,
     widthRatio: Float,
     scaleText: String,
-    color: Color = MaterialTheme.colors.primary
+    color: Color = MaterialTheme.colorScheme.tertiaryContainer
 ) {
     Box(
         Modifier.height(25.dp),
@@ -58,7 +58,7 @@ fun ScaleIndicator(
         Text(
             text = scaleText,
             fontSize = 12.sp,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onTertiaryContainer,
             modifier = Modifier
                 .padding(start = 16.dp)
                 .background(color = color, shape = RoundedCornerShape(4.dp))

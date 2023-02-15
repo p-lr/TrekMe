@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
@@ -23,7 +23,6 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.units.DistanceUnit
@@ -31,12 +30,12 @@ import com.peterlaurence.trekme.core.units.DistanceUnit.*
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.text.TextFieldCustom
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.BeaconEditViewModel
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.BeaconEditViewModel.Loading
 import com.peterlaurence.trekme.util.capitalize
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeaconEditStateful(
     viewModel: BeaconEditViewModel = hiltViewModel(),
@@ -160,7 +159,6 @@ private fun BeaconEditScreen(
     Column(
         modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.surface)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start
     ) {
@@ -180,7 +178,7 @@ private fun BeaconEditScreen(
             text = stringResource(id = R.string.beacon_setting_title),
             fontWeight = FontWeight.Medium,
             fontSize = 16.sp,
-            color = MaterialTheme.colors.primary
+            color = MaterialTheme.colorScheme.primary
         )
 
         Row {
@@ -218,12 +216,9 @@ private fun BeaconEditScreen(
             )
 
             if (isShowingUnitsModal) {
-                Dialog(
-                    onDismissRequest = { isShowingUnitsModal = false }) {
-                    Card(
-                        elevation = 8.dp,
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
+                AlertDialog(
+                    onDismissRequest = { isShowingUnitsModal = false },
+                    text = {
                         Column(
                             Modifier
                                 .padding(top = 16.dp)
@@ -256,11 +251,10 @@ private fun BeaconEditScreen(
                                     )
                                     Spacer(modifier = Modifier.width(0.dp))
                                     Text(
-                                        translateUnit(
+                                        text = translateUnit(
                                             unit = unit,
                                             shortVariant = false
                                         ).capitalize(),
-                                        color = textColor(),
                                         style = TextStyle(
                                             lineHeightStyle = LineHeightStyle(
                                                 alignment = LineHeightStyle.Alignment.Center,
@@ -271,8 +265,9 @@ private fun BeaconEditScreen(
                                 }
                             }
                         }
-                    }
-                }
+                    },
+                    confirmButton = {}
+                )
             }
         }
 
@@ -281,7 +276,7 @@ private fun BeaconEditScreen(
             text = stringResource(id = R.string.wgs84_label),
             fontWeight = FontWeight.Medium,
             fontSize = 16.sp,
-            color = MaterialTheme.colors.primary
+            color = MaterialTheme.colorScheme.primary
         )
 
         Row {
@@ -311,7 +306,7 @@ private fun BeaconEditScreen(
             modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
             fontWeight = FontWeight.Medium,
             fontSize = 16.sp,
-            color = MaterialTheme.colors.primary
+            color = MaterialTheme.colorScheme.primary
         )
 
         var hasFocus by remember { mutableStateOf(false) }
@@ -321,7 +316,7 @@ private fun BeaconEditScreen(
                 .fillMaxWidth()
                 .border(
                     if (hasFocus) 2.dp else 1.dp,
-                    MaterialTheme.colors.primary,
+                    MaterialTheme.colorScheme.outline,
                     RoundedCornerShape(10.dp)
                 )
 
@@ -329,7 +324,7 @@ private fun BeaconEditScreen(
             BasicTextField(
                 value = commentField,
                 onValueChange = onCommentChange,
-                textStyle = TextStyle(color = MaterialTheme.colors.onSurface),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
                 modifier = Modifier
                     .heightIn(min = 200.dp)
                     .fillMaxWidth()
@@ -339,7 +334,7 @@ private fun BeaconEditScreen(
                     },
                 singleLine = false,
                 maxLines = 10,
-                cursorBrush = SolidColor(MaterialTheme.colors.primary)
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
             )
         }
     }

@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.backgroundVariant
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundVariant
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
@@ -90,9 +90,7 @@ private fun SourceRow(source: WmtsSource, onSourceClick: (WmtsSource) -> Unit) {
                                 Text(text = stringResource(id = R.string.ign_legal_notice))
                             },
                             confirmButton = {
-                                OutlinedButton(
-                                    onClick = { openDialog.value = false },
-                                ) {
+                                TextButton(onClick = { openDialog.value = false }) {
                                     Text(stringResource(id = R.string.ok_dialog))
                                 }
                             },

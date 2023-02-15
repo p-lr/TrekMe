@@ -12,7 +12,7 @@ import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.databinding.FragmentMapCreateBinding
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

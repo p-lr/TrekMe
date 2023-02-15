@@ -11,18 +11,15 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
-import com.peterlaurence.trekme.core.wmts.domain.model.*
 import com.peterlaurence.trekme.databinding.FragmentWmtsBinding
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.*
-import com.peterlaurence.trekme.features.mapcreate.presentation.events.MapCreateEventBus
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsOnBoardingViewModel
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.collectWhileResumed
 import com.peterlaurence.trekme.util.collectWhileResumedIn
-import com.peterlaurence.trekme.util.collectWhileStartedIn
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -66,9 +63,6 @@ class WmtsFragment : Fragment() {
     lateinit var appEventBus: AppEventBus
 
     @Inject
-    lateinit var eventBus: MapCreateEventBus
-
-    @Inject
     lateinit var locationSource: LocationSource
 
     @Inject
@@ -84,15 +78,6 @@ class WmtsFragment : Fragment() {
         defaultViewModelProviderFactory
     }
 
-    private val layerIdToResId = mapOf(
-        ignPlanv2 to R.string.layer_ign_plan_v2,
-        ignClassic to R.string.layer_ign_classic,
-        ignSatellite to R.string.layer_ign_satellite,
-        osmTopo to R.string.layer_osm_topo,
-        osmStreet to R.string.layer_osm_street,
-        openTopoMap to R.string.layer_osm_opentopo
-    )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -102,10 +87,6 @@ class WmtsFragment : Fragment() {
         locationSource.locationFlow.collectWhileResumed(this) { loc ->
             viewModel.onLocationReceived(loc)
         }
-
-        eventBus.showDownloadFormEvent.map {
-            showDownloadForm(it)
-        }.collectWhileStartedIn(this)
 
         /* Circumvent a nasty bug causing the AbstractComposeView to be not responsive
          * to touch events at certain state transitions */
@@ -142,8 +123,6 @@ class WmtsFragment : Fragment() {
                     WmtsStateful(
                         viewModel,
                         onBoardingViewModel,
-                        wmtsSourceRepository.wmtsSourceState,
-                        ::showPrimaryLayerSelection,
                         ::showLayerOverlay,
                         appEventBus::openDrawer
                     )
@@ -152,25 +131,6 @@ class WmtsFragment : Fragment() {
         }
 
         return binding.root
-    }
-
-    private fun showPrimaryLayerSelection() {
-        wmtsSource?.also { wmtsSource ->
-            val title = getString(R.string.ign_select_layer_title)
-            val layers = viewModel.getAvailablePrimaryLayersForSource(wmtsSource)
-                ?: return@also
-            val activeLayer =
-                viewModel.getActivePrimaryLayerForSource(wmtsSource) ?: return@also
-            val ids = layers.map { it.id }
-            val values = layers.mapNotNull { translateLayerName(it) }
-            val selectedValue = translateLayerName(activeLayer) ?: return@also
-            val layerSelectDialog =
-                LayerSelectDialog.newInstance(title, ids, values, selectedValue)
-            layerSelectDialog.show(
-                requireActivity().supportFragmentManager,
-                "LayerSelectDialog"
-            )
-        }
     }
 
     private fun showLayerOverlay() {
@@ -182,17 +142,6 @@ class WmtsFragment : Fragment() {
                 )
             findNavController().navigate(action)
         }
-    }
-
-    private fun translateLayerName(layer: Layer): String? {
-        val res = layerIdToResId[layer.id] ?: return null
-        return getString(res)
-    }
-
-    private fun showDownloadForm(data: DownloadFormDataBundle) {
-        val fm = activity?.supportFragmentManager ?: return
-        val wmtsLevelsDialog = WmtsLevelsDialog.newInstance(data)
-        wmtsLevelsDialog.show(fm, "fragment")
     }
 }
 

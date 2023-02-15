@@ -3,13 +3,11 @@ package com.peterlaurence.trekme.features.maplist.presentation.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -22,6 +20,7 @@ import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.ui.MapUI
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalibrationStateful(
     viewModel: CalibrationViewModel
@@ -34,7 +33,7 @@ fun CalibrationStateful(
         Loading -> {}
         is MapUiState -> {
 
-            val scaffoldState: ScaffoldState = rememberScaffoldState()
+            val snackbarHostState = remember { SnackbarHostState() }
             val scope = rememberCoroutineScope()
 
             if (events.isNotEmpty()) {
@@ -47,16 +46,17 @@ fun CalibrationStateful(
                 SideEffect {
                     scope.launch {
                         /* Dismiss the currently showing snackbar, if any */
-                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                        snackbarHostState.currentSnackbarData?.dismiss()
 
-                        scaffoldState.snackbarHostState
-                            .showSnackbar(message, actionLabel = ok)
+                        snackbarHostState.showSnackbar(message, actionLabel = ok)
                     }
                     viewModel.acknowledgeEvent()
                 }
             }
 
-            Scaffold(scaffoldState = scaffoldState) { paddingValues ->
+            Scaffold(
+                snackbarHost = { SnackbarHost(snackbarHostState) }
+            ) { paddingValues ->
                 Column(Modifier.padding(paddingValues)) {
                     val mapUiState = uiState as MapUiState
                     val calibrationPoints = mapUiState.calibrationPoints
@@ -126,12 +126,10 @@ private fun Calibration(
             Modifier
                 .padding(start = 9.dp)
                 .size(48.dp),
-            backgroundColor = colorResource(id = R.color.colorAccent)
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_save_white_24dp),
-                contentDescription = null,
-                tint = Color.White
+                contentDescription = stringResource(id = R.string.save_action)
             )
         }
     }
@@ -153,11 +151,14 @@ private fun PointSelector(
                     painter = painterResource(id = R.drawable.ic_looks_one_black_24dp),
                     contentDescription = stringResource(id = R.string.first_calibration_pt),
                     tint = if (activePointId == PointId.One) {
-                        colorResource(id = R.color.colorAccent)
-                    } else Color.Black
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer
+                    }
                 )
             }
 
+            val enabled = calibrationMethod != CalibrationMethod.SIMPLE_2_POINTS
             IconButton(
                 onClick = { onPointSelection(PointId.Three) },
                 enabled = calibrationMethod != CalibrationMethod.SIMPLE_2_POINTS
@@ -166,22 +167,31 @@ private fun PointSelector(
                     painter = painterResource(id = R.drawable.ic_looks_3_black_24dp),
                     contentDescription = stringResource(id = R.string.third_calibration_pt),
                     tint = if (activePointId == PointId.Three) {
-                        colorResource(id = R.color.colorAccent)
-                    } else Color.Black.copy(alpha = LocalContentAlpha.current)
+                        MaterialTheme.colorScheme.primary
+                    } else if (enabled) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                    }
                 )
             }
         }
         Row {
+            val enabled = calibrationMethod == CalibrationMethod.CALIBRATION_4_POINTS
             IconButton(
                 onClick = { onPointSelection(PointId.Four) },
-                enabled = calibrationMethod == CalibrationMethod.CALIBRATION_4_POINTS
+                enabled = enabled
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_looks_4_black_24dp),
                     contentDescription = stringResource(id = R.string.fourth_calibration_pt),
                     tint = if (activePointId == PointId.Four) {
-                        colorResource(id = R.color.colorAccent)
-                    } else Color.Black.copy(alpha = LocalContentAlpha.current)
+                        MaterialTheme.colorScheme.primary
+                    } else if (enabled) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                    }
                 )
             }
 
@@ -190,8 +200,10 @@ private fun PointSelector(
                     painter = painterResource(id = R.drawable.ic_looks_two_black_24dp),
                     contentDescription = stringResource(id = R.string.second_calibration_pt),
                     tint = if (activePointId == PointId.Two) {
-                        colorResource(id = R.color.colorAccent)
-                    } else Color.Black
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer
+                    },
                 )
             }
         }
@@ -203,9 +215,8 @@ private fun LatLonTextField(
     value: String,
     onValueChange: (String) -> Unit
 ) {
-    val unfocusedColor =
-        MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.UnfocusedIndicatorLineOpacity)
-    val focusedColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
+    val unfocusedColor = MaterialTheme.colorScheme.onSurface
+    val focusedColor = MaterialTheme.colorScheme.primary
 
     var focused by remember { mutableStateOf(false) }
 
@@ -230,7 +241,8 @@ private fun LatLonTextField(
                     Spacer(modifier = Modifier.height(1.dp))
                 }
             }
-        }
+        },
+        textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface)
     )
 }
 
@@ -239,7 +251,6 @@ private fun LatLonPrefix(text: String) {
     Text(
         modifier = Modifier.padding(end = 8.dp),
         text = text,
-        color = colorResource(id = R.color.colorGrey),
         fontSize = 14.sp
     )
 }

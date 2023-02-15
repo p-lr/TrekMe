@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ElevationFixDialog(
     elevationFix: Int,
@@ -28,24 +28,6 @@ fun ElevationFixDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(text = stringResource(id = R.string.elevation_fix_title))
-        },
-        buttons = {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(end = 16.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    colors = ButtonDefaults.textButtonColors(contentColor = accentColor()),
-                    onClick = {
-                        onDismiss()
-                        onElevationFixUpdate(text.text.toDoubleOrNull()?.toInt() ?: 0)
-                    }
-                ) {
-                    Text(stringResource(id = R.string.save_action))
-                }
-            }
         },
         text = {
             Column {
@@ -66,6 +48,23 @@ fun ElevationFixDialog(
                     fontWeight = FontWeight.Light,
                     fontSize = 13.sp
                 )
+            }
+        },
+        confirmButton = {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(
+                    onClick = {
+                        onDismiss()
+                        onElevationFixUpdate(text.text.toDoubleOrNull()?.toInt() ?: 0)
+                    }
+                ) {
+                    Text(stringResource(id = R.string.save_action))
+                }
             }
         }
     )

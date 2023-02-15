@@ -5,22 +5,20 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import kotlinx.coroutines.delay
 
 @Composable
@@ -39,6 +37,7 @@ fun OnBoardingTip(
             shape = shape,
             popupOrigin = popupOrigin,
             delayMs = delayMs,
+            elevation = 12.dp,
             shouldAnimate = shouldAnimate,
             onAnimationDone = { shouldAnimate = false }
         ) {
@@ -56,7 +55,6 @@ fun OnBoardingTip(
                         fontSize = 16.sp,
                         textAlign = TextAlign.Left,
                         fontWeight = FontWeight.Bold,
-                        color = textColor()
                     )
                 }
 
@@ -67,8 +65,7 @@ fun OnBoardingTip(
                         modifier = Modifier.padding(top = 0.dp, end = 8.dp, bottom = 8.dp),
                     ) {
                         Text(
-                            text = stringResource(id = R.string.ok_dialog),
-                            color = colorResource(id = R.color.colorAccent)
+                            text = stringResource(id = R.string.ok_dialog)
                         )
                     }
                 }
@@ -102,12 +99,13 @@ private fun LightBulbAnimated() {
     }
 
     Box(contentAlignment = Alignment.Center) {
+        val primaryColor = MaterialTheme.colorScheme.primary
         Canvas(modifier = Modifier.size(50.dp)) {
             val canvasWidth = size.width
             val canvasHeight = size.height
             animationValues.forEach {
                 drawCircle(
-                    color = Color(0xff2196f3),
+                    color = primaryColor,
                     center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
                     radius = size.minDimension * it / 2,
                     alpha = 1f - it

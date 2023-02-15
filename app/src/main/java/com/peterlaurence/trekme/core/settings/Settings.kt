@@ -63,7 +63,7 @@ class Settings @Inject constructor(
     private val showScaleIndicator = booleanPreferencesKey("showScaleIndicator")
     private val scaleRatioCentered = floatPreferencesKey("scaleRatioCentered")
     private val measurementSystem = stringPreferencesKey("measurementSystem")
-    private val locationDisclaimer = booleanPreferencesKey("locationDisclaimer")
+    private val locationRationale = booleanPreferencesKey("locationDisclaimer")
     private val locationProducerInfo = stringPreferencesKey("locationProducerInfo")
 
     /**
@@ -304,13 +304,13 @@ class Settings @Inject constructor(
         }
     }
 
-    fun isShowingLocationDisclaimer(): Flow<Boolean> {
-        return dataStore.data.map { it[locationDisclaimer] ?: true }
+    fun isShowingLocationRationale(): Flow<Boolean> {
+        return dataStore.data.map { it[locationRationale] ?: true }
     }
 
     suspend fun discardLocationDisclaimer() {
         dataStore.edit {
-            it[locationDisclaimer] = false
+            it[locationRationale] = false
         }
     }
 

@@ -3,10 +3,10 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.compone
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -27,8 +27,11 @@ import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingS
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.DialogShape
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LevelsDialogStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.PrimaryLayerDialogStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.PrimaryLayerSelectionData
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas
 import ovh.plrapps.mapcompose.api.fullSize
@@ -106,7 +109,7 @@ private fun FabAreaSelection(onToggleArea: () -> Unit) {
     FloatingActionButton(
         onClick = onToggleArea,
     ) {
-        Image(
+        Icon(
             painter = painterResource(id = R.drawable.ic_crop_free_white_24dp),
             contentDescription = null
         )
@@ -154,22 +157,62 @@ private fun CustomErrorScreen(state: WmtsError) {
 fun WmtsStateful(
     viewModel: WmtsViewModel,
     onBoardingViewModel: WmtsOnBoardingViewModel,
-    wmtsSourceStateFlow: StateFlow<WmtsSource?>,
-    onLayerSelection: () -> Unit,
     onShowLayerOverlay: () -> Unit,
     onMenuClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val topBarState by viewModel.topBarState.collectAsState()
     val onBoardingState by onBoardingViewModel.onBoardingState
-    val wmtsSource by wmtsSourceStateFlow.collectAsState()
+    val wmtsSource by viewModel.wmtsSourceState.collectAsState()
 
     val events = viewModel.eventListState.toList()
 
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.also {
-            viewModel.onTrackImport(uri)
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.also {
+                viewModel.onTrackImport(uri)
+            }
         }
+
+    var primaryLayerSelectionData by rememberSaveable { mutableStateOf<PrimaryLayerSelectionData?>(null) }
+    primaryLayerSelectionData?.also { data ->
+        PrimaryLayerDialogStateful(
+            layerIds = data.layerIds,
+            initialActiveLayerId = data.selectedLayerId,
+            onLayerSelected = {
+                viewModel.onPrimaryLayerDefined(it)
+                primaryLayerSelectionData = null
+            },
+            onDismiss = { primaryLayerSelectionData = null }
+        )
+    }
+
+    var levelsDialogData by rememberSaveable { mutableStateOf<DownloadFormData?>(null) }
+    levelsDialogData?.also { data ->
+        LevelsDialogStateful(
+            minLevel = data.levelMin,
+            maxLevel = data.levelMax,
+            p1 = data.p1,
+            p2 = data.p2,
+            onDownloadClicked = { minLevel, maxLevel ->
+                viewModel.onDownloadFormConfirmed(minLevel, maxLevel)
+                levelsDialogData = null
+            },
+            onDismiss = { levelsDialogData = null }
+        )
+    }
+
+    val onValidateArea = {
+        val downloadForm = viewModel.onValidateArea()
+        levelsDialogData = downloadForm
+    }
+
+    val onPrimaryLayerSelection = l@{
+        val source = wmtsSource ?: return@l
+        val layers = viewModel.getAvailablePrimaryLayersForSource(source) ?: return@l
+        val activeLayer = viewModel.getActivePrimaryLayerForSource(source) ?: return@l
+
+        primaryLayerSelectionData = PrimaryLayerSelectionData(layers.map { it.id }, activeLayer.id)
     }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -182,13 +225,13 @@ fun WmtsStateful(
                 viewModel.toggleArea()
                 onBoardingViewModel.onFabTipAck()
             },
-            viewModel::onValidateArea,
+            onValidateArea,
             onMenuClick,
             viewModel::onSearchClick,
             viewModel::onCloseSearch,
             viewModel::onQueryTextSubmit,
             viewModel::moveToPlace,
-            onLayerSelection,
+            onPrimaryLayerSelection,
             onZoomOnPosition = {
                 viewModel.zoomOnPosition()
                 onBoardingViewModel.onCenterOnPosTipAck()
@@ -264,6 +307,7 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WmtsScaffold(
     events: List<WmtsEvent>, topBarState: TopBarState, uiState: UiState,
@@ -279,7 +323,7 @@ fun WmtsScaffold(
     onShowLayerOverlay: () -> Unit,
     onUseTrack: () -> Unit
 ) {
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
 
@@ -293,10 +337,9 @@ fun WmtsScaffold(
         SideEffect {
             scope.launch {
                 /* Dismiss the currently showing snackbar, if any */
-                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.currentSnackbarData?.dismiss()
 
-                scaffoldState.snackbarHostState
-                    .showSnackbar(message, actionLabel = ok)
+                snackbarHostState.showSnackbar(message, actionLabel = ok)
             }
             onAckError()
         }
@@ -304,7 +347,7 @@ fun WmtsScaffold(
 
     Scaffold(
         Modifier.fillMaxSize(),
-        scaffoldState = scaffoldState,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             SearchAppBar(
                 topBarState,
@@ -330,7 +373,9 @@ fun WmtsScaffold(
             }
         },
     ) { innerPadding ->
-        val modifier = Modifier.fillMaxSize().padding(innerPadding)
+        val modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
 
         when (uiState) {
             is GeoplaceList -> {

@@ -17,14 +17,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 
 /**
  * This view-model exposes a [recordingDataFlow] flow which holds the the state of the list of
  * recordings.
- * It also responds to some events coming from UI components, such as [RecordingNameChangeEvent]
- * to trigger proper update of [recordingDataFlow].
  *
  * @since 2019/04/21
  */
@@ -43,12 +42,6 @@ class RecordingStatisticsViewModel @Inject constructor(
     val newRecordingEventFlow = newRecordingEventChannel.receiveAsFlow()
 
     init {
-        viewModelScope.launch {
-            eventBus.recordingNameChangeEvent.collect {
-                onRecordingNameChangeEvent(it)
-            }
-        }
-
         /* Emit an event when there's a new element in the list */
         viewModelScope.launch {
             recordingDataFlow.filterIsInstance<RecordingsAvailable>().scan(0) { s, l ->
@@ -72,8 +65,10 @@ class RecordingStatisticsViewModel @Inject constructor(
         return geoRecordInteractor.getRecordUri(recordingData.id)
     }
 
-    private suspend fun onRecordingNameChangeEvent(event: RecordEventBus.RecordingNameChangeEvent) {
-        geoRecordInteractor.rename(event.id, event.newValue)
+    fun renameRecording(id: UUID, newName: String) {
+        viewModelScope.launch {
+            geoRecordInteractor.rename(id, newName)
+        }
     }
 
     fun onRequestDeleteRecordings(recordingDataList: List<RecordingData>) = viewModelScope.launch {

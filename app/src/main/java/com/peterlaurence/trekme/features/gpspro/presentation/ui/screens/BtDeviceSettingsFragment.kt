@@ -9,13 +9,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
-import com.peterlaurence.trekme.databinding.FragmentBtDeviceSettingsBinding
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.GpsProViewModel
+import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.selectedDevice
 import com.peterlaurence.trekme.util.collectWhileStarted
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +34,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class BtDeviceSettingsFragment : Fragment() {
-    private var binding: FragmentBtDeviceSettingsBinding? = null
+    private val viewModel: GpsProViewModel by activityViewModels()
 
     @Inject
     lateinit var gpsProEvents: GpsProEvents
@@ -59,13 +66,30 @@ class BtDeviceSettingsFragment : Fragment() {
             title = getString(R.string.bt_device_frgmt_title)
         }
 
-        binding = FragmentBtDeviceSettingsBinding.inflate(inflater, container, false)
-        return binding!!.root
-    }
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
+            val intents = object : BtDeviceSettingsIntents {
+                override fun onGenerateReport() {
+                    viewModel.generateDiagnosis()
+                }
+
+                override fun onCancelDiagnosisSave() = viewModel.cancelDiagnosis()
+
+                override fun onSaveDiagnosis() {
+                    viewModel.saveDiagnosis()
+                }
+            }
+
+            setContent {
+                val selectedDevice = viewModel.bluetoothState.selectedDevice ?: return@setContent
+                val diagnosisState by viewModel.isDiagnosisRunning.collectAsState()
+
+                TrekMeTheme {
+                    BtDeviceSettingsUI(selectedDevice, diagnosisState, intents)
+                }
+            }
+        }
     }
 
     private val fileWriteLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

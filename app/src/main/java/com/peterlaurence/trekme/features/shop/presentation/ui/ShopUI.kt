@@ -6,7 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.HorizontalPager
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.PagerState
 import com.peterlaurence.trekme.features.common.presentation.ui.pager.rememberPagerState
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundVariant
 import com.peterlaurence.trekme.features.shop.presentation.ui.offers.*
 
 @Composable
@@ -44,7 +46,7 @@ fun ShopCarousel(
     firstOffer: OfferUi,
     secondOffer: OfferUi,
 ) {
-    Column(Modifier.background(Color.Gray)) {
+    Column(Modifier.background(backgroundVariant())) {
         Row(
             Modifier
                 .fillMaxWidth()
@@ -58,7 +60,7 @@ fun ShopCarousel(
                         .clip(CircleShape)
                         .background(
                             if (it == pagerState.currentPage) {
-                                Color(0xFFEF6C00)
+                                MaterialTheme.colorScheme.primary
                             } else Color.White
                         )
                 )
@@ -72,28 +74,29 @@ fun ShopCarousel(
             Box(
                 contentAlignment = Alignment.BottomCenter
             ) {
-                Column(
+                Surface(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(start = 16.dp, end = 16.dp, bottom = 43.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colors.surface)
                 ) {
-                    when (page) {
-                        0 -> (firstOffer.header)()
-                        1 -> (secondOffer.header)()
-                    }
-
-                    val scrollState = rememberScrollState()
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(start = 32.dp, end = 32.dp, bottom = 32.dp)
-                            .verticalScroll(scrollState),
-                    ) {
+                    Column {
                         when (page) {
-                            0 -> (firstOffer.content)()
-                            1 -> (secondOffer.content)()
+                            0 -> (firstOffer.header)()
+                            1 -> (secondOffer.header)()
+                        }
+
+                        val scrollState = rememberScrollState()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(start = 32.dp, end = 32.dp, bottom = 32.dp)
+                                .verticalScroll(scrollState),
+                        ) {
+                            when (page) {
+                                0 -> (firstOffer.content)()
+                                1 -> (secondOffer.content)()
+                            }
                         }
                     }
                 }

@@ -7,14 +7,12 @@ import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -31,10 +29,9 @@ import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapLayout
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
-import com.peterlaurence.trekme.features.map.presentation.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
-import java.util.UUID
+import java.util.*
 
 @Composable
 fun MapScreen(
@@ -53,7 +50,8 @@ fun MapScreen(
     val isShowingSpeed by viewModel.isShowingSpeedFlow().collectAsState(initial = false)
     val isLockedOnpPosition by viewModel.isLockedOnPosition()
     val isShowingGpsData by viewModel.isShowingGpsDataFlow().collectAsState(initial = false)
-    val isShowingScaleIndicator by viewModel.settings.getShowScaleIndicator().collectAsState(initial = true)
+    val isShowingScaleIndicator by viewModel.settings.getShowScaleIndicator()
+        .collectAsState(initial = true)
     val snackBarEvents = viewModel.snackBarController.snackBarEvents.toList()
     val stats by statisticsViewModel.stats.collectAsState(initial = null)
     val rotationMode by viewModel.settings.getRotationMode()
@@ -157,6 +155,7 @@ fun MapScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MapScaffold(
     modifier: Modifier = Modifier,
@@ -190,7 +189,7 @@ private fun MapScaffold(
     onCompassClick: () -> Unit,
     onElevationFixUpdate: (Int) -> Unit
 ) {
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     if (snackBarEvents.isNotEmpty()) {
@@ -202,10 +201,9 @@ private fun MapScaffold(
         SideEffect {
             scope.launch {
                 /* Dismiss the currently showing snackbar, if any */
-                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.currentSnackbarData?.dismiss()
 
-                scaffoldState.snackbarHostState
-                    .showSnackbar(message, actionLabel = ok)
+                snackbarHostState.showSnackbar(message, actionLabel = ok)
             }
             onSnackBarShown()
         }
@@ -213,7 +211,7 @@ private fun MapScaffold(
 
     Scaffold(
         modifier,
-        scaffoldState = scaffoldState,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             MapTopAppBar(
                 isShowingOrientation,
@@ -249,13 +247,13 @@ private fun MapScaffold(
                 }
 
                 FloatingActionButton(
-                    backgroundColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
                     onClick = onPositionFabClick,
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_gps_fixed_24dp),
                         contentDescription = stringResource(id = R.string.center_on_position_btn_desc),
-                        colorFilter = ColorFilter.tint(colorResource(id = R.color.colorAccent))
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                 }
             }

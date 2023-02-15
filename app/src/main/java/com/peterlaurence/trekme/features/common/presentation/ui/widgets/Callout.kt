@@ -5,14 +5,16 @@ import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
@@ -29,12 +31,13 @@ import kotlinx.coroutines.delay
 @Composable
 fun Callout(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(5.dp),
+    shape: Shape = CardDefaults.elevatedShape,
     shouldAnimate: Boolean = true,
     delayMs: Long = 0,
+    elevation: Dp = 3.dp,
     popupOrigin: PopupOrigin = PopupOrigin.BottomCenter,
     onAnimationDone: () -> Unit = {},
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     var animVal by remember { mutableStateOf(if (shouldAnimate) 0f else 1f) }
 
@@ -50,8 +53,8 @@ fun Callout(
             onAnimationDone()
         }
     }
-    Surface(
-        modifier
+    ElevatedCard(
+        modifier = modifier
             .alpha(animVal)
             .graphicsLayer {
                 scaleX = animVal
@@ -59,7 +62,7 @@ fun Callout(
                 transformOrigin = getTransformOrigin(popupOrigin)
             },
         shape = shape,
-        elevation = 10.dp,
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation),
         content = content
     )
 }

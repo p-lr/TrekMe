@@ -1,37 +1,5 @@
 package com.peterlaurence.trekme.features.common.presentation.ui.theme
 
-import androidx.compose.material.Typography
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Typography
 
-// Set of Material typography styles to start with
-val Typography = Typography(
-    h1 = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 24.sp,
-    ),
-
-    body1 = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-    ),
-
-    button = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.W500,
-        fontSize = 14.sp,
-        color = Color.Unspecified
-    ),
-    /* Other default text styles to override
-    caption = TextStyle(
-    fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Normal,
-    fontSize = 12.sp
-    )
-    */
-)
+val TypographyM3 = Typography()

@@ -2,19 +2,13 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import android.content.res.Configuration
 import android.os.Parcelable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.RadioButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -23,15 +17,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import kotlinx.parcelize.Parcelize
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColorPicker(initColor: Long = 0L, onColorPicked: (Long) -> Unit = {}, onCancel: () -> Unit = {}) {
+fun ColorPicker(
+    initColor: Long = 0L,
+    onColorPicked: (Long) -> Unit = {},
+    onCancel: () -> Unit = {}
+) {
     val initValues = remember(initColor) {
         findColorInPalettes(initColor)
     }
@@ -47,154 +43,145 @@ fun ColorPicker(initColor: Long = 0L, onColorPicked: (Long) -> Unit = {}, onCanc
     }
     var activeIndex by remember { mutableStateOf(initValues?.second ?: 0) }
 
-    Column(
-        Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor())
-            .padding(top = 16.dp)
-    ) {
-        Text(
-            stringResource(id = R.string.color_picker_title),
-            modifier = Modifier.padding(start = 16.dp, bottom = 24.dp),
-            color = textColor(),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium
-        )
-        val strokeColor = textColor()
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(36.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            repeat(3) { index ->
-                Surface(
-                    onClick = { activeIndex = index },
-                    shape = CircleShape,
-                    color = Color(palette[index]),
+    AlertDialog(
+        onDismissRequest = onCancel,
+        text = {
+            Column(
+                Modifier.padding(top = 16.dp)
+            ) {
+                Text(
+                    stringResource(id = R.string.color_picker_title),
+                    modifier = Modifier.padding(start = 16.dp, bottom = 24.dp),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                val strokeColor = MaterialTheme.colorScheme.onSurface
+                Row(
                     modifier = Modifier
-                        .padding(horizontal = if (index == activeIndex) 0.dp else 3.dp)
-                        .size(if (index == activeIndex) 36.dp else 30.dp)
-                        .drawBehind {
-                            if (index == activeIndex) {
-                                drawCircle(strokeColor, 19.dp.toPx(), style = Stroke(3.dp.toPx()))
-                            }
-                        }
+                        .fillMaxWidth()
+                        .height(36.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-
+                    repeat(3) { index ->
+                        Surface(
+                            onClick = { activeIndex = index },
+                            shape = CircleShape,
+                            color = Color(palette[index]),
+                            modifier = Modifier
+                                .padding(horizontal = if (index == activeIndex) 0.dp else 3.dp)
+                                .size(if (index == activeIndex) 36.dp else 30.dp)
+                                .drawBehind {
+                                    if (index == activeIndex) {
+                                        drawCircle(
+                                            strokeColor,
+                                            19.dp.toPx(),
+                                            style = Stroke(3.dp.toPx())
+                                        )
+                                    }
+                                }
+                        ) {}
+                    }
                 }
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(36.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            repeat(3) { index ->
-                Surface(
-                    onClick = { activeIndex = 3 + index },
-                    shape = CircleShape,
-                    color = Color(palette[3 + index]),
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
                     modifier = Modifier
-                        .padding(horizontal = if (3 + index == activeIndex) 0.dp else 3.dp)
-                        .size(if (3 + index == activeIndex) 36.dp else 30.dp)
-                        .drawBehind {
-                            if (3 + index == activeIndex) {
-                                drawCircle(strokeColor, 19.dp.toPx(), style = Stroke(3.dp.toPx()))
+                        .fillMaxWidth()
+                        .height(36.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(3) { index ->
+                        Surface(
+                            onClick = { activeIndex = 3 + index },
+                            shape = CircleShape,
+                            color = Color(palette[3 + index]),
+                            modifier = Modifier
+                                .padding(horizontal = if (3 + index == activeIndex) 0.dp else 3.dp)
+                                .size(if (3 + index == activeIndex) 36.dp else 30.dp)
+                                .drawBehind {
+                                    if (3 + index == activeIndex) {
+                                        drawCircle(
+                                            strokeColor,
+                                            19.dp.toPx(),
+                                            style = Stroke(3.dp.toPx())
+                                        )
+                                    }
+                                }
+                        ) {}
+                    }
+                }
+
+                Row(Modifier.padding(start = 16.dp, top = 16.dp)) {
+                    Text(
+                        stringResource(id = R.string.color_variant_label),
+                        modifier = Modifier.padding(top = 13.dp),
+                        fontWeight = FontWeight.Medium,
+                    )
+
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable {
+                                paletteVariant = PaletteVariant.NORMAL
                             }
+                        ) {
+                            RadioButton(
+                                selected = paletteVariant == PaletteVariant.NORMAL,
+                                onClick = { paletteVariant = PaletteVariant.NORMAL }
+                            )
+                            Text(text = stringResource(id = R.string.color_variant_normal),)
                         }
-                ) {
 
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable {
+                                paletteVariant = PaletteVariant.LIGHT
+                            }
+                        ) {
+                            RadioButton(
+                                selected = paletteVariant == PaletteVariant.LIGHT,
+                                onClick = { paletteVariant = PaletteVariant.LIGHT }
+                            )
+                            Text(text = stringResource(id = R.string.color_variant_light),)
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable {
+                                paletteVariant = PaletteVariant.DARK
+                            }
+                        ) {
+                            RadioButton(
+                                selected = paletteVariant == PaletteVariant.DARK,
+                                onClick = { paletteVariant = PaletteVariant.DARK }
+                            )
+                            Text(text = stringResource(id = R.string.color_variant_dark),)
+                        }
+                    }
                 }
             }
-        }
-
-        Row(Modifier.padding(start = 16.dp, top = 16.dp)) {
-            Text(
-                stringResource(id = R.string.color_variant_label),
-                modifier = Modifier.padding(top = 13.dp),
-                fontWeight = FontWeight.Medium,
-                color = textColor()
-            )
-
-            Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        paletteVariant = PaletteVariant.NORMAL
-                    }
-                ) {
-                    RadioButton(
-                        selected = paletteVariant == PaletteVariant.NORMAL,
-                        onClick = { paletteVariant = PaletteVariant.NORMAL }
-                    )
-                    Text(
-                        text = stringResource(id = R.string.color_variant_normal),
-                        color = textColor()
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        paletteVariant = PaletteVariant.LIGHT
-                    }
-                ) {
-                    RadioButton(
-                        selected = paletteVariant == PaletteVariant.LIGHT,
-                        onClick = { paletteVariant = PaletteVariant.LIGHT }
-                    )
-                    Text(
-                        text = stringResource(id = R.string.color_variant_light),
-                        color = textColor()
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        paletteVariant = PaletteVariant.DARK
-                    }
-                ) {
-                    RadioButton(
-                        selected = paletteVariant == PaletteVariant.DARK,
-                        onClick = { paletteVariant = PaletteVariant.DARK }
-                    )
-                    Text(
-                        text = stringResource(id = R.string.color_variant_dark),
-                        color = textColor()
-                    )
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(end = 16.dp),
-            horizontalArrangement = Arrangement.End
-        ) {
+        },
+        dismissButton = {
             TextButton(onClick = onCancel) {
                 Text(
                     text = stringResource(id = R.string.cancel_dialog_string),
-                    color = accentColor()
                 )
             }
+        },
+        confirmButton = {
             TextButton(onClick = { onColorPicked(palette[activeIndex]) }) {
                 Text(
                     text = stringResource(id = R.string.apply_color_btn),
-                    color = accentColor()
                 )
             }
         }
-    }
+    )
 }
 
 private fun findColorInPalettes(color: Long): Pair<PaletteVariant, Int>? {
     PaletteVariant.values().forEach { variant ->
-        val palette = when(variant) {
+        val palette = when (variant) {
             PaletteVariant.NORMAL -> normalPalette
             PaletteVariant.LIGHT -> lightPalette
             PaletteVariant.DARK -> darkPalette

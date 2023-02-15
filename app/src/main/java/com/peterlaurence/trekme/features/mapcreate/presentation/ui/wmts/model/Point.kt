@@ -8,3 +8,4 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Point as PointDomain
 data class Point(val X: Double, val Y: Double) : Parcelable
 
 fun Point.toDomain(): PointDomain = PointDomain(X, Y)
+fun PointDomain.toModel() = Point(X, Y)

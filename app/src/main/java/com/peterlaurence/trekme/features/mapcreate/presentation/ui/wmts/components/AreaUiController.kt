@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -57,16 +56,14 @@ class AreaUiController {
             Box(
                 modifier = Modifier
                     .size(50.dp)
-                    .background(colorResource(id = R.color.colorAreaMarker))
-                    .clip(CircleShape)
+                    .background(colorResource(id = R.color.colorAreaMarker), shape = CircleShape)
             )
         }
         state.addMarker(m2, p2x, p2y, Offset(-0.5f, -0.5f)) {
             Box(
                 modifier = Modifier
                     .size(50.dp)
-                    .background(colorResource(id = R.color.colorAreaMarker))
-                    .clip(CircleShape)
+                    .background(colorResource(id = R.color.colorAreaMarker), shape = CircleShape)
             )
         }
         state.addMarker(central, pcx, pcy, Offset(-0.5f, -0.5f)) {

@@ -6,26 +6,17 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.map.app.service.BeaconService
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.BeaconServiceLauncherViewModel
 import com.peterlaurence.trekme.util.compose.annotatedStringResource
@@ -73,22 +64,15 @@ fun BeaconServiceLauncher(
         }
         AlertDialog(
             text = {
-                Text(text = annotatedStringResource(id = R.string.beacon_background_loc_perm), fontSize = 17.sp, color = textColor())
+                Text(
+                    text = annotatedStringResource(id = R.string.beacon_background_loc_perm),
+                    fontSize = 17.sp
+                )
             },
             onDismissRequest = onDismiss,
-            buttons = {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        colors = ButtonDefaults.textButtonColors(contentColor = accentColor()),
-                        onClick = onDismiss
-                    ) {
-                        Text(stringResource(id = R.string.ok_dialog))
-                    }
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(id = R.string.ok_dialog))
                 }
             }
         )

@@ -26,7 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
 import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections

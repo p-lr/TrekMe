@@ -10,33 +10,33 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.*
 import androidx.compose.material.DismissDirection.EndToStart
 import androidx.compose.material.DismissDirection.StartToEnd
 import androidx.compose.material.DismissValue.*
+import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.*
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
 import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
@@ -79,16 +79,16 @@ fun TracksManageStateful(
         }
     }
 
-    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
     val errorMsg = stringResource(id = R.string.gpx_import_error_msg)
     val resultRecap = stringResource(id = R.string.import_result_recap)
     launchFlowCollectionWithLifecycle(viewModel.routeImportEventFlow) { result ->
         when (result) {
             GeoRecordImportResult.GeoRecordImportError -> {
-                scaffoldState.snackbarHostState.showSnackbar(errorMsg)
+                snackbarHostState.showSnackbar(errorMsg)
             }
             is GeoRecordImportResult.GeoRecordImportOk -> {
-                scaffoldState.snackbarHostState.showSnackbar(
+                snackbarHostState.showSnackbar(
                     resultRecap.format(
                         result.newRouteCount,
                         result.newMarkersCount
@@ -100,7 +100,7 @@ fun TracksManageStateful(
 
     TracksManageScreen(
         topAppBarState = topAppBarState,
-        scaffoldState = scaffoldState,
+        snackbarHostState = snackbarHostState,
         selectableRoutes = selectableRoutes,
         onMenuClick = onMenuClick,
         onRouteRename = { newName ->
@@ -134,10 +134,11 @@ fun TracksManageStateful(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TracksManageScreen(
     topAppBarState: TopAppBarState,
-    scaffoldState: ScaffoldState,
+    snackbarHostState: SnackbarHostState,
     selectableRoutes: List<SelectableRoute>,
     onMenuClick: () -> Unit,
     onRouteRename: (String) -> Unit,
@@ -149,7 +150,7 @@ private fun TracksManageScreen(
     onAddNewRoute: () -> Unit
 ) {
     Scaffold(
-        scaffoldState = scaffoldState,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TrackTopAppbar(
                 state = topAppBarState,
@@ -159,10 +160,13 @@ private fun TracksManageScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddNewRoute) {
+            FloatingActionButton(
+                onClick = onAddNewRoute,
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_add_24),
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     contentDescription = stringResource(
                         id = R.string.add_track_btn_desc
                     )
@@ -171,7 +175,12 @@ private fun TracksManageScreen(
         }
     ) { padding ->
         if (selectableRoutes.isEmpty()) {
-            Text(stringResource(id = R.string.no_track_message), Modifier.padding(16.dp), color = textColor())
+            Text(
+                stringResource(id = R.string.no_track_message),
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(16.dp),
+            )
         } else {
             TrackList(
                 Modifier.padding(padding),
@@ -185,6 +194,7 @@ private fun TracksManageScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TrackTopAppbar(
     state: TopAppBarState,
@@ -210,8 +220,7 @@ private fun TrackTopAppbar(
                 ) {
                     Icon(
                         Icons.Default.MoreVert,
-                        contentDescription = null,
-                        tint = Color.White
+                        contentDescription = null
                     )
                 }
                 Box(
@@ -225,17 +234,23 @@ private fun TrackTopAppbar(
                         onDismissRequest = { expanded = false },
                         offset = DpOffset(0.dp, 0.dp)
                     ) {
-                        DropdownMenuItem(onClick = {
-                            expanded = false
-                            isShowingRenameModal = true
-                        }) {
-                            Text(stringResource(id = R.string.track_rename_action))
-                        }
+                        DropdownMenuItem(
+                            onClick = {
+                                expanded = false
+                                isShowingRenameModal = true
+                            },
+                            text = {
+                                Text(stringResource(id = R.string.track_rename_action))
+                            }
+                        )
 
                         if (state.hasCenterOnTrack) {
-                            DropdownMenuItem(onClick = onGoToRoute) {
-                                Text(stringResource(id = R.string.go_to_track_on_map))
-                            }
+                            DropdownMenuItem(
+                                onClick = onGoToRoute,
+                                text = {
+                                    Text(stringResource(id = R.string.go_to_track_on_map))
+                                }
+                            )
                         }
                     }
                 }
@@ -255,33 +270,25 @@ private fun TrackTopAppbar(
                     value = name,
                     onValueChange = { name = it },
                     colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.Transparent,
-                        textColor = textColor()
+                        containerColor = Color.Transparent,
                     )
                 )
             },
-            buttons = {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp),
-                    horizontalArrangement = Arrangement.End
+            dismissButton = {
+                TextButton(
+                    onClick = { isShowingRenameModal = false }
                 ) {
-                    TextButton(
-                        colors = ButtonDefaults.textButtonColors(contentColor = accentColor()),
-                        onClick = { isShowingRenameModal = false }
-                    ) {
-                        Text(stringResource(id = R.string.cancel_dialog_string))
+                    Text(stringResource(id = R.string.cancel_dialog_string))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isShowingRenameModal = false
+                        onRouteRename(name)
                     }
-                    TextButton(
-                        colors = ButtonDefaults.textButtonColors(contentColor = accentColor()),
-                        onClick = {
-                            isShowingRenameModal = false
-                            onRouteRename(name)
-                        }
-                    ) {
-                        Text(stringResource(id = R.string.ok_dialog))
-                    }
+                ) {
+                    Text(stringResource(id = R.string.ok_dialog))
                 }
             }
         )
@@ -301,7 +308,7 @@ private fun TrackList(
     LazyColumn(
         modifier
             .fillMaxSize()
-            .background(backgroundColor())
+            .background(MaterialTheme.colorScheme.background)
     ) {
         itemsIndexed(selectableRoutes, key = { _, it -> it.route.id }) { index, selectableRoute ->
             val dismissState = rememberDismissState(
@@ -380,11 +387,9 @@ private fun TrackItem(
             .fillMaxWidth()
             .background(
                 if (selectableRoute.isSelected) {
-                    if (isSystemInDarkTheme()) Color(0xff3b5072) else Color(0xffc1d8ff)
+                    MaterialTheme.colorScheme.tertiaryContainer
                 } else {
-                    if (index % 2 == 1) surfaceBackground() else {
-                        if (isSystemInDarkTheme()) Color(0xff3c3c3c) else Color(0xffeaeaea)
-                    }
+                    if (index % 2 == 0) MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp) else MaterialTheme.colorScheme.surface
                 }
             )
             .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -393,38 +398,38 @@ private fun TrackItem(
     ) {
         Text(
             text = name,
-            color = textColor(),
             modifier = Modifier.weight(1f)
         )
 
         Row {
             ColorIndicator(color, onClick = { isShowingColorPicker = true })
             Spacer(modifier = Modifier.width(10.dp))
-            Image(
-                painter = if (visible) {
-                    painterResource(id = R.drawable.ic_visibility_black_24dp)
-                } else {
-                    painterResource(id = R.drawable.ic_visibility_off_black_24dp)
-                },
-                modifier = Modifier.clickable { onVisibilityToggle(selectableRoute) },
-                contentDescription = stringResource(id = R.string.track_visibility_btn),
-                colorFilter = ColorFilter.tint(textColor())
-            )
+            IconButton(
+                onClick = { onVisibilityToggle(selectableRoute) },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    painter = if (visible) {
+                        painterResource(id = R.drawable.ic_visibility_black_24dp)
+                    } else {
+                        painterResource(id = R.drawable.ic_visibility_off_black_24dp)
+                    },
+                    contentDescription = stringResource(id = R.string.track_visibility_btn),
+                )
+            }
         }
 
     }
 
     if (isShowingColorPicker) {
-        Dialog(onDismissRequest = { isShowingColorPicker = false }) {
-            ColorPicker(
-                initColor = parseColorL(color),
-                onColorPicked = { c ->
-                    onColorChange(selectableRoute, c)
-                    isShowingColorPicker = false
-                },
-                onCancel = { isShowingColorPicker = false }
-            )
-        }
+        ColorPicker(
+            initColor = parseColorL(color),
+            onColorPicked = { c ->
+                onColorChange(selectableRoute, c)
+                isShowingColorPicker = false
+            },
+            onCancel = { isShowingColorPicker = false }
+        )
     }
 }
 
@@ -454,8 +459,13 @@ private data class TopAppBarState(
 
 private data class SelectableRoute(val route: Route, val isSelected: Boolean)
 
-@Preview(showBackground = true, widthDp = 350)
-@Preview(showBackground = true, widthDp = 350, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, widthDp = 350, heightDp = 200)
+@Preview(
+    showBackground = true,
+    widthDp = 350,
+    heightDp = 200,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 private fun TrackListPreview() {
     TrekMeTheme {

@@ -3,10 +3,12 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -49,14 +51,15 @@ private fun StatWithImage(statText: String, @DrawableRes imageId: Int) {
     Row(
         Modifier
             .padding(start = 5.dp, end = 10.dp)
-            .height(24.dp),
+            .height(30.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(id = imageId),
-            contentDescription = stringResource(id = R.string.distance)
+            contentDescription = stringResource(id = R.string.distance),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.secondary)
         )
         Spacer(modifier = Modifier.width(5.dp))
-        Text(text = statText)
+        Text(text = statText, color = MaterialTheme.colorScheme.onBackground)
     }
 }

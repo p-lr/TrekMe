@@ -24,17 +24,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.m3.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundColor
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundVariant
 import com.peterlaurence.trekme.features.record.app.service.GpxRecordService
 import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import com.peterlaurence.trekme.features.record.presentation.ui.components.ActionsStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.GpxRecordListStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.StatusStateful
-import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.BatteryOptWarningDialog
-import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.LocalisationDisclaimer
-import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.MapSelectionForImport
-import com.peterlaurence.trekme.features.record.presentation.ui.components.dialogs.TrackFileNameEdit
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.GpxRecordServiceViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordViewModel
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
@@ -93,16 +89,8 @@ class RecordFragment : Fragment() {
             snackbar.show()
         }
 
-        eventBus.showLocationDisclaimerSignal.collectWhileResumed(this) {
-            LocalisationDisclaimer().show(parentFragmentManager, null)
-        }
-
         appEventBus.geoRecordImportEvent.collectWhileResumed(this) {
             onGpxImported(it)
-        }
-
-        eventBus.disableBatteryOptSignal.collectWhileResumed(this) {
-            BatteryOptWarningDialog().show(parentFragmentManager, null)
         }
     }
 
@@ -123,7 +111,7 @@ class RecordFragment : Fragment() {
                     Column(
                         Modifier
                             .fillMaxSize()
-                            .background(backgroundColor())
+                            .background(backgroundVariant())
                     ) {
                         Row(
                             Modifier
@@ -147,8 +135,9 @@ class RecordFragment : Fragment() {
                         }
 
                         GpxRecordListStateful(
-                            Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
-                            statViewModel,
+                            modifier = Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
+                            statViewModel = statViewModel,
+                            recordViewModel = viewModel,
                             onImportMenuClick = {
                                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                                 intent.addCategory(Intent.CATEGORY_OPENABLE)
@@ -157,30 +146,6 @@ class RecordFragment : Fragment() {
                                 /* Search for all documents available via installed storage providers */
                                 intent.type = "*/*"
                                 importRecordingsLauncher.launch(intent)
-                            },
-                            onRenameRecord = { data ->
-                                val fragmentActivity = activity
-                                if (fragmentActivity != null) {
-                                    val editFieldDialog = TrackFileNameEdit.newInstance(
-                                        getString(R.string.track_file_name_change),
-                                        data.id,
-                                        data.name
-                                    )
-                                    editFieldDialog.show(
-                                        fragmentActivity.supportFragmentManager,
-                                        "EditFieldDialog" + data.name
-                                    )
-                                }
-                            },
-                            onChooseMapForRecord = { data ->
-                                val fragmentActivity = activity
-                                if (fragmentActivity != null) {
-                                    val dialog = MapSelectionForImport.newInstance(data.id)
-                                    dialog.show(
-                                        fragmentActivity.supportFragmentManager,
-                                        "MapSelectionForImport"
-                                    )
-                                }
                             },
                             onShareRecords = { dataList ->
                                 val activity = activity ?: return@GpxRecordListStateful

@@ -3,7 +3,7 @@ package com.peterlaurence.trekme.features.common.presentation.ui.text
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.*
@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextFieldCustom(
     modifier: Modifier = Modifier,
@@ -48,7 +49,7 @@ fun TextFieldCustom(
                 }
             },
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
+                containerColor = Color.Transparent,
             ),
             readOnly = readOnly,
             enabled = enabled,
@@ -80,7 +81,7 @@ fun TextFieldCustom(
                         .padding(top = 4.dp),
                     textAlign = TextAlign.End,
                     fontSize = 12.sp,
-                    color = MaterialTheme.colors.primary
+                    color = MaterialTheme.colorScheme.primary
                 )
             } else {
                 Spacer(modifier = Modifier.height(20.dp))

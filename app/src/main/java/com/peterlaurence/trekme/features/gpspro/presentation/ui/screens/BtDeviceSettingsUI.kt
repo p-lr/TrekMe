@@ -1,33 +1,23 @@
 package com.peterlaurence.trekme.features.gpspro.presentation.ui.screens
 
-import android.content.Context
-import android.util.AttributeSet
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.AbstractComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.findFragment
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
-import com.peterlaurence.trekme.features.gpspro.presentation.ui.components.IconCircle
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.gpspro.domain.repositories.*
+import com.peterlaurence.trekme.features.gpspro.presentation.ui.components.IconCircle
 import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.BluetoothDeviceStub
-import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.GpsProViewModel
-import com.peterlaurence.trekme.features.gpspro.presentation.viewmodel.selectedDevice
 
 
 @Composable
@@ -37,9 +27,11 @@ fun BtDeviceSettingsUI(
     intents: BtDeviceSettingsIntents
 ) {
     val color = Color(0xFF4CAF50)
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Header(name = btDeviceStub.name, color)
-        RecordButton(diagnosisState, intents)
+    Surface {
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Header(name = btDeviceStub.name, color)
+            RecordButton(diagnosisState, intents)
+        }
     }
 }
 
@@ -56,65 +48,64 @@ private fun Header(name: String, color: Color) {
 @Composable
 private fun RecordButton(diagnosisState: DiagnosisState, intents: BtDeviceSettingsIntents) {
     val openDialog = remember { mutableStateOf(false) }
-    Row(
+    Column(
         Modifier
-            .fillMaxWidth()
-            .padding(end = 16.dp, bottom = 8.dp)
-            .clickable(enabled = diagnosisState is Ready || diagnosisState is DiagnosisEmpty) {
-                openDialog.value = true
-            }
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         when (diagnosisState) {
             Ready -> {
-                Text(
-                    text = stringResource(id = R.string.bt_device_frgmt_record),
-                    modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp)
-                )
-            }
-            DiagnosisRunning -> {
-                Text(
-                    text = stringResource(id = R.string.bt_device_frgmt_record_running),
-                    color = colorResource(id = R.color.colorGrey),
-                    modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp)
-                )
-            }
-            DiagnosisEmpty -> {
-                Column(Modifier.fillMaxWidth()) {
+                ElevatedButton(
+                    onClick = { openDialog.value = true },
+                ) {
                     Text(
                         text = stringResource(id = R.string.bt_device_frgmt_record),
-                        modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 16.dp)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.bt_device_settings_diagnostic_empty),
-                        modifier = Modifier.padding(start = 74.dp, top = 0.dp, bottom = 24.dp),
-                        color = colorResource(id = R.color.colorGrey)
                     )
                 }
+            }
+            DiagnosisRunning -> {
+                LinearProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = stringResource(id = R.string.bt_device_frgmt_record_running))
+            }
+            DiagnosisEmpty -> {
+                Text(
+                    text = stringResource(id = R.string.bt_device_settings_diagnostic_empty),
+                    modifier = Modifier.padding(horizontal = 48.dp)
+                )
 
+                ElevatedButton(
+                    onClick = { openDialog.value = true },
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 24.dp)
+                ) {
+                    Text(text = stringResource(id = R.string.bt_device_frgmt_record))
+                }
             }
             is DiagnosisAwaitingSave -> {
-                Column(Modifier.fillMaxWidth()) {
-                    Text(
-                        text = stringResource(id = R.string.bt_device_settings_diagnostic_done).format(
-                            diagnosisState.nbSentences
-                        ),
-                        modifier = Modifier.padding(start = 74.dp, top = 24.dp, bottom = 24.dp)
+                Text(
+                    text = stringResource(id = R.string.bt_device_settings_diagnostic_done).format(
+                        diagnosisState.nbSentences
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.Bottom
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    TextButton(
+                        onClick = { intents.onCancelDiagnosisSave() },
                     ) {
-                        OutlinedButtonColored(
-                            onClick = { intents.onCancelDiagnosisSave() },
-                            text = stringResource(id = R.string.cancel_dialog_string),
-                            color = colorResource(id = R.color.colorDarkGrey)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        OutlinedButtonColored(
-                            onClick = { intents.onSaveDiagnosis() },
-                            color = colorResource(id = R.color.colorGreen),
-                            text = stringResource(id = R.string.save_action))
+                        Text(stringResource(id = R.string.cancel_dialog_string))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = { intents.onSaveDiagnosis() },
+                    ) {
+                        Text(stringResource(id = R.string.save_action))
                     }
                 }
             }
@@ -140,64 +131,25 @@ private fun ShowDialog(openDialog: MutableState<Boolean>, onStartPressed: () -> 
             )
         },
         confirmButton = {
-            OutlinedButtonColored(
+            TextButton(
                 onClick = {
                     openDialog.value = false
                     onStartPressed()
-                },
-                color = colorResource(id = R.color.colorGreen),
-                text = stringResource(id = R.string.start_dialog_string)
-            )
+                }
+            ) {
+                Text(stringResource(id = R.string.start_dialog_string))
+            }
         },
         dismissButton = {
-            OutlinedButtonColored(
+            TextButton(
                 onClick = {
                     openDialog.value = false
-                },
-                color = colorResource(id = R.color.colorDarkGrey),
-                text = stringResource(id = R.string.cancel_dialog_string)
-            )
+                }
+            ) {
+                Text(stringResource(id = R.string.cancel_dialog_string))
+            }
         }
     )
-}
-
-class BtDeviceSettingsView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyle: Int = 0
-) : AbstractComposeView(context, attrs, defStyle) {
-
-    @Composable
-    override fun Content() {
-        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-
-        /* Get a view-model scoped to the GpsProFragment in the nav graph. Once the GpsProFragment
-         * is popped from the backstack, the view-model is cleared */
-        val f = findFragment<BtDeviceSettingsFragment>()
-        val viewModel: GpsProViewModel = viewModel(
-            f.findNavController().getBackStackEntry(R.id.gpsProFragment),
-            factory = f.defaultViewModelProviderFactory
-        )
-
-        val selectedDevice = viewModel.bluetoothState.selectedDevice ?: return
-        val diagnosisState by viewModel.isDiagnosisRunning.collectAsState()
-
-        val intents = object : BtDeviceSettingsIntents {
-            override fun onGenerateReport() {
-                viewModel.generateDiagnosis()
-            }
-
-            override fun onCancelDiagnosisSave() = viewModel.cancelDiagnosis()
-
-            override fun onSaveDiagnosis() {
-                viewModel.saveDiagnosis()
-            }
-        }
-
-        TrekMeTheme {
-            BtDeviceSettingsUI(selectedDevice, diagnosisState, intents)
-        }
-    }
 }
 
 interface BtDeviceSettingsIntents {

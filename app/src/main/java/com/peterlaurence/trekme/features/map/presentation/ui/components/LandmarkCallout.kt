@@ -2,9 +2,10 @@ package com.peterlaurence.trekme.features.map.presentation.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,8 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentColor
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.textColor
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.Callout
 
 @Composable
@@ -28,7 +27,8 @@ fun LandmarkCallout(
 ) {
     Callout(
         shouldAnimate = shouldAnimate,
-        onAnimationDone = onAnimationDone
+        onAnimationDone = onAnimationDone,
+        elevation = 0.dp,
     ) {
         Column(
             Modifier.size(size),
@@ -37,14 +37,12 @@ fun LandmarkCallout(
             Text(
                 text = stringResource(id = R.string.callout_landmark_title),
                 modifier = Modifier.padding(top = 8.dp),
-                color = textColor(),
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
             Text(
                 text = subTitle,
                 modifier = Modifier.padding(vertical = 4.dp),
-                color = textColor(),
                 fontSize = 10.sp
             )
             Spacer(modifier = Modifier.weight(1f))
@@ -61,7 +59,7 @@ fun LandmarkCallout(
                         .clickable {
                             onMoveAction()
                         },
-                    tint = accentColor()
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Divider(
@@ -78,7 +76,7 @@ fun LandmarkCallout(
                         .clickable {
                             onDeleteAction()
                         },
-                    tint = accentColor()
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
