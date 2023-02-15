@@ -1,14 +1,11 @@
 package com.peterlaurence.trekme.features.record.presentation.ui
 
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.os.ParcelUuid
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -56,23 +53,6 @@ class RecordFragment : Fragment() {
 
     @Inject
     lateinit var appEventBus: AppEventBus
-
-    private val importRecordingsLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val uri = result.data?.data
-                val uriList = if (uri != null) {
-                    /* One file selected */
-                    listOf(uri)
-                } else {
-                    val clipData = result.data?.clipData ?: return@registerForActivityResult
-                    (0 until clipData.itemCount).map {
-                        clipData.getItemAt(it).uri
-                    }
-                }
-                statViewModel.importRecordings(uriList)
-            }
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,15 +118,6 @@ class RecordFragment : Fragment() {
                             modifier = Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
                             statViewModel = statViewModel,
                             recordViewModel = viewModel,
-                            onImportMenuClick = {
-                                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                                intent.addCategory(Intent.CATEGORY_OPENABLE)
-                                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-
-                                /* Search for all documents available via installed storage providers */
-                                intent.type = "*/*"
-                                importRecordingsLauncher.launch(intent)
-                            },
                             onShareRecords = { dataList ->
                                 val activity = activity ?: return@GpxRecordListStateful
                                 val intentBuilder = ShareCompat.IntentBuilder(activity)

@@ -2,6 +2,8 @@ package com.peterlaurence.trekme.features.record.presentation.ui.components
 
 import android.os.ParcelUuid
 import android.os.Parcelable
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,7 +41,6 @@ fun GpxRecordListStateful(
     modifier: Modifier = Modifier,
     statViewModel: RecordingStatisticsViewModel,
     recordViewModel: RecordViewModel,
-    onImportMenuClick: () -> Unit,
     onShareRecords: (List<RecordingData>) -> Unit,
     onElevationGraphClick: (RecordingData) -> Unit,
     onDeleteClick: (List<RecordingData>) -> Unit
@@ -104,6 +105,12 @@ fun GpxRecordListStateful(
         mutableStateOf<ParcelUuid?>(null)
     }
 
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uriList ->
+        statViewModel.importRecordings(uriList)
+    }
+
     val actioner: Actioner = { action ->
         when (action) {
             Action.OnMultiSelectionClick -> {
@@ -114,7 +121,10 @@ fun GpxRecordListStateful(
                     }
                 }
             }
-            Action.OnImportMenuCLick -> onImportMenuClick()
+            Action.OnImportMenuCLick -> {
+                /* Search for all documents available via installed storage providers */
+                launcher.launch("*/*")
+            }
             Action.OnEditClick -> {
                 val selected = getSelected(dataById, items)
                 if (selected != null) {
