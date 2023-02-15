@@ -6,7 +6,6 @@ import com.peterlaurence.trekme.features.record.data.datasource.IgnElevationData
 import com.peterlaurence.trekme.features.record.domain.datasource.ElevationDataSource
 import com.peterlaurence.trekme.features.record.domain.model.ElevationStateOwner
 import com.peterlaurence.trekme.features.record.domain.repositories.ElevationRepository
-import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,10 +17,6 @@ import kotlinx.coroutines.Dispatchers
 @Module
 @InstallIn(ActivityRetainedComponent::class)
 object RecordModule {
-    @ActivityRetainedScoped
-    @Provides
-    fun bindEventBus(): RecordEventBus = RecordEventBus()
-
     @ActivityRetainedScoped
     @Provides
     fun bindElevationRepository(elevationDataSource: ElevationDataSource): ElevationRepository {

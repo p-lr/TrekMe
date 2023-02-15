@@ -12,12 +12,11 @@ import com.peterlaurence.trekme.features.common.domain.model.RecordingsAvailable
 import com.peterlaurence.trekme.features.common.domain.model.RecordingsState
 import com.peterlaurence.trekme.features.record.domain.interactors.ImportRecordingsInteractor
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
-import com.peterlaurence.trekme.features.record.presentation.events.RecordEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.UUID
+import java.util.*
 import javax.inject.Inject
 
 
@@ -33,13 +32,15 @@ class RecordingStatisticsViewModel @Inject constructor(
     recordingDataStateOwner: RecordingDataStateOwner,
     private val geoRecordInteractor: GeoRecordInteractor,
     private val importRecordingsInteractor: ImportRecordingsInteractor,
-    private val eventBus: RecordEventBus,
 ) : ViewModel() {
 
     val recordingDataFlow: StateFlow<RecordingsState> = recordingDataStateOwner.recordingDataFlow
 
     private val newRecordingEventChannel = Channel<Unit>(1)
     val newRecordingEventFlow = newRecordingEventChannel.receiveAsFlow()
+
+    private val recordingDeletionFailureChannel = Channel<Unit>(1)
+    val recordingDeletionFailureFlow = recordingDeletionFailureChannel.receiveAsFlow()
 
     init {
         /* Emit an event when there's a new element in the list */
@@ -77,7 +78,7 @@ class RecordingStatisticsViewModel @Inject constructor(
             val success = geoRecordInteractor.delete(recordingDataList.map { it.id })
             /* If only one removal failed, notify the user */
             if (!success) {
-                eventBus.postRecordingDeletionFailed()
+                recordingDeletionFailureChannel.send(Unit)
             }
         }
 

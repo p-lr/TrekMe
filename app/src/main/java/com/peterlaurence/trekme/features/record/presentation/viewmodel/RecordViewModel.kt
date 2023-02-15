@@ -15,6 +15,8 @@ import com.peterlaurence.trekme.features.common.domain.interactors.georecord.Imp
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.record.app.service.event.GpxFileWriteEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import java.util.*
@@ -30,6 +32,9 @@ class RecordViewModel @Inject constructor(
     private val gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
 ) : ViewModel() {
+
+    private val geoRecordImportResultChannel = Channel<GeoRecordImportResult>(1)
+    val geoRecordImportResultFlow = geoRecordImportResultChannel.receiveAsFlow()
 
     init {
         viewModelScope.launch {
@@ -54,7 +59,6 @@ class RecordViewModel @Inject constructor(
                         /* Import the new route */
                         val result =
                             importGeoRecordInteractor.applyGeoRecordFileToMap(event.gpxFile, map)
-                        appEventBus.postGeoRecordImportResult(result)
                         if (result is GeoRecordImportResult.GeoRecordImportOk && result.newRouteCount >= 1) {
                             importCount++
                         }
@@ -76,9 +80,12 @@ class RecordViewModel @Inject constructor(
 
         viewModelScope.launch {
             importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map).let {
-                /* Once done, notify the rest of the app */
-                appEventBus.postGeoRecordImportResult(it)
+                geoRecordImportResultChannel.send(it)
             }
         }
+    }
+
+    fun onMainMenuClick() {
+        appEventBus.openDrawer()
     }
 }

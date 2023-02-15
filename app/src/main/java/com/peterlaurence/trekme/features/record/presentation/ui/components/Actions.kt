@@ -33,9 +33,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ActionsStateful(
     modifier: Modifier = Modifier,
-    viewModel: GpxRecordServiceViewModel,
-    onStartStopClick: () -> Unit,
-    onPauseResumeClick: () -> Unit
+    viewModel: GpxRecordServiceViewModel
 ) {
     val gpxRecordState by viewModel.status.collectAsState()
     val disableBatterySignal = remember { viewModel.disableBatteryOptSignal.receiveAsFlow() }
@@ -88,8 +86,8 @@ fun ActionsStateful(
     Actions(
         modifier = modifier,
         gpxRecordState = gpxRecordState,
-        onStartStopClick = onStartStopClick,
-        onPauseResumeClick = onPauseResumeClick
+        onStartStopClick = viewModel::onStartStopClicked,
+        onPauseResumeClick = viewModel::onPauseResumeClicked
     )
 }
 

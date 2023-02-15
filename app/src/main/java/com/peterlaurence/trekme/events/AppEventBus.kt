@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.events
 
 import com.peterlaurence.trekme.core.billing.data.model.BillingParams
-import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -25,13 +24,6 @@ class AppEventBus {
     val requestBackgroundLocationSignal = _requestBackgroundLocationSignal.asSharedFlow()
 
     fun requestBackgroundLocation() = _requestBackgroundLocationSignal.tryEmit(Unit)
-
-    /**********************************************************************************************/
-
-    private val _geoRecordImportEvent = MutableSharedFlow<GeoRecordImportResult>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val geoRecordImportEvent = _geoRecordImportEvent.asSharedFlow()
-
-    fun postGeoRecordImportResult(event: GeoRecordImportResult) = _geoRecordImportEvent.tryEmit(event)
 
     /**********************************************************************************************/
 
