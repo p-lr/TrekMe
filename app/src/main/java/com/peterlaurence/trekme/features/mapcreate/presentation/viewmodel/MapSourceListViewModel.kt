@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.common.domain.repositories.OnBoardingRepository
 import com.peterlaurence.trekme.util.isEnglish
@@ -17,6 +18,7 @@ class MapSourceListViewModel @Inject constructor(
     @ApplicationContext appContext: Context,
     private val wmtsSourceRepository: WmtsSourceRepository,
     onBoardingRepository: OnBoardingRepository,
+    private val appEventBus: AppEventBus
 ): ViewModel() {
     val sourceList = mutableStateOf<List<WmtsSource>>(listOf())
     val showOnBoarding = mutableStateOf(onBoardingRepository.mapCreateOnBoarding)
@@ -41,5 +43,9 @@ class MapSourceListViewModel @Inject constructor(
 
     fun setMapSource(source: WmtsSource) {
         wmtsSourceRepository.setMapSource(source)
+    }
+
+    fun onMainMenuClick() {
+        appEventBus.openDrawer()
     }
 }

@@ -25,6 +25,8 @@ import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.settings.RotationMode
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_background
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapLayout
@@ -108,42 +110,46 @@ fun MapScreen(
             LoadingScreen()
         }
         is MapUiState -> {
-            Column {
-                MapScaffold(
-                    Modifier.weight(1f, true),
-                    uiState as MapUiState,
-                    isShowingOrientation,
-                    isShowingDistance,
-                    isShowingDistanceOnTrack,
-                    isShowingSpeed,
-                    isLockedOnpPosition,
-                    isShowingGpsData,
-                    isShowingScaleIndicator,
-                    rotationMode,
-                    snackBarEvents,
-                    location,
-                    elevationFix,
-                    hasElevationFix = purchaseState == PurchaseState.PURCHASED,
-                    hasBeacons = purchaseState == PurchaseState.PURCHASED,
-                    onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
-                    onMainMenuClick = viewModel::onMainMenuClick,
-                    onManageTracks = onNavigateToTracksManage,
-                    onToggleShowOrientation = viewModel::toggleShowOrientation,
-                    onAddMarker = viewModel.markerLayer::addMarker,
-                    onAddLandmark = viewModel.landmarkLayer::addLandmark,
-                    onAddBeacon = viewModel.beaconLayer::addBeacon,
-                    onShowDistance = viewModel.distanceLayer::toggleDistance,
-                    onToggleDistanceOnTrack = viewModel.routeLayer::toggleDistanceOnTrack,
-                    onToggleSpeed = viewModel::toggleSpeed,
-                    onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
-                    onToggleShowGpsData = viewModel::toggleShowGpsData,
-                    onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
-                    onCompassClick = viewModel::alignToNorth,
-                    onElevationFixUpdate = viewModel::onElevationFixUpdate
-                )
+            /* Always use the light theme background (dark theme or not). Done this way, it
+             * doesn't add a GPU overdraw. */
+            TrekMeTheme(darkThemeBackground = md_theme_light_background) {
+                Column {
+                    MapScaffold(
+                        Modifier.weight(1f, true),
+                        uiState as MapUiState,
+                        isShowingOrientation,
+                        isShowingDistance,
+                        isShowingDistanceOnTrack,
+                        isShowingSpeed,
+                        isLockedOnpPosition,
+                        isShowingGpsData,
+                        isShowingScaleIndicator,
+                        rotationMode,
+                        snackBarEvents,
+                        location,
+                        elevationFix,
+                        hasElevationFix = purchaseState == PurchaseState.PURCHASED,
+                        hasBeacons = purchaseState == PurchaseState.PURCHASED,
+                        onSnackBarShown = viewModel.snackBarController::onSnackBarShown,
+                        onMainMenuClick = viewModel::onMainMenuClick,
+                        onManageTracks = onNavigateToTracksManage,
+                        onToggleShowOrientation = viewModel::toggleShowOrientation,
+                        onAddMarker = viewModel.markerLayer::addMarker,
+                        onAddLandmark = viewModel.landmarkLayer::addLandmark,
+                        onAddBeacon = viewModel.beaconLayer::addBeacon,
+                        onShowDistance = viewModel.distanceLayer::toggleDistance,
+                        onToggleDistanceOnTrack = viewModel.routeLayer::toggleDistanceOnTrack,
+                        onToggleSpeed = viewModel::toggleSpeed,
+                        onToggleLockOnPosition = viewModel.locationOrientationLayer::toggleLockedOnPosition,
+                        onToggleShowGpsData = viewModel::toggleShowGpsData,
+                        onPositionFabClick = viewModel.locationOrientationLayer::centerOnPosition,
+                        onCompassClick = viewModel::alignToNorth,
+                        onElevationFixUpdate = viewModel::onElevationFixUpdate
+                    )
 
-                stats?.also {
-                    StatsPanel(it)
+                    stats?.also {
+                        StatsPanel(it)
+                    }
                 }
             }
         }

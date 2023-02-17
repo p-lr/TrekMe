@@ -27,9 +27,9 @@ import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingS
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.DialogShape
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LevelsDialogStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.PrimaryLayerDialogStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.PrimaryLayerSelectionData
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
 import kotlinx.coroutines.launch
@@ -174,7 +174,11 @@ fun WmtsStateful(
             }
         }
 
-    var primaryLayerSelectionData by rememberSaveable { mutableStateOf<PrimaryLayerSelectionData?>(null) }
+    var primaryLayerSelectionData by rememberSaveable {
+        mutableStateOf<PrimaryLayerSelectionData?>(
+            null
+        )
+    }
     primaryLayerSelectionData?.also { data ->
         PrimaryLayerDialogStateful(
             layerIds = data.layerIds,

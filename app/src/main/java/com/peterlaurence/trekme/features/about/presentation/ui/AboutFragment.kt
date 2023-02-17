@@ -8,40 +8,44 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.databinding.FragmentAboutBinding
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Displays the link on the user manual, and encourages the user to give feedback about the
  * application.
  */
+@AndroidEntryPoint
 class AboutFragment : Fragment() {
+    @Inject
+    lateinit var appEventBus: AppEventBus
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        /* The action bar isn't managed by Compose */
+        /* The action bar is managed by Compose */
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            show()
-            title = getString(R.string.about)
+            hide()
+            title = ""
         }
 
-        val binding = FragmentAboutBinding.inflate(inflater, container, false)
-
-        binding.aboutUi.apply {
+        return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 TrekMeTheme {
                     AboutStateful(
                         onUserManual = this@AboutFragment::onUserManual,
                         onAppRating = this@AboutFragment::onAppRating,
-                        onSendMail = this@AboutFragment::onSendMail
+                        onSendMail = this@AboutFragment::onSendMail,
+                        onMainMenuClick = appEventBus::openDrawer
                     )
                 }
             }
         }
-
-        return binding.root
     }
 
     private fun onUserManual() {

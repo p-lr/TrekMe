@@ -1,11 +1,7 @@
 package com.peterlaurence.trekme.features.record.presentation.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -15,7 +11,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundVariant
 import com.peterlaurence.trekme.features.record.domain.model.RecordingData
 import com.peterlaurence.trekme.features.record.presentation.ui.components.ActionsStateful
 import com.peterlaurence.trekme.features.record.presentation.ui.components.GpxRecordListStateful
@@ -71,7 +66,6 @@ fun RecordScreen(
             Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(backgroundVariant())
         ) {
             Row(
                 Modifier

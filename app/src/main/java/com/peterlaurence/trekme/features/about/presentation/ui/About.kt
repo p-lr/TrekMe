@@ -7,6 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,33 +30,49 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 fun AboutStateful(
     onUserManual: () -> Unit,
     onAppRating: () -> Unit,
-    onSendMail: () -> Unit
+    onSendMail: () -> Unit,
+    onMainMenuClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    AboutScreen(scrollState, onUserManual, onAppRating, onSendMail)
+    AboutScreen(scrollState, onUserManual, onAppRating, onSendMail, onMainMenuClick)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
     scrollState: ScrollState,
     onUserManualClick: () -> Unit,
     onAppRating: () -> Unit,
-    onSendMail: () -> Unit
+    onSendMail: () -> Unit,
+    onMainMenuClick: () -> Unit
 ) {
-    Surface {
-        Column(
-            Modifier
-                .verticalScroll(scrollState)
-                .padding(16.dp)
-                .fillMaxSize()
-        ) {
-            UserManualSection(onUserManualClick)
-            Spacer(Modifier.height(16.dp))
-            AppRatingSection(onAppRating)
-            Spacer(Modifier.height(16.dp))
-            UserFeedback(onSendMail)
-            Spacer(Modifier.height(16.dp))
-            PrivacyPolicy()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.about)) },
+                navigationIcon = {
+                    IconButton(onClick = onMainMenuClick) {
+                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Surface(Modifier.padding(paddingValues)) {
+            Column(
+                Modifier
+                    .verticalScroll(scrollState)
+                    .padding(16.dp)
+                    .fillMaxSize()
+            ) {
+                UserManualSection(onUserManualClick)
+                Spacer(Modifier.height(16.dp))
+                AppRatingSection(onAppRating)
+                Spacer(Modifier.height(16.dp))
+                UserFeedback(onSendMail)
+                Spacer(Modifier.height(16.dp))
+                PrivacyPolicy()
+            }
         }
     }
 }
@@ -214,7 +232,8 @@ fun AboutPreview() {
                 rememberScrollState(),
                 onUserManualClick = {},
                 onAppRating = {},
-                onSendMail = {}
+                onSendMail = {},
+                onMainMenuClick = {}
             )
         }
     }

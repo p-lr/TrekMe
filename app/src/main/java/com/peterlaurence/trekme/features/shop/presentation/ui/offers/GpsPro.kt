@@ -8,8 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,28 +19,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
-import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
-import com.peterlaurence.trekme.core.billing.domain.model.TrialInfo
-import com.peterlaurence.trekme.core.billing.domain.model.TrialUnavailable
+import com.peterlaurence.trekme.core.billing.domain.model.*
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.PriceButton
-import com.peterlaurence.trekme.features.shop.presentation.viewmodel.GpsProPurchaseViewModel
+
 
 @Composable
-fun GpsProPurchaseHeaderStateful(
-    viewModel: GpsProPurchaseViewModel = viewModel()
-) {
-    val purchaseState by viewModel.purchaseFlow.collectAsState()
-    val subDetails by viewModel.subscriptionDetailsFlow.collectAsState(initial = null)
-
-    GpsProPurchaseHeader(purchaseState, subDetails?.trialInfo)
-}
-
-@Composable
-private fun GpsProPurchaseHeader(purchaseState: PurchaseState, trialInfo: TrialInfo?) {
+fun GpsProPurchaseHeader(purchaseState: PurchaseState, subDetails: SubscriptionDetails?) {
+    val trialInfo = subDetails?.trialInfo
     val subTitle = when (purchaseState) {
         PurchaseState.CHECK_PENDING -> stringResource(id = R.string.module_check_pending)
         PurchaseState.PURCHASED -> stringResource(id = R.string.module_owned)
@@ -60,7 +45,7 @@ private fun GpsProPurchaseHeader(purchaseState: PurchaseState, trialInfo: TrialI
 }
 
 @Composable
-fun ColumnScope.GpsProPurchaseUI() {
+fun ColumnScope.GpsProPurchaseContent() {
     Image(
         modifier = Modifier
             .padding(16.dp)
@@ -112,17 +97,18 @@ private val supportedDevices = listOf(
 )
 
 @Composable
-fun GpsProPurchaseFooterStateful(viewModel: GpsProPurchaseViewModel = viewModel()) {
-    val purchaseState by viewModel.purchaseFlow.collectAsState()
-    val subDetails by viewModel.subscriptionDetailsFlow.collectAsState(initial = null)
-
+fun GpsProPurchaseFooter(
+    purchaseState: PurchaseState,
+    subDetails: SubscriptionDetails?,
+    onPurchase: () -> Unit
+) {
     val uriHandler = LocalUriHandler.current
     val subscriptionCenterUri = stringResource(id = R.string.subscription_center)
 
-    GpsProPurchaseFooter(
+    GpsProPurchaseFooterUi(
         purchaseState,
         price = subDetails?.price,
-        viewModel::buy,
+        onPurchase,
         manageSubscriptionCb = {
             uriHandler.openUri(subscriptionCenterUri)
         }
@@ -130,7 +116,7 @@ fun GpsProPurchaseFooterStateful(viewModel: GpsProPurchaseViewModel = viewModel(
 }
 
 @Composable
-private fun GpsProPurchaseFooter(
+private fun GpsProPurchaseFooterUi(
     purchaseState: PurchaseState,
     price: String?,
     buyCb: () -> Unit,

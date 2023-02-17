@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.buttons.OutlinedButtonColored
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundVariant
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.dark_accentGreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.light_accentGreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.Error
@@ -41,9 +40,7 @@ fun ErrorScaffold(
                     }
                 }
             )
-        },
-        containerColor = backgroundVariant(),
-        contentColor = MaterialTheme.colorScheme.onBackground
+        }
     ) { paddingValues ->
         when (error) {
             Error.LicenseError -> MissingOffer(

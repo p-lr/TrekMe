@@ -32,10 +32,10 @@ class MapCreateFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        /* The action bar isn't managed by Compose */
+        /* The action bar is managed by Compose */
         (requireActivity() as AppCompatActivity).supportActionBar?.apply {
-            show()
-            title = getString(R.string.mapcreate_title)
+            hide()
+            title = ""
         }
 
         val binding = FragmentMapCreateBinding.inflate(inflater, container, false)

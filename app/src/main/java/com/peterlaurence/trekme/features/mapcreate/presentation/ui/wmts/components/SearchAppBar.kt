@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -158,7 +159,7 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
             Text(
                 text = stringResource(id = R.string.search_hint),
                 fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
                 modifier = Modifier.alpha(0.5f)
             )
         },
@@ -183,6 +184,13 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
         shape = RectangleShape,
         colors = TextFieldDefaults.textFieldColors(
             textColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            cursorColor = MaterialTheme.colorScheme.tertiary,
+            selectionColors = TextSelectionColors(
+                handleColor = MaterialTheme.colorScheme.tertiary,
+                backgroundColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
+            ),
+            focusedIndicatorColor = MaterialTheme.colorScheme.tertiary
         )
     )
 

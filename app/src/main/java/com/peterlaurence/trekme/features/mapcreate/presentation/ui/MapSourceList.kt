@@ -1,11 +1,12 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,22 +23,39 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.backgroundVariant
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardingTip
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.MapSourceListViewModel
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SourceList(sources: List<WmtsSource>, onSourceClick: (WmtsSource) -> Unit) {
-    LazyColumn(
-        Modifier
-            .fillMaxSize()
-            .background(backgroundVariant()),
-    ) {
-        items(sources) { wmtsSource ->
-            SourceRow(wmtsSource, onSourceClick)
-            Divider(thickness = 0.5.dp)
+private fun MapSourceListUi(
+    sources: List<WmtsSource>,
+    onSourceClick: (WmtsSource) -> Unit,
+    onMainMenuClick: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.mapcreate_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onMainMenuClick) {
+                        Icon(Icons.Filled.Menu, contentDescription = "")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            items(sources) { wmtsSource ->
+                SourceRow(wmtsSource, onSourceClick)
+                Divider(thickness = 0.5.dp)
+            }
         }
     }
 }
@@ -160,7 +178,7 @@ fun MapSourceListStateful(
     var showOnBoarding by viewModel.showOnBoarding
 
     BoxWithConstraints {
-        SourceList(sourceList, onSourceClick)
+        MapSourceListUi(sourceList, onSourceClick, onMainMenuClick = viewModel::onMainMenuClick)
         if (showOnBoarding) {
             OnBoardingTip(
                 modifier = Modifier

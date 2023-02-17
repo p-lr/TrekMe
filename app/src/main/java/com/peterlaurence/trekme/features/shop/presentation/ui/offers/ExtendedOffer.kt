@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalUriHandler
@@ -18,35 +16,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
-import com.peterlaurence.trekme.core.billing.domain.model.TrialAvailable
-import com.peterlaurence.trekme.core.billing.domain.model.TrialInfo
-import com.peterlaurence.trekme.core.billing.domain.model.TrialUnavailable
+import com.peterlaurence.trekme.core.billing.domain.model.*
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.accentGreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.dark_accentGreen
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.Header
 import com.peterlaurence.trekme.features.shop.presentation.ui.components.PriceButton
-import com.peterlaurence.trekme.features.shop.presentation.viewmodel.ExtendedOfferViewModel
 
 @Composable
-fun ExtendedOfferHeaderStateful(viewModel: ExtendedOfferViewModel = viewModel()) {
-    val purchaseState by viewModel.purchaseFlow.collectAsState()
-    val monthlySubDetails by viewModel.monthlySubscriptionDetailsFlow.collectAsState(initial = null)
-    val yearlySubDetails by viewModel.yearlySubscriptionDetailsFlow.collectAsState(initial = null)
-
+fun ExtendedOfferHeader(
+    purchaseState: PurchaseState,
+    monthlySubDetails: SubscriptionDetails?,
+    yearlySubDetails: SubscriptionDetails?
+) {
     /* Monthly and yearly trials should have the same trial duration */
     val monthlyTrial = monthlySubDetails?.trialInfo
     val yearlyTrial = yearlySubDetails?.trialInfo
     val trialInfo = if (monthlyTrial is TrialAvailable && yearlyTrial is TrialAvailable) {
         monthlyTrial
     } else TrialUnavailable
-    ExtendedOfferHeader(purchaseState, trialInfo)
+    ExtendedOfferHeaderUi(purchaseState, trialInfo)
 }
 
 @Composable
-private fun ExtendedOfferHeader(purchaseState: PurchaseState, trialInfo: TrialInfo) {
+private fun ExtendedOfferHeaderUi(purchaseState: PurchaseState, trialInfo: TrialInfo) {
     val subTitle = when (purchaseState) {
         PurchaseState.CHECK_PENDING -> stringResource(id = R.string.module_check_pending)
         PurchaseState.PURCHASED -> stringResource(id = R.string.module_owned)
@@ -152,20 +145,22 @@ private fun NotaBene() {
 }
 
 @Composable
-fun ExtendedOfferFooterStateful(viewModel: ExtendedOfferViewModel = viewModel()) {
-    val purchaseState by viewModel.purchaseFlow.collectAsState()
-    val monthlySubDetails by viewModel.monthlySubscriptionDetailsFlow.collectAsState(initial = null)
-    val yearlySubDetails by viewModel.yearlySubscriptionDetailsFlow.collectAsState(initial = null)
-
+fun ExtendedOfferFooter(
+    purchaseState: PurchaseState,
+    monthlySubDetails: SubscriptionDetails?,
+    yearlySubDetails: SubscriptionDetails?,
+    onMonthlyPurchase: () -> Unit,
+    onYearlyPurchase: () -> Unit
+) {
     val uriHandler = LocalUriHandler.current
     val subscriptionCenterUri = stringResource(id = R.string.subscription_center)
 
-    ExtendedOfferFooter(
+    ExtendedOfferFooterUi(
         purchaseState,
         pricePerMonth = monthlySubDetails?.price,
         pricePerYear = yearlySubDetails?.price,
-        buyMonthlyOffer = viewModel::buyMonthly,
-        buyYearlyOffer = viewModel::buyYearly,
+        buyMonthlyOffer = onMonthlyPurchase,
+        buyYearlyOffer = onYearlyPurchase,
         manageSubscriptionCb = {
             uriHandler.openUri(subscriptionCenterUri)
         }
@@ -173,7 +168,7 @@ fun ExtendedOfferFooterStateful(viewModel: ExtendedOfferViewModel = viewModel())
 }
 
 @Composable
-private fun ExtendedOfferFooter(
+private fun ExtendedOfferFooterUi(
     purchaseState: PurchaseState,
     pricePerMonth: String?,
     pricePerYear: String?,

@@ -1,9 +1,7 @@
 package com.peterlaurence.trekme.features.maplist.presentation.ui.screens
 
-import android.content.Context
 import android.content.res.Configuration
 import android.net.Uri
-import android.util.AttributeSet
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,22 +12,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.AbstractComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.findFragment
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.findNavController
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.features.common.presentation.ui.scrollbar.drawVerticalScrollbar
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.maplist.presentation.model.MapItem
-import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment
-import com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragmentDirections
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.DownloadCard
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.GoToMapCreationScreen
 import com.peterlaurence.trekme.features.maplist.presentation.ui.components.MapCard
@@ -39,38 +33,53 @@ import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapListV
 import com.peterlaurence.trekme.features.maplist.presentation.viewmodel.MapSettingsViewModel
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapList(state: MapListState, intents: MapListIntents) {
-    val listState = rememberLazyListState()
-    Column {
-        if (state.isDownloadPending) {
-            DownloadCard(
-                Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
-                state.downloadProgress,
-                intents::onCancelDownload
-            )
-        }
-
-        if (state.isMapListLoading && !state.isDownloadPending) {
-            PendingScreen()
-        } else {
-            if (state.mapItems.isNotEmpty()) {
-                LazyColumn(
-                    Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .drawVerticalScrollbar(listState),
-                    state = listState,
-                    contentPadding = PaddingValues(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(state.mapItems, key = { it.mapId }) { map ->
-                        AnimatedMapCard(map, intents)
+private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuClick: () -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.app_name)) },
+                navigationIcon = {
+                    IconButton(onClick = onMainMenuClick) {
+                        Icon(Icons.Filled.Menu, contentDescription = "")
                     }
                 }
+            )
+        }
+    ) { paddingValues ->
+        val listState = rememberLazyListState()
+        Column {
+            if (state.isDownloadPending) {
+                DownloadCard(
+                    Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+                    state.downloadProgress,
+                    intents::onCancelDownload
+                )
+            }
+
+            if (state.isMapListLoading && !state.isDownloadPending) {
+                PendingScreen()
             } else {
-                GoToMapCreationScreen(intents::navigateToMapCreate)
+                if (state.mapItems.isNotEmpty()) {
+                    LazyColumn(
+                        Modifier
+                            .padding(paddingValues)
+                            .background(MaterialTheme.colorScheme.background)
+                            .drawVerticalScrollbar(listState),
+                        state = listState,
+                        contentPadding = PaddingValues(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(state.mapItems, key = { it.mapId }) { map ->
+                            AnimatedMapCard(map, intents)
+                        }
+                    }
+                } else {
+                    GoToMapCreationScreen(intents::navigateToMapCreate)
+                }
             }
         }
     }
@@ -82,69 +91,52 @@ private fun LazyItemScope.AnimatedMapCard(mapItem: MapItem, intents: MapListInte
     MapCard(Modifier.animateItemPlacement(), mapItem, intents)
 }
 
-
-class MapListStateful @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyle: Int = 0
-) : AbstractComposeView(context, attrs, defStyle) {
-
-    @Composable
-    override fun Content() {
-        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-
-        val viewModel: MapListViewModel =
-            viewModel(findFragment<MapListFragment>().requireActivity())
-        val settingsViewModel: MapSettingsViewModel = viewModel()
-
-        val intents = object : MapListIntents {
-            override fun onMapClicked(mapId: UUID) {
-                val navController = findNavController()
-                if (navController.currentDestination?.id == R.id.mapListFragment) {
-                    viewModel.setMap(mapId)
-                    navController.navigate(R.id.action_global_mapFragment)
-                }
-            }
-
-            override fun onMapFavorite(mapId: UUID) {
-                viewModel.toggleFavorite(mapId)
-            }
-
-            override fun onMapSettings(mapId: UUID) {
-                viewModel.onMapSettings(mapId)
-
-                /* Navigate to the MapSettingsFragment*/
-                val action =
-                    MapListFragmentDirections.actionMapListFragmentToMapSettingsGraph()
-                findNavController().navigate(action)
-            }
-
-            override fun onSetMapImage(mapId: UUID, uri: Uri) {
-                settingsViewModel.setMapImage(mapId, uri)
-            }
-
-            override fun onMapDelete(mapId: UUID) {
-                viewModel.deleteMap(mapId)
-            }
-
-            override fun navigateToMapCreate(showOnBoarding: Boolean) {
-                /* First, let the app globally know about the user choice */
-                viewModel.onNavigateToMapCreate(showOnBoarding)
-
-                /* Then, navigate */
-                val navController = findNavController()
-                navController.navigate(R.id.action_global_mapCreateFragment)
-            }
-
-            override fun onCancelDownload() {
-                viewModel.onCancelDownload()
-            }
+@Composable
+fun MapListStateful(
+    mapListViewModel: MapListViewModel,
+    mapSettingsViewModel: MapSettingsViewModel,
+    onNavigateToMapCreate: () -> Unit,
+    onNavigateToMapSettings: () -> Unit,
+    onNavigateToMap: (UUID) -> Unit
+) {
+    val intents = object : MapListIntents {
+        override fun onMapClicked(mapId: UUID) {
+            onNavigateToMap(mapId)
         }
 
-        val mapListState by viewModel.mapListState.collectAsState()
-        TrekMeTheme {
-            MapList(mapListState, intents)
+        override fun onMapFavorite(mapId: UUID) {
+            mapListViewModel.toggleFavorite(mapId)
         }
+
+        override fun onMapSettings(mapId: UUID) {
+            mapListViewModel.onMapSettings(mapId)
+
+            onNavigateToMapSettings()
+        }
+
+        override fun onSetMapImage(mapId: UUID, uri: Uri) {
+            mapSettingsViewModel.setMapImage(mapId, uri)
+        }
+
+        override fun onMapDelete(mapId: UUID) {
+            mapListViewModel.deleteMap(mapId)
+        }
+
+        override fun navigateToMapCreate(showOnBoarding: Boolean) {
+            /* First, let the app globally know about the user choice */
+            mapListViewModel.onNavigateToMapCreate(showOnBoarding)
+
+            onNavigateToMapCreate()
+        }
+
+        override fun onCancelDownload() {
+            mapListViewModel.onCancelDownload()
+        }
+    }
+
+    val mapListState by mapListViewModel.mapListState.collectAsState()
+    TrekMeTheme {
+        MapListUi(mapListState, intents, onMainMenuClick = mapListViewModel::onMainMenuClick)
     }
 }
 
@@ -209,6 +201,6 @@ private fun MapListPreview() {
     }
 
     TrekMeTheme {
-        MapList(mapListState, intents)
+        MapListUi(mapListState, intents, onMainMenuClick = {})
     }
 }

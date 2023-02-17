@@ -9,6 +9,7 @@ import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
+import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.features.common.domain.repositories.OnBoardingRepository
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
@@ -34,6 +35,7 @@ class MapListViewModel @Inject constructor(
     private val onBoardingRepository: OnBoardingRepository,
     private val deleteMapInteractor: DeleteMapInteractor,
     private val app: Application,
+    private val appEventBus: AppEventBus
 ) : ViewModel() {
 
     /**
@@ -149,6 +151,10 @@ class MapListViewModel @Inject constructor(
 
     private fun Map.toMapItem(isFavorite: Boolean): MapItem {
         return MapItem(id, title = name, isFavorite = isFavorite, image = thumbnailImage)
+    }
+
+    fun onMainMenuClick() {
+        appEventBus.openDrawer()
     }
 }
 

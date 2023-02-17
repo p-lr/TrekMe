@@ -51,7 +51,7 @@ val md_theme_dark_error = Color(0xFFFFB4AB)
 val md_theme_dark_errorContainer = Color(0xFF93000A)
 val md_theme_dark_onError = Color(0xFF690005)
 val md_theme_dark_onErrorContainer = Color(0xFFFFDAD6)
-val md_theme_dark_background = Color(0xFF1F1B16)
+val md_theme_dark_background = Color(0xFF1b1a1f)
 val md_theme_dark_onBackground = Color(0xFFEAE1D9)
 val md_theme_dark_surface = Color(0xFF313035)
 val md_theme_dark_onSurface = Color(0xFFe5e1e8)
@@ -66,13 +66,6 @@ val md_theme_dark_surfaceTint = Color(0xFFFDBA4B)
 val md_theme_dark_outlineVariant = Color(0xFF4F4539)
 val md_theme_dark_scrim = Color(0xFF000000)
 
-/**
- * A grey-ish background, different from the default brown one.
- */
-@Composable
-fun backgroundVariant(): Color {
-    return if (isSystemInDarkTheme()) Color(0xFF1b1a1f) else Color(0xFFf4eff5)
-}
 
 val seed = Color(0xFF805600)
 val accentGreen = Color(0xFF4CAF50)

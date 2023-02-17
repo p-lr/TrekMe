@@ -20,9 +20,7 @@ fun NavGraphBuilder.mapScreen(
     onNavigateToBeaconEdit: (beaconId: String, mapId: UUID) -> Unit
 ) {
     composable(mapDestination) {
-        /* Always use the light theme background (dark theme or not). Done this way, it
-         * doesn't add a GPU overdraw. */
-        TrekMeTheme(darkThemeBackground = md_theme_light_background) {
+        TrekMeTheme {
             /* By changing the view-model store owner to the activity in the current
              * composition tree (which in this case starts at setContent { .. }) in the
              * fragment, calling viewModel() inside a composable will provide us a
