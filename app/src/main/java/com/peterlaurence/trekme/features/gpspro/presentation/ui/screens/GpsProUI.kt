@@ -70,9 +70,9 @@ fun BluetoothUI(
                 }
             }
         }
-        BtDisabled -> ErrorScreen(stringResource(id = R.string.gps_pro_bt_disabled))
-        BtNotSupported -> ErrorScreen(stringResource(id = R.string.gps_pro_bt_notsupported))
-        BtConnectPermNotGranted -> ErrorScreen(stringResource(id = R.string.gps_pro_bt_perm_not_granted))
+        BtDisabled -> ErrorScreen(message = stringResource(id = R.string.gps_pro_bt_disabled))
+        BtNotSupported -> ErrorScreen(message = stringResource(id = R.string.gps_pro_bt_notsupported))
+        BtConnectPermNotGranted -> ErrorScreen(message = stringResource(id = R.string.gps_pro_bt_perm_not_granted))
     }
 }
 

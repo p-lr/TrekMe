@@ -214,6 +214,7 @@
     <string name="no_track_message">You haven\'t created nor imported any track yet.
         You can import a gpx track downloaded from a website (or a recording of your own) using the import button below.</string>
     <string name="missing_extended_offer">To open this map, your TrekMe Extended subscription must be active.</string>
+    <string name="empty_map">This map appears to be empty</string>
     <string name="navigate_to_shop">Go to shop</string>
     <string name="unknown_map_source">Unknown map source. The map configuration is incorrect.</string>
     <string name="center_on_position_btn_desc" translatable="false">Center on position button</string>

@@ -150,7 +150,7 @@ private fun CustomErrorScreen(state: WmtsError) {
         WmtsError.VPS_FAIL -> stringResource(id = R.string.mapreate_warning_vps)
         WmtsError.PROVIDER_OUTAGE -> stringResource(id = R.string.mapcreate_warning_others)
     }
-    ErrorScreen(message)
+    ErrorScreen(message = message)
 }
 
 @Composable

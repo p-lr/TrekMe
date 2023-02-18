@@ -48,8 +48,9 @@ private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuCl
             )
         }
     ) { paddingValues ->
-        val listState = rememberLazyListState()
-        Column {
+        Column(
+            Modifier.padding(paddingValues)
+        ) {
             if (state.isDownloadPending) {
                 DownloadCard(
                     Modifier
@@ -63,10 +64,10 @@ private fun MapListUi(state: MapListState, intents: MapListIntents, onMainMenuCl
             if (state.isMapListLoading && !state.isDownloadPending) {
                 PendingScreen()
             } else {
+                val listState = rememberLazyListState()
                 if (state.mapItems.isNotEmpty()) {
                     LazyColumn(
                         Modifier
-                            .padding(paddingValues)
                             .background(MaterialTheme.colorScheme.background)
                             .drawVerticalScrollbar(listState),
                         state = listState,

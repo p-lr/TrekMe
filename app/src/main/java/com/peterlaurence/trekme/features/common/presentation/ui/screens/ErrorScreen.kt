@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 
 @Composable
-fun ErrorScreen(message: String) {
+fun ErrorScreen(modifier: Modifier = Modifier, message: String) {
     Column(
-        Modifier
+        modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.Center,
