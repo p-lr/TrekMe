@@ -3,6 +3,7 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -11,7 +12,6 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
-import com.peterlaurence.trekme.databinding.FragmentWmtsBinding
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.*
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsStateful
@@ -19,9 +19,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsOn
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.collectWhileResumed
-import com.peterlaurence.trekme.util.collectWhileResumedIn
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
@@ -51,14 +49,10 @@ import javax.inject.Inject
  * The same settings can be seen at [USGS WMTS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/WMTS/1.0.0/WMTSCapabilities.xml)
  * for the "GoogleMapsCompatible" TileMatrixSet (and not the "default028mm" one).
  *
- * @author P.Laurence on 11/05/18
+ * @since 11/05/18
  */
 @AndroidEntryPoint
 class WmtsFragment : Fragment() {
-    /* We don't provide a non-null equivalent because we use suspend functions which can access this
-     * property when it's null */
-    private var _binding: FragmentWmtsBinding? = null
-
     @Inject
     lateinit var appEventBus: AppEventBus
 
@@ -87,19 +81,6 @@ class WmtsFragment : Fragment() {
         locationSource.locationFlow.collectWhileResumed(this) { loc ->
             viewModel.onLocationReceived(loc)
         }
-
-        /* Circumvent a nasty bug causing the AbstractComposeView to be not responsive
-         * to touch events at certain state transitions */
-        viewModel.wmtsState.map {
-            _binding?.wmtsComposeView?.also {
-                it.disposeComposition()
-            }
-        }.collectWhileResumedIn(this)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     override fun onCreateView(
@@ -113,9 +94,7 @@ class WmtsFragment : Fragment() {
             title = ""
         }
 
-        val binding = FragmentWmtsBinding.inflate(inflater, container, false)
-        _binding = binding
-        binding.wmtsComposeView.apply {
+        return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
@@ -129,8 +108,6 @@ class WmtsFragment : Fragment() {
                 }
             }
         }
-
-        return binding.root
     }
 
     private fun showLayerOverlay() {

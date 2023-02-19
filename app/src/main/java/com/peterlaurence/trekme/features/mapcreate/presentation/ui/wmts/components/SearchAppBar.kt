@@ -152,7 +152,7 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp)
+            .padding(start = 58.dp, end = 8.dp)
             .focusRequester(focusRequester),
         textStyle = TextStyle(fontSize = 18.sp),
         placeholder = {

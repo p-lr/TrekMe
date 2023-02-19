@@ -5,11 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.databinding.FragmentExtendedOfferGatewayBinding
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.offergateway.ExtendedOfferGatewayStateful
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,8 +28,7 @@ class ExtendedOfferGatewayFragment : Fragment() {
             title = ""
         }
 
-        val binding = FragmentExtendedOfferGatewayBinding.inflate(inflater, container, false)
-        binding.extendedOfferGatewayView.apply {
+        return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 TrekMeTheme {
@@ -40,7 +39,6 @@ class ExtendedOfferGatewayFragment : Fragment() {
                 }
             }
         }
-        return binding.root
     }
 
     private fun navigateToWmtsFragment() {
