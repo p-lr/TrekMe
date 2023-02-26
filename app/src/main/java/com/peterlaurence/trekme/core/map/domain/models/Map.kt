@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.map.domain.models
 
 import android.graphics.Bitmap
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.*
 import java.util.UUID
@@ -27,6 +28,7 @@ interface Map {
     val landmarks: MutableStateFlow<List<Landmark>>
     val beacons: MutableStateFlow<List<Beacon>>
     val routes: MutableStateFlow<List<Route>>
+    val excursionRefs: MutableStateFlow<List<ExcursionRef>>
     val elevationFix: MutableStateFlow<Int>
     val sizeInBytes: MutableStateFlow<Long?>
     val projectionName: String?

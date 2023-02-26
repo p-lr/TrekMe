@@ -6,7 +6,7 @@ import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
-import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import javax.inject.Inject
 
 class MapDownloadInteractor @Inject constructor(

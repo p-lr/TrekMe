@@ -245,7 +245,7 @@ private val FadeOutAnimationSpec =
 
 @Preview(widthDp = 400, heightDp = 400, showBackground = true)
 @Composable
-fun ScrollbarPreview() {
+private fun ScrollbarPreview() {
     val state = rememberScrollState()
     Column(
         modifier = Modifier
@@ -265,7 +265,7 @@ fun ScrollbarPreview() {
 
 @Preview(widthDp = 400, heightDp = 400, showBackground = true)
 @Composable
-fun LazyListScrollbarPreview() {
+private fun LazyListScrollbarPreview() {
     val state = rememberLazyListState()
     LazyColumn(
         modifier = Modifier.drawVerticalScrollbar(state),
@@ -284,7 +284,7 @@ fun LazyListScrollbarPreview() {
 
 @Preview(widthDp = 400, showBackground = true)
 @Composable
-fun HorizontalScrollbarPreview() {
+private fun HorizontalScrollbarPreview() {
     val state = rememberScrollState()
     Row(
         modifier = Modifier
@@ -303,7 +303,7 @@ fun HorizontalScrollbarPreview() {
 
 @Preview(widthDp = 400, showBackground = true)
 @Composable
-fun LazyListHorizontalScrollbarPreview() {
+private fun LazyListHorizontalScrollbarPreview() {
     val state = rememberLazyListState()
     LazyRow(
         modifier = Modifier.drawHorizontalScrollbar(state),

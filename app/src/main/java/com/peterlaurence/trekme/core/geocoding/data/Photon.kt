@@ -14,9 +14,10 @@ import com.peterlaurence.trekme.core.geocoding.domain.engine.Street as GeoStreet
 /**
  * A [GeocodingBackend] which uses Komoot's Photon.
  *
- * @author P.Laurence on 01/01/21
+ * @since 01/01/21
  */
-class Photon(private val client: OkHttpClient, private val json: Json) : GeocodingBackend {
+class Photon(private val client: OkHttpClient) : GeocodingBackend {
+    private val json = Json { isLenient = true; ignoreUnknownKeys = true }
     private val requestBuilder = Request.Builder()
 
     override suspend fun search(query: String): List<GeoPlace>? {

@@ -2,6 +2,7 @@ package com.peterlaurence.trekme.core.georecord.domain.model
 
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
 import com.peterlaurence.trekme.features.common.domain.model.ElevationSourceInfo
 import java.util.*
 
@@ -23,3 +24,15 @@ data class GeoRecord(
  * A regroup of several [Route].
  */
 data class RouteGroup(val id: String, val routes: List<Route>, val name: String = "")
+
+fun GeoRecord.hasTrustedElevations() : Boolean {
+    return elevationSourceInfo.hasTrustedElevations()
+}
+
+fun ElevationSourceInfo?.hasTrustedElevations() : Boolean {
+    return this?.elevationSource == ElevationSource.IGN_RGE_ALTI
+}
+
+fun GeoRecord.getElevationSource(): ElevationSource {
+    return elevationSourceInfo?.elevationSource ?: ElevationSource.UNKNOWN
+}

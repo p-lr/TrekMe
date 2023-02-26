@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -319,7 +320,8 @@ fun WmtsScaffold(
     onToggleArea: () -> Unit,
     onValidateArea: () -> Unit,
     onMenuClick: () -> Unit,
-    onSearchClick: () -> Unit, onCloseSearch: () -> Unit,
+    onSearchClick: () -> Unit,
+    onCloseSearch: () -> Unit,
     onQueryTextSubmit: (String) -> Unit,
     onGeoPlaceSelection: (GeoPlace) -> Unit,
     onLayerSelection: () -> Unit,
@@ -383,6 +385,9 @@ fun WmtsScaffold(
 
         when (uiState) {
             is GeoplaceList -> {
+                /* In this context, intercept physical back gesture */
+                BackHandler(onBack = onCloseSearch)
+
                 GeoPlaceListUI(
                     modifier,
                     uiState,

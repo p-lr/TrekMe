@@ -32,7 +32,7 @@ interface TrekMeContext {
     val defaultMapsDownloadDir: File?
     val importedDir: File?
     val recordingsDir: File?
-    var rootDirList: List<File>?
+    var rootDirList: List<File>
     val credentialsDir: File
     suspend fun isAppDirReadOnly(): Boolean
     suspend fun init(applicationContext: Context)
@@ -62,7 +62,7 @@ class TrekMeContextAndroid : TrekMeContext {
     }
 
     /* Possible root folders */
-    override var rootDirList: List<File>? = null
+    override var rootDirList: List<File> = emptyList()
 
     private val TAG = "TrekMeContextAndroid"
 
@@ -100,7 +100,7 @@ class TrekMeContextAndroid : TrekMeContext {
     /**
      * We distinguish two cases:
      * * Android < 10: We use the "trekme" folder in the internal memory as the default app dir.
-     * Using [Context.getExternalFilesDirs], we indirectly the directory on the SD card (if there
+     * Using [Context.getExternalFilesDirs], we indirectly use the directory on the SD card (if there
      * is one). The first [File] returned returned by that last api is a folder on the internal
      * memory whose files are removed when the app is uninstalled. This isn't the original behavior
      * of TrekMe so we don't use it on Android 9 and below.
@@ -121,7 +121,7 @@ class TrekMeContextAndroid : TrekMeContext {
             @Suppress("DEPRECATION")
             defaultAppDir = File(Environment.getExternalStorageDirectory(), appFolderName)
             val otherDirs = dirs.drop(1)
-            rootDirList = listOf(defaultAppDir!!) + otherDirs
+            rootDirList = listOfNotNull(defaultAppDir) + otherDirs
         }
     }
 

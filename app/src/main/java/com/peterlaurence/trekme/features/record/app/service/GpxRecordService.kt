@@ -215,7 +215,7 @@ class GpxRecordService : Service() {
                 val boundingBox = bounds?.let {
                     BoundingBox(it.minLat, it.maxLat, it.minLon, it.maxLon)
                 }
-                val geoRecord = gpxToDomain(gpx)
+                val geoRecord = gpxToDomain(gpx, name = trackName)
                 eventsGpx.postGpxFileWriteEvent(GpxFileWriteEvent(gpxFile, geoRecord, boundingBox))
             } catch (e: Exception) {
                 eventBus.postMessage(StandardMessage(getString(R.string.service_gpx_error)))

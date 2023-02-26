@@ -10,9 +10,9 @@ import java.io.IOException
 import kotlin.coroutines.resumeWithException
 
 suspend inline fun <reified T> OkHttpClient.performRequest(request: Request, json: Json): T? = withContext(Dispatchers.IO) {
-    val call = newCall(request)
-    val r = call.await()
     runCatching {
+        val call = newCall(request)
+        val r = call.await()
         val str = r?.string()!!
         json.decodeFromString<T>(str)
     }.getOrNull()

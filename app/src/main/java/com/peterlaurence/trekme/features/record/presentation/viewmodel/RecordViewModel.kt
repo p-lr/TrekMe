@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.core.map.domain.models.intersects
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.record.app.service.event.GpxFileWriteEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -58,7 +58,7 @@ class RecordViewModel @Inject constructor(
                     if (map.intersects(boundingBox)) {
                         /* Import the new route */
                         val result =
-                            importGeoRecordInteractor.applyGeoRecordFileToMap(event.gpxFile, map)
+                            importGeoRecordInteractor.applyGeoRecordToMap(event.geoRecord, map)
                         if (result is GeoRecordImportResult.GeoRecordImportOk && result.newRouteCount >= 1) {
                             importCount++
                         }

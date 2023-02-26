@@ -406,6 +406,25 @@
     <string name="multi_selection_desc">Mode sélection multiple</string>
     <string name="manage_subscription_btn">GÉRER L\'ABONNEMENT</string>
 
+    <!-- Excursion search -->
+    <string name="excursion_feature_menu">Chercher une excursion</string>
+    <string name="excursion_search_placeholder">Recherche</string>
+    <string name="use_my_location">Autour de moi</string>
+    <string name="excursion_feature_banner">Cette fonctionnalité est toute nouvelle.
+        La base de donnée des randonnées va se compléter progressivement.
+        Bientôt, vous pourrez publier vos propes randonnées !</string>
+    <string name="excursion_search_button">Rechercher</string>
+    <string name="excursion_title">Activités</string>
+    <string name="excursion_all">Toutes</string>
+    <string name="excursion_on_foot">À pied</string>
+    <string name="excursion_by_bike">En vélo</string>
+    <string name="excursion_on_horse">À cheval</string>
+    <string name="excursion_nautical">Nautique</string>
+    <string name="excursion_aerial">Aérienne</string>
+    <string name="excursion_motorized">Véhicule motorisé</string>
+    <string name="activity_label">Activité</string>
+    <string name="back_action">Retour arrière</string>
+
     <!-- General -->
     <string name="meters">mètres</string>
     <string name="kilometers">kilomètres</string>

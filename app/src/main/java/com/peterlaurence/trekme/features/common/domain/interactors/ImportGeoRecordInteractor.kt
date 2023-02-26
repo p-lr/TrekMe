@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.common.domain.interactors.georecord
+package com.peterlaurence.trekme.features.common.domain.interactors
 
 import android.content.ContentResolver
 import android.net.Uri
@@ -11,15 +11,8 @@ import com.peterlaurence.trekme.core.map.domain.dao.MarkersDao
 import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
-import com.peterlaurence.trekme.features.common.domain.model.ElevationSource
-import com.peterlaurence.trekme.features.common.domain.model.ElevationSourceInfo
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
 import java.util.HashMap
 import javax.inject.Inject
 
@@ -31,7 +24,7 @@ import javax.inject.Inject
  * @since 03/03/17 -- converted to Kotlin on 16/09/18
  */
 class ImportGeoRecordInteractor @Inject constructor(
-    val routeRepository: RouteRepository,
+    private val routeRepository: RouteRepository,
     private val markersDao: MarkersDao,
     private val geoRecordParser: GeoRecordParser
 ) {
@@ -54,32 +47,9 @@ class ImportGeoRecordInteractor @Inject constructor(
     /**
      * Applies the geo record content given as a [File] to the provided [Map].
      */
-    suspend fun applyGeoRecordFileToMap(file: File, map: Map): GeoRecordImportResult {
-        return try {
-            val fileInputStream = FileInputStream(file)
-            applyGeoRecordInputStreamToMap(fileInputStream, map, file.name)
-        } catch (e: Exception) {
-            GeoRecordImportResult.GeoRecordImportError
-        }
-    }
-
-    /**
-     * Parses a geo record from the given [InputStream]. Then, on the calling [CoroutineScope] (which
-     * [CoroutineDispatcher] should be [Dispatchers.Main]), applies the result on the provided [Map].
-     */
-    private suspend fun applyGeoRecordInputStreamToMap(
-        input: InputStream,
-        map: Map,
-        defaultName: String
-    ): GeoRecordImportResult {
-        val pair = geoRecordParser.parse(input, defaultName)
-
-        return if (pair != null) {
-            val newRoutes = pair.routeGroups.flatMap { it.routes }
-            return setRoutesAndMarkersToMap(map, newRoutes, pair.markers)
-        } else {
-            GeoRecordImportResult.GeoRecordImportError
-        }
+    suspend fun applyGeoRecordToMap(geoRecord: GeoRecord, map: Map): GeoRecordImportResult {
+        val newRoutes = geoRecord.routeGroups.flatMap { it.routes }
+        return setRoutesAndMarkersToMap(map, newRoutes, geoRecord.markers)
     }
 
     private suspend fun setRoutesAndMarkersToMap(
@@ -137,18 +107,6 @@ class ImportGeoRecordInteractor @Inject constructor(
         map.markers.update { it + toBeAdded }
         return toBeAdded.count()
     }
-}
-
-fun GeoRecord.hasTrustedElevations() : Boolean {
-    return elevationSourceInfo.hasTrustedElevations()
-}
-
-fun ElevationSourceInfo?.hasTrustedElevations() : Boolean {
-    return this?.elevationSource == ElevationSource.IGN_RGE_ALTI
-}
-
-fun GeoRecord.getElevationSource(): ElevationSource {
-    return elevationSourceInfo?.elevationSource ?: ElevationSource.UNKNOWN
 }
 
 private const val TAG = "TrackImporter"

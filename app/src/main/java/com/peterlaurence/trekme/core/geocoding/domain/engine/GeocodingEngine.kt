@@ -1,14 +1,14 @@
 package com.peterlaurence.trekme.core.geocoding.domain.engine
 
 import com.peterlaurence.trekme.core.geocoding.domain.model.GeocodingBackend
-import com.peterlaurence.trekme.core.geocoding.data.Nominatim
-import com.peterlaurence.trekme.core.geocoding.data.Photon
+import com.peterlaurence.trekme.core.geocoding.di.NominatimBackend
+import com.peterlaurence.trekme.core.geocoding.di.PhotonBackend
+import com.peterlaurence.trekme.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import okhttp3.OkHttpClient
+import javax.inject.Inject
 
 /**
  * A wrapper around several geocoding APIs. A place name is submitted as a raw [String], using the
@@ -23,15 +23,19 @@ import okhttp3.OkHttpClient
  *
  * @author P.Laurence on 01/01/21
  */
-class GeocodingEngine(private val scope: CoroutineScope) {
-    private val httpClient = OkHttpClient()
-    private val json = Json { isLenient = true; ignoreUnknownKeys = true }
-    private val backends: List<GeocodingBackend> = listOf(
-            Nominatim(httpClient, json), Photon(httpClient, json),
-    )
+class GeocodingEngine @Inject constructor(
+    @ApplicationScope private val scope: CoroutineScope,
+    @PhotonBackend private val photon: GeocodingBackend,
+    @NominatimBackend private val nominatim: GeocodingBackend
+) {
+    private val backends: List<GeocodingBackend> = listOf(nominatim, photon)
 
-    private val _geoPlaceFlow = MutableSharedFlow<List<GeoPlace>?>(0, 1, BufferOverflow.DROP_OLDEST)
-    val geoPlaceFlow: SharedFlow<List<GeoPlace>?> = _geoPlaceFlow.asSharedFlow()
+    private val _isLoadingState = MutableStateFlow(false)
+    val isLoadingState: StateFlow<Boolean> = _isLoadingState.asStateFlow()
+
+    private val _geoPlaceFlow = MutableSharedFlow<List<GeoPlace>>(0, 1, BufferOverflow.DROP_OLDEST)
+    val geoPlaceFlow: SharedFlow<List<GeoPlace>> = _geoPlaceFlow.asSharedFlow()
+
     private val queryFlow = MutableSharedFlow<String>(0, 1, BufferOverflow.DROP_OLDEST)
     private val queryFlowDebounced = queryFlow.debounce(500)
 
@@ -45,6 +49,7 @@ class GeocodingEngine(private val scope: CoroutineScope) {
 
     private fun collectQueries() = scope.launch {
         queryFlowDebounced.collect { query ->
+            _isLoadingState.update { true }
             val geoPlaces = runCatching {
                 for (backend in backends) {
                     val geoPlaces = backend.search(query)
@@ -52,11 +57,13 @@ class GeocodingEngine(private val scope: CoroutineScope) {
                         return@runCatching geoPlaces
                     }
                 }
-                null
-            }.onFailure {
-                it.printStackTrace()
+                emptyList()
             }.getOrNull()
-            _geoPlaceFlow.tryEmit(geoPlaces)
+            _isLoadingState.update { false }
+
+            if (geoPlaces != null) {
+                _geoPlaceFlow.tryEmit(geoPlaces)
+            }
         }
     }
 }

@@ -82,7 +82,6 @@ class WmtsViewModel @Inject constructor(
     val topBarState: StateFlow<TopBarState> = _topBarState.asStateFlow()
 
     private val _wmtsState = MutableStateFlow<WmtsState>(Loading)
-    val wmtsState: StateFlow<WmtsState> = _wmtsState.asStateFlow()
 
     val wmtsSourceState = wmtsSourceRepository.wmtsSourceState
 
@@ -187,7 +186,7 @@ class WmtsViewModel @Inject constructor(
         }
 
         geocodingRepository.geoPlaceFlow.map { places ->
-            if (places != null && _uiState.value is GeoplaceList) {
+            if (_uiState.value is GeoplaceList) {
                 _uiState.value = GeoplaceList(places)
             }
         }.launchIn(viewModelScope)

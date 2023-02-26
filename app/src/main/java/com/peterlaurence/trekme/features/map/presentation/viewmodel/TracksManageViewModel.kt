@@ -10,7 +10,7 @@ import com.peterlaurence.trekme.core.georecord.domain.interactors.IsUriSupported
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.common.domain.interactors.RemoveRouteInteractor
-import com.peterlaurence.trekme.features.common.domain.interactors.georecord.ImportGeoRecordInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents

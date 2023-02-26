@@ -15,6 +15,10 @@
             android:icon="@drawable/record_rec"
             android:title="@string/record_menu_title" />
         <item
+            android:id="@+id/nav_hike_search"
+            android:icon="@drawable/ic_baseline_search_24"
+            android:title="@string/excursion_feature_menu" />
+        <item
             android:id="@+id/nav_gps_plus"
             android:icon="@drawable/satellite_variant"
             android:title="@string/gps_plus_menu_title"

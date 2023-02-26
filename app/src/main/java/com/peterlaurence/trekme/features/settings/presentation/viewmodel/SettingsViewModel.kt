@@ -34,8 +34,7 @@ class SettingsViewModel @Inject constructor(
 
     init {
         /* App dir list */
-        _appDirList.value = trekMeContext.rootDirList?.map { it.absolutePath }
-                ?: emptyList()
+        _appDirList.value = trekMeContext.rootDirList.map { it.absolutePath }
     }
 
     fun setDownloadDirPath(newPath: String) = viewModelScope.launch {

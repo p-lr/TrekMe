@@ -378,6 +378,24 @@
     <string name="distance">Distance</string>
     <string name="current_recording">Current recording</string>
 
+    <!-- Excursion search -->
+    <string name="excursion_feature_menu">Look for a hike</string>
+    <string name="excursion_search_placeholder">Search</string>
+    <string name="use_my_location">Around me</string>
+    <string name="excursion_feature_banner">This feature is brand new, and the hike database will complete over time.
+        Soon, you\'ll be able to publish your own hikes!</string>
+    <string name="excursion_search_button">Search</string>
+    <string name="activity_label">Activity</string>
+    <string name="excursion_title">Activities</string>
+    <string name="excursion_all">All</string>
+    <string name="excursion_on_foot">On foot</string>
+    <string name="excursion_by_bike">By bike</string>
+    <string name="excursion_on_horse">On horse</string>
+    <string name="excursion_nautical">Nautical</string>
+    <string name="excursion_aerial">Aerial</string>
+    <string name="excursion_motorized">Motorised vehicle</string>
+    <string name="back_action">Back</string>
+
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>
     <string name="general_category">General</string>

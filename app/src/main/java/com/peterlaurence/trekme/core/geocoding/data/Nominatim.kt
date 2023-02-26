@@ -15,9 +15,10 @@ import okhttp3.Request
  * A [GeocodingBackend] which uses Nominatim.
  * @see [Nominatim](https://github.com/osm-search/Nominatim)
  *
- * @author P.Laurence on 01/01/21
+ * @since 01/01/21
  */
-class Nominatim(private val client: OkHttpClient, private val json: Json) : GeocodingBackend {
+class Nominatim(private val client: OkHttpClient) : GeocodingBackend {
+    private val json = Json { isLenient = true; ignoreUnknownKeys = true }
     private val requestBuilder = Request.Builder()
 
     override suspend fun search(query: String): List<GeoPlace>? {

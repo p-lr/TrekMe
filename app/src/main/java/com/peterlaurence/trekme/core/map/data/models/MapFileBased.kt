@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.core.map.data.models
 
 import android.graphics.Bitmap
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.Projection
@@ -40,6 +41,7 @@ class MapFileBased(
     override val landmarks: MutableStateFlow<List<Landmark>> = MutableStateFlow(emptyList())
     override val beacons: MutableStateFlow<List<Beacon>> = MutableStateFlow(emptyList())
     override val routes = MutableStateFlow<List<Route>>(listOf())
+    override val excursionRefs = MutableStateFlow<List<ExcursionRef>>(emptyList())
     override val elevationFix = MutableStateFlow(config.elevationFix)
     override val sizeInBytes: MutableStateFlow<Long?> = MutableStateFlow(null)
 

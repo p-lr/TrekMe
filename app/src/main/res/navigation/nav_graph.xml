@@ -143,4 +143,8 @@
         android:name="com.peterlaurence.trekme.features.about.presentation.ui.AboutFragment"
         android:label="AboutFragment" />
     <action android:id="@+id/action_global_aboutFragment" app:destination="@id/aboutFragment" />
+    <fragment
+        android:id="@+id/hikeSearchFragment"
+        android:name="com.peterlaurence.trekme.features.excursionsearch.presentation.ui.ExcursionSearchFragment"
+        android:label="HikeSearchFragment" /><action android:id="@+id/action_global_hikeSearchFragment" app:destination="@id/hikeSearchFragment"/>
 </navigation>

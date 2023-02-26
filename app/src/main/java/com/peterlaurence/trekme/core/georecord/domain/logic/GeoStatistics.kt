@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.core.georecord.domain.logic
 
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
-import com.peterlaurence.trekme.features.common.domain.interactors.georecord.hasTrustedElevations
+import com.peterlaurence.trekme.core.georecord.domain.model.hasTrustedElevations
 
 fun getGeoStatistics(geoRecord: GeoRecord): GeoStatistics {
     val statCalculatorList = geoRecord.routeGroups.flatMap { it.routes }.map { route ->
