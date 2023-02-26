@@ -18,16 +18,18 @@ import java.io.OutputStream
  * @return A compressed [Bitmap] (thumbnail), or null if any error occurred.
  */
 fun makeThumbnail(imageUri: Uri, resolver: ContentResolver, thumbnailSize: Int, outputStream: OutputStream): Bitmap? {
-    try {
+    return try {
         val parcelFileDescriptor = resolver.openFileDescriptor(imageUri, "r") ?: return null
-        val fileDescriptor = parcelFileDescriptor.fileDescriptor
-        val fileInputStream = FileInputStream(fileDescriptor)
-        val thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeStream(fileInputStream),
+        parcelFileDescriptor.use {
+            val fileDescriptor = it.fileDescriptor
+            val fileInputStream = FileInputStream(fileDescriptor)
+            val thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeStream(fileInputStream),
                 thumbnailSize, thumbnailSize)
-        val resultOk = thumbnail.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-        return if (resultOk) thumbnail else null
+            val resultOk = thumbnail.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+            if (resultOk) thumbnail else null
+        }
     } catch (e: Exception) {
-        return null
+        null
     }
 }
 
