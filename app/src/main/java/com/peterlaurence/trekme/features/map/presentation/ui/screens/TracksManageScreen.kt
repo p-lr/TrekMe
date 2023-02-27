@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.DismissDirection.EndToStart
 import androidx.compose.material.DismissDirection.StartToEnd
 import androidx.compose.material.DismissValue.*
-import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
@@ -26,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +37,8 @@ import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResu
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
+import com.peterlaurence.trekme.util.compose.SwipeToDismiss
 import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
 import com.peterlaurence.trekme.util.parseColorL
 import kotlinx.coroutines.flow.update
@@ -98,6 +98,8 @@ fun TracksManageStateful(
         }
     }
 
+    var routeToRemoveModal by remember { mutableStateOf<Route?>(null) }
+
     TracksManageScreen(
         topAppBarState = topAppBarState,
         snackbarHostState = snackbarHostState,
@@ -126,12 +128,23 @@ fun TracksManageStateful(
             viewModel.onColorChange(selectableRoute.route, c)
         },
         onRemove = { selectableRoute ->
-            viewModel.onRemoveRoute(selectableRoute.route)
+            routeToRemoveModal = selectableRoute.route
         },
         onAddNewRoute = {
             launcher.launch("*/*")
         }
     )
+
+    routeToRemoveModal?.also { route ->
+        ConfirmDialog(
+            onConfirmPressed = { viewModel.onRemoveRoute(route) },
+            contentText = stringResource(id = R.string.track_remove_question),
+            confirmButtonText = stringResource(id = R.string.delete_dialog),
+            cancelButtonText = stringResource(id = R.string.cancel_dialog_string),
+            confirmColorBackground = MaterialTheme.colorScheme.error,
+            onDismissRequest = { routeToRemoveModal = null }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -316,7 +329,7 @@ private fun TrackList(
                     if (it == DismissedToEnd || it == DismissedToStart) {
                         onRemove(selectableRoute)
                     }
-                    true
+                    false
                 }
             )
             SwipeToDismiss(
@@ -328,7 +341,7 @@ private fun TrackList(
                     val color by animateColorAsState(
                         when (dismissState.targetValue) {
                             Default -> Color.LightGray
-                            else -> colorResource(id = R.color.colorAccentRed)
+                            else -> MaterialTheme.colorScheme.error
                         }
                     )
                     val alignment = when (direction) {
@@ -349,6 +362,7 @@ private fun TrackList(
                         Icon(
                             icon,
                             contentDescription = stringResource(id = R.string.delete_dialog),
+                            tint = MaterialTheme.colorScheme.onError,
                             modifier = Modifier.scale(scale)
                         )
                     }

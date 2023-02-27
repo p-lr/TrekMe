@@ -186,6 +186,7 @@
     <string name="color_variant_light">Light</string>
     <string name="color_variant_dark">Dark</string>
     <string name="add_track_btn_desc" translatable="false">Add track button</string>
+    <string name="track_remove_question">Confirm track removal</string>
 
     <!-- Map feature -->
     <string name="mapview_show_speed">Show speed</string>
