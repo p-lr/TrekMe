@@ -69,6 +69,7 @@ class TileStreamProviderHttpAuth(
             connection.connect()
             TileStream(BufferedInputStream(connection.inputStream))
         } catch (e: Exception) {
+            e.printStackTrace()
             connection.disconnect()
             TileStream(null)
         }

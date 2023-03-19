@@ -22,8 +22,8 @@ android {
         applicationId "com.peterlaurence.trekme"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 184
-        versionName "3.4.2"
+        versionCode 185
+        versionName "3.4.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
