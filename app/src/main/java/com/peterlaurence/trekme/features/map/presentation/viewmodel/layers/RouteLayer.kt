@@ -1,66 +1,49 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.peterlaurence.trekme.core.georecord.data.mapper.toMarker
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
+import com.peterlaurence.trekme.core.map.domain.models.Barycenter
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.core.map.domain.models.Barycenter
-import com.peterlaurence.trekme.core.georecord.domain.logic.distanceCalculatorFactory
-import com.peterlaurence.trekme.core.units.UnitFormatter
-import com.peterlaurence.trekme.events.recording.GpxRecordEvents
-import com.peterlaurence.trekme.events.recording.LiveRoutePause
-import com.peterlaurence.trekme.events.recording.LiveRoutePoint
-import com.peterlaurence.trekme.events.recording.LiveRouteStop
+import com.peterlaurence.trekme.features.map.domain.interactors.ExcursionInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
-import com.peterlaurence.trekme.features.map.presentation.ui.components.MarkerGrab
+import com.peterlaurence.trekme.features.map.presentation.model.RouteData
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.DataState
+import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.DistanceOnRouteController
 import com.peterlaurence.trekme.util.parseColor
-import com.peterlaurence.trekme.util.throttle
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
-import ovh.plrapps.mapcompose.utils.Point
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.max
 
 class RouteLayer(
     scope: CoroutineScope,
     private val dataStateFlow: Flow<DataState>,
     private val goToRouteFlow: Flow<Route>,
+    private val goToExcursionFlow: Flow<ExcursionRef>,
     private val routeInteractor: RouteInteractor,
-    private val gpxRecordEvents: GpxRecordEvents
+    private val excursionInteractor: ExcursionInteractor,
 ) {
     val isShowingDistanceOnTrack = MutableStateFlow(false)
-    private val staticRoutesData = ConcurrentHashMap<Route, RouteData>()
+    private val staticRoutesData = MutableStateFlow(emptyMap<Route, RouteData>())
+    private val excursionRoutesData = MutableStateFlow(emptyMap<Route, RouteData>())
+
+    private val routeDataFlow = combine(staticRoutesData, excursionRoutesData) { s, e -> s + e }
 
     init {
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
                 goToRouteFlow.collectLatest event@{ route ->
-                    val routeData = staticRoutesData[route] ?: return@event
+                    val routeData = staticRoutesData.value[route] ?: return@event
                     coroutineScope {
                         mapState.getLayoutSizeFlow().collectLatest { layoutSize ->
                             val mapSize = IntSize(map.widthPx, map.heightPx)
-                            centerOnRoute(layoutSize, mapSize, routeData, mapState)
+                            centerOnBoundingBox(layoutSize, mapSize, routeData.boundingBox, mapState)
                             cancel()
                         }
                     }
@@ -70,18 +53,26 @@ class RouteLayer(
 
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
-                staticRoutesData.clear()
-                routeInteractor.loadRoutes(map)
+                staticRoutesData.update { emptyMap() }
 
-                map.routes.collectLatest { routes ->
-                    drawStaticRoutes(mapState, map, routes)
+                launch {
+                    routeInteractor.loadRoutes(map)
+                    map.routes.collectLatest { routes ->
+                        drawStaticRoutes(mapState, map, routes)
+                    }
                 }
-            }
-        }
 
-        scope.launch {
-            dataStateFlow.collectLatest { (map, mapState) ->
-                drawLiveRoute(mapState, map)
+                launch {
+                    map.excursionRefs.collectLatest { refs ->
+                        val routesForRef = excursionInteractor.loadRoutes(refs)
+                        launch {
+                            drawExcursionRoutes(mapState, map, routesForRef)
+                        }
+                        launch {
+                            listenForGoToExcursionEvent(mapState, map, routesForRef)
+                        }
+                    }
+                }
             }
         }
 
@@ -96,7 +87,7 @@ class RouteLayer(
                             map,
                             mapState,
                             routeInteractor,
-                            staticRoutesData,
+                            routeDataFlow,
                             state
                         )
                         controller.processNearestRoute()
@@ -106,72 +97,118 @@ class RouteLayer(
         }
     }
 
+    private suspend fun listenForGoToExcursionEvent(
+        mapState: MapState,
+        map: Map,
+        routesForRef: kotlin.collections.Map<ExcursionRef, List<Route>>
+    ) {
+        goToExcursionFlow.collectLatest event@{ ref ->
+            val routes = routesForRef[ref] ?: return@event
+            val boundingBox = routes.mapNotNull {
+                excursionRoutesData.value[it]?.boundingBox
+            }.reduce { acc, b ->
+                acc + b
+            }
+            coroutineScope {
+                mapState.getLayoutSizeFlow().collectLatest { layoutSize ->
+                    val mapSize = IntSize(map.widthPx, map.heightPx)
+                    centerOnBoundingBox(layoutSize, mapSize, boundingBox, mapState)
+                    cancel()
+                }
+            }
+        }
+    }
+
     fun toggleDistanceOnTrack() {
         isShowingDistanceOnTrack.value = !isShowingDistanceOnTrack.value
     }
 
-    private suspend fun drawLiveRoute(mapState: MapState, map: Map): Nothing = coroutineScope {
-        val routeList = mutableListOf<Route>()
-
-        fun newRoute(): Route {
-            val route = Route(initialColor = colorLiveRoute)
-            routeList.add(route)
-
-            launch {
-                val pathBuilder = mapState.makePathDataBuilder()
-                routeInteractor.getLiveMarkerPositions(map, route).collect {
-                    pathBuilder.addPoint(it.x, it.y)
-                    val pathData = pathBuilder.build()
-                    if (pathData != null) {
-                        if (mapState.hasPath(route.id)) {
-                            mapState.updatePath(route.id, pathData = pathData)
-                        } else {
-                            addPath(mapState, route, pathData)
-                        }
-                    }
-                }
-            }
-            return route
+    private suspend fun drawExcursionRoutes(
+        mapState: MapState,
+        map: Map,
+        routesForRef: kotlin.collections.Map<ExcursionRef, List<Route>>
+    ) = coroutineScope {
+        /* First, remove routes which are no longer associated with an excursion */
+        val routesToRemove = excursionRoutesData.value.keys.filter {
+            it !in routesForRef.values.flatten()
+        }
+        routesToRemove.forEach {
+            mapState.removePath(it.id)
+        }
+        excursionRoutesData.update {
+            it.filterKeys { route -> route !in routesToRemove }
         }
 
-        var route = newRoute()
+        for (ref in routesForRef.keys) {
+            processExcursion(ref, routesForRef.getOrDefault(ref, emptyList()), map, mapState)
+        }
+    }
 
-        gpxRecordEvents.liveRouteFlow.collect {
-            when (it) {
-                is LiveRoutePoint -> {
-                    route.addMarker(it.pt.toMarker())
+    private fun CoroutineScope.processExcursion(
+        ref: ExcursionRef,
+        routes: List<Route>,
+        map: Map,
+        mapState: MapState
+    ) {
+        /* React to color change */
+        launch(Dispatchers.Default) {
+            ref.color.collect { color ->
+                routes.forEach { route ->
+                    route.color.value = color
+                    mapState.updatePath(
+                        route.id,
+                        color = Color(parseColor(color))
+                    )
                 }
-                LiveRouteStop -> {
-                    routeList.forEach { route ->
-                        mapState.removePath(route.id)
+            }
+        }
+
+        /* React to visibility change */
+        launch(Dispatchers.Default) {
+            ref.visible.collect { visible ->
+                routes.forEach { route ->
+                    val existing = excursionRoutesData.value[route]
+                    if (visible) {
+                        /* Only make route data if it wasn't already processed, or previously removed
+                         * after visibility set to false. */
+                        val routeData = existing ?: makeRouteData(map, route, mapState)
+
+                        if (routeData != null && !mapState.hasPath(route.id)) {
+                            excursionRoutesData.update {
+                                it.toMutableMap().apply {
+                                    set(route, routeData)
+                                }
+                            }
+                            addPath(mapState, route, routeData.pathData)
+                        }
+                    } else {
+                        if (existing != null) {
+                            excursionRoutesData.update {
+                                it.toMutableMap().apply { remove(route) }
+                            }
+                            mapState.removePath(route.id)
+                        }
                     }
-                    routeList.clear()
-                    route = newRoute()
-                }
-                LiveRoutePause -> {
-                    /* Add previous route */
-                    routeList.add(route)
-
-                    /* Create and add a new route */
-                    route = newRoute()
                 }
             }
         }
     }
 
     /**
-     * Anytime this suspend fun is invoked, the parent scope should be cancelled because flows
-     * are collected inside [processRoute].
+     * Anytime this suspend fun is invoked, previous invocation should be cancelled because
+     * [processRoute] starts flow collections which need to be cancelled.
      */
     private suspend fun drawStaticRoutes(mapState: MapState, map: Map, routes: List<Route>) {
         coroutineScope {
             /* First, remove routes which are no longer in the list */
-            val routesToRemove = staticRoutesData.keys.filter {
+            val routesToRemove = staticRoutesData.value.keys.filter {
                 it !in routes
             }
             routesToRemove.forEach {
-                staticRoutesData.remove(it)
                 mapState.removePath(it.id)
+            }
+            staticRoutesData.update {
+                it.filterKeys { route -> route !in routesToRemove }
             }
 
             /* Then, process current routes */
@@ -204,19 +241,25 @@ class RouteLayer(
         /* React to visibility change */
         launch(Dispatchers.Default) {
             route.visible.collect { visible ->
-                val existing = staticRoutesData[route]
+                val existing = staticRoutesData.value[route]
                 if (visible) {
                     /* Only make route data if it wasn't already processed, or previously removed
                      * after visibility set to false. */
                     val routeData = existing ?: makeRouteData(map, route, mapState)
 
                     if (routeData != null && !mapState.hasPath(route.id)) {
-                        staticRoutesData[route] = routeData
+                        staticRoutesData.update {
+                            it.toMutableMap().apply {
+                                set(route, routeData)
+                            }
+                        }
                         addPath(mapState, route, routeData.pathData)
                     }
                 } else {
                     if (existing != null) {
-                        staticRoutesData.remove(route)
+                        staticRoutesData.update {
+                            it.toMutableMap().apply { remove(route) }
+                        }
                         mapState.removePath(route.id)
                     }
                 }
@@ -271,258 +314,22 @@ class RouteLayer(
         )
     }
 
-    private suspend fun centerOnRoute(layoutSize: IntSize, mapSize: IntSize, routeData: RouteData, mapState: MapState) {
-        val destScaleX = layoutSize.width / (abs(routeData.boundingBox.xRight - routeData.boundingBox.xLeft) * mapSize.width)
-        val destScaleY = layoutSize.height / (abs(routeData.boundingBox.yTop - routeData.boundingBox.yBottom) * mapSize.height)
+    private suspend fun centerOnBoundingBox(layoutSize: IntSize, mapSize: IntSize, boundingBox: BoundingBox, mapState: MapState) {
+        val destScaleX = layoutSize.width / (abs(boundingBox.xRight - boundingBox.xLeft) * mapSize.width)
+        val destScaleY = layoutSize.height / (abs(boundingBox.yTop - boundingBox.yBottom) * mapSize.height)
         val destScale = min(destScaleX, destScaleY) * 0.8
-        val centerX = (routeData.boundingBox.xRight + routeData.boundingBox.xLeft) / 2
-        val centerY = (routeData.boundingBox.yBottom + routeData.boundingBox.yTop) / 2
+        val centerX = (boundingBox.xRight + boundingBox.xLeft) / 2
+        val centerY = (boundingBox.yBottom + boundingBox.yTop) / 2
 
         mapState.scrollTo(centerX, centerY, destScale.toFloat())
     }
+
+    private operator fun BoundingBox.plus(b: BoundingBox): BoundingBox {
+        return BoundingBox(
+            xLeft = min(xLeft, b.xLeft),
+            yTop = min(yTop, b.yTop),
+            xRight = max(xRight, b.xRight),
+            yBottom = max(yBottom, b.yBottom)
+        )
+    }
 }
-
-private data class RouteData(val pathData: PathData, val barycenter: Barycenter, val boundingBox: BoundingBox)
-
-private class DistanceOnRouteController(
-    private val map: Map,
-    private val mapState: MapState,
-    private val routeInteractor: RouteInteractor,
-    private val routesData: ConcurrentMap<Route, RouteData>,
-    private val restoreState: DistanceOnRouteControllerRestoreState
-) {
-    private val grabMarker1 = "distOnRoute-Grab1"
-    private val grabMarker2 = "distOnRoute-Grab2"
-    private val distMarker = "distOnRoute-Distance"
-    private val mainPath = "distOnRoute-MainPath"
-    private val headPath = "distOnRoute-HeadPath"
-    private val tailPath = "distOnRoute-TailPath"
-
-    suspend fun processNearestRoute() = withContext(Dispatchers.Main) {
-        mapState.centroidSnapshotFlow().map {
-            findNearestRoute(it)
-        }.filterNotNull().distinctUntilChanged().collectLatest { route ->
-            coroutineScope {
-                launch {
-                    drawRoute(route)
-                }.invokeOnCompletion {
-                    mapState.removeMarker(grabMarker1)
-                    mapState.removeMarker(grabMarker2)
-                    mapState.removeMarker(distMarker)
-                    mapState.removePath(mainPath)
-                    mapState.removePath(headPath)
-                    mapState.removePath(tailPath)
-                    mapState.updatePath(route.id, visible = true)
-                }
-            }
-        }
-    }
-
-    private suspend fun drawRoute(route: Route) {
-        val routePoints = getRoutePoints(route)
-        val chunkSize = min(25, routePoints.size)
-        val chunks = routePoints.chunked(chunkSize)
-        val chunksByBarycenter = chunks.filter { it.isNotEmpty() }.associateBy {
-            getBarycenter(it)
-        }
-        val distanceComputeFlow = MutableSharedFlow<Unit>(1, 0, BufferOverflow.DROP_OLDEST)
-        var distanceText by mutableStateOf("")
-        val state = restoreState.states.firstOrNull {
-            it.route == route
-        } ?: DistanceOnRouteState(route, 0, routePoints.lastIndex / 4).also {
-            restoreState.states.add(it)
-        }
-
-        val firstPoint = routePoints[state.i1]
-        val secondPoint = routePoints[state.i2]
-
-        mapState.addMarker(
-            grabMarker1,
-            firstPoint.x,
-            firstPoint.y,
-            relativeOffset = Offset(-0.5f, -0.5f)
-        ) {
-            MarkerGrab(morphedIn = true, size = 50.dp)
-        }
-
-        mapState.addMarker(
-            grabMarker2,
-            secondPoint.x,
-            secondPoint.y,
-            relativeOffset = Offset(-0.5f, -0.5f)
-        ) {
-            MarkerGrab(morphedIn = true, size = 50.dp)
-        }
-
-        mapState.addMarker(
-            distMarker,
-            (firstPoint.x + secondPoint.x) / 2,
-            (firstPoint.y + secondPoint.y) / 2,
-            relativeOffset = Offset(-0.5f, -0.5f),
-            clickable = false,
-            clipShape = RoundedCornerShape(5.dp)
-        ) {
-            Text(
-                text = distanceText,
-                modifier = Modifier
-                    .background(Color(0x885D4037))
-                    .padding(horizontal = 4.dp),
-                color = Color.White,
-                fontSize = 14.sp
-            )
-        }
-
-        mapState.updatePath(route.id, visible = false)
-
-        val pathData = routesData[route]?.pathData ?: return
-        mapState.addPath(
-            headPath,
-            pathData,
-            offset = 0,
-            count = min(state.i1, state.i2),
-            color = route.color.value.let { colorStr ->
-                Color(parseColor(colorStr))
-            }
-        )
-
-        mapState.addPath(
-            mainPath,
-            pathData,
-            width = 10.dp,
-            offset = min(state.i1, state.i2),
-            count = abs(state.i2 - state.i1),
-            color = Color(0xFFF50057)
-        )
-
-        mapState.addPath(
-            tailPath,
-            pathData,
-            offset = max(state.i1, state.i2),
-            count = routePoints.lastIndex - max(state.i1, state.i2),
-            color = route.color.value.let { colorStr ->
-                Color(parseColor(colorStr))
-            }
-        )
-
-        fun moveMarker(id: String, px: Double, py: Double): Int? {
-            val bary = chunksByBarycenter.keys.minByOrNull {
-                (it.x - px).pow(2) + (it.y - py).pow(2)
-            } ?: return null
-
-            val chunk = chunksByBarycenter[bary] ?: return null
-            return chunk.minByOrNull {
-                (it.x - px).pow(2) + (it.y - py).pow(2)
-            }?.let {
-                mapState.moveMarker(id, it.x, it.y)
-                it.index
-            }
-        }
-
-        fun updatePaths() {
-            mapState.updatePath(
-                headPath,
-                offset = 0,
-                count = min(state.i1, state.i2)
-            )
-
-            mapState.updatePath(
-                mainPath,
-                offset = min(state.i1, state.i2),
-                count = abs(state.i2 - state.i1)
-            )
-
-            mapState.updatePath(
-                tailPath,
-                offset = max(state.i1, state.i2),
-                count = routePoints.lastIndex - max(state.i1, state.i2)
-            )
-        }
-
-        fun updateDistance() {
-            val p1 = routePoints[state.i1]
-            val p2 = routePoints[state.i2]
-            mapState.moveMarker(
-                distMarker,
-                x = (p1.x + p2.x) / 2,
-                y = (p1.y + p2.y) / 2,
-            )
-            distanceComputeFlow.tryEmit(Unit)
-        }
-
-        mapState.enableMarkerDrag(grabMarker1) { _, _, _, _, _, px, py ->
-            val index = moveMarker(grabMarker1, px, py)
-            if (index != null) {
-                state.i1 = index
-                updatePaths()
-                updateDistance()
-            }
-        }
-
-        mapState.enableMarkerDrag(grabMarker2) { _, _, _, _, _, px, py ->
-            val index = moveMarker(grabMarker2, px, py)
-            if (index != null) {
-                state.i2 = index
-                updatePaths()
-                updateDistance()
-            }
-        }
-
-        /* Trigger the first distance computation (don't wait grab markers to be moved) */
-        distanceComputeFlow.tryEmit(Unit)
-
-        /* This collection never completes - this is on purpose */
-        distanceComputeFlow.throttle(100).collect {
-            val dist = computeDistance(route, state.i1, state.i2)
-            distanceText = UnitFormatter.formatDistance(dist)
-        }
-    }
-
-    private suspend fun findNearestRoute(point: Point): Route? = withContext(Dispatchers.Default) {
-        routesData.minByOrNull {
-            val bary = it.value.barycenter.let { b -> Point(b.x, b.y) }
-            (point.x - bary.x).pow(2) + (point.y - bary.y).pow(2)
-        }?.key
-    }
-
-    private suspend fun getRoutePoints(route: Route): List<PointIndexed> {
-        var i = 0
-        return routeInteractor.getExistingMarkerPositions(map, route).map {
-            PointIndexed(i++, it.x, it.y)
-        }.toList()
-    }
-
-    private fun getBarycenter(chunk: List<PointIndexed>): Barycenter {
-        var sumX = 0.0
-        var sumY = 0.0
-        for (pt in chunk) {
-            sumX += pt.x
-            sumY += pt.y
-        }
-        return Barycenter(sumX / chunk.size, sumY / chunk.size)
-    }
-
-    private suspend fun computeDistance(route: Route, i1: Int, i2: Int): Double {
-        return withContext(Dispatchers.Default) {
-            val iMin = min(i1, i2)
-            val iMax = max(i1, i2)
-
-            val iterator = route.routeMarkers.listIterator(iMin)
-
-            val distanceCalculator = distanceCalculatorFactory(route.elevationTrusted)
-            for (i in iMin until iMax) {
-                val marker = iterator.next()
-                distanceCalculator.addPoint(marker.lat, marker.lon, marker.elevation)
-            }
-
-            distanceCalculator.getDistance()
-        }
-    }
-
-    private data class PointIndexed(val index: Int, val x: Double, val y: Double)
-
-    data class DistanceOnRouteControllerRestoreState(val states: MutableList<DistanceOnRouteState>)
-    data class DistanceOnRouteState(val route: Route, var i1: Int, var i2: Int)
-}
-
-private const val colorLiveRoute = "#FF9800"
-//const val colorRoute = "#3F51B5"    // default route color

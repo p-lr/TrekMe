@@ -1,0 +1,42 @@
+[
+  {
+    "id": "wpt1",
+    "name": "First waypoint",
+    "comment": "",
+    "lat": "5.26",
+    "lon": "14.25",
+    "ele": "50.0",
+    "photos": [
+      {
+        "id": "p1",
+        "name": "wpt1 photo1",
+        "file-name": "p1.jpg"
+      },
+      {
+        "id": "p2",
+        "name": "wpt1 photo2",
+        "file-name": "p2.jpg"
+      }
+    ]
+  },
+  {
+    "id": "wpt2",
+    "name": "Second waypoint",
+    "comment": "",
+    "lat": "5.27",
+    "lon": "14.26",
+    "ele": null,
+    "photos": [
+      {
+        "id": "p3",
+        "name": "wpt2 photo1",
+        "file-name": "p3.jpg"
+      },
+      {
+        "id": "p4",
+        "name": "wpt2 photo2",
+        "file-name": "p4.jpg"
+      }
+    ]
+  }
+]

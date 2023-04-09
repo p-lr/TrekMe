@@ -43,6 +43,7 @@ class MapViewModel @Inject constructor(
     landmarkInteractor: LandmarkInteractor,
     beaconInteractor: BeaconInteractor,
     routeInteractor: RouteInteractor,
+    excursionInteractor: ExcursionInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
@@ -113,8 +114,9 @@ class MapViewModel @Inject constructor(
         viewModelScope,
         dataStateFlow,
         mapFeatureEvents.goToRoute,
+        mapFeatureEvents.goToExcursion,
         routeInteractor,
-        gpxRecordEvents
+        excursionInteractor
     )
 
     val snackBarController = SnackBarController()
@@ -140,6 +142,8 @@ class MapViewModel @Inject constructor(
         settings.getMaxScale().combine(dataStateFlow) { maxScale, dataState ->
             dataState.mapState.maxScale = maxScale
         }.launchIn(viewModelScope)
+
+        LiveRouteLayer(viewModelScope, dataStateFlow, routeInteractor, gpxRecordEvents)
     }
 
     /* region events */

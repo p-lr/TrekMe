@@ -1,38 +1,41 @@
 package com.peterlaurence.trekme.core.excursion.data.dao
 
-import com.peterlaurence.trekme.core.TrekMeContext
+import android.net.Uri
+import androidx.core.net.toUri
+import com.peterlaurence.trekme.core.excursion.data.model.ExcursionConfig
 import com.peterlaurence.trekme.core.excursion.data.model.ExcursionFileBased
+import com.peterlaurence.trekme.core.excursion.data.model.Waypoint
 import com.peterlaurence.trekme.core.excursion.domain.dao.ExcursionDao
 import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
 import com.peterlaurence.trekme.util.FileUtils
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
 
 class ExcursionDaoFileBased(
-    val trekMeContext: TrekMeContext
+    private val excursionFolders: List<File>,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ExcursionDao {
     private val excursions = MutableStateFlow<List<Excursion>>(emptyList())
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
 
     override suspend fun getExcursionsFlow(): StateFlow<List<Excursion>> {
-        val excursionFolders = trekMeContext.rootDirList.map {
-            File(it, EXCURSIONS_FOLDER_NAME)
-        }
-
         excursions.update {
             excursionSearchTask(CONFIG_FILENAME, *excursionFolders.toTypedArray())
         }
         return excursions
     }
 
-    private fun excursionSearchTask(excursionFileName: String, vararg dirs: File): List<Excursion> {
+    private suspend fun excursionSearchTask(
+        excursionFileName: String, vararg dirs: File
+    ): List<Excursion> = withContext(ioDispatcher) {
         val excursionFilesFoundList = mutableListOf<File>()
 
         @Throws(SecurityException::class)
@@ -67,102 +70,37 @@ class ExcursionDaoFileBased(
                 }
             }.getOrNull() ?: continue
 
-            val waypointsFile = File(rootDir, WAYPOINTS_FILENAME)
-            val waypoints = runCatching<List<ExcursionWaypoint>> {
-                FileUtils.getStringFromFile(waypointsFile).let {
-                    json.decodeFromString(it)
-                }
-            }.getOrElse { emptyList() }
-
-            excursionList.add(
-                ExcursionFileBased(
-                    f,
-                    config.id,
-                    config.title,
-                    config.description,
-                    config.type.toDomain()
-                )
-            )
+            excursionList.add(ExcursionFileBased(rootDir, config))
         }
 
-        return excursionList
+        excursionList
     }
-}
 
-@Serializable
-private data class ExcursionConfig(
-    val id: String,
-    val title: String,
-    @SerialName("desc")
-    val description: String = "",
-    val type: Type,
-    @SerialName("photos")
-    val photos: List<Photo>
-)
+    override suspend fun getWaypoints(excursion: Excursion): List<ExcursionWaypoint> {
+        val root = (excursion as? ExcursionFileBased)?.root ?: return emptyList()
 
-@Serializable
-enum class Type {
-    @SerialName("hike")
-    Hike,
+        val waypointsFile = File(root, WAYPOINTS_FILENAME)
+        val waypoints = runCatching<List<Waypoint>> {
+            FileUtils.getStringFromFile(waypointsFile).let {
+                json.decodeFromString(it)
+            }
+        }.getOrElse { emptyList() }
+        return waypoints
+    }
 
-    @SerialName("running")
-    Running,
+    override suspend fun getGeoRecordUri(excursion: Excursion): Uri? {
+        val root = (excursion as? ExcursionFileBased)?.root ?: return null
 
-    @SerialName("mountain-bike")
-    MountainBike,
-
-    @SerialName("travel-bike")
-    TravelBike,
-
-    @SerialName("horse-riding")
-    HorseRiding,
-
-    @SerialName("aerial")
-    Aerial,
-
-    @SerialName("nautical")
-    Nautical
-}
-
-@Serializable
-private data class ExcursionWaypoint(
-    val id: String,
-    val name: String,
-    @SerialName("lat")
-    val latitude: Double,
-    @SerialName("lon")
-    val longitude: Double,
-    @SerialName("ele")
-    val elevation: Double?,
-    val comment: String,
-    @SerialName("photos")
-    val photos: List<Photo>
-)
-
-@Serializable
-data class Photo(
-    val name: String,
-    @SerialName("file")
-    val fileName: String,
-)
-
-private fun Type.toDomain(): ExcursionType {
-    return when (this) {
-        Type.Hike -> ExcursionType.Hike
-        Type.Running -> ExcursionType.Running
-        Type.MountainBike -> ExcursionType.MountainBike
-        Type.TravelBike -> ExcursionType.TravelBike
-        Type.HorseRiding -> ExcursionType.HorseRiding
-        Type.Aerial -> ExcursionType.Aerial
-        Type.Nautical -> ExcursionType.Nautical
+        return root.listFiles()?.firstOrNull {
+            it.isFile && it.name.endsWith(".gpx")
+        }?.toUri()
     }
 }
 
 
 private val TAG = "ExcursionDaoFileBased"
 
-private const val MAX_RECURSION_DEPTH = 5
-private const val EXCURSIONS_FOLDER_NAME = "excursions"
+private const val MAX_RECURSION_DEPTH = 3
 private const val CONFIG_FILENAME = "excursion.json"
 private const val WAYPOINTS_FILENAME = "waypoints.json"
 private const val FILES_DIR = "files"

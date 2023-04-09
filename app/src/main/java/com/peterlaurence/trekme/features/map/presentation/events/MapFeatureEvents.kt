@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.events
 
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
@@ -39,6 +40,13 @@ class MapFeatureEvents {
     val goToRoute = _goToRoute.asSharedFlow()
 
     fun postGoToRoute(route: Route) = _goToRoute.tryEmit(route)
+    /* endregion */
+
+    /* region excursion */
+    private val _goToExcursion = MutableSharedFlow<ExcursionRef>(0, 1, BufferOverflow.DROP_OLDEST)
+    val goToExcursion = _goToExcursion.asSharedFlow()
+
+    fun postGoToExcursion(ref: ExcursionRef) = _goToExcursion.tryEmit(ref)
     /* endregion */
 
     /* region public properties */

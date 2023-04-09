@@ -1,22 +1,60 @@
 package com.peterlaurence.trekme.core.excursion.data.model
 
+import com.peterlaurence.trekme.core.excursion.data.mapper.toDomain
 import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionPhoto
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.io.File
 
 class ExcursionFileBased(
-    private val root: File,
-    private val _id: String,
-    private val _title: String,
-    private val _description: String,
-    private val _type: ExcursionType
+    val root: File,
+    private val config: ExcursionConfig
 ) : Excursion {
     override val id: String
-        get() = _id
+        get() = config.id
     override val title: String
-        get() = _title
+        get() = config.title
     override val type: ExcursionType
-        get() = _type
+        get() = config.type.toDomain()
     override val description: String
-        get() = _description
+        get() = config.description
+    override val photos: List<ExcursionPhoto>
+        get() = config.photos
+}
+
+@Serializable
+data class ExcursionConfig(
+    val id: String,
+    val title: String,
+    @SerialName("description")
+    val description: String,
+    val type: Type,
+    @SerialName("photos")
+    val photos: List<Photo> = emptyList()
+)
+
+@Serializable
+enum class Type {
+    @SerialName("hike")
+    Hike,
+
+    @SerialName("running")
+    Running,
+
+    @SerialName("mountain-bike")
+    MountainBike,
+
+    @SerialName("travel-bike")
+    TravelBike,
+
+    @SerialName("horse-riding")
+    HorseRiding,
+
+    @SerialName("aerial")
+    Aerial,
+
+    @SerialName("nautical")
+    Nautical
 }

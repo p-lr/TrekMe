@@ -1,0 +1,10 @@
+{
+  "id": "exc_1",
+  "title": "Excursion 1",
+  "description": "This the description for excursion 1",
+  "type": "hike",
+  "photos": [
+    { "id": "photo_id_1", "name":  "photo1", "file-name": "photo1.jpg" },
+    { "id": "photo_id_2", "name":  "photo2", "file-name": "photo2.jpg" }
+  ]
+}

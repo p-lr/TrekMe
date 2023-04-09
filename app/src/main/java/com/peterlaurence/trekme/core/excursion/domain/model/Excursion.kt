@@ -5,6 +5,6 @@ interface Excursion {
     val title: String
     val type: ExcursionType
     val description: String
-        get() = ""
+    val photos: List<ExcursionPhoto>
     // TODO: maybe add statistics
 }

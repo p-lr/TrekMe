@@ -28,7 +28,7 @@ fun MapGraph(
         )
 
         tracksManageScreen(
-            onNavigateToRoute = { navController.navigateUp() },
+            onNavigateToMap = { navController.navigateUp() },
             onMenuClick = onMenuClick
         )
 

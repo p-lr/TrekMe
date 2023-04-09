@@ -10,13 +10,13 @@ import com.peterlaurence.trekme.features.map.presentation.ui.screens.TracksManag
 private const val tracksDestination = "tracks_dest"
 
 fun NavGraphBuilder.tracksManageScreen(
-    onNavigateToRoute: (Route) -> Unit,
+    onNavigateToMap: () -> Unit,
     onMenuClick: () -> Unit
 ) {
     composable(tracksDestination) {
         TrekMeTheme {
             TracksManageStateful(
-                onGoToRoute = onNavigateToRoute,
+                onNavigateToMap = onNavigateToMap,
                 onMenuClick = onMenuClick
             )
         }

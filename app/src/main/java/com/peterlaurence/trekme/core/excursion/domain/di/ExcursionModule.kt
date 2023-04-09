@@ -16,5 +16,7 @@ object ExcursionModule {
     @Provides
     fun provideExcursionDao(
         trekMeContext: TrekMeContext
-    ): ExcursionDao = ExcursionDaoFileBased(trekMeContext)
+    ): ExcursionDao {
+        return ExcursionDaoFileBased(trekMeContext.rootDirList)
+    }
 }

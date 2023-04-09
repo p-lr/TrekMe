@@ -32,43 +32,50 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.map.presentation.ui.components.ColorPicker
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.TracksManageViewModel
-import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
 import com.peterlaurence.trekme.util.compose.SwipeToDismiss
 import com.peterlaurence.trekme.util.launchFlowCollectionWithLifecycle
 import com.peterlaurence.trekme.util.parseColorL
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
 @Composable
 fun TracksManageStateful(
     viewModel: TracksManageViewModel = hiltViewModel(),
-    onGoToRoute: (Route) -> Unit,
+    onNavigateToMap: () -> Unit,
     onMenuClick: () -> Unit
 ) {
     val routes by viewModel.getRouteFlow().collectAsState()
+    val excursionRefs by viewModel.getExcursionRefsFlow().collectAsState()
     var selectionId: String? by rememberSaveable { mutableStateOf(null) }
 
-    val selectableRoutes by produceState(
-        initialValue = routes.map { SelectableRoute(it, false) },
+    val selectables by produceState(
+        initialValue = excursionRefs.map { SelectableExcursion(it, false) } +
+                routes.map { SelectableRoute(it, false) },
         key1 = routes,
-        key2 = selectionId,
+        key2 = excursionRefs,
+        key3 = selectionId,
         producer = {
-            value = routes.map {
-                SelectableRoute(it, it.id == selectionId)
-            }
+            value = excursionRefs.map { SelectableExcursion(it, it.id == selectionId) } +
+                    routes.map {
+                        SelectableRoute(it, it.id == selectionId)
+                    }
         }
     )
 
     /* Depending on whether the user has extended offer, we show different menus. */
     val hasExtendedOffer by viewModel.hasExtendedOffer.collectAsState()
+    val isSelectionVisible = selectables.firstOrNull { it.isSelected }?.visible?.collectAsState()
     val topAppBarState = TopAppBarState(
         hasOverflowMenu = selectionId != null,
-        hasCenterOnTrack = hasExtendedOffer,
-        currentTrackName = selectableRoutes.firstOrNull { it.isSelected }?.route?.name?.value ?: ""
+        hasCenterOnTrack = hasExtendedOffer && isSelectionVisible?.value == true,
+        currentTrackName = selectables.firstOrNull { it.isSelected }?.name?.value ?: ""
     )
 
     val launcher = rememberLauncherForActivityResult(
@@ -98,46 +105,85 @@ fun TracksManageStateful(
         }
     }
 
-    var routeToRemoveModal by remember { mutableStateOf<Route?>(null) }
+    var routeToRemoveModal by remember { mutableStateOf<Selectable?>(null) }
 
     TracksManageScreen(
         topAppBarState = topAppBarState,
         snackbarHostState = snackbarHostState,
-        selectableRoutes = selectableRoutes,
+        selectables = selectables,
         onMenuClick = onMenuClick,
-        onRouteRename = { newName ->
-            val route = selectableRoutes.firstOrNull { it.isSelected }?.route
-            if (route != null) {
-                viewModel.onRenameRoute(route, newName)
+        onRename = { newName ->
+            val selectable = selectables.firstOrNull { it.isSelected }
+            if (selectable != null) {
+                when (selectable) {
+                    is SelectableExcursion -> {
+                        viewModel.onRenameExcursion(selectable.excursionRef, newName)
+                    }
+                    is SelectableRoute -> {
+                        viewModel.onRenameRoute(selectable.route, newName)
+                    }
+                }
             }
         },
         onGoToRoute = {
-            val route = selectableRoutes.firstOrNull { it.isSelected }?.route
-            if (route != null) {
-                onGoToRoute(route)
-                viewModel.centerOnRoute(route)
+            val selectable = selectables.firstOrNull { it.isSelected }
+            if (selectable != null) {
+                onNavigateToMap()
+                when (selectable) {
+                    is SelectableExcursion -> {
+                        viewModel.centerOnExcursion(selectable.excursionRef)
+                    }
+                    is SelectableRoute -> {
+                        viewModel.centerOnRoute(selectable.route)
+                    }
+                }
             }
         },
         onRouteClick = {
-            selectionId = it.route.id
+            selectionId = it.id
         },
-        onVisibilityToggle = { selectableRoute ->
-            viewModel.toggleRouteVisibility(selectableRoute.route)
+        onVisibilityToggle = { id ->
+            val selectable = selectables.firstOrNull { it.id == id }
+            if (selectable != null) {
+                when (selectable) {
+                    is SelectableExcursion -> {
+                        viewModel.toggleExcursionVisibility(selectable.excursionRef)
+                    }
+                    is SelectableRoute -> {
+                        viewModel.toggleRouteVisibility(selectable.route)
+                    }
+                }
+            }
         },
-        onColorChange = { selectableRoute, c ->
-            viewModel.onColorChange(selectableRoute.route, c)
+        onColorChange = { id, c ->
+            val selectable = selectables.firstOrNull { it.id == id }
+            if (selectable != null) {
+                when (selectable) {
+                    is SelectableExcursion -> {
+                        viewModel.onColorChange(selectable.excursionRef, c)
+                    }
+                    is SelectableRoute -> {
+                        viewModel.onColorChange(selectable.route, c)
+                    }
+                }
+            }
         },
-        onRemove = { selectableRoute ->
-            routeToRemoveModal = selectableRoute.route
+        onRemove = { selectable ->
+            routeToRemoveModal = selectable
         },
         onAddNewRoute = {
             launcher.launch("*/*")
         }
     )
 
-    routeToRemoveModal?.also { route ->
+    routeToRemoveModal?.also { selectable ->
         ConfirmDialog(
-            onConfirmPressed = { viewModel.onRemoveRoute(route) },
+            onConfirmPressed = {
+                when (selectable) {
+                    is SelectableExcursion -> viewModel.onRemoveExcursion(selectable.excursionRef)
+                    is SelectableRoute -> viewModel.onRemoveRoute(selectable.route)
+                }
+            },
             contentText = stringResource(id = R.string.track_remove_question),
             confirmButtonText = stringResource(id = R.string.delete_dialog),
             cancelButtonText = stringResource(id = R.string.cancel_dialog_string),
@@ -152,14 +198,14 @@ fun TracksManageStateful(
 private fun TracksManageScreen(
     topAppBarState: TopAppBarState,
     snackbarHostState: SnackbarHostState,
-    selectableRoutes: List<SelectableRoute>,
+    selectables: List<Selectable>,
     onMenuClick: () -> Unit,
-    onRouteRename: (String) -> Unit,
+    onRename: (String) -> Unit,
     onGoToRoute: () -> Unit,
-    onRouteClick: (SelectableRoute) -> Unit,
-    onVisibilityToggle: (SelectableRoute) -> Unit = {},
-    onColorChange: (SelectableRoute, Long) -> Unit,
-    onRemove: (SelectableRoute) -> Unit,
+    onRouteClick: (Selectable) -> Unit,
+    onVisibilityToggle: (id: String) -> Unit = {},
+    onColorChange: (id: String, Long) -> Unit,
+    onRemove: (Selectable) -> Unit,
     onAddNewRoute: () -> Unit
 ) {
     Scaffold(
@@ -168,7 +214,7 @@ private fun TracksManageScreen(
             TrackTopAppbar(
                 state = topAppBarState,
                 onMenuClick = onMenuClick,
-                onRouteRename = onRouteRename,
+                onRouteRename = onRename,
                 onGoToRoute = onGoToRoute
             )
         },
@@ -187,7 +233,7 @@ private fun TracksManageScreen(
             }
         }
     ) { padding ->
-        if (selectableRoutes.isEmpty()) {
+        if (selectables.isEmpty()) {
             Text(
                 stringResource(id = R.string.no_track_message),
                 modifier = Modifier
@@ -197,7 +243,7 @@ private fun TracksManageScreen(
         } else {
             TrackList(
                 Modifier.padding(padding),
-                selectableRoutes = selectableRoutes,
+                selectables = selectables,
                 onRouteClick = onRouteClick,
                 onVisibilityToggle = onVisibilityToggle,
                 onColorChange = onColorChange,
@@ -312,22 +358,22 @@ private fun TrackTopAppbar(
 @Composable
 private fun TrackList(
     modifier: Modifier = Modifier,
-    selectableRoutes: List<SelectableRoute>,
-    onRouteClick: (SelectableRoute) -> Unit,
-    onVisibilityToggle: (SelectableRoute) -> Unit = {},
-    onColorChange: (SelectableRoute, Long) -> Unit,
-    onRemove: (SelectableRoute) -> Unit
+    selectables: List<Selectable>,
+    onRouteClick: (Selectable) -> Unit,
+    onVisibilityToggle: (id: String) -> Unit = {},
+    onColorChange: (id: String, Long) -> Unit,
+    onRemove: (Selectable) -> Unit
 ) {
     LazyColumn(
         modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        itemsIndexed(selectableRoutes, key = { _, it -> it.route.id }) { index, selectableRoute ->
+        itemsIndexed(selectables, key = { _, it -> it.id }) { index, selectable ->
             val dismissState = rememberDismissState(
                 confirmStateChange = {
                     if (it == DismissedToEnd || it == DismissedToStart) {
-                        onRemove(selectableRoute)
+                        onRemove(selectable)
                     }
                     false
                 }
@@ -368,11 +414,18 @@ private fun TrackList(
                     }
                 },
             ) {
+                val visible by selectable.visible.collectAsState()
+                val color by selectable.color.collectAsState()
+                val name by selectable.name.collectAsState()
                 TrackItem(
                     Modifier.clickable {
-                        onRouteClick(selectableRoute)
+                        onRouteClick(selectable)
                     },
-                    selectableRoute,
+                    selectable.id,
+                    selectable.isSelected,
+                    visible,
+                    color,
+                    name,
                     index,
                     onVisibilityToggle = onVisibilityToggle,
                     onColorChange = onColorChange
@@ -385,22 +438,22 @@ private fun TrackList(
 @Composable
 private fun TrackItem(
     modifier: Modifier = Modifier,
-    selectableRoute: SelectableRoute,
+    id: String,
+    isSelected: Boolean,
+    visible: Boolean,
+    color: String,
+    name: String,
     index: Int,
-    onVisibilityToggle: (SelectableRoute) -> Unit = {},
-    onColorChange: (SelectableRoute, Long) -> Unit
+    onVisibilityToggle: (id: String) -> Unit = {},
+    onColorChange: (id: String, Long) -> Unit
 ) {
-    val visible by selectableRoute.route.visible.collectAsState()
-    val color by selectableRoute.route.color.collectAsState()
-    val name by selectableRoute.route.name.collectAsState()
-
     var isShowingColorPicker by remember { mutableStateOf(false) }
 
     Row(
         modifier
             .fillMaxWidth()
             .background(
-                if (selectableRoute.isSelected) {
+                if (isSelected) {
                     MaterialTheme.colorScheme.tertiaryContainer
                 } else {
                     if (index % 2 == 0) MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp) else MaterialTheme.colorScheme.surface
@@ -419,7 +472,7 @@ private fun TrackItem(
             ColorIndicator(color, onClick = { isShowingColorPicker = true })
             Spacer(modifier = Modifier.width(10.dp))
             IconButton(
-                onClick = { onVisibilityToggle(selectableRoute) },
+                onClick = { onVisibilityToggle(id) },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
@@ -439,7 +492,7 @@ private fun TrackItem(
         ColorPicker(
             initColor = parseColorL(color),
             onColorPicked = { c ->
-                onColorChange(selectableRoute, c)
+                onColorChange(id, c)
                 isShowingColorPicker = false
             },
             onCancel = { isShowingColorPicker = false }
@@ -471,7 +524,38 @@ private data class TopAppBarState(
     val currentTrackName: String
 )
 
-private data class SelectableRoute(val route: Route, val isSelected: Boolean)
+private sealed interface Selectable {
+    val isSelected: Boolean
+    val id: String
+    val name: StateFlow<String>
+    val color: StateFlow<String>
+    val visible: StateFlow<Boolean>
+}
+private data class SelectableRoute(
+    val route: Route, override val isSelected: Boolean
+) : Selectable {
+    override val id: String
+        get() = route.id
+    override val name: StateFlow<String>
+        get() = route.name
+    override val color: StateFlow<String>
+        get() = route.color
+    override val visible: StateFlow<Boolean>
+        get() = route.visible
+}
+
+private data class SelectableExcursion(
+    val excursionRef: ExcursionRef, override val isSelected: Boolean
+) : Selectable {
+    override val id: String
+        get() = excursionRef.id
+    override val name: StateFlow<String>
+        get() = excursionRef.name
+    override val color: StateFlow<String>
+        get() = excursionRef.color
+    override val visible: StateFlow<Boolean>
+        get() = excursionRef.visible
+}
 
 @Preview(showBackground = true, widthDp = 350, heightDp = 200)
 @Preview(
@@ -499,10 +583,10 @@ private fun TrackListPreview() {
         }
 
         TrackList(
-            selectableRoutes = selectableRoutes,
+            selectables = selectableRoutes,
             onRouteClick = {
                 selectableRoutes = selectableRoutes.map { r ->
-                    if (r.route.id == it.route.id) {
+                    if (r.route.id == it.id) {
                         r.copy(isSelected = !r.isSelected)
                     } else {
                         r.copy(isSelected = false)
@@ -510,7 +594,8 @@ private fun TrackListPreview() {
                 }
             },
             onVisibilityToggle = {
-                it.route.visible.update { v -> !v }
+                val route = selectableRoutes.first().route
+                route.visible.update { v -> !v }
             },
             onColorChange = { _, _ -> },
             onRemove = {}

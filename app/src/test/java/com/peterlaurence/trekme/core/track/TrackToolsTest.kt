@@ -26,7 +26,7 @@ class TrackToolsTest {
 
         val gpx = parseGpx(FileInputStream(gpxFile))
         assertEquals(1, gpx.tracks.size)
-        val geoRecord = gpxToDomain(gpx)
+        val geoRecord = gpxToDomain(gpx, gpxFile.name)
         val stats = getGeoStatistics(geoRecord)
         assertEquals(3773.11, stats.distance, 0.01)
     }
