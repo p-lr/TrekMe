@@ -1,8 +1,6 @@
-package com.peterlaurence.trekme.core.excursion.domain.model
+package com.peterlaurence.trekme.core.map.domain.models
 
-import com.peterlaurence.trekme.core.map.domain.models.Route
 import kotlinx.coroutines.flow.MutableStateFlow
-
 
 class ExcursionRef(
     val id: String,
@@ -12,7 +10,9 @@ class ExcursionRef(
 ) {
     val name: MutableStateFlow<String> = MutableStateFlow(initialName)
     val visible: MutableStateFlow<Boolean> = MutableStateFlow(initialVisibility)
-    val color: MutableStateFlow<String> = MutableStateFlow(initialColor ?: colorRoute)
+    val color: MutableStateFlow<String> = MutableStateFlow(
+        initialColor ?: colorRoute
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

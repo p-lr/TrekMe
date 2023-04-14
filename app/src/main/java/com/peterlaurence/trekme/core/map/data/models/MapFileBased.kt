@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.core.map.data.models
 
 import android.graphics.Bitmap
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.projection.Projection
@@ -10,8 +10,7 @@ import java.io.File
 import java.util.*
 
 /**
- * **Warning**: This class isn't thread-safe. It's advised to thread-confine the use of this
- * class to the main thread.
+ * **Warning**: This class isn't thread-safe. It's advised to thread-confine the use of this class.
  */
 class MapFileBased(
     private val config: MapConfig,

@@ -1,7 +1,6 @@
 package com.peterlaurence.trekme.core.map.domain.models
 
 import android.graphics.Bitmap
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
 import com.peterlaurence.trekme.core.projection.Projection
 import kotlinx.coroutines.flow.*
 import java.util.UUID

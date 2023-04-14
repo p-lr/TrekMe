@@ -66,6 +66,7 @@ class RouteDaoImpl(
         }
 
         /* Set the routes on the main thread */
+        // TODO: switching to main thread is probably useless here (because of atomic update)
         withContext(mainDispatcher) {
             map.routes.update { routes }
         }

@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Route
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog

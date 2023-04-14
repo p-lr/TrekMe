@@ -187,6 +187,15 @@ object MapModule {
     ): MapDownloadDao {
         return MapDownloadDaoImpl(settings)
     }
+
+    @Singleton
+    @Provides
+    fun provideExcursionRefDao(
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        @MapJson json: Json
+    ): ExcursionRefDao {
+        return ExcursionRefDaoImpl(ioDispatcher, json)
+    }
 }
 
 /**

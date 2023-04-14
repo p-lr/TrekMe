@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.billing.domain.model.ExtendedOfferStateOwner
 import com.peterlaurence.trekme.core.billing.domain.model.PurchaseState
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.georecord.domain.interactors.IsUriSupportedInteractor
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route

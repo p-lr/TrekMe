@@ -2,10 +2,11 @@ package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Barycenter
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.models.Route
+import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.ExcursionInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.RouteInteractor
 import com.peterlaurence.trekme.features.map.presentation.model.RouteData
@@ -28,6 +29,7 @@ class RouteLayer(
     private val goToExcursionFlow: Flow<ExcursionRef>,
     private val routeInteractor: RouteInteractor,
     private val excursionInteractor: ExcursionInteractor,
+    private val mapExcursionInteractor: MapExcursionInteractor,
 ) {
     val isShowingDistanceOnTrack = MutableStateFlow(false)
     private val staticRoutesData = MutableStateFlow(emptyMap<Route, RouteData>())
@@ -63,6 +65,7 @@ class RouteLayer(
                 }
 
                 launch {
+                    mapExcursionInteractor.importExcursions(map)
                     map.excursionRefs.collectLatest { refs ->
                         val routesForRef = excursionInteractor.loadRoutes(refs)
                         launch {

@@ -1,6 +1,6 @@
 package com.peterlaurence.trekme.features.map.presentation.events
 
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Beacon
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route

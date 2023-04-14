@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.common.domain.interactors
 
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionRef
-import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
+import com.peterlaurence.trekme.core.map.domain.dao.ExcursionRefDao
+import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
@@ -12,20 +12,10 @@ import javax.inject.Inject
  * get rid of the current limitations (a route == track segment).
  */
 class MapExcursionInteractor @Inject constructor(
-    excursionRepository: ExcursionRepository,
-    importGeoRecordInteractor: ImportGeoRecordInteractor
+    private val excursionRefDao: ExcursionRefDao,
 ) {
-    /**
-     * TODO: for each excursion, get a GeoRecord and use the importGeoRecordInteractor to import
-     * them into the map. This import phase should be done in the RouteLayer, at the same time we
-     * import routes.
-     * 1. Implement the [ExcursionRepository]. Excursions are expected to be found in "excursions"
-     * directory right next to "recordings".
-     *
-     * 2.
-     **/
-    fun importExcursions(map: Map) {
-
+    suspend fun importExcursions(map: Map) {
+        excursionRefDao.importExcursionRefs(map)
     }
 
     /**

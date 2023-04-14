@@ -19,6 +19,7 @@ import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.MapComposeTileStreamProviderInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.map.domain.interactors.*
 import com.peterlaurence.trekme.features.map.presentation.events.MapFeatureEvents
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.controllers.SnackBarController
@@ -44,6 +45,7 @@ class MapViewModel @Inject constructor(
     beaconInteractor: BeaconInteractor,
     routeInteractor: RouteInteractor,
     excursionInteractor: ExcursionInteractor,
+    mapExcursionInteractor: MapExcursionInteractor,
     private val mapComposeTileStreamProviderInteractor: MapComposeTileStreamProviderInteractor,
     val settings: Settings,
     private val mapFeatureEvents: MapFeatureEvents,
@@ -116,7 +118,8 @@ class MapViewModel @Inject constructor(
         mapFeatureEvents.goToRoute,
         mapFeatureEvents.goToExcursion,
         routeInteractor,
-        excursionInteractor
+        excursionInteractor,
+        mapExcursionInteractor
     )
 
     val snackBarController = SnackBarController()
