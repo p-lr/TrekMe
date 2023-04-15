@@ -23,23 +23,23 @@ class MapExcursionInteractor @Inject constructor(
      */
     suspend fun setColor(map: Map, ref: ExcursionRef, color: Long) {
         ref.color.value = '#' + java.lang.Long.toHexString(color)
-        // TODO: save changes
+        excursionRefDao.saveExcursionRef(map, ref)
     }
 
     suspend fun rename(map: Map, ref: ExcursionRef, newName: String) {
         ref.name.value = newName
-        // TODO: save changes
+        excursionRefDao.saveExcursionRef(map, ref)
     }
 
     suspend fun removeExcursionOnMap(map: Map, ref: ExcursionRef) {
         map.excursionRefs.update {
             it.filter { r -> r.id != ref.id }
         }
-        // TODO: save on disk
+        excursionRefDao.removeExcursionRef(ref)
     }
 
     suspend fun toggleVisibility(map: Map, ref: ExcursionRef) {
         ref.visible.update { !it }
-        // TODO: save on disk
+        excursionRefDao.saveExcursionRef(map, ref)
     }
 }

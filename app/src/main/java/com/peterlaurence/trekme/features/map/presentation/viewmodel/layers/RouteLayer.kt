@@ -55,24 +55,26 @@ class RouteLayer(
 
         scope.launch {
             dataStateFlow.collectLatest { (map, mapState) ->
-                staticRoutesData.update { emptyMap() }
+                coroutineScope {
+                    staticRoutesData.update { emptyMap() }
 
-                launch {
-                    routeInteractor.loadRoutes(map)
-                    map.routes.collectLatest { routes ->
-                        drawStaticRoutes(mapState, map, routes)
-                    }
-                }
-
-                launch {
-                    mapExcursionInteractor.importExcursions(map)
-                    map.excursionRefs.collectLatest { refs ->
-                        val routesForRef = excursionInteractor.loadRoutes(refs)
-                        launch {
-                            drawExcursionRoutes(mapState, map, routesForRef)
+                    launch {
+                        routeInteractor.loadRoutes(map)
+                        map.routes.collectLatest { routes ->
+                            drawStaticRoutes(mapState, map, routes)
                         }
-                        launch {
-                            listenForGoToExcursionEvent(mapState, map, routesForRef)
+                    }
+
+                    launch {
+                        mapExcursionInteractor.importExcursions(map)
+                        map.excursionRefs.collectLatest { refs ->
+                            val routesForRef = excursionInteractor.loadRoutes(refs)
+                            launch {
+                                drawExcursionRoutes(mapState, map, routesForRef)
+                            }
+                            launch {
+                                listenForGoToExcursionEvent(mapState, map, routesForRef)
+                            }
                         }
                     }
                 }
@@ -109,9 +111,9 @@ class RouteLayer(
             val routes = routesForRef[ref] ?: return@event
             val boundingBox = routes.mapNotNull {
                 excursionRoutesData.value[it]?.boundingBox
-            }.reduce { acc, b ->
+            }.reduceOrNull { acc, b ->
                 acc + b
-            }
+            } ?: return@event
             coroutineScope {
                 mapState.getLayoutSizeFlow().collectLatest { layoutSize ->
                     val mapSize = IntSize(map.widthPx, map.heightPx)

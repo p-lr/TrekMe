@@ -1,6 +1,8 @@
 package com.peterlaurence.trekme.core.map.data.dao
 
+import com.peterlaurence.trekme.core.map.data.mappers.toData
 import com.peterlaurence.trekme.core.map.data.mappers.toDomain
+import com.peterlaurence.trekme.core.map.data.models.ExcursionRefFileBased
 import com.peterlaurence.trekme.core.map.data.models.ExcursionRefKtx
 import com.peterlaurence.trekme.core.map.data.models.MapFileBased
 import com.peterlaurence.trekme.core.map.domain.dao.ExcursionRefDao
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import java.io.File
 
 class ExcursionRefDaoImpl(
@@ -28,7 +31,7 @@ class ExcursionRefDaoImpl(
             } ?: emptyArray()
 
             val refs = refFiles.map {
-                json.decodeFromString<ExcursionRefKtx>(FileUtils.getStringFromFile(it))
+                json.decodeFromString<ExcursionRefKtx>(FileUtils.getStringFromFile(it)) to it
             }
 
             map.excursionRefs.update { refs.map { it.toDomain() } }
@@ -36,11 +39,23 @@ class ExcursionRefDaoImpl(
         Unit
     }
 
-    override suspend fun saveExcursionRef(map: Map, ref: ExcursionRef) {
-        TODO("Not yet implemented")
+    override suspend fun saveExcursionRef(map: Map, ref: ExcursionRef) = withContext(ioDispatcher) {
+        val refFileBased = (ref as? ExcursionRefFileBased) ?: return@withContext
+
+        runCatching {
+            if (!refFileBased.file.exists()) return@withContext
+            val content = json.encodeToString(refFileBased.toData())
+            FileUtils.writeToFile(content, refFileBased.file)
+        }
+        Unit
     }
 
-    override suspend fun removeExcursionRef(map: Map, ref: ExcursionRef) {
-        TODO("Not yet implemented")
+    override suspend fun removeExcursionRef(ref: ExcursionRef) = withContext(ioDispatcher) {
+        val refFileBased = (ref as? ExcursionRefFileBased) ?: return@withContext
+
+        runCatching {
+            refFileBased.file.delete()
+        }
+        Unit
     }
 }
