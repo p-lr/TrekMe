@@ -17,3 +17,9 @@
 #}
 
 -keep class com.peterlaurence.trekme.** { *; }
+
+# Remove rules below when upgrade to okhttp 5.0 is done
+-dontwarn okhttp3.internal.platform.**
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**
