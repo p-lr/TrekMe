@@ -395,6 +395,7 @@
     <string name="excursion_aerial">Aerial</string>
     <string name="excursion_motorized">Motorised vehicle</string>
     <string name="back_action">Back</string>
+    <string name="location_disabled">Location is disabled on your device.</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>

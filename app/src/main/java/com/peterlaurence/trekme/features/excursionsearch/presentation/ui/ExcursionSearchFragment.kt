@@ -10,7 +10,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.screen.ExcursionSearchStateful
+import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.navigation.ExcursionSearchGraph
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -35,7 +35,7 @@ class ExcursionSearchFragment : Fragment() {
 
             setContent {
                 TrekMeTheme {
-                    ExcursionSearchStateful(onMenuClick = appEventBus::openDrawer)
+                    ExcursionSearchGraph(onMenuClick = appEventBus::openDrawer)
                 }
             }
         }

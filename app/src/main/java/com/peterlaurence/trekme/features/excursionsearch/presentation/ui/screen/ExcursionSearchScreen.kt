@@ -1,6 +1,11 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.ui.screen
 
+import android.Manifest
+import android.content.Context
+import android.location.LocationManager
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -15,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -24,6 +30,7 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.location.LocationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionCategory
@@ -36,6 +43,7 @@ import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.
 @Composable
 fun ExcursionSearchStateful(
     viewModel: ExcursionSearchViewModel = hiltViewModel(),
+    onNavigateToExcursionMap: () -> Unit,
     onMenuClick: () -> Unit
 ) {
     var isUsingCurrentLocation by rememberSaveable { mutableStateOf(true) }
@@ -54,6 +62,36 @@ fun ExcursionSearchStateful(
     val excursionCategories = remember { viewModel.getExcursionCategories() }
     var excursionCategoryChoice by rememberSaveable {
         mutableStateOf<ExcursionCategoryChoice>(ExcursionCategoryChoice.Single(ExcursionCategory.OnFoot))
+    }
+
+    var isShowingLocationWarning by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            val locationManager =
+                context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+            if (locationManager == null || !LocationManagerCompat.isLocationEnabled(locationManager)) {
+                // warn location disabled
+                isShowingLocationWarning = true
+            }
+        } else {
+            isUsingCurrentLocation = false
+        }
+    }
+
+    if (isShowingLocationWarning) {
+        AlertDialog(
+            title = { Text(stringResource(id = R.string.warning_title)) },
+            text = { Text(stringResource(id = R.string.location_disabled)) },
+            onDismissRequest = { isShowingLocationWarning = false },
+            confirmButton = {
+                Button(onClick = { isShowingLocationWarning = false }) {
+                    Text(text = stringResource(id = R.string.ok_dialog))
+                }
+            }
+        )
     }
 
     HikeSearchScreen(
@@ -85,7 +123,13 @@ fun ExcursionSearchStateful(
             excursionCategoryChoice = choice
         },
         onSearchClicked = { choice ->
-            viewModel.onSearch(isUsingCurrentLocation, choice)
+            if (isUsingCurrentLocation) {
+                launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                viewModel.searchWithLocation(choice)
+            } else {
+                viewModel.onSearchWithPlace(choice)
+            }
+            onNavigateToExcursionMap()
         }
     )
 }
@@ -309,6 +353,7 @@ private fun ColumnScope.ExcursionSearchUi(
                 ExcursionCategoryChoice.All -> stringResource(
                     id = R.string.excursion_all
                 )
+
                 is ExcursionCategoryChoice.Single -> stringResource(
                     getExcursionCategoryName(
                         excursionCategoryChoice.choice
