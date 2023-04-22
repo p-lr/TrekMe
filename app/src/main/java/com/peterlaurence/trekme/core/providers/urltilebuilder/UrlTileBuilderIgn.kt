@@ -17,6 +17,6 @@ class UrlTileBuilderIgn(private val api: String, private val layer: Layer) : Url
             is Cadastre -> "PCI vecteur"
             else -> "normal"
         }
-        return "http://wxs.ign.fr/$api/geoportail/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=$style&LAYER=${layer.wmtsName}&EXCEPTIONS=text/xml&Format=image/$imgFormat&tilematrixset=PM&TileMatrix=$level&TileRow=$row&TileCol=$col&"
+        return "https://wxs.ign.fr/$api/geoportail/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=$style&LAYER=${layer.wmtsName}&EXCEPTIONS=text/xml&Format=image/$imgFormat&tilematrixset=PM&TileMatrix=$level&TileRow=$row&TileCol=$col&"
     }
 }
