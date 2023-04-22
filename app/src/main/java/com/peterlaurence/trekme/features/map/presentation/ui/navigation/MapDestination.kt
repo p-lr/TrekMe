@@ -6,9 +6,8 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_background
 import com.peterlaurence.trekme.features.map.presentation.ui.modal.BeaconServiceLauncher
-import com.peterlaurence.trekme.features.map.presentation.ui.MapScreen
+import com.peterlaurence.trekme.features.map.presentation.ui.MapStateful
 import com.peterlaurence.trekme.util.android.activity
 import java.util.*
 
@@ -31,7 +30,7 @@ fun NavGraphBuilder.mapScreen(
             CompositionLocalProvider(
                 LocalViewModelStoreOwner provides LocalContext.current.activity
             ) {
-                MapScreen(
+                MapStateful(
                     onNavigateToTracksManage = onNavigateToTrackManage,
                     onNavigateToMarkerEdit = onNavigateToMarkerEdit,
                     onNavigateToBeaconEdit = onNavigateToBeaconEdit

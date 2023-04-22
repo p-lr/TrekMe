@@ -11,7 +11,7 @@ import com.peterlaurence.trekme.features.map.presentation.viewmodel.MapUiState
 import ovh.plrapps.mapcompose.ui.MapUI
 
 @Composable
-fun MapLayout(
+fun MapScreen(
     modifier: Modifier = Modifier,
     mapUiState: MapUiState,
     isShowingDistance: Boolean,

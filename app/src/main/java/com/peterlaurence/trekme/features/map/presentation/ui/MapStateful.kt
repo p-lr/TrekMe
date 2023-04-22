@@ -17,7 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peterlaurence.trekme.R
@@ -29,14 +29,14 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.md_theme_light_background
 import com.peterlaurence.trekme.features.map.presentation.ui.components.*
 import com.peterlaurence.trekme.features.map.presentation.ui.screens.ErrorScaffold
-import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapLayout
+import com.peterlaurence.trekme.features.map.presentation.ui.screens.MapScreen
 import com.peterlaurence.trekme.features.map.presentation.viewmodel.*
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.rotation
 import java.util.*
 
 @Composable
-fun MapScreen(
+fun MapStateful(
     viewModel: MapViewModel = viewModel(),
     statisticsViewModel: StatisticsViewModel = viewModel(),
     onNavigateToTracksManage: () -> Unit,
@@ -62,16 +62,15 @@ fun MapScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val locationFlow = viewModel.locationFlow
     val elevationFix by viewModel.elevationFixFlow.collectAsState()
-    val locationFlowLifecycleAware = remember(locationFlow, lifecycleOwner) {
-        locationFlow.flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.RESUMED)
-    }
 
-    val location: Location? by locationFlowLifecycleAware.collectAsState(initial = null)
+    val location: Location? by locationFlow.collectAsStateWithLifecycle(initialValue = null, minActiveState = Lifecycle.State.RESUMED)
 
     LaunchedEffect(lifecycleOwner) {
         launch {
-            locationFlowLifecycleAware.collect {
-                viewModel.locationOrientationLayer.onLocation(it)
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                locationFlow.collect {
+                    viewModel.locationOrientationLayer.onLocation(it)
+                }
             }
         }
         launch {
@@ -265,7 +264,7 @@ private fun MapScaffold(
             }
         }
     ) { paddingValues ->
-        MapLayout(
+        MapScreen(
             Modifier.padding(paddingValues),
             uiState,
             isShowingDistance,
