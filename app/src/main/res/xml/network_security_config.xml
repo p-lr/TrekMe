@@ -8,6 +8,16 @@
         </trust-anchors>
     </debug-overrides>
 
+    <domain-config>
+        <!-- For IGN: certigna root CA. https://www.certigna.com/autorites-de-certification/ -->
+        <domain includeSubdomains="true">wxs.ign.fr</domain>
+        <trust-anchors>
+            <certificates src="@raw/certignarootca"/>
+            <certificates src="user"/>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
+
     <domain-config cleartextTrafficPermitted="true">
         <!-- Make sure your URL Server here -->
         <domain includeSubdomains="true">192.168.1.18</domain>
