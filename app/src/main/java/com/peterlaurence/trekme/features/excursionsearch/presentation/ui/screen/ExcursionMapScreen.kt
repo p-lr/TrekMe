@@ -19,7 +19,7 @@ fun ExcursionMapStateful(
         launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.locationFlow.collect {
-                    viewModel.onLocation(it)
+                    // TODO
                 }
             }
         }
