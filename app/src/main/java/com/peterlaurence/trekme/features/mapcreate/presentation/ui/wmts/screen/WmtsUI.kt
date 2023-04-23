@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components
+package com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.screen
 
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -30,6 +30,8 @@ import com.peterlaurence.trekme.features.common.presentation.ui.widgets.OnBoardi
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PopupOrigin
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.LevelsDialogStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.PrimaryLayerDialogStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.GeoPlaceListUI
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.SearchAppBar
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.PrimaryLayerSelectionData
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
@@ -43,7 +45,7 @@ import kotlin.math.abs
 import kotlin.math.min
 
 @Composable
-fun WmtsUI(
+private fun WmtsUI(
     modifier: Modifier,
     wmtsState: WmtsState,
     onValidateArea: () -> Unit
@@ -314,8 +316,10 @@ private fun BoxWithConstraintsScope.OnBoardingOverlay(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WmtsScaffold(
-    events: List<WmtsEvent>, topBarState: TopBarState, uiState: UiState,
+private fun WmtsScaffold(
+    events: List<WmtsEvent>,
+    topBarState: TopBarState,
+    uiState: UiState,
     onAckError: () -> Unit,
     onToggleArea: () -> Unit,
     onValidateArea: () -> Unit,

@@ -12,7 +12,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import com.peterlaurence.trekme.core.wmts.domain.model.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
-import com.peterlaurence.trekme.core.providers.bitmap.BitmapProvider
+import com.peterlaurence.trekme.core.map.data.models.BitmapProvider
 import com.peterlaurence.trekme.core.settings.Settings
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.firstOrNull

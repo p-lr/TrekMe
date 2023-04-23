@@ -14,7 +14,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.dialogs.*
-import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.WmtsStateful
+import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.screen.WmtsStateful
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsOnBoardingViewModel
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme

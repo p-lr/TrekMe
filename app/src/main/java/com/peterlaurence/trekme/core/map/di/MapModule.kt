@@ -196,6 +196,12 @@ object MapModule {
     ): ExcursionRefDao {
         return ExcursionRefDaoImpl(ioDispatcher, json)
     }
+
+    @Singleton
+    @Provides
+    fun provideCheckTileStreamProviderDao(): CheckTileStreamProviderDao {
+        return CheckTileStreamProviderDaoImpl()
+    }
 }
 
 /**

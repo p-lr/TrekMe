@@ -1,22 +1,19 @@
-package com.peterlaurence.trekme.core.providers.stream
+package com.peterlaurence.trekme.core.wmts.data.provider
 
 import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
-import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttpAuth
+import com.peterlaurence.trekme.core.wmts.data.model.TileStreamProviderHttpAuth
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
 import com.peterlaurence.trekme.core.wmts.domain.model.Layer
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
+import com.peterlaurence.trekme.core.wmts.data.model.UrlTileBuilder
 
 /**
  * A [TileStreamProvider] specific for France IGN.
  * Luckily, IGN's [WMTS service](https://geoservices.ign.fr/documentation/geoservices/wmts.html) has
- * a grid coordinates that is exactly the same as the one [MapView] uses.
- * Consequently, to make a valid HTTP request, we just have to format the URL with raw zoom-level,
- * row and col numbers.
- * Additional information have to be provided though, like IGN credentials.
+ * a grid coordinates that is exactly the same as the one used in MapCompose.
  *
- * @author P.Laurence on 20/06/19
+ * @since 20/06/2019
  */
 class TileStreamProviderIgn(urlTileBuilder: UrlTileBuilder, val layer: Layer) : TileStreamProvider {
     private val base: TileStreamProvider

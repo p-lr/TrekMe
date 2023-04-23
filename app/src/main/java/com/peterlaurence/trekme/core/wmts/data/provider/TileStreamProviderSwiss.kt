@@ -1,18 +1,18 @@
-package com.peterlaurence.trekme.core.providers.stream
+package com.peterlaurence.trekme.core.wmts.data.provider
 
 import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
-import com.peterlaurence.trekme.core.providers.bitmap.TileStreamProviderHttp
-import com.peterlaurence.trekme.core.providers.urltilebuilder.UrlTileBuilder
+import com.peterlaurence.trekme.core.wmts.data.model.TileStreamProviderHttp
+import com.peterlaurence.trekme.core.wmts.data.model.UrlTileBuilder
 
 /**
  * Swiss topo maps server use the Referer to authorize WMTS tile fetch.
  */
 class TileStreamProviderSwiss(urlTileBuilder: UrlTileBuilder) : TileStreamProvider {
     private val requestProperties = mapOf(
-            "Referer" to "https://wmts.geo.admin.ch",
-            "User-Agent" to "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
+        "Referer" to "https://wmts.geo.admin.ch",
+        "User-Agent" to "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
     )
     private val base = TileStreamProviderHttp(urlTileBuilder, requestProperties)
 

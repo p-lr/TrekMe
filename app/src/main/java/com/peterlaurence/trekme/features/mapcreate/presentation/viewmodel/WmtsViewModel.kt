@@ -17,20 +17,18 @@ import com.peterlaurence.trekme.core.geocoding.domain.engine.GeoPlace
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
-import com.peterlaurence.trekme.core.providers.bitmap.*
-import com.peterlaurence.trekme.core.providers.stream.TileStreamProviderOverlay
-import com.peterlaurence.trekme.core.providers.stream.newTileStreamProvider
+import com.peterlaurence.trekme.core.wmts.data.provider.TileStreamProviderOverlay
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.core.geocoding.domain.repository.GeocodingRepository
+import com.peterlaurence.trekme.core.map.domain.dao.CheckTileStreamProviderDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
+import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.model.*
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.LayerOverlayRepository
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
 import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
 import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
-import com.peterlaurence.trekme.features.common.data.dao.IgnApiDao
-import com.peterlaurence.trekme.features.common.data.dao.OrdnanceSurveyApiDao
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
@@ -64,9 +62,9 @@ import javax.inject.Inject
 class WmtsViewModel @Inject constructor(
     private val app: Application,
     private val downloadRepository: DownloadRepository,
-    private val ignApiDao: IgnApiDao,
+    private val getTileStreamProviderDao: TileStreamProviderDao,
+    private val checkTileStreamProviderDao: CheckTileStreamProviderDao,
     private val wmtsSourceRepository: WmtsSourceRepository,
-    private val ordnanceSurveyApiDao: OrdnanceSurveyApiDao,
     private val layerOverlayRepository: LayerOverlayRepository,
     private val locationSource: LocationSource,
     private val geocodingRepository: GeocodingRepository,
@@ -243,10 +241,6 @@ class WmtsViewModel @Inject constructor(
         _wmtsState.value = Loading
         _topBarState.value = Empty
 
-        val tileStreamProviderFlow = createTileStreamProvider(wmtsSource).catch {
-            _wmtsState.value = WmtsError.VPS_FAIL
-        }
-
         val mapState = MapState(
             19, mapSize, mapSize,
             workerCount = 16
@@ -320,9 +314,15 @@ class WmtsViewModel @Inject constructor(
         /* Restore the location marker right now - even if subsequent updates will do it anyway. */
         updatePositionOneTime()
 
-        tileStreamProviderFlow.collect { tileStreamProvider ->
-            mapState.removeAllLayers()
-            mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
+        val tileStreamProviderFlow = createTileStreamProvider(wmtsSource)
+        tileStreamProviderFlow.collect { result ->
+            val tileStreamProvider = result.getOrNull()
+            if (tileStreamProvider != null) {
+                mapState.removeAllLayers()
+                mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
+            } else {
+                _wmtsState.value = WmtsError.VPS_FAIL
+            }
         }
     }
 
@@ -398,20 +398,16 @@ class WmtsViewModel @Inject constructor(
      * we should have been able to do so), an [IllegalStateException] is thrown.
      */
     @Throws(ApiFetchError::class)
-    suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<TileStreamProvider> {
+    suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<Result<TileStreamProvider>> {
         val mapSourceData: Flow<MapSourceData> = when (wmtsSource) {
             WmtsSource.IGN -> {
                 val layer = getActivePrimaryIgnLayer()
                 getOverlayLayersForSource(wmtsSource).map { overlays ->
-                    val ignApi = ignApiDao.getApi() ?: throw ApiFetchError()
-                    IgnSourceData(ignApi, layer, overlays)
+                    IgnSourceData(layer, overlays)
                 }
             }
             WmtsSource.ORDNANCE_SURVEY -> {
-                flow {
-                    val api = ordnanceSurveyApiDao.getApi() ?: throw ApiFetchError()
-                    emit(OrdnanceSurveyData(api))
-                }
+                flow { emit(OrdnanceSurveyData) }
             }
             WmtsSource.OPEN_STREET_MAP -> {
                 val layer = getActivePrimaryOsmLayer()
@@ -423,9 +419,10 @@ class WmtsViewModel @Inject constructor(
         }
 
         return mapSourceData.map {
-            newTileStreamProvider(it).also { provider ->
+            getTileStreamProviderDao.newTileStreamProvider(it).also { result ->
                 /* Don't test the stream provider if it has overlays */
-                if (provider !is TileStreamProviderOverlay) {
+                val provider = result.getOrNull()
+                if (provider != null && provider !is TileStreamProviderOverlay) {
                     checkTileAccessibility(wmtsSource, provider)
                 }
             }
@@ -499,7 +496,7 @@ class WmtsViewModel @Inject constructor(
         viewModelScope.launch {
             val tileStreamProvider = createTileStreamProvider(
                 wmtsSource
-            ).catch {}.firstOrNull() ?: return@launch
+            ).firstOrNull()?.getOrNull() ?: return@launch
             val request = DownloadMapRequest(wmtsSource, mapSpec, tileCount, tileStreamProvider, geoRecordUrls)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
@@ -515,20 +512,7 @@ class WmtsViewModel @Inject constructor(
         tileStreamProvider: TileStreamProvider
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val success = when (wmtsSource) {
-                WmtsSource.IGN -> {
-                    try {
-                        checkIgnProvider(tileStreamProvider)
-                    } catch (e: Exception) {
-                        false
-                    }
-                }
-                WmtsSource.IGN_SPAIN -> checkIgnSpainProvider(tileStreamProvider)
-                WmtsSource.USGS -> checkUSGSProvider(tileStreamProvider)
-                WmtsSource.OPEN_STREET_MAP -> checkOSMProvider(tileStreamProvider)
-                WmtsSource.SWISS_TOPO -> checkSwissTopoProvider(tileStreamProvider)
-                WmtsSource.ORDNANCE_SURVEY -> checkOrdnanceSurveyProvider(tileStreamProvider)
-            }
+            val success = checkTileStreamProviderDao.check(wmtsSource, tileStreamProvider)
             if (!success) {
                 val errorState = if (wmtsSource == WmtsSource.IGN) {
                     WmtsError.IGN_OUTAGE

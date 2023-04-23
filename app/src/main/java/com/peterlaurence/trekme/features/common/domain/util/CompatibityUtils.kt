@@ -6,7 +6,9 @@ import ovh.plrapps.mapcompose.core.TileStreamProvider as MapComposeTileStreamPro
 
 fun TileStreamProvider.toMapComposeTileStreamProvider(): MapComposeTileStreamProvider {
     return MapComposeTileStreamProvider { row, col, zoomLvl ->
-        val tileResult = this@toMapComposeTileStreamProvider.getTileStream(row, col, zoomLvl)
+        val tileResult = runCatching {
+            this@toMapComposeTileStreamProvider.getTileStream(row, col, zoomLvl)
+        }.getOrNull()
         (tileResult as? TileStream)?.tileStream
     }
 }

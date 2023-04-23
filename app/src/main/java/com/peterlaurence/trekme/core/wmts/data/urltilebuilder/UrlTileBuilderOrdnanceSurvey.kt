@@ -1,4 +1,6 @@
-package com.peterlaurence.trekme.core.providers.urltilebuilder
+package com.peterlaurence.trekme.core.wmts.data.urltilebuilder
+
+import com.peterlaurence.trekme.core.wmts.data.model.UrlTileBuilder
 
 class UrlTileBuilderOrdnanceSurvey(private val api: String) : UrlTileBuilder {
     override fun build(level: Int, row: Int, col: Int): String {

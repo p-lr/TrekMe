@@ -1,4 +1,4 @@
-package com.peterlaurence.trekme.core.providers.stream
+package com.peterlaurence.trekme.core.wmts.data.provider
 
 import android.graphics.Bitmap.CompressFormat
 import android.graphics.BitmapFactory

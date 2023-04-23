@@ -7,11 +7,9 @@ enum class WmtsSource {
 
 sealed interface MapSourceData
 
-data class IgnSourceData(
-    val api: String, val layer: Layer, val overlays: List<LayerProperties>
-) : MapSourceData
+data class IgnSourceData(val layer: Layer, val overlays: List<LayerProperties>) : MapSourceData
 object SwissTopoData : MapSourceData
 data class OsmSourceData(val layer: Layer) : MapSourceData
 object UsgsData : MapSourceData
 object IgnSpainData : MapSourceData
-data class OrdnanceSurveyData(val api: String) : MapSourceData
+object OrdnanceSurveyData : MapSourceData

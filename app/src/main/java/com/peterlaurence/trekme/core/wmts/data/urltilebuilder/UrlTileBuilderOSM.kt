@@ -1,5 +1,6 @@
-package com.peterlaurence.trekme.core.providers.urltilebuilder
+package com.peterlaurence.trekme.core.wmts.data.urltilebuilder
 
+import com.peterlaurence.trekme.core.wmts.data.model.UrlTileBuilder
 import com.peterlaurence.trekme.core.wmts.domain.model.openTopoMap
 import com.peterlaurence.trekme.core.wmts.domain.model.osmStreet
 import com.peterlaurence.trekme.core.wmts.domain.model.osmTopo

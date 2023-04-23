@@ -20,6 +20,8 @@ import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceR
 import com.peterlaurence.trekme.features.common.domain.repositories.OnBoardingRepository
 import com.peterlaurence.trekme.core.settings.Settings
 import com.peterlaurence.trekme.core.orientation.app.OrientationSourceImpl
+import com.peterlaurence.trekme.core.wmts.data.dao.TileStreamProviderDaoImpl
+import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.gpspro.GpsProEvents
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
@@ -94,6 +96,15 @@ object AppModule {
     @Singleton
     @Provides
     fun bindOrdnanceSurveyApiRepository(): OrdnanceSurveyApiDao = OrdnanceSurveyApiDao()
+
+    @Singleton
+    @Provides
+    fun provideTileStreamProviderDao(
+        ignApiDao: IgnApiDao,
+        ordnanceSurveyApiDao: OrdnanceSurveyApiDao
+    ): TileStreamProviderDao {
+        return TileStreamProviderDaoImpl(ignApiDao, ordnanceSurveyApiDao)
+    }
 
     @Singleton
     @Provides
