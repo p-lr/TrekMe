@@ -394,6 +394,7 @@
     <string name="map_settings_frgmt_title">Réglages de carte</string>
     <string name="center_on_track">Centrez directement sur une trace depuis la gestion des traces d\'une carte</string>
     <string name="define_elevation_fix">Définissez une correction d\'altitude GPS</string>
+    <string name="osm_level_17">Débloquez le niveau 17 pour les cartes OpenStreetMap</string>
     <string name="create_map_from_track">Créez une carte à partir d\'une trace gpx</string>
     <string name="rate_the_app">Noter l\'application</string>
     <string name="user_feedback">Retours et suggestions</string>

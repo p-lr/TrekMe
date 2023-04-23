@@ -74,6 +74,7 @@ fun TrekMeExtendedContent() {
     LineItem(id = R.string.create_map_from_track)
     LineItem(id = R.string.center_on_track)
     LineItem(id = R.string.define_elevation_fix)
+    LineItem(id = R.string.osm_level_17)
     LineItem(id = R.string.no_ads)
 
     NotaBene()
@@ -109,12 +110,13 @@ private fun TitleRow(@StringRes id: Int) {
 
 @Composable
 private fun LineItem(@StringRes id: Int) {
-    Row {
+    Row(Modifier.padding(bottom = 4.dp)) {
         Text("\u2022")
         Text(
             stringResource(id),
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 8.dp),
+            lineHeight = 18.sp
         )
     }
 }

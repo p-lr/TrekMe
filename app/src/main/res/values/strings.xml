@@ -511,6 +511,7 @@
     <string name="create_map_from_track">Create a map from a gpx track</string>
     <string name="center_on_track">Quick center on a track from tracks management screen</string>
     <string name="define_elevation_fix">Set an elevation fix in the GPS statistics panel</string>
+    <string name="osm_level_17">Unlock the 17th level for OSM maps</string>
     <string name="new_features">Exclusive features will be added</string>
     <string name="module_owned">You own this module</string>
     <string name="module_purchase_pending">Purchase pending…</string>

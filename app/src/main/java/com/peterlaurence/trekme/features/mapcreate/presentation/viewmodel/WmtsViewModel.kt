@@ -94,7 +94,7 @@ class WmtsViewModel @Inject constructor(
     private val searchFieldState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue(""))
     private var hasPrimaryLayers = false
     private var hasOverlayLayers = false
-    private var hasTrackImport = false
+    private var hasExtendedOffer = false
 
     private val routeLayer = RouteLayer(viewModelScope, wgs84ToNormalizedInteractor)
     private val geoRecordUrls = mutableSetOf<Uri>()
@@ -308,7 +308,7 @@ class WmtsViewModel @Inject constructor(
         _topBarState.value = Collapsed(
             hasPrimaryLayers = hasPrimaryLayers,
             hasOverlayLayers = hasOverlayLayers,
-            hasTrackImport = hasTrackImport
+            hasTrackImport = hasExtendedOffer
         )
 
         /* Restore the location marker right now - even if subsequent updates will do it anyway. */
@@ -331,7 +331,7 @@ class WmtsViewModel @Inject constructor(
     }
 
     private fun updateTopBarConfig(wmtsSource: WmtsSource) {
-        hasTrackImport = extendedOfferStateOwner.purchaseFlow.value == PurchaseState.PURCHASED
+        hasExtendedOffer = extendedOfferStateOwner.purchaseFlow.value == PurchaseState.PURCHASED
         hasPrimaryLayers = when (wmtsSource) {
             WmtsSource.IGN, WmtsSource.OPEN_STREET_MAP -> true
             else -> false
@@ -439,9 +439,13 @@ class WmtsViewModel @Inject constructor(
         }
         val startMaxLevel = if (hasCadastreOverlay) 17 else null
 
-        /* Otherwise, honor the level limits configuration for this source, if any. */
-        val levelConf =
+        /* Otherwise, honor the level limits configuration for this source, if any.
+         * Make an exception for OSM in the case the user has the extended offer. */
+        val levelConf = if (wmtsSource == WmtsSource.OPEN_STREET_MAP && hasExtendedOffer) {
+            LevelLimitsConfig(levelMax = 17)
+        } else {
             mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
+        }
 
         /* At this point, the current state should be AreaSelection */
         val areaSelectionState = _wmtsState.value as? AreaSelection ?: return null
@@ -648,7 +652,7 @@ class WmtsViewModel @Inject constructor(
         _topBarState.value = Collapsed(
             hasPrimaryLayers = hasPrimaryLayers,
             hasOverlayLayers = hasOverlayLayers,
-            hasTrackImport = hasTrackImport
+            hasTrackImport = hasExtendedOffer
         )
     }
 }
