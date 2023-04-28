@@ -55,7 +55,7 @@ class TileStreamProviderDaoImpl constructor(
             }
 
             is OsmSourceData -> {
-                val urlTileBuilder = UrlTileBuilderOSM(data.layer.id)
+                val urlTileBuilder = UrlTileBuilderOSM(data.layer)
                 TileStreamProviderOSM(urlTileBuilder)
             }
 

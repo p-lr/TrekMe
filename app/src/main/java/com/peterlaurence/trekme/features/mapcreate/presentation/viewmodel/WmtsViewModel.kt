@@ -358,12 +358,12 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
-    private fun getActivePrimaryIgnLayer(): Layer {
-        return activePrimaryLayerForSource[WmtsSource.IGN] ?: defaultIgnLayer
+    private fun getActivePrimaryIgnLayer(): IgnLayer {
+        return activePrimaryLayerForSource[WmtsSource.IGN] as? IgnLayer ?: defaultIgnLayer
     }
 
-    private fun getActivePrimaryOsmLayer(): Layer {
-        return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] ?: defaultOsmLayer
+    private fun getActivePrimaryOsmLayer(): OsmLayer {
+        return activePrimaryLayerForSource[WmtsSource.OPEN_STREET_MAP] as? OsmLayer ?: defaultOsmLayer
     }
 
     fun onPrimaryLayerDefined(layerId: String) = viewModelScope.launch {
@@ -393,6 +393,18 @@ class WmtsViewModel @Inject constructor(
         return layerOverlayRepository.getLayerProperties(wmtsSource)
     }
 
+    private fun getPrimaryLayer(id: String): Layer? {
+        return when (id) {
+            ignPlanv2 -> PlanIgnV2
+            ignClassic -> IgnClassic
+            ignSatellite -> Satellite
+            osmTopo -> WorldTopoMap
+            osmStreet -> WorldStreetMap
+            openTopoMap -> OpenTopoMap
+            else -> null
+        }
+    }
+
     /**
      * Creates the [TileStreamProvider] for the given source. If we couldn't fetch the API key (when
      * we should have been able to do so), an [IllegalStateException] is thrown.
@@ -403,7 +415,8 @@ class WmtsViewModel @Inject constructor(
             WmtsSource.IGN -> {
                 val layer = getActivePrimaryIgnLayer()
                 getOverlayLayersForSource(wmtsSource).map { overlays ->
-                    IgnSourceData(layer, overlays)
+                    val overlaysIgn = overlays.filterIsInstance<LayerPropertiesIgn>()
+                    IgnSourceData(layer, overlaysIgn)
                 }
             }
             WmtsSource.ORDNANCE_SURVEY -> {

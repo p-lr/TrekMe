@@ -1,9 +1,10 @@
 package com.peterlaurence.trekme.core.wmts.data.urltilebuilder
 
 import com.peterlaurence.trekme.core.wmts.data.model.UrlTileBuilder
-import com.peterlaurence.trekme.core.wmts.domain.model.openTopoMap
-import com.peterlaurence.trekme.core.wmts.domain.model.osmStreet
-import com.peterlaurence.trekme.core.wmts.domain.model.osmTopo
+import com.peterlaurence.trekme.core.wmts.domain.model.OpenTopoMap
+import com.peterlaurence.trekme.core.wmts.domain.model.OsmLayer
+import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
+import com.peterlaurence.trekme.core.wmts.domain.model.WorldTopoMap
 
 /**
  * For OSM, using https://tile.openstreetmap.org/
@@ -15,16 +16,15 @@ import com.peterlaurence.trekme.core.wmts.domain.model.osmTopo
  *
  * Former provider: "https://tiles.wmflabs.org/hikebike/$level/$col/$row.png"
  */
-class UrlTileBuilderOSM(private val layerId: String) : UrlTileBuilder {
+class UrlTileBuilderOSM(private val layer: OsmLayer) : UrlTileBuilder {
     override fun build(level: Int, row: Int, col: Int): String {
-        return when (layerId) {
-            osmStreet -> "https://tile.openstreetmap.org/$level/$col/$row.png"
-            osmTopo -> "https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/WMTS/tile/1.0.0/World_Topo_Map/default/GoogleMapsCompatible/$level/$row/$col.jpg"
-            openTopoMap -> {
+        return when (layer) {
+            OpenTopoMap -> {
                 val server = listOf("a", "b", "c").random()
                 "https://$server.tile.opentopomap.org/$level/$col/$row.png"
             }
-            else -> "https://tile.openstreetmap.org/$level/$col/$row.png"
+            WorldStreetMap -> "https://tile.openstreetmap.org/$level/$col/$row.png"
+            WorldTopoMap -> "https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/WMTS/tile/1.0.0/World_Topo_Map/default/GoogleMapsCompatible/$level/$row/$col.jpg"
         }
     }
 }

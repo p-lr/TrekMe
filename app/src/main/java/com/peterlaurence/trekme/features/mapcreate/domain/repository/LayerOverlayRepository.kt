@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.mapcreate.domain.repository
 
 import com.peterlaurence.trekme.core.wmts.domain.model.LayerProperties
+import com.peterlaurence.trekme.core.wmts.domain.model.LayerPropertiesIgn
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.core.wmts.domain.model.ignLayersOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +40,7 @@ class LayerOverlayRepository {
                 val layer = ignLayersOverlay.firstOrNull { it.id == id } ?: return
                 layersForSource[wmtsSource]?.update { existingLayers ->
                     if (!existingLayers.any { it.layer.id == layer.id }) {
-                        existingLayers + LayerProperties(layer, 1f)
+                        existingLayers + LayerPropertiesIgn(layer, 1f)
                     } else existingLayers
                 }
             }
@@ -68,9 +69,14 @@ class LayerOverlayRepository {
 
     fun updateOpacityForLayer(wmtsSource: WmtsSource, layerId: String, opacity: Float) {
         layersForSource[wmtsSource]?.update {
-            it.map { layerProperties ->
+            it.mapNotNull { layerProperties ->
                 if (layerProperties.layer.id == layerId) {
-                    layerProperties.copy(opacity = opacity)
+                    when (wmtsSource) {
+                        WmtsSource.IGN -> {
+                            (layerProperties as? LayerPropertiesIgn)?.copy(opacity = opacity)
+                        }
+                        else -> null
+                    }
                 } else layerProperties
             }
         }
