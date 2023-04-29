@@ -405,12 +405,7 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Creates the [TileStreamProvider] for the given source. If we couldn't fetch the API key (when
-     * we should have been able to do so), an [IllegalStateException] is thrown.
-     */
-    @Throws(ApiFetchError::class)
-    suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<Result<TileStreamProvider>> {
+    private suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<Result<TileStreamProvider>> {
         val mapSourceData: Flow<MapSourceData> = when (wmtsSource) {
             WmtsSource.IGN -> {
                 val layer = getActivePrimaryIgnLayer()
@@ -686,8 +681,6 @@ data class BoundariesConfig(val boundingBoxList: List<BoundingBox>) : Config()
 fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
     return any { it.contains(latitude, longitude) }
 }
-
-private class ApiFetchError : Exception()
 
 enum class WmtsEvent {
     CURRENT_LOCATION_OUT_OF_BOUNDS, PLACE_OUT_OF_BOUNDS
