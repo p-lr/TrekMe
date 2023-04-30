@@ -35,6 +35,7 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.componen
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.DownloadFormData
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.PrimaryLayerSelectionData
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.*
+import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.DefaultCanvas
 import ovh.plrapps.mapcompose.api.fullSize
@@ -167,6 +168,10 @@ fun WmtsStateful(
     val topBarState by viewModel.topBarState.collectAsState()
     val onBoardingState by onBoardingViewModel.onBoardingState
     val wmtsSource by viewModel.wmtsSourceState.collectAsState()
+
+    LaunchedEffectWithLifecycle(flow = viewModel.locationFlow) {
+        viewModel.onLocationReceived(it)
+    }
 
     val events = viewModel.eventListState.toList()
 

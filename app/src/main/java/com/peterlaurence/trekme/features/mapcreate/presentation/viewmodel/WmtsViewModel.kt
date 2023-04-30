@@ -36,6 +36,18 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.WmtsFrag
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.AreaUiController
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.components.PlaceMarker
 import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.BoundariesConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.InitScaleAndScrollConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.LevelLimitsConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleForZoomOnPositionConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleLimitsConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignSpainConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ordnanceSurveyConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.Wgs84ToNormalizedInteractor
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
@@ -82,6 +94,7 @@ class WmtsViewModel @Inject constructor(
     private val _wmtsState = MutableStateFlow<WmtsState>(Loading)
 
     val wmtsSourceState = wmtsSourceRepository.wmtsSourceState
+    val locationFlow = locationSource.locationFlow
 
     val eventListState = mutableStateListOf<WmtsEvent>()
 
@@ -98,79 +111,6 @@ class WmtsViewModel @Inject constructor(
 
     private val routeLayer = RouteLayer(viewModelScope, wgs84ToNormalizedInteractor)
     private val geoRecordUrls = mutableSetOf<Uri>()
-
-    private val scaleAndScrollInitConfig = mapOf(
-        WmtsSource.IGN to listOf(
-            ScaleLimitsConfig(maxScale = 0.25f),
-            ScaleForZoomOnPositionConfig(scale = 0.125f),
-            LevelLimitsConfig(levelMax = 18),
-            BoundariesConfig(
-                listOf(
-                    BoundingBox(41.21, 51.05, -4.92, 8.37),        // France
-                    BoundingBox(-21.39, -20.86, 55.20, 55.84),     // La Réunion
-                    BoundingBox(2.07, 5.82, -54.66, -51.53),       // Guyane
-                    BoundingBox(15.82, 16.54, -61.88, -60.95),     // Guadeloupe
-                    BoundingBox(18.0, 18.135, -63.162, -62.965),   // St Martin
-                    BoundingBox(17.856, 17.988, -62.957, -62.778), // St Barthélemy
-                    BoundingBox(14.35, 14.93, -61.31, -60.75),     // Martinique
-                    BoundingBox(-17.945, -17.46, -149.97, -149.1), // Tahiti
-                )
-            )
-        ),
-        WmtsSource.OPEN_STREET_MAP to listOf(
-            ScaleLimitsConfig(maxScale = 0.25f),
-            ScaleForZoomOnPositionConfig(scale = 0.125f),
-            LevelLimitsConfig(levelMax = 16),
-            BoundariesConfig(
-                listOf(
-                    BoundingBox(-80.0, 83.0, -180.0, 180.0)        // World
-                )
-            )
-        ),
-        WmtsSource.USGS to listOf(
-            ScaleLimitsConfig(maxScale = 0.25f),
-            ScaleForZoomOnPositionConfig(scale = 0.125f),
-            LevelLimitsConfig(levelMax = 16),
-            BoundariesConfig(
-                listOf(
-                    BoundingBox(24.69, 49.44, -124.68, -66.5)
-                )
-            )
-        ),
-        WmtsSource.SWISS_TOPO to listOf(
-            InitScaleAndScrollConfig(0.0006149545f, 21064, 13788),
-            ScaleLimitsConfig(minScale = 0.0006149545f, maxScale = 0.5f),
-            ScaleForZoomOnPositionConfig(scale = 0.125f),
-            LevelLimitsConfig(levelMax = 17),
-            BoundariesConfig(
-                listOf(
-                    BoundingBox(45.78, 47.838, 5.98, 10.61)
-                )
-            )
-        ),
-        WmtsSource.IGN_SPAIN to listOf(
-            InitScaleAndScrollConfig(0.0003546317f, 11127, 8123),
-            ScaleLimitsConfig(minScale = 0.0003546317f, maxScale = 0.5f),
-            ScaleForZoomOnPositionConfig(scale = 0.125f),
-            LevelLimitsConfig(levelMax = 17),
-            BoundariesConfig(
-                listOf(
-                    BoundingBox(35.78, 43.81, -9.55, 3.32)
-                )
-            )
-        ),
-        WmtsSource.ORDNANCE_SURVEY to listOf(
-            InitScaleAndScrollConfig(0.000830759f, 27011, 17261),
-            ScaleLimitsConfig(minScale = 0.000830759f, maxScale = 0.25f),
-            LevelLimitsConfig(7, 16),
-            ScaleForZoomOnPositionConfig(scale = 0.125f),
-            BoundariesConfig(
-                listOf(
-                    BoundingBox(49.8, 61.08, -8.32, 2.04)
-                )
-            )
-        )
-    )
 
     private val activePrimaryLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
         WmtsSource.IGN to defaultIgnLayer
@@ -256,7 +196,7 @@ class WmtsViewModel @Inject constructor(
 
         /* Apply configuration */
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
-        mapConfiguration?.forEach { conf ->
+        mapConfiguration.forEach { conf ->
             when (conf) {
                 is ScaleLimitsConfig -> {
                     val minScale = conf.minScale
@@ -279,8 +219,7 @@ class WmtsViewModel @Inject constructor(
                         )
                     }
                 }
-                else -> { /* Nothing to do */
-                }
+                else -> {} /* Nothing to do */
             }
         }
 
@@ -290,7 +229,7 @@ class WmtsViewModel @Inject constructor(
             launch {
                 mapState.setScroll(previousMapState.scroll)
             }
-            /* Restore the location of the place marker */
+            /* Restore the location of the place marker (not to confuse with the position marker) */
             previousMapState.getMarkerInfo(placeMarkerId)?.also { markerInfo ->
                 updatePlacePosition(mapState, markerInfo.x, markerInfo.y)
             }
@@ -326,8 +265,15 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
-    private fun getScaleAndScrollConfig(wmtsSource: WmtsSource): List<Config>? {
-        return scaleAndScrollInitConfig[wmtsSource]
+    private fun getScaleAndScrollConfig(wmtsSource: WmtsSource): List<Config> {
+        return when (wmtsSource) {
+            WmtsSource.IGN -> ignConfig
+            WmtsSource.SWISS_TOPO -> swissTopoConfig
+            WmtsSource.OPEN_STREET_MAP -> osmConfig
+            WmtsSource.USGS -> usgsConfig
+            WmtsSource.IGN_SPAIN -> ignSpainConfig
+            WmtsSource.ORDNANCE_SURVEY -> ordnanceSurveyConfig
+        }
     }
 
     private fun updateTopBarConfig(wmtsSource: WmtsSource) {
@@ -452,7 +398,7 @@ class WmtsViewModel @Inject constructor(
         val levelConf = if (wmtsSource == WmtsSource.OPEN_STREET_MAP && hasExtendedOffer) {
             LevelLimitsConfig(levelMax = 17)
         } else {
-            mapConfiguration?.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
+            mapConfiguration.firstOrNull { conf -> conf is LevelLimitsConfig } as? LevelLimitsConfig
         }
 
         /* At this point, the current state should be AreaSelection */
@@ -573,7 +519,7 @@ class WmtsViewModel @Inject constructor(
 
         locationSource.locationFlow.take(1).map { location ->
             val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
-            val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
+            val boundaryConf = mapConfiguration.filterIsInstance<BoundariesConfig>().firstOrNull()
             boundaryConf?.boundingBoxList?.also { boxes ->
                 if (boxes.contains(location.latitude, location.longitude)) {
                     centerOnPosition()
@@ -590,7 +536,7 @@ class WmtsViewModel @Inject constructor(
 
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
         val scaleConf =
-            mapConfiguration?.filterIsInstance<ScaleForZoomOnPositionConfig>()?.firstOrNull()
+            mapConfiguration.filterIsInstance<ScaleForZoomOnPositionConfig>().firstOrNull()
 
         viewModelScope.launch {
             /* If we have conf, use it. Otherwise, use 1f - the scale is caped by the max scale anyway */
@@ -608,7 +554,7 @@ class WmtsViewModel @Inject constructor(
         val mapState = _wmtsState.value.getMapState() ?: return
 
         val mapConfiguration = getScaleAndScrollConfig(wmtsSource)
-        val boundaryConf = mapConfiguration?.filterIsInstance<BoundariesConfig>()?.firstOrNull()
+        val boundaryConf = mapConfiguration.filterIsInstance<BoundariesConfig>().firstOrNull()
         boundaryConf?.boundingBoxList?.also { boxes ->
             if (!boxes.contains(place.lat, place.lon)) {
                 eventListState.add(WmtsEvent.PLACE_OUT_OF_BOUNDS)
@@ -667,16 +613,6 @@ class WmtsViewModel @Inject constructor(
 
 private const val positionMarkerId = "position"
 private const val placeMarkerId = "place"
-
-/* Size of level 18 (levels are 0-based) */
-private const val mapSize = 67108864
-
-sealed class Config
-data class InitScaleAndScrollConfig(val scale: Float, val scrollX: Int, val scrollY: Int) : Config()
-data class ScaleForZoomOnPositionConfig(val scale: Float) : Config()
-data class ScaleLimitsConfig(val minScale: Float? = null, val maxScale: Float? = null) : Config()
-data class LevelLimitsConfig(val levelMin: Int = 1, val levelMax: Int = 18) : Config()
-data class BoundariesConfig(val boundingBoxList: List<BoundingBox>) : Config()
 
 fun List<BoundingBox>.contains(latitude: Double, longitude: Double): Boolean {
     return any { it.contains(latitude, longitude) }

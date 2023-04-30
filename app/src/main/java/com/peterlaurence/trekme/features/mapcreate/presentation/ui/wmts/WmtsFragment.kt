@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.WmtsSourceRepository
@@ -18,7 +17,6 @@ import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.screen.W
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsOnBoardingViewModel
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.WmtsViewModel
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
-import com.peterlaurence.trekme.util.collectWhileResumed
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -49,15 +47,12 @@ import javax.inject.Inject
  * The same settings can be seen at [USGS WMTS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/WMTS/1.0.0/WMTSCapabilities.xml)
  * for the "GoogleMapsCompatible" TileMatrixSet (and not the "default028mm" one).
  *
- * @since 11/05/18
+ * @since 11/05/2018
  */
 @AndroidEntryPoint
 class WmtsFragment : Fragment() {
     @Inject
     lateinit var appEventBus: AppEventBus
-
-    @Inject
-    lateinit var locationSource: LocationSource
 
     @Inject
     lateinit var wmtsSourceRepository: WmtsSourceRepository
@@ -76,11 +71,6 @@ class WmtsFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         wmtsSource = wmtsSourceRepository.wmtsSourceState.value
-
-        /* Listen to position update */
-        locationSource.locationFlow.collectWhileResumed(this) { loc ->
-            viewModel.onLocationReceived(loc)
-        }
     }
 
     override fun onCreateView(
