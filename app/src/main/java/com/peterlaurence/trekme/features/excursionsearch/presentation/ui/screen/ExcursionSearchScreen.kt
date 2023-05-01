@@ -40,6 +40,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeThem
 import com.peterlaurence.trekme.features.excursionsearch.presentation.model.ExcursionCategoryChoice
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionSearchViewModel
 
+
 @Composable
 fun ExcursionSearchStateful(
     viewModel: ExcursionSearchViewModel = hiltViewModel(),
@@ -50,7 +51,7 @@ fun ExcursionSearchStateful(
     var placeText by rememberSaveable { mutableStateOf("") }
 
     val geoPlaceList by viewModel.geoPlaceFlow.collectAsState(initial = emptyList())
-    val isLoading by viewModel.isGeoPlaceLoading.collectAsState()
+    val isGeoPlaceLoading by viewModel.isGeoPlaceLoading.collectAsState()
 
     val selectedGeoPlace by viewModel.selectedGeoPlace.collectAsState()
     val searchEnabled by remember {
@@ -98,7 +99,7 @@ fun ExcursionSearchStateful(
         placeText = placeText,
         isUsingCurrentLocation = isUsingCurrentLocation,
         geoPlaceList = geoPlaceList,
-        isLoading = isLoading,
+        isGeoPlaceLoading = isGeoPlaceLoading,
         searchEnabled = searchEnabled,
         excursionCategories = excursionCategories,
         excursionCategoryChoice = excursionCategoryChoice,
@@ -140,7 +141,7 @@ private fun HikeSearchScreen(
     placeText: String,
     isUsingCurrentLocation: Boolean,
     geoPlaceList: List<GeoPlace>,
-    isLoading: Boolean,
+    isGeoPlaceLoading: Boolean,
     searchEnabled: Boolean,
     excursionCategories: Array<ExcursionCategory>,
     excursionCategoryChoice: ExcursionCategoryChoice,
@@ -175,7 +176,7 @@ private fun HikeSearchScreen(
                 placeText = placeText,
                 isUsingCurrentLocation = isUsingCurrentLocation,
                 geoPlaceList = geoPlaceList,
-                isLoading = isLoading,
+                isGeoPlaceLoading = isGeoPlaceLoading,
                 searchEnabled = searchEnabled,
                 excursionCategoryChoice = excursionCategoryChoice,
                 onPlaceTextChange = onPlaceTextChange,
@@ -229,7 +230,7 @@ private fun ColumnScope.ExcursionSearchUi(
     placeText: String,
     isUsingCurrentLocation: Boolean,
     geoPlaceList: List<GeoPlace>,
-    isLoading: Boolean,
+    isGeoPlaceLoading: Boolean,
     searchEnabled: Boolean,
     excursionCategoryChoice: ExcursionCategoryChoice,
     onPlaceTextChange: (String) -> Unit,
@@ -298,7 +299,7 @@ private fun ColumnScope.ExcursionSearchUi(
 
         val scrollState = rememberScrollState()
         Box {
-            if (isLoading) {
+            if (isGeoPlaceLoading) {
                 LinearProgressIndicator(
                     Modifier
                         .fillMaxWidth()
@@ -479,7 +480,7 @@ private fun ExcursionSearchScreenPreview() {
                     lon = 0.0
                 )
             ),
-            isLoading = false,
+            isGeoPlaceLoading = false,
             searchEnabled = true,
             excursionCategories = arrayOf(ExcursionCategory.OnFoot, ExcursionCategory.Bike),
             excursionCategoryChoice = ExcursionCategoryChoice.All,

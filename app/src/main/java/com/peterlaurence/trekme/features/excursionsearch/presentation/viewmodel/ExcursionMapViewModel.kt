@@ -24,6 +24,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ordna
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
+import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +48,7 @@ import javax.inject.Inject
 class ExcursionMapViewModel @Inject constructor(
     locationSource: LocationSource,
     private val getTileStreamProviderDao: TileStreamProviderDao,
+    private val pendingSearchRepository: PendingSearchRepository
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
@@ -64,6 +66,11 @@ class ExcursionMapViewModel @Inject constructor(
             mapSourceDataFlow.collect {
                 updateMapState(it)
             }
+        }
+
+        viewModelScope.launch {
+            val res = pendingSearchRepository.search()
+            // TODO : use result to produce state
         }
     }
 

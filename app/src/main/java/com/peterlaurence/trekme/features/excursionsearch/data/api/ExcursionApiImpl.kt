@@ -4,7 +4,6 @@ import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionCategory
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
 import com.peterlaurence.trekme.features.excursionsearch.domain.model.ExcursionApi
-import com.peterlaurence.trekme.features.excursionsearch.presentation.model.ExcursionCategoryChoice
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -23,20 +22,17 @@ class ExcursionApiImpl(private val httpClient: OkHttpClient) : ExcursionApi {
     override suspend fun search(
         lat: Double,
         lon: Double,
-        categoryChoice: ExcursionCategoryChoice
+        category: ExcursionCategory?
     ): List<ExcursionSearchItem> {
-        val request = makeRequest(lat, lon, categoryChoice)
+        val request = makeRequest(lat, lon, category)
         return httpClient.performRequest<List<Item>>(request, json)?.map { it.toDomain() } ?: emptyList()
     }
 
-    private fun makeRequest(lat: Double, lon: Double, categoryChoice: ExcursionCategoryChoice): Request {
-        val form = when(categoryChoice) {
-            ExcursionCategoryChoice.All -> {
-                SearchForm(lat, lon)
-            }
-            is ExcursionCategoryChoice.Single -> {
-                SearchForm(lat, lon, category = categoryChoice.choice.toApiString())
-            }
+    private fun makeRequest(lat: Double, lon: Double, category: ExcursionCategory?): Request {
+        val form = if (category == null) {
+            SearchForm(lat, lon)
+        } else {
+            SearchForm(lat, lon, category = category.toApiString())
         }
 
         return requestBuilder
