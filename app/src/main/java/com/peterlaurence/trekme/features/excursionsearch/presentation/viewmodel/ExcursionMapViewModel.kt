@@ -25,12 +25,15 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmCo
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
+import com.peterlaurence.trekme.features.mapcreate.domain.interactors.Wgs84ToNormalizedInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addLayer
@@ -38,7 +41,9 @@ import ovh.plrapps.mapcompose.api.disableFlingZoom
 import ovh.plrapps.mapcompose.api.removeAllLayers
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.scroll
+import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.api.setMapBackground
+import ovh.plrapps.mapcompose.api.setScroll
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -48,7 +53,8 @@ import javax.inject.Inject
 class ExcursionMapViewModel @Inject constructor(
     locationSource: LocationSource,
     private val getTileStreamProviderDao: TileStreamProviderDao,
-    private val pendingSearchRepository: PendingSearchRepository
+    private val pendingSearchRepository: PendingSearchRepository,
+    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
@@ -95,7 +101,6 @@ class ExcursionMapViewModel @Inject constructor(
                         val minScale = conf.minScale
                         if (minScale == null) {
                             minimumScaleMode(Fit)
-                            scale(0f)
                         } else {
                             minimumScaleMode(Forced(minScale))
                         }
@@ -105,20 +110,33 @@ class ExcursionMapViewModel @Inject constructor(
                     else -> {} /* Nothing to do */
                 }
             }
-
-            if (previousMapState != null) {
-                scale(previousMapState.scale)
-                launch {
-                    scroll(
-                        x = previousMapState.scroll.x.toDouble() / mapSize,
-                        y = previousMapState.scroll.y.toDouble() / mapSize
-                    )
-                }
-            }
         }.apply {
             disableFlingZoom()
             /* Use grey background to contrast with the material 3 top app bar in light mode */
             setMapBackground(Color(0xFFF8F8F8))
+        }
+
+        if (previousMapState != null) {
+            mapState.scale = previousMapState.scale
+            launch {
+                mapState.setScroll(previousMapState.scroll)
+            }
+        } else {
+            _mapStateFlow.value = AwaitingLocation
+            val latLon = pendingSearchRepository.locationFlow.filterNotNull().first()
+            _mapStateFlow.value = Loading
+            val normalized = wgs84ToNormalizedInteractor.getNormalized(latLon.lat, latLon.lon)
+            if (normalized != null) {
+                launch {
+                    mapState.scrollTo(
+                        x = normalized.x,
+                        y = normalized.y,
+                        destScale = 0.0625f  // Level 15
+                    )
+                }
+            } else {
+                // TODO: error could not get location
+            }
         }
 
         tileStreamProviderFlow.collect { result ->
@@ -153,6 +171,7 @@ class ExcursionMapViewModel @Inject constructor(
 }
 
 sealed interface UiState
+object AwaitingLocation : UiState
 object Loading : UiState
 data class MapReady(val mapState: MapState) : UiState
 enum class Error : UiState {

@@ -2,9 +2,13 @@ package com.peterlaurence.trekme.features.excursionsearch.domain.repository
 
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionCategory
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
+import com.peterlaurence.trekme.core.location.domain.model.LatLon
+import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
+import com.peterlaurence.trekme.core.wmts.domain.model.Point
 import com.peterlaurence.trekme.features.excursionsearch.domain.model.ExcursionApi
 import dagger.hilt.android.scopes.ActivityRetainedScoped
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
@@ -17,6 +21,8 @@ class PendingSearchRepository @Inject constructor(
     private val locationSource: LocationSource
 ) {
     private var query: QueryData? = null
+
+    val locationFlow = MutableStateFlow<LatLon?>(null)
 
     fun queueSearch(lat: Double, lon: Double, category: ExcursionCategory?) {
         query = QueryAtPlace(lat, lon, category)
@@ -33,9 +39,11 @@ class PendingSearchRepository @Inject constructor(
             when (query) {
                 is QueryAtCurrentLocation -> {
                     val location = locationSource.locationFlow.firstOrNull() ?: return Result.failure(Exception("Could not get location"))
+                    locationFlow.value = LatLon(location.latitude, location.longitude)
                     api.search(location.latitude, location.longitude, query.category)
                 }
                 is QueryAtPlace -> {
+                    locationFlow.value = LatLon(query.lat, query.lon)
                     api.search(query.lat, query.lon, query.category)
                 }
             }

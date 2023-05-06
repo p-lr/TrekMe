@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionMapViewModel
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Loading
@@ -43,6 +44,10 @@ private fun ExcursionMapScreen(uiState: UiState) {
             }
 
             Loading -> {
+                // TODO()
+            }
+
+            AwaitingLocation -> {
                 // TODO()
             }
 
