@@ -1,11 +1,11 @@
-package com.peterlaurence.trekme.features.mapcreate.domain.interactors
+package com.peterlaurence.trekme.core.map.domain.interactors
 
 import com.peterlaurence.trekme.core.wmts.domain.model.X0
 import com.peterlaurence.trekme.core.wmts.domain.model.X1
 import com.peterlaurence.trekme.core.wmts.domain.model.Y0
 import com.peterlaurence.trekme.core.wmts.domain.model.Y1
 import com.peterlaurence.trekme.core.projection.MercatorProjection
-import com.peterlaurence.trekme.features.mapcreate.domain.model.NormalizedPos
+import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import javax.inject.Inject
 import javax.inject.Singleton
 

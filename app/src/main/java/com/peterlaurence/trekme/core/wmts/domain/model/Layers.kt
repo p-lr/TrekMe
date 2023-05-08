@@ -27,10 +27,12 @@ sealed class OsmLayer(override val id: String) : Layer(id)
 object WorldTopoMap : OsmLayer(osmTopo)
 object WorldStreetMap : OsmLayer(osmStreet)
 object OpenTopoMap : OsmLayer(openTopoMap)
+object Outdoors : OsmLayer(osmOutdoors)
 
 const val osmTopo = "osmTopo"
 const val osmStreet = "osmStreet"
 const val openTopoMap = "openTopoMap"
+const val osmOutdoors = "osmOutdoors"
 
 /* All supported OSM layers */
 val osmLayersPrimary: List<OsmLayer> = listOf(WorldStreetMap, WorldTopoMap, OpenTopoMap)

@@ -2,8 +2,8 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.layer
 
 import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
-import com.peterlaurence.trekme.features.mapcreate.domain.interactors.Wgs84ToNormalizedInteractor
-import com.peterlaurence.trekme.features.mapcreate.domain.model.NormalizedPos
+import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

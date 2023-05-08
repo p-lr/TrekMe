@@ -49,7 +49,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmCo
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
-import com.peterlaurence.trekme.features.mapcreate.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toModel
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.layers.RouteLayer
