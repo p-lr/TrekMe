@@ -9,6 +9,9 @@ import com.peterlaurence.trekme.features.excursionsearch.domain.repository.Pendi
 import com.peterlaurence.trekme.features.excursionsearch.presentation.model.ExcursionCategoryChoice
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,7 +21,14 @@ class ExcursionSearchViewModel @Inject constructor(
     private val pendingSearchRepository: PendingSearchRepository,
 ) : ViewModel() {
 
-    val geoPlaceFlow = geocodingRepository.geoPlaceFlow
+    /* We don't persist search result in the domain. However, we create a state in the view-model.
+     * If the user navigates to the map and goes back to the search, the previous search result
+     * is still in memory because the view-model is scoped to the navigation graph. */
+    val geoPlaceFlow: StateFlow<List<GeoPlace>> = geocodingRepository.geoPlaceFlow.stateIn(
+        viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
     val isGeoPlaceLoading = geocodingRepository.isLoadingFlow
 
     val selectedGeoPlace = MutableStateFlow<GeoPlace?>(null)

@@ -50,7 +50,7 @@ fun ExcursionSearchStateful(
     var isUsingCurrentLocation by rememberSaveable { mutableStateOf(true) }
     var placeText by rememberSaveable { mutableStateOf("") }
 
-    val geoPlaceList by viewModel.geoPlaceFlow.collectAsState(initial = emptyList())
+    val geoPlaceList by viewModel.geoPlaceFlow.collectAsState()
     val isGeoPlaceLoading by viewModel.isGeoPlaceLoading.collectAsState()
 
     val selectedGeoPlace by viewModel.selectedGeoPlace.collectAsState()
