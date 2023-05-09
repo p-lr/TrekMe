@@ -7,7 +7,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
@@ -21,7 +20,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 
 @Composable
 fun ExcursionMapStateful(
-    viewModel: ExcursionMapViewModel = hiltViewModel()
+    viewModel: ExcursionMapViewModel
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
     LaunchedEffectWithLifecycle(flow = viewModel.locationFlow) {

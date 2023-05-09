@@ -21,6 +21,6 @@ fun ExcursionSearchGraph(
             onNavigateToMap = { navController.navigateToExcursionMap() },
             onMenuClick = onMenuClick
         )
-        excursionMapDestination()
+        excursionMapDestination(navController)
     }
 }
