@@ -8,8 +8,7 @@
     <fragment
         android:id="@+id/mapListFragment"
         android:name="com.peterlaurence.trekme.features.maplist.presentation.ui.MapListFragment"
-        android:label="@string/fragment_map_list"
-        tools:layout="@layout/fragment_map_list" >
+        android:label="@string/fragment_map_list">
         <action
             android:id="@+id/action_mapListFragment_to_mapSettingsGraph"
             app:destination="@id/map_settings_graph" />
@@ -21,17 +20,14 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.peterlaurence.trekme.features.settings.presentation.ui.SettingsFragment"
-        android:label="SettingsFragment" />
+        android:label="@string/fragment_settings" />
     <action
         android:id="@+id/action_global_settingsFragment"
         app:destination="@id/settingsFragment"/>
-    <action android:id="@+id/action_global_mapCreateFragment"
-        app:destination="@id/mapCreationGraph"/>
     <fragment
         android:id="@+id/recordFragment"
         android:name="com.peterlaurence.trekme.features.record.presentation.ui.RecordFragment"
-        android:label="fragment_record"
-        tools:layout="@layout/fragment_record" >
+        android:label="@string/fragment_recording">
         <action
             android:id="@+id/action_recordFragment_to_elevationFragment"
             app:destination="@id/elevationFragment" />
@@ -45,7 +41,7 @@
     <fragment
         android:id="@+id/mapImportFragment"
         android:name="com.peterlaurence.trekme.features.mapimport.presentation.ui.MapImportFragment"
-        android:label="fragment_map_import"
+        android:label="@string/fragment_map_import"
         tools:layout="@layout/fragment_map_import" />
     <action android:id="@+id/action_global_mapImportFragment" app:destination="@id/mapImportFragment" />
     <action android:id="@+id/action_global_mapListFragment" app:destination="@id/mapListFragment" />
@@ -58,6 +54,7 @@
             app:argType="android.os.ParcelUuid" />
     </fragment>
     <action android:id="@+id/action_global_gpsProFragment" app:destination="@id/gpsProGraph"/>
+    <action android:id="@+id/action_global_mapCreateGraph" app:destination="@id/mapCreationGraph"/>
     <navigation android:id="@+id/mapCreationGraph"
         app:startDestination="@id/mapCreateFragment">
         <fragment
@@ -79,7 +76,7 @@
         <fragment
             android:id="@+id/mapCreateFragment"
             android:name="com.peterlaurence.trekme.features.mapcreate.presentation.ui.MapCreateFragment"
-            android:label="MapCreateFragment">
+            android:label="@string/fragment_map_create">
             <action
                 android:id="@+id/action_mapCreateFragment_to_wmtsFragment"
                 app:destination="@id/wmtsFragment" />
@@ -122,7 +119,7 @@
     <fragment
         android:id="@+id/shopFragment"
         android:name="com.peterlaurence.trekme.features.shop.presentation.ui.ShopFragment"
-        android:label="ShopFragment" /><action android:id="@+id/action_global_shopFragment" app:destination="@id/shopFragment"/>
+        android:label="@string/fragment_shop" /><action android:id="@+id/action_global_shopFragment" app:destination="@id/shopFragment"/>
     <navigation android:id="@+id/gpsProGraph"
         app:startDestination="@id/gpsProFragment">
         <fragment
@@ -144,7 +141,7 @@
         android:label="AboutFragment" />
     <action android:id="@+id/action_global_aboutFragment" app:destination="@id/aboutFragment" />
     <fragment
-        android:id="@+id/hikeSearchFragment"
+        android:id="@+id/excursionSearchFragment"
         android:name="com.peterlaurence.trekme.features.excursionsearch.presentation.ui.ExcursionSearchFragment"
-        android:label="HikeSearchFragment" /><action android:id="@+id/action_global_hikeSearchFragment" app:destination="@id/hikeSearchFragment"/>
+        android:label="@string/fragment_excursion_search" /><action android:id="@+id/action_global_excursionSearchFragment" app:destination="@id/excursionSearchFragment"/>
 </navigation>

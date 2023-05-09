@@ -85,6 +85,7 @@
     <string name="choose_map_thumbnail">You can choose a thumbnail image to illustrate your map, it\'ll be prettier!\nContinue?</string>
 
     <!-- Map Settings fragment -->
+    <string name="fragment_settings" translatable="false">SettingsFragment</string>
     <string name="map_settings_frgmt_title">Map settings</string>
     <string name="map_image_import_ok">Image set successfully</string>
     <string name="map_image_import_error">Error while changing the image :(</string>
@@ -147,6 +148,7 @@
     <string name="projected_y_short">N</string>
 
     <!-- MapImport fragment -->
+    <string name="fragment_map_import" translatable="false">fragment_map_import</string>
     <string name="import_title">Import from archives</string>
     <string name="import_desc">Import maps previously saved from the list of maps > EDIT > Save</string>
     <string name="import_folder_select_btn">Select archives folder</string>
@@ -243,6 +245,7 @@
         \n\nWhen a map has beacons, a service runs in the background. The purpose of this service is to alert you when you get close to a beacon.
     </string>
     <!-- Record GPX fragment -->
+    <string name="fragment_recording" translatable="false">FragmentRecording</string>
     <string name="recording_frgmt_title">GPX recording</string>
     <string name="control_card_title">Control</string>
     <string name="control_card_subtitle">Start · stop · pause</string>
@@ -302,6 +305,7 @@
     <string name="elevation_src_unknown">Elevation data comes from an unknown source. If the source is the GPS, the accuracy is medium.</string>
 
     <!-- MapCreate fragment -->
+    <string name="fragment_map_create" translatable="false">MapCreateFragment</string>
     <string name="next_button">Next</string>
     <string name="mapcreate_settings">Settings</string>
     <string name="ign_source">IGN</string>
@@ -379,6 +383,7 @@
     <string name="current_recording">Current recording</string>
 
     <!-- Excursion search -->
+    <string name="fragment_excursion_search" translatable="false">ExcursionSearchFragment</string>
     <string name="excursion_feature_menu">Look for a hike</string>
     <string name="excursion_search_placeholder">Search</string>
     <string name="use_my_location">Around me</string>
@@ -496,6 +501,7 @@
     <string name="bt_device_settings_diagnostic_empty">The previous diagnosis didn\'t record any activity from the GPS.</string>
 
     <!-- Shop UI -->
+    <string name="fragment_shop" translatable="false">ShopFragment</string>
     <string name="trekme_extended_offer" translatable="false">TrekMe Extended</string>
     <string name="trekme_extended_trial">7d of free trial</string>
     <string name="trekme_extended_ign_maps_title">IGN maps</string>

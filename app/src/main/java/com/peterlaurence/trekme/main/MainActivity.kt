@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.navOptions
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.BuildConfig
@@ -235,7 +236,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_select_map -> showMapListFragment()
             R.id.nav_create -> showMapCreateFragment()
             R.id.nav_record -> showRecordFragment()
-            R.id.nav_hike_search -> showHikeSearchFragment()
+            R.id.nav_hike_search -> showExcursionSearchFragment()
             R.id.nav_gps_plus -> showGpsProFragment()
             R.id.nav_import -> showMapImportFragment()
             R.id.nav_share -> showWifiP2pFragment()
@@ -280,18 +281,37 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                 }
             }
-            navController.navigate(action)
+            val options = navOptions {
+                popUpTo(R.id.mapListFragment) {
+                    inclusive = true
+                }
+            }
+            navController.navigate(action, options)
         }
     }
 
     private fun showMapCreateFragment() {
-        navController.navigate(R.id.action_global_mapCreateFragment)
-        permissionRequestHandler?.requestMapCreationPermission()
-        warnIfNotInternet()
+        if (getString(R.string.fragment_map_create) != navController.currentDestination?.label) {
+            val options = navOptions {
+                popUpTo(R.id.mapCreateFragment) {
+                    inclusive = true
+                }
+            }
+            navController.navigate(NavGraphDirections.actionGlobalMapCreateGraph(), options)
+            permissionRequestHandler?.requestMapCreationPermission()
+            warnIfNotInternet()
+        }
     }
 
     private fun showMapImportFragment() {
-        navController.navigate(R.id.action_global_mapImportFragment)
+        if (getString(R.string.fragment_map_import) != navController.currentDestination?.label) {
+            val options = navOptions {
+                popUpTo(R.id.mapImportFragment) {
+                    inclusive = true
+                }
+            }
+            navController.navigate(NavGraphDirections.actionGlobalMapImportFragment(), options)
+        }
     }
 
     private fun showWifiP2pFragment() {
@@ -299,11 +319,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showRecordFragment() {
-        navController.navigate(R.id.action_global_recordFragment)
+        if (getString(R.string.fragment_recording) != navController.currentDestination?.label) {
+            val options = navOptions {
+                popUpTo(R.id.recordFragment) {
+                    inclusive = true
+                }
+            }
+            navController.navigate(NavGraphDirections.actionGlobalRecordFragment(), options)
+        }
     }
 
-    private fun showHikeSearchFragment() {
-        navController.navigate(R.id.action_global_hikeSearchFragment)
+    private fun showExcursionSearchFragment() {
+        if (getString(R.string.fragment_excursion_search) != navController.currentDestination?.label) {
+            val options = navOptions {
+                popUpTo(R.id.excursionSearchFragment) {
+                    inclusive = true
+                }
+            }
+            navController.navigate(NavGraphDirections.actionGlobalExcursionSearchFragment(), options)
+        }
     }
 
     private fun showGpsProFragment() {
@@ -316,11 +350,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun showSettingsFragment() {
-        navController.navigate(R.id.action_global_settingsFragment)
+        if (getString(R.string.fragment_settings) != navController.currentDestination?.label) {
+            navController.navigate(R.id.action_global_settingsFragment)
+        }
     }
 
     private fun showShopFragment() {
-        navController.navigate(R.id.action_global_shopFragment)
+        if (getString(R.string.fragment_shop) != navController.currentDestination?.label) {
+            navController.navigate(R.id.action_global_shopFragment)
+        }
     }
 
     fun showSnackbar(message: String, isLong: Boolean = true) {
@@ -368,7 +406,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     /**
      * Determine if we have an internet connection.
      */
-    @Suppress("BlockingMethodInNonBlockingContext")
     private suspend fun checkInternet(): Boolean = withContext(Dispatchers.IO) {
         try {
             val ip = InetAddress.getByName("google.com")

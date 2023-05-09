@@ -45,7 +45,7 @@ class MapListFragment : Fragment() {
                     mapSettingsViewModel,
                     onNavigateToMapCreate = {
                         val navController = findNavController()
-                        navController.navigate(R.id.action_global_mapCreateFragment)
+                        navController.navigate(R.id.action_global_mapCreateGraph)
                     },
                     onNavigateToMapSettings = {
                         val action =
