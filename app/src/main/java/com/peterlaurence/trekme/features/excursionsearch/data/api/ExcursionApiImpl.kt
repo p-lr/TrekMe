@@ -61,6 +61,8 @@ private data class Item(
     val id: String,
     val title: String,
     val type: String,
+    val startLat: Double,
+    val startLon: Double,
     val description: String = ""
 )
 
@@ -73,5 +75,12 @@ private fun Item.toDomain(): ExcursionSearchItem  {
         "horse-riding" -> ExcursionType.HorseRiding
         else -> ExcursionType.Hike
     }
-    return ExcursionSearchItem(id = id, title = title, type = typeDomain, description = description)
+    return ExcursionSearchItem(
+        id = id,
+        title = title,
+        type = typeDomain,
+        startLat = startLat,
+        startLon = startLon,
+        description = description
+    )
 }

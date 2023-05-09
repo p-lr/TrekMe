@@ -3,8 +3,10 @@ package com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
+import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
@@ -25,16 +27,18 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmCo
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
-import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.centroidY
@@ -56,10 +60,20 @@ class ExcursionMapViewModel @Inject constructor(
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
-    private val _mapStateFlow = MutableStateFlow<UiState>(Loading)
-    val mapStateFlow: StateFlow<UiState> = _mapStateFlow.asStateFlow()
+    private val _uiStateFlow = MutableStateFlow<UiState>(Loading)
+    val uiStateFlow: StateFlow<UiState> = _uiStateFlow.asStateFlow()
+    private val mapStateFlow = _uiStateFlow.filterIsInstance<MapReady>().map { it.mapState }
 
     private val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(Outdoors))
+
+    private val _excursionItemsFlow = MutableStateFlow<List<ExcursionSearchItem>>(emptyList())
+
+    val markerLayer = MarkerLayer(
+        scope = viewModelScope,
+        excursionItemsFlow = _excursionItemsFlow,
+        mapStateFlow = mapStateFlow,
+        wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor
+    )
 
     init {
         viewModelScope.launch {
@@ -69,27 +83,34 @@ class ExcursionMapViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val res = pendingSearchRepository.search()
-            // TODO : use result to produce state
+            pendingSearchRepository.search(
+            ).onSuccess {
+                _excursionItemsFlow.value = it
+            }.onFailure {
+                // TODO
+            }
         }
     }
 
     private suspend fun updateMapState(mapSourceData: MapSourceData) = coroutineScope {
-        val previousMapState = _mapStateFlow.value.getMapState()
+        val previousMapState = _uiStateFlow.value.getMapState()
 
         /* Shutdown the previous MapState, if any */
         previousMapState?.shutdown()
 
         /* Display the loading screen while building the new MapState */
-        _mapStateFlow.value = Loading
+        _uiStateFlow.value = Loading
 
         val wmtsConfig = getWmtsConfig(mapSourceData)
         val initScaleAndScroll = if (previousMapState != null) {
-            Pair(previousMapState.scale, NormalizedPos(previousMapState.centroidY, previousMapState.centroidY))
+            Pair(
+                previousMapState.scale,
+                NormalizedPos(previousMapState.centroidY, previousMapState.centroidY)
+            )
         } else {
-            _mapStateFlow.value = AwaitingLocation
+            _uiStateFlow.value = AwaitingLocation
             val latLon = pendingSearchRepository.locationFlow.filterNotNull().first()
-            _mapStateFlow.value = Loading
+            _uiStateFlow.value = Loading
             val normalized = wgs84ToNormalizedInteractor.getNormalized(latLon.lat, latLon.lon)
             if (normalized != null) {
                 Pair(0.0625f, normalized)
@@ -134,7 +155,7 @@ class ExcursionMapViewModel @Inject constructor(
 
         val tileStreamProvider =
             getTileStreamProviderDao.newTileStreamProvider(mapSourceData).getOrNull()
-        _mapStateFlow.value = if (tileStreamProvider != null) {
+        _uiStateFlow.value = if (tileStreamProvider != null) {
             mapState.removeAllLayers()
             mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
             MapReady(mapState)

@@ -23,7 +23,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 fun ExcursionMapStateful(
     viewModel: ExcursionMapViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.mapStateFlow.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
     LaunchedEffectWithLifecycle(flow = viewModel.locationFlow) {
 
     }
