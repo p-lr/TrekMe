@@ -3,7 +3,6 @@ package com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
@@ -17,7 +16,6 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.mapSize
-import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleLimitsConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignConfig
@@ -29,18 +27,21 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsC
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
+import com.peterlaurence.trekme.util.ResultL
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
 import ovh.plrapps.mapcompose.api.removeAllLayers
@@ -66,11 +67,13 @@ class ExcursionMapViewModel @Inject constructor(
 
     private val mapSourceDataFlow = MutableStateFlow<MapSourceData>(OsmSourceData(Outdoors))
 
-    private val _excursionItemsFlow = MutableStateFlow<List<ExcursionSearchItem>>(emptyList())
+    private val _excursionItemsFlow = pendingSearchRepository.getSearchResultFlow().stateIn(
+        viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
+    )
 
     val markerLayer = MarkerLayer(
         scope = viewModelScope,
-        excursionItemsFlow = _excursionItemsFlow,
+        excursionItemsFlow = _excursionItemsFlow.mapNotNull { it.getOrNull() },
         mapStateFlow = mapStateFlow,
         wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor
     )
@@ -79,15 +82,6 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope.launch {
             mapSourceDataFlow.collect {
                 updateMapState(it)
-            }
-        }
-
-        viewModelScope.launch {
-            pendingSearchRepository.search(
-            ).onSuccess {
-                _excursionItemsFlow.value = it
-            }.onFailure {
-                // TODO
             }
         }
     }
@@ -157,7 +151,7 @@ class ExcursionMapViewModel @Inject constructor(
             getTileStreamProviderDao.newTileStreamProvider(mapSourceData).getOrNull()
         _uiStateFlow.value = if (tileStreamProvider != null) {
             mapState.removeAllLayers()
-            mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
+//            mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
             MapReady(mapState)
         } else {
             Error.PROVIDER_OUTAGE
