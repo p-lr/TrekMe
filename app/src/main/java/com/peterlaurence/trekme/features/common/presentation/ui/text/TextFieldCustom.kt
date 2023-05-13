@@ -48,8 +48,8 @@ fun TextFieldCustom(
                     )
                 }
             },
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.Transparent,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
             ),
             readOnly = readOnly,
             enabled = enabled,

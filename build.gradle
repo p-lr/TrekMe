@@ -4,7 +4,7 @@ buildscript {
     ext.kotlin_version = '1.8.20'
     ext.hilt_version= '2.44.2'
     ext.nav_version = '2.5.3'
-    ext.compose_compiler_version = '1.4.5'
+    ext.compose_compiler_version = '1.4.6'
     repositories {
         mavenCentral()
         google()

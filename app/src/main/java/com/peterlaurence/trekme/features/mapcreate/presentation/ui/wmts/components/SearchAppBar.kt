@@ -139,7 +139,6 @@ fun SearchAppBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Unit) {
     val focusRequester = remember { FocusRequester() }
@@ -182,9 +181,9 @@ fun SearchView(state: MutableState<TextFieldValue>, onTextChange: (String) -> Un
         },
         singleLine = true,
         shape = RectangleShape,
-        colors = TextFieldDefaults.textFieldColors(
-            textColor = MaterialTheme.colorScheme.onSurface,
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            focusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
             cursorColor = MaterialTheme.colorScheme.tertiary,
             selectionColors = TextSelectionColors(
                 handleColor = MaterialTheme.colorScheme.tertiary,
