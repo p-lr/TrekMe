@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.mapSize
+import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleLimitsConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignConfig
@@ -24,11 +25,13 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ordna
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
+import com.peterlaurence.trekme.features.excursionsearch.domain.repository.ExcursionGeoRecordRepository
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import com.peterlaurence.trekme.util.ResultL
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,8 +43,10 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
 import ovh.plrapps.mapcompose.api.removeAllLayers
@@ -57,6 +62,7 @@ class ExcursionMapViewModel @Inject constructor(
     locationSource: LocationSource,
     private val getTileStreamProviderDao: TileStreamProviderDao,
     private val pendingSearchRepository: PendingSearchRepository,
+    private val excursionGeoRecordRepository: ExcursionGeoRecordRepository,
     private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
@@ -71,11 +77,24 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
     )
 
+    val geoRecordFlow = excursionGeoRecordRepository.getGeoRecordFlow().stateIn(
+        viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
+    )
+
+    private val _events = Channel<Event>(1)
+    val event = _events.receiveAsFlow()
+
     val markerLayer = MarkerLayer(
         scope = viewModelScope,
         excursionItemsFlow = _excursionItemsFlow.mapNotNull { it.getOrNull() },
         mapStateFlow = mapStateFlow,
-        wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor
+        wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor,
+        onExcursionItemClick = { item ->
+            viewModelScope.launch {
+                excursionGeoRecordRepository.postItem(item)
+                _events.send(Event.OnMarkerClick)
+            }
+        }
     )
 
     init {
@@ -190,6 +209,10 @@ class ExcursionMapViewModel @Inject constructor(
     }
 
     private data class WmtsConfig(val tileSize: Int, val mapSize: Int)
+
+    sealed interface Event {
+        object OnMarkerClick: Event
+    }
 }
 
 sealed interface UiState

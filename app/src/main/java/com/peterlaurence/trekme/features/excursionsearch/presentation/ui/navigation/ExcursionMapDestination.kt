@@ -18,7 +18,10 @@ fun NavGraphBuilder.excursionMapDestination(
             navController.getBackStackEntry(excursionSearchDestination)
         }
         val viewModel: ExcursionMapViewModel = hiltViewModel(startGraphEntry)
-        ExcursionMapStateful(viewModel)
+        ExcursionMapStateful(
+            viewModel,
+            onBack = { navController.navigateUp() }
+        )
     }
 }
 

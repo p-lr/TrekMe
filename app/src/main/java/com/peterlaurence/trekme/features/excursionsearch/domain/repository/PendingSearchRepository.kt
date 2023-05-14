@@ -62,7 +62,7 @@ class PendingSearchRepository @Inject constructor(
                         }
                     }.asResultL()
                 } else {
-                    ResultL.failure(Exception("No query"))
+                    ResultL.loading()
                 }
             )
         }

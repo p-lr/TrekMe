@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.SwipeableState
 import androidx.compose.material.swipeable
@@ -51,12 +52,10 @@ enum class States {
 @Composable
 fun CollapsibleBottomSheet(
     swipeableState: SwipeableState<States>,
+    lazyListState: LazyListState = rememberLazyListState(),
     header: @Composable () -> Unit,
     content: LazyListScope.() -> Unit
 ) {
-
-    val scrollState = rememberLazyListState()
-
     BoxWithConstraints {
         val maxHeightPx = with(LocalDensity.current) {
             maxHeight.toPx()
@@ -87,7 +86,7 @@ fun CollapsibleBottomSheet(
                 }
 
                 override suspend fun onPreFling(available: Velocity): Velocity {
-                    return if (available.y < 0 && scrollState.firstVisibleItemIndex == 0 && scrollState.firstVisibleItemScrollOffset == 0) {
+                    return if (available.y < 0 && lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0) {
                         swipeableState.performFling(available.y)
                         available
                     } else {
@@ -135,7 +134,7 @@ fun CollapsibleBottomSheet(
                 header()
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
-                    state = scrollState
+                    state = lazyListState
                 ) {
                     content()
                 }

@@ -401,6 +401,11 @@
     <string name="excursion_motorized">Motorised vehicle</string>
     <string name="back_action">Back</string>
     <string name="location_disabled">Location is disabled on your device.</string>
+    <string name="distance_stat">Distance</string>
+    <string name="duration_stat">Duration</string>
+    <string name="vertical_drop_stat">Vertical drop</string>
+    <string name="vertical_ascent_stat">Vertical ascent</string>
+    <string name="vertical_descent_stat">Vertical descent</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>

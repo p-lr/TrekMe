@@ -23,7 +23,6 @@ import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.ExperimentalClusteringApi
 import ovh.plrapps.mapcompose.api.addClusterer
 import ovh.plrapps.mapcompose.api.addMarker
-import ovh.plrapps.mapcompose.api.getMarkerInfo
 import ovh.plrapps.mapcompose.api.onMarkerClick
 import ovh.plrapps.mapcompose.ui.state.MapState
 import ovh.plrapps.mapcompose.ui.state.markers.model.RenderingStrategy
@@ -32,14 +31,15 @@ class MarkerLayer(
     scope: CoroutineScope,
     val excursionItemsFlow: Flow<List<ExcursionSearchItem>>,
     val mapStateFlow: Flow<MapState>,
-    val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
+    val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
+    val onExcursionItemClick: (ExcursionSearchItem) -> Unit
 ) {
-
     init {
         scope.launch {
             mapStateFlow.collectLatest { mapState ->
-                configure(mapState)
+                configureClustering(mapState)
                 excursionItemsFlow.collect { items ->
+                    configureClickListener(mapState, items)
                     renderMarkers(mapState, items)
                 }
             }
@@ -47,17 +47,19 @@ class MarkerLayer(
     }
 
     @OptIn(ExperimentalClusteringApi::class)
-    private suspend fun configure(mapState: MapState) {
+    private fun configureClustering(mapState: MapState) {
         /* Add a marker clusterer to manage markers. In this example, we use "default" for the id */
         mapState.addClusterer("default") { ids ->
             { Cluster(size = ids.size) }
         }
+    }
 
-        mapState.onMarkerClick { id, x, y ->
-            println("xxxxx marker click $id")
-
-            val info = mapState.getMarkerInfo(id)
-            println("xxxxx info ${info?.relativeOffset}")
+    private fun configureClickListener(mapState: MapState, items: List<ExcursionSearchItem>) {
+        mapState.onMarkerClick { id, _, _ ->
+            val item = items.firstOrNull { it.id == id }
+            if (item != null) {
+                onExcursionItemClick(item)
+            }
         }
     }
 

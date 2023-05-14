@@ -18,6 +18,15 @@ suspend inline fun <reified T> OkHttpClient.performRequest(request: Request, jso
     }.getOrNull()
 }
 
+
+suspend fun OkHttpClient.performRequest(request: Request): String? = withContext(Dispatchers.IO) {
+    runCatching {
+        val call = newCall(request)
+        val r = call.await()
+        r?.string()
+    }.getOrNull()
+}
+
 suspend fun Call.await() = suspendCancellableCoroutine<ResponseBody?> { continuation ->
     continuation.invokeOnCancellation {
         cancel()

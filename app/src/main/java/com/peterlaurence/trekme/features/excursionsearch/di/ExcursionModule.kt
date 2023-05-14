@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.excursionsearch.di
 
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
 import com.peterlaurence.trekme.features.excursionsearch.data.api.ExcursionApiImpl
 import com.peterlaurence.trekme.features.excursionsearch.domain.model.ExcursionApi
 import dagger.Module
@@ -17,7 +18,7 @@ class ExcursionModule {
 
     @Provides
     @ActivityRetainedScoped
-    fun provideExcursionApi(): ExcursionApi {
-        return ExcursionApiImpl(httpClient)
+    fun provideExcursionApi(geoRecordParser: GeoRecordParser): ExcursionApi {
+        return ExcursionApiImpl(httpClient, geoRecordParser)
     }
 }

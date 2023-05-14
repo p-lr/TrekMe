@@ -3,6 +3,8 @@ package com.peterlaurence.trekme.features.excursionsearch.data.api
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionCategory
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
+import com.peterlaurence.trekme.core.georecord.domain.dao.GeoRecordParser
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.features.excursionsearch.domain.model.ExcursionApi
 import com.peterlaurence.trekme.util.performRequest
 import kotlinx.serialization.Serializable
@@ -12,8 +14,12 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayInputStream
 
-class ExcursionApiImpl(private val httpClient: OkHttpClient) : ExcursionApi {
+class ExcursionApiImpl(
+    private val httpClient: OkHttpClient,
+    private val geoRecordParser: GeoRecordParser
+) : ExcursionApi {
     private val requestBuilder = Request.Builder()
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
     private val baseUrl = "http://192.168.1.18:8080/excursion"
@@ -25,7 +31,19 @@ class ExcursionApiImpl(private val httpClient: OkHttpClient) : ExcursionApi {
         category: ExcursionCategory?
     ): List<ExcursionSearchItem> {
         val request = makeRequest(lat, lon, category)
-        return httpClient.performRequest<List<Item>>(request, json)?.map { it.toDomain() } ?: emptyList()
+        return httpClient.performRequest<List<Item>>(request, json)?.map { it.toDomain() }
+            ?: emptyList()
+    }
+
+    override suspend fun getGeoRecord(id: String, name: String): GeoRecord? {
+        val req = Request.Builder()
+            .url("$baseUrl/gpx/$id")
+            .get()
+            .build()
+
+        val gpx = httpClient.performRequest(req) ?: return null
+
+        return geoRecordParser.parse(ByteArrayInputStream(gpx.toByteArray()), name)
     }
 
     private fun makeRequest(lat: Double, lon: Double, category: ExcursionCategory?): Request {
@@ -42,7 +60,7 @@ class ExcursionApiImpl(private val httpClient: OkHttpClient) : ExcursionApi {
     }
 
     private fun ExcursionCategory.toApiString(): String {
-        return when(this) {
+        return when (this) {
             ExcursionCategory.OnFoot -> "on-foot"
             ExcursionCategory.Bike -> "bike"
             ExcursionCategory.Horse -> "horse"
@@ -54,7 +72,12 @@ class ExcursionApiImpl(private val httpClient: OkHttpClient) : ExcursionApi {
 }
 
 @Serializable
-private data class SearchForm(val lat: Double, val lon: Double, val radiusKm: Int? = null, val category: String? = null)
+private data class SearchForm(
+    val lat: Double,
+    val lon: Double,
+    val radiusKm: Int? = null,
+    val category: String? = null
+)
 
 @Serializable
 private data class Item(
@@ -66,8 +89,8 @@ private data class Item(
     val description: String = ""
 )
 
-private fun Item.toDomain(): ExcursionSearchItem  {
-    val typeDomain = when(type) {
+private fun Item.toDomain(): ExcursionSearchItem {
+    val typeDomain = when (type) {
         "hike" -> ExcursionType.Hike
         "running" -> ExcursionType.Running
         "mountain-bike" -> ExcursionType.MountainBike

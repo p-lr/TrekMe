@@ -426,6 +426,11 @@
     <string name="activity_label">Activité</string>
     <string name="back_action">Retour arrière</string>
     <string name="location_disabled">La localisation est désactivée sur votre appareil.</string>
+    <string name="distance_stat">Distance</string>
+    <string name="duration_stat">Durée</string>
+    <string name="vertical_drop_stat">Dénivelé</string>
+    <string name="vertical_ascent_stat">Dénivelé positif</string>
+    <string name="vertical_descent_stat">Dénivelé négatif</string>
 
     <!-- General -->
     <string name="meters">mètres</string>

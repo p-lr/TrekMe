@@ -148,7 +148,7 @@ object MapModule {
 
     @Singleton
     @Provides
-    fun providesGpxDao(@IoDispatcher ioDispatcher: CoroutineDispatcher): GeoRecordParser {
+    fun providesGeoRecordParser(@IoDispatcher ioDispatcher: CoroutineDispatcher): GeoRecordParser {
         return GeoRecordParserImpl(ioDispatcher)
     }
 
