@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
@@ -49,6 +50,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.Stat
 //import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
 //import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.SizeMode
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
+import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionMapViewModel
@@ -78,9 +80,9 @@ fun ExcursionMapStateful(
         initialValue = ResultL.loading(),
         key1 = geoRecordState
     ) {
-        geoRecordState.map {
+        geoRecordState.map { geoRecord ->
             withContext(Dispatchers.Default) {
-                value = ResultL.success(BottomSheetData(getGeoStatistics(it)))
+                value = ResultL.success(makeBottomSheetData(geoRecord))
             }
         }
     }
@@ -172,9 +174,28 @@ private fun BottomSheet(
                         }
                     }
                 },
-                onSuccess = {
-                    item("key") {
-                        TrackStats(it.geoStatistics)
+                onSuccess = { data ->
+                    item("stats") {
+                        TrackStats(data.geoStatistics)
+                    }
+                    if (data.elevationGraphData != null) {
+                        item("elevation-graph") {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                ElevationGraph(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(150.dp),
+                                    xValues = data.elevationGraphData.xValues,
+                                    yValues = data.elevationGraphData.yValues,
+                                    verticalSpacingY = 20.dp,
+                                    verticalPadding = 16.dp
+                                )
+                            }
+                        }
                     }
                 },
                 onFailure = {
@@ -212,7 +233,9 @@ private fun ExcursionMap(modifier: Modifier, mapState: MapState) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TrackStats(geoStatistics: GeoStatistics) {
-    Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)) {
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -270,7 +293,8 @@ private fun TrackStats(geoStatistics: GeoStatistics) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val verticalDrop = remember(geoStatistics) {
-                    val drop = (geoStatistics.elevationMax ?: 0.0) - (geoStatistics.elevationMin ?: 0.0)
+                    val drop =
+                        (geoStatistics.elevationMax ?: 0.0) - (geoStatistics.elevationMin ?: 0.0)
                     formatDistance(drop)
                 }
                 Icon(
@@ -353,7 +377,29 @@ private fun TrackStats(geoStatistics: GeoStatistics) {
     }
 }
 
-private data class BottomSheetData(val geoStatistics: GeoStatistics)
+private fun makeBottomSheetData(geoRecord: GeoRecord): BottomSheetData {
+    val xValues = mutableListOf<Double>()
+    val yValues = mutableListOf<Double>()
+    val stats = getGeoStatistics(geoRecord) { distance, marker ->
+        xValues += distance
+        marker.elevation?.also { ele ->
+            yValues += ele
+        }
+    }
+    val elevationGraphData =
+        if (xValues.isNotEmpty() && yValues.isNotEmpty() && xValues.size == yValues.size) {
+            ElevationGraphData(xValues, yValues)
+        } else null
+
+    return BottomSheetData(stats, elevationGraphData)
+}
+
+private data class BottomSheetData(
+    val geoStatistics: GeoStatistics,
+    val elevationGraphData: ElevationGraphData?
+)
+
+private data class ElevationGraphData(val xValues: List<Double>, val yValues: List<Double>)
 
 @Preview(showBackground = true, widthDp = 450, heightDp = 600)
 @Composable
@@ -373,7 +419,7 @@ private fun BottomSheetPreview() {
         val bottomSheetData by remember {
             mutableStateOf(
                 ResultL.success(
-                    BottomSheetData(geoStats)
+                    BottomSheetData(geoStats, null)
                 )
             )
         }

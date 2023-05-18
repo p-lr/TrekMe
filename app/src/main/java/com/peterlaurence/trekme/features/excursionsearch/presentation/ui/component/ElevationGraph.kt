@@ -45,8 +45,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.floor
 
 /**
- * A graph which uses cubic bezier curves if the dataset has less than 50 points, and straight lines
- * otherwise.
+ * An elevation graph which uses cubic bezier curves if the dataset has less than 50 points, and
+ * straight lines otherwise.
  * Interpolation is done accordingly.
  * [xValues] and [yValues] must be of the same size and non-empty.
  *
@@ -58,7 +58,7 @@ import kotlin.math.floor
  */
 @OptIn(ExperimentalTextApi::class, ExperimentalComposeUiApi::class)
 @Composable
-fun Graph(
+fun ElevationGraph(
     modifier: Modifier = Modifier,
     xValues: List<Double>,
     yValues: List<Double>,
@@ -169,8 +169,11 @@ fun Graph(
         ) {
             /* Draw elevation ticks labels */
             var labelWidth = 0
-            for (i in niceScale.niceMin.toInt()..niceScale.niceMax.toInt() step niceScale.tickSpacing.toInt()) {
-                val ele = i.toDouble()
+            generateSequence( // the equivalent of for(i in min..max step x) with Doubles
+                niceScale.niceMin, nextFunction = { it + niceScale.tickSpacing }
+            ).takeWhile {
+                it <= niceScale.niceMax
+            }.forEach { ele ->
                 val label = UnitFormatter.formatElevation(ele)
                 val res = textMeasurer.measure(
                     label,
@@ -182,7 +185,7 @@ fun Graph(
                 if (ele in yRange) {
                     drawText(
                         res,
-                        topLeft = Offset(startPaddingPx, yToPx(i.toDouble()) - res.size.height / 2)
+                        topLeft = Offset(startPaddingPx, yToPx(ele) - res.size.height / 2)
                     )
                 }
             }
@@ -267,7 +270,7 @@ private fun GraphPreview() {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Graph(
+                ElevationGraph(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp),

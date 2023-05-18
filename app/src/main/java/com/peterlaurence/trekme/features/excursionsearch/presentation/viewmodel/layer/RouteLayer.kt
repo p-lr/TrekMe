@@ -22,7 +22,7 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
 
 class RouteLayer(
-    private val scope: CoroutineScope,
+    scope: CoroutineScope,
     private val geoRecordFlow: Flow<GeoRecord>,
     private val mapStateFlow: Flow<MapState>,
     private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
