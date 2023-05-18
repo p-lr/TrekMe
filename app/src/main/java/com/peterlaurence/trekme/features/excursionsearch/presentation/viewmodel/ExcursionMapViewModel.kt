@@ -28,6 +28,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsC
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.ExcursionGeoRecordRepository
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
+import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.RouteLayer
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import com.peterlaurence.trekme.util.ResultL
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -95,6 +96,13 @@ class ExcursionMapViewModel @Inject constructor(
                 _events.send(Event.OnMarkerClick)
             }
         }
+    )
+
+    val routeLayer = RouteLayer(
+        scope = viewModelScope,
+        geoRecordFlow = geoRecordFlow.mapNotNull { it.getOrNull() },
+        mapStateFlow = mapStateFlow,
+        wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor
     )
 
     init {
