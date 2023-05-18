@@ -44,6 +44,18 @@ import com.peterlaurence.trekme.util.NiceScale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.floor
 
+/**
+ * A graph which uses cubic bezier curves if the dataset has less than 50 points, and straight lines
+ * otherwise.
+ * Interpolation is done accordingly.
+ * [xValues] and [yValues] must be of the same size and non-empty.
+ *
+ * @param verticalPadding The padding in [Dp] applied to the top and the bottom of the graph
+ * @param verticalSpacingY The minimum spacing in [Dp] between ticks of the vertical axis
+ * @param startPadding The padding in [Dp] applied to the start of the graph. By design, there is no
+ * end padding.
+ * @param onCursorMove A callback invoked when the user scrolls the graph horizontally.
+ */
 @OptIn(ExperimentalTextApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun Graph(
@@ -52,9 +64,12 @@ fun Graph(
     yValues: List<Double>,
     verticalSpacingY: Dp,
     verticalPadding: Dp,
-    startPadding: Dp,
+    startPadding: Dp = 8.dp,
     onCursorMove: (x: Double, y: Double) -> Unit = { _, _ -> }
 ) {
+    // Safety
+    if (xValues.isEmpty() || yValues.isEmpty() || xValues.size != yValues.size) return
+
     val density = LocalDensity.current
 
     val yMin = remember(yValues) { yValues.minOrNull() } ?: return
@@ -255,12 +270,11 @@ private fun GraphPreview() {
                 Graph(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp),
+                        .height(150.dp),
                     xValues = xValues,
                     yValues = yValues,
-                    verticalSpacingY = 50.dp,
+                    verticalSpacingY = 20.dp,
                     verticalPadding = 16.dp,
-                    startPadding = 8.dp,
                     onCursorMove = { x, y ->
                         println("cursor move x=$x y=$y")
                     }

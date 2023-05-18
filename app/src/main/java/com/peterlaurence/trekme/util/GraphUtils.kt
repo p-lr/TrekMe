@@ -21,7 +21,7 @@ class NiceScale(private var minPoint: Double, private var maxPoint: Double, priv
      */
     private fun calculate() {
         range = niceNum(maxPoint - minPoint, false)
-        tickSpacing = niceNum(range / (maxTicks - 1), true)
+        tickSpacing = niceNum(range / (maxTicks - 1).coerceAtLeast(1), true)
         niceMin = floor(minPoint / tickSpacing) * tickSpacing
         niceMax = ceil(maxPoint / tickSpacing) * tickSpacing
     }
