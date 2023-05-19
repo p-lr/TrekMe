@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
@@ -22,11 +23,13 @@ import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
 
 class RouteLayer(
-    scope: CoroutineScope,
+    private val scope: CoroutineScope,
     private val geoRecordFlow: Flow<GeoRecord>,
     private val mapStateFlow: Flow<MapState>,
     private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
 ) {
+    private var lastBoundingBox: BoundingBox? = null
+
     init {
         scope.launch {
             mapStateFlow.collectLatest { mapState ->
@@ -34,6 +37,13 @@ class RouteLayer(
                     setGeoRecord(geoRecord, mapState)
                 }
             }
+        }
+    }
+
+    fun centerOnGeoRecord(mapState: MapState, geoRecordId: UUID) = scope.launch {
+        if (geoRecordFlow.first().id != geoRecordId) return@launch
+        lastBoundingBox?.also { bb ->
+            mapState.scrollTo(bb, Offset(0.2f, 0.2f))
         }
     }
 
@@ -54,6 +64,7 @@ class RouteLayer(
         mapState.addPath(id, routeData.pathData)
 
         mapState.scrollTo(routeData.boundingBox, Offset(0.2f, 0.2f))
+        lastBoundingBox = routeData.boundingBox
     }
 
     private suspend fun makeRouteData(

@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -46,9 +47,6 @@ import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheet
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
-//import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowMainAxisAlignment
-//import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.FlowRow
-//import com.peterlaurence.trekme.features.common.presentation.ui.flowlayout.SizeMode
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
@@ -62,7 +60,9 @@ import com.peterlaurence.trekme.util.compose.LaunchedEffectWithLifecycle
 import com.peterlaurence.trekme.util.fold
 import com.peterlaurence.trekme.util.map
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 
@@ -90,15 +90,30 @@ fun ExcursionMapStateful(
     LaunchedEffectWithLifecycle(flow = viewModel.event) { event ->
         when (event) {
             ExcursionMapViewModel.Event.OnMarkerClick -> {
-                if (swipeableState.currentValue == States.COLLAPSED) {
-                    swipeableState.snapTo(States.PEAKED)
-                }
+                swipeableState.snapTo(States.EXPANDED)
             }
         }
     }
 
     LaunchedEffectWithLifecycle(flow = viewModel.locationFlow) {
 
+    }
+
+    /* Handle map padding and center on georecord if bottomsheet is expanded. */
+    LaunchedEffect(swipeableState.currentValue, uiState, geoRecordState) {
+        val mapState = (uiState as? MapReady)?.mapState ?: return@LaunchedEffect
+        val geoRecord = geoRecordState.getOrNull() ?: return@LaunchedEffect
+
+        val paddingRatio = when(swipeableState.currentValue) {
+            States.EXPANDED, States.PEAKED -> 0.5f
+            States.COLLAPSED -> 0f
+        }
+        launch {
+            mapState.setVisibleAreaPadding(bottomRatio = paddingRatio)
+            if (swipeableState.currentValue == States.EXPANDED) {
+                viewModel.routeLayer.centerOnGeoRecord(mapState, geoRecord.id)
+            }
+        }
     }
 
     ExcursionMapScreen(
