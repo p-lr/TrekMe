@@ -1,7 +1,7 @@
 package com.peterlaurence.trekme.features.map.presentation.viewmodel.layers
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.IntSize
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Barycenter
 import com.peterlaurence.trekme.core.map.domain.models.Map
@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.*
 import ovh.plrapps.mapcompose.api.*
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
-import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.max
 
@@ -39,16 +38,10 @@ class RouteLayer(
 
     init {
         scope.launch {
-            dataStateFlow.collectLatest { (map, mapState) ->
+            dataStateFlow.collectLatest { (_, mapState) ->
                 goToRouteFlow.collectLatest event@{ route ->
                     val routeData = staticRoutesData.value[route] ?: return@event
-                    coroutineScope {
-                        mapState.getLayoutSizeFlow().collectLatest { layoutSize ->
-                            val mapSize = IntSize(map.widthPx, map.heightPx)
-                            centerOnBoundingBox(layoutSize, mapSize, routeData.boundingBox, mapState)
-                            cancel()
-                        }
-                    }
+                    mapState.scrollTo(routeData.boundingBox, padding = Offset(0.2f, 0.2f))
                 }
             }
         }
@@ -73,7 +66,7 @@ class RouteLayer(
                                 drawExcursionRoutes(mapState, map, routesForRef)
                             }
                             launch {
-                                listenForGoToExcursionEvent(mapState, map, routesForRef)
+                                listenForGoToExcursionEvent(mapState, routesForRef)
                             }
                         }
                     }
@@ -104,7 +97,6 @@ class RouteLayer(
 
     private suspend fun listenForGoToExcursionEvent(
         mapState: MapState,
-        map: Map,
         routesForRef: kotlin.collections.Map<ExcursionRef, List<Route>>
     ) {
         goToExcursionFlow.collectLatest event@{ ref ->
@@ -114,13 +106,7 @@ class RouteLayer(
             }.reduceOrNull { acc, b ->
                 acc + b
             } ?: return@event
-            coroutineScope {
-                mapState.getLayoutSizeFlow().collectLatest { layoutSize ->
-                    val mapSize = IntSize(map.widthPx, map.heightPx)
-                    centerOnBoundingBox(layoutSize, mapSize, boundingBox, mapState)
-                    cancel()
-                }
-            }
+            mapState.scrollTo(boundingBox, padding = Offset(0.2f, 0.2f))
         }
     }
 
@@ -317,16 +303,6 @@ class RouteLayer(
                 Color(parseColor(colorStr))
             }
         )
-    }
-
-    private suspend fun centerOnBoundingBox(layoutSize: IntSize, mapSize: IntSize, boundingBox: BoundingBox, mapState: MapState) {
-        val destScaleX = layoutSize.width / (abs(boundingBox.xRight - boundingBox.xLeft) * mapSize.width)
-        val destScaleY = layoutSize.height / (abs(boundingBox.yTop - boundingBox.yBottom) * mapSize.height)
-        val destScale = min(destScaleX, destScaleY) * 0.8
-        val centerX = (boundingBox.xRight + boundingBox.xLeft) / 2
-        val centerY = (boundingBox.yBottom + boundingBox.yTop) / 2
-
-        mapState.scrollTo(centerX, centerY, destScale.toFloat())
     }
 
     private operator fun BoundingBox.plus(b: BoundingBox): BoundingBox {
