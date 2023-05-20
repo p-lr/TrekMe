@@ -431,6 +431,8 @@
     <string name="vertical_drop_stat">Dénivelé</string>
     <string name="vertical_ascent_stat">Dénivelé positif</string>
     <string name="vertical_descent_stat">Dénivelé négatif</string>
+    <string name="distance_cursor">distance :</string>
+    <string name="elevation_cursor">elevation :</string>
 
     <!-- General -->
     <string name="meters">mètres</string>

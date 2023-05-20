@@ -406,6 +406,8 @@
     <string name="vertical_drop_stat">Vertical drop</string>
     <string name="vertical_ascent_stat">Vertical ascent</string>
     <string name="vertical_descent_stat">Vertical descent</string>
+    <string name="distance_cursor">distance:</string>
+    <string name="elevation_cursor">elevation:</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>

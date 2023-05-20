@@ -199,7 +199,7 @@ class DialogShape(
                         lineTo(size.width + nubHeight, startY + (endY - startY) / 2f + offset)
                     }
                     NubPosition.BOTTOM -> {
-                        val startX = (size.width * relativePosition).coerceIn(
+                        val startX = (size.width * relativePosition - nubWidth / 2).coerceIn(
                             cornerRadius,
                             size.width - cornerRadius - nubWidth
                         )
