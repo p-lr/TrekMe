@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.units.UnitFormatter
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.util.NiceScale
@@ -48,7 +49,6 @@ import kotlin.math.floor
  * An elevation graph which uses cubic bezier curves if the dataset has less than 50 points, and
  * straight lines otherwise.
  * Interpolation is done accordingly.
- * [xValues] and [yValues] must be of the same size and non-empty.
  *
  * @param verticalPadding The padding in [Dp] applied to the top and the bottom of the graph
  * @param verticalSpacingY The minimum spacing in [Dp] between ticks of the vertical axis
@@ -60,17 +60,19 @@ import kotlin.math.floor
 @Composable
 fun ElevationGraph(
     modifier: Modifier = Modifier,
-    xValues: List<Double>,
-    yValues: List<Double>,
+    points: List<ElevationGraphPoint>,
     verticalSpacingY: Dp,
     verticalPadding: Dp,
     startPadding: Dp = 8.dp,
-    onCursorMove: (x: Double, y: Double) -> Unit = { _, _ -> }
+    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> }
 ) {
     // Safety
-    if (xValues.isEmpty() || yValues.isEmpty() || xValues.size != yValues.size) return
+    if (points.isEmpty()) return
 
     val density = LocalDensity.current
+
+    val xValues = points.map { it.distance }
+    val yValues = points.map { it.elevation }
 
     val yMin = remember(yValues) { yValues.minOrNull() } ?: return
     val yMax = remember(yValues) { yValues.maxOrNull() } ?: return
@@ -84,20 +86,34 @@ fun ElevationGraph(
     val pathInterpolator = remember { PathInterpolator(0.5f, 0f, 0.5f, 1f) }
     val interpolator = { x: Double ->
         val greaterIndex = xValues.indexOfFirst { it >= x }
-        val y = if (greaterIndex >= 1) {
+        val (ele, latLon) = if (greaterIndex >= 1) {
             val left = xValues[greaterIndex - 1]
             val right = xValues[greaterIndex]
-            val dy = yValues[greaterIndex] - yValues[greaterIndex - 1]
-            if (isUsingCubic) {
-                val t = pathInterpolator.getInterpolation(((x - left) / (right - left)).toFloat())
-                t * dy + yValues[greaterIndex - 1]
+
+            val t = if (isUsingCubic) {
+                pathInterpolator.getInterpolation(((x - left) / (right - left)).toFloat())
             } else {
-                (x - left) * dy / (right - left) + yValues[greaterIndex - 1]
+                ((x - left) / (right - left)).toFloat()
             }
+
+            /* Elevation */
+            val dy = yValues[greaterIndex] - yValues[greaterIndex - 1]
+            val ele = yValues[greaterIndex - 1] + t * dy
+
+            /* Latitude and longitude */
+            val prevPt = points[greaterIndex - 1]
+            val nextPt = points[greaterIndex]
+            val latLon = LatLon(
+                lat = prevPt.lat + t * (nextPt.lat - prevPt.lat),
+                lon = prevPt.lon + t * (nextPt.lon - prevPt.lon)
+            )
+            ele to latLon
         } else {
-            yValues[0]
+            val ele = yValues[0]
+            val latLon = LatLon(lat = points[0].lat, lon = points[0].lon)
+            ele to latLon
         }
-        onCursorMove(x, y)
+        onCursorMove(latLon, x, ele)
     }
 
     var cursorX: Float? by remember { mutableStateOf(null) }
@@ -252,15 +268,21 @@ fun ElevationGraph(
 
 }
 
+data class ElevationGraphPoint(val lat: Double, val lon: Double, val distance: Double, val elevation: Double)
+
 @Preview(widthDp = 450, heightDp = 350, showBackground = true)
 @Composable
 private fun GraphPreview() {
-    val xValues = remember {
-        listOf(0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0)
-    }
-
-    val yValues = remember {
-        listOf(980.0, 1043.0, 1142.0, 1432.0, 1352.0, 1321.0, 1189.0)
+    val points = remember {
+        listOf(
+            ElevationGraphPoint(0.0, 0.0, 0.0, 980.0),
+            ElevationGraphPoint(0.0, 0.0, 10.0, 1043.0),
+            ElevationGraphPoint(0.0, 0.0, 20.0, 1142.0),
+            ElevationGraphPoint(0.0, 0.0, 30.0, 1432.0),
+            ElevationGraphPoint(0.0, 0.0, 40.0, 1352.0),
+            ElevationGraphPoint(0.0, 0.0, 50.0, 1321.0),
+            ElevationGraphPoint(0.0, 0.0, 60.0, 1189.0)
+        )
     }
 
     TrekMeTheme {
@@ -274,12 +296,11 @@ private fun GraphPreview() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp),
-                    xValues = xValues,
-                    yValues = yValues,
+                    points = points,
                     verticalSpacingY = 20.dp,
                     verticalPadding = 16.dp,
-                    onCursorMove = { x, y ->
-                        println("cursor move x=$x y=$y")
+                    onCursorMove = { _, ele, d ->
+                        println("cursor move d=$d ele=$ele")
                     }
                 )
             }

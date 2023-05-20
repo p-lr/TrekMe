@@ -43,12 +43,14 @@ import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.georecord.domain.logic.getGeoStatistics
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoStatistics
+import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheet
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
+import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.AwaitingLocation
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.Error
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.ExcursionMapViewModel
@@ -120,6 +122,9 @@ fun ExcursionMapStateful(
         uiState = uiState,
         swipeableState = swipeableState,
         bottomSheetDataState = bottomSheetDataState,
+        onCursorMove = { latLon, d, ele ->
+            viewModel.routeLayer.setCursor(latLon, distance = d, ele = ele)
+        },
         onBack = onBack
     )
 }
@@ -130,6 +135,7 @@ private fun ExcursionMapScreen(
     uiState: UiState,
     swipeableState: SwipeableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData>,
+    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -156,7 +162,7 @@ private fun ExcursionMapScreen(
             is MapReady -> {
                 Box {
                     ExcursionMap(modifier, uiState.mapState)
-                    BottomSheet(swipeableState, bottomSheetDataState)
+                    BottomSheet(swipeableState, bottomSheetDataState, onCursorMove)
                 }
             }
         }
@@ -166,7 +172,8 @@ private fun ExcursionMapScreen(
 @Composable
 private fun BottomSheet(
     swipeableState: SwipeableState<States>,
-    bottomSheetDataState: ResultL<BottomSheetData>
+    bottomSheetDataState: ResultL<BottomSheetData>,
+    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> }
 ) {
     CollapsibleBottomSheet(
         swipeableState = swipeableState,
@@ -193,7 +200,7 @@ private fun BottomSheet(
                     item("stats") {
                         TrackStats(data.geoStatistics)
                     }
-                    if (data.elevationGraphData != null) {
+                    if (data.elevationGraphPoints != null) {
                         item("elevation-graph") {
                             Card(
                                 modifier = Modifier
@@ -204,10 +211,10 @@ private fun BottomSheet(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(150.dp),
-                                    xValues = data.elevationGraphData.xValues,
-                                    yValues = data.elevationGraphData.yValues,
+                                    points = data.elevationGraphPoints,
                                     verticalSpacingY = 20.dp,
-                                    verticalPadding = 16.dp
+                                    verticalPadding = 16.dp,
+                                    onCursorMove = onCursorMove
                                 )
                             }
                         }
@@ -393,28 +400,21 @@ private fun TrackStats(geoStatistics: GeoStatistics) {
 }
 
 private fun makeBottomSheetData(geoRecord: GeoRecord): BottomSheetData {
-    val xValues = mutableListOf<Double>()
-    val yValues = mutableListOf<Double>()
+    val points = mutableListOf<ElevationGraphPoint>()
     val stats = getGeoStatistics(geoRecord) { distance, marker ->
-        xValues += distance
         marker.elevation?.also { ele ->
-            yValues += ele
+            points += ElevationGraphPoint(marker.lat, marker.lon, distance, ele)
         }
     }
-    val elevationGraphData =
-        if (xValues.isNotEmpty() && yValues.isNotEmpty() && xValues.size == yValues.size) {
-            ElevationGraphData(xValues, yValues)
-        } else null
+    val elevationGraphPoints = points.ifEmpty { null }
 
-    return BottomSheetData(stats, elevationGraphData)
+    return BottomSheetData(stats, elevationGraphPoints)
 }
 
 private data class BottomSheetData(
     val geoStatistics: GeoStatistics,
-    val elevationGraphData: ElevationGraphData?
+    val elevationGraphPoints: List<ElevationGraphPoint>?,
 )
-
-private data class ElevationGraphData(val xValues: List<Double>, val yValues: List<Double>)
 
 @Preview(showBackground = true, widthDp = 450, heightDp = 600)
 @Composable
@@ -445,7 +445,10 @@ private fun BottomSheetPreview() {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                BottomSheet(swipeableState = swipeableState, bottomSheetDataState = bottomSheetData)
+                BottomSheet(
+                    swipeableState = swipeableState,
+                    bottomSheetDataState = bottomSheetData
+                )
             }
         }
     }

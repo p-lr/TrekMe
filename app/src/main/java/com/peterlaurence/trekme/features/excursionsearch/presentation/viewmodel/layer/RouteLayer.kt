@@ -2,10 +2,13 @@ package com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel
 
 import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
+import com.peterlaurence.trekme.features.map.presentation.ui.components.Marker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -15,8 +18,11 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.BoundingBox
+import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.addPath
+import ovh.plrapps.mapcompose.api.hasMarker
 import ovh.plrapps.mapcompose.api.makePathDataBuilder
+import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -29,12 +35,31 @@ class RouteLayer(
     private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
 ) {
     private var lastBoundingBox: BoundingBox? = null
+    private val cursorChannel = Channel<CursorData>(Channel.CONFLATED)
+    private val cursorMarkerId = "cursor"
 
     init {
         scope.launch {
             mapStateFlow.collectLatest { mapState ->
                 geoRecordFlow.collectLatest { geoRecord ->
                     setGeoRecord(geoRecord, mapState)
+                }
+            }
+        }
+
+        scope.launch {
+            mapStateFlow.collectLatest { mapState ->
+                for (data in cursorChannel) {
+                    val normalized = withContext(Dispatchers.Default) {
+                        wgs84ToNormalizedInteractor.getNormalized(data.latLon.lat, data.latLon.lon)
+                    } ?: continue
+                    if (mapState.hasMarker(cursorMarkerId)) {
+                        mapState.moveMarker(cursorMarkerId, normalized.x, normalized.y)
+                    } else {
+                        mapState.addMarker(cursorMarkerId, normalized.x, normalized.y, relativeOffset = Offset(-0.5f, -0.5f)) {
+                            Marker()
+                        }
+                    }
                 }
             }
         }
@@ -45,6 +70,10 @@ class RouteLayer(
         lastBoundingBox?.also { bb ->
             mapState.scrollTo(bb, Offset(0.2f, 0.2f))
         }
+    }
+
+    fun setCursor(latLon: LatLon, distance: Double, ele: Double) {
+        cursorChannel.trySend(CursorData(latLon, distance, ele))
     }
 
     private suspend fun setGeoRecord(geoRecord: GeoRecord, mapState: MapState) {
@@ -98,3 +127,4 @@ class RouteLayer(
 }
 
 private data class RouteData(val pathData: PathData, val boundingBox: BoundingBox)
+private data class CursorData(val latLon: LatLon, val distance: Double, val ele: Double)
