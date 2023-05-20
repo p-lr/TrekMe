@@ -24,11 +24,11 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.BoundingBox
-import ovh.plrapps.mapcompose.api.addMarker
+import ovh.plrapps.mapcompose.api.addCallout
 import ovh.plrapps.mapcompose.api.addPath
-import ovh.plrapps.mapcompose.api.hasMarker
+import ovh.plrapps.mapcompose.api.hasCallout
 import ovh.plrapps.mapcompose.api.makePathDataBuilder
-import ovh.plrapps.mapcompose.api.moveMarker
+import ovh.plrapps.mapcompose.api.moveCallout
 import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -63,10 +63,10 @@ class RouteLayer(
                     val normalized = withContext(Dispatchers.Default) {
                         wgs84ToNormalizedInteractor.getNormalized(data.latLon.lat, data.latLon.lon)
                     } ?: continue
-                    if (mapState.hasMarker(cursorMarkerId)) {
-                        mapState.moveMarker(cursorMarkerId, normalized.x, normalized.y)
+                    if (mapState.hasCallout(cursorMarkerId)) {
+                        mapState.moveCallout(cursorMarkerId, normalized.x, normalized.y)
                     } else {
-                        mapState.addMarker(
+                        mapState.addCallout(
                             id = cursorMarkerId,
                             x = normalized.x,
                             y = normalized.y,
