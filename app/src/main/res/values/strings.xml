@@ -408,6 +408,7 @@
     <string name="vertical_descent_stat">Vertical descent</string>
     <string name="distance_cursor">distance:</string>
     <string name="elevation_cursor">elevation:</string>
+    <string name="download_map_option">Download the map for this excursion</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>

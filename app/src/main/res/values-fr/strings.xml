@@ -432,7 +432,8 @@
     <string name="vertical_ascent_stat">Dénivelé positif</string>
     <string name="vertical_descent_stat">Dénivelé négatif</string>
     <string name="distance_cursor">distance :</string>
-    <string name="elevation_cursor">elevation :</string>
+    <string name="elevation_cursor">altitude :</string>
+    <string name="download_map_option">Télécharger la carte pour cette excursion</string>
 
     <!-- General -->
     <string name="meters">mètres</string>

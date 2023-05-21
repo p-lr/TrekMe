@@ -1,6 +1,7 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.SwipeableState
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -77,15 +81,16 @@ fun ExcursionMapStateful(
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
     val geoRecordState by viewModel.geoRecordFlow.collectAsStateWithLifecycle()
+    val hasContainingMap by viewModel.routeLayer.hasContainingMap.collectAsStateWithLifecycle()
 
     val bottomSheetDataState: ResultL<BottomSheetData> by produceState(
         initialValue = ResultL.loading(),
-        key1 = geoRecordState
+        key1 = geoRecordState,
+        key2 = hasContainingMap
     ) {
         geoRecordState.map { geoRecord ->
-            withContext(Dispatchers.Default) {
-                value = ResultL.success(makeBottomSheetData(geoRecord))
-            }
+            val isDownloadOptionChecked = !hasContainingMap
+            value = ResultL.success(makeBottomSheetData(geoRecord, isDownloadOptionChecked))
         }
     }
 
@@ -106,7 +111,7 @@ fun ExcursionMapStateful(
         val mapState = (uiState as? MapReady)?.mapState ?: return@LaunchedEffect
         val geoRecord = geoRecordState.getOrNull() ?: return@LaunchedEffect
 
-        val paddingRatio = when(swipeableState.currentValue) {
+        val paddingRatio = when (swipeableState.currentValue) {
             States.EXPANDED, States.PEAKED -> 0.5f
             States.COLLAPSED -> 0f
         }
@@ -197,28 +202,9 @@ private fun BottomSheet(
                     }
                 },
                 onSuccess = { data ->
-                    item("stats") {
-                        TrackStats(data.geoStatistics)
-                    }
-                    if (data.elevationGraphPoints != null) {
-                        item("elevation-graph") {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                            ) {
-                                ElevationGraph(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(150.dp),
-                                    points = data.elevationGraphPoints,
-                                    verticalSpacingY = 20.dp,
-                                    verticalPadding = 16.dp,
-                                    onCursorMove = onCursorMove
-                                )
-                            }
-                        }
-                    }
+                    statisticsSection(data)
+                    elevationGraphSection(data, onCursorMove)
+                    downloadSection(data)
                 },
                 onFailure = {
                     item("error") {
@@ -228,6 +214,52 @@ private fun BottomSheet(
             )
         }
     )
+}
+
+private fun LazyListScope.statisticsSection(data: BottomSheetData) {
+    item("stats") {
+        TrackStats(data.geoStatistics)
+    }
+}
+
+private fun LazyListScope.elevationGraphSection(
+    data: BottomSheetData,
+    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit
+) {
+    if (data.elevationGraphPoints != null) {
+        item("elevation-graph") {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                ElevationGraph(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    points = data.elevationGraphPoints,
+                    verticalSpacingY = 20.dp,
+                    verticalPadding = 16.dp,
+                    onCursorMove = onCursorMove
+                )
+            }
+        }
+    }
+}
+
+private fun LazyListScope.downloadSection(data: BottomSheetData) {
+    item("download-option") {
+        var isChecked by remember { mutableStateOf(data.isDownloadOptionChecked) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().clickable { isChecked = !isChecked }
+        ) {
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { isChecked = !isChecked })
+            Text(text = stringResource(id = R.string.download_map_option))
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -255,9 +287,11 @@ private fun ExcursionMap(modifier: Modifier, mapState: MapState) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TrackStats(geoStatistics: GeoStatistics) {
-    Card(modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -399,21 +433,27 @@ private fun TrackStats(geoStatistics: GeoStatistics) {
     }
 }
 
-private fun makeBottomSheetData(geoRecord: GeoRecord): BottomSheetData {
+private suspend fun makeBottomSheetData(
+    geoRecord: GeoRecord,
+    isDownloadOptionChecked: Boolean
+): BottomSheetData {
     val points = mutableListOf<ElevationGraphPoint>()
-    val stats = getGeoStatistics(geoRecord) { distance, marker ->
-        marker.elevation?.also { ele ->
-            points += ElevationGraphPoint(marker.lat, marker.lon, distance, ele)
+    val stats = withContext(Dispatchers.Default) {
+        getGeoStatistics(geoRecord) { distance, marker ->
+            marker.elevation?.also { ele ->
+                points += ElevationGraphPoint(marker.lat, marker.lon, distance, ele)
+            }
         }
     }
     val elevationGraphPoints = points.ifEmpty { null }
 
-    return BottomSheetData(stats, elevationGraphPoints)
+    return BottomSheetData(stats, elevationGraphPoints, isDownloadOptionChecked)
 }
 
 private data class BottomSheetData(
     val geoStatistics: GeoStatistics,
     val elevationGraphPoints: List<ElevationGraphPoint>?,
+    val isDownloadOptionChecked: Boolean
 )
 
 @Preview(showBackground = true, widthDp = 450, heightDp = 600)
@@ -434,7 +474,7 @@ private fun BottomSheetPreview() {
         val bottomSheetData by remember {
             mutableStateOf(
                 ResultL.success(
-                    BottomSheetData(geoStats, null)
+                    BottomSheetData(geoStats, null, true)
                 )
             )
         }

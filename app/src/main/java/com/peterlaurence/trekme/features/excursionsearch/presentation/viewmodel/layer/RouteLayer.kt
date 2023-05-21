@@ -9,21 +9,24 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
+import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
+import com.peterlaurence.trekme.core.map.domain.models.Marker
+import com.peterlaurence.trekme.core.map.domain.models.contains
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.Cursor
-import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ovh.plrapps.mapcompose.api.BoundingBox
 import ovh.plrapps.mapcompose.api.addCallout
 import ovh.plrapps.mapcompose.api.addPath
 import ovh.plrapps.mapcompose.api.hasCallout
@@ -33,14 +36,18 @@ import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
+import ovh.plrapps.mapcompose.api.BoundingBox as NormalizedBoundingBox
 
 class RouteLayer(
     private val scope: CoroutineScope,
     private val geoRecordFlow: Flow<GeoRecord>,
     private val mapStateFlow: Flow<MapState>,
-    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
+    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
+    private val getMapInteractor: GetMapInteractor
 ) {
-    private var lastBoundingBox: BoundingBox? = null
+    private val boundingBoxData: MutableStateFlow<BoundingBoxData?> = MutableStateFlow(null)
+    val hasContainingMap: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
     private val cursorChannel = Channel<CursorData>(Channel.CONFLATED)
     private val cursorMarkerId = "cursor"
     private var distance by mutableStateOf(0.0)
@@ -49,6 +56,7 @@ class RouteLayer(
     init {
         scope.launch {
             mapStateFlow.collectLatest { mapState ->
+                boundingBoxData.value = null
                 geoRecordFlow.collectLatest { geoRecord ->
                     setGeoRecord(geoRecord, mapState)
                 }
@@ -83,11 +91,44 @@ class RouteLayer(
                 }
             }
         }
+
+        scope.launch {
+            boundingBoxData.collect { bb ->
+                if (bb != null) {
+                    hasContainingMap.value = hasContainingMap(bb.denormalized)
+                }
+            }
+        }
+    }
+
+    /**
+     * If the user has a map which contains the bounding box of the selected excursion, then
+     * by default we de-select the option to download the corresponding map (since upon excursion
+     * download, we import it into all maps which can display the excursion).
+     */
+    private suspend fun hasContainingMap(boundingBox: BoundingBox): Boolean {
+        var hasMapContainingBoundingBox = false
+
+        coroutineScope {
+            launch {
+                val scope = this
+                getMapInteractor.getMapList().map { map ->
+                    launch {
+                        if (map.contains(boundingBox)) {
+                            hasMapContainingBoundingBox = true
+                            scope.cancel()
+                        }
+                    }
+                }
+            }
+        }
+
+        return hasMapContainingBoundingBox
     }
 
     fun centerOnGeoRecord(mapState: MapState, geoRecordId: UUID) = scope.launch {
         if (geoRecordFlow.first().id != geoRecordId) return@launch
-        lastBoundingBox?.also { bb ->
+        boundingBoxData.value?.normalized?.also { bb ->
             mapState.scrollTo(bb, Offset(0.2f, 0.2f))
         }
     }
@@ -99,52 +140,76 @@ class RouteLayer(
     private suspend fun setGeoRecord(geoRecord: GeoRecord, mapState: MapState) {
         val firstGroup = geoRecord.routeGroups.firstOrNull() ?: return
 
-        val normalized = firstGroup.routes.flatMap {
+        val markersFlow = firstGroup.routes.flatMap {
             it.routeMarkers
-        }.asFlow().mapNotNull {
-            wgs84ToNormalizedInteractor.getNormalized(it.lat, it.lon)
-        }.flowOn(Dispatchers.Default)
+        }.asFlow()
 
         val routeData = withContext(Dispatchers.Default) {
-            makeRouteData(normalized, mapState)
+            makeRouteData(markersFlow, mapState)
         } ?: return
+
+        boundingBoxData.value = routeData.boundingBoxData
 
         val id = UUID.randomUUID().toString()
         mapState.addPath(id, routeData.pathData)
 
-        mapState.scrollTo(routeData.boundingBox, Offset(0.2f, 0.2f))
-        lastBoundingBox = routeData.boundingBox
+        mapState.scrollTo(routeData.boundingBoxData.normalized, Offset(0.2f, 0.2f))
     }
 
     private suspend fun makeRouteData(
-        normalizedPositionsFlow: Flow<NormalizedPos>,
+        markersFlow: Flow<Marker>,
         mapState: MapState
     ): RouteData? {
         val pathBuilder = mapState.makePathDataBuilder()
 
-        var xMin: Double? = null
-        var xMax: Double? = null
-        var yMin: Double? = null
-        var yMax: Double? = null
+        var latMin: Double? = null
+        var latMax: Double? = null
+        var lonMin: Double? = null
+        var lonMax: Double? = null
 
-        normalizedPositionsFlow.collect {
-            pathBuilder.addPoint(it.x, it.y)
+        markersFlow.collect {
+            val normalized = wgs84ToNormalizedInteractor.getNormalized(it.lat, it.lon)
+            if (normalized != null) {
+                pathBuilder.addPoint(normalized.x, normalized.y)
+            }
 
-            xMin = it.x.coerceAtMost(xMin ?: it.x)
-            xMax = it.x.coerceAtLeast(xMax ?: it.x)
-            yMin = it.y.coerceAtMost(yMin ?: it.y)
-            yMax = it.y.coerceAtLeast(yMax ?: it.y)
+            latMin = it.lat.coerceAtMost(latMin ?: it.lat)
+            latMax = it.lat.coerceAtLeast(latMax ?: it.lat)
+            lonMin = it.lon.coerceAtMost(lonMin ?: it.lon)
+            lonMax = it.lon.coerceAtLeast(lonMax ?: it.lon)
         }
 
-        val boundingBox = if (xMin != null && xMax != null && yMin != null && yMax != null) {
-            BoundingBox(xLeft = xMin!!, xRight = xMax!!, yBottom = yMax!!, yTop = yMin!!)
-        } else return null
+        val minLat = latMin
+        val minLon = lonMin
+        val maxLat = latMax
+        val maxLon = lonMax
+
+        val normalizedBoundingBox =
+            if (minLat != null && minLon != null && maxLat != null && maxLon != null) {
+                val bottomLeft =
+                    wgs84ToNormalizedInteractor.getNormalized(minLat, minLon) ?: return null
+                val topRight =
+                    wgs84ToNormalizedInteractor.getNormalized(maxLat, maxLon) ?: return null
+                NormalizedBoundingBox(bottomLeft.x, topRight.y, topRight.x, bottomLeft.y)
+            } else return null
+
+        val denormalizedBoundingBox = BoundingBox(minLat, maxLat, minLon, maxLon)
+
+        val bbData = BoundingBoxData(
+            normalized = normalizedBoundingBox,
+            denormalized = denormalizedBoundingBox
+        )
 
         return pathBuilder.build()?.let {
-            RouteData(it, boundingBox)
+            RouteData(it, bbData)
         }
     }
 }
 
-private data class RouteData(val pathData: PathData, val boundingBox: BoundingBox)
+private data class RouteData(val pathData: PathData, val boundingBoxData: BoundingBoxData)
+private data class BoundingBoxData(
+    val normalized: NormalizedBoundingBox,
+    val denormalized: BoundingBox
+)
+
 private data class CursorData(val latLon: LatLon, val distance: Double, val ele: Double)

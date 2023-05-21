@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
+import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
@@ -16,7 +17,6 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.mapSize
-import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleLimitsConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignConfig
@@ -47,7 +47,6 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
 import ovh.plrapps.mapcompose.api.removeAllLayers
@@ -64,7 +63,8 @@ class ExcursionMapViewModel @Inject constructor(
     private val getTileStreamProviderDao: TileStreamProviderDao,
     private val pendingSearchRepository: PendingSearchRepository,
     private val excursionGeoRecordRepository: ExcursionGeoRecordRepository,
-    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
+    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
+    getMapInteractor: GetMapInteractor
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
@@ -102,7 +102,8 @@ class ExcursionMapViewModel @Inject constructor(
         scope = viewModelScope,
         geoRecordFlow = geoRecordFlow.mapNotNull { it.getOrNull() },
         mapStateFlow = mapStateFlow,
-        wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor
+        wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor,
+        getMapInteractor = getMapInteractor
     )
 
     init {
@@ -219,7 +220,7 @@ class ExcursionMapViewModel @Inject constructor(
     private data class WmtsConfig(val tileSize: Int, val mapSize: Int)
 
     sealed interface Event {
-        object OnMarkerClick: Event
+        object OnMarkerClick : Event
     }
 }
 
