@@ -179,6 +179,7 @@ fun ElevationGraph(
         val textMeasurer = rememberTextMeasurer()
         val strokeColor = MaterialTheme.colorScheme.primary
         val labelColor = MaterialTheme.colorScheme.onPrimaryContainer
+        val cursorLineColor = MaterialTheme.colorScheme.tertiary
 
         Canvas(
             modifier = Modifier.fillMaxSize(),
@@ -232,7 +233,8 @@ fun ElevationGraph(
             cursorX?.also {
                 val x = it.coerceAtLeast(startOffset)
                 drawLine(
-                    Color.Gray,
+                    cursorLineColor,
+                    strokeWidth = 2f,
                     start = Offset(x, 0f),
                     end = Offset(x, size.height)
                 )
