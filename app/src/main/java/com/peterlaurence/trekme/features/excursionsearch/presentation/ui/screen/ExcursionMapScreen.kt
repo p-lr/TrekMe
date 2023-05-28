@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.SwipeableState
 import androidx.compose.material.rememberSwipeableState
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -112,7 +113,7 @@ fun ExcursionMapStateful(
         val geoRecord = geoRecordState.getOrNull() ?: return@LaunchedEffect
 
         val paddingRatio = when (swipeableState.currentValue) {
-            States.EXPANDED, States.PEAKED -> 0.5f
+            States.EXPANDED, States.PEAKED -> expandedRatio
             States.COLLAPSED -> 0f
         }
         launch {
@@ -147,6 +148,22 @@ private fun ExcursionMapScreen(
         topBar = {
             ExcursionMapTopAppBar(onBack = onBack)
         },
+        bottomBar = {
+            if (swipeableState.currentValue != States.COLLAPSED) {
+                Row(
+                    modifier = Modifier
+                        .height(58.dp)
+                        .fillMaxWidth()
+                    ,
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(onClick = { /*TODO*/ }) {
+                        Text(stringResource(id = R.string.download))
+                    }
+                }
+            }
+        }
     ) { paddingValues ->
         val modifier = Modifier
             .fillMaxSize()
@@ -165,8 +182,8 @@ private fun ExcursionMapScreen(
             }
 
             is MapReady -> {
-                Box {
-                    ExcursionMap(modifier, uiState.mapState)
+                Box(modifier) {
+                    ExcursionMap(mapState = uiState.mapState)
                     BottomSheet(swipeableState, bottomSheetDataState, onCursorMove)
                 }
             }
@@ -182,16 +199,18 @@ private fun BottomSheet(
 ) {
     CollapsibleBottomSheet(
         swipeableState = swipeableState,
-        header = {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .background(Color.Gray)
-            ) {
-
-            }
-        },
+//        header = {
+//            Row(
+//                Modifier
+//                    .fillMaxWidth()
+//                    .height(50.dp)
+//                    .background(Color.Gray)
+//            ) {
+//
+//            }
+//        },
+        expandedRatio = expandedRatio,
+        peakedRatio = peakedRatio,
         content = {
             bottomSheetDataState.fold(
                 onLoading = {
@@ -212,7 +231,7 @@ private fun BottomSheet(
                     }
                 }
             )
-        }
+        },
     )
 }
 
@@ -252,7 +271,9 @@ private fun LazyListScope.downloadSection(data: BottomSheetData) {
         var isChecked by remember { mutableStateOf(data.isDownloadOptionChecked) }
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().clickable { isChecked = !isChecked }
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isChecked = !isChecked }
         ) {
             Checkbox(
                 checked = isChecked,
@@ -280,7 +301,7 @@ private fun ExcursionMapTopAppBar(
 }
 
 @Composable
-private fun ExcursionMap(modifier: Modifier, mapState: MapState) {
+private fun ExcursionMap(modifier: Modifier = Modifier, mapState: MapState) {
     MapUI(modifier = modifier, state = mapState)
 }
 
@@ -494,3 +515,6 @@ private fun BottomSheetPreview() {
     }
 
 }
+
+private const val expandedRatio = 0.6f
+private const val peakedRatio = 0.4f

@@ -145,7 +145,7 @@ class DistanceOnRouteController(
         mapState.addPath(
             mainPath,
             pathData,
-            width = 10.dp,
+            width = 5.dp,
             offset = min(state.i1, state.i2),
             count = abs(state.i2 - state.i1),
             color = Color(0xFFF50057)

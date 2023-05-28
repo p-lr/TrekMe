@@ -38,8 +38,10 @@ enum class States {
 
 /**
  * A bottom-sheet which has 3 states, among which [States.COLLAPSED].
- * In [States.EXPANDED], the bottom-sheet takes half the screen height.
- * In [States.PEAKED], the bottom-sheet takes a quarter of the screen height.
+ * In [States.EXPANDED], the bottom-sheet occupies its maximum height, which is obtained by the
+ * formula: available_height * [expandedRatio].
+ * In [States.PEAKED], the bottom-sheet occupies a lesser height, which is obtained by the formula:
+ * available_height * [peakedRatio]. We must have [peakedRatio] < [expandedRatio].
  * The [content] is a lazy list body.
  *
  *
@@ -53,14 +55,15 @@ enum class States {
 fun CollapsibleBottomSheet(
     swipeableState: SwipeableState<States>,
     lazyListState: LazyListState = rememberLazyListState(),
-    header: @Composable () -> Unit,
+    expandedRatio: Float,
+    peakedRatio: Float,
+    header: @Composable () -> Unit = {},
     content: LazyListScope.() -> Unit
 ) {
     BoxWithConstraints {
         val maxHeightPx = with(LocalDensity.current) {
             maxHeight.toPx()
         }
-        val peakHeight = maxHeightPx / 4
 
         val connection = remember {
             object : NestedScrollConnection {
@@ -118,8 +121,8 @@ fun CollapsibleBottomSheet(
                     state = swipeableState,
                     orientation = Orientation.Vertical,
                     anchors = mapOf(
-                        maxHeightPx / 2 to States.EXPANDED,
-                        maxHeightPx - peakHeight to States.PEAKED,
+                        maxHeightPx * (1 - expandedRatio) to States.EXPANDED,
+                        maxHeightPx * (1 - peakedRatio) to States.PEAKED,
                         maxHeightPx to States.COLLAPSED,
                     )
                 )
@@ -127,7 +130,7 @@ fun CollapsibleBottomSheet(
         ) {
             Column(
                 Modifier
-                    .height(this@BoxWithConstraints.maxHeight / 2)
+                    .height(this@BoxWithConstraints.maxHeight * expandedRatio)
                     .clip(BottomSheetDefaults.ExpandedShape)
                     .background(Color.White)
             ) {
