@@ -409,6 +409,9 @@
     <string name="distance_cursor">distance:</string>
     <string name="elevation_cursor">elevation:</string>
     <string name="download_map_option">Download the map for this excursion</string>
+    <string name="awaiting_location">Awaiting for GPS location</string>
+    <string name="no_internet_excursions">You must be connected to internet to search for excursions</string>
+    <string name="provider_issue">The map provider is having a temporary outage</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>

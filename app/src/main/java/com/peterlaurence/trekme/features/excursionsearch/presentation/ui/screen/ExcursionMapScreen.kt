@@ -1,6 +1,5 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.ui.screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,11 +24,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -53,6 +56,8 @@ import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheet
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
+import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraph
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.ElevationGraphPoint
@@ -72,6 +77,7 @@ import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.setVisibleAreaPadding
 import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,10 +101,21 @@ fun ExcursionMapStateful(
         }
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val noInternetWarning = stringResource(id = R.string.no_internet_excursions)
     LaunchedEffectWithLifecycle(flow = viewModel.event) { event ->
         when (event) {
             ExcursionMapViewModel.Event.OnMarkerClick -> {
                 swipeableState.snapTo(States.EXPANDED)
+            }
+
+            ExcursionMapViewModel.Event.NoInternet -> {
+                snackbarHostState.showSnackbar(
+                    message = noInternetWarning,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Indefinite
+                )
             }
         }
     }
@@ -128,6 +145,7 @@ fun ExcursionMapStateful(
         uiState = uiState,
         swipeableState = swipeableState,
         bottomSheetDataState = bottomSheetDataState,
+        snackbarHostState = snackbarHostState,
         onCursorMove = { latLon, d, ele ->
             viewModel.routeLayer.setCursor(latLon, distance = d, ele = ele)
         },
@@ -141,6 +159,7 @@ private fun ExcursionMapScreen(
     uiState: UiState,
     swipeableState: SwipeableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData>,
+    snackbarHostState: SnackbarHostState,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onBack: () -> Unit
 ) {
@@ -163,6 +182,9 @@ private fun ExcursionMapScreen(
                     }
                 }
             }
+        },
+        snackbarHost =  {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
         val modifier = Modifier
@@ -170,15 +192,15 @@ private fun ExcursionMapScreen(
             .padding(paddingValues)
         when (uiState) {
             Error.PROVIDER_OUTAGE -> {
-                // TODO
+                ErrorScreen(message = stringResource(id = R.string.provider_issue))
             }
 
             Loading -> {
-                // TODO()
+                LoadingScreen()
             }
 
             AwaitingLocation -> {
-                // TODO()
+                LoadingScreen(stringResource(id = R.string.awaiting_location))
             }
 
             is MapReady -> {
@@ -252,15 +274,17 @@ private fun LazyListScope.elevationGraphSection(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                ElevationGraph(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
-                    points = data.elevationGraphPoints,
-                    verticalSpacingY = 20.dp,
-                    verticalPadding = 16.dp,
-                    onCursorMove = onCursorMove
-                )
+                key(data.id) {
+                    ElevationGraph(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp),
+                        points = data.elevationGraphPoints,
+                        verticalSpacingY = 20.dp,
+                        verticalPadding = 16.dp,
+                        onCursorMove = onCursorMove
+                    )
+                }
             }
         }
     }
@@ -468,10 +492,11 @@ private suspend fun makeBottomSheetData(
     }
     val elevationGraphPoints = points.ifEmpty { null }
 
-    return BottomSheetData(stats, elevationGraphPoints, isDownloadOptionChecked)
+    return BottomSheetData(geoRecord.id, stats, elevationGraphPoints, isDownloadOptionChecked)
 }
 
 private data class BottomSheetData(
+    val id: UUID,
     val geoStatistics: GeoStatistics,
     val elevationGraphPoints: List<ElevationGraphPoint>?,
     val isDownloadOptionChecked: Boolean
@@ -495,7 +520,7 @@ private fun BottomSheetPreview() {
         val bottomSheetData by remember {
             mutableStateOf(
                 ResultL.success(
-                    BottomSheetData(geoStats, null, true)
+                    BottomSheetData(UUID.randomUUID(), geoStats, null, true)
                 )
             )
         }

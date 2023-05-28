@@ -1,9 +1,11 @@
 package com.peterlaurence.trekme.core.wmts.data.provider
 
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
+import com.peterlaurence.trekme.core.map.domain.models.TileStream
 import com.peterlaurence.trekme.core.map.domain.models.TileStreamProvider
 import com.peterlaurence.trekme.core.wmts.data.model.TileStreamProviderHttp
 import com.peterlaurence.trekme.core.wmts.data.model.UrlTileBuilder
+import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
 import kotlin.random.Random
 
 /**
@@ -11,7 +13,10 @@ import kotlin.random.Random
  *
  * @author P.Laurence on 20/16/19
  */
-class TileStreamProviderOSM(urlTileBuilder: UrlTileBuilder) : TileStreamProvider {
+class TileStreamProviderOSM(
+    urlTileBuilder: UrlTileBuilder,
+    private val reporter: TileStreamReporter? = null
+) : TileStreamProvider {
     private val requestProperties = mapOf(
         "User-Agent" to generateRandomUserAgent()
     )
@@ -26,7 +31,11 @@ class TileStreamProviderOSM(urlTileBuilder: UrlTileBuilder) : TileStreamProvider
     }
 
     override fun getTileStream(row: Int, col: Int, zoomLvl: Int): TileResult {
-        return base.getTileStream(row, col, zoomLvl)
+        return base.getTileStream(row, col, zoomLvl).also { result ->
+            if (reporter != null && result is TileStream && result.tileStream == null) {
+                reporter.report(result)
+            }
+        }
     }
 }
 

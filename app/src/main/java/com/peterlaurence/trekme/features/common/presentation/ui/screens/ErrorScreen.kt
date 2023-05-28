@@ -15,7 +15,7 @@ fun ErrorScreen(modifier: Modifier = Modifier, message: String) {
     Column(
         modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

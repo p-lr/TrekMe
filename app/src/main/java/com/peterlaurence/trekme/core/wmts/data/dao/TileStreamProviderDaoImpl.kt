@@ -16,6 +16,7 @@ import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderOrdn
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderSwiss
 import com.peterlaurence.trekme.core.wmts.data.urltilebuilder.UrlTileBuilderUSGS
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
+import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
@@ -30,7 +31,10 @@ class TileStreamProviderDaoImpl constructor(
     private val ignApiDao: IgnApiDao,
     private val ordnanceSurveyApiDao: OrdnanceSurveyApiDao,
 ): TileStreamProviderDao {
-    override suspend fun newTileStreamProvider(data: MapSourceData): Result<TileStreamProvider> {
+    override suspend fun newTileStreamProvider(
+        data: MapSourceData,
+        reporter: TileStreamReporter?
+    ): Result<TileStreamProvider> {
         val tileStreamProvider = when (data) {
             is IgnSourceData -> {
                 val ignApi =
@@ -56,7 +60,7 @@ class TileStreamProviderDaoImpl constructor(
 
             is OsmSourceData -> {
                 val urlTileBuilder = UrlTileBuilderOSM(data.layer)
-                TileStreamProviderOSM(urlTileBuilder)
+                TileStreamProviderOSM(urlTileBuilder, reporter = reporter)
             }
 
             is IgnSpainData -> {

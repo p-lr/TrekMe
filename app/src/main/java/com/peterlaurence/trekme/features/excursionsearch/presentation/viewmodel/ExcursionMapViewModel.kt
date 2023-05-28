@@ -7,7 +7,11 @@ import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
+import com.peterlaurence.trekme.core.map.domain.models.TileResult
+import com.peterlaurence.trekme.core.map.domain.models.TileStream
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
+import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamReporter
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
 import com.peterlaurence.trekme.core.wmts.domain.model.IgnSpainData
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
@@ -17,6 +21,7 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.mapSize
+import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleLimitsConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ignConfig
@@ -31,6 +36,7 @@ import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.RouteLayer
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import com.peterlaurence.trekme.util.ResultL
+import com.peterlaurence.trekme.util.checkInternet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -46,7 +52,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ovh.plrapps.mapcompose.api.addLayer
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
 import ovh.plrapps.mapcompose.api.removeAllLayers
@@ -55,6 +63,7 @@ import ovh.plrapps.mapcompose.api.setMapBackground
 import ovh.plrapps.mapcompose.ui.layout.Fit
 import ovh.plrapps.mapcompose.ui.layout.Forced
 import ovh.plrapps.mapcompose.ui.state.MapState
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 @HiltViewModel
@@ -110,6 +119,12 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope.launch {
             mapSourceDataFlow.collect {
                 updateMapState(it)
+            }
+        }
+
+        viewModelScope.launch {
+            if (!checkInternet()) {
+                _events.send(Event.NoInternet)
             }
         }
     }
@@ -176,13 +191,40 @@ class ExcursionMapViewModel @Inject constructor(
         }
 
         val tileStreamProvider =
-            getTileStreamProviderDao.newTileStreamProvider(mapSourceData).getOrNull()
+            getTileStreamProviderDao.newTileStreamProvider(mapSourceData, makeReporter()).getOrNull()
         _uiStateFlow.value = if (tileStreamProvider != null) {
             mapState.removeAllLayers()
 //            mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
             MapReady(mapState)
         } else {
             Error.PROVIDER_OUTAGE
+        }
+    }
+
+    private fun makeReporter(): TileStreamReporter {
+        return object : TileStreamReporter {
+            private var successCnt = AtomicInteger(0)
+            private var failureCnt = AtomicInteger(0)
+
+            override fun report(result: TileResult) {
+                if (result is TileStream) {
+                    if (result.tileStream != null){
+                        successCnt.incrementAndGet()
+                    } else {
+                        val failCnt = failureCnt.incrementAndGet()
+                        val successCnt = successCnt.get()
+                        check(failCnt, successCnt)
+                    }
+                }
+            }
+
+            private fun check(failCnt: Int, successCnt: Int) {
+                if (failCnt > successCnt) {
+                    _uiStateFlow.update {
+                        Error.PROVIDER_OUTAGE
+                    }
+                }
+            }
         }
     }
 
@@ -221,6 +263,7 @@ class ExcursionMapViewModel @Inject constructor(
 
     sealed interface Event {
         object OnMarkerClick : Event
+        object NoInternet : Event
     }
 }
 

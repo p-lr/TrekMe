@@ -38,6 +38,7 @@ import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
 import com.peterlaurence.trekme.main.shortcut.Shortcut
 import com.peterlaurence.trekme.util.android.*
+import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -299,7 +300,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             navController.navigate(NavGraphDirections.actionGlobalMapCreateGraph(), options)
             permissionRequestHandler?.requestMapCreationPermission()
-            warnIfNotInternet()
+            warnIfNotInternet(getString(R.string.no_internet))
         }
     }
 
@@ -337,6 +338,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
             navController.navigate(NavGraphDirections.actionGlobalExcursionSearchFragment(), options)
+            warnIfNotInternet(getString(R.string.no_internet_excursions))
         }
     }
 
@@ -403,22 +405,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    /**
-     * Determine if we have an internet connection.
-     */
-    private suspend fun checkInternet(): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val ip = InetAddress.getByName("google.com")
-            ip.hostAddress != ""
-        } catch (e: Throwable) {
-            false
-        }
-    }
-
-    private fun warnIfNotInternet() {
+    private fun warnIfNotInternet(message: String) {
         lifecycleScope.launchWhenCreated {
             if (!checkInternet()) {
-                showSnackbar(getString(R.string.no_internet))
+                showSnackbar(message)
             }
         }
     }

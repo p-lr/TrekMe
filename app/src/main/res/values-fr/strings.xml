@@ -434,6 +434,9 @@
     <string name="distance_cursor">distance :</string>
     <string name="elevation_cursor">altitude :</string>
     <string name="download_map_option">Télécharger la carte pour cette excursion</string>
+    <string name="awaiting_location">En attente d\'une position GPS</string>
+    <string name="no_internet_excursions">Vous devez être connecté à internet pour chercher une excursion</string>
+    <string name="provider_issue">Le fournisseur de carte a une panne temporaire</string>
 
     <!-- General -->
     <string name="meters">mètres</string>
