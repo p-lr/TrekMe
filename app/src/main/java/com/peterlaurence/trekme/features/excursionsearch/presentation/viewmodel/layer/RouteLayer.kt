@@ -32,6 +32,7 @@ import ovh.plrapps.mapcompose.api.addPath
 import ovh.plrapps.mapcompose.api.hasCallout
 import ovh.plrapps.mapcompose.api.makePathDataBuilder
 import ovh.plrapps.mapcompose.api.moveCallout
+import ovh.plrapps.mapcompose.api.removeAllPaths
 import ovh.plrapps.mapcompose.api.scrollTo
 import ovh.plrapps.mapcompose.ui.paths.PathData
 import ovh.plrapps.mapcompose.ui.state.MapState
@@ -150,6 +151,8 @@ class RouteLayer(
 
         boundingBoxData.value = routeData.boundingBoxData
 
+        /* Remove all paths before adding the new one */
+        mapState.removeAllPaths()
         val id = UUID.randomUUID().toString()
         mapState.addPath(id, routeData.pathData)
 

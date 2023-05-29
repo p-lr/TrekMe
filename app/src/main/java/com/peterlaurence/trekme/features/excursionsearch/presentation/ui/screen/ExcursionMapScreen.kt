@@ -32,14 +32,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -89,14 +87,14 @@ fun ExcursionMapStateful(
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
     val geoRecordState by viewModel.geoRecordFlow.collectAsStateWithLifecycle()
     val hasContainingMap by viewModel.routeLayer.hasContainingMap.collectAsStateWithLifecycle()
+    var isDownloadOptionChecked by remember { mutableStateOf(!hasContainingMap) }
 
     val bottomSheetDataState: ResultL<BottomSheetData> by produceState(
         initialValue = ResultL.loading(),
         key1 = geoRecordState,
-        key2 = hasContainingMap
+        key2 = isDownloadOptionChecked
     ) {
         geoRecordState.map { geoRecord ->
-            val isDownloadOptionChecked = !hasContainingMap
             value = ResultL.success(makeBottomSheetData(geoRecord, isDownloadOptionChecked))
         }
     }
@@ -149,6 +147,7 @@ fun ExcursionMapStateful(
         onCursorMove = { latLon, d, ele ->
             viewModel.routeLayer.setCursor(latLon, distance = d, ele = ele)
         },
+        onToggleDownloadMapOption = { isDownloadOptionChecked = !isDownloadOptionChecked},
         onBack = onBack
     )
 }
@@ -161,6 +160,7 @@ private fun ExcursionMapScreen(
     bottomSheetDataState: ResultL<BottomSheetData>,
     snackbarHostState: SnackbarHostState,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
+    onToggleDownloadMapOption: () -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -206,7 +206,7 @@ private fun ExcursionMapScreen(
             is MapReady -> {
                 Box(modifier) {
                     ExcursionMap(mapState = uiState.mapState)
-                    BottomSheet(swipeableState, bottomSheetDataState, onCursorMove)
+                    BottomSheet(swipeableState, bottomSheetDataState, onCursorMove, onToggleDownloadMapOption)
                 }
             }
         }
@@ -217,7 +217,8 @@ private fun ExcursionMapScreen(
 private fun BottomSheet(
     swipeableState: SwipeableState<States>,
     bottomSheetDataState: ResultL<BottomSheetData>,
-    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> }
+    onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
+    onToggleDownloadMapOption: () -> Unit = {}
 ) {
     CollapsibleBottomSheet(
         swipeableState = swipeableState,
@@ -245,7 +246,7 @@ private fun BottomSheet(
                 onSuccess = { data ->
                     statisticsSection(data)
                     elevationGraphSection(data, onCursorMove)
-                    downloadSection(data)
+                    downloadSection(data.isDownloadOptionChecked, onToggleDownloadMapOption)
                 },
                 onFailure = {
                     item("error") {
@@ -258,7 +259,7 @@ private fun BottomSheet(
 }
 
 private fun LazyListScope.statisticsSection(data: BottomSheetData) {
-    item("stats") {
+    item(key = data.geoStatistics) {
         TrackStats(data.geoStatistics)
     }
 }
@@ -268,40 +269,40 @@ private fun LazyListScope.elevationGraphSection(
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit
 ) {
     if (data.elevationGraphPoints != null) {
-        item("elevation-graph") {
+        item(key = data.id) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                key(data.id) {
-                    ElevationGraph(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp),
-                        points = data.elevationGraphPoints,
-                        verticalSpacingY = 20.dp,
-                        verticalPadding = 16.dp,
-                        onCursorMove = onCursorMove
-                    )
-                }
+                ElevationGraph(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    points = data.elevationGraphPoints,
+                    verticalSpacingY = 20.dp,
+                    verticalPadding = 16.dp,
+                    onCursorMove = onCursorMove
+                )
             }
         }
     }
 }
 
-private fun LazyListScope.downloadSection(data: BottomSheetData) {
-    item("download-option") {
-        var isChecked by remember { mutableStateOf(data.isDownloadOptionChecked) }
+private fun LazyListScope.downloadSection(
+    isChecked: Boolean,
+    onToggleDownloadMapOption: () -> Unit
+) {
+    item {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { isChecked = !isChecked }
+                .clickable(onClick = onToggleDownloadMapOption)
         ) {
             Checkbox(
                 checked = isChecked,
-                onCheckedChange = { isChecked = !isChecked })
+                onCheckedChange = { onToggleDownloadMapOption() })
             Text(text = stringResource(id = R.string.download_map_option))
         }
     }
