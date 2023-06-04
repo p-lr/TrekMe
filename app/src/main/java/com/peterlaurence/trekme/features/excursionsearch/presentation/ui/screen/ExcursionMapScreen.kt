@@ -269,7 +269,7 @@ private fun LazyListScope.elevationGraphSection(
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit
 ) {
     if (data.elevationGraphPoints != null) {
-        item(key = data.id) {
+        item(key = "elevation-graph") {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -543,4 +543,4 @@ private fun BottomSheetPreview() {
 }
 
 private const val expandedRatio = 0.6f
-private const val peakedRatio = 0.4f
+private const val peakedRatio = 0.2f

@@ -194,7 +194,7 @@ class ExcursionMapViewModel @Inject constructor(
             getTileStreamProviderDao.newTileStreamProvider(mapSourceData, makeReporter()).getOrNull()
         _uiStateFlow.value = if (tileStreamProvider != null) {
             mapState.removeAllLayers()
-//            mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
+            mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
             MapReady(mapState)
         } else {
             Error.PROVIDER_OUTAGE

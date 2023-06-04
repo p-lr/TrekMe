@@ -155,7 +155,7 @@ fun ElevationGraph(
             floor(availableDpYaxis / verticalSpacingY).toInt()
         }
 
-        val niceScale = remember {
+        val niceScale = remember(yValues) {
             NiceScale(minPoint = yMin, maxPoint = yMax, maxTicks = nDivY)
         }
 
@@ -167,7 +167,7 @@ fun ElevationGraph(
             density.run { 4.dp.toPx() }
         }
 
-        val yToPx = remember(density) {
+        val yToPx = remember(density, yValues) {
             val vPx = density.run { verticalPadding.toPx() }
             val h = density.run { maxHeight.toPx() }
             val a = (2 * vPx - h) / (yMax - yMin)
