@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -18,7 +17,6 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.main.MainActivity
 import com.peterlaurence.trekme.util.getBitmapFromDrawable
-import com.peterlaurence.trekme.util.stackTraceToString
 import com.peterlaurence.trekme.util.throttle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -182,13 +180,12 @@ class DownloadService : Service() {
         stopService()
     }
 
+    @SuppressLint("MissingPermission")
     private fun onDownloadProgress(progress: Int) {
         notificationBuilder.setProgress(100, progress, false)
-        try {
+        runCatching {
+            // SecurityException thrown when missing permission
             notificationManager.notify(downloadServiceNofificationId, notificationBuilder.build())
-        } catch (e: RuntimeException) {
-            // can't figure out why it's (rarely) thrown. Log it for now
-            Log.e(TAG, stackTraceToString(e))
         }
     }
 

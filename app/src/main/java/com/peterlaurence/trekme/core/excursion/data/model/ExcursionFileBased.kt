@@ -56,5 +56,8 @@ enum class Type {
     Aerial,
 
     @SerialName("nautical")
-    Nautical
+    Nautical,
+
+    @SerialName("motorised-vehicle")
+    MotorisedVehicle
 }

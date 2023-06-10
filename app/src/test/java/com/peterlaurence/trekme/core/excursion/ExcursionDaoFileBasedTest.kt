@@ -2,9 +2,11 @@ package com.peterlaurence.trekme.core.excursion
 
 import com.peterlaurence.trekme.core.excursion.data.dao.ExcursionDaoFileBased
 import com.peterlaurence.trekme.core.excursion.data.model.Waypoint
+import com.peterlaurence.trekme.core.georecord.data.mapper.gpxToDomain
+import com.peterlaurence.trekme.core.lib.gpx.parseGpxSafely
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,7 +21,14 @@ class ExcursionDaoFileBasedTest {
     private val testScope = TestScope(testDispatcher)
 
     private val dao = ExcursionDaoFileBased(
-        listOfNotNull(excursionDir), ioDispatcher = testDispatcher
+        listOfNotNull(excursionDir),
+        appDirFlow = flowOf(),
+        geoRecordParser = { file ->
+            parseGpxSafely(file.inputStream())?.let {
+                gpxToDomain(it, file.name)
+            }
+        },
+        ioDispatcher = testDispatcher
     )
 
     @Test
@@ -53,15 +62,14 @@ class ExcursionDaoFileBasedTest {
 
         assertEquals(1, excursions.value.size)
         val excursion = excursions.value.first()
-        val uri = dao.getGeoRecordUri(excursion)
-        assertNotNull(uri)
-        assertEquals("sceaux.gpx", uri?.lastPathSegment)
+        val geoRecord = dao.getGeoRecord(excursion)
+        assertEquals("sceaux.gpx", geoRecord?.name)
     }
 
     companion object {
         private val excursionDir: File? = try {
             val url = ExcursionDaoFileBasedTest::class.java.classLoader!!.getResource("excursions")
-            File(url.toURI())
+            File(url.toURI()).parentFile
         } catch (e: Exception) {
             println("Error while getting excursions test dir")
             null

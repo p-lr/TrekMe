@@ -85,17 +85,17 @@ fun ExcursionMapStateful(
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
-    val geoRecordState by viewModel.geoRecordFlow.collectAsStateWithLifecycle()
+    val partialExcursionState by viewModel.partialExcursionFlow.collectAsStateWithLifecycle()
     val hasContainingMap by viewModel.routeLayer.hasContainingMap.collectAsStateWithLifecycle()
     var isDownloadOptionChecked by remember { mutableStateOf(!hasContainingMap) }
 
     val bottomSheetDataState: ResultL<BottomSheetData> by produceState(
         initialValue = ResultL.loading(),
-        key1 = geoRecordState,
+        key1 = partialExcursionState,
         key2 = isDownloadOptionChecked
     ) {
-        geoRecordState.map { geoRecord ->
-            value = ResultL.success(makeBottomSheetData(geoRecord, isDownloadOptionChecked))
+        partialExcursionState.map { partialExcursion ->
+            value = ResultL.success(makeBottomSheetData(partialExcursion.geoRecord, isDownloadOptionChecked))
         }
     }
 
@@ -123,9 +123,9 @@ fun ExcursionMapStateful(
     }
 
     /* Handle map padding and center on georecord if bottomsheet is expanded. */
-    LaunchedEffect(swipeableState.currentValue, uiState, geoRecordState) {
+    LaunchedEffect(swipeableState.currentValue, uiState, partialExcursionState) {
         val mapState = (uiState as? MapReady)?.mapState ?: return@LaunchedEffect
-        val geoRecord = geoRecordState.getOrNull() ?: return@LaunchedEffect
+        val geoRecord = partialExcursionState.getOrNull()?.geoRecord ?: return@LaunchedEffect
 
         val paddingRatio = when (swipeableState.currentValue) {
             States.EXPANDED, States.PEAKED -> expandedRatio
@@ -148,6 +148,7 @@ fun ExcursionMapStateful(
             viewModel.routeLayer.setCursor(latLon, distance = d, ele = ele)
         },
         onToggleDownloadMapOption = { isDownloadOptionChecked = !isDownloadOptionChecked},
+        onDownload = viewModel::onDownload,
         onBack = onBack
     )
 }
@@ -161,6 +162,7 @@ private fun ExcursionMapScreen(
     snackbarHostState: SnackbarHostState,
     onCursorMove: (latLon: LatLon, d: Double, ele: Double) -> Unit = { _, _, _ -> },
     onToggleDownloadMapOption: () -> Unit,
+    onDownload: () -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -177,7 +179,7 @@ private fun ExcursionMapScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(onClick = { /*TODO*/ }) {
+                    Button(onClick = onDownload) {
                         Text(stringResource(id = R.string.download))
                     }
                 }

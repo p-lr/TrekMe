@@ -3,11 +3,11 @@ package com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
-import com.peterlaurence.trekme.core.map.domain.models.OutOfBounds
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
@@ -30,7 +30,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ordna
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
-import com.peterlaurence.trekme.features.excursionsearch.domain.repository.ExcursionGeoRecordRepository
+import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PartialExcursionRepository
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.RouteLayer
@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -71,9 +72,10 @@ class ExcursionMapViewModel @Inject constructor(
     locationSource: LocationSource,
     private val getTileStreamProviderDao: TileStreamProviderDao,
     private val pendingSearchRepository: PendingSearchRepository,
-    private val excursionGeoRecordRepository: ExcursionGeoRecordRepository,
+    private val partialExcursionRepository: PartialExcursionRepository,
     private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
-    getMapInteractor: GetMapInteractor
+    getMapInteractor: GetMapInteractor,
+    private val excursionRepository: ExcursionRepository
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
@@ -87,7 +89,7 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
     )
 
-    val geoRecordFlow = excursionGeoRecordRepository.getGeoRecordFlow().stateIn(
+    val partialExcursionFlow = partialExcursionRepository.getPartialExcursionFlow().stateIn(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
     )
 
@@ -101,7 +103,7 @@ class ExcursionMapViewModel @Inject constructor(
         wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor,
         onExcursionItemClick = { item ->
             viewModelScope.launch {
-                excursionGeoRecordRepository.postItem(item)
+                partialExcursionRepository.postItem(item)
                 _events.send(Event.OnMarkerClick)
             }
         }
@@ -109,7 +111,7 @@ class ExcursionMapViewModel @Inject constructor(
 
     val routeLayer = RouteLayer(
         scope = viewModelScope,
-        geoRecordFlow = geoRecordFlow.mapNotNull { it.getOrNull() },
+        geoRecordFlow = partialExcursionFlow.mapNotNull { it.getOrNull()?.geoRecord },
         mapStateFlow = mapStateFlow,
         wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor,
         getMapInteractor = getMapInteractor
@@ -127,6 +129,21 @@ class ExcursionMapViewModel @Inject constructor(
                 _events.send(Event.NoInternet)
             }
         }
+    }
+
+    /**
+     * The user has selected a pin, and clicked on the download button in the bottomsheet.
+     */
+    fun onDownload() = viewModelScope.launch {
+        val partialExcursion = partialExcursionFlow.firstOrNull()?.getOrNull() ?: return@launch
+
+        excursionRepository.putExcursion(
+            id = partialExcursion.searchItem.id,
+            title = partialExcursion.searchItem.title,
+            type = partialExcursion.searchItem.type,
+            description = partialExcursion.searchItem.description,
+            geoRecord = partialExcursion.geoRecord
+        )
     }
 
     private suspend fun updateMapState(mapSourceData: MapSourceData) = coroutineScope {

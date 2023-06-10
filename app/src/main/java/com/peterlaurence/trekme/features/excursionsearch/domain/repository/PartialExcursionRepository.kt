@@ -10,8 +10,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import javax.inject.Inject
 
+/**
+ * Given a [ExcursionSearchItem], using [postItem] we trigger a fetch of the corresponding [GeoRecord].
+ * The flow returned by [getPartialExcursionFlow] shall be collected prior to using [postItem].
+ */
 @ActivityRetainedScoped
-class ExcursionGeoRecordRepository @Inject constructor(
+class PartialExcursionRepository @Inject constructor(
     private val api: ExcursionApi,
 ) {
     private val lastItemFlow = MutableStateFlow<ExcursionSearchItem?>(null)
@@ -20,13 +24,13 @@ class ExcursionGeoRecordRepository @Inject constructor(
         lastItemFlow.value = item
     }
 
-    fun getGeoRecordFlow(): Flow<ResultL<GeoRecord>> = channelFlow {
+    fun getPartialExcursionFlow(): Flow<ResultL<PartialExcursion>> = channelFlow {
         lastItemFlow.collect { item ->
             if (item != null) {
                 send(ResultL.loading())
                 val geoRecord = api.getGeoRecord(item.id, item.title)
                 if (geoRecord != null) {
-                    send(ResultL.success(geoRecord))
+                    send(ResultL.success(PartialExcursion(item, geoRecord)))
                 } else {
                     send(ResultL.failure(Exception("Error while parsing georecord for ${item.id}")))
                 }
@@ -35,4 +39,6 @@ class ExcursionGeoRecordRepository @Inject constructor(
             }
         }
     }
+
+    data class PartialExcursion(val searchItem: ExcursionSearchItem, val geoRecord: GeoRecord)
 }

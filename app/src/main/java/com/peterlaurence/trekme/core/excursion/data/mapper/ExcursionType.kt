@@ -13,5 +13,19 @@ fun Type.toDomain(): ExcursionType {
         Type.HorseRiding -> ExcursionType.HorseRiding
         Type.Aerial -> ExcursionType.Aerial
         Type.Nautical -> ExcursionType.Nautical
+        Type.MotorisedVehicle -> ExcursionType.MotorisedVehicle
+    }
+}
+
+fun ExcursionType.toData(): Type {
+    return when (this) {
+        ExcursionType.Hike -> Type.Hike
+        ExcursionType.Running -> Type.Running
+        ExcursionType.MountainBike -> Type.MountainBike
+        ExcursionType.TravelBike -> Type.TravelBike
+        ExcursionType.HorseRiding -> Type.HorseRiding
+        ExcursionType.Aerial -> Type.Aerial
+        ExcursionType.Nautical -> Type.Nautical
+        ExcursionType.MotorisedVehicle -> Type.MotorisedVehicle
     }
 }
