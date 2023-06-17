@@ -77,6 +77,7 @@
     <string name="with_onboarding_btn">With onboarding</string>
     <string name="without_onboarding_btn">Without onboarding</string>
     <string name="ok_dialog">OK</string>
+    <string name="no_dialog">No</string>
     <string name="delete_dialog">Delete</string>
     <string name="map_manage_btn_string">Edit</string>
     <string name="download_map_dialog_title">Map download</string>
@@ -412,6 +413,9 @@
     <string name="awaiting_location">Awaiting for GPS location</string>
     <string name="no_internet_excursions">You must be connected to internet to search for excursions</string>
     <string name="provider_issue">The map provider is having a temporary outage</string>
+    <string name="excursion_download_start">The excursion will be imported into relevant maps.</string>
+    <string name="excursion_download_error">An error occurred while downloading this excursion.</string>
+    <string name="excursion_map_download">A map will be downloaded for this excursion.\nWould you like to see the download progress?</string>
 
     <!-- SettingsFragment -->
     <string name="settings_frgmt_title">Settings</string>

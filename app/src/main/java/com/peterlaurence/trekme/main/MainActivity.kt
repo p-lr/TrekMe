@@ -24,7 +24,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.peterlaurence.trekme.BuildConfig
 import com.peterlaurence.trekme.NavGraphDirections
 import com.peterlaurence.trekme.R
-import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.repository.MapRepository
 import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.databinding.ActivityMainBinding
@@ -37,15 +36,11 @@ import com.peterlaurence.trekme.main.eventhandler.MapArchiveEventHandler
 import com.peterlaurence.trekme.main.eventhandler.MapDownloadEventHandler
 import com.peterlaurence.trekme.main.eventhandler.PermissionRequestHandler
 import com.peterlaurence.trekme.main.shortcut.Shortcut
-import com.peterlaurence.trekme.util.android.*
 import com.peterlaurence.trekme.util.checkInternet
 import com.peterlaurence.trekme.util.collectWhileStarted
 import com.peterlaurence.trekme.util.collectWhileStartedIn
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
-import java.net.InetAddress
 import java.util.*
 import javax.inject.Inject
 
@@ -172,7 +167,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         appEventBus.openDrawerFlow.map { openDrawer() }.collectWhileStartedIn(this)
 
-        appEventBus.navigateToShopFlow.map { showShopFragment() }.collectWhileStartedIn(this)
+        appEventBus.navigateFlow.map { dest ->
+            when(dest) {
+                AppEventBus.NavDestination.Shop -> showShopFragment()
+                AppEventBus.NavDestination.MapList -> showMapListFragment()
+            }
+        }.collectWhileStartedIn(this)
 
         gpsProEvents.showBtDeviceSettingsFragmentSignal.collectWhileStarted(this) {
             showBtDeviceSettingsFragment()

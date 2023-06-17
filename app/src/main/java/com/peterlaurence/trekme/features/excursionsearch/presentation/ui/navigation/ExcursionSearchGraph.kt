@@ -9,7 +9,8 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun ExcursionSearchGraph(
     modifier: Modifier = Modifier,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    onGoToMapList: () -> Unit
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -21,6 +22,6 @@ fun ExcursionSearchGraph(
             onNavigateToMap = { navController.navigateToExcursionMap() },
             onMenuClick = onMenuClick
         )
-        excursionMapDestination(navController)
+        excursionMapDestination(navController, onGoToMapList = onGoToMapList)
     }
 }

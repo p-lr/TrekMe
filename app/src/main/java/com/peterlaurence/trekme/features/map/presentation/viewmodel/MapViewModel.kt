@@ -155,7 +155,7 @@ class MapViewModel @Inject constructor(
     }
 
     fun onShopClick() {
-        appEventBus.navigateToShop()
+        appEventBus.navigateTo(AppEventBus.NavDestination.Shop)
     }
     /* endregion */
 

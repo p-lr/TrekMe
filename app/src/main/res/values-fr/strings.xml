@@ -22,6 +22,7 @@
     <string name="projection_none">Aucune</string>
     <string name="calibration_projection_saved_ok">Projection changée</string>
     <string name="ok_dialog">OK</string>
+    <string name="no_dialog">Non</string>
     <string name="import_menu_title">Importer une carte</string>
     <string name="import_folder_select_btn">Sélection du dossier d\'archives</string>
     <string name="extraction_lbl">Extraction</string>
@@ -437,6 +438,9 @@
     <string name="awaiting_location">En attente d\'une position GPS</string>
     <string name="no_internet_excursions">Vous devez être connecté à internet pour chercher une excursion</string>
     <string name="provider_issue">Le fournisseur de carte a une panne temporaire</string>
+    <string name="excursion_download_start">L\'excursion va être importée dans les cartes concernées.</string>
+    <string name="excursion_download_error">Une erreur s\'est produite pendant le téléchargement.</string>
+    <string name="excursion_map_download">Une carte va être téléchargée pour cette excursion.\nVoulez-vous suivre la progression du téléchargement ?</string>
 
     <!-- General -->
     <string name="meters">mètres</string>

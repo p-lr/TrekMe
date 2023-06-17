@@ -35,7 +35,12 @@ class ExcursionSearchFragment : Fragment() {
 
             setContent {
                 TrekMeTheme {
-                    ExcursionSearchGraph(onMenuClick = appEventBus::openDrawer)
+                    ExcursionSearchGraph(
+                        onMenuClick = appEventBus::openDrawer,
+                        onGoToMapList = {
+                            appEventBus.navigateTo(AppEventBus.NavDestination.MapList)
+                        }
+                    )
                 }
             }
         }

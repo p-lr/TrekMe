@@ -134,16 +134,27 @@ class ExcursionMapViewModel @Inject constructor(
     /**
      * The user has selected a pin, and clicked on the download button in the bottomsheet.
      */
-    fun onDownload() = viewModelScope.launch {
+    fun onDownload(withMap: Boolean) = viewModelScope.launch {
         val partialExcursion = partialExcursionFlow.firstOrNull()?.getOrNull() ?: return@launch
 
-        excursionRepository.putExcursion(
+        _events.send(Event.ExcursionDownloadStart)
+
+        val result = excursionRepository.putExcursion(
             id = partialExcursion.searchItem.id,
             title = partialExcursion.searchItem.title,
             type = partialExcursion.searchItem.type,
             description = partialExcursion.searchItem.description,
             geoRecord = partialExcursion.geoRecord
         )
+
+        when (result) {
+            ExcursionRepository.PutExcursionResult.Ok,
+            ExcursionRepository.PutExcursionResult.AlreadyExists,
+            ExcursionRepository.PutExcursionResult.Pending -> { /* Do nothing */ }
+            ExcursionRepository.PutExcursionResult.Error -> {
+                _events.send(Event.ExcursionDownloadError)
+            }
+        }
     }
 
     private suspend fun updateMapState(mapSourceData: MapSourceData) = coroutineScope {
@@ -208,7 +219,8 @@ class ExcursionMapViewModel @Inject constructor(
         }
 
         val tileStreamProvider =
-            getTileStreamProviderDao.newTileStreamProvider(mapSourceData, makeReporter()).getOrNull()
+            getTileStreamProviderDao.newTileStreamProvider(mapSourceData, makeReporter())
+                .getOrNull()
         _uiStateFlow.value = if (tileStreamProvider != null) {
             mapState.removeAllLayers()
             mapState.addLayer(tileStreamProvider.toMapComposeTileStreamProvider())
@@ -225,7 +237,7 @@ class ExcursionMapViewModel @Inject constructor(
 
             override fun report(result: TileResult) {
                 if (result is TileStream) {
-                    if (result.tileStream != null){
+                    if (result.tileStream != null) {
                         successCnt.incrementAndGet()
                     } else {
                         val failCnt = failureCnt.incrementAndGet()
@@ -281,6 +293,8 @@ class ExcursionMapViewModel @Inject constructor(
     sealed interface Event {
         object OnMarkerClick : Event
         object NoInternet : Event
+        object ExcursionDownloadStart : Event
+        object ExcursionDownloadError : Event
     }
 }
 

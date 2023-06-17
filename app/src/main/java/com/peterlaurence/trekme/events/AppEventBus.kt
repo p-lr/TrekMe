@@ -70,8 +70,12 @@ class AppEventBus {
 
     /**********************************************************************************************/
 
-    private val _navigateToShopFlow = MutableSharedFlow<Unit>(0, 1, BufferOverflow.DROP_OLDEST)
-    val navigateToShopFlow = _navigateToShopFlow.asSharedFlow()
+    private val _navigateToFlow = MutableSharedFlow<NavDestination>(0, 1, BufferOverflow.DROP_OLDEST)
+    val navigateFlow = _navigateToFlow.asSharedFlow()
 
-    fun navigateToShop() = _navigateToShopFlow.tryEmit(Unit)
+    fun navigateTo(dest: NavDestination) = _navigateToFlow.tryEmit(dest)
+
+    enum class NavDestination {
+        Shop, MapList
+    }
 }

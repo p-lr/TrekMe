@@ -54,6 +54,7 @@ import com.peterlaurence.trekme.core.units.UnitFormatter.formatDistance
 import com.peterlaurence.trekme.core.units.UnitFormatter.formatDuration
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.CollapsibleBottomSheet
 import com.peterlaurence.trekme.features.common.presentation.ui.bottomsheet.States
+import com.peterlaurence.trekme.features.common.presentation.ui.dialogs.ConfirmDialog
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.ErrorScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.screens.LoadingScreen
 import com.peterlaurence.trekme.features.common.presentation.ui.theme.TrekMeTheme
@@ -77,11 +78,11 @@ import ovh.plrapps.mapcompose.ui.MapUI
 import ovh.plrapps.mapcompose.ui.state.MapState
 import java.util.UUID
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExcursionMapStateful(
     viewModel: ExcursionMapViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onGoToMapList: () -> Unit
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
@@ -95,13 +96,21 @@ fun ExcursionMapStateful(
         key2 = isDownloadOptionChecked
     ) {
         partialExcursionState.map { partialExcursion ->
-            value = ResultL.success(makeBottomSheetData(partialExcursion.geoRecord, isDownloadOptionChecked))
+            value = ResultL.success(
+                makeBottomSheetData(
+                    partialExcursion.geoRecord,
+                    isDownloadOptionChecked
+                )
+            )
         }
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
     val noInternetWarning = stringResource(id = R.string.no_internet_excursions)
+    val excursionDownloadStart = stringResource(id = R.string.excursion_download_start)
+    val excursionDownloadError = stringResource(id = R.string.excursion_download_error)
+    var isShowingMapDownloadDialog by remember { mutableStateOf(false) }
     LaunchedEffectWithLifecycle(flow = viewModel.event) { event ->
         when (event) {
             ExcursionMapViewModel.Event.OnMarkerClick -> {
@@ -113,6 +122,24 @@ fun ExcursionMapStateful(
                     message = noInternetWarning,
                     withDismissAction = true,
                     duration = SnackbarDuration.Indefinite
+                )
+            }
+
+            ExcursionMapViewModel.Event.ExcursionDownloadStart -> {
+                if (!isDownloadOptionChecked) {
+                    snackbarHostState.showSnackbar(
+                        message = excursionDownloadStart,
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Long
+                    )
+                }
+            }
+
+            ExcursionMapViewModel.Event.ExcursionDownloadError -> {
+                snackbarHostState.showSnackbar(
+                    message = excursionDownloadError,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Long
                 )
             }
         }
@@ -147,10 +174,25 @@ fun ExcursionMapStateful(
         onCursorMove = { latLon, d, ele ->
             viewModel.routeLayer.setCursor(latLon, distance = d, ele = ele)
         },
-        onToggleDownloadMapOption = { isDownloadOptionChecked = !isDownloadOptionChecked},
-        onDownload = viewModel::onDownload,
+        onToggleDownloadMapOption = { isDownloadOptionChecked = !isDownloadOptionChecked },
+        onDownload = {
+            if (isDownloadOptionChecked) {
+                isShowingMapDownloadDialog = true
+            }
+            viewModel.onDownload(isDownloadOptionChecked)
+        },
         onBack = onBack
     )
+
+    if (isShowingMapDownloadDialog) {
+        ConfirmDialog(
+            contentText = stringResource(id = R.string.excursion_map_download),
+            confirmButtonText = stringResource(id = R.string.ok_dialog),
+            cancelButtonText = stringResource(id = R.string.no_dialog),
+            onDismissRequest = { isShowingMapDownloadDialog = false },
+            onConfirmPressed = onGoToMapList,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -174,8 +216,7 @@ private fun ExcursionMapScreen(
                 Row(
                     modifier = Modifier
                         .height(58.dp)
-                        .fillMaxWidth()
-                    ,
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -185,7 +226,7 @@ private fun ExcursionMapScreen(
                 }
             }
         },
-        snackbarHost =  {
+        snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
@@ -208,7 +249,12 @@ private fun ExcursionMapScreen(
             is MapReady -> {
                 Box(modifier) {
                     ExcursionMap(mapState = uiState.mapState)
-                    BottomSheet(swipeableState, bottomSheetDataState, onCursorMove, onToggleDownloadMapOption)
+                    BottomSheet(
+                        swipeableState,
+                        bottomSheetDataState,
+                        onCursorMove,
+                        onToggleDownloadMapOption
+                    )
                 }
             }
         }
