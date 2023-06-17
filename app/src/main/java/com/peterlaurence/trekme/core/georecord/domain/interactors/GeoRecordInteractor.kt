@@ -30,4 +30,8 @@ class GeoRecordInteractor @Inject constructor(
             repository.importGeoRecordFromUri(uri) != null
         }
     }
+
+    fun getExcursionId(id: UUID): String? {
+        return repository.getExcursionId(id)
+    }
 }

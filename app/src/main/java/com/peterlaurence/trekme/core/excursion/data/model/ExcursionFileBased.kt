@@ -10,7 +10,7 @@ import java.io.File
 
 class ExcursionFileBased(
     val root: File,
-    private val config: ExcursionConfig
+    val config: ExcursionConfig
 ) : Excursion {
     override val id: String
         get() = config.id

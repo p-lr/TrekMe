@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.common.domain.interactors
 
+import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
 import com.peterlaurence.trekme.core.map.domain.dao.ExcursionRefDao
 import com.peterlaurence.trekme.core.map.domain.models.ExcursionRef
 import com.peterlaurence.trekme.core.map.domain.models.Map
@@ -41,5 +42,9 @@ class MapExcursionInteractor @Inject constructor(
     suspend fun toggleVisibility(map: Map, ref: ExcursionRef) {
         ref.visible.update { !it }
         excursionRefDao.saveExcursionRef(map, ref)
+    }
+
+    suspend fun createExcursionRef(map: Map, excursion: Excursion) {
+        excursionRefDao.createExcursionRef(map, excursion)
     }
 }

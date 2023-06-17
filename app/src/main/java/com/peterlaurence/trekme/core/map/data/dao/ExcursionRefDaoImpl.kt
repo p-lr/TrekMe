@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.map.data.dao
 
+import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
 import com.peterlaurence.trekme.core.map.data.mappers.toData
 import com.peterlaurence.trekme.core.map.data.mappers.toDomain
 import com.peterlaurence.trekme.core.map.data.models.ExcursionRefFileBased
@@ -37,6 +38,31 @@ class ExcursionRefDaoImpl(
             map.excursionRefs.update { refs.map { it.toDomain() } }
         }
         Unit
+    }
+
+    override suspend fun createExcursionRef(map: Map, excursion: Excursion): ExcursionRef? = withContext(ioDispatcher) {
+        val directory = (map as? MapFileBased)?.folder ?: return@withContext null
+        val refsDir = File(directory, excursionRefsDir)
+
+        runCatching {
+            if (!refsDir.exists()) return@withContext null
+            val refFiles = refsDir.listFiles { it: File ->
+                it.isFile && it.nameWithoutExtension.toIntOrNull() != null && it.name.endsWith(".json")
+            } ?: emptyArray()
+
+            val count = refFiles.size
+
+            val newRefFile = File(refsDir, "$count.json")
+            val data = ExcursionRefKtx(id = excursion.id, name = excursion.title, visible = true)
+            val st = json.encodeToString(data)
+            FileUtils.writeToFile(st, newRefFile)
+
+            val newRef = Pair(data, newRefFile).toDomain()
+            map.excursionRefs.update {
+                it + newRef
+            }
+            newRef
+        }.getOrNull()
     }
 
     override suspend fun saveExcursionRef(map: Map, ref: ExcursionRef) = withContext(ioDispatcher) {

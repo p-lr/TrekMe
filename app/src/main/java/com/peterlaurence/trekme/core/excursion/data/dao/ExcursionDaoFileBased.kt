@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.core.excursion.data.dao
 
+import android.net.Uri
 import com.peterlaurence.trekme.core.excursion.data.mapper.toData
 import com.peterlaurence.trekme.core.excursion.data.model.ExcursionConfig
 import com.peterlaurence.trekme.core.excursion.data.model.ExcursionFileBased
@@ -8,6 +9,7 @@ import com.peterlaurence.trekme.core.excursion.domain.dao.ExcursionDao
 import com.peterlaurence.trekme.core.excursion.domain.model.Excursion
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionType
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionWaypoint
+import com.peterlaurence.trekme.core.georecord.app.TrekmeFilesProvider
 import com.peterlaurence.trekme.core.georecord.data.mapper.toGpx
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.lib.gpx.writeGpx
@@ -35,7 +37,7 @@ class ExcursionDaoFileBased(
     private val geoRecordParser: suspend (file: File) -> GeoRecord?,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ExcursionDao {
-    private val excursions = MutableStateFlow<List<Excursion>>(emptyList())
+    private val excursions = MutableStateFlow<List<ExcursionFileBased>>(emptyList())
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
 
     override suspend fun getExcursionsFlow(): StateFlow<List<Excursion>> {
@@ -47,7 +49,7 @@ class ExcursionDaoFileBased(
 
     private suspend fun excursionSearchTask(
         excursionFileName: String, vararg dirs: File
-    ): List<Excursion> = withContext(ioDispatcher) {
+    ): List<ExcursionFileBased> = withContext(ioDispatcher) {
         val excursionFilesFoundList = mutableListOf<File>()
 
         @Throws(SecurityException::class)
@@ -73,7 +75,7 @@ class ExcursionDaoFileBased(
             recursiveFind(dir, 1)
         }
 
-        val excursionList = mutableListOf<Excursion>()
+        val excursionList = mutableListOf<ExcursionFileBased>()
         for (f in excursionFilesFoundList) {
             val rootDir = f.parentFile ?: continue
 
@@ -101,14 +103,25 @@ class ExcursionDaoFileBased(
         return waypoints
     }
 
+    /**
+     * Beware that this implementation does not provide a stable id for the returned [GeoRecord].
+     * Everytime [getGeoRecord] is called, a new [GeoRecord] with a different id is generated.
+     */
     override suspend fun getGeoRecord(excursion: Excursion): GeoRecord? {
         val root = (excursion as? ExcursionFileBased)?.root ?: return null
 
-        val file = root.listFiles()?.firstOrNull {
-            it.isFile && it.name.endsWith(".gpx")
-        } ?: return null
+        val file = root.getGpxFile() ?: return null
 
         return geoRecordParser(file)
+    }
+
+    override fun getGeoRecordUri(id: String): Uri? {
+        val excursion = excursions.value.firstOrNull {
+            it.id == id
+        } ?: return null
+
+        val file = excursion.root.getGpxFile() ?: return null
+        return TrekmeFilesProvider.generateUri(file)
     }
 
     override suspend fun putExcursion(
@@ -149,8 +162,58 @@ class ExcursionDaoFileBased(
             withContext(ioDispatcher) {
                 writeGpx(gpx, FileOutputStream(gpxFile))
             }
+
+            /* Update the state */
+            excursions.update {
+                it + ExcursionFileBased(destFolder, config)
+            }
         }.isSuccess
     }
+
+    override suspend fun deleteExcursions(ids: List<String>): Boolean {
+        val excursionsToDelete = excursions.value.filter {
+            it.id in ids
+        }
+
+        return withContext(ioDispatcher) {
+            excursionsToDelete.all { exc ->
+                runCatching {
+                    exc.root.deleteRecursively().also { success ->
+                        if (success) {
+                            excursions.update {
+                                it - exc
+                            }
+                        }
+                    }
+                }.getOrElse { false }
+            }
+        }
+    }
+
+    override suspend fun rename(id: String, newName: String): Boolean {
+        val excursionToRename = excursions.value.firstOrNull {
+            it.id == id
+        } ?: return false
+
+        return runCatching {
+            withContext(ioDispatcher) {
+                val newConfig = excursionToRename.config.copy(title = newName)
+                val configFile = File(excursionToRename.root, CONFIG_FILENAME)
+                val str = json.encodeToString(newConfig)
+                FileUtils.writeToFile(str, configFile)
+
+                excursions.update {
+                    it - excursionToRename + ExcursionFileBased(excursionToRename.root, newConfig)
+                }
+            }
+        }.isSuccess
+    }
+
+    private fun File.getGpxFile(): File? = runCatching {
+        listFiles()?.firstOrNull {
+            it.isFile && it.name.endsWith(".gpx")
+        }
+    }.getOrNull()
 }
 
 

@@ -21,7 +21,7 @@ import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordVie
 import com.peterlaurence.trekme.features.record.presentation.viewmodel.RecordingStatisticsViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun RecordScreen(
     gpxRecordServiceViewModel: GpxRecordServiceViewModel,

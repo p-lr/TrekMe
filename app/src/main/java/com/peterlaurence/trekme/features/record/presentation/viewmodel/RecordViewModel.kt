@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.R
+import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
 import com.peterlaurence.trekme.core.georecord.domain.interactors.GeoRecordInteractor
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
@@ -12,6 +13,7 @@ import com.peterlaurence.trekme.events.AppEventBus
 import com.peterlaurence.trekme.events.StandardMessage
 import com.peterlaurence.trekme.events.recording.GpxRecordEvents
 import com.peterlaurence.trekme.features.common.domain.interactors.ImportGeoRecordInteractor
+import com.peterlaurence.trekme.features.common.domain.interactors.MapExcursionInteractor
 import com.peterlaurence.trekme.features.common.domain.model.GeoRecordImportResult
 import com.peterlaurence.trekme.features.record.app.service.event.GpxFileWriteEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,6 +30,8 @@ class RecordViewModel @Inject constructor(
     private val geoRecordInteractor: GeoRecordInteractor,
     private val importGeoRecordInteractor: ImportGeoRecordInteractor,
     private val getMapInteractor: GetMapInteractor,
+    private val mapExcursionInteractor: MapExcursionInteractor,
+    private val excursionRepository: ExcursionRepository,
     private val app: Application,
     private val gpxRecordEvents: GpxRecordEvents,
     private val appEventBus: AppEventBus,
@@ -73,12 +77,18 @@ class RecordViewModel @Inject constructor(
         }
     }
 
-    fun importRecordInMap(mapId: UUID, recordId: UUID) {
-        val map = getMapInteractor.getMap(mapId) ?: return
+    fun importRecordInMap(mapId: UUID, recordId: UUID) = viewModelScope.launch{
+        val map = getMapInteractor.getMap(mapId) ?: return@launch
 
-        val uri = geoRecordInteractor.getRecordUri(recordId) ?: return
+        val excursionId = geoRecordInteractor.getExcursionId(recordId)
+        if (excursionId != null) {
+            val excursion = excursionRepository.getExcursion(excursionId)
+            if (excursion != null) {
+                mapExcursionInteractor.createExcursionRef(map, excursion)
+            }
+        } else {
+            val uri = geoRecordInteractor.getRecordUri(recordId) ?: return@launch
 
-        viewModelScope.launch {
             importGeoRecordInteractor.applyGeoRecordUriToMap(uri, app.contentResolver, map).let {
                 geoRecordImportResultChannel.send(it)
             }

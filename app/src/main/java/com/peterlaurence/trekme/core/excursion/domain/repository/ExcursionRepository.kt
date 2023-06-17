@@ -27,7 +27,7 @@ class ExcursionRepository @Inject constructor(
         /* Check for an already existing excursion */
         dao.getExcursionsFlow().value.firstOrNull {
             it.id == id
-        } ?: run {
+        }?.also {
             pendingPut.remove(id)
             return PutExcursionResult.AlreadyExists
         }
@@ -47,7 +47,7 @@ class ExcursionRepository @Inject constructor(
         Ok, Pending, AlreadyExists, Error
     }
 
-    private suspend fun getExcursion(id: String): Excursion? {
+    suspend fun getExcursion(id: String): Excursion? {
         return dao.getExcursionsFlow().value.firstOrNull {
             it.id == id
         }
