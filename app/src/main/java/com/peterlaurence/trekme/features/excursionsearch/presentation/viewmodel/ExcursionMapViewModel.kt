@@ -1,5 +1,6 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,6 +31,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ordna
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
+import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PartialExcursionRepository
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
@@ -38,6 +40,7 @@ import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.checkInternet
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -55,9 +58,13 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ovh.plrapps.mapcompose.api.addLayer
+import ovh.plrapps.mapcompose.api.addMarker
 import ovh.plrapps.mapcompose.api.centroidY
 import ovh.plrapps.mapcompose.api.disableFlingZoom
+import ovh.plrapps.mapcompose.api.hasMarker
+import ovh.plrapps.mapcompose.api.moveMarker
 import ovh.plrapps.mapcompose.api.removeAllLayers
 import ovh.plrapps.mapcompose.api.scale
 import ovh.plrapps.mapcompose.api.setMapBackground
@@ -127,6 +134,36 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope.launch {
             if (!checkInternet()) {
                 _events.send(Event.NoInternet)
+            }
+        }
+    }
+
+    fun onLocationReceived(location: Location) = viewModelScope.launch {
+        /* If there is no MapState, no need to go further */
+        val mapState = mapStateFlow.firstOrNull() ?: return@launch
+
+        /* Project lat/lon off UI thread */
+        val normalized = withContext(Dispatchers.Default) {
+            wgs84ToNormalizedInteractor.getNormalized(location.latitude, location.longitude)
+        }
+
+        /* Update the position */
+        if (normalized != null) {
+            updatePosition(mapState, normalized.x, normalized.y)
+        }
+    }
+
+    /**
+     * Update the position on the map. The first time we update the position, we add the
+     * position marker.
+     * [x] and [y] are expected to be normalized coordinates.
+     */
+    private fun updatePosition(mapState: MapState, x: Double, y: Double) {
+        if (mapState.hasMarker(positionMarkerId)) {
+            mapState.moveMarker(positionMarkerId, x, y)
+        } else {
+            mapState.addMarker(positionMarkerId, x, y, relativeOffset = Offset(-0.5f, -0.5f)) {
+                PositionMarker()
             }
         }
     }
@@ -297,6 +334,8 @@ class ExcursionMapViewModel @Inject constructor(
         object ExcursionDownloadError : Event
     }
 }
+
+private const val positionMarkerId = "position"
 
 sealed interface UiState
 object AwaitingLocation : UiState

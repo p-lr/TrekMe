@@ -146,7 +146,7 @@ fun ExcursionMapStateful(
     }
 
     LaunchedEffectWithLifecycle(flow = viewModel.locationFlow) {
-
+        viewModel.onLocationReceived(it)
     }
 
     /* Handle map padding and center on georecord if bottomsheet is expanded. */
