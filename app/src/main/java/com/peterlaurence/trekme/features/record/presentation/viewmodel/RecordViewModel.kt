@@ -40,6 +40,9 @@ class RecordViewModel @Inject constructor(
     private val geoRecordImportResultChannel = Channel<GeoRecordImportResult>(1)
     val geoRecordImportResultFlow = geoRecordImportResultChannel.receiveAsFlow()
 
+    private val _excursionImportEvent = Channel<Boolean>(1)
+    val excursionImportEventFlow = _excursionImportEvent.receiveAsFlow()
+
     init {
         viewModelScope.launch {
             gpxRecordEvents.gpxFileWriteEvent.collect {
@@ -83,9 +86,11 @@ class RecordViewModel @Inject constructor(
         val excursionId = geoRecordInteractor.getExcursionId(recordId)
         if (excursionId != null) {
             val excursion = excursionRepository.getExcursion(excursionId)
-            if (excursion != null) {
+            val success = if (excursion != null) {
                 mapExcursionInteractor.createExcursionRef(map, excursion)
-            }
+                true
+            } else false
+            _excursionImportEvent.send(success)
         } else {
             val uri = geoRecordInteractor.getRecordUri(recordId) ?: return@launch
 
