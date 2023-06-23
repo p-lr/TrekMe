@@ -15,4 +15,5 @@ interface ExcursionDao {
     suspend fun putExcursion(id: String, title: String, type: ExcursionType, description: String, geoRecord: GeoRecord): Boolean
     suspend fun deleteExcursions(ids: List<String>): Boolean
     suspend fun rename(id: String, newName: String): Boolean
+    suspend fun updateGeoRecord(id: String, geoRecord: GeoRecord): Boolean
 }

@@ -83,6 +83,8 @@ class RecordViewModel @Inject constructor(
     fun importRecordInMap(mapId: UUID, recordId: UUID) = viewModelScope.launch{
         val map = getMapInteractor.getMap(mapId) ?: return@launch
 
+        /* In this particular case, we need to know from inside the view-model the true nature of
+         * the data behind "recordId" (an excursion or a georecord). */
         val excursionId = geoRecordInteractor.getExcursionId(recordId)
         if (excursionId != null) {
             val excursion = excursionRepository.getExcursion(excursionId)

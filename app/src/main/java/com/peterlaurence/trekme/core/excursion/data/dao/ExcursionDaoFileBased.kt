@@ -209,6 +209,21 @@ class ExcursionDaoFileBased(
         }.isSuccess
     }
 
+    override suspend fun updateGeoRecord(id: String, geoRecord: GeoRecord): Boolean {
+        val excursion = excursions.value.firstOrNull {
+            it.id == id
+        } ?: return false
+        val root = (excursion as? ExcursionFileBased)?.root ?: return false
+
+        val file = root.getGpxFile() ?: return false
+        return runCatching {
+            val gpx = geoRecord.toGpx()
+            withContext(ioDispatcher) {
+                writeGpx(gpx, FileOutputStream(file))
+            }
+        }.isSuccess
+    }
+
     private fun File.getGpxFile(): File? = runCatching {
         listFiles()?.firstOrNull {
             it.isFile && it.name.endsWith(".gpx")

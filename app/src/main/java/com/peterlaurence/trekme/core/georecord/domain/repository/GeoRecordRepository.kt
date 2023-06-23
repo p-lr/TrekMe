@@ -79,6 +79,7 @@ class GeoRecordRepository @Inject constructor(
         return if (excursionId != null) {
             excursionDao.getExcursionsFlow().value.firstNotNullOfOrNull {
                 if (it.id == excursionId) {
+                    /* Purposely set the georecord uuid to the corresponding georecordlightweight uuid */
                     excursionDao.getGeoRecord(it)?.copy(id = id, name = it.title)
                 } else null
             }
@@ -103,7 +104,15 @@ class GeoRecordRepository @Inject constructor(
     }
 
     suspend fun updateGeoRecord(geoRecord: GeoRecord) {
-        geoRecordDao.updateGeoRecord(geoRecord)
+        val excursionId = rosetta.entries.firstNotNullOfOrNull {
+            if (it.value == geoRecord.id) it.key else null
+        }
+
+        if (excursionId != null) {
+            excursionDao.updateGeoRecord(excursionId, geoRecord)
+        } else {
+            geoRecordDao.updateGeoRecord(geoRecord)
+        }
     }
 
     suspend fun deleteGeoRecords(ids: List<UUID>): Boolean {
