@@ -41,6 +41,12 @@ class ExcursionRefDaoImpl(
     }
 
     override suspend fun createExcursionRef(map: Map, excursion: Excursion): ExcursionRef? = withContext(ioDispatcher) {
+        val existing = map.excursionRefs.value.firstOrNull {
+            it.id == excursion.id
+        }
+        /* If the reference already exists, fast return it */
+        if (existing != null) return@withContext existing
+
         val directory = (map as? MapFileBased)?.folder ?: return@withContext null
         val refsDir = File(directory, excursionRefsDir)
 
