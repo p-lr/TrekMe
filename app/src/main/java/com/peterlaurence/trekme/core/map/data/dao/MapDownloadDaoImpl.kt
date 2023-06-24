@@ -8,12 +8,16 @@ import com.peterlaurence.trekme.core.map.domain.dao.MapDownloadDao
 import com.peterlaurence.trekme.core.map.domain.models.*
 import com.peterlaurence.trekme.core.map.domain.models.Map
 import com.peterlaurence.trekme.core.map.domain.utils.createNomediaFile
-import com.peterlaurence.trekme.core.wmts.domain.model.WmtsSource
 import com.peterlaurence.trekme.core.wmts.domain.model.MapSpec
 import com.peterlaurence.trekme.core.wmts.domain.model.Tile
 import com.peterlaurence.trekme.core.projection.MercatorProjection
 import com.peterlaurence.trekme.core.map.data.models.BitmapProvider
 import com.peterlaurence.trekme.core.settings.Settings
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnClassic
+import com.peterlaurence.trekme.core.wmts.domain.model.IgnSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.MapSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.OsmSourceData
+import com.peterlaurence.trekme.core.wmts.domain.model.WorldStreetMap
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
@@ -68,21 +72,22 @@ class MapDownloadDaoImpl(
             }
         }
 
-        /* Specific to OSM, don't use more than 2 workers */
-        val effectiveWorkerCount = if (source == WmtsSource.OPEN_STREET_MAP) 2 else workerCount
+        /* Specific to WorldStreetMap, don't use more than 2 workers */
+        val effectiveWorkerCount = if (source == OsmSourceData(WorldStreetMap)) 2 else workerCount
         launchDownloadTask(
             effectiveWorkerCount,
             threadSafeTileIterator,
             tileWriter,
             tileStreamProvider,
+            tileSize = request.mapSpec.tileSize
         )
         val map = postProcess(request.mapSpec, source, destDir)
 
         MapDownloadResult.Success(map)
     }
 
-    private suspend fun postProcess(mapSpec: MapSpec, source: WmtsSource, destDir: File): Map {
-        val mapOrigin = Wmts(licensed = source == WmtsSource.IGN)
+    private suspend fun postProcess(mapSpec: MapSpec, source: MapSourceData, destDir: File): Map {
+        val mapOrigin = Wmts(licensed = source is IgnSourceData && source.layer == IgnClassic)
 
         val map = buildMap(mapSpec, mapOrigin, destDir)
 
@@ -92,20 +97,25 @@ class MapDownloadDaoImpl(
     }
 
     private suspend fun launchDownloadTask(
-        workerCount: Int, tileIterator: ThreadSafeTileIterator,
-        tileWriter: TileWriter, tileStreamProvider: TileStreamProvider,
+        workerCount: Int,
+        tileIterator: ThreadSafeTileIterator,
+        tileWriter: TileWriter,
+        tileStreamProvider: TileStreamProvider,
+        tileSize: Int
     ) = coroutineScope {
         for (i in 0 until workerCount) {
             val bitmapProvider = BitmapProvider(tileStreamProvider)
-            launchTileDownload(tileIterator, bitmapProvider, tileWriter)
+            launchTileDownload(tileIterator, bitmapProvider, tileWriter, tileSize)
         }
     }
 
     private fun CoroutineScope.launchTileDownload(
-        tileIterator: ThreadSafeTileIterator, bitmapProvider: BitmapProvider,
+        tileIterator: ThreadSafeTileIterator,
+        bitmapProvider: BitmapProvider,
         tileWriter: TileWriter,
+        tileSize: Int
     ) = launch(Dispatchers.IO) {
-        val bitmap: Bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
+        val bitmap: Bitmap = Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.ARGB_8888)
         val options = BitmapFactory.Options()
         options.inBitmap = bitmap
         options.inPreferredConfig = Bitmap.Config.ARGB_8888

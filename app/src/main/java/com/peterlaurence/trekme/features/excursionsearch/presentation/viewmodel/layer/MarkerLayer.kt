@@ -8,7 +8,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.R
 import com.peterlaurence.trekme.core.excursion.domain.model.ExcursionSearchItem
-import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.features.excursionsearch.presentation.ui.component.Cluster
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +31,7 @@ class MarkerLayer(
     scope: CoroutineScope,
     val excursionItemsFlow: Flow<List<ExcursionSearchItem>>,
     val mapStateFlow: Flow<MapState>,
-    val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
+    val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor,
     val onExcursionItemClick: (ExcursionSearchItem) -> Unit
 ) {
     init {
@@ -71,7 +71,7 @@ class MarkerLayer(
         val itemsWithPos = items.asFlow().map {
             flow {
                 val normalizedPos = withContext(Dispatchers.Default) {
-                    wgs84ToNormalizedInteractor.getNormalized(it.startLat, it.startLon)
+                    wgs84ToMercatorInteractor.getNormalized(it.startLat, it.startLon)
                 }
                 emit(Pair(it, normalizedPos))
             }

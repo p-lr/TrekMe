@@ -48,10 +48,12 @@ class ExcursionRefDaoImpl(
         if (existing != null) return@withContext existing
 
         val directory = (map as? MapFileBased)?.folder ?: return@withContext null
-        val refsDir = File(directory, excursionRefsDir)
+        val refsDir = File(directory, excursionRefsDir).also {
+            val success = if (!it.exists()) it.mkdir() else true
+            if (!success) return@withContext null
+        }
 
         runCatching {
-            if (!refsDir.exists()) return@withContext null
             val refFiles = refsDir.listFiles { it: File ->
                 it.isFile && it.nameWithoutExtension.toIntOrNull() != null && it.name.endsWith(".json")
             } ?: emptyArray()

@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
 import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
-import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.core.map.domain.models.BoundingBox
 import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.contains
@@ -43,7 +43,7 @@ class RouteLayer(
     private val scope: CoroutineScope,
     private val geoRecordFlow: Flow<GeoRecord>,
     private val mapStateFlow: Flow<MapState>,
-    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
+    private val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor,
     private val getMapInteractor: GetMapInteractor
 ) {
     private val boundingBoxData: MutableStateFlow<BoundingBoxData?> = MutableStateFlow(null)
@@ -70,7 +70,7 @@ class RouteLayer(
                     distance = data.distance
                     elevation = data.ele
                     val normalized = withContext(Dispatchers.Default) {
-                        wgs84ToNormalizedInteractor.getNormalized(data.latLon.lat, data.latLon.lon)
+                        wgs84ToMercatorInteractor.getNormalized(data.latLon.lat, data.latLon.lon)
                     } ?: continue
                     if (mapState.hasCallout(cursorMarkerId)) {
                         mapState.moveCallout(cursorMarkerId, normalized.x, normalized.y)
@@ -171,7 +171,7 @@ class RouteLayer(
         var lonMax: Double? = null
 
         markersFlow.collect {
-            val normalized = wgs84ToNormalizedInteractor.getNormalized(it.lat, it.lon)
+            val normalized = wgs84ToMercatorInteractor.getNormalized(it.lat, it.lon)
             if (normalized != null) {
                 pathBuilder.addPoint(normalized.x, normalized.y)
             }
@@ -190,9 +190,9 @@ class RouteLayer(
         val normalizedBoundingBox =
             if (minLat != null && minLon != null && maxLat != null && maxLon != null) {
                 val bottomLeft =
-                    wgs84ToNormalizedInteractor.getNormalized(minLat, minLon) ?: return null
+                    wgs84ToMercatorInteractor.getNormalized(minLat, minLon) ?: return null
                 val topRight =
-                    wgs84ToNormalizedInteractor.getNormalized(maxLat, maxLon) ?: return null
+                    wgs84ToMercatorInteractor.getNormalized(maxLat, maxLon) ?: return null
                 NormalizedBoundingBox(bottomLeft.x, topRight.y, topRight.x, bottomLeft.y)
             } else return null
 

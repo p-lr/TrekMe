@@ -2,7 +2,7 @@ package com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.layer
 
 import androidx.compose.ui.geometry.Offset
 import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
-import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +19,7 @@ import java.util.*
 
 class RouteLayer(
     private val scope: CoroutineScope,
-    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor
+    private val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor
 ) {
 
     fun setGeoRecord(geoRecord: GeoRecord, mapState: MapState) = scope.launch {
@@ -28,7 +28,7 @@ class RouteLayer(
         val normalized = firstGroup.routes.flatMap {
             it.routeMarkers
         }.asFlow().mapNotNull {
-            wgs84ToNormalizedInteractor.getNormalized(it.lat, it.lon)
+            wgs84ToMercatorInteractor.getNormalized(it.lat, it.lon)
         }.flowOn(Dispatchers.Default)
 
         val routeData = withContext(Dispatchers.Default) {

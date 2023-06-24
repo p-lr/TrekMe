@@ -86,19 +86,19 @@ fun ExcursionMapStateful(
 ) {
     val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
     val swipeableState = rememberSwipeableState(initialValue = States.COLLAPSED)
-    val partialExcursionState by viewModel.partialExcursionFlow.collectAsStateWithLifecycle()
+    val geoRecordForSearchState by viewModel.geoRecordForSearchFlow.collectAsStateWithLifecycle()
     val hasContainingMap by viewModel.routeLayer.hasContainingMap.collectAsStateWithLifecycle()
     var isDownloadOptionChecked by remember { mutableStateOf(!hasContainingMap) }
 
     val bottomSheetDataState: ResultL<BottomSheetData> by produceState(
         initialValue = ResultL.loading(),
-        key1 = partialExcursionState,
+        key1 = geoRecordForSearchState,
         key2 = isDownloadOptionChecked
     ) {
-        partialExcursionState.map { partialExcursion ->
+        geoRecordForSearchState.map { geoRecordForSearchItem ->
             value = ResultL.success(
                 makeBottomSheetData(
-                    partialExcursion.geoRecord,
+                    geoRecordForSearchItem.geoRecord,
                     isDownloadOptionChecked
                 )
             )
@@ -150,9 +150,9 @@ fun ExcursionMapStateful(
     }
 
     /* Handle map padding and center on georecord if bottomsheet is expanded. */
-    LaunchedEffect(swipeableState.currentValue, uiState, partialExcursionState) {
+    LaunchedEffect(swipeableState.currentValue, uiState, geoRecordForSearchState) {
         val mapState = (uiState as? MapReady)?.mapState ?: return@LaunchedEffect
-        val geoRecord = partialExcursionState.getOrNull()?.geoRecord ?: return@LaunchedEffect
+        val geoRecord = geoRecordForSearchState.getOrNull()?.geoRecord ?: return@LaunchedEffect
 
         val paddingRatio = when (swipeableState.currentValue) {
             States.EXPANDED, States.PEAKED -> expandedRatio

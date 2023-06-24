@@ -49,7 +49,7 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmCo
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
 import com.peterlaurence.trekme.features.mapcreate.domain.interactors.ParseGeoRecordInteractor
-import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toDomain
 import com.peterlaurence.trekme.features.mapcreate.presentation.ui.wmts.model.toModel
 import com.peterlaurence.trekme.features.mapcreate.presentation.viewmodel.layers.RouteLayer
@@ -81,7 +81,7 @@ class WmtsViewModel @Inject constructor(
     private val locationSource: LocationSource,
     private val geocodingRepository: GeocodingRepository,
     private val parseGeoRecordInteractor: ParseGeoRecordInteractor,
-    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
+    private val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor,
     private val extendedOfferStateOwner: ExtendedOfferStateOwner
 ) : ViewModel() {
 
@@ -109,7 +109,7 @@ class WmtsViewModel @Inject constructor(
     private var hasOverlayLayers = false
     private var hasExtendedOffer = false
 
-    private val routeLayer = RouteLayer(viewModelScope, wgs84ToNormalizedInteractor)
+    private val routeLayer = RouteLayer(viewModelScope, wgs84ToMercatorInteractor)
     private val geoRecordUrls = mutableSetOf<Uri>()
 
     private val activePrimaryLayerForSource: MutableMap<WmtsSource, Layer> = mutableMapOf(
@@ -254,7 +254,7 @@ class WmtsViewModel @Inject constructor(
         updatePositionOneTime()
 
         val tileStreamProviderFlow = createTileStreamProvider(wmtsSource)
-        tileStreamProviderFlow.collect { result ->
+        tileStreamProviderFlow.collect { (_, result) ->
             val tileStreamProvider = result.getOrNull()
             if (tileStreamProvider != null) {
                 mapState.removeAllLayers()
@@ -351,7 +351,7 @@ class WmtsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<Result<TileStreamProvider>> {
+    private suspend fun createTileStreamProvider(wmtsSource: WmtsSource): Flow<Pair<MapSourceData, Result<TileStreamProvider>>> {
         val mapSourceData: Flow<MapSourceData> = when (wmtsSource) {
             WmtsSource.IGN -> {
                 val layer = getActivePrimaryIgnLayer()
@@ -373,7 +373,7 @@ class WmtsViewModel @Inject constructor(
         }
 
         return mapSourceData.map {
-            getTileStreamProviderDao.newTileStreamProvider(it).also { result ->
+            Pair(it, getTileStreamProviderDao.newTileStreamProvider(it)).also { (_, result) ->
                 /* Don't test the stream provider if it has overlays */
                 val provider = result.getOrNull()
                 if (provider != null && provider !is TileStreamProviderOverlay) {
@@ -452,10 +452,11 @@ class WmtsViewModel @Inject constructor(
         val mapSpec = getMapSpec(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         val tileCount = getNumberOfTiles(minLevel, maxLevel, p1.toDomain(), p2.toDomain())
         viewModelScope.launch {
-            val tileStreamProvider = createTileStreamProvider(
+            val tileStreamAndMapSource = createTileStreamProvider(
                 wmtsSource
-            ).firstOrNull()?.getOrNull() ?: return@launch
-            val request = DownloadMapRequest(wmtsSource, mapSpec, tileCount, tileStreamProvider, geoRecordUrls)
+            ).firstOrNull()
+            val tileStreamProvider = tileStreamAndMapSource?.second?.getOrNull() ?: return@launch
+            val request = DownloadMapRequest(tileStreamAndMapSource.first, mapSpec, tileCount, tileStreamProvider, geoRecordUrls)
             downloadRepository.postDownloadMapRequest(request)
             val intent = Intent(app, DownloadService::class.java)
             app.startService(intent)
@@ -489,7 +490,7 @@ class WmtsViewModel @Inject constructor(
         viewModelScope.launch {
             /* Project lat/lon off UI thread */
             val normalized = withContext(Dispatchers.Default) {
-                wgs84ToNormalizedInteractor.getNormalized(location.latitude, location.longitude)
+                wgs84ToMercatorInteractor.getNormalized(location.latitude, location.longitude)
             }
 
             /* Update the position */
@@ -563,7 +564,7 @@ class WmtsViewModel @Inject constructor(
         }
 
         /* If it's in the bounds, add a marker */
-        val normalized = wgs84ToNormalizedInteractor.getNormalized(place.lat, place.lon) ?: return
+        val normalized = wgs84ToMercatorInteractor.getNormalized(place.lat, place.lon) ?: return
         updatePlacePosition(mapState, normalized.x, normalized.y)
 
         viewModelScope.launch {

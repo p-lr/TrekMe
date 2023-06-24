@@ -1,14 +1,20 @@
 package com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel
 
+import android.app.Application
+import android.content.Intent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peterlaurence.trekme.core.excursion.domain.repository.ExcursionRepository
+import com.peterlaurence.trekme.core.georecord.domain.model.GeoRecord
+import com.peterlaurence.trekme.core.georecord.domain.model.getBoundingBox
+import com.peterlaurence.trekme.core.location.domain.model.LatLon
 import com.peterlaurence.trekme.core.location.domain.model.Location
 import com.peterlaurence.trekme.core.location.domain.model.LocationSource
 import com.peterlaurence.trekme.core.map.domain.interactors.GetMapInteractor
-import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToNormalizedInteractor
+import com.peterlaurence.trekme.core.map.domain.interactors.Wgs84ToMercatorInteractor
+import com.peterlaurence.trekme.core.map.domain.models.DownloadMapRequest
 import com.peterlaurence.trekme.core.map.domain.models.TileResult
 import com.peterlaurence.trekme.core.map.domain.models.TileStream
 import com.peterlaurence.trekme.core.wmts.domain.dao.TileStreamProviderDao
@@ -22,6 +28,8 @@ import com.peterlaurence.trekme.core.wmts.domain.model.Outdoors
 import com.peterlaurence.trekme.core.wmts.domain.model.SwissTopoData
 import com.peterlaurence.trekme.core.wmts.domain.model.UsgsData
 import com.peterlaurence.trekme.core.wmts.domain.model.mapSize
+import com.peterlaurence.trekme.core.wmts.domain.tools.getMapSpec
+import com.peterlaurence.trekme.core.wmts.domain.tools.getNumberOfTiles
 import com.peterlaurence.trekme.features.common.domain.util.toMapComposeTileStreamProvider
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.Config
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.ScaleLimitsConfig
@@ -32,11 +40,13 @@ import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.osmCo
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.swissTopoConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.mapcompose.usgsConfig
 import com.peterlaurence.trekme.features.common.presentation.ui.widgets.PositionMarker
-import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PartialExcursionRepository
+import com.peterlaurence.trekme.features.excursionsearch.domain.repository.GeoRecordForSearchItemRepository
 import com.peterlaurence.trekme.features.excursionsearch.domain.repository.PendingSearchRepository
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.MarkerLayer
 import com.peterlaurence.trekme.features.excursionsearch.presentation.viewmodel.layer.RouteLayer
 import com.peterlaurence.trekme.features.map.domain.models.NormalizedPos
+import com.peterlaurence.trekme.features.mapcreate.app.service.download.DownloadService
+import com.peterlaurence.trekme.features.mapcreate.domain.repository.DownloadRepository
 import com.peterlaurence.trekme.util.ResultL
 import com.peterlaurence.trekme.util.checkInternet
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -79,10 +89,12 @@ class ExcursionMapViewModel @Inject constructor(
     locationSource: LocationSource,
     private val getTileStreamProviderDao: TileStreamProviderDao,
     private val pendingSearchRepository: PendingSearchRepository,
-    private val partialExcursionRepository: PartialExcursionRepository,
-    private val wgs84ToNormalizedInteractor: Wgs84ToNormalizedInteractor,
+    private val geoRecordForSearchItemRepository: GeoRecordForSearchItemRepository,
+    private val wgs84ToMercatorInteractor: Wgs84ToMercatorInteractor,
     getMapInteractor: GetMapInteractor,
-    private val excursionRepository: ExcursionRepository
+    private val excursionRepository: ExcursionRepository,
+    private val downloadRepository: DownloadRepository,
+    private val app: Application
 ) : ViewModel() {
     val locationFlow: Flow<Location> = locationSource.locationFlow
 
@@ -96,7 +108,7 @@ class ExcursionMapViewModel @Inject constructor(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
     )
 
-    val partialExcursionFlow = partialExcursionRepository.getPartialExcursionFlow().stateIn(
+    val geoRecordForSearchFlow = geoRecordForSearchItemRepository.getGeoRecordForSearchFlow().stateIn(
         viewModelScope, started = SharingStarted.Eagerly, initialValue = ResultL.loading()
     )
 
@@ -107,10 +119,10 @@ class ExcursionMapViewModel @Inject constructor(
         scope = viewModelScope,
         excursionItemsFlow = _excursionItemsFlow.mapNotNull { it.getOrNull() },
         mapStateFlow = mapStateFlow,
-        wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor,
+        wgs84ToMercatorInteractor = wgs84ToMercatorInteractor,
         onExcursionItemClick = { item ->
             viewModelScope.launch {
-                partialExcursionRepository.postItem(item)
+                geoRecordForSearchItemRepository.postItem(item)
                 _events.send(Event.OnMarkerClick)
             }
         }
@@ -118,9 +130,9 @@ class ExcursionMapViewModel @Inject constructor(
 
     val routeLayer = RouteLayer(
         scope = viewModelScope,
-        geoRecordFlow = partialExcursionFlow.mapNotNull { it.getOrNull()?.geoRecord },
+        geoRecordFlow = geoRecordForSearchFlow.mapNotNull { it.getOrNull()?.geoRecord },
         mapStateFlow = mapStateFlow,
-        wgs84ToNormalizedInteractor = wgs84ToNormalizedInteractor,
+        wgs84ToMercatorInteractor = wgs84ToMercatorInteractor,
         getMapInteractor = getMapInteractor
     )
 
@@ -144,7 +156,7 @@ class ExcursionMapViewModel @Inject constructor(
 
         /* Project lat/lon off UI thread */
         val normalized = withContext(Dispatchers.Default) {
-            wgs84ToNormalizedInteractor.getNormalized(location.latitude, location.longitude)
+            wgs84ToMercatorInteractor.getNormalized(location.latitude, location.longitude)
         }
 
         /* Update the position */
@@ -172,17 +184,29 @@ class ExcursionMapViewModel @Inject constructor(
      * The user has selected a pin, and clicked on the download button in the bottomsheet.
      */
     fun onDownload(withMap: Boolean) = viewModelScope.launch {
-        val partialExcursion = partialExcursionFlow.firstOrNull()?.getOrNull() ?: return@launch
+        val geoRecordForSearchItem = geoRecordForSearchFlow.firstOrNull()?.getOrNull() ?: return@launch
 
         _events.send(Event.ExcursionDownloadStart)
 
         val result = excursionRepository.putExcursion(
-            id = partialExcursion.searchItem.id,
-            title = partialExcursion.searchItem.title,
-            type = partialExcursion.searchItem.type,
-            description = partialExcursion.searchItem.description,
-            geoRecord = partialExcursion.geoRecord
+            id = geoRecordForSearchItem.searchItem.id,
+            title = geoRecordForSearchItem.searchItem.title,
+            type = geoRecordForSearchItem.searchItem.type,
+            description = geoRecordForSearchItem.searchItem.description,
+            geoRecord = geoRecordForSearchItem.geoRecord
         )
+
+        /* Now that excursion is downloaded, start map download */
+        if (withMap) {
+            launch {
+                scheduleDownload(
+                    geoRecord = geoRecordForSearchItem.geoRecord,
+                    excursionId = geoRecordForSearchItem.searchItem.id
+                )
+            }
+        } else {
+            // TODO: import in all maps which intersects
+        }
 
         when (result) {
             ExcursionRepository.PutExcursionResult.Ok,
@@ -191,6 +215,42 @@ class ExcursionMapViewModel @Inject constructor(
             ExcursionRepository.PutExcursionResult.Error -> {
                 _events.send(Event.ExcursionDownloadError)
             }
+        }
+    }
+
+    private suspend fun scheduleDownload(geoRecord: GeoRecord, excursionId: String) {
+        val request: DownloadMapRequest = withContext(Dispatchers.Default) {
+            val bb = geoRecord.getBoundingBox() ?: return@withContext null
+            val topLeft = LatLon(bb.maxLat, bb.minLon)
+            val bottomRight = LatLon(bb.minLat, bb.maxLon)
+            val p1 = wgs84ToMercatorInteractor.getProjected(topLeft.lat, topLeft.lon)
+                ?: return@withContext null
+            val p2 = wgs84ToMercatorInteractor.getProjected(bottomRight.lat, bottomRight.lon)
+                ?: return@withContext null
+
+            val minLevel = 12
+            val maxLevel = 12
+            val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2, tileSize = 512)
+            val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
+            val mapSourceData = mapSourceDataFlow.value
+
+            val tileStreamProvider = getTileStreamProviderDao.newTileStreamProvider(
+                mapSourceData
+            ).getOrNull() ?: return@withContext null
+
+            DownloadMapRequest(
+                mapSourceData,
+                mapSpec,
+                tileCount,
+                tileStreamProvider,
+                excursionIds = setOf(excursionId)
+            )
+        } ?: return
+
+        withContext(Dispatchers.Main) {
+            downloadRepository.postDownloadMapRequest(request)
+            val intent = Intent(app, DownloadService::class.java)
+            app.startService(intent)
         }
     }
 
@@ -213,7 +273,7 @@ class ExcursionMapViewModel @Inject constructor(
             _uiStateFlow.value = AwaitingLocation
             val latLon = pendingSearchRepository.locationFlow.filterNotNull().first()
             _uiStateFlow.value = Loading
-            val normalized = wgs84ToNormalizedInteractor.getNormalized(latLon.lat, latLon.lon)
+            val normalized = wgs84ToMercatorInteractor.getNormalized(latLon.lat, latLon.lon)
             if (normalized != null) {
                 Pair(0.0625f, normalized)
             } else {

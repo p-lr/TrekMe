@@ -44,12 +44,12 @@ import kotlin.math.*
  * @param point1 A [Point] at any corner
  * @param point2 A [Point] at the opposite corner of [point1]
  */
-fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point): MapSpec {
+fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point, tileSize: Int = TILE_SIZE_PX): MapSpec {
     val (XLeft, YTop, XRight, YBottom) = orderCoordinates(point1, point2)
 
     val tileSequence = getTileSequence(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
     val calibrationPoints = getCalibrationPoints(levelMin, XLeft, YTop, XRight, YBottom)
-    val mapSize = getMapSize(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
+    val mapSize = getMapSize(levelMin, levelMax, XLeft, YTop, XRight, YBottom, tileSize)
 
     return MapSpec(
         levelMin,
@@ -58,7 +58,7 @@ fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point): MapS
         mapSize.heightPx,
         tileSequence,
         calibrationPoints,
-        TILE_SIZE_PX
+        tileSize
     )
 }
 
@@ -185,13 +185,14 @@ private fun getMapSize(
     XLeft: Double,
     YTop: Double,
     XRight: Double,
-    YBottom: Double
+    YBottom: Double,
+    tileSize: Int
 ): MapSize {
     val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 
     val levelMaxArea = levelBuilder.getLevelAreaForLevel(levelMax) ?: return MapSize(0, 0)
     return with(levelMaxArea) {
-        MapSize((colRight - colLeft + 1) * TILE_SIZE_PX, (rowBottom - rowTop + 1) * TILE_SIZE_PX)
+        MapSize((colRight - colLeft + 1) * tileSize, (rowBottom - rowTop + 1) * tileSize)
     }
 }
 
