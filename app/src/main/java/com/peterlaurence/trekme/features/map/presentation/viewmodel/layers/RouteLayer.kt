@@ -50,6 +50,7 @@ class RouteLayer(
             dataStateFlow.collectLatest { (map, mapState) ->
                 coroutineScope {
                     staticRoutesData.update { emptyMap() }
+                    excursionRoutesData.update { emptyMap() }
 
                     launch {
                         routeInteractor.loadRoutes(map)
