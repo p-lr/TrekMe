@@ -28,18 +28,22 @@ import kotlin.math.*
  * This function builds the map as a [Sequence] of [Tile] which contains the area defined by the two
  * supplied points. This is done in two steps:
  *
- * * Start by finding the tiles at min level that overlap the area.
- * * Find the tiles at higher levels that match exactly the the area underneath the tiles at min level
+ * * Start by finding the tiles at min and max levels that overlap the area. We refer to them as
+ * minArea and maxArea respectively.
+ * * Find the tiles at higher levels that cover the top left corner of the minArea but stop (at the
+ * bottom right corner) to overlap just enough of the maxArea.
  *
- * This algorithm has the advantage of producing a map whose levels cover the same area. But it
- * has a drawback. If the min level is too small, the tile size in meters at this level is high and
- * potentially a large unwanted area will be covered by this level and hence all higher levels. This
- * can lead to downloading a lot of unwanted tiles.
+ * This algorithm has the advantage of producing a map which is compatible with MapCompose, while
+ * reducing the amount of unwanted tiles (in most cases), since it removes unwanted tiles at the
+ * bottom right corner. However, it's not perfect.
+ * If the min level is too small, the tile size in meters at this level is high and
+ * potentially a large unwanted area will be covered at the top left corner of this level and hence
+ * all higher levels. This can lead to downloading a lot of unwanted tiles.
  *
  * A rule of thumb is to set the min level to 12 or higher, and max level no more than 17.
  *
  * Calibration points are set on top-left and bottom-right corners. They are computed with the tiles
- * of the min level since this is the level used for getting the boundaries of the map.
+ * of the max level.
  *
  * @param point1 A [Point] at any corner
  * @param point2 A [Point] at the opposite corner of [point1]
@@ -47,9 +51,10 @@ import kotlin.math.*
 fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point, tileSize: Int = TILE_SIZE_PX): MapSpec {
     val (XLeft, YTop, XRight, YBottom) = orderCoordinates(point1, point2)
 
-    val tileSequence = getTileSequence(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
-    val calibrationPoints = getCalibrationPoints(levelMin, XLeft, YTop, XRight, YBottom)
-    val mapSize = getMapSize(levelMin, levelMax, XLeft, YTop, XRight, YBottom, tileSize)
+    val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
+    val tileSequence = getTileSequence(levelMin, levelMax, levelBuilder)
+    val calibrationPoints = getCalibrationPoints(levelMax, levelBuilder)
+    val mapSize = getMapSize(levelBuilder, levelMax, tileSize)
 
     return MapSpec(
         levelMin,
@@ -65,12 +70,8 @@ fun getMapSpec(levelMin: Int, levelMax: Int, point1: Point, point2: Point, tileS
 private fun getTileSequence(
     levelMin: Int,
     levelMax: Int,
-    XLeft: Double,
-    YTop: Double,
-    XRight: Double,
-    YBottom: Double
+    levelBuilder: LevelBuilder
 ): Sequence<Tile> {
-    val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
 
     return Sequence {
         iterator {
@@ -137,16 +138,22 @@ private class LevelBuilder(
     private val levelAreaMap = mutableMapOf<Int, LevelArea>()
 
     init {
-        val minArea = getLevelArea(levelMin, XLeft, YTop, XRight, YBottom)
-        levelAreaMap[levelMin] = minArea
+        val areaLvlMin = getLevelArea(levelMin, XLeft, YTop, XRight, YBottom)
+        levelAreaMap[levelMin] = areaLvlMin
 
-        var (colLeft, rowTop, colRight, rowBottom) = minArea
+        val areaLvlMax = getLevelArea(levelMax, XLeft, YTop, XRight, YBottom)
+
+        var colLeft = areaLvlMin.colLeft
+        var rowTop = areaLvlMin.rowTop
         for (level in (levelMin + 1)..levelMax) {
             colLeft *= 2
             rowTop *= 2
-            colRight = (colRight + 1) * 2 - 1
-            rowBottom = (rowBottom + 1) * 2 - 1
-            levelAreaMap[level] = LevelArea(colLeft, rowTop, colRight, rowBottom)
+            levelAreaMap[level] = LevelArea(
+                colLeft,
+                rowTop,
+                colRight = (areaLvlMax.colRight / 2.0.pow(levelMax - level)).toInt(),
+                rowBottom = (areaLvlMax.rowBottom / 2.0.pow(levelMax - level)).toInt()
+            )
         }
     }
 
@@ -180,16 +187,10 @@ private fun getNumberOfTiles(
  * Beware that we still need the minimum level as input, because of the way [LevelBuilder] works.
  */
 private fun getMapSize(
-    levelMin: Int,
+    levelBuilder: LevelBuilder,
     levelMax: Int,
-    XLeft: Double,
-    YTop: Double,
-    XRight: Double,
-    YBottom: Double,
     tileSize: Int
 ): MapSize {
-    val levelBuilder = LevelBuilder(levelMin, levelMax, XLeft, YTop, XRight, YBottom)
-
     val levelMaxArea = levelBuilder.getLevelAreaForLevel(levelMax) ?: return MapSize(0, 0)
     return with(levelMaxArea) {
         MapSize((colRight - colLeft + 1) * tileSize, (rowBottom - rowTop + 1) * tileSize)
@@ -200,12 +201,13 @@ private data class MapSize(val widthPx: Int, val heightPx: Int)
 
 private fun getCalibrationPoints(
     level: Int,
-    XLeft: Double,
-    YTop: Double,
-    XRight: Double,
-    YBottom: Double
+    levelBuilder: LevelBuilder,
 ): Pair<CalibrationPoint, CalibrationPoint> {
-    val (colLeft, rowTop, colRight, rowBottom) = getLevelArea(level, XLeft, YTop, XRight, YBottom)
+    val (colLeft, rowTop, colRight, rowBottom) = levelBuilder.getLevelAreaForLevel(level) ?:
+        return Pair(
+            CalibrationPoint(0.0, 0.0, 0.0, 0.0),
+            CalibrationPoint(1.0, 1.0, 0.0, 0.0)
+        )
     val tileSize = getTileInMetersForZoom(level)
 
     val topLeftCalibrationPoint = CalibrationPoint(

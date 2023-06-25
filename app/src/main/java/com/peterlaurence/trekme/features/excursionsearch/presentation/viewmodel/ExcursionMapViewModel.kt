@@ -229,7 +229,7 @@ class ExcursionMapViewModel @Inject constructor(
                 ?: return@withContext null
 
             val minLevel = 12
-            val maxLevel = 12
+            val maxLevel = 16
             val mapSpec = getMapSpec(minLevel, maxLevel, p1, p2, tileSize = 512)
             val tileCount = getNumberOfTiles(minLevel, maxLevel, p1, p2)
             val mapSourceData = mapSourceDataFlow.value
