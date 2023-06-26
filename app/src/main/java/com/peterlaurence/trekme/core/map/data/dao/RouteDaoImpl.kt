@@ -161,6 +161,9 @@ class RouteDaoImpl(
             ).also {
                 routeDirNameForId[it.id] = dir.name
             }
+        }.distinctBy {
+            // Protect against copy-paste of a route folder
+            it.id
         }
     }
 

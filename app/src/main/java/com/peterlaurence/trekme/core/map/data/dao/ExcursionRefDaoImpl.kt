@@ -33,6 +33,9 @@ class ExcursionRefDaoImpl(
 
             val refs = refFiles.map {
                 json.decodeFromString<ExcursionRefKtx>(FileUtils.getStringFromFile(it)) to it
+            }.distinctBy {
+                /* Protect against copy-paste of an excursion ref file */
+                it.first.id
             }
 
             map.excursionRefs.update { refs.map { it.toDomain() } }
