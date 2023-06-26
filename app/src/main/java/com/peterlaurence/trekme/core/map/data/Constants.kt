@@ -6,7 +6,6 @@ const val MAP_IMPORTED_FOLDER_NAME = "imported"
 const val MAP_FILENAME = "map.json"
 
 /* Routes */
-const val LEGACY_MAP_ROUTE_FILENAME = "routes.json"
 const val MAP_ROUTES_DIRECTORY = "routes"
 const val MAP_ROUTE_MARKERS_FILENAME = "route_markers.json"
 const val MAP_ROUTE_INFO_FILENAME = "route_info.json"

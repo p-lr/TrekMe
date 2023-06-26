@@ -1,14 +1,10 @@
 package com.peterlaurence.trekme.core.map.data.dao
 
 import android.util.Log
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.peterlaurence.trekme.core.map.data.LEGACY_MAP_ROUTE_FILENAME
 import com.peterlaurence.trekme.core.map.data.MAP_ROUTES_DIRECTORY
 import com.peterlaurence.trekme.core.map.data.MAP_ROUTE_INFO_FILENAME
 import com.peterlaurence.trekme.core.map.data.MAP_ROUTE_MARKERS_FILENAME
 import com.peterlaurence.trekme.core.map.domain.models.Map
-import com.peterlaurence.trekme.core.map.data.models.RouteGson
 import com.peterlaurence.trekme.core.map.data.models.RouteInfoKtx
 import com.peterlaurence.trekme.core.map.data.models.RouteKtx
 import com.peterlaurence.trekme.core.map.domain.dao.RouteDao
@@ -26,18 +22,11 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 
-/**
- * When routes are imported in a map, we check whether the map uses the legacy routes format.
- * If the legacy format is used, we convert it on-the-fly.
- * The original routes format was deprecated in September 2021 and should be supported for at least
- * one more year - ideally as long as reasonably possible.
- */
 class RouteDaoImpl(
     private val ioDispatcher: CoroutineDispatcher,
     private val mainDispatcher: CoroutineDispatcher,
     private val json: Json
 ): RouteDao {
-    private val gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
 
     /* Associates a route id and the directory name of the serialized route */
     private val routeDirNameForId = mutableMapOf<String, String>()
@@ -45,25 +34,8 @@ class RouteDaoImpl(
     override suspend fun importRoutes(map: Map) = withContext(ioDispatcher) {
         routeDirNameForId.clear()
         val directory = (map as? MapFileBased)?.folder ?: return@withContext
-        val legacyRouteFile = File(directory, LEGACY_MAP_ROUTE_FILENAME)
-        val routes = if (legacyRouteFile.exists()) {
-            /* Import legacy */
-            val routes = getLegacyRoutes(gson, legacyRouteFile)
-
-            /* Convert to new format and serialize */
-            routes.forEach { route ->
-                saveNewRoute(map, route)
-            }
-
-            /* Delete the legacy format */
-            legacyRouteFile.safeDelete()
-
-            routes
-        } else {
-            val dir =
-                getOrCreateDirectory(directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
-            getRoutes(dir)
-        }
+        val dir = getOrCreateDirectory(directory, MAP_ROUTES_DIRECTORY) ?: return@withContext
+        val routes = getRoutes(dir)
 
         /* Set the routes on the main thread */
         // TODO: switching to main thread is probably useless here (because of atomic update)
@@ -192,28 +164,6 @@ class RouteDaoImpl(
         }
     }
 
-
-    /**
-     * Get the routes, using the legacy format.
-     * A file named 'routes.json' (also referred as track file) is expected at the same level of the
-     * 'map.json' configuration file. If there is no track file, this means that the map has no routes.
-     *
-     * This should be called off UI thread.
-     *
-     * @return A list of [Route]
-     */
-    private fun getLegacyRoutes(gson: Gson, routeFile: File): List<Route> {
-        return try {
-            val jsonString = FileUtils.getStringFromFile(routeFile)
-            val routeGson = gson.fromJson(jsonString, RouteGson::class.java)
-            routeGson.routes.map { it.toDomain() }
-        } catch (e: Exception) {
-            /* Error while decoding the json file */
-            Log.e(TAG, e.message, e)
-            emptyList()
-        }
-    }
-
     private fun getOrCreateDirectory(parent: File?, dirName: String): File? {
         return runCatching {
             File(parent, dirName).let {
@@ -268,10 +218,6 @@ class RouteDaoImpl(
         }
         val routeKtsJson = json.encodeToString(routeKtx)
         FileUtils.writeToFile(routeKtsJson, routeMarkersFile)
-    }
-
-    private fun File.safeDelete() = runCatching {
-        delete()
     }
 }
 

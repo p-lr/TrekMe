@@ -1,8 +1,6 @@
 package com.peterlaurence.trekme.core.map.data.mappers
 
-import com.peterlaurence.trekme.core.map.domain.models.Marker
 import com.peterlaurence.trekme.core.map.domain.models.Route
-import com.peterlaurence.trekme.core.map.data.models.RouteGson
 import com.peterlaurence.trekme.core.map.data.models.RouteInfoKtx
 import com.peterlaurence.trekme.core.map.data.models.RouteKtx
 
@@ -21,17 +19,5 @@ fun Route.toRouteInfoKtx(): RouteInfoKtx {
         color = r.color.value,
         visible = r.visible.value,
         elevationTrusted = r.elevationTrusted,
-    )
-}
-
-fun RouteGson.Route.toDomain(): Route {
-    val domainList = ArrayList<Marker>(routeMarkers.size)
-    return Route(
-        id = null,
-        initialName = name,
-        initialVisibility = visible,
-        initialMarkers = routeMarkers.mapTo(domainList) { it.toDomain() },
-        initialColor = color,
-        elevationTrusted = elevationTrusted
     )
 }
