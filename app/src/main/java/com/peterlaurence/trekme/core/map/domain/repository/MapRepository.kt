@@ -5,7 +5,7 @@ import com.peterlaurence.trekme.features.maplist.presentation.ui.MapSettingsFrag
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.*
+import java.util.UUID
 
 /**
  * This repository holds:
@@ -69,7 +69,7 @@ class MapRepository {
      * For situations when we need to get the list of maps at the time of the call, and we don't
      * need to react on map list changes.
      */
-    fun getCurrentMapList() : List<Map> {
+    fun getCurrentMapList(): List<Map> {
         return (_mapListFlow.value as? MapList)?.mapList ?: emptyList()
     }
 
@@ -81,11 +81,13 @@ class MapRepository {
     }
 
     fun addMaps(maps: List<Map>) {
+        /* Protect against duplicates */
+        val uniqueMaps = maps.distinctBy { it.id }
         when (val mapListState = _mapListFlow.value) {
-            Loading -> _mapListFlow.value = MapList(maps)
+            Loading -> _mapListFlow.value = MapList(uniqueMaps)
             is MapList -> {
                 _mapListFlow.value = MapList(
-                    mapListState.mapList + maps.filter { it !in mapListState.mapList }
+                    mapListState.mapList + uniqueMaps.filter { it !in mapListState.mapList }
                 )
             }
         }
